@@ -1956,45 +1956,6 @@ bool Tokenizer::tokenize(std::istream &code,
 
     createTokens(code);
 
-    // replace __LINE__ macro with line number
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (tok->str() == "__LINE__")
-            tok->str(MathLib::toString(tok->linenr()));
-    }
-
-    // 'double sharp' token concatenation
-    {
-        bool goback = false;
-        for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (goback) {
-                goback = false;
-                tok = tok->previous();
-            }
-            // TODO: pattern should be "%var%|%num% ## %var%|%num%"
-            if (Token::Match(tok, "%any% ## %any%") &&
-                (tok->isName() || tok->isNumber()) &&
-                (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
-                tok->str(tok->str() + tok->strAt(2));
-                tok->deleteNext(2);
-                goback = true;
-            }
-        }
-    }
-
-    // Convert C# code
-    if (isCSharp()) {
-        for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (Token::Match(tok, "%type% [ ] %var% [=;]") &&
-                (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
-                tok->deleteNext(2);
-                tok->insertToken("*");
-                tok = tok->tokAt(2);
-                if (tok->next()->str() == "=")
-                    tok = tok->next();
-            }
-        }
-    }
-
     // if MACRO
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "if|for|while %var% (")) {
@@ -2002,35 +1963,6 @@ bool Tokenizer::tokenize(std::istream &code,
             return false;
         }
     }
-
-    // Simplify JAVA/C# code
-    if (isJavaOrCSharp()) {
-        // better don't call isJava in the loop
-        bool isJava_ = isJava();
-        for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (isJava_ && Token::Match(tok, ") throws %var% {")) {
-                tok->deleteNext(2);
-            } else if (tok->str() == "private")
-                tok->str("private:");
-            else if (tok->str() == "protected")
-                tok->str("protected:");
-            else if (tok->str() == "public")
-                tok->str("public:");
-        }
-    }
-
-    // Replace NULL with 0..
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (tok->str() == "NULL" || tok->str() == "__null" ||
-            tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
-            tok->str("0");
-        } else if (tok->isNumber() &&
-                   MathLib::isInt(tok->str()) &&
-                   MathLib::toLongNumber(tok->str()) == 0) {
-            tok->str("0");
-        }
-    }
-
 
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     for (Token *tok = _tokens; tok; tok = tok->next()) {
@@ -2061,6 +1993,63 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
+    //easy simplifications...
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+
+        // replace __LINE__ macro with line number
+        if (tok->str() == "__LINE__")
+            tok->str(MathLib::toString(tok->linenr()));
+
+        // 'double sharp' token concatenation
+        // TODO: pattern should be "%var%|%num% ## %var%|%num%"
+        while (Token::Match(tok, "%any% ## %any%") &&
+            (tok->isName() || tok->isNumber()) &&
+            (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
+            tok->str(tok->str() + tok->strAt(2));
+            tok->deleteNext(2);
+        }
+
+        //Replace NULL with 0..
+        if (tok->str() == "NULL" || tok->str() == "__null" ||
+            tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
+            tok->str("0");
+        } else if (tok->isNumber() &&
+                   MathLib::isInt(tok->str()) &&
+                   MathLib::toLongNumber(tok->str()) == 0) {
+            tok->str("0");
+        }
+
+        // Combine "- %num%" ..
+        if (Token::Match(tok, "?|:|,|(|[|=|return|case|sizeof|%op% - %num%")) {
+            tok->deleteNext();
+            tok->next()->str("-" + tok->next()->str());
+        }
+
+        // Simplify JAVA/C# code
+        if (isJava() && Token::Match(tok, ") throws %var% {"))
+            tok->deleteNext(2);
+        else if (isJavaOrCSharp() && tok->str() == "private")
+            tok->str("private:");
+        else if (isJavaOrCSharp() && tok->str() == "protected")
+            tok->str("protected:");
+        else if (isJavaOrCSharp() && tok->str() == "public")
+            tok->str("public:");
+
+        // Convert exclusive C# code
+        if (isCSharp() && Token::Match(tok, "%type% [ ] %var% [=;]") &&
+            (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+            tok->deleteNext(2);
+            tok->insertToken("*");
+        }
+
+        // simplify round "(" parenthesis between "[;{}] and "{"
+        if (Token::Match(tok, "[;{}] ( {") && 
+            Token::simpleMatch(tok->linkAt(2), "} ) ;")) {
+            tok->linkAt(2)->previous()->deleteNext(2);
+            tok->deleteNext(2);
+        }
+    }
+
     // Convert K&R function declarations to modern C
     simplifyVarDecl(true);
     simplifyFunctionParameters();
@@ -2082,14 +2071,6 @@ bool Tokenizer::tokenize(std::istream &code,
 
     if (!simplifyIfAddBraces())
         return false;
-
-    // Combine "- %num%" ..
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "?|:|,|(|[|=|return|case|sizeof|%op% - %num%")) {
-            tok->next()->str("-" + tok->strAt(2));
-            tok->next()->deleteNext();
-        }
-    }
 
     // Combine tokens..
     for (Token *tok = _tokens; tok && tok->next(); tok = tok->next()) {
@@ -2523,7 +2504,7 @@ void Tokenizer::simplifyDefaultAndDeleteInsideClass()
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "struct|class %var% :|{")) {
             unsigned int indentlevel = 0;
-            for (Token * tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+            for (Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "{")
                     ++indentlevel;
                 else if (tok2->str() == "}") {

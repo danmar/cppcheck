@@ -1112,7 +1112,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         }
 
         // Inner scope..
-        if (Token::Match(tok, "if (")) {
+        if (Token::simpleMatch(tok, "if (")) {
             // initialization / usage in condition..
             if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors, bool(number_of_if == 0)))
                 return true;
@@ -1126,11 +1126,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             // goto the }
             tok = tok->link();
 
-            // TODO: Make sure "if" blocks are surrounded by {} properly (#3415)
-            if (!tok)
-                return true;   // bail out
-
-            if (!Token::Match(tok, "} else {")) {
+            if (!Token::simpleMatch(tok, "} else {")) {
                 if (initif || possibleInitIf) {
                     ++number_of_if;
                     if (number_of_if >= 2)
