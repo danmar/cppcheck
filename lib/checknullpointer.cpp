@@ -894,6 +894,16 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                         break;
                     --indentlevel;
 
+                    // calling exit function?
+                    bool unknown = false;
+                    if (_tokenizer->IsScopeNoReturn(tok2, &unknown))
+                    {
+                        if (_settings->inconclusive && unknown)
+                            inconclusive = true;
+                        else
+                            break;
+                    }
+
                     if (null && indentlevel == 0) {
                         // skip all "else" blocks because they are not executed in this execution path
                         while (Token::simpleMatch(tok2, "} else {"))
@@ -909,10 +919,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     else if (Token::Match(tok2, "return %varid%", varid) &&
                              CheckNullPointer::isPointerDeRef(tok2->next(), dummy))
                         nullPointerError(tok2, pointerName, linenr, inconclusive);
-                    break;
-                }
-
-                if (Token::Match(tok2, "exit ( %num% ) ;")) {
                     break;
                 }
 
