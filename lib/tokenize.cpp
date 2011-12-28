@@ -2642,7 +2642,7 @@ void Tokenizer::simplifyJavaAndCSharp()
                 tok->deleteNext(2);
         } else {
             if (Token::Match(tok, "%type% [ ] %var% [=;]") &&
-                     (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+                (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
                 tok->deleteNext(2);
                 tok->insertToken("*");
                 tok = tok->tokAt(2);
