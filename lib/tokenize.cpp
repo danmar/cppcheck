@@ -1988,6 +1988,10 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // Simplify JAVA/C# code
+    if (isJavaOrCSharp())
+        simplifyJavaAndCSharp();
+
     if (!createLinks()) {
         // Source has syntax errors, can't proceed
         return false;
@@ -2030,34 +2034,6 @@ bool Tokenizer::tokenize(std::istream &code,
             Token::simpleMatch(tok->linkAt(2), "} ) ;")) {
             tok->linkAt(2)->previous()->deleteNext(2);
             tok->deleteNext(2);
-        }
-    }
-
-    // Simplify JAVA/C# code
-    if (isJavaOrCSharp()) {
-        // better don't call isJava in the loop
-        bool isJava_ = isJava();
-        for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (tok->str() == "private")
-                tok->str("private:");
-            else if (tok->str() == "protected")
-                tok->str("protected:");
-            else if (tok->str() == "public")
-                tok->str("public:");
-
-            else if (isJava_) {
-                if (Token::Match(tok, ") throws %var% {"))
-                    tok->deleteNext(2);
-            } else {
-                if (Token::Match(tok, "%type% [ ] %var% [=;]") &&
-                         (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
-                    tok->deleteNext(2);
-                    tok->insertToken("*");
-                    tok = tok->tokAt(2);
-                    if (tok->next()->str() == "=")
-                        tok = tok->next();
-                }
-            }
         }
     }
 

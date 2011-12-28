@@ -233,6 +233,9 @@ public:
      */
     bool simplifyCalculations();
 
+    /** Simplify Java and C# syntax */
+    void simplifyJavaAndCSharp();
+
     /** Insert array size where it isn't given */
     void arraySize();
 
