@@ -1644,14 +1644,14 @@ void CheckOther::checkUnreachableCode()
 void CheckOther::duplicateBreakError(const Token *tok)
 {
     reportError(tok, Severity::style, "duplicateBreak",
-                "Consecutive return, break, continue, goto or throw statements are unnecessary\n"
-                "The second of the two statements can never be executed, and so should be removed\n");
+                "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
+                "The second of the two statements can never be executed, and so should be removed.");
 }
 
 void CheckOther::unreachableCodeError(const Token *tok)
 {
     reportError(tok, Severity::style, "unreachableCode",
-                "Statements following return, break, continue, goto or throw will never be executed\n");
+                "Statements following return, break, continue, goto or throw will never be executed.");
 }
 
 //---------------------------------------------------------------------------
