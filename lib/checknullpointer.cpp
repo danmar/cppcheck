@@ -1013,17 +1013,6 @@ void CheckNullPointer::nullConstantDereference()
             if (tok->str() == "(" && Token::Match(tok->previous(), "sizeof|decltype|typeid"))
                 tok = tok->link();
 
-            else if (Token::simpleMatch(tok, "exit ( )")) {
-                // Goto end of scope
-                while (tok && tok->str() != "}") {
-                    if (tok->str() == "{")
-                        tok = tok->link();
-                    tok = tok->next();
-                }
-                if (!tok)
-                    break;
-            }
-
             else if (Token::simpleMatch(tok, "* 0")) {
                 if (Token::Match(tok->previous(), "return|;|{|}|=|(|,|%op%")) {
                     nullPointerError(tok);
