@@ -5674,7 +5674,7 @@ void Tokenizer::simplifyFunctionParameters()
 
 void Tokenizer::simplifyPointerToStandardType()
 {
-    if (!code_is_c())
+    if (!isC())
         return;
 
     for (Token *tok = _tokens; tok; tok = tok->next()) {
@@ -10085,18 +10085,4 @@ void Tokenizer::printUnknownTypes()
         if (_errorLogger)
             _errorLogger->reportOut(ss.str());
     }
-}
-
-bool Tokenizer::code_is_c() const
-{
-    const std::string fname = getFiles()->at(0);
-    const size_t position   = fname.rfind(".");
-
-    if (position != std::string::npos) {
-        const std::string ext = fname.substr(position);
-        if (ext == ".c" || ext == ".C")
-            return true;
-    }
-
-    return false;
 }

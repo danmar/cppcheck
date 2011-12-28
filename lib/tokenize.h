@@ -792,9 +792,6 @@ public:
      */
     void printUnknownTypes();
 
-    /** Checks if the file extensions is .c or .C */
-    bool code_is_c() const;
-
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);

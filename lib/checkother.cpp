@@ -155,7 +155,7 @@ void CheckOther::clarifyCondition()
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "<|<=|==|!=|>|>=")) {
                     // This might be a template
-                    if (!_tokenizer->code_is_c() && Token::Match(tok2->previous(), "%var% <"))
+                    if (!_tokenizer->isC() && Token::Match(tok2->previous(), "%var% <"))
                         break;
 
                     clarifyConditionError(tok, tok->strAt(2) == "=", false);
@@ -2246,7 +2246,7 @@ static bool isFunction(const std::string &name, const Token *startToken)
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
-    if (_tokenizer->code_is_c()) {
+    if (_tokenizer->isC()) {
         return;
     }
 
