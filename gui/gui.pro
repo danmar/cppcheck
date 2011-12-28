@@ -71,6 +71,7 @@ HEADERS += aboutdialog.h \
            resultstree.h \
            resultsview.h \
            settingsdialog.h \
+           showtypes.h \
            statsdialog.h \
            threadhandler.h \
            threadresult.h \
@@ -78,8 +79,7 @@ HEADERS += aboutdialog.h \
            txtreport.h \
            xmlreport.h \
            xmlreportv1.h \
-           xmlreportv2.h \
-    showtypes.h
+           xmlreportv2.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -102,6 +102,7 @@ SOURCES += aboutdialog.cpp \
            resultstree.cpp \
            resultsview.cpp \
            settingsdialog.cpp \
+           showtypes.cpp \
            statsdialog.cpp \
            threadhandler.cpp \
            threadresult.cpp \
@@ -109,8 +110,7 @@ SOURCES += aboutdialog.cpp \
            txtreport.cpp \
            xmlreport.cpp \
            xmlreportv1.cpp \
-           xmlreportv2.cpp \
-    showtypes.cpp
+           xmlreportv2.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
