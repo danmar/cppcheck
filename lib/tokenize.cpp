@@ -2003,8 +2003,8 @@ bool Tokenizer::tokenize(std::istream &code,
         // 'double sharp' token concatenation
         // TODO: pattern should be "%var%|%num% ## %var%|%num%"
         while (Token::Match(tok, "%any% ## %any%") &&
-            (tok->isName() || tok->isNumber()) &&
-            (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
+               (tok->isName() || tok->isNumber()) &&
+               (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
             tok->str(tok->str() + tok->strAt(2));
             tok->deleteNext(2);
         }
@@ -2043,7 +2043,7 @@ bool Tokenizer::tokenize(std::istream &code,
         }
 
         // simplify round "(" parenthesis between "[;{}] and "{"
-        if (Token::Match(tok, "[;{}] ( {") && 
+        if (Token::Match(tok, "[;{}] ( {") &&
             Token::simpleMatch(tok->linkAt(2), "} ) ;")) {
             tok->linkAt(2)->previous()->deleteNext(2);
             tok->deleteNext(2);

@@ -896,8 +896,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                     // calling exit function?
                     bool unknown = false;
-                    if (_tokenizer->IsScopeNoReturn(tok2, &unknown))
-                    {
+                    if (_tokenizer->IsScopeNoReturn(tok2, &unknown)) {
                         if (_settings->inconclusive && unknown)
                             inconclusive = true;
                         else
