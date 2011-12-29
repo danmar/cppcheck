@@ -2209,7 +2209,7 @@ void CheckOther::checkCCTypeFunctions()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->varId() == 0 &&
-            Token::Match(tok, "isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|isxdigit ( %num% )") &&
+            Token::Match(tok, "isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|isxdigit ( %num% ,|)") &&
             MathLib::isNegative(tok->strAt(2))) {
             cctypefunctionCallError(tok, tok->str(), tok->tokAt(2)->str());
         }

@@ -1166,6 +1166,10 @@ private:
               "    std::cout <<  isxdigit(-61) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -61 to isxdigit() cause undefined behavior, which may lead to a crash\n", errout.str());
+        check("void f() {\n"
+              "std::isgraph(-10000, loc);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Passing value -10000 to isgraph() cause undefined behavior, which may lead to a crash\n", errout.str());
 
     }
     void fflushOnInputStreamTest() {
