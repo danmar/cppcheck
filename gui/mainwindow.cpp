@@ -530,6 +530,11 @@ void MainWindow::CheckDone()
         mUI.mActionSave->setEnabled(true);
     }
 
+    for (int i = 0; i < MaxRecentProjects + 1; i++) {
+        if (mRecentProjectActs[i] != NULL)
+            mRecentProjectActs[i]->setEnabled(true);
+    }
+
     // Notify user - if the window is not active - that check is ready
     QApplication::alert(this, 3000);
 }
@@ -545,6 +550,11 @@ void MainWindow::CheckLockDownUI()
     mUI.mActionCplusplus11->setEnabled(false);
     mUI.mActionC99->setEnabled(false);
     mUI.mActionPosix->setEnabled(false);
+
+    for (int i = 0; i < MaxRecentProjects + 1; i++) {
+        if (mRecentProjectActs[i] != NULL)
+            mRecentProjectActs[i]->setEnabled(false);
+    }
 }
 
 void MainWindow::ProgramSettings()
