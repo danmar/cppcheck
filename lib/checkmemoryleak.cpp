@@ -61,7 +61,7 @@ static const char * const call_func_white_list[] = {
     , "mkdir", "mkfifo", "mknod", "mkstemp"
     , "obstack_printf", "obstack_vprintf", "open", "opendir", "parse_printf_format", "pathconf"
     , "perror", "popen" ,"posix_fadvise", "posix_fallocate", "pread"
-    , "printf", "psignal", "putenv", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r"
+    , "printf", "psignal", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r"
     , "readlink", "readv"
     , "realloc", "regcomp", "remove", "rename", "return", "rewind", "rewinddir", "rindex"
     , "rmdir" ,"scandir", "scanf", "seekdir"

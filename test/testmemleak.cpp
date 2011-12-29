@@ -222,6 +222,7 @@ private:
         TEST_CASE(func23);      // Ticket #2667
         TEST_CASE(func24);      // Ticket #2705
         TEST_CASE(func25);      // Ticket #2904
+        TEST_CASE(func26);
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -589,7 +590,7 @@ private:
             , "getgrnam", "gethostbyaddr", "getnetbyname", "getopt", "getopt_long", "getprotobyname", "getpwnam"
             , "getservbyname", "getservbyport", "glob", "index", "inet_addr", "inet_aton", "inet_network"
             , "initgroups", "link", "mblen", "mbstowcs", "mbtowc", "mkdir", "mkfifo", "mknod", "obstack_printf"
-            , "obstack_vprintf", "opendir", "parse_printf_format", "pathconf", "popen", "psignal", "putenv"
+            , "obstack_vprintf", "opendir", "parse_printf_format", "pathconf", "popen", "psignal"
             , "readlink", "regcomp", "strxfrm", "wordexp", "sizeof", "strtok"
         };
 
@@ -2221,6 +2222,14 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f\n", errout.str());
     }
 
+    void func26() { // ticket #3444
+        // technically there is a leak here. however warning is not wanted
+        check("void f() {\n"
+              "    char *p = strdup(\"A=B\");\n"
+              "    putenv(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void allocfunc1() {
         check("static char *a()\n"
