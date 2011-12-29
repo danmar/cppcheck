@@ -20,6 +20,7 @@
 #include "path.h"
 #include "cppcheck.h"
 
+#include <cassert>
 #include <sstream>
 #include <vector>
 
@@ -48,6 +49,13 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 
 void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
 {
+    // If a message ends to a '\n' and contains only a one '\n'
+    // it will cause the _verboseMessage to be empty which will show
+    // as an empty message to the user if --verbose is used.
+    // Even this doesn't cause problems with messages that have multiple
+    // lines, none of the the error messages should end into it.
+    assert(!(msg[msg.size()-1]=='\n'));
+
     // The summary and verbose message are separated by a newline
     // If there is no newline then both the summary and verbose messages
     // are the given message

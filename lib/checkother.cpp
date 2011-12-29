@@ -61,7 +61,7 @@ void CheckOther::incrementBooleanError(const Token *tok)
         Severity::style,
         "incrementboolean",
         "The use of a variable of type bool with the ++ postfix operator is always true and deprecated by the C++ Standard.\n"
-        "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true\n"
+        "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true."
     );
 }
 
