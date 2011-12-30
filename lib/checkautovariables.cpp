@@ -339,7 +339,12 @@ void CheckAutoVariables::errorReturnTempReference(const Token *tok)
 
 void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
 {
-    reportError(tok, Severity::error, "autovarInvalidDeallocation", "Invalid deallocation");
+    reportError(tok,
+                Severity::error,
+                "autovarInvalidDeallocation",
+                "Deallocating auto-variable is invalid\n"
+                "Deallocating an auto-variable is invalid. You should only free memory "
+                "that has been allocated dynamically.");
 }
 
 

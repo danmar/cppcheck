@@ -297,7 +297,7 @@ private:
               "char tmp[256];\n"
               "free (tmp);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Invalid deallocation\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Deallocating auto-variable is invalid\n"), errout.str());
 
         check("void f()\n"
               "{\n"
