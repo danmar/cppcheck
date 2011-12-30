@@ -1484,6 +1484,12 @@ void Scope::getVariableList()
                 tok = tok->next();
             continue;
         }
+        
+
+        else if (Token::Match(tok, "using namespace| %type% ;")) {
+            tok = tok->tokAt(2);
+            continue;
+        }
 
         // Search for start of statement..
         else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
@@ -1491,9 +1497,6 @@ void Scope::getVariableList()
         else if (Token::Match(tok, ";|{|}"))
             continue;
         else if (Token::Match(tok, "goto %var% ;")) {
-            tok = tok->tokAt(2);
-            continue;
-        } else if (check->_tokenizer->isCSharp() && Token::Match(tok, "using %var% ;")) {
             tok = tok->tokAt(2);
             continue;
         }

@@ -3655,12 +3655,8 @@ void Tokenizer::setVarId()
         if (tok->str() == "unsigned")
             tok = tok->next();
 
-        if (Token::Match(tok, "using namespace %type% ;")) {
+        if (Token::Match(tok, "using namespace| %type% ;")) {
             tok = tok->next();
-            continue;
-        }
-
-        if (tok->str() == "using") {
             continue;
         }
 
