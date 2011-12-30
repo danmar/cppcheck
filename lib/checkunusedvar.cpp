@@ -662,20 +662,17 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             break;
         }
 
-        if (Token::Match(tok, "%type% const| *|&| const| *| const| %var% ;|[|,|)|=|(") && tok->str() != "return" && tok->str() != "throw") { // Declaration: Skip
-            const Token* old = tok;
+        if (Token::Match(tok, "%type% const| *|&| const| *| const| %var% [;=[(]") && tok->str() != "return" && tok->str() != "throw") { // Declaration: Skip
             tok = tok->next();
             while (Token::Match(tok, "const|*|&"))
                 tok = tok->next();
-            tok = Token::findmatch(tok, "[,;)=(]");
+            tok = Token::findmatch(tok, "[;=[(]");
             if (tok && Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
                 tok = tok->next();
             else if (tok && Token::Match(tok, "= %var% ;")) // Simple initialization
                 tok = tok->next();
             if (!tok)
                 break;
-            if (tok->str() == ")" && tok->link() && Token::Match(tok->link()->previous(), "if|for|while"))
-                tok = old;
         }
         // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
         if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||

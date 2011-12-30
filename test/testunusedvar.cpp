@@ -84,6 +84,7 @@ private:
         TEST_CASE(localvar36); // ticket #2805
         TEST_CASE(localvar37); // ticket #3078
         TEST_CASE(localvar38);
+        TEST_CASE(localvar39); // ticket #3454
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1367,6 +1368,14 @@ private:
                               "    const std::string s1(sizeof_(code));\n"
                               "    const std::string s2 = sizeof_(code);\n"
                               "    return(s1+s2);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar39() {
+        functionVariableUsage("void f() {\n"
+                              "    int a = 1;\n"
+                              "    foo(x*a);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
