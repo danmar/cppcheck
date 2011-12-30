@@ -1484,7 +1484,7 @@ void Scope::getVariableList()
                 tok = tok->next();
             continue;
         }
-        
+
 
         else if (Token::Match(tok, "using namespace| %type% ;")) {
             tok = tok->tokAt(2);
