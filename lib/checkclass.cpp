@@ -1241,7 +1241,7 @@ void CheckClass::checkConst()
                     }
 
                     // get function name
-                    std::string functionName((func->tokenDef->isName() ? "" : "operator") + func->tokenDef->str());
+                    std::string functionName = (func->tokenDef->isName() ? "" : "operator") + func->tokenDef->str();
 
                     if (func->tokenDef->str() == "(")
                         functionName += ")";

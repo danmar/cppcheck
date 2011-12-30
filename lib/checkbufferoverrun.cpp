@@ -420,7 +420,7 @@ static bool for_bailout(const Token * const tok1, unsigned int varid)
 
 void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value)
 {
-    const std::string pattern((arrayInfo.varid() ? std::string("%varid%") : arrayInfo.varname()) + " [ " + strindex + " ]");
+    const std::string pattern = (arrayInfo.varid() ? std::string("%varid%") : arrayInfo.varname()) + " [ " + strindex + " ]";
 
     for (const Token* tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
         // TODO: try to reduce false negatives. This is just a quick fix
@@ -795,7 +795,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     for (unsigned int i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
-    const unsigned char varc(static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U));
+    const unsigned char varc = static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U);
 
     if (Token::simpleMatch(tok, "return")) {
         tok = tok->next();
