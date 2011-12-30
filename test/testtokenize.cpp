@@ -5932,8 +5932,10 @@ private:
         bool expand = true;
         Settings::PlatformType platform = Settings::Unspecified;
         const std::string filename="test.cs";
-        ASSERT_EQUALS("int * i ;", tokenizeAndStringify("int [] i;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * i ;", tokenizeAndStringify("; int [] i;", simplify, expand, platform, filename));
+        ASSERT_EQUALS("int * x ;", tokenizeAndStringify("int [] x;", simplify, expand, platform, filename));
+        ASSERT_EQUALS("; int * x , int * y ;", tokenizeAndStringify("; int [] x, int [] y;", simplify, expand, platform, filename));
+        ASSERT_EQUALS("; int * * x ;", tokenizeAndStringify("; int [][] x;", simplify, expand, platform, filename));
+        ASSERT_EQUALS("; int * * * x ;", tokenizeAndStringify("; int [][][] x;", simplify, expand, platform, filename));
     }
 
     std::string javatest(const char javacode[]) {
