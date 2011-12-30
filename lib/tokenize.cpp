@@ -2529,13 +2529,11 @@ bool Tokenizer::hasEnumsWithTypedef()
 {
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "enum %var% {")) {
-            for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "typedef") {
-                    syntaxError(tok2);
-                    return true;
-                } else if (tok2->str() == "}") {
-                    break;
-                }
+            tok = tok->tokAt(2);
+            const Token *tok2 = Token::findmatch(tok, "typedef", tok->link());
+            if (tok2) {
+                syntaxError(tok2);
+                return true;
             }
         }
     }
