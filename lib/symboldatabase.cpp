@@ -1493,6 +1493,9 @@ void Scope::getVariableList()
         else if (Token::Match(tok, "goto %var% ;")) {
             tok = tok->tokAt(2);
             continue;
+        } else if (check->_tokenizer->isCSharp() && Token::Match(tok, "using %var% ;")) {
+            tok = tok->tokAt(2);
+            continue;
         }
 
         tok = checkVariable(tok, varaccess);
