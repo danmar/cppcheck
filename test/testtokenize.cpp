@@ -3054,12 +3054,22 @@ private:
     }
 
     void varid37() {
-        const std::string code = "void blah() {"
-                                 "    Bar bar(*x);"
-                                 "}";
-        ASSERT_EQUALS("\n\n##file 0\n1: "
-                      "void blah ( ) { Bar bar@1 ( * x ) ; }\n",
-                      tokenizeDebugListing(code));
+        {
+            const std::string code = "void blah() {"
+                                     "    Bar bar(*x);"
+                                     "}";
+            ASSERT_EQUALS("\n\n##file 0\n1: "
+                          "void blah ( ) { Bar bar@1 ( * x ) ; }\n",
+                          tokenizeDebugListing(code));
+        }
+        {
+            const std::string code = "void blah() {"
+                                     "    Bar bar(&x);"
+                                     "}";
+            ASSERT_EQUALS("\n\n##file 0\n1: "
+                          "void blah ( ) { Bar bar@1 ( & x ) ; }\n",
+                          tokenizeDebugListing(code));
+        }
     }
 
     void varid38() {
@@ -5170,6 +5180,15 @@ private:
                                "foo::foo() = delete;";
             TODO_ASSERT_EQUALS("struct foo { }",
                                "struct foo { foo ( ) ; } foo :: foo ( ) = delete ;", tokenizeAndStringify(code));
+        }
+
+        //ticket #3448 (segmentation fault)
+        {
+            const char *code = "struct A {"
+                               "  void bar () = delete;"
+                               "};"
+                               "void baz () = delete;";
+            ASSERT_EQUALS("struct A { } ; void baz ( ) = delete ;", tokenizeAndStringify(code));
         }
     }
 

@@ -2518,7 +2518,8 @@ void Tokenizer::simplifyDefaultAndDeleteInsideClass()
                         tok2 = tok2->previous();
                     if (Token::Match(tok2, "[;{}]") || tok2->isName())
                         Token::eraseTokens(tok2, end);
-                    tok2 = end;
+                    else
+                        tok2 = end->previous();
                 }
             }
         }
