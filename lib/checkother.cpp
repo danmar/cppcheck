@@ -1591,6 +1591,7 @@ void CheckOther::checkUnreachableCode()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         const Token* secondBreak = 0;
+        const Token* labelName = 0;
         if (tok->str() == "(")
             tok = tok->link();
         else if (Token::Match(tok, "break|continue ;"))
@@ -1602,8 +1603,10 @@ void CheckOther::checkUnreachableCode()
                     secondBreak = tok2->next();
                     break;
                 }
-        } else if (Token::Match(tok, "goto %any% ;"))
+        } else if (Token::Match(tok, "goto %any% ;")) {
             secondBreak = tok->tokAt(3);
+            labelName = tok->tokAt(1);
+        }
 
         if (secondBreak) {
             if (Token::Match(secondBreak, "continue|goto|throw") ||
@@ -1630,7 +1633,22 @@ void CheckOther::checkUnreachableCode()
                 }
                 tok = Token::findmatch(secondBreak, "[}:]");
             } else if (!Token::Match(secondBreak, "return|}|case|default") && secondBreak->strAt(1) != ":") { // TODO: No bailout for unconditional scopes
-                unreachableCodeError(secondBreak);
+                // If the goto label is followed by a loop construct in which the label is defined it's quite likely
+                // that the goto jump was intended to skip some code on the first loop iteration.
+                bool labelInFollowingLoop = false;
+                if (labelName && Token::Match(secondBreak, "while|do|for")) {
+                    const Token *scope = Token::findmatch(secondBreak, "{");
+                    if (scope) {
+                        for (const Token *tokIter = scope; tokIter != scope->link() && tokIter; tokIter = tokIter->next()) {
+                            if (Token::Match(tokIter, "[;{}] %any% :") && labelName->str() == tokIter->strAt(1)) {
+                                labelInFollowingLoop = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!labelInFollowingLoop)
+                    unreachableCodeError(secondBreak);
                 tok = Token::findmatch(secondBreak, "[}:]");
             } else
                 tok = secondBreak;

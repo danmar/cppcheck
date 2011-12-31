@@ -1919,6 +1919,33 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("int foo() {\n"
+              "    goto label;\n"
+              "    while (true) {\n"
+              "     bar();\n"
+              "     label:\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #3457
+
+        check("int foo() {\n"
+              "    goto label;\n"
+              "    do {\n"
+              "     bar();\n"
+              "     label:\n"
+              "    } while (true);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #3457
+
+        check("int foo() {\n"
+              "    goto label;\n"
+              "    for (;;) {\n"
+              "     bar();\n"
+              "     label:\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #3457
+
         check("%: return ; ()"); // Don't crash. #3441.
     }
 
