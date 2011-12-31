@@ -2826,6 +2826,11 @@ static void removeTemplates(Token *tok)
             continue;
 
         for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+
+            if (tok2->str() == "(") {
+                tok2 = tok2->link();
+            }
+
             if (tok2->str() == "{") {
                 tok2 = tok2->link()->next();
                 Token::eraseTokens(tok, tok2);
@@ -2846,15 +2851,18 @@ static void removeTemplates(Token *tok)
                 goback = true;
                 break;
             }
-            if (tok2->str() == "(") {
-                tok2 = tok2->link();
-            } else if (tok2->str() == ";") {
-                Token::eraseTokens(tok, tok2->next());
+
+            if (tok2->str() == ";") {
+                tok2 = tok2->next();
+                Token::eraseTokens(tok, tok2);
                 tok->deleteThis();
                 goback = true;
                 break;
-            } else if (Token::Match(tok2, ">|>> class %var% [,)]")) {
-                Token::eraseTokens(tok,tok2->next());
+            }
+
+            if (Token::Match(tok2, ">|>> class|struct %var% [,)]")) {
+                tok2 = tok2->next();
+                Token::eraseTokens(tok, tok2);
                 tok->deleteThis();
                 goback = true;
                 break;
@@ -3659,8 +3667,9 @@ void Tokenizer::setVarId()
         if (tok->str() == "unsigned")
             tok = tok->next();
 
-        if (Token::Match(tok, "using namespace| %type% ;")) {
-            tok = tok->next();
+        if (tok->str() == "using") {
+            if (tok->next() && tok->next()->str() == "namespace")
+                tok = tok->next();
             continue;
         }
 
@@ -3813,16 +3822,14 @@ void Tokenizer::setVarId()
                 continue;
 
             // Search for function declaration, e.g. void f( int c );
-            if (Token::Match(tok2->next(), "%num%") ||
-                Token::Match(tok2->next(), "%bool%") ||
-                tok2->next()->str()[0] == '"' ||
-                tok2->next()->str()[0] == '\'' ||
-                tok2->next()->str() == "*" ||
-                tok2->next()->varId() != 0) {
-                // This is not a function
-            } else {
+            if (!Token::Match(tok2->next(), "%num%") &&
+                !Token::Match(tok2->next(), "%bool%") &&
+                tok2->next()->str()[0] != '"' &&
+                tok2->next()->str()[0] != '\'' &&
+                tok2->next()->str() != "*" &&
+                tok2->next()->str() != "&" &&
+                tok2->next()->varId() == 0)
                 continue;
-            }
         }
 
         // Don't set variable id for 'AAA a[0] = 0;' declaration (#2638)

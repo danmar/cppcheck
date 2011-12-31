@@ -1485,9 +1485,10 @@ void Scope::getVariableList()
             continue;
         }
 
-
-        else if (Token::Match(tok, "using namespace| %type% ;")) {
-            tok = tok->tokAt(2);
+        //skip 'using (namespace)' keyword
+        else if (tok->str() == "using") {
+            if (tok->next() && tok->next()->str() == "namespace")
+                tok = tok->next();
             continue;
         }
 
