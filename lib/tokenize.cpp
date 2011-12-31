@@ -2834,6 +2834,10 @@ static void removeTemplates(Token *tok)
                 tok->deleteThis();
                 goback = true;
                 break;
+            } else if (tok2->str() == "}") {  // garbage code! (#3449)
+                Token::eraseTokens(tok,tok2);
+                tok->deleteThis();
+                break;
             }
             // don't remove constructor
             if (tok2->str() == "explicit") {

@@ -119,6 +119,7 @@ private:
         TEST_CASE(template26);  // #2721 - passing 'char[2]' as template parameter
         TEST_CASE(template27);  // #3350 - removing unused template in macro call
         TEST_CASE(template28);
+        TEST_CASE(template29);  // #3449
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2084,6 +2085,14 @@ private:
         const char code[] = "template<class A, class B> class Fred {};\n"
                             "Fred<int,Fred<int,int> > x;\n";
         ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } class Fred<int,Fred<int,int>> { }", sizeof_(code));
+    }
+
+    void template29() {
+        // #3449 - garbage code (don't segfault)
+        const char code[] = "template<typename T> struct A;\n"
+                            "struct B { template<typename T> struct C };\n"
+                            "{};";
+        ASSERT_EQUALS("struct B { } ; { } ;", sizeof_(code));
     }
 
     void template_unhandled() {
