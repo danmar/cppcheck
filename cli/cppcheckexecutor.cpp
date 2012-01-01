@@ -105,32 +105,31 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Remove header files from the list of ignored files.
         // Also output a warning for the user.
         // TODO: Remove all unknown files? (use FileLister::acceptFile())
-        bool warned = false;
+        bool warn = false;
         std::vector<std::string> ignored = parser.GetIgnoredPaths();
-        std::vector<std::string>::iterator iterIgnored = ignored.begin();
-        for (size_t i = 0 ; i < ignored.size();) {
-            const std::string extension = Path::getFilenameExtension(ignored[i]);
+        for (std::vector<std::string>::iterator i = ignored.begin(); i != ignored.end();) {
+            const std::string extension = Path::getFilenameExtension(*i);
             if (extension == ".h" || extension == ".hpp") {
-                ignored.erase(iterIgnored + i);
-                if (!warned) {
-                    std::cout << "cppcheck: filename exclusion does not apply to header (.h and .hpp) files." << std::endl;
-                    std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
-                    warned = true; // Warn only once
-                }
+                i = ignored.erase(i);
+                warn = true;
             } else
                 ++i;
         }
+        if (warn) {
+            std::cout << "cppcheck: filename exclusion does not apply to header (.h and .hpp) files." << std::endl;
+            std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
+        }
 
         PathMatch matcher(parser.GetIgnoredPaths());
-        for (size_t i = 0 ; i < filenames.size();) {
+        for (std::vector<std::string>::iterator i = filenames.begin() ; i != filenames.end();) {
 #if defined(_WIN32)
             // For Windows we want case-insensitive path matching
             const bool caseSensitive = false;
 #else
             const bool caseSensitive = true;
 #endif
-            if (matcher.Match(filenames[i], caseSensitive))
-                filenames.erase(filenames.begin() + i);
+            if (matcher.Match(*i, caseSensitive))
+                i = filenames.erase(i);
             else
                 ++i;
         }

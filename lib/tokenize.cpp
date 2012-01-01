@@ -303,7 +303,7 @@ void Tokenizer::createTokens(std::istream &code)
 
         // char/string..
         // multiline strings are not handled. The preprocessor should handle that for us.
-        if (ch == '\'' || ch == '\"') {
+        else if (ch == '\'' || ch == '\"') {
             std::string line;
 
             // read char
@@ -366,88 +366,86 @@ void Tokenizer::createTokens(std::istream &code)
             continue;
         }
 
-        if (strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch)) {
-            if (ch == '.' &&
-                CurrentToken.length() > 0 &&
-                std::isdigit(CurrentToken[0])) {
-                // Don't separate doubles "5.4"
-            } else if (strchr("+-", ch) &&
-                       CurrentToken.length() > 0 &&
-                       std::isdigit(CurrentToken[0]) &&
-                       CurrentToken.compare(0,2,"0x") != 0 &&
-                       (CurrentToken[CurrentToken.length()-1] == 'e' ||
-                        CurrentToken[CurrentToken.length()-1] == 'E')) {
-                // Don't separate doubles "4.2e+10"
-            } else if (CurrentToken.empty() && ch == '.' && std::isdigit(code.peek())) {
-                // tokenize .125 into 0.125
-                CurrentToken = "0";
-            } else if (ch=='&' && code.peek() == '&') {
-                if (!CurrentToken.empty()) {
-                    addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
-                    if (!CurrentToken.empty())
-                        _tokensBack->setExpandedMacro(expandedMacro);
-                    CurrentToken.clear();
-                }
-
-                // &&
-                ch = (char)code.get();
-                addtoken("&&", lineno, FileIndex, true);
-                _tokensBack->setExpandedMacro(expandedMacro);
-                continue;
-            } else if (ch==':' && CurrentToken.empty() && code.peek() == ' ') {
-                // :
-                addtoken(":", lineno, FileIndex, true);
-                _tokensBack->setExpandedMacro(expandedMacro);
-                CurrentToken.clear();
-                continue;
-            } else if (ch==':' && CurrentToken.empty() && code.peek() == ':') {
-                // ::
-                ch = (char)code.get();
-                addtoken("::", lineno, FileIndex, true);
-                _tokensBack->setExpandedMacro(expandedMacro);
-                CurrentToken.clear();
-                continue;
-            } else {
-                if (CurrentToken == "#file") {
-                    // Handle this where strings are handled
-                    continue;
-                } else if (CurrentToken == "#endfile") {
-                    if (lineNumbers.empty() || fileIndexes.empty()) {
-                        cppcheckError(0);
-                        deallocateTokens();
-                        return;
-                    }
-
-                    lineno = lineNumbers.back();
-                    lineNumbers.pop_back();
-                    FileIndex = fileIndexes.back();
-                    fileIndexes.pop_back();
-                    CurrentToken.clear();
-                    continue;
-                }
-
+        if (ch == '.' &&
+            CurrentToken.length() > 0 &&
+            std::isdigit(CurrentToken[0])) {
+            // Don't separate doubles "5.4"
+        } else if (strchr("+-", ch) &&
+                   CurrentToken.length() > 0 &&
+                   std::isdigit(CurrentToken[0]) &&
+                   CurrentToken.compare(0,2,"0x") != 0 &&
+                   (CurrentToken[CurrentToken.length()-1] == 'e' ||
+                    CurrentToken[CurrentToken.length()-1] == 'E')) {
+            // Don't separate doubles "4.2e+10"
+        } else if (CurrentToken.empty() && ch == '.' && std::isdigit(code.peek())) {
+            // tokenize .125 into 0.125
+            CurrentToken = "0";
+        } else if (ch=='&' && code.peek() == '&') {
+            if (!CurrentToken.empty()) {
                 addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
                 if (!CurrentToken.empty())
                     _tokensBack->setExpandedMacro(expandedMacro);
-
                 CurrentToken.clear();
+            }
 
-                if (ch == '\n') {
-                    ++lineno;
-                    continue;
-                } else if (ch == ' ') {
-                    continue;
+            // &&
+            ch = (char)code.get();
+            addtoken("&&", lineno, FileIndex, true);
+            _tokensBack->setExpandedMacro(expandedMacro);
+            continue;
+        } else if (ch==':' && CurrentToken.empty() && code.peek() == ' ') {
+            // :
+            addtoken(":", lineno, FileIndex, true);
+            _tokensBack->setExpandedMacro(expandedMacro);
+            CurrentToken.clear();
+            continue;
+        } else if (ch==':' && CurrentToken.empty() && code.peek() == ':') {
+            // ::
+            ch = (char)code.get();
+            addtoken("::", lineno, FileIndex, true);
+            _tokensBack->setExpandedMacro(expandedMacro);
+            CurrentToken.clear();
+            continue;
+        } else if (strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch)) {
+            if (CurrentToken == "#file") {
+                // Handle this where strings are handled
+                continue;
+            } else if (CurrentToken == "#endfile") {
+                if (lineNumbers.empty() || fileIndexes.empty()) {
+                    cppcheckError(0);
+                    deallocateTokens();
+                    return;
                 }
 
-                CurrentToken += ch;
-                // Add "++", "--" or ">>" token
-                if ((ch == '+' || ch == '-' || ch == '>') && (code.peek() == ch))
-                    CurrentToken += (char)code.get();
-                addtoken(CurrentToken.c_str(), lineno, FileIndex);
-                _tokensBack->setExpandedMacro(expandedMacro);
+                lineno = lineNumbers.back();
+                lineNumbers.pop_back();
+                FileIndex = fileIndexes.back();
+                fileIndexes.pop_back();
                 CurrentToken.clear();
                 continue;
             }
+
+            addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+            if (!CurrentToken.empty())
+                _tokensBack->setExpandedMacro(expandedMacro);
+
+            CurrentToken.clear();
+
+            if (ch == '\n') {
+                ++lineno;
+                continue;
+            } else if (ch == ' ') {
+                continue;
+            }
+
+            CurrentToken += ch;
+            // Add "++", "--" or ">>" token
+            if ((ch == '+' || ch == '-' || ch == '>') && (code.peek() == ch))
+                CurrentToken += (char)code.get();
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            _tokensBack->setExpandedMacro(expandedMacro);
+            CurrentToken.clear();
+            continue;
         }
 
         CurrentToken += ch;
@@ -2832,7 +2830,7 @@ static void removeTemplates(Token *tok)
                 tok2 = tok2->link();
             }
 
-            if (tok2->str() == "{") {
+            else if (tok2->str() == "{") {
                 tok2 = tok2->link()->next();
                 Token::eraseTokens(tok, tok2);
                 if (tok2 && tok2->str() == ";" && tok2->next())
@@ -3198,17 +3196,9 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
         std::vector<const Token *> &typesUsedInTemplateInstantion,
         std::list<Token *> &templateInstantiations)
 {
-    int _indentlevel = 0;
-    int _parlevel = 0;
     for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next()) {
-        if (tok3->str() == "{")
-            ++_indentlevel;
-        else if (tok3->str() == "}")
-            --_indentlevel;
-        else if (tok3->str() == "(")
-            ++_parlevel;
-        else if (tok3->str() == ")")
-            --_parlevel;
+        if (tok3->str() == "{" || tok3->str() == "(")
+            tok3 = tok3->link();
 
         // Start of template..
         if (tok3 == tok) {
@@ -3216,9 +3206,7 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
         }
 
         // member function implemented outside class definition
-        else if (_indentlevel == 0 &&
-                 _parlevel == 0 &&
-                 simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
+        else if (simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
             addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
             while (tok3->str() != "::")
                 tok3 = tok3->next();

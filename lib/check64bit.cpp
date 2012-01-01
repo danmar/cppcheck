@@ -33,8 +33,7 @@ namespace {
 /** Is given variable a pointer or array? */
 static bool isaddr(const Variable *var)
 {
-    const Token *nametok = var ? var->nameToken() : 0;
-    return (var && (nametok->strAt(-2) == "*" || nametok->strAt(-1) == "*" || nametok->strAt(1) == "["));
+    return (var && (var->isPointer() || var->isArray()));
 }
 
 /** Is given variable an integer variable */

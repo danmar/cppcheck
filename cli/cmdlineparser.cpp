@@ -172,8 +172,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Filter errors
         else if (strncmp(argv[i], "--suppressions-list=", 20) == 0) {
-            std::string filename = argv[i];
-            filename = filename.substr(20);
+            std::string filename = argv[i]+20;
             std::ifstream f(filename.c_str());
             if (!f.is_open()) {
                 std::string message("cppcheck: Couldn't open the file: \"");
@@ -191,8 +190,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Filter errors
         // This is deprecated, see --supressions-list above
-        else if (strcmp(argv[i], "--suppressions") == 0 &&
-                 strlen(argv[i]) == 14) {
+        else if (strcmp(argv[i], "--suppressions") == 0) {
             ++i;
 
             if (i >= argc) {
@@ -216,8 +214,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         else if (strncmp(argv[i], "--suppress=", 11) == 0) {
-            std::string suppression = argv[i];
-            suppression = suppression.substr(11);
+            std::string suppression = argv[i]+11;
             const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
             if (!errmsg.empty()) {
                 PrintMessage(errmsg);
@@ -243,8 +240,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Define the XML file version (and enable XML output)
         else if (strncmp(argv[i], "--xml-version=", 14) == 0) {
-            std::string numberString(argv[i]);
-            numberString = numberString.substr(14);
+            std::string numberString(argv[i]+14);
 
             std::istringstream iss(numberString);
             if (!(iss >> _settings->_xml_version)) {
@@ -282,7 +278,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 return false;
             }
             // when "style" is enabled, also enable "performance" and "portability"
-            else if (strstr(argv[i]+9, "style")) {
+            if (_settings->isEnabled("style")) {
                 _settings->addEnabled("performance");
                 _settings->addEnabled("portability");
             }
@@ -290,8 +286,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --error-exitcode=1
         else if (strncmp(argv[i], "--error-exitcode=", 17) == 0) {
-            std::string temp = argv[i];
-            temp = temp.substr(17);
+            std::string temp = argv[i]+17;
             std::istringstream iss(temp);
             if (!(iss >> _settings->_exitCode)) {
                 _settings->_exitCode = 0;
@@ -307,8 +302,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "-D define"
             if (strcmp(argv[i], "-D") == 0) {
                 ++i;
-                if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
-                    strncmp(argv[i], "--", 2) == 0) {
+                if (i >= argc || argv[i][0] == '-') {
                     PrintMessage("cppcheck: argument to '-D' is missing.");
                     return false;
                 }
@@ -331,8 +325,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "-U undef"
             if (strcmp(argv[i], "-U") == 0) {
                 ++i;
-                if (i >= argc || strncmp(argv[i], "-", 1) == 0 ||
-                    strncmp(argv[i], "--", 2) == 0) {
+                if (i >= argc || argv[i][0] == '-') {
                     PrintMessage("cppcheck: argument to '-U' is missing.");
                     return false;
                 }
@@ -354,7 +347,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "-I path/"
             if (strcmp(argv[i], "-I") == 0) {
                 ++i;
-                if (i >= argc) {
+                if (i >= argc || argv[i][0] == '-') {
                     PrintMessage("cppcheck: argument to '-I' is missing.");
                     return false;
                 }
@@ -391,7 +384,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "-i path/"
             if (strcmp(argv[i], "-i") == 0) {
                 ++i;
-                if (i >= argc) {
+                if (i >= argc || argv[i][0] == '-') {
                     PrintMessage("cppcheck: argument to '-i' is missing.");
                     return false;
                 }
@@ -442,11 +435,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "--template path/"
             if (argv[i][10] == '=')
                 _settings->_outputFormat = argv[i] + 11;
-            else {
+            else if ((i+1) < argc && argv[i+1][0] != '-') {
                 ++i;
-                _settings->_outputFormat = (argv[i] ? argv[i] : "");
-            }
-            if (_settings->_outputFormat.empty()) {
+                _settings->_outputFormat = argv[i];
+            } else {
                 PrintMessage("cppcheck: argument to '--template' is missing.");
                 return false;
             }
@@ -460,14 +452,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Checking threads
-        else if (strcmp(argv[i], "-j") == 0 ||
-                 strncmp(argv[i], "-j", 2) == 0) {
+        else if (strncmp(argv[i], "-j", 2) == 0) {
             std::string numberString;
 
             // "-j 3"
             if (strcmp(argv[i], "-j") == 0) {
                 ++i;
-                if (i >= argc) {
+                if (i >= argc || argv[i][0] == '-') {
                     PrintMessage("cppcheck: argument to '-j' is missing.");
                     return false;
                 }
@@ -476,10 +467,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
 
             // "-j3"
-            else if (strncmp(argv[i], "-j", 2) == 0) {
-                numberString = argv[i];
-                numberString = numberString.substr(2);
-            }
+            else
+                numberString = argv[i]+2;
 
             std::istringstream iss(numberString);
             if (!(iss >> _settings->_jobs)) {
