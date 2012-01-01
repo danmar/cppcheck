@@ -2639,14 +2639,28 @@ void Tokenizer::simplifyJavaAndCSharp()
             if (Token::Match(tok, ") throws %var% {"))
                 tok->deleteNext(2);
         } else {
-            //simplify C# arrays of arrays declarations
-            while (Token::Match(tok, "%type% [ ]") &&
+            //simplify C# arrays of arrays and multidimension arrays
+            while (Token::Match(tok, "%type% [ ,|]") &&
                    (!tok->previous() || Token::Match(tok->previous(), "[,;{}]"))) {
-                Token *tok2 = tok->tokAt(3);
+                Token *tok2 = tok->tokAt(2);
                 unsigned int count = 1;
-                while (Token::simpleMatch(tok2, "[ ]")) {
-                    tok2 = tok2->tokAt(2);
+                while (tok2 && tok2->str() == ",") {
                     ++count;
+                    tok2 = tok2->next();
+                }
+                if (!tok2 || tok2->str() != "]")
+                    break;
+                tok2 = tok2->next();
+                while (Token::Match(tok2, "[ ,|]")) {
+                    tok2 = tok2->next();
+                    while (tok2 && tok2->str() == ",") {
+                        ++count;
+                        tok2 = tok2->next();
+                    }
+                    if (!tok2 || tok2->str() != "]")
+                        break;
+                    ++count;
+                    tok2 = tok2->next();
                 }
                 if (!tok2)
                     break;
