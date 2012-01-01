@@ -544,13 +544,6 @@ public:
     int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
 
     /**
-     * Used after simplifyTemplates to perform a little cleanup.
-     * Sometimes the simplifyTemplates isn't fully successful and then
-     * there are function calls etc with "wrong" syntax.
-     */
-    void simplifyTemplates2();
-
-    /**
      * Simplify e.g. 'atol("0")' into '0'
      */
     void simplifyMathFunctions();

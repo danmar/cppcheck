@@ -30,6 +30,7 @@
 #include "check.h"
 #include "path.h"
 #include "symboldatabase.h"
+#include "templatesimplifier.h"
 
 #include <string>
 #include <cstring>
@@ -2324,7 +2325,7 @@ bool Tokenizer::tokenize(std::istream &code,
     // then unsimplified function calls etc remain. These have the
     // "wrong" syntax. So this function will just fix so that the
     // syntax is corrected.
-    simplifyTemplates2();
+    TemplateSimplifier::cleanupAfterSimplify(_tokens);
 
     // Simplify the operator "?:"
     simplifyConditionOperator();
@@ -3516,37 +3517,6 @@ void Tokenizer::simplifyTemplates()
     }
 
     removeTemplates(_tokens);
-}
-//---------------------------------------------------------------------------
-
-void Tokenizer::simplifyTemplates2()
-{
-    bool goback = false;
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (goback) {
-            tok = tok->previous();
-            goback = false;
-        }
-        if (tok->str() == "(")
-            tok = tok->link();
-
-        else if (Token::Match(tok, "%type% <") &&
-                 (!tok->previous() || tok->previous()->str() == ";")) {
-            const Token *tok2 = tok->tokAt(2);
-            std::string type;
-            while (Token::Match(tok2, "%type% ,") || Token::Match(tok2, "%num% ,")) {
-                type += tok2->str() + ",";
-                tok2 = tok2->tokAt(2);
-            }
-            if (Token::Match(tok2, "%type% > (") || Token::Match(tok2, "%num% > (")) {
-                type += tok2->str();
-                tok->str(tok->str() + "<" + type + ">");
-                Token::eraseTokens(tok, tok2->tokAt(2));
-                if (tok == _tokens)
-                    goback = true;
-            }
-        }
-    }
 }
 //---------------------------------------------------------------------------
 

@@ -159,6 +159,8 @@
 		<Unit filename="lib/suppressions.h" />
 		<Unit filename="lib/symboldatabase.cpp" />
 		<Unit filename="lib/symboldatabase.h" />
+		<Unit filename="lib/templatesimplifier.cpp" />
+		<Unit filename="lib/templatesimplifier.h" />
 		<Unit filename="lib/timer.cpp" />
 		<Unit filename="lib/timer.h" />
 		<Unit filename="lib/token.cpp" />
