@@ -287,7 +287,7 @@ lib/suppressions.o: lib/suppressions.cpp lib/suppressions.h lib/settings.h lib/s
 lib/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/token.h lib/mathlib.h lib/tokenize.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/check.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/symboldatabase.o lib/symboldatabase.cpp
 
-lib/templatesimplifier.o: lib/templatesimplifier.cpp lib/token.h
+lib/templatesimplifier.o: lib/templatesimplifier.cpp lib/templatesimplifier.h lib/token.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/templatesimplifier.o lib/templatesimplifier.cpp
 
 lib/timer.o: lib/timer.cpp lib/timer.h
