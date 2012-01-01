@@ -2626,7 +2626,7 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 void Tokenizer::simplifyJavaAndCSharp()
 {
     // better don't call isJava in the loop
-    bool isJava_ = isJava();
+    const bool isJava_ = isJava();
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "private")
             tok->str("private:");
@@ -2639,6 +2639,13 @@ void Tokenizer::simplifyJavaAndCSharp()
             if (Token::Match(tok, ") throws %var% {"))
                 tok->deleteNext(2);
         } else {
+            //remove 'using var;' from code
+            if (Token::Match(tok, "using %var% ;") &&
+                (!tok->previous() || Token::Match(tok->previous(), "[,;{}]"))) {
+                tok->deleteNext(2);
+                tok->deleteThis();
+            }
+
             //simplify C# arrays of arrays and multidimension arrays
             while (Token::Match(tok, "%type% [ ,|]") &&
                    (!tok->previous() || Token::Match(tok->previous(), "[,;{}]"))) {
