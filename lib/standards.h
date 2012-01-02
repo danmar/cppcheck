@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2011 Marek Zmys≥owski and Cppcheck team.
+ * Copyright (C) 2007-2011 Marek Zmys≈Çowski and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef StandardsH
-#define StandardsH
+#ifndef standardsH
+#define standardsH
 
 /// @addtogroup Core
 /// @{
@@ -42,4 +42,4 @@ struct Standards {
 
 /// @}
 
-#endif // STANDARDS_H
+#endif // standardsH
