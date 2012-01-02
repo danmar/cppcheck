@@ -198,7 +198,6 @@ private:
         TEST_CASE(varid40);   // ticket #3279
         TEST_CASE(varid41);   // ticket #3340 (varid for union type)
         TEST_CASE(varid42);   // ticket #3316 (varid for array)
-        TEST_CASE(varid43);
         TEST_CASE(varid44);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3126,13 +3125,6 @@ private:
                       "3: public:\n"
                       "4: struct fruit :: banana Bananas@1 [ 25 ] ;\n"
                       "5: } ;\n",
-                      tokenizeDebugListing(code));
-    }
-
-    void varid43() {
-        const std::string code("namespace fruit { using banana; }");
-        ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: namespace fruit { using banana ; }\n",
                       tokenizeDebugListing(code));
     }
 

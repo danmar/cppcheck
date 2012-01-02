@@ -3652,10 +3652,6 @@ void Tokenizer::setVarId()
             continue;
         }
 
-        if (tok->str() == "using") {
-            continue;
-        }
-
         if (Token::Match(tok, "goto %any% ;"))
             continue;
 
