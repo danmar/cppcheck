@@ -18,6 +18,7 @@
 
 #include "templatesimplifier.h"
 #include "token.h"
+#include <sstream>
 #include <set>
 #include <string>
 
@@ -271,4 +272,70 @@ void TemplateSimplifier::removeTemplates(Token *tok)
             }
         }
     }
+}
+
+
+std::set<std::string> TemplateSimplifier::simplifyTemplatesExpandSpecialized(Token *tokens)
+{
+    std::set<std::string> expandedtemplates;
+
+    // Locate specialized templates..
+    for (Token *tok = tokens; tok; tok = tok->next()) {
+        if (tok->str() != "template")
+            continue;
+        if (!Token::simpleMatch(tok->next(), "< >"))
+            continue;
+
+        // what kind of template is this?
+        Token *tok2 = tok->tokAt(3);
+        while (tok2 && (tok2->isName() || tok2->str() == "*"))
+            tok2 = tok2->next();
+
+        if (!TemplateSimplifier::templateParameters(tok2))
+            continue;
+
+        // unknown template.. bail out
+        if (!tok2->previous()->isName())
+            continue;
+
+        tok2 = tok2->previous();
+        std::string s;
+        {
+            std::ostringstream ostr;
+            const Token *tok3 = tok2;
+            for (tok3 = tok2; tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
+                if (tok3 != tok2)
+                    ostr << " ";
+                ostr << tok3->str();
+            }
+            if (!Token::simpleMatch(tok3, "> ("))
+                continue;
+            s = ostr.str();
+        }
+
+        // save search pattern..
+        const std::string pattern(s + " > (");
+
+        // remove spaces to create new name
+        while (s.find(" ") != std::string::npos)
+            s.erase(s.find(" "), 1);
+        const std::string name(s + ">");
+        expandedtemplates.insert(name);
+
+        // Rename template..
+        Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
+        tok2->str(name);
+
+        // delete the "template < >"
+        tok->deleteNext(2);
+        tok->deleteThis();
+
+        // Use this special template in the code..
+        while (NULL != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
+            Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
+            tok2->str(name);
+        }
+    }
+
+    return expandedtemplates;
 }

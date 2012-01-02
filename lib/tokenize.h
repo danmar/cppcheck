@@ -473,12 +473,6 @@ public:
      */
     void simplifyTemplates();
 
-    /**
-     * Expand specialized templates : "template<>.."
-     * @return names of expanded templates
-     */
-    std::set<std::string> simplifyTemplatesExpandSpecialized();
-
     void simplifyDoublePlusAndDoubleMinus();
 
     void simplifyRedundantConsecutiveBraces();

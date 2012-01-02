@@ -22,7 +22,8 @@
 #define templatesimplifierH
 //---------------------------------------------------------------------------
 
-
+#include <set>
+#include <string>
 
 class Token;
 
@@ -61,6 +62,12 @@ public:
      * Remove "template < ..." they can cause false positives because they are not expanded
      */
     static void removeTemplates(Token *tok);
+
+    /**
+     * Expand specialized templates : "template<>.."
+     * @return names of expanded templates
+     */
+    static std::set<std::string> simplifyTemplatesExpandSpecialized(Token *tokens);
 };
 
 /// @}
