@@ -71,36 +71,36 @@ static unsigned char readChar(std::istream &istr)
     return ch;
 }
 
-// Splits a string that contains the specified separator into substrings
-static std::list<std::string> split(const std::string &s, char separator)
-{
-    std::list<std::string> parts;
-
-    std::string::size_type prevPos = 0;
-    for (std::string::size_type pos = 0; pos < s.length(); ++pos) {
-        if (s[pos] == separator) {
-            if (pos > prevPos)
-                parts.push_back(s.substr(prevPos, pos - prevPos));
-            prevPos = pos + 1;
-        }
-    }
-    if (prevPos < s.length())
-        parts.push_back(s.substr(prevPos));
-
-    return parts;
-}
-
 // Concatenates a list of strings, inserting a separator between parts
-static std::string join(const std::list<std::string> &list, char separator)
+static std::string join(const std::set<std::string>& list, char separator)
 {
     std::string s;
-    for (std::list<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+    for (std::set<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
         if (!s.empty())
             s += separator;
 
         s += *it;
     }
     return s;
+}
+
+// Removes duplicate string portions separated by the specified separator
+static std::string unify(const std::string &s, char separator)
+{
+    std::set<std::string> parts;
+
+    std::string::size_type prevPos = 0;
+    for (std::string::size_type pos = 0; pos < s.length(); ++pos) {
+        if (s[pos] == separator) {
+            if (pos > prevPos)
+                parts.insert(s.substr(prevPos, pos - prevPos));
+            prevPos = pos + 1;
+        }
+    }
+    if (prevPos < s.length())
+        parts.insert(s.substr(prevPos));
+
+    return join(parts, separator);
 }
 
 /** Just read the code into a string. Perform simple cleanup of the code */
@@ -549,12 +549,8 @@ std::string Preprocessor::removeIf0(const std::string &code)
     std::istringstream istr(code);
     std::string line;
     while (std::getline(istr,line)) {
-        if (line != "#if 0")
-            ret << line << "\n";
-        else {
-            // replace '#if 0' with empty line
-            ret << line << "\n";
-
+        ret << line << "\n";
+        if (line == "#if 0") {
             // goto the end of the '#if 0' block
             unsigned int level = 1;
             bool in = false;
@@ -1136,23 +1132,22 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
 
             const Token *tok = tokenizer.tokens();
-            std::list<std::string> varList;
+            std::set<std::string> varList;
             while (tok) {
                 if (Token::Match(tok, "defined ( %var% )")) {
-                    varList.push_back(tok->strAt(2));
+                    varList.insert(tok->strAt(2));
                     tok = tok->tokAt(4);
                     if (tok && tok->str() == "&&") {
                         tok = tok->next();
                     }
                 } else if (Token::Match(tok, "%var% ;")) {
-                    varList.push_back(tok->str());
+                    varList.insert(tok->str());
                     tok = tok->tokAt(2);
                 } else {
                     break;
                 }
             }
 
-            varList.sort();
             s = join(varList, ';');
 
             if (!s.empty())
@@ -1161,15 +1156,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     }
 
     // Convert configurations into a canonical form: B;C;A or C;A;B => A;B;C
-    for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it) {
-        // Split the configuration into a list of defines
-        std::list<std::string> defs = split(*it, ';');
-
-        // Re-constitute the configuration after sorting the defines
-        defs.sort();
-        defs.unique();
-        *it = join(defs, ';');
-    }
+    for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
+        *it = unify(*it, ';');
 
     // Remove duplicates from the ret list..
     ret.sort();
