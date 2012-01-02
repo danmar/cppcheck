@@ -156,8 +156,8 @@ public:
     /** @brief Experimental 2 pass checking of files */
     bool test_2_pass;
 
-    /** @brief 0 => don't report progress. 1-.. => report progress every T seconds */
-    unsigned char reportProgressTime;
+    /** @brief --report-progress */
+    bool reportProgress;
 
     /**
      * @brief Is there any preprocessor configurations in the source code?

@@ -616,7 +616,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(10U, settings.reportProgressTime);
+        ASSERT(settings.reportProgress);
     }
 
     void stdposix() {
