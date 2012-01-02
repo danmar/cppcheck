@@ -4019,86 +4019,68 @@ void Tokenizer::setVarId()
     }
 }
 
+bool linkBrackets(Tokenizer* tokenizer, std::stack<const Token*>& type, std::stack<Token*>& links, Token* token, char open, char close)
+{
+    if (token->str().back() == open) {
+        links.push(token);
+        type.push(token);
+    } else if (token->str().back() == close) {
+        if (links.empty()) {
+            // Error, { and } don't match.
+            tokenizer->syntaxError(token, open);
+            return false;
+        }
+        if (type.top()->str().back() != open) {
+            tokenizer->syntaxError(type.top(), type.top()->str()[0]);
+            return false;
+        }
+        type.pop();
+
+        Token::createMutualLinks(links.top(), token);
+        links.pop();
+    }
+    return(true);
+}
+
 bool Tokenizer::createLinks()
 {
-    std::list<const Token*> type;
-    std::list<Token*> links;
-    std::list<Token*> links2;
-    std::list<Token*> links3;
+    std::stack<const Token*> type;
+    std::stack<Token*> links1;
+    std::stack<Token*> links2;
+    std::stack<Token*> links3;
     for (Token *token = _tokens; token; token = token->next()) {
         if (token->link()) {
             token->link(0);
         }
 
-        if (token->str() == "{") {
-            links.push_back(token);
-            type.push_back(token);
-        } else if (token->str() == "}") {
-            if (links.empty()) {
-                // Error, { and } don't match.
-                syntaxError(token, '{');
-                return false;
-            }
-            if (type.back()->str() != "{") {
-                syntaxError(type.back(), type.back()->str()[0]);
-                return false;
-            }
-            type.pop_back();
+        bool validSyntax = validSyntax = linkBrackets(this, type, links1, token, '{', '}');
+        if (!validSyntax)
+            return false;
 
-            Token::createMutualLinks(links.back(), token);
-            links.pop_back();
-        } else if (token->str() == "(") {
-            links2.push_back(token);
-            type.push_back(token);
-        } else if (token->str() == ")") {
-            if (links2.empty()) {
-                // Error, ( and ) don't match.
-                syntaxError(token, '(');
-                return false;
-            }
-            if (type.back()->str() != "(") {
-                syntaxError(type.back(), type.back()->str()[0]);
-                return false;
-            }
-            type.pop_back();
+        validSyntax = linkBrackets(this, type, links2, token, '(', ')');
+        if (!validSyntax)
+            return false;
 
-            Token::createMutualLinks(links2.back(), token);
-            links2.pop_back();
-        } else if (token->str() == "[") {
-            links3.push_back(token);
-            type.push_back(token);
-        } else if (token->str() == "]") {
-            if (links3.empty()) {
-                // Error, [ and ] don't match.
-                syntaxError(token, '[');
-                return false;
-            }
-            if (type.back()->str() != "[") {
-                syntaxError(type.back(), type.back()->str()[0]);
-                return false;
-            }
-            type.pop_back();
-
-            Token::createMutualLinks(links3.back(), token);
-            links3.pop_back();
-        }
+        validSyntax = linkBrackets(this, type, links3, token, '[', ']');
+        if (!validSyntax)
+            return false;
     }
 
-    if (!links.empty()) {
+    if (!links1.empty()) {
         // Error, { and } don't match.
-        syntaxError(links.back(), '{');
+        syntaxError(links1.top(), '{');
         return false;
     }
 
     if (!links2.empty()) {
         // Error, ( and ) don't match.
-        syntaxError(links2.back(), '(');
+        syntaxError(links2.top(), '(');
         return false;
     }
 
     if (!links3.empty()) {
         // Error, [ and ] don't match.
-        syntaxError(links3.back(), '[');
+        syntaxError(links3.top(), '[');
         return false;
     }
 
@@ -4479,7 +4461,7 @@ bool Tokenizer::simplifyTokenList()
     // simplify "x=realloc(y,0);" => "free(y); x=0;"..
     // and "x = realloc (0, n);" => "x = malloc(n);"
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "; %var% = realloc ( %var% , 0 ) ;")) {
+        if (Token::Match(tok, "[;{}:] %var% = realloc ( %var% , 0 ) ;")) {
             const std::string varname(tok->next()->str());
             const unsigned int varid(tok->next()->varId());
 
@@ -4502,7 +4484,7 @@ bool Tokenizer::simplifyTokenList()
             tok->insertToken("=");
             tok->insertToken(varname);
             tok->next()->varId(varid);
-        } else if (Token::Match(tok, "; %var% = realloc ( 0 , %num% ) ;")) {
+        } else if (Token::Match(tok, "[;{}:] %var% = realloc ( 0 , %num% ) ;")) {
             tok = tok->tokAt(3);
             // Change function name "realloc" to "malloc"
             tok->str("malloc");
@@ -9360,7 +9342,7 @@ void Tokenizer::simplifyStructDecl()
 
 void Tokenizer::simplifyCallingConvention()
 {
-    const char pattern[] = "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK";
+    static const char pattern[] = "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK";
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         while (Token::Match(tok, pattern)) {
             tok->deleteThis();
@@ -9403,7 +9385,7 @@ void Tokenizer::simplifyAttribute()
 // Remove "volatile", "inline", "register", and "restrict"
 void Tokenizer::simplifyKeyword()
 {
-    const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict|__restrict__";
+    static const char pattern[] = "volatile|inline|__inline|__forceinline|register|restrict|__restrict|__restrict__";
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         while (Token::Match(tok, pattern)) {
             tok->deleteThis();

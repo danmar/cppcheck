@@ -266,7 +266,7 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
 
 static bool hasbom(const std::string &str)
 {
-    return bool(str.size() > 3 &&
+    return bool(str.size() >= 3 &&
                 static_cast<unsigned char>(str[0]) == 0xef &&
                 static_cast<unsigned char>(str[1]) == 0xbb &&
                 static_cast<unsigned char>(str[2]) == 0xbf);
@@ -284,13 +284,13 @@ static int tolowerWrapper(int c)
 static bool isFallThroughComment(std::string comment)
 {
     // convert comment to lower case without whitespace
-    std::transform(comment.begin(), comment.end(), comment.begin(), tolowerWrapper);
     for (std::string::iterator i = comment.begin(); i != comment.end();) {
         if (std::isspace(static_cast<unsigned char>(*i)))
             i = comment.erase(i);
         else
             ++i;
     }
+    std::transform(comment.begin(), comment.end(), comment.begin(), tolowerWrapper);
 
     return comment.find("fallthr") != std::string::npos ||
            comment.find("fallsthr") != std::string::npos ||
@@ -650,83 +650,16 @@ std::string Preprocessor::removeParentheses(const std::string &str)
 }
 
 
-
-static void _removeAsm(std::string &str, const std::string::size_type pos)
-{
-    unsigned int newlines = 0;
-    bool instr = false;
-    int parlevel = 0;
-    std::string::size_type pos2 = pos + 1;
-    while (pos2 < str.length()) {
-        if (str[pos2] == '\"')
-            instr = !instr;
-
-        else if (str[pos2] == '\n')
-            ++newlines;
-
-        else if (!instr) {
-            if (str[pos2] == '(')
-                ++parlevel;
-            else if (str[pos2] == ')') {
-                if (parlevel <= 1)
-                    break;
-                --parlevel;
-            }
-        }
-
-        ++pos2;
-    }
-    str.erase(pos + 1, pos2 - pos);
-    str.insert(pos, std::string(newlines, '\n'));
-}
-
 void Preprocessor::removeAsm(std::string &str)
 {
     std::string::size_type pos = 0;
-    while ((pos = str.find("\nasm(", pos)) != std::string::npos) {
-        _removeAsm(str, pos++);
-        str.insert(pos, "asm()");
-    }
-
-    pos = 0;
-    while ((pos = str.find("\nasm (", pos)) != std::string::npos) {
-        _removeAsm(str, pos++);
-        str.insert(pos, "asm()");
-    }
-
-    pos = 0;
-    while ((pos = str.find("\nasm __volatile(", pos)) != std::string::npos)
-        _removeAsm(str, pos);
-
-    pos = 0;
-    while ((pos = str.find("\nasm __volatile (", pos)) != std::string::npos)
-        _removeAsm(str, pos);
-
-    pos = 0;
     while ((pos = str.find("#asm\n", pos)) != std::string::npos) {
-        const std::string::size_type pos1 = pos;
-        ++pos;
+        str.replace(pos, 4, "asm(");
 
-        if (pos1 > 0 && str[pos1-1] != '\n')
-            continue;
-
-        const std::string::size_type endpos = str.find("\n#endasm", pos1);
-        if (endpos != std::string::npos) {
-            if (endpos + 8U < str.size() && str[endpos+8U] != '\n')
-                break;
-
-            // Remove '#endasm'
-            str.erase(endpos+1, 7);
-
-            // Remove non-newline characters between pos1 and endpos
-            for (std::string::size_type p = endpos; p > pos1; --p) {
-                if (str[p] != '\n')
-                    str.erase(p,1);
-            }
-            str.erase(pos1,1);
-
-            // Insert 'asm();' to make the checks bailout properly
-            str.insert(pos1, ";asm();");
+        std::string::size_type pos2 = str.find("#endasm", pos);
+        if (pos2 != std::string::npos) {
+            str.replace(pos2, 7, ");");
+            pos = pos2;
         }
     }
 }

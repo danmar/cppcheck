@@ -1549,21 +1549,13 @@ private:
     }
 
     void remove_asm() {
-        std::string str1("\nasm(\n\n\n);");
+        std::string str1("#asm\nmov ax,bx\n#endasm");
         Preprocessor::removeAsm(str1);
-        ASSERT_EQUALS("\nasm()\n\n\n;", str1);
+        ASSERT_EQUALS("asm(\nmov ax,bx\n);", str1);
 
-        std::string str2("\nasm __volatile(\"\nlw iScale, 0x00(pScale)\n\", ());");
+        std::string str2("\n#asm\nmov ax,bx\n#endasm\n");
         Preprocessor::removeAsm(str2);
-        ASSERT_EQUALS("\n\n\n;", str2);
-
-        std::string str3("#asm\nmov ax,bx\n#endasm");
-        Preprocessor::removeAsm(str3);
-        ASSERT_EQUALS(";asm();\n\n", str3);
-
-        std::string str4("\n#asm\nmov ax,bx\n#endasm\n");
-        Preprocessor::removeAsm(str4);
-        ASSERT_EQUALS("\n;asm();\n\n\n", str4);
+        ASSERT_EQUALS("\nasm(\nmov ax,bx\n);\n", str2);
     }
 
     void if_defined() {
