@@ -48,6 +48,14 @@ public:
      * the location of syntax error.
      */
     static const Token* hasComplicatedSyntaxErrorsInTemplates(Token *tokens);
+
+    /**
+     * is the token pointing at a template parameters block
+     * < int , 3 > => yes
+     * \param tok start token that must point at "<"
+     * \return number of parameters (invalid parameters => 0)
+     */
+    static unsigned int templateParameters(const Token *tok);
 };
 
 /// @}

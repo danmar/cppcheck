@@ -2681,66 +2681,6 @@ void Tokenizer::simplifyLabelsCaseDefault()
     }
 }
 
-
-/**
- * is the token pointing at a template parameters block
- * < int , 3 > => yes
- * \param tok start token that must point at "<"
- * \return number of parameters (invalid parameters => 0)
- */
-static unsigned int templateParameters(const Token *tok)
-{
-    unsigned int numberOfParameters = 0;
-
-    if (!tok)
-        return 0;
-    if (tok->str() != "<")
-        return 0;
-    tok = tok->next();
-
-    unsigned int level = 0;
-
-    while (tok) {
-        if (level == 0)
-            ++numberOfParameters;
-
-        // skip std::
-        while (Token::Match(tok, "%var% ::"))
-            tok = tok->tokAt(2);
-        if (!tok)
-            return 0;
-
-        // num/type ..
-        if (!tok->isNumber() && !tok->isName())
-            return 0;
-        tok = tok->next();
-
-        // optional "*"
-        if (tok->str() == "*")
-            tok = tok->next();
-
-        // inner template
-        if (tok->str() == "<") {
-            ++level;
-            tok = tok->next();
-            continue;
-        }
-
-        // ,/>
-        while (tok->str() == ">") {
-            if (level == 0)
-                return numberOfParameters;
-            --level;
-            tok = tok->next();
-        }
-        if (tok->str() != ",")
-            break;
-        tok = tok->next();
-    }
-    return 0;
-}
-
-
 /**
  * Remove "template < ..." they can cause false positives because they are not expanded
  */
@@ -2817,7 +2757,7 @@ std::set<std::string> Tokenizer::simplifyTemplatesExpandSpecialized()
         while (tok2 && (tok2->isName() || tok2->str() == "*"))
             tok2 = tok2->next();
 
-        if (!templateParameters(tok2))
+        if (!TemplateSimplifier::templateParameters(tok2))
             continue;
 
         // unknown template.. bail out
@@ -2954,13 +2894,13 @@ std::list<Token *> Tokenizer::simplifyTemplatesGetTemplateInstantiations()
             // parse backwards and add template instantiations
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
                 if (Token::Match(tok2, ", %var% <") &&
-                    templateParameters(tok2->tokAt(2))) {
+                    TemplateSimplifier::templateParameters(tok2->tokAt(2))) {
                     used.push_back(tok2->next());
                 }
             }
 
             // Add outer template..
-            if (templateParameters(tok->next()))
+            if (TemplateSimplifier::templateParameters(tok->next()))
                 used.push_back(tok);
         }
     }
@@ -3069,7 +3009,7 @@ static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::
     if (!Token::simpleMatch(instance, (name + " <").c_str()))
         return false;
 
-    if (numberOfArguments != templateParameters(instance->next()))
+    if (numberOfArguments != TemplateSimplifier::templateParameters(instance->next()))
         return false;
 
     if (patternAfter) {

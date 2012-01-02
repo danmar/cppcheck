@@ -170,3 +170,55 @@ const Token* TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(Token *to
 
     return 0;
 }
+
+unsigned int TemplateSimplifier::templateParameters(const Token *tok)
+{
+    unsigned int numberOfParameters = 0;
+
+    if (!tok)
+        return 0;
+    if (tok->str() != "<")
+        return 0;
+    tok = tok->next();
+
+    unsigned int level = 0;
+
+    while (tok) {
+        if (level == 0)
+            ++numberOfParameters;
+
+        // skip std::
+        while (Token::Match(tok, "%var% ::"))
+            tok = tok->tokAt(2);
+        if (!tok)
+            return 0;
+
+        // num/type ..
+        if (!tok->isNumber() && !tok->isName())
+            return 0;
+        tok = tok->next();
+
+        // optional "*"
+        if (tok->str() == "*")
+            tok = tok->next();
+
+        // inner template
+        if (tok->str() == "<") {
+            ++level;
+            tok = tok->next();
+            continue;
+        }
+
+        // ,/>
+        while (tok->str() == ">") {
+            if (level == 0)
+                return numberOfParameters;
+            --level;
+            tok = tok->next();
+        }
+        if (tok->str() != ",")
+            break;
+        tok = tok->next();
+    }
+    return 0;
+}
