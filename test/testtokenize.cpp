@@ -3134,11 +3134,6 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: namespace fruit { using banana ; }\n",
                       tokenizeDebugListing(code));
-
-        //Fix '(debug) found variable with varid 0' in this case
-        errout.str("");
-        tokenizeAndStringify(code.c_str());
-        ASSERT_EQUALS("", errout.str());
     }
 
     void varid44() {
