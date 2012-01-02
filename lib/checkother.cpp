@@ -1359,7 +1359,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 if (_continue)
                     continue;
 
-                if (*i != 'm') { // %m is a non-standard extension that requires no parameter
+                if (scan || *i != 'm') { // %m is a non-standard extension that requires no parameter on print functions.
                     numFormat++;
 
                     // Perform type checks

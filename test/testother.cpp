@@ -2023,9 +2023,7 @@ private:
               "    b = fscanf(file, \"aa%%ds\", &a);\n"
               "    fclose(file);\n"
               "    return b;\n"
-              "}\n",
-              "test.cpp",
-              true);
+              "}");
         ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
@@ -2042,9 +2040,7 @@ private:
               "    b = fscanf(file, \"aa%%ds\", &a);\n"
               "    fclose(file);\n"
               "    return b;\n"
-              "}\n",
-              "test.cpp",
-              true);
+              "}");
         ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n"
                       "[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
@@ -2060,9 +2056,7 @@ private:
               "    c = fscanf(file, \"%[^ ] %d\n\", a, &b);\n"
               "    fclose(file);\n"
               "    return c;\n"
-              "}\n",
-              "test.cpp",
-              true);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("#include <stdio.h>\n"
@@ -2074,9 +2068,7 @@ private:
               "    b = fscanf(file, \"%[^ \n\", a);\n"
               "    fclose(file);\n"
               "    return b;\n"
-              "}\n",
-              "test.cpp",
-              true);
+              "}");
         ASSERT_EQUALS("[test.cpp:7]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
     }
 
@@ -2086,10 +2078,8 @@ private:
               "    sscanf(bar, \"%1d\", &foo);\n"
               "    scanf(\"%1u%1u\", &foo, bar());\n"
               "    scanf(\"%*1x %1x %29s\", &count, KeyName);\n" // #3373
-              "}\n",
-              "test.cpp",
-              true
-             );
+              "    fscanf(f, \"%7ms\", &ref);\n" // #3461
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
@@ -2097,10 +2087,7 @@ private:
               "    scanf(\"%1d\", &foo, &bar);\n"
               "    fscanf(bar, \"%1d\", &foo, &bar);\n"
               "    scanf(\"%*1x %1x %29s\", &count, KeyName, foo);\n"
-              "}\n",
-              "test.cpp",
-              true
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) scanf format string has 0 parameters but 1 are given\n"
                       "[test.cpp:3]: (warning) scanf format string has 1 parameters but 2 are given\n"
                       "[test.cpp:4]: (warning) fscanf format string has 1 parameters but 2 are given\n"
@@ -2111,10 +2098,7 @@ private:
               "    scanf(\"%1u%1u\", bar());\n"
               "    sscanf(bar, \"%1d%1d\", &foo);\n"
               "    scanf(\"%*1x %1x %29s\", &count);\n"
-              "}\n",
-              "test.cpp",
-              true
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) scanf format string has 1 parameters but only 0 are given\n"
                       "[test.cpp:3]: (error) scanf format string has 2 parameters but only 1 are given\n"
                       "[test.cpp:4]: (error) sscanf format string has 2 parameters but only 1 are given\n"
