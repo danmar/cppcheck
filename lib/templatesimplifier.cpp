@@ -22,13 +22,6 @@
 #include <string>
 
 //---------------------------------------------------------------------------
-#ifdef _MSC_VER
-#pragma warning(disable: 4503)
-#endif
-
-
-
-//---------------------------------------------------------------------------
 
 TemplateSimplifier::TemplateSimplifier()
 {
@@ -221,4 +214,61 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         tok = tok->next();
     }
     return 0;
+}
+
+void TemplateSimplifier::removeTemplates(Token *tok)
+{
+    bool goback = false;
+    for (; tok; tok = tok->next()) {
+        if (goback) {
+            tok = tok->previous();
+            goback = false;
+        }
+        if (!Token::simpleMatch(tok, "template <"))
+            continue;
+
+        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+
+            if (tok2->str() == "(") {
+                tok2 = tok2->link();
+            }
+
+            else if (tok2->str() == "{") {
+                tok2 = tok2->link()->next();
+                Token::eraseTokens(tok, tok2);
+                if (tok2 && tok2->str() == ";" && tok2->next())
+                    tok->deleteNext();
+                tok->deleteThis();
+                goback = true;
+                break;
+            } else if (tok2->str() == "}") {  // garbage code! (#3449)
+                Token::eraseTokens(tok,tok2);
+                tok->deleteThis();
+                break;
+            }
+            // don't remove constructor
+            if (tok2->str() == "explicit") {
+                Token::eraseTokens(tok, tok2);
+                tok->deleteThis();
+                goback = true;
+                break;
+            }
+
+            if (tok2->str() == ";") {
+                tok2 = tok2->next();
+                Token::eraseTokens(tok, tok2);
+                tok->deleteThis();
+                goback = true;
+                break;
+            }
+
+            if (Token::Match(tok2, ">|>> class|struct %var% [,)]")) {
+                tok2 = tok2->next();
+                Token::eraseTokens(tok, tok2);
+                tok->deleteThis();
+                goback = true;
+                break;
+            }
+        }
+    }
 }

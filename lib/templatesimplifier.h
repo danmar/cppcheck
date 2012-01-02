@@ -56,6 +56,11 @@ public:
      * \return number of parameters (invalid parameters => 0)
      */
     static unsigned int templateParameters(const Token *tok);
+
+    /**
+     * Remove "template < ..." they can cause false positives because they are not expanded
+     */
+    static void removeTemplates(Token *tok);
 };
 
 /// @}

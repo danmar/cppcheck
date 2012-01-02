@@ -2681,66 +2681,6 @@ void Tokenizer::simplifyLabelsCaseDefault()
     }
 }
 
-/**
- * Remove "template < ..." they can cause false positives because they are not expanded
- */
-static void removeTemplates(Token *tok)
-{
-    bool goback = false;
-    for (; tok; tok = tok->next()) {
-        if (goback) {
-            tok = tok->previous();
-            goback = false;
-        }
-        if (!Token::simpleMatch(tok, "template <"))
-            continue;
-
-        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-
-            if (tok2->str() == "(") {
-                tok2 = tok2->link();
-            }
-
-            else if (tok2->str() == "{") {
-                tok2 = tok2->link()->next();
-                Token::eraseTokens(tok, tok2);
-                if (tok2 && tok2->str() == ";" && tok2->next())
-                    tok->deleteNext();
-                tok->deleteThis();
-                goback = true;
-                break;
-            } else if (tok2->str() == "}") {  // garbage code! (#3449)
-                Token::eraseTokens(tok,tok2);
-                tok->deleteThis();
-                break;
-            }
-            // don't remove constructor
-            if (tok2->str() == "explicit") {
-                Token::eraseTokens(tok, tok2);
-                tok->deleteThis();
-                goback = true;
-                break;
-            }
-
-            if (tok2->str() == ";") {
-                tok2 = tok2->next();
-                Token::eraseTokens(tok, tok2);
-                tok->deleteThis();
-                goback = true;
-                break;
-            }
-
-            if (Token::Match(tok2, ">|>> class|struct %var% [,)]")) {
-                tok2 = tok2->next();
-                Token::eraseTokens(tok, tok2);
-                tok->deleteThis();
-                goback = true;
-                break;
-            }
-        }
-    }
-}
-
 std::set<std::string> Tokenizer::simplifyTemplatesExpandSpecialized()
 {
     std::set<std::string> expandedtemplates;
@@ -3346,7 +3286,7 @@ void Tokenizer::simplifyTemplates()
     std::list<Token *> templates(simplifyTemplatesGetTemplateDeclarations());
 
     if (templates.empty()) {
-        removeTemplates(_tokens);
+        TemplateSimplifier::removeTemplates(_tokens);
         return;
     }
 
@@ -3369,7 +3309,7 @@ void Tokenizer::simplifyTemplates()
 
     // No template instantiations? Then remove all templates.
     if (templateInstantiations.empty()) {
-        removeTemplates(_tokens);
+        TemplateSimplifier::removeTemplates(_tokens);
         return;
     }
 
@@ -3386,7 +3326,7 @@ void Tokenizer::simplifyTemplates()
         }
     }
 
-    removeTemplates(_tokens);
+    TemplateSimplifier::removeTemplates(_tokens);
 }
 //---------------------------------------------------------------------------
 
