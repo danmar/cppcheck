@@ -4019,18 +4019,18 @@ void Tokenizer::setVarId()
     }
 }
 
-bool linkBrackets(Tokenizer* tokenizer, std::stack<const Token*>& type, std::stack<Token*>& links, Token* token, char open, char close)
+static bool linkBrackets(Tokenizer* tokenizer, std::stack<const Token*>& type, std::stack<Token*>& links, Token* token, char open, char close)
 {
-    if (token->str().back() == open) {
+    if (token->str()[0] == open) {
         links.push(token);
         type.push(token);
-    } else if (token->str().back() == close) {
+    } else if (token->str()[0] == close) {
         if (links.empty()) {
             // Error, { and } don't match.
             tokenizer->syntaxError(token, open);
             return false;
         }
-        if (type.top()->str().back() != open) {
+        if (type.top()->str()[0] != open) {
             tokenizer->syntaxError(type.top(), type.top()->str()[0]);
             return false;
         }
@@ -4053,7 +4053,7 @@ bool Tokenizer::createLinks()
             token->link(0);
         }
 
-        bool validSyntax = validSyntax = linkBrackets(this, type, links1, token, '{', '}');
+        bool validSyntax = linkBrackets(this, type, links1, token, '{', '}');
         if (!validSyntax)
             return false;
 
