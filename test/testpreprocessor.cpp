@@ -1549,13 +1549,21 @@ private:
     }
 
     void remove_asm() {
-        std::string str1("#asm\nmov ax,bx\n#endasm");
+        std::string str1("\nasm(\n\n\n);");
         Preprocessor::removeAsm(str1);
-        ASSERT_EQUALS("asm(\nmov ax,bx\n);", str1);
+        ASSERT_EQUALS("\nasm()\n\n\n;", str1);
 
-        std::string str2("\n#asm\nmov ax,bx\n#endasm\n");
+        std::string str2("\nasm __volatile(\"\nlw iScale, 0x00(pScale)\n\", ());");
         Preprocessor::removeAsm(str2);
-        ASSERT_EQUALS("\nasm(\nmov ax,bx\n);\n", str2);
+        ASSERT_EQUALS("\n\n\n;", str2);
+
+        std::string str3("#asm\nmov ax,bx\n#endasm");
+        Preprocessor::removeAsm(str3);
+        ASSERT_EQUALS(";asm();\n\n", str3);
+
+        std::string str4("\n#asm\nmov ax,bx\n#endasm\n");
+        Preprocessor::removeAsm(str4);
+        ASSERT_EQUALS("\n;asm();\n\n\n", str4);
     }
 
     void if_defined() {
@@ -2826,4 +2834,469 @@ private:
         }
 
         {
-            std::string actual = Preprocessor::getcode(src, "X=1;Y=2", "test.c", &setting
+            std::string actual = Preprocessor::getcode(src, "X=1;Y=2", "test.c", &settings, this);
+            ASSERT_EQUALS("\nFred & Wilma\n\n", actual);
+        }
+    }
+
+    void predefine3() {
+        // #2871 - define in source is not used if -D is used
+        const char code[] = "#define X 1\n"
+                            "#define Y X\n"
+                            "#if (X == Y)\n"
+                            "Fred & Wilma\n"
+                            "#endif\n";
+        const Settings settings;
+        const std::string actual = Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
+        ASSERT_EQUALS("\n\n\nFred & Wilma\n\n", actual);
+    }
+
+    void simplifyCondition() {
+        // Ticket #2794
+        std::map<std::string, std::string> cfg;
+        cfg["C"] = "";
+        std::string condition("defined(A) || defined(B) || defined(C)");
+        Preprocessor::simplifyCondition(cfg, condition, true);
+        ASSERT_EQUALS("1", condition);
+    }
+
+    void invalidElIf() {
+        // #2942 - segfault
+        const char code[] = "#elif (){\n";
+        const Settings settings;
+        const std::string actual = Preprocessor::getcode(code, "TEST", "test.c", &settings, this);
+        ASSERT_EQUALS("\n", actual);
+    }
+
+    void def_handleIncludes() {
+        const std::string filePath("test.c");
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        Preprocessor preprocessor(NULL, this);
+
+        // ifdef
+        {
+            defs.clear();
+            defs["A"] = "";
+            {
+                const std::string code("#ifdef A\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n123\n\n", actual);
+            }{
+                const std::string code("#ifdef B\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n", actual);
+            }
+        }
+
+        // ifndef
+        {
+            defs.clear();
+            defs["A"] = "";
+            {
+                const std::string code("#ifndef A\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n", actual);
+            }{
+                const std::string code("#ifndef B\n123\n#endif\n");
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n123\n\n", actual);
+            }
+        }
+
+        // define - ifndef
+        {
+            defs.clear();
+            const std::string code("#ifndef X\n#define X\n123\n#endif\n"
+                                   "#ifndef X\n#define X\n123\n#endif\n");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("\n#define X\n123\n\n" "\n\n\n\n", actual);
+        }
+
+        // #define => #if
+        {
+            defs.clear();
+            const std::string code("#define X 123\n"
+                                   "#if X==123\n"
+                                   "456\n"
+                                   "#endif\n");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("#define X 123\n\n456\n\n", actual);
+        }
+
+        // #elif
+        {
+            const std::string code("#if defined(A)\n"
+                                   "1\n"
+                                   "#elif defined(B)\n"
+                                   "2\n"
+                                   "#elif defined(C)\n"
+                                   "3\n"
+                                   "#else\n"
+                                   "4\n"
+                                   "#endif");
+            {
+                defs.clear();
+                defs["A"] = "";
+                defs["C"] = "";
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n1\n\n\n\n\n\n\n\n", actual);
+            }
+
+            {
+                defs.clear();
+                defs["B"] = "";
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n2\n\n\n\n\n\n", actual);
+            }
+
+            {
+                defs.clear();
+                const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+                ASSERT_EQUALS("\n\n\n\n\n\n\n4\n\n", actual);
+            }
+        }
+
+        // #endif
+        {
+            // see also endifsemicolon
+            const std::string code("{\n#ifdef X\n#endif;\n}");
+            defs.clear();
+            defs["Z"] = "";
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("{\n\n\n}\n", actual);
+        }
+
+        // #undef
+        {
+            const std::string code("#ifndef X\n"
+                                   "#define X\n"
+                                   "123\n"
+                                   "#endif\n");
+
+            defs.clear();
+            const std::string actual1(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+
+            defs.clear();
+            const std::string actual(preprocessor.handleIncludes(code + "#undef X\n" + code, filePath, includePaths, defs));
+
+            ASSERT_EQUALS(actual1 + "#undef X\n" + actual1, actual);
+        }
+
+        // #error
+        {
+            errout.str("");
+            defs.clear();
+            const std::string code("#ifndef X\n#error abc\n#endif");
+            const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+            ASSERT_EQUALS("\n#error abc\n\n", actual);
+            ASSERT_EQUALS("[test.c:2]: (error) abc\n", errout.str());
+        }
+    }
+
+    void def_missingInclude() {
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        defs["AA"] = "";
+        Settings settings;
+        Preprocessor preprocessor(&settings,this);
+
+        // missing local include
+        {
+            const std::string code("#include \"missing-include!!.h\"\n");
+
+            errout.str("");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+
+            errout.str("");
+            settings.nomsg.addSuppression("missingInclude");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        // missing system header
+        {
+            const std::string code("#include <missing-include!!.h>\n");
+
+            errout.str("");
+            settings = Settings();
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+
+            errout.str("");
+            settings.debugwarnings = true;
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("[test.c:1]: (debug) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+
+            errout.str("");
+            settings.nomsg.addSuppression("missingInclude");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        // #3285 - #elif
+        {
+            const std::string code("#ifdef GNU\n"
+                                   "#elif defined(WIN32)\n"
+                                   "#include \"missing-include!!.h\"\n"
+                                   "#endif");
+            defs.clear();
+            defs["GNU"] = "";
+
+            errout.str("");
+            settings = Settings();
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs);
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void def_handleIncludes_ifelse() {
+        const std::string filePath("test.c");
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        Preprocessor preprocessor(NULL, this);
+
+        // #3405
+        {
+            defs.clear();
+            defs["A"] = "";
+            const std::string code("\n#ifndef PAL_UTIL_UTILS_H_\n"
+                                   "#define PAL_UTIL_UTILS_H_\n"
+                                   "1\n"
+                                   "#ifndef USE_BOOST\n"
+                                   "2\n"
+                                   "#else\n"
+                                   "3\n"
+                                   "#endif\n"
+                                   "4\n"
+                                   "#endif\n"
+                                   "\n"
+                                   "#ifndef PAL_UTIL_UTILS_H_\n"
+                                   "#define PAL_UTIL_UTILS_H_\n"
+                                   "5\n"
+                                   "#ifndef USE_BOOST\n"
+                                   "6\n"
+                                   "#else\n"
+                                   "7\n"
+                                   "#endif\n"
+                                   "8\n"
+                                   "#endif\n"
+                                   "\n");
+            std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs));
+
+            // the 1,2,4 should be in the result
+            actual.erase(0, actual.find("1"));
+            while (actual.find("\n") != std::string::npos)
+                actual.erase(actual.find("\n"),1);
+            ASSERT_EQUALS("124", actual);
+        }
+
+        // #3418
+        {
+            defs.clear();
+            const char code[] = "#define A 1\n"
+                                "#define B A\n"
+                                "#if A == B\n"
+                                "123\n"
+                                "#endif\n";
+
+            std::string actual(preprocessor.handleIncludes(code, filePath, includePaths, defs));
+            ASSERT_EQUALS("#define A 1\n#define B A\n\n123\n\n", actual);
+        }
+    }
+
+    void undef1() {
+        Settings settings;
+
+        const char filedata[] = "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X");
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\n\n\n", actual[""]);
+    }
+
+    void undef2() {
+        Settings settings;
+
+        const char filedata[] = "#ifndef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X");
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\nFred & Wilma\n\n", actual[""]);
+    }
+
+    void undef3() {
+        Settings settings;
+
+        const char filedata[] = "#define X\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+    }
+
+    void undef4() {
+        Settings settings;
+
+        const char filedata[] = "#define X Y\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+    }
+
+    void undef5() {
+        Settings settings;
+
+        const char filedata[] = "#define X() Y\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+    }
+
+    void undef6() {
+        Settings settings;
+
+        const char filedata[] = "#define X Y\n"
+                                "#ifdef X\n"
+                                "Fred & Wilma\n"
+                                "#else\n"
+                                "Barney & Betty\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\n\n\n\nBarney & Betty\n\n", actual[""]);
+    }
+
+    void undef7() {
+        Settings settings;
+
+        const char filedata[] = "#define X XDefined\n"
+                                "X;\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        TODO_ASSERT_EQUALS("\n;\n","\n$XDefined;\n", actual[""]);
+    }
+
+    void undef8() {
+        Settings settings;
+
+        const char filedata[] = "#ifdef HAVE_CONFIG_H\n"
+                                "#include \"config.h\"\n"
+                                "#endif\n"
+                                "\n"
+                                "void foo();\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+        settings.checkConfiguration = true;
+        errout.str("");
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("\n\n\n\nvoid foo();\n", actual[""]);
+    }
+
+    void undef9() {
+        Settings settings;
+
+        const char filedata[] = "#define X Y\n"
+                                "#ifndef X\n"
+                                "Fred & Wilma\n"
+                                "#else\n"
+                                "Barney & Betty\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\n\nFred & Wilma\n\n\n\n", actual[""]);
+    }
+};
+
+REGISTER_TEST(TestPreprocessor)
