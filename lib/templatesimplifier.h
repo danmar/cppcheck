@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include <set>
+#include <list>
 #include <string>
 
 class Token;
@@ -68,6 +69,18 @@ public:
      * @return names of expanded templates
      */
     static std::set<std::string> simplifyTemplatesExpandSpecialized(Token *tokens);
+
+    /**
+     * Get template declarations
+     * @return list of template declarations
+     */
+    static std::list<Token *> simplifyTemplatesGetTemplateDeclarations(Token *tokens, bool &codeWithTemplates);
+
+    /**
+     * Get template instantiations
+     * @return list of template instantiations
+     */
+    static std::list<Token *> simplifyTemplatesGetTemplateInstantiations(Token *tokens);
 };
 
 /// @}

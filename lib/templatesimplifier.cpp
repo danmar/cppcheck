@@ -19,6 +19,7 @@
 #include "templatesimplifier.h"
 #include "token.h"
 #include <sstream>
+#include <list>
 #include <set>
 #include <string>
 
@@ -338,4 +339,105 @@ std::set<std::string> TemplateSimplifier::simplifyTemplatesExpandSpecialized(Tok
     }
 
     return expandedtemplates;
+}
+
+std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(Token *tokens, bool &codeWithTemplates)
+{
+    std::list<Token *> templates;
+    for (Token *tok = tokens; tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "template <")) {
+            codeWithTemplates = true;
+
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+                // Just a declaration => ignore this
+                if (tok2->str() == ";")
+                    break;
+
+                // Implementation => add to "templates"
+                if (tok2->str() == "{") {
+                    templates.push_back(tok);
+                    break;
+                }
+            }
+        }
+    }
+    return templates;
+}
+
+
+std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(Token *tokens)
+{
+    std::list<Token *> used;
+
+    for (Token *tok = tokens; tok; tok = tok->next()) {
+        // template definition.. skip it
+        if (Token::simpleMatch(tok, "template <")) {
+            unsigned int level = 0;
+
+            // Goto the end of the template definition
+            for (; tok; tok = tok->next()) {
+                // skip '<' .. '>'
+                if (tok->str() == "<")
+                    ++level;
+                else if (tok->str() == ">") {
+                    if (level <= 1)
+                        break;
+                    --level;
+                }
+
+                // skip inner '(' .. ')' and '{' .. '}'
+                else if (tok->str() == "{" || tok->str() == "(") {
+                    // skip inner tokens. goto ')' or '}'
+                    tok = tok->link();
+
+                    // this should be impossible. but break out anyway
+                    if (!tok)
+                        break;
+
+                    // the end '}' for the template definition => break
+                    if (tok->str() == "}")
+                        break;
+                }
+
+                // the end ';' for the template definition
+                else if (tok->str() == ";") {
+                    break;
+                }
+            }
+            if (!tok)
+                break;
+        } else if (Token::Match(tok->previous(), "[({};=] %var% <") ||
+                   Token::Match(tok->tokAt(-2), "[,:] private|protected|public %var% <")) {
+
+            // Add inner template instantiations first => go to the ">"
+            // and then parse backwards, adding all seen instantiations
+            const Token *tok2;
+
+            // goto end ">" token
+            unsigned int level = 0;
+            for (tok2 = tok; tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "<") {
+                    ++level;
+                } else if (tok2->str() == ">") {
+                    if (level <= 1)
+                        break;
+                    --level;
+                }
+            }
+
+            // parse backwards and add template instantiations
+            for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
+                if (Token::Match(tok2, ", %var% <") &&
+                    TemplateSimplifier::templateParameters(tok2->tokAt(2))) {
+                    used.push_back(tok2->next());
+                }
+            }
+
+            // Add outer template..
+            if (TemplateSimplifier::templateParameters(tok->next()))
+                used.push_back(tok);
+        }
+    }
+
+    return used;
 }

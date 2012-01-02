@@ -492,18 +492,6 @@ public:
     void simplifyReservedWordNullptr();
 
     /**
-     * Get template declarations
-     * @return list of template declarations
-     */
-    std::list<Token *> simplifyTemplatesGetTemplateDeclarations();
-
-    /**
-     * Get template instantiations
-     * @return list of template instantiations
-     */
-    std::list<Token *> simplifyTemplatesGetTemplateInstantiations();
-
-    /**
      * simplify template instantiations (use default argument values)
      * @param templates list of template declarations
      * @param templateInstantiations list of template instantiations
