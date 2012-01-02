@@ -893,9 +893,6 @@ void Token::printOut(const char *title, const std::vector<std::string> &fileName
 
 std::string Token::stringify(const Token* end) const
 {
-    if (this == end)
-        return "";
-
     std::ostringstream ret;
 
     if (isUnsigned())
