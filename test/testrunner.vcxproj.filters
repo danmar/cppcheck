@@ -32,6 +32,9 @@
     <ClCompile Include="..\lib\checkexceptionsafety.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\checkinternal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\checkmemoryleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -102,6 +105,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\symboldatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\templatesimplifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test64bit.cpp">
@@ -271,6 +277,9 @@
     <ClInclude Include="..\lib\checkexceptionsafety.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\checkinternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\lib\checkmemoryleak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -344,6 +353,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\symboldatabase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\templatesimplifier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="testsuite.h">

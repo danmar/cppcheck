@@ -50,7 +50,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\Qt\VS4.7.3\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\QtSDK\Desktop\Qt\4.7.4\mingw\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -83,7 +83,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\Qt\VS4.7.3\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\QtSDK\Desktop\Qt\4.7.4\mingw\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -122,6 +122,7 @@
     <ClCompile Include="..\lib\checkbufferoverrun.cpp" />
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
+    <ClCompile Include="..\lib\checkinternal.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
     <ClCompile Include="..\lib\checknonreentrantfunctions.cpp" />
     <ClCompile Include="..\lib\checknullpointer.cpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="..\lib\settings.cpp" />
     <ClCompile Include="..\lib\suppressions.cpp" />
     <ClCompile Include="..\lib\symboldatabase.cpp" />
+    <ClCompile Include="..\lib\templatesimplifier.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
     <ClCompile Include="..\lib\timer.cpp" />
     <ClCompile Include="..\externals\tinyxml\tinystr.cpp" />
@@ -164,6 +166,7 @@
     <ClInclude Include="..\lib\checkbufferoverrun.h" />
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
+    <ClInclude Include="..\lib\checkinternal.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
     <ClInclude Include="..\lib\checknonreentrantfunctions.h" />
     <ClInclude Include="..\lib\checknullpointer.h" />
@@ -188,6 +191,7 @@
     <ClInclude Include="..\lib\settings.h" />
     <ClInclude Include="..\lib\suppressions.h" />
     <ClInclude Include="..\lib\symboldatabase.h" />
+    <ClInclude Include="..\lib\templatesimplifier.h" />
     <ClInclude Include="threadexecutor.h" />
     <ClInclude Include="..\lib\timer.h" />
     <ClInclude Include="..\externals\tinyxml\tinystr.h" />
