@@ -1485,13 +1485,6 @@ void Scope::getVariableList()
             continue;
         }
 
-        //skip 'using (namespace)' keyword
-        else if (tok->str() == "using") {
-            if (tok->next() && tok->next()->str() == "namespace")
-                tok = tok->next();
-            continue;
-        }
-
         // Search for start of statement..
         else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;
