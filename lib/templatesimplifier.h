@@ -42,6 +42,12 @@ public:
      * there are function calls etc with "wrong" syntax.
      */
     static void cleanupAfterSimplify(Token *tokens);
+
+    /**
+     * @return 0 if there are no syntax errors or return token which identifies
+     * the location of syntax error.
+     */
+    static const Token* hasComplicatedSyntaxErrorsInTemplates(Token *tokens);
 };
 
 /// @}

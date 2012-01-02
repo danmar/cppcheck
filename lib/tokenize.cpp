@@ -2384,101 +2384,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
 bool Tokenizer::hasComplicatedSyntaxErrorsInTemplates()
 {
-    // check for more complicated syntax errors when using templates..
-    for (const Token *tok = _tokens; tok; tok = tok->next()) {
-        // skip executing scopes..
-        if (Token::Match(tok, ") const| {") || Token::Match(tok, "[,=] {")) {
-            while (tok->str() != "{")
-                tok = tok->next();
-            tok = tok->link();
-        }
-
-        // skip executing scopes (ticket #1984)..
-        if (Token::simpleMatch(tok, "; {"))
-            tok = tok->next()->link();
-
-        // skip executing scopes (ticket #3183)..
-        if (Token::simpleMatch(tok, "( {"))
-            tok = tok->next()->link();
-
-        // skip executing scopes (ticket #1985)..
-        if (Token::simpleMatch(tok, "try {")) {
-            tok = tok->next()->link();
-            while (Token::simpleMatch(tok, "} catch (")) {
-                tok = tok->linkAt(2);
-                if (Token::simpleMatch(tok, ") {"))
-                    tok = tok->next()->link();
-            }
-        }
-
-        // not start of statement?
-        if (tok->previous() && !Token::Match(tok, "[;{}]"))
-            continue;
-
-        // skip starting tokens.. ;;; typedef typename foo::bar::..
-        while (Token::Match(tok, "[;{}]"))
-            tok = tok->next();
-        while (Token::Match(tok, "typedef|typename"))
-            tok = tok->next();
-        while (Token::Match(tok, "%type% ::"))
-            tok = tok->tokAt(2);
-        if (!tok)
-            break;
-
-        // template variable or type..
-        if (Token::Match(tok, "%type% <")) {
-            // these are used types..
-            std::set<std::string> usedtypes;
-
-            // parse this statement and see if the '<' and '>' are matching
-            unsigned int level = 0;
-            for (const Token *tok2 = tok; tok2 && !Token::Match(tok2, "[;{}]"); tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    tok2 = tok2->link();
-                else if (tok2->str() == "<") {
-                    bool inclevel = false;
-                    if (Token::simpleMatch(tok2->previous(), "operator <"))
-                        ;
-                    else if (level == 0)
-                        inclevel = true;
-                    else if (tok2->next() && tok2->next()->isStandardType())
-                        inclevel = true;
-                    else if (Token::simpleMatch(tok2, "< typename"))
-                        inclevel = true;
-                    else if (Token::Match(tok2->tokAt(-2), "<|, %type% <") && usedtypes.find(tok2->previous()->str()) != usedtypes.end())
-                        inclevel = true;
-                    else if (Token::Match(tok2, "< %type%") && usedtypes.find(tok2->next()->str()) != usedtypes.end())
-                        inclevel = true;
-                    else if (Token::Match(tok2, "< %type%")) {
-                        // is the next token a type and not a variable/constant?
-                        // assume it's a type if there comes another "<"
-                        const Token *tok3 = tok2->next();
-                        while (Token::Match(tok3, "%type% ::"))
-                            tok3 = tok3->tokAt(2);
-                        if (Token::Match(tok3, "%type% <"))
-                            inclevel = true;
-                    }
-
-                    if (inclevel) {
-                        ++level;
-                        if (Token::Match(tok2->tokAt(-2), "<|, %type% <"))
-                            usedtypes.insert(tok2->previous()->str());
-                    }
-                } else if (tok2->str() == ">") {
-                    if (level > 0)
-                        --level;
-                } else if (tok2->str() == ">>") {
-                    if (level > 0)
-                        --level;
-                    if (level > 0)
-                        --level;
-                }
-            }
-            if (level > 0) {
-                syntaxError(tok);
-                return true;
-            }
-        }
+    const Token *tok = TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(_tokens);
+    if (tok) {
+        syntaxError(tok);
+        return true;
     }
 
     return false;
