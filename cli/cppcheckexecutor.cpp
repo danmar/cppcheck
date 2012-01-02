@@ -161,7 +161,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_FAILURE;
     }
 
-    if (cppCheck.settings().reportProgress)
+    if (_settings.reportProgressTime > 0)
         time1 = std::time(0);
 
     _settings = cppCheck.settings();
@@ -247,12 +247,12 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 {
     (void)filename;
 
-    if (!time1)
+    if (_settings.reportProgressTime == 0)
         return;
 
     // Report progress messages every 10 seconds
     const std::time_t time2 = std::time(NULL);
-    if (time2 >= (time1 + 10)) {
+    if (time2 >= (time1 + _settings.reportProgressTime)) {
         time1 = time2;
 
         // current time in the format "Www Mmm dd hh:mm:ss yyyy"

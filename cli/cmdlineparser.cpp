@@ -412,7 +412,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Report progress
         else if (strcmp(argv[i], "--report-progress") == 0) {
-            _settings->reportProgress = true;
+            _settings->reportProgressTime = 10;
         }
 
         // --std

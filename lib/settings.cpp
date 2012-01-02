@@ -43,7 +43,7 @@ Settings::Settings()
     inconclusive = false;
     experimental = false;
     test_2_pass = false;
-    reportProgress = false;
+    reportProgressTime = 0;
     ifcfg = false;
     checkConfiguration = false;
 
