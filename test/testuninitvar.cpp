@@ -1752,6 +1752,13 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
+        // ?:
+        checkUninitVar2("int f(int *ptr) {\n"
+                        "    int a;\n"
+                        "    int *p = ptr ? ptr : &a;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // = { .. }
         checkUninitVar2("int f() {\n"
                         "    int a;\n"
