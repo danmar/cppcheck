@@ -18,10 +18,6 @@
 
 
 //---------------------------------------------------------------------------
-#ifdef _MSC_VER
-#pragma warning(disable: 4503)
-#endif
-
 #include "tokenize.h"
 #include "token.h"
 #include "mathlib.h"
@@ -279,12 +275,12 @@ void Tokenizer::createTokens(std::istream &code)
     // lineNumbers holds line numbers for files in fileIndexes
     // every time an include file is completely parsed, last item in the vector
     // is removed and lineno is set to point to that value.
-    std::vector<unsigned int> lineNumbers;
+    std::stack<unsigned int> lineNumbers;
 
     // fileIndexes holds index for _files vector about currently parsed files
     // every time an include file is completely parsed, last item in the vector
     // is removed and FileIndex is set to point to that value.
-    std::vector<unsigned int> fileIndexes;
+    std::stack<unsigned int> fileIndexes;
 
     // FileIndex. What file in the _files vector is read now?
     unsigned int FileIndex = 0;
@@ -333,7 +329,7 @@ void Tokenizer::createTokens(std::istream &code)
                 // Has this file been tokenized already?
                 ++lineno;
                 bool foundOurfile = false;
-                fileIndexes.push_back(FileIndex);
+                fileIndexes.push(FileIndex);
                 for (unsigned int i = 0; i < _files.size(); ++i) {
                     if (Path::sameFileName(_files[i], line)) {
                         // Use this index
@@ -348,7 +344,7 @@ void Tokenizer::createTokens(std::istream &code)
                     FileIndex = static_cast<unsigned int>(_files.size() - 1);
                 }
 
-                lineNumbers.push_back(lineno);
+                lineNumbers.push(lineno);
                 lineno = 0;
             } else {
                 // Add previous token
@@ -418,10 +414,10 @@ void Tokenizer::createTokens(std::istream &code)
                     return;
                 }
 
-                lineno = lineNumbers.back();
-                lineNumbers.pop_back();
-                FileIndex = fileIndexes.back();
-                fileIndexes.pop_back();
+                lineno = lineNumbers.top();
+                lineNumbers.pop();
+                FileIndex = fileIndexes.top();
+                fileIndexes.pop();
                 CurrentToken.clear();
                 continue;
             }
