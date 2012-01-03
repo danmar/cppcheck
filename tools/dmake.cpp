@@ -251,8 +251,10 @@ int main(int argc, char **argv)
                                 "-Wextra "
                                 "-Wabi "
                                 "-Wcast-qual "
+//                                "-Wconversion "
                                 "-Wfloat-equal "
                                 "-Winline "
+//                                "-Wlogical-op "
                                 "-Wmissing-declarations "
                                 "-Wmissing-format-attribute "
                                 "-Wno-long-long "
@@ -260,10 +262,9 @@ int main(int argc, char **argv)
                                 "-Wpacked "
                                 "-Wredundant-decls "
                                 "-Wshadow "
+//                                "-Wsign-conversion "
                                 "-Wsign-promo "
 //                                "-Wunreachable-code "
-//                                "-Wsign-conversion "
-//                                "-Wconversion "
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
