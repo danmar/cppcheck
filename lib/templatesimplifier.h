@@ -101,6 +101,13 @@ public:
      */
     static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, size_t numberOfArguments, const char patternAfter[]);
 
+    /**
+     * Match template declaration/instantiation
+     * @param tok The ">" token e.g. before "class"
+     * @return -1 to bail out or positive integer to identity the position
+     * of the template name.
+     */
+    static int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
 };
 
 /// @}

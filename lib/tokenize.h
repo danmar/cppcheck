@@ -510,14 +510,6 @@ public:
                                          std::list<Token *> &templateInstantiations);
 
     /**
-     * Match template declaration/instantiation
-     * @param tok The ">" token e.g. before "class"
-     * @return -1 to bail out or positive integer to identity the position
-     * of the template name.
-     */
-    int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
-
-    /**
      * Simplify e.g. 'atol("0")' into '0'
      */
     void simplifyMathFunctions();

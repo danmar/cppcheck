@@ -2677,44 +2677,6 @@ void Tokenizer::simplifyLabelsCaseDefault()
     }
 }
 
-int Tokenizer::simplifyTemplatesGetTemplateNamePosition(const Token *tok)
-{
-    // get the position of the template name
-    int namepos = 0;
-    if (Token::Match(tok, "> class|struct %type% {|:"))
-        namepos = 2;
-    else if (Token::Match(tok, "> %type% *|&| %type% ("))
-        namepos = 2;
-    else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
-        namepos = 3;
-    else {
-        // debug message that we bail out..
-        if (_settings->debugwarnings) {
-            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-            ErrorLogger::ErrorMessage::FileLocation loc;
-            loc.line = tok->linenr();
-            loc.setfile(file(tok));
-            locationList.push_back(loc);
-
-            const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                   Severity::debug,
-                                                   "simplifyTemplates: bailing out",
-                                                   "debug",
-                                                   false);
-
-            if (_errorLogger)
-                _errorLogger->reportErr(errmsg);
-            else
-                Check::reportError(errmsg);
-        }
-        return -1;
-    }
-    if ((tok->strAt(namepos) == "*" || tok->strAt(namepos) == "&"))
-        ++namepos;
-
-    return namepos;
-}
-
 void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
         const std::string &name,
         std::vector<const Token *> &typeParametersInDeclaration,
@@ -2845,9 +2807,29 @@ void Tokenizer::simplifyTemplateInstantions(const Token *tok,
         return;
 
     // get the position of the template name
-    int namepos = simplifyTemplatesGetTemplateNamePosition(tok);
-    if (namepos == -1)
+    int namepos = TemplateSimplifier::simplifyTemplatesGetTemplateNamePosition(tok);
+    if (namepos == -1) {
+        // debug message that we bail out..
+        if (_settings->debugwarnings) {
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            ErrorLogger::ErrorMessage::FileLocation loc;
+            loc.line = tok->linenr();
+            loc.setfile(file(tok));
+            locationList.push_back(loc);
+
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   Severity::debug,
+                                                   "simplifyTemplates: bailing out",
+                                                   "debug",
+                                                   false);
+
+            if (_errorLogger)
+                _errorLogger->reportErr(errmsg);
+            else
+                Check::reportError(errmsg);
+        }
         return;
+    }
 
     // name of template function/class..
     const std::string name(tok->strAt(namepos));
