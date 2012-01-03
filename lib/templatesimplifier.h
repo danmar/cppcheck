@@ -25,6 +25,7 @@
 #include <set>
 #include <list>
 #include <string>
+#include <vector>
 
 class Token;
 
@@ -81,6 +82,25 @@ public:
      * @return list of template instantiations
      */
     static std::list<Token *> simplifyTemplatesGetTemplateInstantiations(Token *tokens);
+
+    /**
+     * simplify template instantiations (use default argument values)
+     * @param templates list of template declarations
+     * @param templateInstantiations list of template instantiations
+     */
+    static void simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
+            const std::list<Token *> &templateInstantiations);
+
+    /**
+     * Match template declaration/instantiation
+     * @param instance template instantiation
+     * @param name name of template
+     * @param numberOfArguments number of template arguments
+     * @param patternAfter pattern that must match the tokens after the ">"
+     * @return match => true
+     */
+    static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, size_t numberOfArguments, const char patternAfter[]);
+
 };
 
 /// @}

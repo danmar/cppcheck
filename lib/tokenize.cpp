@@ -2677,119 +2677,6 @@ void Tokenizer::simplifyLabelsCaseDefault()
     }
 }
 
-void Tokenizer::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
-        const std::list<Token *> &templateInstantiations)
-{
-    for (std::list<Token *>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1) {
-        // template parameters with default value has syntax such as:
-        //     x = y
-        // this list will contain all the '=' tokens for such arguments
-        std::list<Token *> eq;
-
-        // parameter number. 1,2,3,..
-        std::size_t templatepar = 1;
-
-        // the template classname. This will be empty for template functions
-        std::string classname;
-
-        // Scan template declaration..
-        for (Token *tok = *iter1; tok; tok = tok->next()) {
-            // end of template parameters?
-            if (tok->str() == ">") {
-                if (Token::Match(tok, "> class|struct %var%"))
-                    classname = tok->strAt(2);
-                break;
-            }
-
-            // next template parameter
-            if (tok->str() == ",")
-                ++templatepar;
-
-            // default parameter value
-            else if (tok->str() == "=")
-                eq.push_back(tok);
-        }
-        if (eq.empty() || classname.empty())
-            continue;
-
-        // iterate through all template instantiations
-        for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
-            Token *tok = *iter2;
-
-            if (!Token::Match(tok, (classname + " < %any%").c_str()))
-                continue;
-
-            // count the parameters..
-            unsigned int usedpar = 1;
-            for (tok = tok->tokAt(3); tok; tok = tok->tokAt(2)) {
-                if (tok->str() == ">")
-                    break;
-
-                if (tok->str() == ",")
-                    ++usedpar;
-
-                else
-                    break;
-            }
-            if (tok && tok->str() == ">") {
-                tok = tok->previous();
-                std::list<Token *>::const_iterator it = eq.begin();
-                for (std::size_t i = (templatepar - eq.size()); it != eq.end() && i < usedpar; ++i)
-                    ++it;
-                while (it != eq.end()) {
-                    tok->insertToken(",");
-                    tok = tok->next();
-                    const Token *from = (*it)->next();
-                    std::stack<Token *> links;
-                    while (from && (!links.empty() || (from->str() != "," && from->str() != ">"))) {
-                        tok->insertToken(from->str());
-                        tok = tok->next();
-                        if (Token::Match(tok, "(|["))
-                            links.push(tok);
-                        else if (!links.empty() && Token::Match(tok, ")|]")) {
-                            Token::createMutualLinks(links.top(), tok);
-                            links.pop();
-                        }
-                        from = from->next();
-                    }
-                    ++it;
-                }
-            }
-        }
-
-        for (std::list<Token *>::iterator it = eq.begin(); it != eq.end(); ++it) {
-            (*it)->deleteNext();
-            (*it)->deleteThis();
-        }
-    }
-}
-
-/**
- * Match template declaration/instantiation
- * @param instance template instantiation
- * @param name name of template
- * @param numberOfArguments number of template arguments
- * @param patternAfter pattern that must match the tokens after the ">"
- * @return match => true
- */
-static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, size_t numberOfArguments, const char patternAfter[])
-{
-    if (!Token::simpleMatch(instance, (name + " <").c_str()))
-        return false;
-
-    if (numberOfArguments != TemplateSimplifier::templateParameters(instance->next()))
-        return false;
-
-    if (patternAfter) {
-        const Token *tok = Token::findsimplematch(instance, ">");
-        if (!tok || !Token::Match(tok->next(), patternAfter))
-            return false;
-    }
-
-    // nothing mismatching was found..
-    return true;
-}
-
 int Tokenizer::simplifyTemplatesGetTemplateNamePosition(const Token *tok)
 {
     // get the position of the template name
@@ -2845,7 +2732,7 @@ void Tokenizer::simplifyTemplatesExpandTemplate(const Token *tok,
         }
 
         // member function implemented outside class definition
-        else if (simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
+        else if (TemplateSimplifier::simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
             addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
             while (tok3->str() != "::")
                 tok3 = tok3->next();
@@ -2996,7 +2883,7 @@ void Tokenizer::simplifyTemplateInstantions(const Token *tok,
         }
 
         if (Token::Match(tok2->previous(), "[;{}=]") &&
-            !simplifyTemplatesInstantiateMatch(*iter2, name, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %var%"))
+            !TemplateSimplifier::simplifyTemplatesInstantiateMatch(*iter2, name, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %var%"))
             continue;
 
         // New type..
@@ -3143,7 +3030,7 @@ void Tokenizer::simplifyTemplates()
     }
 
     // Template arguments with default values
-    simplifyTemplatesUseDefaultArgumentValues(templates, templateInstantiations);
+    TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(templates, templateInstantiations);
 
     // expand templates
     //bool done = false;
