@@ -261,11 +261,11 @@ unsigned int ThreadExecutor::check()
     return result;
 }
 
-void ThreadExecutor::writeToPipe(char type, const std::string &data)
+void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
 {
-    unsigned int len = data.length() + 1;
+    unsigned int len = static_cast<unsigned int>(data.length() + 1);
     char *out = new char[ len + 1 + sizeof(len)];
-    out[0] = type;
+    out[0] = static_cast<char>(type);
     std::memcpy(&(out[1]), &len, sizeof(len));
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
     if (write(_wpipe, out, len + 1 + sizeof(len)) <= 0) {
