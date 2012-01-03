@@ -79,6 +79,7 @@ private:
      */
     int _wpipe;
     std::list<std::string> _errorList;
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='3'};
 public:
     /**
      * @return true if support for threads exist.

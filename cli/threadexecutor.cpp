@@ -67,7 +67,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         return -1;
     }
 
-    if (type != '1' && type != '2' && type != '3') {
+    if (type != REPORT_OUT && type != REPORT_ERROR && type != CHILD_END) {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
     }
@@ -84,9 +84,9 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         exit(0);
     }
 
-    if (type == '1') {
+    if (type == REPORT_OUT) {
         _errorLogger.reportOut(buf);
-    } else if (type == '2') {
+    } else if (type == REPORT_ERROR) {
         ErrorLogger::ErrorMessage msg;
         msg.deserialize(buf);
 
@@ -105,7 +105,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
                 _errorLogger.reportErr(msg);
             }
         }
-    } else if (type == '3') {
+    } else if (type == CHILD_END) {
         std::istringstream iss(buf);
         unsigned int fileResult = 0;
         iss >> fileResult;
@@ -176,7 +176,7 @@ unsigned int ThreadExecutor::check()
 
                 std::ostringstream oss;
                 oss << resultOfCheck;
-                writeToPipe('3', oss.str());
+                writeToPipe(CHILD_END, oss.str());
                 exit(0);
             }
 
@@ -280,12 +280,12 @@ void ThreadExecutor::writeToPipe(char type, const std::string &data)
 
 void ThreadExecutor::reportOut(const std::string &outmsg)
 {
-    writeToPipe('1', outmsg);
+    writeToPipe(REPORT_OUT, outmsg);
 }
 
 void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    writeToPipe('2', msg.serialize());
+    writeToPipe(REPORT_ERROR, msg.serialize());
 }
 
 #else
