@@ -109,7 +109,7 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     return ostr.str();
 }
 
-void TestFixture::assert_(const char *filename, int linenr, bool condition)
+void TestFixture::assert_(const char *filename, unsigned int linenr, bool condition)
 {
     if (!condition) {
         ++fails_counter;
@@ -121,7 +121,7 @@ void TestFixture::assert_(const char *filename, int linenr, bool condition)
     }
 }
 
-void TestFixture::assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual, const std::string &msg)
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg)
 {
     if (expected != actual) {
         ++fails_counter;
@@ -146,7 +146,7 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
     }
 }
 
-void TestFixture::assertEquals(const char *filename, int linenr, long long expected, long long actual, const std::string &msg)
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg)
 {
     std::ostringstream ostr1;
     ostr1 << expected;
@@ -155,7 +155,7 @@ void TestFixture::assertEquals(const char *filename, int linenr, long long expec
     assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
 }
 
-void TestFixture::assertEqualsDouble(const char *filename, int linenr, double expected, double actual, const std::string &msg)
+void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg)
 {
     std::ostringstream ostr1;
     ostr1 << expected;
@@ -164,7 +164,7 @@ void TestFixture::assertEqualsDouble(const char *filename, int linenr, double ex
     assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
 }
 
-void TestFixture::todoAssertEquals(const char *filename, int linenr,
+void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr,
                                    const std::string &wanted,
                                    const std::string &current,
                                    const std::string &actual)
@@ -184,7 +184,7 @@ void TestFixture::todoAssertEquals(const char *filename, int linenr,
     }
 }
 
-void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned int wanted, unsigned int current, unsigned int actual)
+void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr, long long wanted, long long current, long long actual)
 {
     std::ostringstream wantedStr, currentStr, actualStr;
     wantedStr << wanted;
@@ -193,7 +193,7 @@ void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned in
     todoAssertEquals(filename, linenr, wantedStr.str(), currentStr.str(), actualStr.str());
 }
 
-void TestFixture::assertThrowFail(const char *filename, int linenr)
+void TestFixture::assertThrowFail(const char *filename, unsigned int linenr)
 {
     ++fails_counter;
     if (gcc_style_errors) {
