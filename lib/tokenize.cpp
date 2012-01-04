@@ -2542,18 +2542,34 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
                 if (tok->next()->str() == "+") {
                     tok->deleteNext();
                     continue;
-                } else if (tok->next()->str() == "-") {
-                    tok->str("-");
-                    tok->deleteNext();
+                } else if (tok->next()->str()[0] == '-') {
+                    tok = tok->next();
+                    if (tok->str().size() == 1) {
+                        tok = tok->previous();
+                        tok->str("-");
+                        tok->deleteNext();
+                    } else if (tok->isNumber()) {
+                        tok->str(tok->str().substr(1));
+                        tok = tok->previous();
+                        tok->str("-");
+                    }
                     continue;
                 }
             } else if (tok->str() == "-") {
-                if (tok->next()->str() == "-") {
-                    tok->str("+");
+                if (tok->next()->str() == "+") {
                     tok->deleteNext();
                     continue;
-                } else if (tok->next()->str() == "+") {
-                    tok->deleteNext();
+                } else if (tok->next()->str()[0] == '-') {
+                    tok = tok->next();
+                    if (tok->str().size() == 1) {
+                        tok = tok->previous();
+                        tok->str("+");
+                        tok->deleteNext();
+                    } else if (tok->isNumber()) {
+                        tok->str(tok->str().substr(1));
+                        tok = tok->previous();
+                        tok->str("+");
+                    }
                     continue;
                 }
             }
