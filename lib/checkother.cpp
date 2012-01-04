@@ -1342,7 +1342,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
                 percent = false;
 
                 bool _continue = false;
-                while (i != formatString.end() && !std::isalpha(*i)) {
+                while (i != formatString.end() && *i != ']' && !std::isalpha(*i)) {
                     if (*i == '*') {
                         if (scan)
                             _continue = true;

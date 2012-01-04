@@ -2079,6 +2079,7 @@ private:
               "    scanf(\"%1u%1u\", &foo, bar());\n"
               "    scanf(\"%*1x %1x %29s\", &count, KeyName);\n" // #3373
               "    fscanf(f, \"%7ms\", &ref);\n" // #3461
+              "    sscanf(ip_port, \"%*[^:]:%d\", &port);\n" // #3468
               "}");
         ASSERT_EQUALS("", errout.str());
 
