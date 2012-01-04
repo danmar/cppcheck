@@ -7181,12 +7181,26 @@ void Tokenizer::simplifyGoto()
         if (tok->str() == "(" || tok->str() == "[")
             tok = tok->link();
 
-        else if (tok->str() == "{") {
-            if (Token::Match(tok->tokAt(-2),"class|namespace|struct|union %var% {") ||
-                Token::Match(tok->previous(),"namespace|struct|union {"))
+        else if (Token::Match(tok, "class|namespace|struct|union %type% :|{")) {
+            tok = tok->tokAt(2);
+            while (tok && !Token::Match(tok, "[;{=]"))
+                tok = tok->next();
+            if (tok && tok->str() == "{")
                 ++indentspecial;
-            else if ((!beginfunction && !indentlevel) ||
-                     (tok->previous() && tok->previous()->str() == "="))
+            else if (!tok)
+                break;
+            else
+                continue;
+        }
+
+        else if (Token::Match(tok, "namespace|struct|union {")) {
+            tok = tok->next();
+            ++indentspecial;
+        }
+
+        else if (tok->str() == "{") {
+            if ((!beginfunction && !indentlevel) ||
+                (tok->previous() && tok->previous()->str() == "="))
                 tok = tok->link();
             else
                 ++indentlevel;

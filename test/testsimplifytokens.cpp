@@ -3130,6 +3130,54 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "class A"
+                                "{"
+                                " int a; "
+                                " double b; "
+                                "    A() : b(3.22)"
+                                "    {"
+                                "        goto source ;"
+                                "        bleeh;"
+                                "        source:"
+                                "        a = 322;"
+                                "    }"
+                                "}"
+                                "class A1 : public A"
+                                "{"
+                                " int a1; "
+                                " double b1; "
+                                "    A1() : b1(3.22)"
+                                "    {"
+                                "        goto source1 ;"
+                                "        bleeh1;"
+                                "        source1:"
+                                "        a = 322;"
+                                "    }"
+                                "}";
+            const char expected[] = "class A "
+                                    "{"
+                                    " int a ;"
+                                    " double b ;"
+                                    " A ( ) : b ( 3.22 )"
+                                    " {"
+                                    " a = 322 ;"
+                                    " return ;"
+                                    " } "
+                                    "} "
+                                    "class A1 : public A "
+                                    "{"
+                                    " int a1 ;"
+                                    " double b1 ;"
+                                    " A1 ( ) : b1 ( 3.22 )"
+                                    " {"
+                                    " a = 322 ;"
+                                    " return ;"
+                                    " } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void flowControl() {
