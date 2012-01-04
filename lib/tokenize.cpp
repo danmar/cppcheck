@@ -1960,78 +1960,31 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "EXEC SQL")) {
-            // delete all tokens until ";"
-            const Token *end = tok->tokAt(2);
-            while (end && end->str() != ";")
-                end = end->next();
-
-            std::string instruction = tok->stringify(end);
-            Token::eraseTokens(tok, end);
-
-            // insert "asm ( "instruction" ) ;"
-            tok->str("asm");
-            // it can happen that 'end' is NULL when wrong code is inserted
-            if (!tok->next())
-                tok->insertToken(";");
-            tok->insertToken(")");
-            tok->insertToken("\"" + instruction + "\"");
-            tok->insertToken("(");
-            // jump to ';' and continue
-            tok = tok->tokAt(3);
-        }
-    }
+    simplifySQL();
 
     // Simplify JAVA/C# code
     if (isJavaOrCSharp())
         simplifyJavaAndCSharp();
+
+    // Concatenate double sharp: 'a ## b' -> 'ab'
+    concatenateDoubleSharp();
 
     if (!createLinks()) {
         // Source has syntax errors, can't proceed
         return false;
     }
 
-    //easy simplifications...
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
+    // replace __LINE__ macro with line number
+    simplifyLineMacro();
 
-        // replace __LINE__ macro with line number
-        if (tok->str() == "__LINE__")
-            tok->str(MathLib::toString(tok->linenr()));
+    // replace 'NULL' and similiar '0'-defined macros with '0'
+    simplifyNull();
 
-        // 'double sharp' token concatenation
-        // TODO: pattern should be "%var%|%num% ## %var%|%num%"
-        while (Token::Match(tok, "%any% ## %any%") &&
-               (tok->isName() || tok->isNumber()) &&
-               (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
-            tok->str(tok->str() + tok->strAt(2));
-            tok->deleteNext(2);
-        }
+    // combine "- %num%"
+    concatenateNegativeNumber();
 
-        //Replace NULL with 0..
-        if (tok->str() == "NULL" || tok->str() == "__null" ||
-            tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
-            tok->str("0");
-        } else if (tok->isNumber() &&
-                   MathLib::isInt(tok->str()) &&
-                   MathLib::toLongNumber(tok->str()) == 0) {
-            tok->str("0");
-        }
-
-        // Combine "- %num%" ..
-        if (Token::Match(tok, "?|:|,|(|[|=|return|case|sizeof|%op% - %num%")) {
-            tok->deleteNext();
-            tok->next()->str("-" + tok->next()->str());
-        }
-
-        // simplify round "(" parenthesis between "[;{}] and "{"
-        if (Token::Match(tok, "[;{}] ( {") &&
-            Token::simpleMatch(tok->linkAt(2), "} ) ;")) {
-            tok->linkAt(2)->previous()->deleteNext(2);
-            tok->deleteNext(2);
-        }
-    }
-
+    // simplify weird but legal code: "[;{}] ( { code; } ) ;"->"[;{}] code;"
+    simplifyRoundCurlyParenthesis();
 
     // Convert K&R function declarations to modern C
     simplifyVarDecl(true);
@@ -2444,6 +2397,88 @@ bool Tokenizer::hasEnumsWithTypedef()
     }
 
     return false;
+}
+
+void Tokenizer::concatenateDoubleSharp()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        // TODO: pattern should be "%var%|%num% ## %var%|%num%"
+        while (Token::Match(tok, "%any% ## %any%") &&
+               (tok->isName() || tok->isNumber()) &&
+               (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
+            tok->str(tok->str() + tok->strAt(2));
+            tok->deleteNext(2);
+        }
+    }
+}
+
+void Tokenizer::simplifyLineMacro()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == "__LINE__")
+            tok->str(MathLib::toString(tok->linenr()));
+    }
+}
+
+void Tokenizer::simplifyNull()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == "NULL" || tok->str() == "__null" ||
+            tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
+            tok->str("0");
+        } else if (tok->isNumber() &&
+                   MathLib::isInt(tok->str()) &&
+                   MathLib::toLongNumber(tok->str()) == 0) {
+            tok->str("0");
+        }
+    }
+}
+
+void Tokenizer::concatenateNegativeNumber()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (Token::Match(tok, "?|:|,|(|[|=|return|case|sizeof|%op% - %num%")) {
+            tok->deleteNext();
+            tok->next()->str("-" + tok->next()->str());
+        }
+    }
+}
+
+void Tokenizer::simplifyRoundCurlyParenthesis()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        while (Token::Match(tok, "[;{}] ( {") &&
+               Token::simpleMatch(tok->linkAt(2), "} ) ;")) {
+            tok->linkAt(2)->previous()->deleteNext(3);
+            tok->deleteNext(2);
+        }
+    }
+}
+
+void Tokenizer::simplifySQL()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "EXEC SQL")) {
+            const Token *end = tok->tokAt(2);
+            while (end && end->str() != ";")
+                end = end->next();
+
+            std::string instruction = tok->stringify(end);
+            // delete all tokens until ';'
+            Token::eraseTokens(tok, end);
+
+            // insert "asm ( "instruction" ) ;"
+            tok->str("asm");
+            // it can happen that 'end' is NULL when wrong code is inserted
+            if (!tok->next())
+                tok->insertToken(";");
+            tok->insertToken(")");
+            tok->insertToken("\"" + instruction + "\"");
+            tok->insertToken("(");
+            // jump to ';' and continue
+            tok = tok->tokAt(3);
+        }
+    }
 }
 
 void Tokenizer::simplifyDebugNew()

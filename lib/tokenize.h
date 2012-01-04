@@ -481,7 +481,19 @@ public:
 
     void simplifyParameterVoid();
 
+    void concatenateDoubleSharp();
+
+    void simplifyLineMacro();
+
+    void simplifyNull();
+
+    void concatenateNegativeNumber();
+
+    void simplifyRoundCurlyParenthesis();
+
     void simplifyDebugNew();
+
+    void simplifySQL();
 
     bool hasEnumsWithTypedef();
 

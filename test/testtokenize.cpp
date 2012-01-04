@@ -54,6 +54,7 @@ private:
         TEST_CASE(tokenize20);  // replace C99 _Bool => bool
         TEST_CASE(tokenize21);  // tokenize 0x0E-7
         TEST_CASE(tokenize22);  // special marker $ from preprocessor
+        TEST_CASE(tokenize23);  // tokenize "return - __LINE__;"
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -609,6 +610,10 @@ private:
 
     void tokenize22() { // tokenize special marker $ from preprocessor
         ASSERT_EQUALS("a b", tokenizeAndStringify("a$b"));
+    }
+
+    void tokenize23() { // tokenize 'return - __LINE__' correctly
+        ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
     }
 
     void wrong_syntax() {
