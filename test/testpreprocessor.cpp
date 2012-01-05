@@ -256,7 +256,7 @@ private:
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         std::istringstream istr(code);
-        std::string codestr(preprocessor.read(istr,"test.c",0));
+        std::string codestr(preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("a\n#aa b\n", codestr);
     }
 
@@ -265,7 +265,7 @@ private:
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         std::istringstream istr(code);
-        std::string codestr(preprocessor.read(istr,"test.c",0));
+        std::string codestr(preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n", codestr);
     }
 
@@ -450,7 +450,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        const std::string actual(preprocessor.read(istr, "test.c", 0));
+        const std::string actual(preprocessor.read(istr, "test.c"));
 
         // Compare results..
         ASSERT_EQUALS("#if A\n#if A\n#if A\n#if defined(A)\n#elif defined(A)\n", actual);
@@ -648,7 +648,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("#error\n\n123", preprocessor.read(istr,"test.c",0));
+        ASSERT_EQUALS("#error\n\n123", preprocessor.read(istr,"test.c"));
     }
 
 
@@ -692,13 +692,13 @@ private:
                                 "A\n"
                                 "#endif\n"
                                 "B\n");
-        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code,""));
 
         std::istringstream code2("#if (0)\n"
                                  "A\n"
                                  "#endif\n"
                                  "B\n");
-        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code2,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code2,""));
     }
 
     void if0_whitespace() {
@@ -709,7 +709,7 @@ private:
                                 "A\n"
                                 " # endif \n"
                                 "B\n");
-        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#endif\nB\n", preprocessor.read(code,""));
     }
 
     void if0_else() {
@@ -722,7 +722,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "C\n");
-        ASSERT_EQUALS("#if 0\n\n#else\nB\n#endif\nC\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#else\nB\n#endif\nC\n", preprocessor.read(code,""));
 
         std::istringstream code2("#if 1\n"
                                  "A\n"
@@ -731,7 +731,7 @@ private:
                                  "#endif\n"
                                  "C\n");
         TODO_ASSERT_EQUALS("#if 1\nA\n#else\n\n#endif\nC\n",
-                           "#if 1\nA\n#else\nB\n#endif\nC\n", preprocessor.read(code2,"",NULL));
+                           "#if 1\nA\n#else\nB\n#endif\nC\n", preprocessor.read(code2,""));
     }
 
     void if0_elif() {
@@ -744,7 +744,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "C\n");
-        ASSERT_EQUALS("#if 0\n\n#elif 1\nB\n#endif\nC\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#elif 1\nB\n#endif\nC\n", preprocessor.read(code,""));
     }
 
     void if0_include_1() {
@@ -755,7 +755,7 @@ private:
                                 "#include \"a.h\"\n"
                                 "#endif\n"
                                 "AB\n");
-        ASSERT_EQUALS("#if 0\n\n#endif\nAB\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#endif\nAB\n", preprocessor.read(code,""));
     }
 
     void if0_include_2() {
@@ -769,7 +769,7 @@ private:
                                 "#endif\n"
                                 "#endif\n"
                                 "AB\n");
-        ASSERT_EQUALS("#if 0\n\n#ifdef WIN32\n#else\n#endif\n#endif\nAB\n", preprocessor.read(code,"",NULL));
+        ASSERT_EQUALS("#if 0\n\n#ifdef WIN32\n#else\n#endif\n#endif\nAB\n", preprocessor.read(code,""));
     }
 
     void includeguard1() {
@@ -851,7 +851,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("\n\n\n", preprocessor.read(istr, "test.c", 0));
+        ASSERT_EQUALS("\n\n\n", preprocessor.read(istr, "test.c"));
     }
 
 
@@ -1477,7 +1477,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("#define str \"abc\" \"def\"\n\nabcdef = str;\n", preprocessor.read(istr, "test.c", 0));
+        ASSERT_EQUALS("#define str \"abc\" \"def\"\n\nabcdef = str;\n", preprocessor.read(istr, "test.c"));
     }
 
     void multiline2() {
@@ -1489,7 +1489,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("#define sqr(aa) aa * aa\n\nsqr(5);\n", preprocessor.read(istr, "test.c", 0));
+        ASSERT_EQUALS("#define sqr(aa) aa * aa\n\nsqr(5);\n", preprocessor.read(istr, "test.c"));
     }
 
     void multiline3() {
@@ -1501,7 +1501,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("const char *str = \"abcdefghi\"\n\n\n", preprocessor.read(istr, "test.c", 0));
+        ASSERT_EQUALS("const char *str = \"abcdefghi\"\n\n\n", preprocessor.read(istr, "test.c"));
     }
 
     void multiline4() {
@@ -2279,7 +2279,7 @@ private:
         errout.str("");
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        preprocessor.read(istr, "test.cpp", 0);
+        preprocessor.read(istr, "test.cpp");
         ASSERT_EQUALS("[test.cpp:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c8)\n", errout.str());
     }
 
@@ -2288,7 +2288,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("", preprocessor.read(istr, "test.cpp", 0));
+        ASSERT_EQUALS("", preprocessor.read(istr, "test.cpp"));
     }
 
     void unicodeInString() {
@@ -2296,7 +2296,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp", 0));
+        ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp"));
     }
 
 
@@ -2710,7 +2710,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("#define FOO 1020", preprocessor.read(istr, "test.cpp", 0));
+        ASSERT_EQUALS("#define FOO 1020", preprocessor.read(istr, "test.cpp"));
     }
 
     void testPreprocessorRead2() {
@@ -2718,7 +2718,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS("\"foo\\bar\"", preprocessor.read(istr, "test.cpp", 0));
+        ASSERT_EQUALS("\"foo\\bar\"", preprocessor.read(istr, "test.cpp"));
     }
 
     void testPreprocessorRead3() {
@@ -2726,7 +2726,7 @@ private:
         std::istringstream istr(filedata);
         Settings settings;
         Preprocessor preprocessor(&settings, this);
-        ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp", 0));
+        ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp"));
     }
 
     void testPreprocessorRead4() {
@@ -2736,7 +2736,7 @@ private:
             std::istringstream istr(filedata);
             Settings settings;
             Preprocessor preprocessor(&settings, this);
-            ASSERT_EQUALS("#define A \" \\\\\" \" \"", preprocessor.read(istr, "test.cpp", 0));
+            ASSERT_EQUALS("#define A \" \\\\\" \" \"", preprocessor.read(istr, "test.cpp"));
         }
 
         {
@@ -2745,7 +2745,7 @@ private:
             std::istringstream istr(filedata);
             Settings settings;
             Preprocessor preprocessor(&settings, this);
-            ASSERT_EQUALS("#define A \" \\\\\\\"  \"", preprocessor.read(istr, "test.cpp", 0));
+            ASSERT_EQUALS("#define A \" \\\\\\\"  \"", preprocessor.read(istr, "test.cpp"));
         }
 
         {
@@ -2754,7 +2754,7 @@ private:
             std::istringstream istr(filedata);
             Settings settings;
             Preprocessor preprocessor(&settings, this);
-            ASSERT_EQUALS("#define A \" \\\\\\\\\" \" \"", preprocessor.read(istr, "test.cpp", 0));
+            ASSERT_EQUALS("#define A \" \\\\\\\\\" \" \"", preprocessor.read(istr, "test.cpp"));
         }
     }
 

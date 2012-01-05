@@ -104,7 +104,7 @@ static std::string unify(const std::string &s, char separator)
 }
 
 /** Just read the code into a string. Perform simple cleanup of the code */
-std::string Preprocessor::read(std::istream &istr, const std::string &filename, Settings *settings)
+std::string Preprocessor::read(std::istream &istr, const std::string &filename)
 {
     // ------------------------------------------------------------------------------------------
     //
@@ -164,7 +164,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     // ------------------------------------------------------------------------------------------
     //
     // Remove all comments..
-    result = removeComments(result, filename, settings);
+    result = removeComments(result, filename, _settings);
 
     // ------------------------------------------------------------------------------------------
     //
@@ -756,7 +756,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     if (file0.empty())
         file0 = filename;
 
-    processedFile = read(srcCodeStream, filename, _settings);
+    processedFile = read(srcCodeStream, filename);
 
     // Remove asm(...)
     removeAsm(processedFile);
@@ -1836,7 +1836,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 includes.push_back(filename);
 
                 ostr << "#file \"" << filename << "\"\n"
-                     << handleIncludes(read(fin, filename, NULL), filename, includePaths, defs, includes) << std::endl
+                     << handleIncludes(read(fin, filename), filename, includePaths, defs, includes) << std::endl
                      << "#endfile\n";
                 continue;
             }
@@ -1909,7 +1909,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             }
 
             handledFiles.insert(tempFile);
-            processedFile = Preprocessor::read(fin, filename, _settings);
+            processedFile = Preprocessor::read(fin, filename);
             fin.close();
         }
 

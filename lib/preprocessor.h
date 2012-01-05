@@ -86,7 +86,7 @@ public:
     void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
 
     /** Just read the code into a string. Perform simple cleanup of the code */
-    std::string read(std::istream &istr, const std::string &filename, Settings *settings);
+    std::string read(std::istream &istr, const std::string &filename);
 
     /**
      * Get preprocessed code for a given configuration
