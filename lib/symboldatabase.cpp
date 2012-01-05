@@ -1193,6 +1193,263 @@ bool SymbolDatabase::arrayDimensions(std::vector<Dimension> &dimensions, const T
     return isArray;
 }
 
+static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
+{
+    s << (type == Scope::eGlobal ? "Global" :
+          type == Scope::eClass ? "Class" :
+          type == Scope::eStruct ? "Struct" :
+          type == Scope::eUnion ? "Union" :
+          type == Scope::eNamespace ? "Namespace" :
+          type == Scope::eFunction ? "Function" :
+          type == Scope::eIf ? "If" :
+          type == Scope::eElse ? "Else" :
+          type == Scope::eElseIf ? "ElseIf" :
+          type == Scope::eFor ? "For" :
+          type == Scope::eWhile ? "While" :
+          type == Scope::eDo ? "Do" :
+          type == Scope::eSwitch ? "Switch" :
+          type == Scope::eUnconditional ? "Unconditional" :
+          "Unknown");
+    return s;
+}
+
+void SymbolDatabase::printVariable(const Variable *var, const char *indent) const
+{
+    std::cout << indent << "_name: " << var->nameToken();
+    if (var->nameToken())
+    {
+        std::cout << " " << var->name() << " " << _tokenizer->fileLine(var->nameToken()) << std::endl;
+        std::cout << indent << "    varId: " << var->varId() << std::endl;
+    }
+    else
+        std::cout << std::endl;
+    std::cout << indent << "_start: " << var->typeStartToken() << " " << var->typeStartToken()->str()
+              << " " << _tokenizer->fileLine(var->typeStartToken()) << std::endl;;
+    std::cout << indent << "_end: " << var->typeEndToken() << " " << var->typeEndToken()->str()
+              << " " << _tokenizer->fileLine(var->typeEndToken()) << std::endl;;
+    std::cout << indent << "_index: " << var->index() << std::endl;
+    std::cout << indent << "_access: " << 
+             (var->isPublic() ? "Public" :
+              var->isProtected() ? "Protected" :
+              var->isPrivate() ? "Private" :
+              var->isGlobal() ? "Global" :
+              var->isNamespace() ? "Namespace" :
+              var->isArgument() ? "Argument" :
+              var->isLocal() ? "Local" :
+              "???")  << std::endl;
+    std::cout << indent << "_flags: " << std::endl; 
+    std::cout << indent << "    isMutable: " << (var->isMutable() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isStatic: " << (var->isStatic() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isConst: " << (var->isConst() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isClass: " << (var->isClass() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isArray: " << (var->isArray() ? "true" : "false") << std::endl;
+    std::cout << indent << "    hasDefault: " << (var->hasDefault() ? "true" : "false") << std::endl;
+    std::cout << indent << "_type: ";
+    if (var->type())
+    {
+        std::cout << var->type()->className << " " << var->type()->type << " "
+                  << _tokenizer->fileLine(var->type()->classDef) << std::endl;
+    }
+    else
+        std::cout << "none" << std::endl;
+
+    std::cout << indent << "_scope: ";
+    if (var->scope())
+    {
+        std::cout << var->scope()->className << " " << var->scope()->type;
+        if (var->scope()->classDef)
+           std::cout << " " << _tokenizer->fileLine(var->scope()->classDef) << std::endl;
+        else
+           std::cout << std::endl;
+    }
+    else
+        std::cout << "none" << std::endl;
+
+    std::cout << indent << "_dimensions:";
+    for (size_t i = 0; i < var->dimensions().size(); i++)
+    {
+        std::cout << " " << var->dimension(i); 
+    }
+    std::cout << std::endl;
+}
+
+void SymbolDatabase::printOut(const char *title) const
+{
+    if (title)
+        std::cout << "\n### " << title << " ###\n";
+
+    std::list<Scope>::const_iterator scope;
+
+    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope)
+    {
+        std::cout << "Scope: " << &*scope << std::endl;
+        std::cout << "    type: " << scope->type << std::endl;
+        std::cout << "    className: " << scope->className << std::endl;
+        std::cout << "    classDef: " << scope->classDef;
+        if (scope->classDef)
+            std::cout << " " << scope->classDef->str() << " " << _tokenizer->fileLine(scope->classDef) << std::endl;
+        else
+            std::cout << std::endl;
+
+        std::cout << "    classStart: " << scope->classStart;
+        if (scope->classStart)
+            std::cout << " " << scope->classStart->str() << " " << _tokenizer->fileLine(scope->classStart) << std::endl;
+        else
+            std::cout << std::endl;
+
+        std::cout << "    classEnd: " << scope->classEnd;
+        if (scope->classEnd)
+            std::cout << " " << scope->classEnd->str() << " " <<  _tokenizer->fileLine(scope->classEnd) << std::endl;
+        else
+            std::cout << std::endl;
+
+        std::list<Function>::const_iterator func;
+
+        // find the function body if not implemented inline
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
+        {
+            std::cout << "    Function: " << &*func << std::endl;
+	    std::cout << "        name: " << func->tokenDef->str() << " "
+                      << _tokenizer->fileLine(func->tokenDef) << std::endl;
+            std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
+                                              func->type == Function::eCopyConstructor ? "CopyConstructor" :
+                                              func->type == Function::eOperatorEqual ? "OperatorEqual" :
+                                              func->type == Function::eDestructor ? "Destructor" :
+                                              func->type == Function::eFunction ? "Function" :
+                                              "???") << std::endl;
+            std::cout << "        access: " << (func->access == Public ? "Public" :
+                                                func->access == Protected ? "Protected" :
+                                                func->access == Private ? "Private" :
+                                                "???")  << std::endl;
+            std::cout << "        hasBody: " << (func->hasBody ? "true" : "false") << std::endl;
+            std::cout << "        isInline: " << (func->isInline ? "true" : "false") << std::endl;
+            std::cout << "        isConst: " << (func->isConst ? "true" : "false") << std::endl;
+            std::cout << "        isVirtual: " << (func->isVirtual ? "true" : "false") << std::endl;
+            std::cout << "        isPure: " << (func->isPure ? "true" : "false") << std::endl;
+            std::cout << "        isStatic: " << (func->isStatic ? "true" : "false") << std::endl;
+            std::cout << "        isFriend: " << (func->isFriend ? "true" : "false") << std::endl;
+            std::cout << "        isExplicit: " << (func->isExplicit ? "true" : "false") << std::endl;
+            std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
+            std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
+            std::cout << "        tokenDef: " << _tokenizer->fileLine(func->tokenDef) << std::endl;
+            std::cout << "        argDef: " << _tokenizer->fileLine(func->argDef) << std::endl;
+            std::cout << "        token: " << _tokenizer->fileLine(func->token) << std::endl;
+            std::cout << "        arg: " << _tokenizer->fileLine(func->arg) << std::endl;
+            std::cout << "        functionScope: ";
+            if (func->functionScope)
+            {
+                std::cout << func->functionScope->className << " "
+                          <<  _tokenizer->fileLine(func->functionScope->classDef) << std::endl;
+            }
+            else
+                std::cout << "Unknown" << std::endl;
+
+            std::list<Variable>::const_iterator var;
+
+            for (var = func->argumentList.begin(); var != func->argumentList.end(); ++var)
+            {
+                std::cout << "        Variable: " << &*var << std::endl;
+                printVariable(&*var, "            ");
+            }
+        }
+
+        std::list<Variable>::const_iterator var;
+
+        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
+        {
+            std::cout << "    Variable: " << &*var << std::endl;
+            printVariable(&*var, "        ");
+        }
+
+        std::cout << "    derivedFrom[" << scope->derivedFrom.size() << "] = (";
+
+        size_t count = scope->derivedFrom.size();
+        for (size_t i = 0; i < scope->derivedFrom.size(); ++i)
+        {
+            if (scope->derivedFrom[i].isVirtual)
+                std::cout << "Virtual ";
+
+            std::cout << (scope->derivedFrom[i].access == Public    ? " Public " :
+                          scope->derivedFrom[i].access == Protected ? " Protected " :
+                          scope->derivedFrom[i].access == Private   ? " Private " :
+                          " Unknown");
+
+            if (scope->derivedFrom[i].scope)
+                std::cout << scope->derivedFrom[i].scope->type;
+            else
+                std::cout << " Unknown";
+
+            std::cout << " " << scope->derivedFrom[i].name;
+            if (count-- > 1)
+                std::cout << ",";
+        }
+
+        std::cout << " )" << std::endl;
+
+        std::cout << "    nestedIn: " << scope->nestedIn;
+        if (scope->nestedIn)
+        {
+            std::cout << " " << scope->nestedIn->type << " " 
+                      << scope->nestedIn->className << std::endl;
+        }
+
+        std::cout << "    nestedList[" << scope->nestedList.size() << "] = (";
+
+        std::list<Scope *>::const_iterator nsi;
+
+        count = scope->nestedList.size();
+        for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi)
+        {
+            std::cout << " " << &(*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
+            if (count-- > 1)
+                std::cout << ",";
+        }
+
+        std::cout << " )" << std::endl;
+
+        std::cout << "    needInitialization: " << (scope->needInitialization == Scope::Unknown ? "Unknown" :
+                  scope->needInitialization == Scope::True ? "True" :
+                  scope->needInitialization == Scope::False ? "False" :
+                  "Invalid") << std::endl;
+
+        std::list<const Token *>::const_iterator use;
+
+        for (use = scope->usingList.begin(); use != scope->usingList.end(); ++use)
+        {
+            std::cout << "    using: " << (*use)->strAt(2);
+            const Token *tok1 = (*use)->tokAt(3);
+            while (tok1 && tok1->str() == "::")
+            {
+                std::cout << "::" << tok1->strAt(1);
+                tok1 = tok1->tokAt(2);
+            }
+            std::cout << " " << _tokenizer->fileLine(*use) << std::endl;
+        }
+
+        std::cout << "    functionOf: " << scope->functionOf;
+        if (scope->functionOf)
+        {
+            std::cout << " " << scope->functionOf->type << " " << scope->functionOf->className;
+            if (scope->functionOf->classDef)
+                std::cout << " " << _tokenizer->fileLine(scope->functionOf->classDef);
+        }
+        std::cout << std::endl;
+
+        std::cout << "    function: " << scope->function;
+        if (scope->function)
+        {
+            std::cout << " " << scope->function->tokenDef->str() << " "
+                      << _tokenizer->fileLine(scope->function->tokenDef);
+        }
+        std::cout << std::endl;
+    }
+
+    for (size_t i = 0; i < _variableList.size(); i++)
+    {
+        std::cout << "_variableList[" << i << "] = " << _variableList[i] << std::endl;
+    }
+}
+
 //---------------------------------------------------------------------------
 
 unsigned int Function::initializedArgCount() const

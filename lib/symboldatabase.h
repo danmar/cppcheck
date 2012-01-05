@@ -558,6 +558,9 @@ public:
      */
     bool arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok) const;
 
+    void printOut(const char * title = NULL) const;
+    void printVariable(const Variable *var, const char *indent) const;
+
 private:
 
     // Needed by Borland C++:
