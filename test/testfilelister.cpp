@@ -24,6 +24,7 @@
 #ifndef _WIN32
 #include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
 #endif
 
 class TestFileLister: public TestFixture {
