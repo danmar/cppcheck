@@ -108,6 +108,18 @@ public:
      * of the template name.
      */
     static int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
+
+    static void addtoken2(Token ** token, const char str[], const unsigned int lineno, const unsigned int fileno);
+    static void addtoken2(Token ** token, const Token * tok, const unsigned int lineno, const unsigned int fileno);
+    static void simplifyTemplatesExpandTemplate(
+        Token *_tokens,
+        Token **_tokensBack,
+        const Token *tok,
+        const std::string &name,
+        std::vector<const Token *> &typeParametersInDeclaration,
+        const std::string &newName,
+        std::vector<const Token *> &typesUsedInTemplateInstantion,
+        std::list<Token *> &templateInstantiations);
 };
 
 /// @}

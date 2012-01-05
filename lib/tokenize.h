@@ -514,12 +514,6 @@ public:
                                      std::list<Token *> &templateInstantiations,
                                      std::set<std::string> &expandedtemplates);
 
-    void simplifyTemplatesExpandTemplate(const Token *tok,
-                                         const std::string &name,
-                                         std::vector<const Token *> &typeParametersInDeclaration,
-                                         const std::string &newName,
-                                         std::vector<const Token *> &typesUsedInTemplateInstantion,
-                                         std::list<Token *> &templateInstantiations);
 
     /**
      * Simplify e.g. 'atol("0")' into '0'
