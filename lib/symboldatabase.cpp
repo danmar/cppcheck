@@ -1216,28 +1216,26 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
 void SymbolDatabase::printVariable(const Variable *var, const char *indent) const
 {
     std::cout << indent << "_name: " << var->nameToken();
-    if (var->nameToken())
-    {
+    if (var->nameToken()) {
         std::cout << " " << var->name() << " " << _tokenizer->fileLine(var->nameToken()) << std::endl;
         std::cout << indent << "    varId: " << var->varId() << std::endl;
-    }
-    else
+    } else
         std::cout << std::endl;
     std::cout << indent << "_start: " << var->typeStartToken() << " " << var->typeStartToken()->str()
               << " " << _tokenizer->fileLine(var->typeStartToken()) << std::endl;;
     std::cout << indent << "_end: " << var->typeEndToken() << " " << var->typeEndToken()->str()
               << " " << _tokenizer->fileLine(var->typeEndToken()) << std::endl;;
     std::cout << indent << "_index: " << var->index() << std::endl;
-    std::cout << indent << "_access: " << 
-             (var->isPublic() ? "Public" :
-              var->isProtected() ? "Protected" :
-              var->isPrivate() ? "Private" :
-              var->isGlobal() ? "Global" :
-              var->isNamespace() ? "Namespace" :
-              var->isArgument() ? "Argument" :
-              var->isLocal() ? "Local" :
-              "???")  << std::endl;
-    std::cout << indent << "_flags: " << std::endl; 
+    std::cout << indent << "_access: " <<
+              (var->isPublic() ? "Public" :
+               var->isProtected() ? "Protected" :
+               var->isPrivate() ? "Private" :
+               var->isGlobal() ? "Global" :
+               var->isNamespace() ? "Namespace" :
+               var->isArgument() ? "Argument" :
+               var->isLocal() ? "Local" :
+               "???")  << std::endl;
+    std::cout << indent << "_flags: " << std::endl;
     std::cout << indent << "    isMutable: " << (var->isMutable() ? "true" : "false") << std::endl;
     std::cout << indent << "    isStatic: " << (var->isStatic() ? "true" : "false") << std::endl;
     std::cout << indent << "    isConst: " << (var->isConst() ? "true" : "false") << std::endl;
@@ -1245,30 +1243,25 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "    isArray: " << (var->isArray() ? "true" : "false") << std::endl;
     std::cout << indent << "    hasDefault: " << (var->hasDefault() ? "true" : "false") << std::endl;
     std::cout << indent << "_type: ";
-    if (var->type())
-    {
+    if (var->type()) {
         std::cout << var->type()->className << " " << var->type()->type << " "
                   << _tokenizer->fileLine(var->type()->classDef) << std::endl;
-    }
-    else
+    } else
         std::cout << "none" << std::endl;
 
     std::cout << indent << "_scope: ";
-    if (var->scope())
-    {
+    if (var->scope()) {
         std::cout << var->scope()->className << " " << var->scope()->type;
         if (var->scope()->classDef)
-           std::cout << " " << _tokenizer->fileLine(var->scope()->classDef) << std::endl;
+            std::cout << " " << _tokenizer->fileLine(var->scope()->classDef) << std::endl;
         else
-           std::cout << std::endl;
-    }
-    else
+            std::cout << std::endl;
+    } else
         std::cout << "none" << std::endl;
 
     std::cout << indent << "_dimensions:";
-    for (size_t i = 0; i < var->dimensions().size(); i++)
-    {
-        std::cout << " " << var->dimension(i); 
+    for (size_t i = 0; i < var->dimensions().size(); i++) {
+        std::cout << " " << var->dimension(i);
     }
     std::cout << std::endl;
 }
@@ -1280,8 +1273,7 @@ void SymbolDatabase::printOut(const char *title) const
 
     std::list<Scope>::const_iterator scope;
 
-    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope)
-    {
+    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
         std::cout << "Scope: " << &*scope << std::endl;
         std::cout << "    type: " << scope->type << std::endl;
         std::cout << "    className: " << scope->className << std::endl;
@@ -1306,10 +1298,9 @@ void SymbolDatabase::printOut(const char *title) const
         std::list<Function>::const_iterator func;
 
         // find the function body if not implemented inline
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func)
-        {
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             std::cout << "    Function: " << &*func << std::endl;
-	    std::cout << "        name: " << func->tokenDef->str() << " "
+            std::cout << "        name: " << func->tokenDef->str() << " "
                       << _tokenizer->fileLine(func->tokenDef) << std::endl;
             std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
                                               func->type == Function::eCopyConstructor ? "CopyConstructor" :
@@ -1336,18 +1327,15 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        token: " << _tokenizer->fileLine(func->token) << std::endl;
             std::cout << "        arg: " << _tokenizer->fileLine(func->arg) << std::endl;
             std::cout << "        functionScope: ";
-            if (func->functionScope)
-            {
+            if (func->functionScope) {
                 std::cout << func->functionScope->className << " "
                           <<  _tokenizer->fileLine(func->functionScope->classDef) << std::endl;
-            }
-            else
+            } else
                 std::cout << "Unknown" << std::endl;
 
             std::list<Variable>::const_iterator var;
 
-            for (var = func->argumentList.begin(); var != func->argumentList.end(); ++var)
-            {
+            for (var = func->argumentList.begin(); var != func->argumentList.end(); ++var) {
                 std::cout << "        Variable: " << &*var << std::endl;
                 printVariable(&*var, "            ");
             }
@@ -1355,8 +1343,7 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::list<Variable>::const_iterator var;
 
-        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
-        {
+        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             std::cout << "    Variable: " << &*var << std::endl;
             printVariable(&*var, "        ");
         }
@@ -1364,8 +1351,7 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << "    derivedFrom[" << scope->derivedFrom.size() << "] = (";
 
         size_t count = scope->derivedFrom.size();
-        for (size_t i = 0; i < scope->derivedFrom.size(); ++i)
-        {
+        for (size_t i = 0; i < scope->derivedFrom.size(); ++i) {
             if (scope->derivedFrom[i].isVirtual)
                 std::cout << "Virtual ";
 
@@ -1387,9 +1373,8 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << " )" << std::endl;
 
         std::cout << "    nestedIn: " << scope->nestedIn;
-        if (scope->nestedIn)
-        {
-            std::cout << " " << scope->nestedIn->type << " " 
+        if (scope->nestedIn) {
+            std::cout << " " << scope->nestedIn->type << " "
                       << scope->nestedIn->className << std::endl;
         }
 
@@ -1398,8 +1383,7 @@ void SymbolDatabase::printOut(const char *title) const
         std::list<Scope *>::const_iterator nsi;
 
         count = scope->nestedList.size();
-        for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi)
-        {
+        for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
             std::cout << " " << &(*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
             if (count-- > 1)
                 std::cout << ",";
@@ -1414,12 +1398,10 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::list<const Token *>::const_iterator use;
 
-        for (use = scope->usingList.begin(); use != scope->usingList.end(); ++use)
-        {
+        for (use = scope->usingList.begin(); use != scope->usingList.end(); ++use) {
             std::cout << "    using: " << (*use)->strAt(2);
             const Token *tok1 = (*use)->tokAt(3);
-            while (tok1 && tok1->str() == "::")
-            {
+            while (tok1 && tok1->str() == "::") {
                 std::cout << "::" << tok1->strAt(1);
                 tok1 = tok1->tokAt(2);
             }
@@ -1427,8 +1409,7 @@ void SymbolDatabase::printOut(const char *title) const
         }
 
         std::cout << "    functionOf: " << scope->functionOf;
-        if (scope->functionOf)
-        {
+        if (scope->functionOf) {
             std::cout << " " << scope->functionOf->type << " " << scope->functionOf->className;
             if (scope->functionOf->classDef)
                 std::cout << " " << _tokenizer->fileLine(scope->functionOf->classDef);
@@ -1436,16 +1417,14 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << std::endl;
 
         std::cout << "    function: " << scope->function;
-        if (scope->function)
-        {
+        if (scope->function) {
             std::cout << " " << scope->function->tokenDef->str() << " "
                       << _tokenizer->fileLine(scope->function->tokenDef);
         }
         std::cout << std::endl;
     }
 
-    for (size_t i = 0; i < _variableList.size(); i++)
-    {
+    for (size_t i = 0; i < _variableList.size(); i++) {
         std::cout << "_variableList[" << i << "] = " << _variableList[i] << std::endl;
     }
 }
