@@ -348,14 +348,14 @@ private:
 
 
 
-    std::string getcode(const char code[], const char varname[], bool classfunc=false) const {
+    std::string getcode(const char code[], const char varname[], bool classfunc=false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, NULL);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
@@ -601,14 +601,14 @@ private:
     }
 
 
-    std::string simplifycode(const char code[]) const {
+    std::string simplifycode(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, NULL);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         Token *tokens = const_cast<Token *>(tokenizer.tokens());
@@ -769,7 +769,7 @@ private:
 
 
     // is there a leak in given code? if so, return the linenr
-    unsigned int dofindleak(const char code[]) const {
+    unsigned int dofindleak(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -777,7 +777,7 @@ private:
         settings.debug = settings.debugwarnings = true;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, NULL);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
