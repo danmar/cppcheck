@@ -138,9 +138,25 @@ bool CppCheck::findError(std::string code, const char FileName[])
     return true;
 }
 
+// Disable debug warnings?
+static bool no_debug_warnings(const std::string &filename) {
+    const std::string::size_type pos = filename.rfind(".");
+    if (pos == std::string::npos)
+        return false;
+    const std::string ext = filename.substr(pos);
+
+    // Only allow debug warnings if file extension is c or cpp so people
+    // won't be tempted to fix java / c# problems spotted this way.
+    return bool(ext != ".c" && ext != ".cpp");
+}
+
 unsigned int CppCheck::processFile()
 {
     exitcode = 0;
+
+    // disable debug warnings?
+    if (no_debug_warnings(_filename))
+        _settings.debugwarnings = false;
 
     // TODO: Should this be moved out to its own function so all the files can be
     // analysed before any files are checked?
