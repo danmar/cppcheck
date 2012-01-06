@@ -49,38 +49,23 @@ public:
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
     virtual ~Tokenizer();
 
-    /** The file extension. Used by isC() etc. */
-    std::string fileExtension() const {
-        if (_files.empty())
-            return std::string("");
-        return Path::getFilenameExtension(_files[0]);
-    }
+    /** Returns the source file path. e.g. "file.cpp" */
+    std::string getSourceFilePath() const;
 
     /** Is the code JAVA. Used for bailouts */
-    bool isJava() const {
-        return fileExtension() == ".java";
-    }
+    bool isJava() const;
 
     /** Is the code C#. Used for bailouts */
-    bool isCSharp() const {
-        return fileExtension() == ".cs";
-    }
+    bool isCSharp() const;
 
     /** Is the code JAVA/C#. Used for bailouts */
-    bool isJavaOrCSharp() const {
-        return isJava() || isCSharp();
-    }
+    bool isJavaOrCSharp() const;
 
     /** Is the code C. Used for bailouts */
-    bool isC() const {
-        const std::string ext = fileExtension();
-        return (ext == ".c" || ext == ".C");
-    }
+    bool isC() const;
 
     /** Is the code CPP. Used for bailouts */
-    bool isCPP() const {
-        return !isC() && (_files.size() && Path::acceptFile(_files[0]));
-    }
+    bool isCPP() const;
 
     /**
      * Check if inner scope ends with a call to a noreturn function

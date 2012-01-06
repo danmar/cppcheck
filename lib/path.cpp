@@ -108,6 +108,13 @@ bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 #endif
 }
 
+// This wrapper exists because Sun's CC does not allow a static_cast
+// from extern "C" int(*)(int) to int(*)(int).
+static int tolowerWrapper(int c)
+{
+    return std::tolower(c);
+}
+
 std::string Path::removeQuotationMarks(std::string path)
 {
     path.erase(std::remove(path.begin(), path.end(), '\"'), path.end());
@@ -124,29 +131,62 @@ std::string Path::getFilenameExtension(const std::string &path)
     return extension;
 }
 
-
-// This wrapper exists because Sun's CC does not allow a static_cast
-// from extern "C" int(*)(int) to int(*)(int).
-static int tolowerWrapper(int c)
+std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
 {
-    return std::tolower(c);
+    std::string extension = getFilenameExtension(path);
+    std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
+    return extension;
 }
 
-
-bool Path::acceptFile(const std::string &filename)
+bool Path::isC(const std::string &path)
 {
-    std::string extension = Path::getFilenameExtension(filename);
-    if (extension == "")
-        return false;
-    std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
+    const std::string extension = getFilenameExtensionInLowerCase(path);
+    if (extension == ".c") {
+        return true;
+    }
 
+    return false;
+}
+
+bool Path::isCPP(const std::string &path)
+{
+    const std::string extension = getFilenameExtensionInLowerCase(path);
     if (extension == ".cpp" ||
         extension == ".cxx" ||
         extension == ".cc" ||
-        extension == ".c" ||
         extension == ".c++" ||
         extension == ".tpp" ||
         extension == ".txx") {
+        return true;
+    }
+
+    return false;
+}
+
+bool Path::isJava(const std::string &path)
+{
+    const std::string extension = getFilenameExtensionInLowerCase(path);
+    if (extension == ".java") {
+        return true;
+    }
+
+    return false;
+}
+
+bool Path::isCSharp(const std::string &path)
+{
+    const std::string extension = getFilenameExtensionInLowerCase(path);
+    if (extension == ".cs") {
+        return true;
+    }
+
+    return false;
+}
+
+bool Path::acceptFile(const std::string &filename)
+{
+    if (Path::isCPP(filename) ||
+        Path::isC(filename)) {
         return true;
     }
 

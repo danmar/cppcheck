@@ -9503,3 +9503,29 @@ void Tokenizer::printUnknownTypes()
             _errorLogger->reportOut(ss.str());
     }
 }
+
+std::string Tokenizer::getSourceFilePath() const {
+    if (_files.empty())
+        return std::string("");
+    return _files[0];
+}
+
+bool Tokenizer::isJava() const {
+    return Path::isJava(getSourceFilePath());
+}
+
+bool Tokenizer::isCSharp() const {
+    return Path::isCSharp(getSourceFilePath());
+}
+
+bool Tokenizer::isJavaOrCSharp() const {
+    return isJava() || isCSharp();
+}
+
+bool Tokenizer::isC() const {
+    return Path::isC(getSourceFilePath());
+}
+
+bool Tokenizer::isCPP() const {
+    return Path::isCPP(getSourceFilePath());
+}

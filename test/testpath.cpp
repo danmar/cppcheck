@@ -29,6 +29,11 @@ private:
 
     void run() {
         TEST_CASE(simplify_path);
+        TEST_CASE(accept_file);
+        TEST_CASE(is_c);
+        TEST_CASE(is_cpp);
+        TEST_CASE(is_java);
+        TEST_CASE(is_csharp);
     }
 
     void simplify_path() {
@@ -57,6 +62,48 @@ private:
         ASSERT_EQUALS("path to/index.cpp", Path::removeQuotationMarks("\"path to/index.cpp\""));
         ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("the/\"path to\"/index.cpp"));
         ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("\"the/path to/index.cpp\""));
+    }
+
+    void accept_file() {
+        ASSERT(Path::acceptFile("index.cpp"));
+        ASSERT(Path::acceptFile("index.invalid.cpp"));
+        ASSERT(Path::acceptFile("index.invalid.Cpp"));
+        ASSERT(Path::acceptFile("index.invalid.C"));
+        ASSERT(Path::acceptFile("index.invalid.C++"));
+        ASSERT(Path::acceptFile("index.")==false);
+        ASSERT(Path::acceptFile("index")==false);
+        ASSERT(Path::acceptFile("")==false);
+        ASSERT(Path::acceptFile("C")==false);
+    }
+
+    void is_c() {
+        ASSERT(Path::isC("index.cpp")==false);
+        ASSERT(Path::isC("")==false);
+        ASSERT(Path::isC("c")==false);
+        ASSERT(Path::isC("index.c"));
+        ASSERT(Path::isC("C:\\foo\\index.c"));
+        ASSERT(Path::isC("C:\\foo\\index.C"));
+    }
+
+    void is_cpp() {
+        ASSERT(Path::isCPP("index.c")==false);
+        ASSERT(Path::isCPP("index.cpp"));
+        ASSERT(Path::isCPP("C:\\foo\\index.cpp"));
+        ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));
+    }
+
+    void is_java() {
+        ASSERT(Path::isJava("index.cpp")==false);
+        ASSERT(Path::isJava("index.java"));
+        ASSERT(Path::isJava("C:\\foo\\index.java"));
+        ASSERT(Path::isJava("C:\\foo\\index.Java"));
+    }
+
+    void is_csharp() {
+        ASSERT(Path::isCSharp("index.cpp")==false);
+        ASSERT(Path::isCSharp("index.cs"));
+        ASSERT(Path::isCSharp("C:\\foo\\index.cs"));
+        ASSERT(Path::isCSharp("C:\\foo\\index.Cs"));
     }
 };
 
