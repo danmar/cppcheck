@@ -2180,7 +2180,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
             errmsg << "inconclusive leak of " << varname << ": ";
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                 errmsg << " " << tok2->str();
-            reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
+            reportError(first, Severity::debug, "debug", errmsg.str());
         }
     }
 
