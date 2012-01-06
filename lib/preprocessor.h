@@ -205,7 +205,7 @@ public:
      * @param def condition
      * @return result when evaluating the condition
      */
-    static bool match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def);
+    bool match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def);
 
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 

@@ -1002,27 +1002,29 @@ private:
 
 
     void match_cfg_def() {
+        Preprocessor preprocessor(NULL, this);
+
         {
             std::map<std::string, std::string> cfg;
-            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A>1||defined(B)"));
+            ASSERT_EQUALS(false, preprocessor.match_cfg_def(cfg, "A>1||defined(B)"));
         }
 
         {
             std::map<std::string, std::string> cfg;
             cfg["A"] = "";
             cfg["B"] = "";
-            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "defined(A)&&defined(B)"));
+            ASSERT_EQUALS(true, preprocessor.match_cfg_def(cfg, "defined(A)&&defined(B)"));
         }
 
         {
             std::map<std::string, std::string> cfg;
             cfg["ABC"] = "";
 
-            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "defined(A)"));
-            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)"));
+            ASSERT_EQUALS(false, preprocessor.match_cfg_def(cfg, "defined(A)"));
+            ASSERT_EQUALS(true, preprocessor.match_cfg_def(cfg, "!defined(A)"));
 
-            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "!defined(ABC)&&!defined(DEF)"));
-            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)&&!defined(B)"));
+            ASSERT_EQUALS(false, preprocessor.match_cfg_def(cfg, "!defined(ABC)&&!defined(DEF)"));
+            ASSERT_EQUALS(true, preprocessor.match_cfg_def(cfg, "!defined(A)&&!defined(B)"));
         }
 
         {
@@ -1030,12 +1032,12 @@ private:
             cfg["A"] = "1";
             cfg["B"] = "2";
 
-            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A==1"));
-            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A<2"));
-            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A==2"));
-            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A<1"));
-            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
-            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A==1 && A==1"));
+            ASSERT_EQUALS(true, preprocessor.match_cfg_def(cfg, "A==1"));
+            ASSERT_EQUALS(true, preprocessor.match_cfg_def(cfg, "A<2"));
+            ASSERT_EQUALS(false, preprocessor.match_cfg_def(cfg, "A==2"));
+            ASSERT_EQUALS(false, preprocessor.match_cfg_def(cfg, "A<1"));
+            ASSERT_EQUALS(false, preprocessor.match_cfg_def(cfg, "A>=1&&B<=A"));
+            ASSERT_EQUALS(true, preprocessor.match_cfg_def(cfg, "A==1 && A==1"));
         }
     }
 
