@@ -1221,8 +1221,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
 void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &cfg, std::string &condition, bool match)
 {
-    Settings settings;
-    Tokenizer tokenizer(&settings, NULL);
+    const Settings settings;
+    Tokenizer tokenizer(&settings, _errorLogger);
     std::istringstream istr("(" + condition + ")");
     if (!tokenizer.tokenize(istr, "", "", true)) {
         // If tokenize returns false, then there is syntax error in the

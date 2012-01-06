@@ -99,7 +99,7 @@ public:
      * @param condition The condition to simplify
      * @param match if true, 'defined(A)' is replaced with 0 if A is not defined
      */
-    static void simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition, bool match);
+    void simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition, bool match);
 
     /**
      * preprocess all whitespaces

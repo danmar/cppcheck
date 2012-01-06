@@ -2858,7 +2858,8 @@ private:
         std::map<std::string, std::string> cfg;
         cfg["C"] = "";
         std::string condition("defined(A) || defined(B) || defined(C)");
-        Preprocessor::simplifyCondition(cfg, condition, true);
+        Preprocessor preprocessor(NULL, this);
+        preprocessor.simplifyCondition(cfg, condition, true);
         ASSERT_EQUALS("1", condition);
     }
 
