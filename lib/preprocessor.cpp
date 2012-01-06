@@ -164,7 +164,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     // ------------------------------------------------------------------------------------------
     //
     // Remove all comments..
-    result = removeComments(result, filename, _settings);
+    result = removeComments(result, filename);
 
     // ------------------------------------------------------------------------------------------
     //
@@ -301,7 +301,7 @@ static bool isFallThroughComment(std::string comment)
            comment == "fall";
 }
 
-std::string Preprocessor::removeComments(const std::string &str, const std::string &filename, Settings *settings)
+std::string Preprocessor::removeComments(const std::string &str, const std::string &filename)
 {
     // For the error report
     unsigned int lineno = 1;
@@ -371,7 +371,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 break;
             std::string comment(str, commentStart, i - commentStart);
 
-            if (settings && settings->_inlineSuppressions) {
+            if (_settings && _settings->_inlineSuppressions) {
                 std::istringstream iss(comment);
                 std::string word;
                 iss >> word;
@@ -408,7 +408,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 fallThroughComment = true;
             }
 
-            if (settings && settings->_inlineSuppressions) {
+            if (_settings && _settings->_inlineSuppressions) {
                 std::istringstream iss(comment);
                 std::string word;
                 iss >> word;
@@ -425,10 +425,10 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
             // Add any pending inline suppressions that have accumulated.
             if (!suppressionIDs.empty()) {
-                if (settings != NULL) {
+                if (_settings != NULL) {
                     // Add the suppressions.
                     for (size_t j(0); j < suppressionIDs.size(); ++j) {
-                        const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                        const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
                         if (!errmsg.empty()) {
                             writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
                         }
@@ -453,10 +453,10 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
                 // Add any pending inline suppressions that have accumulated.
                 if (!suppressionIDs.empty()) {
-                    if (settings != NULL) {
+                    if (_settings != NULL) {
                         // Add the suppressions.
                         for (size_t j(0); j < suppressionIDs.size(); ++j) {
-                            const std::string errmsg(settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                            const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
                             if (!errmsg.empty()) {
                                 writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
                             }
