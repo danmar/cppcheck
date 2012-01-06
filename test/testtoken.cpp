@@ -97,6 +97,14 @@ private:
         Tokenizer::deleteTokens(token);
     }
 
+    bool Match(const std::string &code, const std::string &pattern, unsigned int varid=0) {
+        const Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        return Token::Match(tokenizer.tokens(), pattern.c_str(), varid);
+    }
+
     void multiCompare() {
         // Test for found
         ASSERT_EQUALS(1, Token::multiCompare("one|two", "one"));
@@ -416,7 +424,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            ASSERT_EQUALS(true, Token::Match(givenACodeSampleToTokenize(*test_op).tokens(), "%op%"));
+            ASSERT_EQUALS(true, Match(*test_op, "%op%"));
         }
 
         // Negative test against other operators
@@ -426,7 +434,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            ASSERT_EQUALS_MSG(false, Token::Match(givenACodeSampleToTokenize(*other_op).tokens(), "%op%"), "Failing other operator: " + *other_op);
+            ASSERT_EQUALS_MSG(false, Match(*other_op, "%op%"), "Failing other operator: " + *other_op);
         }
     }
 
