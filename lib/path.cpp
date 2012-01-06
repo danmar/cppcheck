@@ -20,6 +20,7 @@
 #include <vector>
 #include <sstream>
 #include <cstring>
+#include <cctype>
 #include "path.h"
 
 std::string Path::toNativeSeparators(std::string path)

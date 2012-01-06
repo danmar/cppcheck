@@ -18,7 +18,6 @@
 
 #include <cstring>
 #include <string>
-#include <cctype>
 #include <sstream>
 #include "filelister.h"
 #include "path.h"
