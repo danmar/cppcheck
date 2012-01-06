@@ -222,7 +222,7 @@ unsigned int CppCheck::processFile()
 
             cfg = *it;
             Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-            const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, _filename, &_settings, &_errorLogger);
+            const std::string codeWithoutCfg = preprocessor.getcode(filedata, *it, _filename);
             t.Stop();
 
             // If only errors are printed, print filename after the check
@@ -283,7 +283,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     std::list<std::string> configurations;
     std::string filedata = "";
     preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
-    const std::string code = Preprocessor::getcode(filedata, "", filename, &_settings, &_errorLogger);
+    const std::string code = preprocessor.getcode(filedata, "", filename);
 
     if (_settings.checkConfiguration) {
         return;

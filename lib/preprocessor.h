@@ -91,7 +91,7 @@ public:
     /**
      * Get preprocessed code for a given configuration
      */
-    static std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const Settings *settings, ErrorLogger *errorLogger);
+    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
 
     /**
      * simplify condition

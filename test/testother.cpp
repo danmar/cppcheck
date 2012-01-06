@@ -209,13 +209,13 @@ private:
         settings.experimental = true;
 
         // Preprocess file..
-        Preprocessor preprocessor(&settings, this);
+        SimpleSuppressor logger(settings, this);
+        Preprocessor preprocessor(&settings, &logger);
         std::list<std::string> configurations;
         std::string filedata = "";
         std::istringstream fin(precode);
         preprocessor.preprocess(fin, filedata, configurations, filename, settings._includePaths);
-        SimpleSuppressor logger(settings, this);
-        const std::string code = Preprocessor::getcode(filedata, "", filename, &settings, &logger);
+        const std::string code = preprocessor.getcode(filedata, "", filename);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, &logger);
