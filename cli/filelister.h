@@ -44,14 +44,6 @@ public:
                                   const std::string &path);
 
     /**
-     * @brief Check if the file extension indicates that it's a source file.
-     * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
-     * @param filename filename to check
-     * @return returns true if the file extension indicates it should be checked
-     */
-    static bool acceptFile(const std::string &filename);
-
-    /**
      * @brief Is given path a directory?
      * @return returns true if the path is a directory
      */

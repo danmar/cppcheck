@@ -19,37 +19,9 @@
 #include <cstring>
 #include <string>
 #include <cctype>
-#include <algorithm>
 #include <sstream>
 #include "filelister.h"
 #include "path.h"
-
-// This wrapper exists because Sun's CC does not allow a static_cast
-// from extern "C" int(*)(int) to int(*)(int).
-static int tolowerWrapper(int c)
-{
-    return std::tolower(c);
-}
-
-bool FileLister::acceptFile(const std::string &filename)
-{
-    std::string extension = Path::getFilenameExtension(filename);
-    if (extension == "")
-        return false;
-    std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
-
-    if (extension == ".cpp" ||
-        extension == ".cxx" ||
-        extension == ".cc" ||
-        extension == ".c" ||
-        extension == ".c++" ||
-        extension == ".tpp" ||
-        extension == ".txx") {
-        return true;
-    }
-
-    return false;
-}
 
 
 #ifdef _WIN32
@@ -207,7 +179,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, std::map
             // File
 
             // If recursive is not used, accept all files given by user
-            if (Path::sameFileName(path,ansiFfd) || FileLister::acceptFile(ansiFfd)) {
+            if (Path::sameFileName(path,ansiFfd) || Path::acceptFile(ansiFfd)) {
                 const std::string nativename = Path::fromNativeSeparators(fname.str());
                 filenames.push_back(nativename);
                 // Limitation: file sizes are assumed to fit in a 'long'
@@ -300,7 +272,7 @@ void FileLister::recursiveAddFiles2(std::vector<std::string> &relative,
         if (filename[filename.length()-1] != '/') {
             // File
 
-            if (Path::sameFileName(path,filename) || FileLister::acceptFile(filename)) {
+            if (Path::sameFileName(path,filename) || Path::acceptFile(filename)) {
                 relative.push_back(filename);
                 seen_paths.insert(absolute_path);
 

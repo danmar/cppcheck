@@ -22,6 +22,8 @@
 #define tokenizeH
 //---------------------------------------------------------------------------
 
+#include "path.h"
+
 #include <string>
 #include <map>
 #include <list>
@@ -51,10 +53,7 @@ public:
     std::string fileExtension() const {
         if (_files.empty())
             return std::string("");
-        const std::string::size_type pos = _files[0].rfind('.');
-        if (pos != std::string::npos)
-            return _files[0].substr(pos);
-        return std::string("");
+        return Path::getFilenameExtension(_files[0]);
     }
 
     /** Is the code JAVA. Used for bailouts */
@@ -74,13 +73,13 @@ public:
 
     /** Is the code C. Used for bailouts */
     bool isC() const {
-        std::string ext = fileExtension();
+        const std::string ext = fileExtension();
         return (ext == ".c" || ext == ".C");
     }
 
     /** Is the code CPP. Used for bailouts */
     bool isCPP() const {
-        return !isC() && !isJavaOrCSharp();
+        return !isC() && (_files.size() && Path::acceptFile(_files[0]));
     }
 
     /**

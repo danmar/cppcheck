@@ -122,3 +122,33 @@ std::string Path::getFilenameExtension(const std::string &path)
     const std::string extension = path.substr(dotLocation);
     return extension;
 }
+
+
+// This wrapper exists because Sun's CC does not allow a static_cast
+// from extern "C" int(*)(int) to int(*)(int).
+static int tolowerWrapper(int c)
+{
+    return std::tolower(c);
+}
+
+
+bool Path::acceptFile(const std::string &filename)
+{
+    std::string extension = Path::getFilenameExtension(filename);
+    if (extension == "")
+        return false;
+    std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
+
+    if (extension == ".cpp" ||
+        extension == ".cxx" ||
+        extension == ".cc" ||
+        extension == ".c" ||
+        extension == ".c++" ||
+        extension == ".tpp" ||
+        extension == ".txx") {
+        return true;
+    }
+
+    return false;
+}
+
