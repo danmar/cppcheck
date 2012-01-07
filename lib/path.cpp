@@ -140,7 +140,8 @@ std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
 
 bool Path::isC(const std::string &path)
 {
-    const std::string extension = getFilenameExtensionInLowerCase(path);
+    // In unix, ".C" is concidered C++ file
+    const std::string extension = getFilenameExtension(path);
     if (extension == ".c") {
         return true;
     }
@@ -157,6 +158,11 @@ bool Path::isCPP(const std::string &path)
         extension == ".c++" ||
         extension == ".tpp" ||
         extension == ".txx") {
+        return true;
+    }
+
+    // In unix, ".C" is concidered C++ file
+    if (getFilenameExtension(path) == ".C") {
         return true;
     }
 
