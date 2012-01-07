@@ -4004,7 +4004,8 @@ bool Tokenizer::simplifyTokenList()
     if (_settings->debug) {
         _tokens->printOut(0, _files);
 
-        getSymbolDatabase()->printOut("Symbol database");
+        if (_settings->_verbose)
+            getSymbolDatabase()->printOut("Symbol database");
     }
 
     if (_settings->debugwarnings) {
