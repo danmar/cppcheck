@@ -679,7 +679,7 @@ private:
 
         ASSERT_EQUALS("X", scope->className);
 
-        // The class has a constructor but the implementation is not seen
+        // The class has a constructor but the implementation _is not_ seen
         ASSERT_EQUALS(1U, scope->functionList.size());
         const Function *function = &(scope->functionList.front());
         ASSERT_EQUALS(false, function->hasBody);
@@ -709,7 +709,7 @@ private:
 
         ASSERT_EQUALS("X", scope->className);
 
-        // The class has a constructor but the implementation is not seen
+        // The class has a constructor and the implementation _is_ seen
         ASSERT_EQUALS(1U, scope->functionList.size());
         const Function *function = &(scope->functionList.front());
         ASSERT_EQUALS("X", function->tokenDef->str());
