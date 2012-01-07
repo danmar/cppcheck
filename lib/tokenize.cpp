@@ -2798,15 +2798,6 @@ void Tokenizer::simplifyTemplateInstantions(const Token *tok,
         if (tok2->str() != name)
             continue;
 
-        // #2648 - simple fix for sizeof used as template parameter
-        // TODO: this is a bit hardcoded. make a bit more generic
-        if (Token::Match(tok2, "%var% < sizeof ( %type% ) >") && tok2->tokAt(4)->isStandardType()) {
-            Token * const tok3 = tok2->next();
-            const unsigned int sizeOfResult = sizeOfType(tok3->tokAt(3));
-            tok3->deleteNext(4);
-            tok3->insertToken(MathLib::toString<unsigned int>(sizeOfResult));
-        }
-
         if (Token::Match(tok2->previous(), "[;{}=]") &&
             !TemplateSimplifier::simplifyTemplatesInstantiateMatch(*iter2, name, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %var%"))
             continue;
@@ -2920,6 +2911,17 @@ void Tokenizer::simplifyTemplateInstantions(const Token *tok,
 
 void Tokenizer::simplifyTemplates()
 {
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        // #2648 - simple fix for sizeof used as template parameter
+        // TODO: this is a bit hardcoded. make a bit more generic
+        if (Token::Match(tok, "%var% < sizeof ( %type% ) >") && tok->tokAt(4)->isStandardType()) {
+            Token * const tok3 = tok->next();
+            const unsigned int sizeOfResult = sizeOfType(tok3->tokAt(3));
+            tok3->deleteNext(4);
+            tok3->insertToken(MathLib::toString<unsigned int>(sizeOfResult));
+        }
+    }
+
     std::set<std::string> expandedtemplates(TemplateSimplifier::simplifyTemplatesExpandSpecialized(_tokens));
 
     // Locate templates and set member variable _codeWithTemplates if the code has templates.
