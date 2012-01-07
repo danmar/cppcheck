@@ -110,6 +110,9 @@ private:
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
 
+        TEST_CASE(namespaces1);
+        TEST_CASE(namespaces2);
+
         TEST_CASE(symboldatabase1);
         TEST_CASE(symboldatabase2);
         TEST_CASE(symboldatabase3); // ticket #2000
@@ -656,6 +659,63 @@ private:
         ASSERT_EQUALS(0UL, a->dimension(0));
         ASSERT_EQUALS(4UL, a->dimension(1));
     }
+
+    void namespaces1() {
+        GET_SYMBOL_DB("namespace fred {\n"
+                      "    namespace barney {\n"
+                      "        class X { X(int); };\n"
+                      "    }\n"
+                      "}\n"
+                      "namespace barney { X::X(int) { } }\n");
+
+        // Locate the scope for the class..
+        const Scope *scope = NULL;
+        for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
+            if (it->isClassOrStruct()) {
+                scope = &(*it);
+                break;
+            }
+        }
+
+        ASSERT_EQUALS("X", scope->className);
+
+        // The class has a constructor but the implementation is not seen
+        ASSERT_EQUALS(1U, scope->functionList.size());
+        const Function *function = &(scope->functionList.front());
+        ASSERT_EQUALS(false, function->hasBody);
+    }
+
+    // based on namespaces1 but here the namespaces match
+    void namespaces2() {
+        GET_SYMBOL_DB("namespace fred {\n"
+                      "    namespace barney {\n"
+                      "        class X { X(int); };\n"
+                      "    }\n"
+                      "}\n"
+                      "namespace fred {\n"
+                      "    namespace barney {\n"
+                      "        X::X(int) { }\n"
+                      "    }\n"
+                      "}\n");
+
+        // Locate the scope for the class..
+        const Scope *scope = NULL;
+        for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
+            if (it->isClassOrStruct()) {
+                scope = &(*it);
+                break;
+            }
+        }
+
+        ASSERT_EQUALS("X", scope->className);
+
+        // The class has a constructor but the implementation is not seen
+        ASSERT_EQUALS(1U, scope->functionList.size());
+        const Function *function = &(scope->functionList.front());
+        ASSERT_EQUALS("X", function->tokenDef->str());
+        ASSERT_EQUALS(true, function->hasBody);
+    }
+
 
     void symboldatabase1() {
         check("namespace foo {\n"

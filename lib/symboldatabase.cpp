@@ -938,6 +938,22 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                                  (*scope)->className == scope1->nestedIn->className &&
                                                  !(*scope)->className.empty() &&
                                                  (*scope)->type == scope1->nestedIn->type)) {
+
+                // nested scopes => check that they match
+                {
+                    const Scope *s1 = *scope;
+                    const Scope *s2 = scope1->nestedIn;
+                    while (s1 && s2) {
+                        if (s1->className != s2->className)
+                            break;
+                        s1 = s1->nestedIn;
+                        s2 = s2->nestedIn;
+                    }
+                    // Not matching scopes
+                    if (s1 || s2)
+                        continue;
+                }
+
                 Scope *scope2 = scope1;
 
                 while (scope2 && count > 0) {
