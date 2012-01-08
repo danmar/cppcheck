@@ -85,6 +85,7 @@ private:
         TEST_CASE(localvar37); // ticket #3078
         TEST_CASE(localvar38);
         TEST_CASE(localvar39); // ticket #3454
+        TEST_CASE(localvar40); // ticket #3473
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1377,6 +1378,14 @@ private:
         functionVariableUsage("void f() {\n"
                               "    int a = 1;\n"
                               "    foo(x*a);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar40() {
+        functionVariableUsage("int f() {\n"
+                              "    int a = 1;\n"
+                              "    return x & a;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -696,8 +696,14 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
-        else if (Token::Match(tok, "return|throw %var%"))
-            variables.readAll(tok->next()->varId());
+        else if (Token::Match(tok, "return|throw %var%")) {
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->varId())
+                    variables.readAll(tok2->varId());
+                else if (tok2->str() == ";")
+                    break;
+            }
+        }
 
         // assignment
         else if (!Token::Match(tok->tokAt(-2), "[;{}.] %var% (") &&
