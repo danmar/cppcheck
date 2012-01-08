@@ -84,6 +84,7 @@ private:
         TEST_CASE(returnReference2);
         TEST_CASE(returnReference3);
         TEST_CASE(returnReference4);
+        TEST_CASE(returnReference5);
 
         // return c_str()..
         TEST_CASE(returncstr1);
@@ -474,6 +475,26 @@ private:
               "    double & ref = a;\n"
               "    return ref;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference5() {
+        check("struct A {\n"
+              "    int i;\n"
+              "};\n"
+
+              "struct B {\n"
+              "    A a;\n"
+              "};\n"
+
+              "struct C {\n"
+              "    B *b;\n"
+              "    const A& a() const {\n"
+              "        const B *pb = b;\n"
+              "        const A &ra = pb->a;\n"
+              "        return ra;\n"
+              "    }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -51,7 +51,7 @@ bool CheckAutoVariables::isAutoVar(unsigned int varId)
 {
     const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
 
-    if (!var || !var->isLocal() || var->isStatic() || var->isArray() || var->typeEndToken()->str() == "*")
+    if (!var || !var->isLocal() || var->isStatic() || var->isArray() || var->isPointer())
         return false;
 
     if (Token::simpleMatch(var->nameToken()->previous(), "&")) {
@@ -85,17 +85,7 @@ void CheckAutoVariables::autoVariables()
         if (scope->type != Scope::eFunction)
             continue;
 
-        unsigned int indentlevel = 0;
-        for (const Token *tok = scope->classDef->next()->link(); tok; tok = tok->next()) {
-            // indentlevel..
-            if (tok->str() == "{")
-                ++indentlevel;
-            else if (tok->str() == "}") {
-                if (indentlevel <= 1)
-                    break;
-                --indentlevel;
-            }
-
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             //Critical assignment
             if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5))) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
@@ -174,24 +164,8 @@ void CheckAutoVariables::returnPointerToLocalArray()
             tok = tok->tokAt(-2);
 
         // have we reached a function that returns a pointer
-        if (Token::Match(tok->tokAt(-2), "%type% *")) {
-            // go to the '('
-            const Token *tok2 = scope->classDef->next();
-
-            // go to the ')'
-            tok2 = tok2->next()->link();
-
-            unsigned int indentlevel = 0;
-            for (; tok2; tok2 = tok2->next()) {
-                // indentlevel..
-                if (tok2->str() == "{")
-                    ++indentlevel;
-                else if (tok2->str() == "}") {
-                    if (indentlevel <= 1)
-                        break;
-                    --indentlevel;
-                }
-
+        if (tok->previous() && tok->previous()->str() == "*") {
+            for (const Token *tok2 = scope->classStart; tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
                 // Return pointer to local array variable..
                 if (Token::Match(tok2, "return %var% ;")) {
                     const unsigned int varid = tok2->next()->varId();
@@ -273,25 +247,8 @@ void CheckAutoVariables::returnReference()
             tok = tok->tokAt(-2);
 
         // have we reached a function that returns a reference?
-        if (Token::Match(tok->tokAt(-2), "%type% &") ||
-            Token::simpleMatch(tok->tokAt(-2), "> &")) {
-            // go to the '('
-            const Token *tok2 = scope->classDef->next();
-
-            // go to the ')'
-            tok2 = tok2->link();
-
-            unsigned int indentlevel = 0;
-            for (; tok2; tok2 = tok2->next()) {
-                // indentlevel..
-                if (tok2->str() == "{")
-                    ++indentlevel;
-                else if (tok2->str() == "}") {
-                    if (indentlevel <= 1)
-                        break;
-                    --indentlevel;
-                }
-
+        if (tok->previous() && tok->previous()->str() == "&") {
+            for (const Token *tok2 = scope->classStart; tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
                 // return..
                 if (Token::Match(tok2, "return %var% ;")) {
                     // is the returned variable a local variable?
@@ -300,7 +257,7 @@ void CheckAutoVariables::returnReference()
 
                     if (var1 && var1->isLocal() && !var1->isStatic()) {
                         // If reference variable is used, check what it references
-                        if (Token::Match(var1->nameToken()->previous(), "& %var% =")) {
+                        if (Token::Match(var1->nameToken(), "%var% =")) {
                             const Token *tok3 = var1->nameToken()->tokAt(2);
                             if (!Token::Match(tok3, "%var% [;.]"))
                                 continue;
@@ -308,7 +265,7 @@ void CheckAutoVariables::returnReference()
                             // Only report error if variable that is referenced is
                             // a auto variable
                             const Variable *var2 = symbolDatabase->getVariableFromVarId(tok3->varId());
-                            if (!var2 || !var2->isLocal() || var2->isStatic())
+                            if (!var2 || !var2->isLocal() || var2->isStatic() || (var2->isPointer() && tok3->strAt(1) == "."))
                                 continue;
                         }
 
@@ -371,23 +328,7 @@ void CheckAutoVariables::returncstr()
 
         // have we reached a function that returns a const char *
         if (Token::simpleMatch(tok->tokAt(-3), "const char *")) {
-            // go to the '('
-            const Token *tok2 = scope->classDef->next();
-
-            // go to the ')'
-            tok2 = tok2->next()->link();
-
-            unsigned int indentlevel = 0;
-            for (; tok2; tok2 = tok2->next()) {
-                // indentlevel..
-                if (tok2->str() == "{")
-                    ++indentlevel;
-                else if (tok2->str() == "}") {
-                    if (indentlevel <= 1)
-                        break;
-                    --indentlevel;
-                }
-
+            for (const Token *tok2 = scope->classStart; tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
                 // return..
                 if (Token::Match(tok2, "return %var% . c_str ( ) ;")) {
                     // is the returned variable a local variable?
