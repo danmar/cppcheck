@@ -99,6 +99,7 @@ private:
         TEST_CASE(localvarstatic);
         TEST_CASE(localvardynamic1);
         TEST_CASE(localvardynamic2); // ticket #2904
+        TEST_CASE(localvardynamic3); // ticket #3467
         TEST_CASE(localvararray1);  // ticket #2780
         TEST_CASE(localvararray2);  // ticket #3438
         TEST_CASE(localvarstring1);
@@ -2859,6 +2860,17 @@ private:
                               "    Fred* ptr = new Fred();\n"
                               "    ptr->i = 0;\n"
                               "    delete ptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvardynamic3() {
+        // Ticket #3477 - False positive that 'data' is not assigned a value
+        functionVariableUsage("void foo() {\n"
+                              "    int* data = new int[100];\n"
+                              "    int* p = data;\n"
+                              "    for ( int i = 0; i < 10; ++i )\n"
+                              "        p++;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

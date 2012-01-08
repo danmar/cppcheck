@@ -929,7 +929,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unusedVariableError(usage._name, varname);
 
             // variable has not been written but has been modified
-            else if (usage._modified && !usage._write)
+            else if (usage._modified && !usage._write && !usage._allocateMemory)
                 unassignedVariableError(usage._name, varname);
 
             // variable has been written but not read
