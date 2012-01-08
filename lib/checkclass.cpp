@@ -142,8 +142,11 @@ void CheckClass::constructors()
 
                     if (classNameUsed)
                         operatorEqVarError(func->token, scope->className, var->name());
-                } else if (func->access != Private)
-                    uninitVarError(func->token, scope->className, var->name());
+                } else if (func->access != Private) {
+                    const Scope *varType = var->type();
+                    if (!varType || varType->type != Scope::eUnion)
+                        uninitVarError(func->token, scope->className, var->name());
+                }
             }
         }
     }

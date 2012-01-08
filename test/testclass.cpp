@@ -81,7 +81,8 @@ private:
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarStruct1); // ticket #2172
         TEST_CASE(uninitVarStruct2); // ticket #838
-        TEST_CASE(uninitVarUnion); // ticket #3196
+        TEST_CASE(uninitVarUnion1); // ticket #3196
+        TEST_CASE(uninitVarUnion2);
         TEST_CASE(uninitMissingFuncDef);	// can't expand function in constructor
         TEST_CASE(privateCtor1);        	// If constructor is private..
         TEST_CASE(privateCtor2);        	// If constructor is private..
@@ -2560,7 +2561,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninitVarUnion() { // ticket #3196
+    void uninitVarUnion1() { // ticket #3196
         checkUninitVar("class Fred\n"
                        "{\n"
                        "private:\n"
@@ -2568,6 +2569,23 @@ private:
                        "public:\n"
                        "    Fred()\n"
                        "    { a = 0; }\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarUnion2() {
+        // If the "data_type" is 0 it means union member "data" is invalid.
+        // So it's ok to not initialize "data".
+        // related forum: http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=3&p=1806
+        checkUninitVar("union Data { int id; int *ptr; };\n"
+                       "\n"
+                       "class Fred {\n"
+                       "private:\n"
+                       "    int data_type;\n"
+                       "    Data data;\n"
+                       "public:\n"
+                       "    Fred() : data_type(0)\n"
+                       "    { }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }
