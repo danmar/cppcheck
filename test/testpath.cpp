@@ -84,14 +84,22 @@ private:
         ASSERT(Path::isC("C:\\foo\\index.c"));
 
         // In unix .C is considered C++
-        ASSERT(Path::isC("C:\\foo\\index.C")==false);
+#ifdef _WIN32
+        ASSERT_EQUALS(true, Path::isC("C:\\foo\\index.C"));
+#else
+        ASSERT_EQUALS(false, Path::isC("C:\\foo\\index.C"));
+#endif
     }
 
     void is_cpp() {
         ASSERT(Path::isCPP("index.c")==false);
 
         // In unix .C is considered C++
-        ASSERT(Path::isCPP("index.C"));
+#ifdef _WIN32
+        ASSERT_EQUALS(false, Path::isCPP("index.C"));
+#else
+        ASSERT_EQUALS(true, Path::isCPP("index.C"));
+#endif
         ASSERT(Path::isCPP("index.cpp"));
         ASSERT(Path::isCPP("C:\\foo\\index.cpp"));
         ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));

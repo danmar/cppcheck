@@ -23,6 +23,17 @@
 #include <cctype>
 #include "path.h"
 
+/** Is the filesystem case insensitive? */
+static bool caseInsensitiveFilesystem()
+{
+#ifdef _WIN32
+    return true;
+#else
+    // TODO: Non-windows filesystems might be case insensitive
+    return false;
+#endif
+}
+
 std::string Path::toNativeSeparators(std::string path)
 {
 #if defined(_WIN32)
@@ -127,7 +138,12 @@ std::string Path::getFilenameExtension(const std::string &path)
     if (dotLocation == std::string::npos)
         return "";
 
-    const std::string extension = path.substr(dotLocation);
+    std::string extension = path.substr(dotLocation);
+    if (caseInsensitiveFilesystem()) {
+        // on a case insensitive filesystem the case doesn't matter so
+        // let's return the extension in lowercase
+        std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
+    }
     return extension;
 }
 
