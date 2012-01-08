@@ -929,6 +929,9 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #3473 - no warning if "log" is a variable
+        check("Fred::Fred() : log(0) { }");
+        ASSERT_EQUALS("", errout.str());
 
         // acos
         check("void foo()\n"
