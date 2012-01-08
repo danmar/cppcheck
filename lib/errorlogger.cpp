@@ -24,6 +24,11 @@
 #include <sstream>
 #include <vector>
 
+InternalError::InternalError(const Token *tok, const std::string &errorMsg) :
+    token(tok), errorMessage(errorMsg)
+{
+}
+
 ErrorLogger::ErrorMessage::ErrorMessage()
     :_severity(Severity::none)
 {

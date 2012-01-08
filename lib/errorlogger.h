@@ -281,6 +281,12 @@ public:
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 };
 
+/** @brief Simple container to be thrown when internal error is detected. */
+struct InternalError {
+    InternalError(const Token *tok, const std::string &errorMsg);
+    const Token *token;
+    std::string errorMessage;
+};
 
 /// @}
 

@@ -7045,8 +7045,14 @@ bool Tokenizer::simplifyCalculations()
                     tok->str(MathLib::add(tok->str(), tok->strAt(2)));
                 else if (Token::Match(tok->previous(), "- %num% + %num%"))
                     tok->str(MathLib::subtract(tok->str(), tok->strAt(2)));
-                else
-                    tok->str(MathLib::calculate(tok->str(), tok->strAt(2), tok->next()->str()[0], this));
+                else {
+                    try {
+                        tok->str(MathLib::calculate(tok->str(), tok->strAt(2), tok->next()->str()[0]));
+                    } catch (InternalError e) {
+                        e.token = tok;
+                        throw e;
+                    }
+                }
 
                 tok->deleteNext(2);
 

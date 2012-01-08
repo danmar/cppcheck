@@ -434,23 +434,23 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             }
         }
 #endif
-    } catch (const Token &tok) {
-        // Catch exception from Token class
-        const std::string fixedpath = Path::toNativeSeparators(_tokenizer.file(&tok));
+    } catch (InternalError e) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-
         ErrorLogger::ErrorMessage::FileLocation loc2;
         loc2.setfile(Path::toNativeSeparators(FileName));
         locationList.push_back(loc2);
-
         ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok.linenr();
-        loc.setfile(fixedpath);
+        if (e.token) {
+            loc.line = e.token->linenr();
+            const std::string fixedpath = Path::toNativeSeparators(_tokenizer.file(e.token));
+            loc.setfile(fixedpath);
+        } else {
+            loc.setfile(_tokenizer.getSourceFilePath());
+        }
         locationList.push_back(loc);
-
         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                Severity::error,
-                                               "Internal error. Token::Match called with varid 0.",
+                                               e.errorMessage,
                                                "cppcheckError",
                                                false);
 

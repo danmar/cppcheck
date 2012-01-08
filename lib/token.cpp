@@ -537,17 +537,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     patternUnderstood = true;
                 } else { // %varid%
                     if (varid == 0) {
-                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                        ErrorLogger::ErrorMessage::FileLocation loc;
-                        loc.line = tok->linenr();
-                        loc.setfile("");
-                        locationList.push_back(loc);
-                        const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                               Severity::error,
-                                                               "Internal error. Token::Match called with varid 0.",
-                                                               "cppcheckError",
-                                                               false);
-                        throw *tok;
+                        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
                     }
 
                     if (tok->varId() != varid)

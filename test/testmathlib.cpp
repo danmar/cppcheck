@@ -119,6 +119,8 @@ private:
         ASSERT_EQUALS("7"   , MathLib::divide("21.", "3"));
         ASSERT_EQUALS("1"   , MathLib::divide("3", "2"));
 
+        // Unknown action should throw exception
+        ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
     }
 
     void convert() {
