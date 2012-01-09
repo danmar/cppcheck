@@ -2694,36 +2694,48 @@ void Tokenizer::arraySize()
 
 void Tokenizer::simplifyLabelsCaseDefault()
 {
+    bool executablescope = false;
+    unsigned int indentlevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
+        // Simplify labels in the executable scope..
         if (Token::Match(tok, ") const| {")) {
-            // Simplify labels in the executable scope..
-            unsigned int indentlevel = 0;
-            while (NULL != (tok = tok->next())) {
-                if (tok->str() == "{") {
-                    if (tok->previous() && tok->previous()->str() == "=")
-                        tok = tok->link();
-                    else
-                        ++indentlevel;
-                } else if (tok->str() == "}") {
-                    --indentlevel;
-                    if (!indentlevel)
-                        break;
-                } else if (tok->str() == "(" || tok->str() == "[")
-                    tok = tok->link();
+            tok = tok->next();
+            if (tok->str() == "const")
+                tok = tok->next();
+            executablescope = true;
+        }
 
-                if (Token::Match(tok, "[;{}] case")) {
-                    while (NULL != (tok = tok->next())) {
-                        if (tok->str() == ":")
-                            break;
-                    }
-                    if (Token::Match(tok, ": !!;")) {
-                        tok->insertToken(";");
-                    }
-                } else if (Token::Match(tok, "[;{}] %var% : !!;")) {
-                    tok = tok->tokAt(2);
-                    tok->insertToken(";");
-                }
+        if (!executablescope)
+            continue;
+
+        if (tok->str() == "{") {
+            if (tok->previous()->str() == "=")
+                tok = tok->link();
+            else
+                ++indentlevel;
+        } else if (tok->str() == "}") {
+            --indentlevel;
+            if (!indentlevel) {
+                executablescope = false;
+                continue;
             }
+        } else if (tok->str() == "(" || tok->str() == "[")
+            tok = tok->link();
+
+        if (Token::Match(tok, "[;{}] case")) {
+            while (NULL != (tok = tok->next())) {
+                if (tok->str() == ":")
+                    break;
+            }
+            if (!tok)
+                break;
+            else if (tok->str() == ":" &&
+                     (!tok->next() || tok->next()->str() != ";")) {
+                tok->insertToken(";");
+            }
+        } else if (Token::Match(tok, "[;{}] %var% : !!;")) {
+            tok = tok->tokAt(2);
+            tok->insertToken(";");
         }
     }
 }

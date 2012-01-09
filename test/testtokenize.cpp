@@ -5239,6 +5239,8 @@ private:
         //with unhandled MACRO() code
         ASSERT_EQUALS(" void f(){ MACRO( ab: b=0;, foo)}", labels_("void f() { MACRO(ab: b=0;, foo)}"));
         ASSERT_EQUALS(" void f(){ MACRO( bar, ab:{&(* b. x)=0;})}", labels_("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
+        //don't crash with garbage code
+        ASSERT_EQUALS(" switch(){ case}", labels_("switch(){case}"));
     }
 
     // Check simplifyInitVar
