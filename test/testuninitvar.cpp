@@ -527,6 +527,13 @@ private:
                        "    return x() ? i : 0;\n"
                        "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: i\n", "", errout.str());
+
+        // Ticket #3480 - Don't crash garbage code
+        checkUninitVar("int f()\n"
+                       "{\n"
+                       "    return if\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

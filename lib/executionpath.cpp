@@ -300,29 +300,27 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         // bailout used variables in '; FOREACH ( .. ) { .. }'
         else if (tok->str() != "if" && Token::Match(tok->previous(), "[;{}] %var% (")) {
             // goto {
-            const Token *tok2 = tok->next()->link();
-            if (tok2 && tok2->str() == ")") {
-                tok2 = tok2->next();
-                if (tok2 && tok2->str() == "{") {
-                    // goto "}"
-                    tok2 = tok2->link();
+            const Token *tok2 = tok->next()->link()->next();
+            if (tok2 && tok2->str() == "{") {
+                // goto "}"
+                tok2 = tok2->link();
 
-                    // bail out all variables used in "{ .. }"
-                    for (; tok && tok != tok2; tok = tok->next()) {
-                        if (tok->varId())
-                            ExecutionPath::bailOutVar(checks, tok->varId());
-                    }
+                // bail out all variables used in "{ .. }"
+                for (; tok && tok != tok2; tok = tok->next()) {
+                    if (tok->varId())
+                        ExecutionPath::bailOutVar(checks, tok->varId());
                 }
             }
         }
 
         // .. ) { ... }  => bail out
-        if (Token::simpleMatch(tok, ") {")) {
+        if (tok->str() == ")" && tok->next() && tok->next()->str() == "{") {
             ExecutionPath::bailOut(checks);
             return;
         }
 
-        if (Token::Match(tok, "abort|exit (")) {
+        if ((tok->str() == "abort" || tok->str() == "exit") &&
+            tok->next() && tok->next()->str() == "(") {
             ExecutionPath::bailOut(checks);
             return;
         }
@@ -360,12 +358,12 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
             continue;
         }
 
-        if (tok->str() == "if") {
+        if (tok->str() == "if" && tok->next() && tok->next()->str() == "(") {
             // what variable ids should the numberOfIf be counted for?
             std::set<unsigned int> countif;
 
             std::list<ExecutionPath *> newchecks;
-            while (tok->str() == "if") {
+            while (tok->str() == "if" && tok->next() && tok->next()->str() == "(") {
                 // goto "("
                 tok = tok->next();
 
@@ -377,12 +375,12 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 }
 
                 // goto ")"
-                tok = tok ? tok->link() : 0;
+                tok = tok->link();
 
                 // goto "{"
-                tok = tok ? tok->next() : 0;
+                tok = tok->next();
 
-                if (!Token::simpleMatch(tok, "{")) {
+                if (!tok || tok->str() != "{") {
                     ExecutionPath::bailOut(checks);
                     ExecutionPath::bailOut(newchecks);
                     return;
@@ -395,12 +393,12 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 tok = tok->link();
 
                 // there is no else => break out
-                if (Token::Match(tok, "} !!else"))
+                if (!tok->next() || tok->next()->str() != "else")
                     break;
 
                 // parse next "if"..
                 tok = tok->tokAt(2);
-                if (tok->str() == "if")
+                if (tok && tok->str() == "if")
                     continue;
 
                 // there is no "if"..
