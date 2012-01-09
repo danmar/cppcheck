@@ -28,6 +28,8 @@
 #include <vector>
 
 class Token;
+class ErrorLogger;
+class Settings;
 
 
 /// @addtogroup Core
@@ -120,6 +122,41 @@ public:
         const std::string &newName,
         std::vector<const Token *> &typesUsedInTemplateInstantion,
         std::list<Token *> &templateInstantiations);
+
+    /**
+     * Simplify templates : expand all instantiatiations for a template
+     * @todo It seems that inner templates should be instantiated recursively
+     * @param tok token where the template declaration begins
+     * @param templateInstantiations a list of template usages (not necessarily just for this template)
+     * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
+     */
+    static void simplifyTemplateInstantions(
+        Token *_tokens,
+        Token **_tokensBack,
+        ErrorLogger *_errorLogger,
+        const Settings *_settings,
+        const std::vector<std::string> &files,
+        const Token *tok,
+        std::list<Token *> &templateInstantiations,
+        std::set<std::string> &expandedtemplates);
+
+    /**
+     * Simplify templates
+     */
+    static void simplifyTemplates(
+        Token *_tokens,
+        Token **_tokensBack,
+        ErrorLogger *_errorLogger,
+        const Settings *_settings,
+        const std::vector<std::string> &_files,
+        bool &_codeWithTemplates);
+
+    /**
+     * Simplify constant calculations such as "1+2" => "3"
+     * @return true if modifications to token-list are done.
+     *         false if no modifications are done.
+     */
+    static bool simplifyCalculations(Token *_tokens);
 };
 
 /// @}

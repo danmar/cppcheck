@@ -488,18 +488,6 @@ public:
     void simplifyReservedWordNullptr();
 
     /**
-     * Simplify templates : expand all instantiatiations for a template
-     * @todo It seems that inner templates should be instantiated recursively
-     * @param tok token where the template declaration begins
-     * @param templateInstantiations a list of template usages (not necessarily just for this template)
-     * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
-     */
-    void simplifyTemplateInstantions(const Token *tok,
-                                     std::list<Token *> &templateInstantiations,
-                                     std::set<std::string> &expandedtemplates);
-
-
-    /**
      * Simplify e.g. 'atol("0")' into '0'
      */
     void simplifyMathFunctions();
