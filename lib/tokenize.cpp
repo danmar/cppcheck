@@ -7060,7 +7060,7 @@ bool Tokenizer::simplifyCalculations()
                 else {
                     try {
                         tok->str(MathLib::calculate(tok->str(), tok->strAt(2), tok->next()->str()[0]));
-                    } catch (InternalError e) {
+                    } catch (InternalError &e) {
                         e.token = tok;
                         throw e;
                     }

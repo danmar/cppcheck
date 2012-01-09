@@ -434,7 +434,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             }
         }
 #endif
-    } catch (InternalError e) {
+    } catch (const InternalError &e) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         ErrorLogger::ErrorMessage::FileLocation loc2;
         loc2.setfile(Path::toNativeSeparators(FileName));
