@@ -621,15 +621,15 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         if (i->isArray() && Token::Match(i->nameToken(), "%var% [ %var% ]")) // Array index variable read.
             variables.read(i->nameToken()->tokAt(2)->varId());
 
-        if (Token::simpleMatch(defValTok, "= {")) {
-            for (const Token* tok = defValTok; tok && tok != defValTok->linkAt(1); tok = tok->next())
-                if (Token::Match(tok, "%var%")) // Variables used to initialize the array read.
-                    variables.read(tok->varId());
+        if (defValTok && defValTok->str() == "=") {
+            if (defValTok->next() && defValTok->next()->str() == "{") {
+                for (const Token* tok = defValTok; tok && tok != defValTok->linkAt(1); tok = tok->next())
+                    if (Token::Match(tok, "%var%")) // Variables used to initialize the array read.
+                        variables.read(tok->varId());
+            } else
+                doAssignment(variables, i->nameToken(), false, scope);
         } else if (Token::Match(defValTok, "( %var% )")) // Variables used to initialize the variable read.
             variables.readAll(defValTok->next()->varId()); // ReadAll?
-        else if (defValTok->str() == "=") {
-            doAssignment(variables, i->nameToken(), false, scope);
-        }
     }
 
     // Check variable usage
