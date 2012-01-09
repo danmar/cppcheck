@@ -8950,7 +8950,13 @@ void Tokenizer::simplifyAsm()
 // Simplify bitfields
 void Tokenizer::simplifyBitfields()
 {
+    bool goback = false;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
+
+        if (goback) {
+            goback = false;
+            tok = tok->previous();
+        }
         Token *last = 0;
 
         if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% :") &&
@@ -8971,7 +8977,7 @@ void Tokenizer::simplifyBitfields()
 
             if (tok->strAt(3 + offset) != "{") {
                 tok->deleteNext(4+offset);
-                tok = tok->previous();
+                goback = true;
             }
         }
 
