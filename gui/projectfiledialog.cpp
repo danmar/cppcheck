@@ -204,13 +204,23 @@ void ProjectFileDialog::SetExcludedPaths(const QStringList &paths)
 
 void ProjectFileDialog::AddIncludeDir()
 {
-    QFileInfo inf(mFilePath);
+    const QFileInfo inf(mFilePath);
     const QString rootpath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           tr("Select include directory"),
                           rootpath);
 
     if (!selectedDir.isEmpty()) {
+        // Check if the path is relative to project file's path and if so
+        // make it a relative path instead of absolute path.
+        const QDir dir(selectedDir);
+        QString absPath = dir.absolutePath();
+        if (absPath.startsWith(rootpath)) {
+            // Remove also the slash from begin of new relative path
+            selectedDir = absPath.remove(0, rootpath.length() + 1);
+        }
+        if (!selectedDir.endsWith("/"))
+            selectedDir += '/';
         AddIncludeDir(selectedDir);
     }
 }
