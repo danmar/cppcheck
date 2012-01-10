@@ -41,6 +41,7 @@
 #include "logview.h"
 #include "filelist.h"
 #include "showtypes.h"
+#include "selectfilesdialog.h"
 
 static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
@@ -347,9 +348,13 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     // QFileDialog::getExistingDirectory() because they show native Windows
     // selection dialog which is a lot more usable than QT:s own dialog.
     if (mode == QFileDialog::ExistingFiles) {
-        selected = QFileDialog::getOpenFileNames(this,
-                   tr("Select files to check"),
-                   mSettings->value(SETTINGS_CHECK_PATH, "").toString());
+        SelectFilesDialog *dialog = new SelectFilesDialog;
+        dialog->exec();
+        /*
+                selected = QFileDialog::getOpenFileNames(this,
+                           tr("Select files to check"),
+                           mSettings->value(SETTINGS_CHECK_PATH, "").toString());
+        */
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {
