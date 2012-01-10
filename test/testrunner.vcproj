@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="9,00"
 	Name="testrunner"
-	ProjectGUID="{499B17DA-AB07-38BE-B1CD-F7370CA0E0EE}"
+	ProjectGUID="{A1772A4C-E3F0-33FC-9A59-2189857FB799}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -19,8 +19,8 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.3\mkspecs\win32-msvc2008"
-				AdditionalOptions="-Zm200 -w34100 -w34189"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\..\..\Qt\qt-everywhere-opensource-src-4.7.3-vs2008-x86\mkspecs\win32-msvc2008"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -MP"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
 				DebugInformationFormat="3"
@@ -28,7 +28,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="4"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -39,7 +39,8 @@
 				Name="VCCustomBuildTool" />
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="shlwapi.lib"
+				AdditionalDependencies="shlwapi.lib ../externals\pcre.lib"
+				AdditionalLibraryDirectories="../externals"
 				GenerateDebugInformation="true"
 				IgnoreImportLibrary="true"
 				LinkTimeCodeGeneration="0"
@@ -60,7 +61,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,_DEBUG" />
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS,_DEBUG" />
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -71,8 +72,8 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.3\mkspecs\win32-msvc2008"
-				AdditionalOptions="-Zm200 -w34100 -w34189"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\cli&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\..\..\Qt\qt-everywhere-opensource-src-4.7.3-vs2008-x86\mkspecs\win32-msvc2008"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -MP"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
 				DebugInformationFormat="0"
@@ -80,7 +81,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="2"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,NDEBUG"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS,NDEBUG"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -91,7 +92,8 @@
 				Name="VCCustomBuildTool" />
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="shlwapi.lib"
+				AdditionalDependencies="shlwapi.lib ../externals\pcre.lib"
+				AdditionalLibraryDirectories="../externals"
 				GenerateDebugInformation="false"
 				IgnoreImportLibrary="true"
 				LinkIncremental="1"
@@ -113,7 +115,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS" />
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,HAVE_RULES,_CRT_SECURE_NO_WARNINGS" />
 		</Configuration>
 	</Configurations>
 	<Files>
@@ -135,6 +137,8 @@
 				RelativePath="..\lib\checkclass.cpp" />
 			<File
 				RelativePath="..\lib\checkexceptionsafety.cpp" />
+			<File
+				RelativePath="..\lib\checkinternal.cpp" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.cpp" />
 			<File
@@ -184,11 +188,15 @@
 			<File
 				RelativePath="..\lib\symboldatabase.cpp" />
 			<File
+				RelativePath="..\lib\templatesimplifier.cpp" />
+			<File
 				RelativePath="test64bit.cpp" />
 			<File
 				RelativePath="testassignif.cpp" />
 			<File
 				RelativePath="testautovariables.cpp" />
+			<File
+				RelativePath="testboost.cpp" />
 			<File
 				RelativePath="testbufferoverrun.cpp" />
 			<File
@@ -297,6 +305,8 @@
 			<File
 				RelativePath="..\lib\checkexceptionsafety.h" />
 			<File
+				RelativePath="..\lib\checkinternal.h" />
+			<File
 				RelativePath="..\lib\checkmemoryleak.h" />
 			<File
 				RelativePath="..\lib\checknonreentrantfunctions.h" />
@@ -346,6 +356,8 @@
 				RelativePath="..\lib\suppressions.h" />
 			<File
 				RelativePath="..\lib\symboldatabase.h" />
+			<File
+				RelativePath="..\lib\templatesimplifier.h" />
 			<File
 				RelativePath="testsuite.h" />
 			<File

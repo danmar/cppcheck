@@ -81,6 +81,7 @@
 #define PROGRESS_MAX                    1024.0
 
 #define SETTINGS_CHECKED_PLATFORM       "Checked platform"
+#define SETTINGS_LAST_PROJECT_PATH      "Last project path"
 
 /// @}
 #endif

@@ -135,13 +135,8 @@ MainWindow::MainWindow() :
     EnableProjectOpenActions(true);
     EnableProjectActions(false);
 
-    QStringList args = QCoreApplication::arguments();
-    //Remove the application itself
-    args.removeFirst();
-    if (!args.isEmpty()) {
-        HandleCLIParams(args);
-    }
-
+    // Must setup MRU menu before CLI param handling as it can load a
+    // project file and update MRU menu.
     for (int i = 0; i < MaxRecentProjects; ++i) {
         mRecentProjectActs[i] = new QAction(this);
         mRecentProjectActs[i]->setVisible(false);
@@ -151,6 +146,13 @@ MainWindow::MainWindow() :
     mRecentProjectActs[MaxRecentProjects] = NULL; // The separator
     mUI.mActionProjectMRU->setVisible(false);
     UpdateMRUMenuItems();
+
+    QStringList args = QCoreApplication::arguments();
+    //Remove the application itself
+    args.removeFirst();
+    if (!args.isEmpty()) {
+        HandleCLIParams(args);
+    }
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         Platform plat = mPlatforms.mPlatforms[i];
@@ -851,14 +853,19 @@ void MainWindow::OpenOnlineHelp()
 
 void MainWindow::OpenProjectFile()
 {
+    const QString lastPath = mSettings->value(SETTINGS_LAST_PROJECT_PATH, QString()).toString();
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
-    QString filepath = QFileDialog::getOpenFileName(this,
-                       tr("Select Project File"),
-                       QString(),
-                       filter);
+    const QString filepath = QFileDialog::getOpenFileName(this,
+                             tr("Select Project File"),
+                             lastPath,
+                             filter);
 
     if (!filepath.isEmpty()) {
-        LoadProjectFile(filepath);
+        const QFileInfo fi(filepath);
+        if (fi.exists() && fi.isFile() && fi.isReadable()) {
+            mSettings->setValue(SETTINGS_LAST_PROJECT_PATH, fi.path());
+            LoadProjectFile(filepath);
+        }
     }
 }
 

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="cppcheck"
-	ProjectGUID="{230A4467-25A6-3276-A1D0-CB521812CD43}"
+	ProjectGUID="{56B0F403-02CE-3F89-9A1B-E03F21240A63}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -19,8 +19,8 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.0\mkspecs\win32-msvc2008"
-				AdditionalOptions="-Zm200 -w34100 -w34189"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\..\..\Qt\qt-everywhere-opensource-src-4.7.3-vs2008-x86\mkspecs\win32-msvc2008"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -MP"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
 				DebugInformationFormat="3"
@@ -72,8 +72,8 @@
 			UseOfMfc="0">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\Qt\VS4.7.0\mkspecs\win32-msvc2008"
-				AdditionalOptions="-Zm200 -w34100 -w34189"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;..\externals&quot;,&quot;..\externals\tinyxml&quot;,..\..\..\..\Qt\qt-everywhere-opensource-src-4.7.3-vs2008-x86\mkspecs\win32-msvc2008"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -MP"
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
 				DebugInformationFormat="0"
@@ -130,11 +130,15 @@
 			<File
 				RelativePath="..\lib\checkautovariables.cpp" />
 			<File
+				RelativePath="..\lib\checkboost.cpp" />
+			<File
 				RelativePath="..\lib\checkbufferoverrun.cpp" />
 			<File
 				RelativePath="..\lib\checkclass.cpp" />
 			<File
 				RelativePath="..\lib\checkexceptionsafety.cpp" />
+			<File
+				RelativePath="..\lib\checkinternal.cpp" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.cpp" />
 			<File
@@ -184,6 +188,8 @@
 			<File
 				RelativePath="..\lib\symboldatabase.cpp" />
 			<File
+				RelativePath="..\lib\templatesimplifier.cpp" />
+			<File
 				RelativePath="threadexecutor.cpp" />
 			<File
 				RelativePath="..\lib\timer.cpp" />
@@ -213,11 +219,15 @@
 			<File
 				RelativePath="..\lib\checkautovariables.h" />
 			<File
+				RelativePath="..\lib\checkboost.h" />
+			<File
 				RelativePath="..\lib\checkbufferoverrun.h" />
 			<File
 				RelativePath="..\lib\checkclass.h" />
 			<File
 				RelativePath="..\lib\checkexceptionsafety.h" />
+			<File
+				RelativePath="..\lib\checkinternal.h" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.h" />
 			<File
@@ -266,6 +276,8 @@
 				RelativePath="..\lib\suppressions.h" />
 			<File
 				RelativePath="..\lib\symboldatabase.h" />
+			<File
+				RelativePath="..\lib\templatesimplifier.h" />
 			<File
 				RelativePath="threadexecutor.h" />
 			<File
