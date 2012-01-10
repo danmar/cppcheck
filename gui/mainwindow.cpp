@@ -848,14 +848,19 @@ void MainWindow::OpenOnlineHelp()
 
 void MainWindow::OpenProjectFile()
 {
+    const QString lastPath = mSettings->value(SETTINGS_LAST_PROJECT_PATH, QString()).toString();
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
-    QString filepath = QFileDialog::getOpenFileName(this,
-                       tr("Select Project File"),
-                       QString(),
-                       filter);
+    const QString filepath = QFileDialog::getOpenFileName(this,
+                             tr("Select Project File"),
+                             lastPath,
+                             filter);
 
     if (!filepath.isEmpty()) {
-        LoadProjectFile(filepath);
+        const QFileInfo fi(filepath);
+        if (fi.exists() && fi.isFile() && fi.isReadable()) {
+            mSettings->setValue(SETTINGS_LAST_PROJECT_PATH, fi.path());
+            LoadProjectFile(filepath);
+        }
     }
 }
 
