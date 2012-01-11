@@ -4,21 +4,31 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QFileSystemModel>
-#include <QList>
-#include <QString>
+#include <QStringList>
 #include <QPushButton>
 
 class SelectFilesModel : public QFileSystemModel {
 private:
-    QList<QString> selected;
-    QList<QString> unselected;
+    QStringList selected;
+    QStringList unselected;
 
-    int getindex(const QList<QString> &s, const QString &filepath) const {
+    /**
+     * Get index in stringlist where start of string matches. If
+     * many strings in the stringlist match then return the index
+     * for the longest string.
+     * \param s stringlist with filepaths
+     * \param filepath the filepath that is matched against the stringlist
+     */
+    int getindex(const QStringList &s, const QString &filepath) const {
+        int matchlen = 0;
+        int matchindex = -1;
         for (int i = 0; i < s.size(); ++i) {
-            if (filepath.startsWith(s[i]))
-                return i;
+            if (filepath.startsWith(s[i])) {
+                if (s[i].size() > matchlen)
+                    matchindex = i;
+            }
         }
-        return -1;
+        return matchindex;
     }
 
 public:
@@ -39,8 +49,12 @@ public:
     QVariant data(const QModelIndex& index, int role=Qt::DisplayRole) const {
         if (role == Qt::CheckStateRole) {
             const QString filepath = filePath(index);
-            if (getindex(selected,filepath) >= 0 &&
-                getindex(unselected,filepath) == -1)
+            int selindex = getindex(selected, filepath);
+            int unselindex = getindex(unselected, filepath);
+            if (selindex >= 0 && unselindex == -1)
+                return Qt::Checked;
+            if (selindex >= 0 && unselindex >= 0 &&
+                    selected[selindex].size() > unselected[unselindex].size())
                 return Qt::Checked;
 
             return Qt::Unchecked;
@@ -55,16 +69,23 @@ public:
                 // remove unchecked path
                 unselected.removeAll(filepath);
             } else if (selected.indexOf(filepath) != -1) {
-                // remove checked path
-                selected.removeAll(filepath);
+                // remove child selected paths
+                for (int i = selected.size() - 1; i >= 0; --i) {
+                    if (selected[i].startsWith(filepath))
+                        selected.removeAt(i);
+                }
 
-                // remove child unchecked paths
-                int i;
-                while ((i = getindex(unselected,filepath)) != -1) {
-                    unselected.removeAt(i);
+                // remove child unselected paths
+                for (int i = unselected.size() - 1; i >= 0; --i) {
+                    if (unselected[i].startsWith(filepath))
+                        unselected.removeAt(i);
                 }
             } else {
-                if (getindex(selected,filepath) == -1)
+                int selindex = getindex(selected, filepath);
+                int unselindex = getindex(unselected, filepath);
+                if (selindex == -1)
+                    selected.append(filepath);
+                else if (unselindex >= 0 && selected[selindex].size() < unselected[unselindex].size())
                     selected.append(filepath);
                 else
                     unselected.append(filepath);
