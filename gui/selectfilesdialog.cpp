@@ -27,6 +27,7 @@ public:
         f << "*.cpp";
         setNameFilters(f);
         setNameFilterDisables(false);
+        setRootPath("/");
     }
 
     Qt::ItemFlags flags(const QModelIndex& index) const {
