@@ -5301,7 +5301,7 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->insertToken("char");
             } else if (tok->str() == "CHAR")
                 tok->str("char");
-            else if (Token::Match(tok, "DWORD|ULONG")) {
+            else if (Token::Match(tok, "DWORD|ULONG|COLORREF")) {
                 tok->str("unsigned");
                 tok->insertToken("long");
             } else if (Token::Match(tok, "DWORD_PTR|ULONG_PTR|SIZE_T")) {
@@ -5318,7 +5318,7 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->insertToken("long");
             } else if (tok->str() == "LONG")
                 tok->str("long");
-            else if (tok->str() == "LONG_PTR") {
+            else if (Token::Match(tok, "LONG_PTR|LPARAM|LRESULT")) {
                 tok->str("long");
                 if (_settings->platformType == Settings::Win64)
                     tok->insertToken("long");
@@ -5350,8 +5350,12 @@ void Tokenizer::simplifyPlatformTypes()
             } else if (Token::Match(tok, "LPSTR|PSTR|PCHAR")) {
                 tok->str("char");
                 tok->insertToken("*");
-            } else if (Token::Match(tok, "LPVOID|PVOID|HANDLE")) {
+            } else if (Token::Match(tok, "LPVOID|PVOID|HANDLE|HBITMAP|HBRUSH|HCOLORSPACE|HCURSOR|HDC|HFONT|HGDIOBJ|HGLOBAL|HICON|HINSTANCE|HKEY|HLOCAL|HMENU|HMETAFILE|HMODULE|HPALETTE|HPEN|HRGN|HRSRC|HWND")) {
                 tok->str("void");
+                tok->insertToken("*");
+            } else if ((tok->str() == "PHANDLE")) {
+                tok->str("void");
+                tok->insertToken("*");
                 tok->insertToken("*");
             } else if (Token::Match(tok, "LPWORD|PWORD")) {
                 tok->str("unsigned");
@@ -5359,17 +5363,15 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->insertToken("short");
             } else if (tok->str() == "SHORT")
                 tok->str("short");
-            else if (tok->str() == "UINT") {
+            else if (Token::Match(tok, "UINT|MMRESULT|SOCKET")) {
                 tok->str("unsigned");
                 tok->insertToken("int");
-            } else if (tok->str() == "UINT_PTR") {
+            } else if (Token::Match(tok, "UINT_PTR|WPARAM")) {
                 tok->str("unsigned");
-                if (_settings->platformType == Settings::Win64) {
+                tok->insertToken("long");
+                if (_settings->platformType == Settings::Win64)
                     tok->insertToken("long");
-                    tok->insertToken("long");
-                } else
-                    tok->insertToken("long");
-            } else if (Token::Match(tok, "USHORT|WORD|WCHAR|wchar_t")) {
+            } else if (Token::Match(tok, "USHORT|WORD|WCHAR|ATOM|wchar_t")) {
                 tok->str("unsigned");
                 tok->insertToken("short");
             } else if (tok->str() == "VOID")
