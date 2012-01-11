@@ -6,7 +6,7 @@
 
 class SelectFilesDialog : public QDialog {
 public:
-    SelectFilesDialog();
+    SelectFilesDialog(QWidget *w);
 };
 
 #endif

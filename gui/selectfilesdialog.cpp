@@ -103,7 +103,7 @@ public:
 
 
 
-SelectFilesDialog::SelectFilesDialog() : QDialog()
+SelectFilesDialog::SelectFilesDialog(QWidget *w) : QDialog(w)
 {
     setModal(true);
 
