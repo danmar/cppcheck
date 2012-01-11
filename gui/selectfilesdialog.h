@@ -4,9 +4,17 @@
 
 #include <QDialog>
 
+namespace Ui {
+    class SelectFilesDialog;
+}
+
 class SelectFilesDialog : public QDialog {
 public:
-    SelectFilesDialog(QWidget *w);
+    explicit SelectFilesDialog(QWidget *w);
+    ~SelectFilesDialog();
+
+private:
+    Ui::SelectFilesDialog *ui;
 };
 
 #endif

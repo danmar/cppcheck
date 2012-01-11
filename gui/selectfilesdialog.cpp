@@ -1,5 +1,6 @@
 
 #include "selectfilesdialog.h"
+#include "ui_selectfilesdialog.h"
 
 #include <QTreeView>
 #include <QVBoxLayout>
@@ -100,26 +101,20 @@ public:
     }
 };
 
+SelectFilesDialog::~SelectFilesDialog() {
+    delete ui;
+}
 
 
-
-SelectFilesDialog::SelectFilesDialog(QWidget *w) : QDialog(w)
+SelectFilesDialog::SelectFilesDialog(QWidget *w) :
+    QDialog(w),
+    ui(new Ui::SelectFilesDialog)
 {
-    setModal(true);
+    ui->setupUi(this);
 
-    resize(300,400);
-
-    QTreeView *treeView = new QTreeView(this);
-    treeView->setModel(new SelectFilesModel);
+    ui->treeView->setModel(new SelectFilesModel);
     for (int i = 1; i < 4; ++i)
-        treeView->setColumnHidden(i, true);
-
-    QPushButton *cancel = new QPushButton("Cancel", this);
-    connect(cancel,SIGNAL(clicked()),this,SLOT(accept()));
-
-    setLayout(new QVBoxLayout(this));
-    layout()->addWidget(treeView);
-    layout()->addWidget(cancel);
+        ui->treeView->setColumnHidden(i, true);
 }
 
 

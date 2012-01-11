@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = cppcheck-gui
-CONFIG += warn_on
+CONFIG += warn_on debug
 DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
@@ -30,7 +30,8 @@ FORMS = about.ui \
         projectfile.ui \
         resultsview.ui \
         settings.ui \
-        stats.ui
+        stats.ui \
+        selectfilesdialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_en.ts \
