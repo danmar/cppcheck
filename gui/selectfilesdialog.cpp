@@ -1,6 +1,7 @@
 
 #include "selectfilesdialog.h"
 #include "ui_selectfilesdialog.h"
+#include "filelist.h"
 
 #include <QTreeView>
 #include <QVBoxLayout>
@@ -34,9 +35,13 @@ private:
 
 public:
     SelectFilesModel() : QFileSystemModel() {
-        QStringList f;
-        f << "*.cpp";
-        setNameFilters(f);
+        class FileLister : private FileList {
+        public:
+            static QStringList filters() {
+                return GetDefaultFilters();
+            }
+        };
+        setNameFilters(FileLister::filters());
         setNameFilterDisables(false);
         setRootPath("/");
     }
@@ -99,11 +104,31 @@ public:
         }
         return QFileSystemModel::setData(index, value, role);
     }
+
+    QStringList getFiles() const {
+        QStringList ret;
+
+        // List all files in "selected" folders..
+        FileList fileLister;
+        fileLister.AddPathList(selected);
+        ret = fileLister.GetFileList();
+
+        // Remove all items from ret that are unselected but not selected..
+        for (int i = ret.size() - 1; i >= 0; i--) {
+            int unselindex = getindex(unselected, ret[i]);
+            if (unselindex == -1)
+                continue;
+
+            // both selected and unselected, check which to rely on
+            int selindex = getindex(selected, ret[i]);
+            if (selected[selindex].size() < unselected[unselindex].size())
+                ret.removeAt(i);
+        }
+
+        return ret;
+    }
 };
 
-SelectFilesDialog::~SelectFilesDialog() {
-    delete ui;
-}
 
 
 SelectFilesDialog::SelectFilesDialog(QWidget *w) :
@@ -112,9 +137,19 @@ SelectFilesDialog::SelectFilesDialog(QWidget *w) :
 {
     ui->setupUi(this);
 
-    ui->treeView->setModel(new SelectFilesModel);
+    selectfilesmodel = new SelectFilesModel;
+
+    ui->treeView->setModel(selectfilesmodel);
     for (int i = 1; i < 4; ++i)
         ui->treeView->setColumnHidden(i, true);
 }
 
+SelectFilesDialog::~SelectFilesDialog()
+{
+    delete ui;
+}
 
+QStringList SelectFilesDialog::getFiles() const
+{
+    return selectfilesmodel->getFiles();
+}
