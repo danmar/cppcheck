@@ -60,7 +60,7 @@ public:
             if (selindex >= 0 && unselindex == -1)
                 return Qt::Checked;
             if (selindex >= 0 && unselindex >= 0 &&
-                    selected[selindex].size() > unselected[unselindex].size())
+                selected[selindex].size() > unselected[unselindex].size())
                 return Qt::Checked;
 
             return Qt::Unchecked;

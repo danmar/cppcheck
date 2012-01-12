@@ -665,12 +665,33 @@ private:
     }
 
     void suppressionsNoFile() {
-        // TODO: Fails because there is no suppr.txt file!
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
-        Settings settings;
-        CmdLineParser parser(&settings);
-        TODO_ASSERT_EQUALS(true, false, parser.ParseFromArgs(3, argv));
+        {
+            CLEAR_REDIRECT_OUTPUT;
+            const char *argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS(false, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
+        }
+
+        {
+            CLEAR_REDIRECT_OUTPUT;
+            const char *argv[] = {"cppcheck", "--suppressions-list=a.suppr,b.suppr", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS(true, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
+        }
+
+        {
+            CLEAR_REDIRECT_OUTPUT;
+            const char *argv[] = {"cppcheck", "--suppressions-list=a.suppr b.suppr", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT_EQUALS(false, parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS(true, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
+        }
     }
 
     void suppressionSingle() {

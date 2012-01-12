@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -178,6 +179,15 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 std::string message("cppcheck: Couldn't open the file: \"");
                 message += std::string(filename);
                 message += "\".";
+                if (count(filename.begin(), filename.end(), ',') > 0 ||
+                    count(filename.begin(), filename.end(), '.') > 1) {
+                    // If user tried to pass multiple files (we can only guess that)
+                    // e.g. like this: --suppressions-list=a.txt,b.txt
+                    // print more detailed error message to tell user how he can solve the problem
+                    message += "\nIf you want to pass two files, you can do it e.g. like this:";
+                    message += "\n    cppcheck --suppressions-list=a.txt --suppressions-list=b.txt file.cpp";
+                }
+
                 PrintMessage(message);
                 return false;
             }

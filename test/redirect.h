@@ -50,6 +50,17 @@ public:
         output << _out.str();
     }
 
+    /** Return what would be printed to cout. See also clearOutput() */
+    std::string getOutput() {
+        return _out.str();
+    }
+
+    /** Normally called after getOutput() to prevent same text to be returned
+    twice. */
+    void clearOutput() {
+        _out.str("");
+    }
+
 private:
     std::stringstream _out;
     std::stringstream _err;
@@ -58,5 +69,7 @@ private:
 };
 
 #define REDIRECT RedirectOutputError redir;
+#define GET_REDIRECT_OUTPUT redir.getOutput()
+#define CLEAR_REDIRECT_OUTPUT redir.clearOutput()
 
 #endif
