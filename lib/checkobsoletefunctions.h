@@ -94,16 +94,32 @@ private:
 
         _obsoletePosixFunctions["rindex"] = "Found obsolete function 'rindex'. It is recommended to use the function 'strrchr' instead";
 
-        _obsoletePosixFunctions["pthread_attr_getstackaddr"] = "Found obsolete function 'pthread_attr_getstackaddr'.It is recommended that new applications use the 'pthread_attr_getstack' function";
-        _obsoletePosixFunctions["pthread_attr_setstackaddr"] = "Found obsolete function 'pthread_attr_setstackaddr'.It is recommended that new applications use the 'pthread_attr_setstack' function";
+        _obsoletePosixFunctions["pthread_attr_getstackaddr"] = "Found obsolete function 'pthread_attr_getstackaddr'. It is recommended that new applications use the 'pthread_attr_getstack' function";
+        _obsoletePosixFunctions["pthread_attr_setstackaddr"] = "Found obsolete function 'pthread_attr_setstackaddr'. It is recommended that new applications use the 'pthread_attr_setstack' function";
 
-        _obsoletePosixFunctions["scalbln"] = "Found obsolete function 'scalb'.It is recommended to use either 'scalbln', 'scalblnf' or 'scalblnl' instead of this function";
+        _obsoletePosixFunctions["scalbln"] = "Found obsolete function 'scalb'. It is recommended to use either 'scalbln', 'scalblnf' or 'scalblnl' instead of this function";
 
-        _obsoletePosixFunctions["ualarm"] = "Found obsolete function 'ualarm'.It is recommended to use either 'timer_create', 'timer_delete', 'timer_getoverrun', 'timer_gettime', or 'timer_settime' instead of this function";
+        _obsoletePosixFunctions["ualarm"] = "Found obsolete function 'ualarm'. It is recommended to use either 'timer_create', 'timer_delete', 'timer_getoverrun', 'timer_gettime', or 'timer_settime' instead of this function";
 
         _obsoletePosixFunctions["vfork"] = "Found obsolete function 'vfork'. It is recommended to use the function 'fork' instead";
 
         _obsoletePosixFunctions["wcswcs"] = "Found obsolete function 'wcswcs'. It is recommended to use the function 'wcsstr' instead";
+
+        _obsoletePosixFunctions["rand_r"] = "Found obsolete function 'rand_r'. It is recommended to use the function 'rand' instead";
+
+        _obsoletePosixFunctions["tmpnam"] = "Found obsolete function 'tmpnam'. It is recommended to use either 'tmpfile', 'mkstemp', or 'mkdtemp' instead for this function";
+
+        _obsoletePosixFunctions["tmpnam_r"] = "Found obsolete function 'tmpnam_r'. It is recommended to use either 'tmpfile', 'mkstemp', or 'mkdtemp' instead for this function";
+
+        _obsoletePosixFunctions["utime"] = "Found obsolete function 'utime'. It is recommended to use the function 'utimensat' instead";
+
+        _obsoletePosixFunctions["asctime"] = "Found obsolete function 'asctime'. It is recommended to use the function 'strftime' instead";
+
+        _obsoletePosixFunctions["asctime_r"] = "Found obsolete function 'asctime_r'. It is recommended to use the function 'strftime' instead";
+
+        _obsoletePosixFunctions["ctime"] = "Found obsolete function 'ctime'. It is recommended to use the function 'strftime' instead";
+
+        _obsoletePosixFunctions["ctime_r"] = "Found obsolete function 'ctime'. It is recommended to use the function 'strftime' instead";
 
         _obsoleteStandardFunctions["gets"] = "Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n"
                                              "Found obsolete function 'gets'. With gets you'll get buffer overruns if the input data too big for the buffer. It is recommended to use the function 'fgets' instead.";

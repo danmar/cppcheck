@@ -63,10 +63,10 @@ private:
     /** init nonreentrant functions list ' */
     void initNonReentrantFunctions() {
         static const char * const non_reentrant_functions_list[] = {
-            "ctime", "localtime", "gmtime", "asctime", "strtok", "gethostbyname", "gethostbyaddr", "getservbyname"
-            , "getservbyport", "crypt", "ttyname", "rand", "gethostbyname2"
+            "localtime", "gmtime", "strtok", "gethostbyname", "gethostbyaddr", "getservbyname"
+            , "getservbyport", "crypt", "ttyname", "gethostbyname2"
             , "getprotobyname", "getnetbyname", "getnetbyaddr", "getrpcbyname", "getrpcbynumber", "getrpcent"
-            , "ctermid", "tmpnam", "readdir", "getlogin", "getpwent", "getpwnam", "getpwuid", "getspent"
+            , "ctermid", "readdir", "getlogin", "getpwent", "getpwnam", "getpwuid", "getspent"
             , "fgetspent", "getspnam", "getgrnam", "getgrgid", "getnetgrent", "tempnam", "fgetpwent"
             , "fgetgrent", "ecvt", "gcvt", "getservent", "gethostent", "getgrent", "fcvt"
         };

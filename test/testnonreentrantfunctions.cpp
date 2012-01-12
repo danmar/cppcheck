@@ -91,9 +91,9 @@ private:
         // Passed as function argument
         check("int f()\n"
               "{\n"
-              "    printf(\"Magic guess: %d\n\", rand());\n"
+              "    printf(\"Magic guess: %d\n\", getpwent());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Found non reentrant function 'rand'. For threadsafe applications it is recommended to use the reentrant replacement function 'rand_r'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Found non reentrant function 'getpwent'. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'\n", errout.str());
 
         // Pass return value
         check("int f()\n"
@@ -106,12 +106,12 @@ private:
         // Access via global namespace
         check("int f()\n"
               "{\n"
-              "    ::rand();\n"
+              "    ::getpwent();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Found non reentrant function 'rand'. For threadsafe applications it is recommended to use the reentrant replacement function 'rand_r'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Found non reentrant function 'getpwent'. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'\n", errout.str());
 
         // Be quiet on function definitions
-        check("int rand()\n"
+        check("int getpwent()\n"
               "{\n"
               "    return 123;\n"
               "}\n");
@@ -120,14 +120,14 @@ private:
         // Be quiet on other namespaces
         check("int f()\n"
               "{\n"
-              "    foobar::rand();\n"
+              "    foobar::getpwent();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // Be quiet on class member functions
         check("int f()\n"
               "{\n"
-              "    foobar.rand();\n"
+              "    foobar.getpwent();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
