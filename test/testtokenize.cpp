@@ -57,7 +57,8 @@ private:
         TEST_CASE(tokenize23);  // tokenize "return - __LINE__;"
 
         // don't freak out when the syntax is wrong
-        TEST_CASE(wrong_syntax);
+        TEST_CASE(wrong_syntax1);
+        TEST_CASE(wrong_syntax2);
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
 
         TEST_CASE(minus);
@@ -617,7 +618,7 @@ private:
         ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
     }
 
-    void wrong_syntax() {
+    void wrong_syntax1() {
         {
             errout.str("");
             const std::string code("TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))");
@@ -646,6 +647,18 @@ private:
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (debug) Failed to parse 'typedef B :: C ( A :: * f ) ( ) ;'. The checking continues anyway.\n", errout.str());
         }
+    }
+
+    void wrong_syntax2() {   // #3504
+        const char code[] = "void f() {\n"
+                            "    X<int> x;\n"
+                            "    Y<int, int, int, int, int, char> y;\n"
+                            "}\n"
+                            "\n"
+                            "void G( template <typename T> class (j) ) {}";
+
+        // don't segfault..
+        tokenizeAndStringify(code);
     }
 
     void wrong_syntax_if_macro() {

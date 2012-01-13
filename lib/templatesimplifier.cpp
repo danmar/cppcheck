@@ -240,6 +240,9 @@ void TemplateSimplifier::removeTemplates(Token *tok)
 
             if (tok2->str() == "(") {
                 tok2 = tok2->link();
+            } else if (tok2->str() == ")") {  // garbage code! (#3504)
+                Token::eraseTokens(tok,tok2);
+                tok->deleteThis();
             }
 
             else if (tok2->str() == "{") {
