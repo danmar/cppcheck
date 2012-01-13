@@ -775,7 +775,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             }
 
             if (Token::simpleMatch(tok->previous(), "* 1") || Token::simpleMatch(tok, "1 *")) {
-                if (tok->previous()->isOp())
+                if (tok->previous() && tok->previous()->isOp())
                     tok = tok->previous();
                 tok->deleteNext();
                 tok->deleteThis();

@@ -5900,6 +5900,8 @@ private:
                       tokenizeAndStringify("int f(int a) { return 0 * a; }", true));
         ASSERT_EQUALS("bool f ( int i ) { switch ( i ) { case 15 : ; return true ; } }",
                       tokenizeAndStringify("bool f(int i) { switch (i) { case 10 + 5: return true; } }", true));
+        // ticket #3512 - Don't crash on garbage code
+        ASSERT_EQUALS("p = const", tokenizeAndStringify("1 *p = const", true));
     }
 
     void simplifyCompoundAssignment() {
