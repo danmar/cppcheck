@@ -26,6 +26,12 @@ private:
         int matchindex = -1;
         for (int i = 0; i < s.size(); ++i) {
             if (filepath.startsWith(s[i])) {
+                // not a real match of paths..
+                if (s[i].size() < filepath.size() && filepath[s[i].size()] != '/')
+                    continue;
+
+                // paths match. the return value is the index for the
+                // longest match
                 if (s[i].size() > matchlen)
                     matchindex = i;
             }
