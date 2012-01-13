@@ -474,7 +474,7 @@ private:
         if (tok.varId()) {
             // array variable passed as function parameter..
             if (Token::Match(tok.previous(), "[(,] %var% [+-,)]")) {
-                if (Token::Match(tok.previous(), "( %var% ) ="))
+                if (Token::Match(tok.previous(), "( %var% ) )| ="))
                     ExecutionPath::bailOutVar(checks, tok.varId());
                 else
                     use(checks, &tok);
