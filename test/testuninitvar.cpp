@@ -2019,6 +2019,16 @@ private:
                         "    typeof(*abc);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #3486 - Don't crash garbage code
+        checkUninitVar2("void f()\n"
+                        "{\n"
+                        "  (\n"
+                        "    x;\n"
+                        "    int a, a2, a2*x; if () ;\n"
+                        "  )\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a2\n", errout.str());
     }
 };
 
