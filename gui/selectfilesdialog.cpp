@@ -148,6 +148,11 @@ SelectFilesDialog::SelectFilesDialog(QWidget *w) :
     ui->treeView->setModel(selectfilesmodel);
     for (int i = 1; i < 4; ++i)
         ui->treeView->setColumnHidden(i, true);
+
+    // Change text of "OK" button to "Check"
+    QPushButton *okbutton = ui->buttonBox->button(QDialogButtonBox::Ok);
+    if (okbutton)
+        okbutton->setText(tr("Check"));
 }
 
 SelectFilesDialog::~SelectFilesDialog()
