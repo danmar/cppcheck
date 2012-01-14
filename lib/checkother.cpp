@@ -3066,15 +3066,12 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
 {
     if (inconclusive) {
         reportInconclusiveError(tok, Severity::style, "unsignedPositive",
-                                "Checking if unsigned variable '" + varname + "' is positive is always true. This might be a false warning.\n"
-                                "Checking if unsigned variable '" + varname + "' is positive is always true. "
-                                "An unsigned variable will always be positive so it is either pointless or "
-                                "an error to check if it is. It's not known if the used constant is a "
+                                "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. This might be a false warning.\n"
+                                "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. "
+                                "It's not known if the used constant is a "
                                 "template parameter or not and therefore this message might be a false warning");
     } else {
         reportError(tok, Severity::style, "unsignedPositive",
-                    "Checking if unsigned variable '" + varname + "' is positive is always true.\n"
-                    "An unsigned variable will always be positive so it is either pointless or "
-                    "an error to check if it is.");
+                    "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.");
     }
 }

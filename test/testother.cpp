@@ -4153,14 +4153,14 @@ private:
             "  for(unsigned char i = 10; i >= 0; i--)"
             "    printf(\"%u\", i);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'i' is positive is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) An unsigned variable 'i' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check_signOfUnsignedVariable(
             "void foo(bool b) {\n"
             "  for(unsigned int i = 10; b || i >= 0; i--)"
             "    printf(\"%u\", i);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'i' is positive is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) An unsigned variable 'i' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check_signOfUnsignedVariable(
             "bool foo(unsigned int x) {\n"
@@ -4200,7 +4200,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) An unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check_signOfUnsignedVariable(
             "bool foo(int x) {\n"
@@ -4249,7 +4249,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) An unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check_signOfUnsignedVariable(
             "bool foo(int x, bool y) {\n"
@@ -4298,7 +4298,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) An unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check_signOfUnsignedVariable(
             "bool foo(int x, bool y) {\n"
@@ -4347,7 +4347,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is positive is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) An unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check_signOfUnsignedVariable(
             "bool foo(int x, bool y) {\n"
