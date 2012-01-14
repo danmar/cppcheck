@@ -140,7 +140,7 @@ void CheckStl::iterators()
             // taking the result of an erase is ok
             else if (Token::Match(tok2, "%varid% = %var% . erase (", iteratorId)) {
                 // the returned iterator is valid
-                validatingToken = tok2->tokAt(5)->link();
+                validatingToken = tok2->linkAt(5);
                 tok2 = tok2->tokAt(5);
             }
 
