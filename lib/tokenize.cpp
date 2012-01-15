@@ -4169,7 +4169,7 @@ bool Tokenizer::simplifyIfAddBraces()
 
         else if (tok->str() == "else") {
             // An else followed by an if or brace don't need to be processed further
-            if (Token::Match(tok, "else if|{"))
+            if (Token::Match(tok->next(), "if|{"))
                 continue;
         }
 
@@ -7019,22 +7019,25 @@ void Tokenizer::simplifyEnum()
             tok = tok->previous();
         }
 
-        if (Token::Match(tok, "class|struct|namespace %any%") &&
+        if (Token::Match(tok, "class|struct|namespace") && tok->next() &&
             (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
             className = tok->next()->str();
             classLevel = 0;
-            continue;
         } else if (tok->str() == "}") {
             --classLevel;
             if (classLevel < 0)
                 className = "";
-
-            continue;
         } else if (tok->str() == "{") {
             ++classLevel;
-            continue;
-        } else if (Token::Match(tok, "enum class|struct| {|:") ||
-                   Token::Match(tok, "enum class|struct| %type% {|:|;")) {
+        } else if (tok->str() == "enum") {
+            Token *temp = tok->next();
+            if (!temp)
+                break;
+            if (Token::Match(temp, "class|struct"))
+                temp = temp->next();
+            if (!Token::Match(temp, "[{:]") &&
+                (!temp->isName() || !Token::Match(temp->next(), "[{:;]")))
+                continue;
             Token *start = tok;
             Token *enumType = 0;
             Token *typeTokenStart = 0;
@@ -7045,7 +7048,7 @@ void Tokenizer::simplifyEnum()
                 tok->deleteNext();
 
             // check for name
-            if (Token::Match(tok->next(), "%type%")) {
+            if (tok->next()->isName()) {
                 enumType = tok->next();
                 tok = tok->next();
             }
