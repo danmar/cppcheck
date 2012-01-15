@@ -4146,30 +4146,30 @@ bool Tokenizer::simplifyIfAddBraces()
         if (Token::Match(tok, "if|for|while|BOOST_FOREACH (")) {
 
             if (tok->strAt(2) == ")") {
-                //no arguments, abort
+                //no arguments inside round braces, abort
                 syntaxError(tok);
                 return false;
             }
             // don't add "{}" around ";" in "do {} while();" (#609)
             const Token *prev = tok->previous();
-            if (Token::simpleMatch(prev, "} while") &&
-                prev->link() &&
-                prev->link()->previous() &&
-                prev->link()->previous()->str() == "do") {
-                continue;
+            if (prev && prev->str() == "}" && tok->str() == "while") {
+                prev = prev->link()->previous();
+                if (prev && prev->str() == "do")
+                    continue;
             }
 
             // Goto the ending ')'
             tok = tok->next()->link();
 
-            // ')' should be followed by '{'
-            if (Token::simpleMatch(tok, ") {"))
+            // there's already '{' after ')', don't bother
+            if (tok->next() && tok->next()->str() == "{")
                 continue;
         }
 
         else if (tok->str() == "else") {
+            const Token *tok2 = tok->next();
             // An else followed by an if or brace don't need to be processed further
-            if (Token::Match(tok->next(), "if|{"))
+            if (tok2 && (tok2->str() == "if" || tok2->str() == "{"))
                 continue;
         }
 
@@ -4177,7 +4177,7 @@ bool Tokenizer::simplifyIfAddBraces()
             continue;
         }
 
-        // If there is no code after the if(), abort
+        // If there is no code after the 'if()' or 'else', abort
         if (!tok->next()) {
             syntaxError(tok);
             return false;
@@ -4188,7 +4188,7 @@ bool Tokenizer::simplifyIfAddBraces()
         tok = tok->next();
         Token *tempToken = tok;
 
-        bool innerIf = Token::simpleMatch(tempToken->next(), "if");
+        bool innerIf = (tempToken->next() && tempToken->next()->str() == "if");
 
         if (Token::simpleMatch(tempToken->next(), "do {"))
             tempToken = tempToken->linkAt(2);
@@ -4201,7 +4201,12 @@ bool Tokenizer::simplifyIfAddBraces()
         // * if (cond1) if (cond2) ; else ;
         while (NULL != (tempToken = tempToken->next())) {
             if (tempToken->str() == "{") {
-                if (Token::simpleMatch(tempToken->previous(),"else {")) {
+                if (tempToken->previous()->str() == "=") {
+                    tempToken = tempToken->link();
+                    continue;
+                }
+
+                if (tempToken->previous()->str() == "else") {
                     if (innerIf)
                         tempToken = tempToken->link();
                     else
@@ -4209,12 +4214,17 @@ bool Tokenizer::simplifyIfAddBraces()
                     break;
                 }
                 tempToken = tempToken->link();
-                if (!tempToken || !tempToken->next())
+                const Token *tempToken1 = tempToken->next();
+                if (!tempToken1)
                     break;
-                if (Token::simpleMatch(tempToken, "} else") && !Token::Match(tempToken->tokAt(2), "if|{"))
-                    innerIf = false;
-                else if (tempToken->next()->isName() && tempToken->next()->str() != "else")
-                    break;
+                if (tempToken1->isName()) {
+                    if (tempToken1->str() == "else") {
+                        tempToken1 = tempToken1->next();
+                        if (!tempToken1 || (tempToken1->str() != "if" && tempToken1->str() != "{"))
+                            innerIf = false;
+                    } else
+                        break;
+                }
                 continue;
             }
 
@@ -4233,11 +4243,12 @@ bool Tokenizer::simplifyIfAddBraces()
                 if (!innerIf)
                     break;
 
-                if (Token::simpleMatch(tempToken, "; else if"))
-                    ;
-                else if (Token::simpleMatch(tempToken, "; else"))
-                    innerIf = false;
-                else
+                const Token *tempToken1 = tempToken->next();
+                if (tempToken1 && tempToken1->str() == "else") {
+                    tempToken1 = tempToken1->next();
+                    if (!tempToken1 || tempToken1->str() != "if")
+                        innerIf = false;
+                } else
                     break;
             }
         }
