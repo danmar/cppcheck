@@ -153,6 +153,8 @@ private:
 
         TEST_CASE(checkForSuspiciousSemicolon1);
         TEST_CASE(checkForSuspiciousSemicolon2);
+
+        TEST_CASE(checkDoubleFree);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false) {
@@ -175,7 +177,6 @@ private:
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
-
         checkOther.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
@@ -4449,6 +4450,225 @@ private:
             "  }\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkDoubleFree() {
+        check(
+            "void foo(char *p) {\n"
+            "  free(p);\n"
+            "  free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p, char *r) {\n"
+            "  free(p);\n"
+            "  free(r);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo() {\n"
+            "  free(p);\n"
+            "  free(r);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  if (x < 3) free(p);\n"
+            "  else if (x > 9) free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  free(p);\n"
+            "  getNext(&p);\n"
+            "  free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  free(p);\n"
+            "  bar();\n"
+            "  free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  free(p);\n"
+            "  printf(\"Freed memory at location %x\", (unsigned int) p);\n"
+            "  free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(DIR *p) {\n"
+            "  closedir(p);\n"
+            "  closedir(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Directory handle 'p' closed twice.\n", errout.str());
+
+        check(
+            "void foo(DIR *p, DIR *r) {\n"
+            "  closedir(p);\n"
+            "  closedir(r);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(DIR *p) {\n"
+            "  if (x < 3) closedir(p);\n"
+            "  else if (x > 9) closedir(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(DIR *p) {\n"
+            "  closedir(p);\n"
+            "  gethandle(&p);\n"
+            "  closedir(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(DIR *p) {\n"
+            "  closedir(p);\n"
+            "  gethandle();\n"
+            "  closedir(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Directory handle 'p' closed twice.\n", errout.str());
+
+        check(
+            "void foo(Data* p) {\n"
+            "  free(p->a);\n"
+            "  free(p->b);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void f() {\n"
+            "    char *p = malloc(100);\n"
+            "    if (x) {\n"
+            "        free(p);\n"
+            "        bailout();\n"
+            "    }\n"
+            "    free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void f() {\n"
+            "    char *p = malloc(100);\n"
+            "    if (x) {\n"
+            "        free(p);\n"
+            "		 x = 0;\n"
+            "    }\n"
+            "    free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void f() {\n"
+            "    char *p = do_something();\n"
+            "    free(p);\n"
+            "    p = do_something();\n"
+            "    free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  g_free(p);\n"
+            "  g_free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p, char *r) {\n"
+            "  g_free(p);\n"
+            "  g_free(r);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  g_free(p);\n"
+            "  getNext(&p);\n"
+            "  g_free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  g_free(p);\n"
+            "  bar();\n"
+            "  g_free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete p;\n"
+            "  delete p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p, char *r) {\n"
+            "  delete p;\n"
+            "  delete r;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete p;\n"
+            "  getNext(&p);\n"
+            "  delete p;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete p;\n"
+            "  bar();\n"
+            "  delete p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete[] p;\n"
+            "  delete[] p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p, char *r) {\n"
+            "  delete[] p;\n"
+            "  delete[] r;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete[] p;\n"
+            "  getNext(&p);\n"
+            "  delete[] p;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete[] p;\n"
+            "  bar();\n"
+            "  delete[] p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
     }
 
     void coutCerrMisusage() {
