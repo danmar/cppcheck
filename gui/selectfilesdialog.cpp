@@ -39,6 +39,29 @@ private:
         return matchindex;
     }
 
+    bool partiallySelected(const QString &filepath, int selindex = -2) const {
+        if (selindex == -2)
+            selindex = getindex(selected, filepath);
+
+        const QString filepath2 = filepath.endsWith("/") ? filepath : (filepath + "/");
+
+        if (selindex == -1) {
+            for (int i = 0; i < selected.size(); ++i) {
+                if (selected[i].startsWith(filepath2)) {
+                    return true;
+                }
+            }
+        }
+
+        for (int i = 0; i < unselected.size(); ++i) {
+            if (unselected[i].startsWith(filepath2)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 public:
     SelectFilesModel() : QFileSystemModel() {
         class FileLister : private FileList {
@@ -61,14 +84,21 @@ public:
     QVariant data(const QModelIndex& index, int role=Qt::DisplayRole) const {
         if (role == Qt::CheckStateRole) {
             const QString filepath = filePath(index);
-            int selindex = getindex(selected, filepath);
-            int unselindex = getindex(unselected, filepath);
+            const int selindex = getindex(selected, filepath);
+            const int unselindex = getindex(unselected, filepath);
+
+            // If some children are not checked then this item should be partially checked..
+            if (partiallySelected(filepath, selindex))
+                return Qt::PartiallyChecked;
+
+            // Is item selected but not unselected?
             if (selindex >= 0 && unselindex == -1)
                 return Qt::Checked;
             if (selindex >= 0 && unselindex >= 0 &&
                 selected[selindex].size() > unselected[unselindex].size())
                 return Qt::Checked;
 
+            // Item is either not selected at all or else it is unselected
             return Qt::Unchecked;
         }
         return QFileSystemModel::data(index, role);
@@ -77,10 +107,13 @@ public:
     bool setData(const QModelIndex& index, const QVariant& value, int role) {
         if (role == Qt::CheckStateRole) {
             const QString filepath = filePath(index);
+
+            bool partiallyChecked = partiallySelected(filepath);
+
             if (unselected.indexOf(filepath) != -1) {
                 // remove unchecked path
                 unselected.removeAll(filepath);
-            } else if (selected.indexOf(filepath) != -1) {
+            } else if (partiallyChecked || selected.indexOf(filepath) != -1) {
                 // remove child selected paths
                 for (int i = selected.size() - 1; i >= 0; --i) {
                     if (selected[i].startsWith(filepath))
@@ -92,9 +125,13 @@ public:
                     if (unselected[i].startsWith(filepath))
                         unselected.removeAt(i);
                 }
+
+                // If partialChecked then select this item
+                if (partiallyChecked)
+                    selected.append(filepath);
             } else {
-                int selindex = getindex(selected, filepath);
-                int unselindex = getindex(unselected, filepath);
+                const int selindex = getindex(selected, filepath);
+                const int unselindex = getindex(unselected, filepath);
                 if (selindex == -1)
                     selected.append(filepath);
                 else if (unselindex >= 0 && selected[selindex].size() < unselected[unselindex].size())
@@ -105,6 +142,13 @@ public:
 
             if (rowCount(index) > 0)
                 emit(dataChanged(index, index.child(rowCount(index)-1,0)));
+
+            // update parents
+            QModelIndex parent = index.parent();
+            while (parent != QModelIndex()) {
+                emit(dataChanged(parent,parent));
+                parent = parent.parent();
+            }
 
             return true;
         }
