@@ -434,23 +434,14 @@ void CheckNullPointer::nullPointerLinkedList()
                 const std::string varname(tok2->str());
 
                 // Check usage of dereferenced variable in the loop..
-                unsigned int indentlevel3 = 0;
-                for (const Token *tok3 = tok1->next()->link(); tok3; tok3 = tok3->next()) {
-                    if (tok3->str() == "{")
-                        ++indentlevel3;
-                    else if (tok3->str() == "}") {
-                        if (indentlevel3 <= 1)
-                            break;
-                        --indentlevel3;
-                    }
-
+                for (const Token *tok3 = i->classStart; tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
                     // TODO: are there false negatives for "while ( %varid% ||"
-                    else if (Token::Match(tok3, "while ( %varid% &&|)", varid)) {
+                    if (Token::Match(tok3, "while ( %varid% &&|)", varid)) {
                         // Make sure there is a "break" or "return" inside the loop.
                         // Without the "break" a null pointer could be dereferenced in the
                         // for statement.
                         // indentlevel4 is a counter for { and }. When scanning the code with tok4
-                        unsigned int indentlevel4 = indentlevel3;
+                        unsigned int indentlevel4 = 1;
                         for (const Token *tok4 = tok3->next()->link(); tok4; tok4 = tok4->next()) {
                             if (tok4->str() == "{")
                                 ++indentlevel4;

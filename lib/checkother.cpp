@@ -1747,8 +1747,7 @@ void CheckOther::checkVariableScope()
             continue;
 
         // Walk through all tokens..
-        unsigned int indentlevel = 0;
-        for (const Token *tok = scope->classStart; tok; tok = tok->next()) {
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Skip function local class and struct declarations..
             if ((tok->str() == "class") || (tok->str() == "struct") || (tok->str() == "union")) {
                 for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
@@ -1764,15 +1763,7 @@ void CheckOther::checkVariableScope()
                     break;
             }
 
-            else if (tok->str() == "{") {
-                ++indentlevel;
-            } else if (tok->str() == "}") {
-                if (!indentlevel)
-                    break;
-                --indentlevel;
-            }
-
-            if (indentlevel > 0 && Token::Match(tok, "[{};]")) {
+            if (Token::Match(tok, "[{};]")) {
                 // First token of statement..
                 const Token *tok1 = tok->next();
                 if (! tok1)
