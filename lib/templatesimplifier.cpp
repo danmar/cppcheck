@@ -76,7 +76,7 @@ const Token* TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(Token *to
     // check for more complicated syntax errors when using templates..
     for (const Token *tok = tokens; tok; tok = tok->next()) {
         // skip executing scopes..
-        if (Token::Match(tok, ") const| {") || Token::Match(tok, "[,=] {")) {
+        if (Token::simpleMatch(tok, ") {") || Token::Match(tok, ") %var% {") || Token::Match(tok, "[,=] {")) {
             while (tok->str() != "{")
                 tok = tok->next();
             tok = tok->link();
