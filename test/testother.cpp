@@ -2027,9 +2027,9 @@ private:
               "    fclose(file);\n"
               "    return b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n"
+                      "[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
+                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
     }
 
     void testScanf2() {
@@ -2044,9 +2044,9 @@ private:
               "    fclose(file);\n"
               "    return b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n"
+                      "[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
+                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
     }
 
     void testScanf3() {
@@ -2212,6 +2212,7 @@ private:
               "    printf(\"%G\", bp);\n"
               "    printf(\"%f\", d);\n"
               "    printf(\"%f\", b);\n"
+              "    printf(\"%f\", (float)cpi);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %e in format string (no. 1) requires a floating point number given in the argument list\n"
                       "[test.cpp:4]: (warning) %E in format string (no. 1) requires a floating point number given in the argument list\n"
