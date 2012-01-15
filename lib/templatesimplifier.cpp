@@ -535,8 +535,16 @@ void TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(const std::li
         }
 
         for (std::list<Token *>::iterator it = eq.begin(); it != eq.end(); ++it) {
-            (*it)->deleteNext();
-            (*it)->deleteThis();
+            Token * const eqtok = *it;
+            const Token *tok2;
+            for (tok2 = eqtok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+                else if (tok2->str() == "," || tok2->str() == ">")
+                    break;
+            }
+            Token::eraseTokens(eqtok, tok2);
+            eqtok->deleteThis();
         }
     }
 }
