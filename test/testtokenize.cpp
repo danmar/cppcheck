@@ -776,16 +776,16 @@ private:
     }
 
     void inlineasm() {
-        ASSERT_EQUALS("; asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify(";asm { mov ax,bx };"));
-        ASSERT_EQUALS("; asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify(";_asm { mov ax,bx };"));
-        ASSERT_EQUALS("; asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify(";__asm { mov ax,bx };"));
-        ASSERT_EQUALS("; asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";__asm__ __volatile__ ( \"mov ax,bx\" );"));
-        ASSERT_EQUALS("; asm ( \"_emit 12h\" ) ;", tokenizeAndStringify(";__asm _emit 12h ;"));
-        ASSERT_EQUALS("; asm ( \"mov a , b\" ) ;", tokenizeAndStringify(";__asm mov a, b ;"));
-        ASSERT_EQUALS("; asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify(";asm volatile (\"fnstcw %0\" : \"= m\" (old_cw));"));
-        ASSERT_EQUALS("; asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify("; __asm__ (\"fnstcw %0\" : \"= m\" (old_cw));"));
-        ASSERT_EQUALS("; asm ( \"\"ddd\"\" ) ;", tokenizeAndStringify("; __asm __volatile__ (\"ddd\") ;"));
-        ASSERT_EQUALS("; asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";__asm__ volatile ( \"mov ax,bx\" );"));
+        ASSERT_EQUALS("asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify("asm { mov ax,bx };"));
+        ASSERT_EQUALS("asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify("_asm { mov ax,bx };"));
+        ASSERT_EQUALS("asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify("__asm { mov ax,bx };"));
+        ASSERT_EQUALS("asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify("__asm__ __volatile__ ( \"mov ax,bx\" );"));
+        ASSERT_EQUALS("asm ( \"_emit 12h\" ) ;", tokenizeAndStringify("__asm _emit 12h ;"));
+        ASSERT_EQUALS("asm ( \"mov a , b\" ) ;", tokenizeAndStringify("__asm mov a, b ;"));
+        ASSERT_EQUALS("asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify("asm volatile (\"fnstcw %0\" : \"= m\" (old_cw));"));
+        ASSERT_EQUALS("asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify(" __asm__ (\"fnstcw %0\" : \"= m\" (old_cw));"));
+        ASSERT_EQUALS("asm ( \"\"ddd\"\" ) ;", tokenizeAndStringify(" __asm __volatile__ (\"ddd\") ;"));
+        ASSERT_EQUALS("asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify("__asm__ volatile ( \"mov ax,bx\" );"));
 
         // 'asm ( ) ;' should be in the same line
         ASSERT_EQUALS(";\n\nasm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );", true));
