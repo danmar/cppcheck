@@ -4144,6 +4144,12 @@ bool Tokenizer::simplifyIfAddBraces()
         }
 
         if (Token::Match(tok, "if|for|while|BOOST_FOREACH (")) {
+
+            if (tok->strAt(2) == ")") {
+                //no arguments, abort
+                syntaxError(tok);
+                return false;
+            }
             // don't add "{}" around ";" in "do {} while();" (#609)
             const Token *prev = tok->previous();
             if (Token::simpleMatch(prev, "} while") &&
@@ -4173,9 +4179,8 @@ bool Tokenizer::simplifyIfAddBraces()
 
         // If there is no code after the if(), abort
         if (!tok->next()) {
-            // This is a syntax error and we should call syntaxError() and return false but
-            // many tokenizer tests are written with this syntax error so just ignore it.
-            return true;
+            syntaxError(tok);
+            return false;
         }
 
         // insert open brace..

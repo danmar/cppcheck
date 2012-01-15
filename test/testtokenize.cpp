@@ -764,7 +764,7 @@ private:
 
     void removeCast6() {
         // ticket #2103
-        ASSERT_EQUALS("if ( ! x )", tokenizeAndStringify("if (x == (char *) ((void *)0))", true));
+        ASSERT_EQUALS("if ( ! x ) { ; }", tokenizeAndStringify("if (x == (char *) ((void *)0)) ;", true));
     }
 
     void removeCast7() {
@@ -5874,14 +5874,14 @@ private:
     }
 
     void simplifyLogicalOperators() {
-        ASSERT_EQUALS("if ( a && b )", tokenizeAndStringify("if (a and b)"));
-        ASSERT_EQUALS("if ( a || b )", tokenizeAndStringify("if (a or b)"));
-        ASSERT_EQUALS("if ( a & b )", tokenizeAndStringify("if (a bitand b)"));
-        ASSERT_EQUALS("if ( a | b )", tokenizeAndStringify("if (a bitor b)"));
-        ASSERT_EQUALS("if ( a ^ b )", tokenizeAndStringify("if (a xor b)"));
-        ASSERT_EQUALS("if ( ~ b )", tokenizeAndStringify("if (compl b)"));
-        ASSERT_EQUALS("if ( ! b )", tokenizeAndStringify("if (not b)"));
-        ASSERT_EQUALS("if ( a != b )", tokenizeAndStringify("if (a not_eq b)"));
+        ASSERT_EQUALS("if ( a && b ) { ; }", tokenizeAndStringify("if (a and b);"));
+        ASSERT_EQUALS("if ( a || b ) { ; }", tokenizeAndStringify("if (a or b);"));
+        ASSERT_EQUALS("if ( a & b ) { ; }", tokenizeAndStringify("if (a bitand b);"));
+        ASSERT_EQUALS("if ( a | b ) { ; }", tokenizeAndStringify("if (a bitor b);"));
+        ASSERT_EQUALS("if ( a ^ b ) { ; }", tokenizeAndStringify("if (a xor b);"));
+        ASSERT_EQUALS("if ( ~ b ) { ; }", tokenizeAndStringify("if (compl b);"));
+        ASSERT_EQUALS("if ( ! b ) { ; }", tokenizeAndStringify("if (not b);"));
+        ASSERT_EQUALS("if ( a != b ) { ; }", tokenizeAndStringify("if (a not_eq b);"));
     }
 
     void simplifyCalculations() {
