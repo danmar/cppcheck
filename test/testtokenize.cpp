@@ -601,7 +601,7 @@ private:
     void tokenize19() {
         // #3006 - added hasComplicatedSyntaxErrorsInTemplates to avoid segmentation fault
         tokenizeAndStringify("x < () <");
-        
+
         // #3496 - make sure hasComplicatedSyntaxErrorsInTemplates works
         ASSERT_EQUALS("void a ( Fred * f ) { for ( ; n < f . x ( ) ; ) { } }",
                       tokenizeAndStringify("void a(Fred* f) MACRO { for (;n < f->x();) {} }"));
