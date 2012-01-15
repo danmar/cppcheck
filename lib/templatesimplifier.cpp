@@ -243,6 +243,7 @@ void TemplateSimplifier::removeTemplates(Token *tok)
             } else if (tok2->str() == ")") {  // garbage code! (#3504)
                 Token::eraseTokens(tok,tok2);
                 tok->deleteThis();
+                break;
             }
 
             else if (tok2->str() == "{") {
