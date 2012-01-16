@@ -4167,9 +4167,8 @@ bool Tokenizer::simplifyIfAddBraces()
         }
 
         else if (tok->str() == "else") {
-            const Token *tok2 = tok->next();
             // An else followed by an if or brace don't need to be processed further
-            if (tok2 && (tok2->str() == "if" || tok2->str() == "{"))
+            if (Token::Match(tok, "else if|{"))
                 continue;
         }
 
@@ -4214,17 +4213,12 @@ bool Tokenizer::simplifyIfAddBraces()
                     break;
                 }
                 tempToken = tempToken->link();
-                const Token *tempToken1 = tempToken->next();
-                if (!tempToken1)
+                if (!tempToken || !tempToken->next())
                     break;
-                if (tempToken1->isName()) {
-                    if (tempToken1->str() == "else") {
-                        tempToken1 = tempToken1->next();
-                        if (!tempToken1 || (tempToken1->str() != "if" && tempToken1->str() != "{"))
-                            innerIf = false;
-                    } else
-                        break;
-                }
+                if (Token::simpleMatch(tempToken, "} else") && !Token::Match(tempToken->tokAt(2), "if|{"))
+                    innerIf = false;
+                else if (tempToken->next()->isName() && tempToken->next()->str() != "else")
+                    break;
                 continue;
             }
 
@@ -4243,12 +4237,11 @@ bool Tokenizer::simplifyIfAddBraces()
                 if (!innerIf)
                     break;
 
-                const Token *tempToken1 = tempToken->next();
-                if (tempToken1 && tempToken1->str() == "else") {
-                    tempToken1 = tempToken1->next();
-                    if (!tempToken1 || tempToken1->str() != "if")
-                        innerIf = false;
-                } else
+                if (Token::simpleMatch(tempToken, "; else if"))
+                    ;
+                else if (Token::simpleMatch(tempToken, "; else"))
+                    innerIf = false;
+                else
                     break;
             }
         }
