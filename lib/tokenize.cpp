@@ -3892,6 +3892,10 @@ void Tokenizer::simplifyFlowControl()
         }
 
         if (tok->str() == "{") {
+            if (tok->previous() && tok->previous()->str() == "=") {
+                tok = tok->link();
+                continue;
+            }
             beginindent = tok;
             ++indentlevel;
         } else if (tok->str() == "}") {
@@ -4213,7 +4217,7 @@ bool Tokenizer::simplifyIfAddBraces()
                     break;
                 }
                 tempToken = tempToken->link();
-                if (!tempToken || !tempToken->next())
+                if (!tempToken->next())
                     break;
                 if (Token::simpleMatch(tempToken, "} else") && !Token::Match(tempToken->tokAt(2), "if|{"))
                     innerIf = false;
@@ -4237,11 +4241,10 @@ bool Tokenizer::simplifyIfAddBraces()
                 if (!innerIf)
                     break;
 
-                if (Token::simpleMatch(tempToken, "; else if"))
-                    ;
-                else if (Token::simpleMatch(tempToken, "; else"))
-                    innerIf = false;
-                else
+                if (Token::simpleMatch(tempToken, "; else")) {
+                    if (tempToken->strAt(2) != "if")
+                        innerIf = false;
+                } else
                     break;
             }
         }
@@ -6716,10 +6719,8 @@ void Tokenizer::simplifyGoto()
             }
         }
 
-        if (!indentlevel && Token::Match(tok, ") const| {")) {
-            gotos.clear();
+        if (!indentlevel && Token::Match(tok, ") const| {"))
             beginfunction = tok;
-        }
 
         else if (indentlevel && Token::Match(tok, "[{};] goto %var% ;"))
             gotos.push_back(tok->next());
