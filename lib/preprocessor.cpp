@@ -1672,6 +1672,23 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 }
 
 
+// Returns 0 if it's not a define, otherwise returns an index where '#define' ends (may have embedded white space).
+static unsigned isDefine(std::string const& line)
+{
+	if (line.empty()) return 0;
+	std::string::const_iterator it = line.begin();
+	if (*it != '#') return 0;
+	++it;
+	// XXX: fails to deal with comments.
+	while (isspace(*it) && it != line.end()) ++it;
+	if (std::distance(it, line.end()) < 6) return 0;
+	if (!std::equal(it, it+6, "define")) return 0;
+	it += 6;
+	// XXX: fails to deal with comments.
+	while (isspace(*it) && it != line.end()) ++it;
+	return std::distance(line.begin(), it);
+}
+
 std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes)
 {
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
@@ -1767,21 +1784,34 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 suppressCurrentCodePath = false;
             }
         } else if (indentmatch == indent) {
-            if (!suppressCurrentCodePath && line.compare(0,8,"#define ")==0) {
+			unsigned ppTokenEnd;
+            if (!suppressCurrentCodePath && (( ppTokenEnd = isDefine(line) )) ) {
                 // no value
-                std::string tag = line.substr(8);
-                if (line.find_first_of("( ", 8) == std::string::npos)
-                    defs[tag] = "";
+                std::string tag = line.substr(ppTokenEnd);
 
-                // define value
-                else if (line.find("(") == std::string::npos) {
-                    const std::string::size_type pos = line.find(" ", 8);
-                    tag = line.substr(8,pos-8);
-                    const std::string value(line.substr(pos+1));
+                std::string::size_type endOfTag = line.find_first_of("( \t", ppTokenEnd);
+				std::string tagName = line.substr(ppTokenEnd, endOfTag-ppTokenEnd);
+				// TODO: issue a warning if macro 'tagName' is already defined.
+
+				// define just a symbol
+				if (endOfTag == std::string::npos) {
+					// Just a symbol with no value.
+					defs[tagName] = "";
+				}
+				// define a function-style macro
+				else if (line[endOfTag] == '(') {
+					// TODO: parse/skip argument list
+	                defs[tagName] = "";
+				}
+                // define value				
+                else if (isspace(line[endOfTag])) {
+					// XXX: does not deal with comments.
+					while (isspace(line[endOfTag]) && endOfTag < line.size()) { ++endOfTag; }
+					const std::string value = line.substr(endOfTag);
                     if (defs.find(value) != defs.end())
-                        defs[tag] = defs[value];
+                        defs[tagName] = defs[value];
                     else
-                        defs[tag] = value;
+                        defs[tagName] = value;
                 }
 
                 if (undefs.find(tag) != undefs.end()) {
