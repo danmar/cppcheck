@@ -1676,26 +1676,26 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 // directive including embedded spaces and spaces after it in 'end'.
 static bool isPreprocessorKeyword(const std::string& line, const std::string& keyword, unsigned& end)
 {
-	if (line.empty())
+    if (line.empty())
         return false;
 
-	std::string::const_iterator it = line.begin();
+    std::string::const_iterator it = line.begin();
     it = std::find_if_not(it, line.end(), isspace);
-	if (it == line.end() || *it != '#')
+    if (it == line.end() || *it != '#')
         return false;
 
-	++it;
-	it = std::find_if_not(it, line.end(), isspace);
+    ++it;
+    it = std::find_if_not(it, line.end(), isspace);
     if (std::distance(it, line.end()) < static_cast<std::string::const_iterator::difference_type>(keyword.size()))
         return false;
 
-	if (!std::equal(keyword.begin(), keyword.end(), it))
+    if (!std::equal(keyword.begin(), keyword.end(), it))
         return false;
 
     it += keyword.size();
 
-	it = std::find_if_not(it, line.end(), isspace);
-	end = std::distance(line.begin(), it);
+    it = std::find_if_not(it, line.end(), isspace);
+    end = std::distance(line.begin(), it);
     return true;
 }
 
@@ -1794,24 +1794,24 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 suppressCurrentCodePath = false;
             }
         } else if (indentmatch == indent) {
-			unsigned ppTokenEnd = 0;
+            unsigned ppTokenEnd = 0;
             if (!suppressCurrentCodePath && isPreprocessorKeyword(line, "define", ppTokenEnd)) {
                 assert(ppTokenEnd >= 8);
                 std::string::size_type endOfTag = line.find_first_of("( \t", ppTokenEnd);
-				const std::string tag = line.substr(ppTokenEnd, endOfTag-ppTokenEnd);
+                const std::string tag = line.substr(ppTokenEnd, endOfTag-ppTokenEnd);
 
                 // TODO: issue a warning if macro 'tagName' is already defined.
 
-				// define a symbol
-				if (endOfTag == std::string::npos) {
-					defs[tag] = "";
-				}
-				// define a function-macro
-				else if (line[endOfTag] == '(') {
-					// XXX: parse/skip argument list and value? 
-	                defs[tag] = "";
-				}
-                // define value				
+                // define a symbol
+                if (endOfTag == std::string::npos) {
+                    defs[tag] = "";
+                }
+                // define a function-macro
+                else if (line[endOfTag] == '(') {
+                    // XXX: parse/skip argument list and value? 
+                    defs[tag] = "";
+                }
+                // define value
                 else if (isspace(line[endOfTag])) {
                     while (endOfTag < line.size() && isspace(line[endOfTag])) {
                         ++endOfTag;
