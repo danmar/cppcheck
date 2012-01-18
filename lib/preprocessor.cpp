@@ -1818,7 +1818,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 }
                 // define value
                 else if (isspace(line[endOfTag])) {
-                    while (endOfTag < line.size() && isspace(line[endOfTag])) {
+                    while (endOfTag < line.size() && std::isspace(line[endOfTag])) {
                         ++endOfTag;
                     }
                     std::string value;
