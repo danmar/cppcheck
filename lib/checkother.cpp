@@ -1995,7 +1995,7 @@ void CheckOther::checkCharVariable()
                 continue;
 
             // This is an error..
-            charBitOpError(tok);
+            charBitOpError(tok->tokAt(4));
         }
 
         else if (Token::Match(tok, "[;{}] %var% = %any% [&|] ( * %var% ) ;")) {
@@ -2012,7 +2012,7 @@ void CheckOther::checkCharVariable()
                 continue;
 
             // This is an error..
-            charBitOpError(tok);
+            charBitOpError(tok->tokAt(4));
         }
     }
 }
