@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
+#include <cassert>
 #include <cstdlib>
 #include <cctype>
 #include <vector>
@@ -1671,22 +1672,31 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
     return false;
 }
 
-
-// Returns 0 if it's not a define, otherwise returns an index where '#define' ends (may have embedded white space).
-static unsigned isDefine(std::string const& line)
+// Returns true if 'line' is a preprocessor directive, false otherwise. Returns length of the
+// directive including embedded spaces and spaces after it in 'end'.
+static bool isPreprocessorKeyword(const std::string& line, const std::string& keyword, unsigned& end)
 {
-	if (line.empty()) return 0;
+	if (line.empty())
+        return false;
+
 	std::string::const_iterator it = line.begin();
-	if (*it != '#') return 0;
+    it = std::find_if_not(it, line.end(), isspace);
+	if (it == line.end() || *it != '#')
+        return false;
+
 	++it;
-	// XXX: fails to deal with comments.
-	while (isspace(*it) && it != line.end()) ++it;
-	if (std::distance(it, line.end()) < 6) return 0;
-	if (!std::equal(it, it+6, "define")) return 0;
-	it += 6;
-	// XXX: fails to deal with comments.
-	while (isspace(*it) && it != line.end()) ++it;
-	return std::distance(line.begin(), it);
+	it = std::find_if_not(it, line.end(), isspace);
+    if (std::distance(it, line.end()) < static_cast<std::string::const_iterator::difference_type>(keyword.size()))
+        return false;
+
+	if (!std::equal(keyword.begin(), keyword.end(), it))
+        return false;
+
+    it += keyword.size();
+
+	it = std::find_if_not(it, line.end(), isspace);
+	end = std::distance(line.begin(), it);
+    return true;
 }
 
 std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes)
@@ -1784,34 +1794,39 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 suppressCurrentCodePath = false;
             }
         } else if (indentmatch == indent) {
-			unsigned ppTokenEnd;
-            if (!suppressCurrentCodePath && (( ppTokenEnd = isDefine(line) )) ) {
-                // no value
-                std::string tag = line.substr(ppTokenEnd);
-
+			unsigned ppTokenEnd = 0;
+            if (!suppressCurrentCodePath && isPreprocessorKeyword(line, "define", ppTokenEnd)) {
+                assert(ppTokenEnd >= 8);
                 std::string::size_type endOfTag = line.find_first_of("( \t", ppTokenEnd);
-				std::string tagName = line.substr(ppTokenEnd, endOfTag-ppTokenEnd);
-				// TODO: issue a warning if macro 'tagName' is already defined.
+				const std::string tag = line.substr(ppTokenEnd, endOfTag-ppTokenEnd);
 
-				// define just a symbol
+                // TODO: issue a warning if macro 'tagName' is already defined.
+
+				// define a symbol
 				if (endOfTag == std::string::npos) {
-					// Just a symbol with no value.
-					defs[tagName] = "";
+					defs[tag] = "";
 				}
-				// define a function-style macro
+				// define a function-macro
 				else if (line[endOfTag] == '(') {
-					// TODO: parse/skip argument list
-	                defs[tagName] = "";
+					// XXX: parse/skip argument list and value? 
+	                defs[tag] = "";
 				}
                 // define value				
                 else if (isspace(line[endOfTag])) {
-					// XXX: does not deal with comments.
-					while (isspace(line[endOfTag]) && endOfTag < line.size()) { ++endOfTag; }
-					const std::string value = line.substr(endOfTag);
+                    while (endOfTag < line.size() && isspace(line[endOfTag])) {
+                        ++endOfTag;
+                    }
+                    std::string value;
+                    if (endOfTag < line.size())
+                    {
+                        const std::string::size_type indexAfterLastNonSpace = line.find_last_not_of(" \t")+1;
+                        value = line.substr(endOfTag, indexAfterLastNonSpace-endOfTag);
+                    }
+
                     if (defs.find(value) != defs.end())
-                        defs[tagName] = defs[value];
+                        defs[tag] = defs[value];
                     else
-                        defs[tagName] = value;
+                        defs[tag] = value;
                 }
 
                 if (undefs.find(tag) != undefs.end()) {

@@ -236,6 +236,8 @@ private:
         TEST_CASE(def_missingInclude);
         TEST_CASE(def_handleIncludes_ifelse);   // problems in handleIncludes for #else
 
+        TEST_CASE(def_valueWithParenthesis); // #3531
+
         // Using -U to undefine symbols
         TEST_CASE(undef1);
         TEST_CASE(undef2);
@@ -3107,6 +3109,35 @@ private:
             std::string actual(preprocessor.handleIncludes(code, filePath, includePaths, defs));
             ASSERT_EQUALS("#define A 1\n#define B A\n\n123\n\n", actual);
         }
+    }
+
+    void def_valueWithParenthesis()
+    {
+        // #define should introduce a new symbol regardless of parenthesis in the value
+        // and regardless of white space in weird places (people do this for some reason).
+        const char code[] = "#define A (Fred)\n"
+                            "      #       define B (Flintstone)\n"
+                            "     #define C (Barney)\n"
+                            "\t#\tdefine\tD\t(Rubble)\t\t\t\n";
+
+        const std::string filePath("test.c");
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        Preprocessor preprocessor(NULL, this);
+
+        preprocessor.handleIncludes(code, filePath, includePaths, defs);
+
+        ASSERT(defs.find("A") != defs.end());
+        ASSERT_EQUALS("(Fred)", defs["A"]);
+
+        ASSERT(defs.find("B") != defs.end());
+        ASSERT_EQUALS("(Flintstone)", defs["B"]);
+
+        ASSERT(defs.find("C") != defs.end());
+        ASSERT_EQUALS("(Barney)", defs["C"]);
+
+        ASSERT(defs.find("D") != defs.end());
+        ASSERT_EQUALS("(Rubble)", defs["D"]);
     }
 
     void undef1() {
