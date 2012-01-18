@@ -1672,20 +1672,25 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
     return false;
 }
 
+static bool notspace(char c)
+{
+	return !std::isspace(c);
+}
+
 // Returns true if 'line' is a preprocessor directive, false otherwise. Returns length of the
 // directive including embedded spaces and spaces after it in 'end'.
-static bool isPreprocessorKeyword(const std::string& line, const std::string& keyword, unsigned& end)
+static bool isPreprocessorKeyword(const std::string& line, const std::string& keyword, unsigned int& end)
 {
     if (line.empty())
         return false;
 
     std::string::const_iterator it = line.begin();
-    it = std::find_if_not(it, line.end(), isspace);
+    it = std::find_if(it, line.end(), notspace);
     if (it == line.end() || *it != '#')
         return false;
 
     ++it;
-    it = std::find_if_not(it, line.end(), isspace);
+    it = std::find_if(it, line.end(), notspace);
     if (std::distance(it, line.end()) < static_cast<std::string::const_iterator::difference_type>(keyword.size()))
         return false;
 
@@ -1694,7 +1699,7 @@ static bool isPreprocessorKeyword(const std::string& line, const std::string& ke
 
     it += keyword.size();
 
-    it = std::find_if_not(it, line.end(), isspace);
+    it = std::find_if(it, line.end(), notspace);
     end = std::distance(line.begin(), it);
     return true;
 }
@@ -1794,7 +1799,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 suppressCurrentCodePath = false;
             }
         } else if (indentmatch == indent) {
-            unsigned ppTokenEnd = 0;
+            unsigned int ppTokenEnd = 0;
             if (!suppressCurrentCodePath && isPreprocessorKeyword(line, "define", ppTokenEnd)) {
                 assert(ppTokenEnd >= 8);
                 std::string::size_type endOfTag = line.find_first_of("( \t", ppTokenEnd);
@@ -1808,7 +1813,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 }
                 // define a function-macro
                 else if (line[endOfTag] == '(') {
-                    // XXX: parse/skip argument list and value? 
+                    // XXX: parse/skip argument list and value?
                     defs[tag] = "";
                 }
                 // define value
@@ -1817,8 +1822,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                         ++endOfTag;
                     }
                     std::string value;
-                    if (endOfTag < line.size())
-                    {
+                    if (endOfTag < line.size()) {
                         const std::string::size_type indexAfterLastNonSpace = line.find_last_not_of(" \t")+1;
                         value = line.substr(endOfTag, indexAfterLastNonSpace-endOfTag);
                     }

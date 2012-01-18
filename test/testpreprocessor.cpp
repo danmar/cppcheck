@@ -3111,8 +3111,7 @@ private:
         }
     }
 
-    void def_valueWithParenthesis()
-    {
+    void def_valueWithParenthesis() {
         // #define should introduce a new symbol regardless of parenthesis in the value
         // and regardless of white space in weird places (people do this for some reason).
         const char code[] = "#define A (Fred)\n"
