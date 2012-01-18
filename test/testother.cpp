@@ -88,6 +88,7 @@ private:
         TEST_CASE(testScanf1);
         TEST_CASE(testScanf2);
         TEST_CASE(testScanf3);
+        TEST_CASE(testScanf4);
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
@@ -2073,6 +2074,14 @@ private:
               "    return b;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
+    }
+
+    void testScanf4() {
+        check("void f() {\n"
+              "    char c;\n"
+              "    scanf(\"%c\", &c);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testScanfArgument() {

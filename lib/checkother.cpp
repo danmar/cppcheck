@@ -1212,7 +1212,8 @@ void CheckOther::invalidScanf()
             }
 
             else if (std::isalpha(formatstr[i])) {
-                invalidScanfError(tok);
+                if (formatstr[i] != 'c')  // #3490 - field width limits are not necessary for %c
+                    invalidScanfError(tok);
                 format = false;
             }
         }
