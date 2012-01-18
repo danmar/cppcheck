@@ -262,7 +262,7 @@ Checking path/file2.cpp...
     <title>Preprocessor configurations</title>
 
     <para>By default Cppcheck will check all preprocessor configurations
-    (except those that has #error in them). This is the recommended
+    (except those that have #error in them). This is the recommended
     behaviour.</para>
 
     <para>But if you want to manually limit the checking you can do so with
