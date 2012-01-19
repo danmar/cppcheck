@@ -2546,7 +2546,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         std::map<std::string, PreprocessorMacro *>::iterator it;
                         for (it = macros.begin(); it != macros.end(); ++it)
                             delete it->second;
-
+                        macros.clear();
                         return "";
                     }
 
@@ -2628,7 +2628,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         std::map<std::string, PreprocessorMacro *>::iterator iter;
                         for (iter = macros.begin(); iter != macros.end(); ++iter)
                             delete iter->second;
-
+                        macros.clear();
                         return "";
                     }
 
@@ -2681,6 +2681,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
     for (std::map<std::string, PreprocessorMacro *>::iterator it = macros.begin(); it != macros.end(); ++it)
         delete it->second;
+    macros.clear();
 
     return ostr.str();
 }
