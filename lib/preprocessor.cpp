@@ -1672,36 +1672,11 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
     return false;
 }
 
-static bool notspace(char c)
+template <unsigned int size>
+static bool startsWith(const std::string& line, const char (&prefix)[size])
 {
-	return !std::isspace(c);
-}
-
-// Returns true if 'line' is a preprocessor directive, false otherwise. Returns length of the
-// directive including embedded spaces and spaces after it in 'end'.
-static bool isPreprocessorKeyword(const std::string& line, const std::string& keyword, unsigned int& end)
-{
-    if (line.empty())
-        return false;
-
-    std::string::const_iterator it = line.begin();
-    it = std::find_if(it, line.end(), notspace);
-    if (it == line.end() || *it != '#')
-        return false;
-
-    ++it;
-    it = std::find_if(it, line.end(), notspace);
-    if (std::distance(it, line.end()) < static_cast<std::string::const_iterator::difference_type>(keyword.size()))
-        return false;
-
-    if (!std::equal(keyword.begin(), keyword.end(), it))
-        return false;
-
-    it += keyword.size();
-
-    it = std::find_if(it, line.end(), notspace);
-    end = std::distance(line.begin(), it);
-    return true;
+    const bool result = line.compare(0, size-1, prefix) == 0;
+    return result;
 }
 
 std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes)
@@ -1799,13 +1774,14 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 suppressCurrentCodePath = false;
             }
         } else if (indentmatch == indent) {
-            unsigned int ppTokenEnd = 0;
-            if (!suppressCurrentCodePath && isPreprocessorKeyword(line, "define", ppTokenEnd)) {
-                assert(ppTokenEnd >= 8);
-                std::string::size_type endOfTag = line.find_first_of("( \t", ppTokenEnd);
-                const std::string tag = line.substr(ppTokenEnd, endOfTag-ppTokenEnd);
+            if (!suppressCurrentCodePath && startsWith(line, "#define ")) {
+                assert(!std::isspace(*line.rbegin())); // line should not end with space
 
-                // TODO: issue a warning if macro 'tagName' is already defined.
+                const unsigned int endOfDefine = 8;
+                std::string::size_type endOfTag = line.find_first_of("( \t", endOfDefine);
+                const std::string tag = line.substr(endOfDefine, endOfTag-endOfDefine);
+
+                // TODO: issue a warning if macro 'tagName' is already defined?
 
                 // define a symbol
                 if (endOfTag == std::string::npos) {
@@ -1818,14 +1794,11 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 }
                 // define value
                 else if (std::isspace(line[endOfTag])) {
-                    while (endOfTag < line.size() && std::isspace(line[endOfTag])) {
-                        ++endOfTag;
-                    }
-                    std::string value;
-                    if (endOfTag < line.size()) {
-                        const std::string::size_type indexAfterLastNonSpace = line.find_last_not_of(" \t")+1;
-                        value = line.substr(endOfTag, indexAfterLastNonSpace-endOfTag);
-                    }
+                    ++endOfTag;
+                    assert(endOfTag < line.size()); // line should not end with space
+                    assert(!std::isspace(line[endOfTag])); // there should be no redundant spaces.
+
+                    const std::string& value = line.substr(endOfTag, line.size()-endOfTag);
 
                     if (defs.find(value) != defs.end())
                         defs[tag] = defs[value];

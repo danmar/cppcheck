@@ -3124,7 +3124,9 @@ private:
         std::map<std::string,std::string> defs;
         Preprocessor preprocessor(NULL, this);
 
-        preprocessor.handleIncludes(code, filePath, includePaths, defs);
+        std::istringstream istr(code);
+        const std::string s(preprocessor.read(istr, ""));
+        preprocessor.handleIncludes(s, filePath, includePaths, defs);
 
         ASSERT(defs.find("A") != defs.end());
         ASSERT_EQUALS("(Fred)", defs["A"]);
