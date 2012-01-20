@@ -27,7 +27,6 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
-#include <cassert>
 #include <cstdlib>
 #include <cctype>
 #include <vector>
@@ -1672,12 +1671,6 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
     return false;
 }
 
-template <unsigned int size>
-static bool startsWith(const std::string& line, const char (&prefix)[size])
-{
-    const bool result = line.compare(0, size-1, prefix) == 0;
-    return result;
-}
 
 std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes)
 {
@@ -1774,36 +1767,33 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 suppressCurrentCodePath = false;
             }
         } else if (indentmatch == indent) {
-            if (!suppressCurrentCodePath && startsWith(line, "#define ")) {
-                assert(!std::isspace(*line.rbegin())); // line should not end with space
-
+            if (!suppressCurrentCodePath && line.compare(0, 8, "#define ") == 0) {
                 const unsigned int endOfDefine = 8;
-                std::string::size_type endOfTag = line.find_first_of("( \t", endOfDefine);
-                const std::string tag = line.substr(endOfDefine, endOfTag-endOfDefine);
-
-                // TODO: issue a warning if macro 'tagName' is already defined?
+                std::string::size_type endOfTag = line.find_first_of("( ", endOfDefine);
+                std::string tag;
 
                 // define a symbol
                 if (endOfTag == std::string::npos) {
+                    tag = line.substr(endOfDefine);
                     defs[tag] = "";
-                }
-                // define a function-macro
-                else if (line[endOfTag] == '(') {
-                    // XXX: parse/skip argument list and value?
-                    defs[tag] = "";
-                }
-                // define value
-                else if (std::isspace(line[endOfTag])) {
-                    ++endOfTag;
-                    assert(endOfTag < line.size()); // line should not end with space
-                    assert(!std::isspace(line[endOfTag])); // there should be no redundant spaces.
+                } else {
+                    tag = line.substr(endOfDefine, endOfTag-endOfDefine);
 
-                    const std::string& value = line.substr(endOfTag, line.size()-endOfTag);
+                    // define a function-macro
+                    if (line[endOfTag] == '(') {
+                        defs[tag] = "";
+                    }
+                    // define value
+                    else {
+                        ++endOfTag;
 
-                    if (defs.find(value) != defs.end())
-                        defs[tag] = defs[value];
-                    else
-                        defs[tag] = value;
+                        const std::string& value = line.substr(endOfTag, line.size()-endOfTag);
+
+                        if (defs.find(value) != defs.end())
+                            defs[tag] = defs[value];
+                        else
+                            defs[tag] = value;
+                    }
                 }
 
                 if (undefs.find(tag) != undefs.end()) {
