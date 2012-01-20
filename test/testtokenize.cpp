@@ -459,7 +459,6 @@ private:
     }
 
     void tokenize3() {
-        errout.str("");
         const std::string code("void foo()\n"
                                "{\n"
                                "    int i;\n"
@@ -474,7 +473,6 @@ private:
     }
 
     void tokenize4() {
-        errout.str("");
         const std::string code("class foo\n"
                                "{\n"
                                "public:\n"
@@ -535,7 +533,6 @@ private:
     }
 
     void tokenize9() {
-        errout.str("");
         const char code[] = "typedef void (*fp)();\n"
                             "typedef fp (*fpp)();\n"
                             "void f() {\n"
@@ -625,21 +622,18 @@ private:
 
     void wrong_syntax1() {
         {
-            errout.str("");
             const std::string code("TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))");
             ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", tokenizeAndStringify(code.c_str(), true));
             ASSERT_EQUALS("", errout.str());
         }
 
         {
-            errout.str("");
             const std::string code("struct A { template<int> struct { }; };");
             ASSERT_EQUALS("", tokenizeAndStringify(code.c_str(), true));
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
         }
 
         {
-            errout.str("");
             const std::string code("enum ABC { A,B, typedef enum { C } };");
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
@@ -647,7 +641,6 @@ private:
 
         {
             // #3314 - don't report syntax error.
-            errout.str("");
             const std::string code("struct A { typedef B::C (A::*f)(); };");
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (debug) Failed to parse 'typedef B :: C ( A :: * f ) ( ) ;'. The checking continues anyway.\n", errout.str());
@@ -668,7 +661,6 @@ private:
 
     void wrong_syntax_if_macro() {
         // #2518
-        errout.str("");
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
