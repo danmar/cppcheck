@@ -830,15 +830,7 @@ private:
                 // Check that the variable hasn't been initialized and
                 // that it isn't initialized in the body..
                 if (varid1.find(varid) == varid1.end()) {
-                    unsigned int indentlevel = 0;
-                    for (const Token *tok3 = tok2->tokAt(5); tok3; tok3 = tok3->next()) {
-                        if (tok3->str() == "{")
-                            ++indentlevel;
-                        else if (tok3->str() == "}") {
-                            if (indentlevel == 0)
-                                break;
-                            --indentlevel;
-                        }
+                    for (const Token *tok3 = tok2->tokAt(5); tok3 && tok3 != tok2->linkAt(4); tok3 = tok3->next()) {
                         if (tok3->varId() == varid) {
                             varid = 0;  // variable is used.. maybe it's initialized. clear the variable id.
                             break;

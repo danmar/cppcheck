@@ -265,35 +265,16 @@ void CheckStl::stlOutOfBounds()
             continue;
 
         // check if the for loop condition is wrong
-        unsigned int indent = 0;
-        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(")
-                ++indent;
-
-            else if (tok2->str() == ")") {
-                if (indent == 0)
-                    break;
-                --indent;
-            }
-
+        for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != tok->next()->link(); tok2 = tok2->next()) {
             if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;")) {
-                // Count { and } for tok3
-                unsigned int indent3 = 0;
-
                 // variable id for loop variable.
                 unsigned int numId = tok2->next()->varId();
 
                 // variable id for the container variable
                 unsigned int varId = tok2->tokAt(3)->varId();
 
-                for (const Token *tok3 = tok2->tokAt(8); tok3; tok3 = tok3->next()) {
-                    if (tok3->str() == "{")
-                        ++indent3;
-                    else if (tok3->str() == "}") {
-                        if (indent3 <= 1)
-                            break;
-                        --indent3;
-                    } else if (tok3->varId() == varId) {
+                for (const Token *tok3 = tok2->tokAt(8); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
+                    if (tok3->varId() == varId) {
                         if (Token::simpleMatch(tok3->next(), ". size ( )"))
                             break;
                         else if (Token::Match(tok3->next(), "[ %varid% ]", numId))

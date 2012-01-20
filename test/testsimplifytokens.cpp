@@ -447,7 +447,7 @@ private:
 
 
     void cast() {
-        ASSERT_EQUALS("if ( ! p )", tok("if (p == (char *)0)"));
+        ASSERT_EQUALS("if ( ! p ) { ; }", tok("if (p == (char *)0);"));
         ASSERT_EQUALS("return str ;", tok("return (char *)str;"));
 
         {
@@ -469,7 +469,7 @@ private:
         ASSERT_EQUALS("if ( * a )", tok("if ((unsigned int)(unsigned char)*a)"));
         ASSERT_EQUALS("class A { A operator* ( int ) ; } ;", tok("class A { A operator *(int); };"));
         ASSERT_EQUALS("class A { A operator* ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
-        ASSERT_EQUALS("if ( ! p )", tok("if (p == (char *)(char *)0)"));
+        ASSERT_EQUALS("if ( ! p ) { ; }", tok("if (p == (char *)(char *)0);"));
 
         // no simplification as the cast may be important here. see #2897 for example
         ASSERT_EQUALS("; * ( ( char * ) p + 1 ) = 0 ;", tok("; *((char *)p + 1) = 0;"));
@@ -2439,17 +2439,17 @@ private:
     }
 
     void ifnot() {
-        ASSERT_EQUALS("if ( ! x )", simplifyIfNot("if(0==x)"));
-        ASSERT_EQUALS("if ( ! x )", simplifyIfNot("if(x==0)"));
-        ASSERT_EQUALS("if ( ! ( a = b ) )", simplifyIfNot("if(0==(a=b))"));
-        ASSERT_EQUALS("if ( ! x )", simplifyIfNot("if(x==0)"));
-        ASSERT_EQUALS("if ( ! a && b ( ) )", simplifyIfNot("if( 0 == a && b() )"));
-        ASSERT_EQUALS("if ( b ( ) && ! a )", simplifyIfNot("if( b() && 0 == a )"));
-        ASSERT_EQUALS("if ( ! ( a = b ) )", simplifyIfNot("if((a=b)==0)"));
-        ASSERT_EQUALS("if ( ! x . y )", simplifyIfNot("if(x.y==0)"));
-        ASSERT_EQUALS("if ( ! x )", simplifyIfNot("if((x==0))"));
-        ASSERT_EQUALS("if ( ( ! x ) && ! y )", simplifyIfNot("if((x==0) && y==0)"));
-        ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) )", simplifyIfNot("if(!(fclose(fd) == 0))"));
+        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if(0==x);"));
+        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if(x==0);"));
+        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", simplifyIfNot("if(0==(a=b));"));
+        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if(x==0);"));
+        ASSERT_EQUALS("if ( ! a && b ( ) ) { ; }", simplifyIfNot("if( 0 == a && b() );"));
+        ASSERT_EQUALS("if ( b ( ) && ! a ) { ; }", simplifyIfNot("if( b() && 0 == a );"));
+        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", simplifyIfNot("if((a=b)==0);"));
+        ASSERT_EQUALS("if ( ! x . y ) { ; }", simplifyIfNot("if(x.y==0);"));
+        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if((x==0));"));
+        ASSERT_EQUALS("if ( ( ! x ) && ! y ) { ; }", simplifyIfNot("if((x==0) && y==0);"));
+        ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) ) { ; }", simplifyIfNot("if(!(fclose(fd) == 0));"));
     }
 
 
@@ -2470,8 +2470,8 @@ private:
     }
 
     void not1() {
-        ASSERT_EQUALS("if ( ! p )", simplifyLogicalOperators("if (not p)"));
-        ASSERT_EQUALS("if ( p && ! q )", simplifyLogicalOperators("if (p && not q)"));
+        ASSERT_EQUALS("if ( ! p ) { ; }", simplifyLogicalOperators("if (not p);"));
+        ASSERT_EQUALS("if ( p && ! q ) { ; }", simplifyLogicalOperators("if (p && not q);"));
         ASSERT_EQUALS("void foo ( not i )", simplifyLogicalOperators("void foo ( not i )"));
     }
 
@@ -2488,8 +2488,8 @@ private:
         ASSERT_EQUALS("if ( p && bar ( ) ) { ; }",
                       simplifyLogicalOperators("if (p and bar()) ;"));
 
-        ASSERT_EQUALS("if ( p && ! q )",
-                      simplifyLogicalOperators("if (p and not q)"));
+        ASSERT_EQUALS("if ( p && ! q ) { ; }",
+                      simplifyLogicalOperators("if (p and not q) ;"));
     }
 
     void or1() {
@@ -2505,8 +2505,8 @@ private:
         ASSERT_EQUALS("if ( p || bar ( ) ) { ; }",
                       simplifyLogicalOperators("if (p or bar()) ;"));
 
-        ASSERT_EQUALS("if ( p || ! q )",
-                      simplifyLogicalOperators("if (p or not q)"));
+        ASSERT_EQUALS("if ( p || ! q ) { ; }",
+                      simplifyLogicalOperators("if (p or not q) ;"));
     }
 
     void comma_keyword() {
@@ -2800,9 +2800,9 @@ private:
 
         ASSERT_EQUALS(";", tok("; x = x + 0;"));
 
-        ASSERT_EQUALS("if ( a == 2 )", tok("if (a==1+1)"));
-        ASSERT_EQUALS("if ( a + 2 != 6 )", tok("if (a+1+1!=1+2+3)"));
-        ASSERT_EQUALS("if ( 4 < a )", tok("if (14-2*5<a*4/(2*2))"));
+        ASSERT_EQUALS("if ( a == 2 ) { ; }", tok("if (a==1+1);"));
+        ASSERT_EQUALS("if ( a + 2 != 6 ) { ; }", tok("if (a+1+1!=1+2+3);"));
+        ASSERT_EQUALS("if ( 4 < a ) { ; }", tok("if (14-2*5<a*4/(2*2));"));
 
         ASSERT_EQUALS("( y / 2 - 2 )", tok("(y / 2 - 2)"));
         ASSERT_EQUALS("( y % 2 - 2 )", tok("(y % 2 - 2)"));

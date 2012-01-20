@@ -598,8 +598,13 @@ private:
         ASSERT_EQUALS("( X && Y )", tokenizeAndStringify("(X&&Y)"));
     }
 
-    void tokenize19() { // #3006 (segmentation fault)
+    void tokenize19() {
+        // #3006 - added hasComplicatedSyntaxErrorsInTemplates to avoid segmentation fault
         tokenizeAndStringify("x < () <");
+
+        // #3496 - make sure hasComplicatedSyntaxErrorsInTemplates works
+        ASSERT_EQUALS("void a ( Fred * f ) { for ( ; n < f . x ( ) ; ) { } }",
+                      tokenizeAndStringify("void a(Fred* f) MACRO { for (;n < f->x();) {} }"));
     }
 
     void tokenize20() { // replace C99 _Bool => bool
@@ -759,7 +764,7 @@ private:
 
     void removeCast6() {
         // ticket #2103
-        ASSERT_EQUALS("if ( ! x )", tokenizeAndStringify("if (x == (char *) ((void *)0))", true));
+        ASSERT_EQUALS("if ( ! x ) { ; }", tokenizeAndStringify("if (x == (char *) ((void *)0)) ;", true));
     }
 
     void removeCast7() {
@@ -771,16 +776,16 @@ private:
     }
 
     void inlineasm() {
-        ASSERT_EQUALS("; asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify(";asm { mov ax,bx };"));
-        ASSERT_EQUALS("; asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify(";_asm { mov ax,bx };"));
-        ASSERT_EQUALS("; asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify(";__asm { mov ax,bx };"));
-        ASSERT_EQUALS("; asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";__asm__ __volatile__ ( \"mov ax,bx\" );"));
-        ASSERT_EQUALS("; asm ( \"_emit 12h\" ) ;", tokenizeAndStringify(";__asm _emit 12h ;"));
-        ASSERT_EQUALS("; asm ( \"mov a , b\" ) ;", tokenizeAndStringify(";__asm mov a, b ;"));
-        ASSERT_EQUALS("; asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify(";asm volatile (\"fnstcw %0\" : \"= m\" (old_cw));"));
-        ASSERT_EQUALS("; asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify("; __asm__ (\"fnstcw %0\" : \"= m\" (old_cw));"));
-        ASSERT_EQUALS("; asm ( \"\"ddd\"\" ) ;", tokenizeAndStringify("; __asm __volatile__ (\"ddd\") ;"));
-        ASSERT_EQUALS("; asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";__asm__ volatile ( \"mov ax,bx\" );"));
+        ASSERT_EQUALS("asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify("asm { mov ax,bx };"));
+        ASSERT_EQUALS("asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify("_asm { mov ax,bx };"));
+        ASSERT_EQUALS("asm ( \"mov ax , bx\" ) ;", tokenizeAndStringify("__asm { mov ax,bx };"));
+        ASSERT_EQUALS("asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify("__asm__ __volatile__ ( \"mov ax,bx\" );"));
+        ASSERT_EQUALS("asm ( \"_emit 12h\" ) ;", tokenizeAndStringify("__asm _emit 12h ;"));
+        ASSERT_EQUALS("asm ( \"mov a , b\" ) ;", tokenizeAndStringify("__asm mov a, b ;"));
+        ASSERT_EQUALS("asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify("asm volatile (\"fnstcw %0\" : \"= m\" (old_cw));"));
+        ASSERT_EQUALS("asm ( \"\"fnstcw %0\" : \"= m\" ( old_cw )\" ) ;", tokenizeAndStringify(" __asm__ (\"fnstcw %0\" : \"= m\" (old_cw));"));
+        ASSERT_EQUALS("asm ( \"\"ddd\"\" ) ;", tokenizeAndStringify(" __asm __volatile__ (\"ddd\") ;"));
+        ASSERT_EQUALS("asm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify("__asm__ volatile ( \"mov ax,bx\" );"));
 
         // 'asm ( ) ;' should be in the same line
         ASSERT_EQUALS(";\n\nasm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );", true));
@@ -5869,14 +5874,14 @@ private:
     }
 
     void simplifyLogicalOperators() {
-        ASSERT_EQUALS("if ( a && b )", tokenizeAndStringify("if (a and b)"));
-        ASSERT_EQUALS("if ( a || b )", tokenizeAndStringify("if (a or b)"));
-        ASSERT_EQUALS("if ( a & b )", tokenizeAndStringify("if (a bitand b)"));
-        ASSERT_EQUALS("if ( a | b )", tokenizeAndStringify("if (a bitor b)"));
-        ASSERT_EQUALS("if ( a ^ b )", tokenizeAndStringify("if (a xor b)"));
-        ASSERT_EQUALS("if ( ~ b )", tokenizeAndStringify("if (compl b)"));
-        ASSERT_EQUALS("if ( ! b )", tokenizeAndStringify("if (not b)"));
-        ASSERT_EQUALS("if ( a != b )", tokenizeAndStringify("if (a not_eq b)"));
+        ASSERT_EQUALS("if ( a && b ) { ; }", tokenizeAndStringify("if (a and b);"));
+        ASSERT_EQUALS("if ( a || b ) { ; }", tokenizeAndStringify("if (a or b);"));
+        ASSERT_EQUALS("if ( a & b ) { ; }", tokenizeAndStringify("if (a bitand b);"));
+        ASSERT_EQUALS("if ( a | b ) { ; }", tokenizeAndStringify("if (a bitor b);"));
+        ASSERT_EQUALS("if ( a ^ b ) { ; }", tokenizeAndStringify("if (a xor b);"));
+        ASSERT_EQUALS("if ( ~ b ) { ; }", tokenizeAndStringify("if (compl b);"));
+        ASSERT_EQUALS("if ( ! b ) { ; }", tokenizeAndStringify("if (not b);"));
+        ASSERT_EQUALS("if ( a != b ) { ; }", tokenizeAndStringify("if (a not_eq b);"));
     }
 
     void simplifyCalculations() {
@@ -6099,6 +6104,7 @@ private:
     }
 
     void platformWin32() {
+        // WIN32A
         const char code[] = "unsigned int sizeof_short = sizeof(short);"
                             "unsigned int sizeof_unsigned_short = sizeof(unsigned short);"
                             "unsigned int sizeof_int = sizeof(int);"
@@ -6158,7 +6164,45 @@ private:
                             "SIZE_T Q;"
                             "HRESULT R;"
                             "LONG_PTR S;"
-                            "HANDLE T;";
+                            "HANDLE T;"
+                            "BOOL _bool;"
+                            "HFILE hfile;"
+                            "LONG32 long32;"
+                            "LCID lcid;"
+                            "LCTYPE lctype;"
+                            "LGRPID lgrpid;"
+                            "LONG64 long64;"
+                            "SSIZE_T _ssize_t;"
+                            "PUCHAR puchar;"
+                            "LPCOLORREF lpcolorref;"
+                            "PDWORD pdword;"
+                            "PULONG pulong;"
+                            "SERVICE_STATUS_HANDLE service_status_hanlde;"
+                            "SC_LOCK sc_lock;"
+                            "SC_HANDLE sc_handle;"
+                            "HACCEL haccel;"
+                            "HCONV hconv;"
+                            "HCONVLIST hconvlist;"
+                            "HDDEDATA hddedata;"
+                            "HDESK hdesk;"
+                            "HDROP hdrop;"
+                            "HDWP hdwp;"
+                            "HENHMETAFILE henhmetafile;"
+                            "HHOOK hhook;"
+                            "HKL hkl;"
+                            "HMONITOR hmonitor;"
+                            "HSZ hsz;"
+                            "HWINSTA hwinsta;"
+                            "PWCHAR pwchar;"
+                            "PUSHORT pushort;"
+                            "UINT_PTR uint_ptr;"
+                            "WPARAM wparam;"
+                            "LANGID langid;"
+                            "DWORD64 dword64;"
+                            "ULONG64 ulong64;"
+                            "HALF_PTR half_ptr;"
+                            "INT_PTR int_ptr;"
+                            "LPCWSTR lpcwstr;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -6219,7 +6263,45 @@ private:
                                 "unsigned long Q ; "
                                 "long R ; "
                                 "long S ; "
-                                "void * T ;";
+                                "void * T ; "
+                                "int _bool ; "
+                                "int hfile ; "
+                                "int long32 ; "
+                                "unsigned long lcid ; "
+                                "unsigned long lctype ; "
+                                "unsigned long lgrpid ; "
+                                "long long long64 ; "
+                                "long _ssize_t ; "
+                                "unsigned char * puchar ; "
+                                "unsigned long * lpcolorref ; "
+                                "unsigned long * pdword ; "
+                                "unsigned long * pulong ; "
+                                "void * service_status_hanlde ; "
+                                "void * sc_lock ; "
+                                "void * sc_handle ; "
+                                "void * haccel ; "
+                                "void * hconv ; "
+                                "void * hconvlist ; "
+                                "void * hddedata ; "
+                                "void * hdesk ; "
+                                "void * hdrop ; "
+                                "void * hdwp ; "
+                                "void * henhmetafile ; "
+                                "void * hhook ; "
+                                "void * hkl ; "
+                                "void * hmonitor ; "
+                                "void * hsz ; "
+                                "void * hwinsta ; "
+                                "unsigned short * pwchar ; "
+                                "unsigned short * pushort ; "
+                                "unsigned int uint_ptr ; "
+                                "unsigned int wparam ; "
+                                "unsigned short langid ; "
+                                "unsigned long dword64 ; "
+                                "unsigned long ulong64 ; "
+                                "short half_ptr ; "
+                                "int int_ptr ; "
+                                "const unsigned short * lpcwstr ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32A));
     }
@@ -6244,7 +6326,8 @@ private:
                             "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\n\"));"
                             "    _tscanf(_T(\"%s\"), dst);"
                             "    _stscanf(dst, _T(\"%s\"), dst);"
-                            "}";
+                            "}"
+                            "TBYTE tbyte;";
         const char expected[] = "unsigned short wc ; "
                                 "char c ; "
                                 "char * ptstr ; "
@@ -6264,7 +6347,8 @@ private:
                                 "snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\n\" ) ; "
                                 "scanf ( \"%s\" , dst ) ; "
                                 "sscanf ( dst , \"%s\" , dst ) ; "
-                                "}";
+                                "} "
+                                "unsigned short tbyte ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32A));
     }
 
@@ -6275,6 +6359,7 @@ private:
                             "LPTSTR lptstr;"
                             "PCTSTR pctstr;"
                             "LPCTSTR lpctstr;"
+                            "TBYTE tbyte;"
                             "void foo() {"
                             "    TCHAR tc = _T(\'c\');"
                             "    TCHAR src[10] = _T(\"123456789\");"
@@ -6295,6 +6380,7 @@ private:
                                 "unsigned short * lptstr ; "
                                 "const unsigned short * pctstr ; "
                                 "const unsigned short * lpctstr ; "
+                                "unsigned char tbyte ; "
                                 "void foo ( ) { "
                                 "unsigned short tc ; tc = \'c\' ; "
                                 "unsigned short src [ 10 ] = \"123456789\" ; "
@@ -6337,7 +6423,11 @@ private:
                             "SIZE_T Q;"
                             "HRESULT R;"
                             "LONG_PTR S;"
-                            "HANDLE T;";
+                            "HANDLE T;"
+                            "SSIZE_T _ssize_t;"
+                            "UINT_PTR uint_ptr;"
+                            "WPARAM wparam;"
+                            "INT_PTR int_ptr;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -6363,7 +6453,12 @@ private:
                                 "unsigned long long Q ; "
                                 "long R ; "
                                 "long long S ; "
-                                "void * T ;";
+                                "void * T ; "
+                                "long long _ssize_t ; "
+                                "unsigned long long uint_ptr ; "
+                                "unsigned long long wparam ; "
+                                "long long int_ptr ;"
+                                ;
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win64));
     }

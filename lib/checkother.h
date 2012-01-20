@@ -67,6 +67,7 @@ public:
         checkOther.checkDuplicateExpression();
         checkOther.checkUnreachableCode();
         checkOther.checkSuspiciousSemicolon();
+        checkOther.checkWrongPrintfScanfArguments();
 
         // information checks
         checkOther.checkVariableScope();
@@ -91,7 +92,6 @@ public:
         checkOther.checkCCTypeFunctions();
         checkOther.checkFflushOnInputStream();
         checkOther.invalidScanf();
-        checkOther.checkWrongPrintfScanfArguments();
 
         checkOther.checkCoutCerrMisusage();
         checkOther.checkIncorrectLogicOperator();

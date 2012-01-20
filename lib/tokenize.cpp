@@ -3892,6 +3892,10 @@ void Tokenizer::simplifyFlowControl()
         }
 
         if (tok->str() == "{") {
+            if (tok->previous() && tok->previous()->str() == "=") {
+                tok = tok->link();
+                continue;
+            }
             beginindent = tok;
             ++indentlevel;
         } else if (tok->str() == "}") {
@@ -4144,20 +4148,25 @@ bool Tokenizer::simplifyIfAddBraces()
         }
 
         if (Token::Match(tok, "if|for|while|BOOST_FOREACH (")) {
+
+            if (tok->strAt(2) == ")") {
+                //no arguments inside round braces, abort
+                syntaxError(tok);
+                return false;
+            }
             // don't add "{}" around ";" in "do {} while();" (#609)
             const Token *prev = tok->previous();
-            if (Token::simpleMatch(prev, "} while") &&
-                prev->link() &&
-                prev->link()->previous() &&
-                prev->link()->previous()->str() == "do") {
-                continue;
+            if (prev && prev->str() == "}" && tok->str() == "while") {
+                prev = prev->link()->previous();
+                if (prev && prev->str() == "do")
+                    continue;
             }
 
             // Goto the ending ')'
             tok = tok->next()->link();
 
-            // ')' should be followed by '{'
-            if (Token::simpleMatch(tok, ") {"))
+            // there's already '{' after ')', don't bother
+            if (tok->next() && tok->next()->str() == "{")
                 continue;
         }
 
@@ -4171,11 +4180,10 @@ bool Tokenizer::simplifyIfAddBraces()
             continue;
         }
 
-        // If there is no code after the if(), abort
+        // If there is no code after the 'if()' or 'else', abort
         if (!tok->next()) {
-            // This is a syntax error and we should call syntaxError() and return false but
-            // many tokenizer tests are written with this syntax error so just ignore it.
-            return true;
+            syntaxError(tok);
+            return false;
         }
 
         // insert open brace..
@@ -4183,7 +4191,7 @@ bool Tokenizer::simplifyIfAddBraces()
         tok = tok->next();
         Token *tempToken = tok;
 
-        bool innerIf = Token::simpleMatch(tempToken->next(), "if");
+        bool innerIf = (tempToken->next() && tempToken->next()->str() == "if");
 
         if (Token::simpleMatch(tempToken->next(), "do {"))
             tempToken = tempToken->linkAt(2);
@@ -4196,7 +4204,12 @@ bool Tokenizer::simplifyIfAddBraces()
         // * if (cond1) if (cond2) ; else ;
         while (NULL != (tempToken = tempToken->next())) {
             if (tempToken->str() == "{") {
-                if (Token::simpleMatch(tempToken->previous(),"else {")) {
+                if (tempToken->previous()->str() == "=") {
+                    tempToken = tempToken->link();
+                    continue;
+                }
+
+                if (tempToken->previous()->str() == "else") {
                     if (innerIf)
                         tempToken = tempToken->link();
                     else
@@ -4204,7 +4217,7 @@ bool Tokenizer::simplifyIfAddBraces()
                     break;
                 }
                 tempToken = tempToken->link();
-                if (!tempToken || !tempToken->next())
+                if (!tempToken->next())
                     break;
                 if (Token::simpleMatch(tempToken, "} else") && !Token::Match(tempToken->tokAt(2), "if|{"))
                     innerIf = false;
@@ -4228,11 +4241,10 @@ bool Tokenizer::simplifyIfAddBraces()
                 if (!innerIf)
                     break;
 
-                if (Token::simpleMatch(tempToken, "; else if"))
-                    ;
-                else if (Token::simpleMatch(tempToken, "; else"))
-                    innerIf = false;
-                else
+                if (Token::simpleMatch(tempToken, "; else")) {
+                    if (tempToken->strAt(2) != "if")
+                        innerIf = false;
+                } else
                     break;
             }
         }
@@ -5294,14 +5306,14 @@ void Tokenizer::simplifyPlatformTypes()
         _settings->platformType == Settings::Win32W ||
         _settings->platformType == Settings::Win64) {
         for (Token *tok = _tokens; tok; tok = tok->next()) {
-            if (Token::Match(tok, "BOOL|INT|INT32"))
+            if (Token::Match(tok, "BOOL|INT|INT32|HFILE|LONG32"))
                 tok->str("int");
             else if (Token::Match(tok, "BOOLEAN|BYTE|UCHAR")) {
                 tok->str("unsigned");
                 tok->insertToken("char");
             } else if (tok->str() == "CHAR")
                 tok->str("char");
-            else if (Token::Match(tok, "DWORD|ULONG|COLORREF")) {
+            else if (Token::Match(tok, "DWORD|ULONG|COLORREF|LCID|LCTYPE|LGRPID")) {
                 tok->str("unsigned");
                 tok->insertToken("long");
             } else if (Token::Match(tok, "DWORD_PTR|ULONG_PTR|SIZE_T")) {
@@ -5311,21 +5323,19 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->insertToken("long");
             } else if (tok->str() == "FLOAT")
                 tok->str("float");
-            else if (tok->str() == "HRESULT")
+            else if (Token::Match(tok, "HRESULT|LONG"))
                 tok->str("long");
-            else if (tok->str() == "INT64") {
+            else if (Token::Match(tok, "INT64|LONG64")) {
                 tok->str("long");
                 tok->insertToken("long");
-            } else if (tok->str() == "LONG")
-                tok->str("long");
-            else if (Token::Match(tok, "LONG_PTR|LPARAM|LRESULT")) {
+            } else if (Token::Match(tok, "LONG_PTR|LPARAM|LRESULT|SSIZE_T")) {
                 tok->str("long");
                 if (_settings->platformType == Settings::Win64)
                     tok->insertToken("long");
             } else if (Token::Match(tok, "LPBOOL|PBOOL")) {
                 tok->str("int");
                 tok->insertToken("*");
-            } else if (Token::Match(tok, "LPBYTE|PBOOLEAN|PBYTE")) {
+            } else if (Token::Match(tok, "LPBYTE|PBOOLEAN|PBYTE|PUCHAR")) {
                 tok->str("unsigned");
                 tok->insertToken("*");
                 tok->insertToken("char");
@@ -5337,7 +5347,7 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->str("const");
                 tok->insertToken("*");
                 tok->insertToken("void");
-            } else if (tok->str() == "LPDWORD") {
+            } else if (Token::Match(tok, "LPDWORD|LPCOLORREF|PDWORD|PULONG")) {
                 tok->str("unsigned");
                 tok->insertToken("*");
                 tok->insertToken("long");
@@ -5350,28 +5360,31 @@ void Tokenizer::simplifyPlatformTypes()
             } else if (Token::Match(tok, "LPSTR|PSTR|PCHAR")) {
                 tok->str("char");
                 tok->insertToken("*");
-            } else if (Token::Match(tok, "LPVOID|PVOID|HANDLE|HBITMAP|HBRUSH|HCOLORSPACE|HCURSOR|HDC|HFONT|HGDIOBJ|HGLOBAL|HICON|HINSTANCE|HKEY|HLOCAL|HMENU|HMETAFILE|HMODULE|HPALETTE|HPEN|HRGN|HRSRC|HWND")) {
+            } else if (Token::Match(tok, "LPVOID|PVOID|HANDLE|HBITMAP|HBRUSH|HCOLORSPACE|HCURSOR|HDC|HFONT|HGDIOBJ|HGLOBAL|HICON|HINSTANCE|HKEY|HLOCAL|HMENU|HMETAFILE|HMODULE|HPALETTE|HPEN|HRGN|HRSRC|HWND|SERVICE_STATUS_HANDLE|SC_LOCK|SC_HANDLE|HACCEL|HCONV|HCONVLIST|HDDEDATA|HDESK|HDROP|HDWP|HENHMETAFILE|HHOOK|HKL|HMONITOR|HSZ|HWINSTA")) {
                 tok->str("void");
                 tok->insertToken("*");
             } else if ((tok->str() == "PHANDLE")) {
                 tok->str("void");
                 tok->insertToken("*");
                 tok->insertToken("*");
-            } else if (Token::Match(tok, "LPWORD|PWORD")) {
+            } else if (Token::Match(tok, "LPWORD|PWORD|PWSTR|PWCHAR|PUSHORT")) {
                 tok->str("unsigned");
                 tok->insertToken("*");
                 tok->insertToken("short");
             } else if (tok->str() == "SHORT")
                 tok->str("short");
-            else if (Token::Match(tok, "UINT|MMRESULT|SOCKET")) {
+            else if (Token::Match(tok, "UINT|MMRESULT|SOCKET|ULONG32|UINT32|DWORD32")) {
                 tok->str("unsigned");
                 tok->insertToken("int");
             } else if (Token::Match(tok, "UINT_PTR|WPARAM")) {
                 tok->str("unsigned");
-                tok->insertToken("long");
-                if (_settings->platformType == Settings::Win64)
+                if (_settings->platformType == Settings::Win64) {
                     tok->insertToken("long");
-            } else if (Token::Match(tok, "USHORT|WORD|WCHAR|ATOM|wchar_t")) {
+                    tok->insertToken("long");
+                } else {
+                    tok->insertToken("int");
+                }
+            } else if (Token::Match(tok, "USHORT|WORD|WCHAR|ATOM|wchar_t|LANGID")) {
                 tok->str("unsigned");
                 tok->insertToken("short");
             } else if (tok->str() == "VOID")
@@ -5383,6 +5396,12 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->str("unsigned");
                     tok->insertToken("short");
                 }
+            } else if (tok->str() == "TBYTE") {
+                tok->str("unsigned");
+                if (_settings->platformType == Settings::Win32A)
+                    tok->insertToken("short");
+                else
+                    tok->insertToken("char");
             } else if (Token::Match(tok, "PTSTR|LPTSTR")) {
                 if (_settings->platformType == Settings::Win32A) {
                     tok->str("char");
@@ -5393,16 +5412,35 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->insertToken("short");
                 }
             } else if (Token::Match(tok, "PCTSTR|LPCTSTR")) {
+                tok->str("const");
                 if (_settings->platformType == Settings::Win32A) {
-                    tok->str("const");
                     tok->insertToken("*");
                     tok->insertToken("char");
                 } else {
-                    tok->str("const");
                     tok->insertToken("*");
                     tok->insertToken("short");
                     tok->insertToken("unsigned");
                 }
+            } else if (Token::Match(tok, "ULONG64|DWORD64")) {
+                tok->str("unsigned");
+                tok->insertToken("long");
+            } else if (tok->str() == "HALF_PTR") {
+                if (_settings->platformType == Settings::Win64)
+                    tok->str("int");
+                else
+                    tok->str("short");
+            } else if (tok->str() == "INT_PTR") {
+                if (_settings->platformType == Settings::Win64) {
+                    tok->str("long");
+                    tok->insertToken("long");
+                } else {
+                    tok->str("int");
+                }
+            } else if (tok->str() == "LPCWSTR") {
+                tok->str("const");
+                tok->insertToken("*");
+                tok->insertToken("short");
+                tok->insertToken("unsigned");
             }
         }
     }
@@ -6707,10 +6745,8 @@ void Tokenizer::simplifyGoto()
             }
         }
 
-        if (!indentlevel && Token::Match(tok, ") const| {")) {
-            gotos.clear();
+        if (!indentlevel && Token::Match(tok, ") const| {"))
             beginfunction = tok;
-        }
 
         else if (indentlevel && Token::Match(tok, "[{};] goto %var% ;"))
             gotos.push_back(tok->next());
@@ -7014,22 +7050,25 @@ void Tokenizer::simplifyEnum()
             tok = tok->previous();
         }
 
-        if (Token::Match(tok, "class|struct|namespace %any%") &&
+        if (Token::Match(tok, "class|struct|namespace") && tok->next() &&
             (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
             className = tok->next()->str();
             classLevel = 0;
-            continue;
         } else if (tok->str() == "}") {
             --classLevel;
             if (classLevel < 0)
                 className = "";
-
-            continue;
         } else if (tok->str() == "{") {
             ++classLevel;
-            continue;
-        } else if (Token::Match(tok, "enum class|struct| {|:") ||
-                   Token::Match(tok, "enum class|struct| %type% {|:|;")) {
+        } else if (tok->str() == "enum") {
+            Token *temp = tok->next();
+            if (!temp)
+                break;
+            if (Token::Match(temp, "class|struct"))
+                temp = temp->next();
+            if (!Token::Match(temp, "[{:]") &&
+                (!temp->isName() || !Token::Match(temp->next(), "[{:;]")))
+                continue;
             Token *start = tok;
             Token *enumType = 0;
             Token *typeTokenStart = 0;
@@ -7040,7 +7079,7 @@ void Tokenizer::simplifyEnum()
                 tok->deleteNext();
 
             // check for name
-            if (Token::Match(tok->next(), "%type%")) {
+            if (tok->next()->isName()) {
                 enumType = tok->next();
                 tok = tok->next();
             }

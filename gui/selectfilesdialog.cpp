@@ -11,32 +11,71 @@
 
 class SelectFilesModel : public QFileSystemModel {
 private:
-    QStringList selected;
-    QStringList unselected;
+    /**
+     * paths that are user-checked. on the screen all children
+     * for these paths will appear to be checked too unless
+     * they are "unchecked".
+     */
+    QStringList checked;
+
+    /**
+     * paths that are user-unchecked.
+     */
+    QStringList unchecked;
 
     /**
      * Get index in stringlist where start of string matches. If
      * many strings in the stringlist match then return the index
      * for the longest string.
-     * \param s stringlist with filepaths
+     * \param paths stringlist with filepaths
      * \param filepath the filepath that is matched against the stringlist
      */
-    int getindex(const QStringList &s, const QString &filepath) const {
+    int getindex(const QStringList &paths, const QString &filepath) const {
         int matchlen = 0;
         int matchindex = -1;
-        for (int i = 0; i < s.size(); ++i) {
-            if (filepath.startsWith(s[i])) {
+        for (int i = 0; i < paths.size(); ++i) {
+            if (filepath.startsWith(paths[i])) {
                 // not a real match of paths..
-                if (s[i].size() < filepath.size() && filepath[s[i].size()] != '/')
+                if (paths[i].size() < filepath.size() && filepath[paths[i].size()] != '/')
                     continue;
 
                 // paths match. the return value is the index for the
                 // longest match
-                if (s[i].size() > matchlen)
+                if (paths[i].size() > matchlen)
                     matchindex = i;
             }
         }
         return matchindex;
+    }
+
+    /**
+     * Is filepath partially checked?
+     * \param filepath the filepath to investigate
+     * \param checkindex result from getindex(checked,filepath). If not given the getindex will be called.
+     * \return true if filepath is partially checked
+     */
+    bool partiallyChecked(const QString &filepath, int checkindex = -2) const {
+        const QString filepath2 = filepath.endsWith("/") ? filepath : (filepath + "/");
+
+        for (int i = 0; i < unchecked.size(); ++i) {
+            if (unchecked[i].startsWith(filepath2)) {
+                return true;
+            }
+        }
+
+        if (checkindex == -2)
+            checkindex = getindex(checked, filepath);
+
+
+        if (checkindex == -1) {
+            for (int i = 0; i < checked.size(); ++i) {
+                if (checked[i].startsWith(filepath2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 public:
@@ -61,14 +100,21 @@ public:
     QVariant data(const QModelIndex& index, int role=Qt::DisplayRole) const {
         if (role == Qt::CheckStateRole) {
             const QString filepath = filePath(index);
-            int selindex = getindex(selected, filepath);
-            int unselindex = getindex(unselected, filepath);
-            if (selindex >= 0 && unselindex == -1)
+            const int checkindex = getindex(checked, filepath);
+            const int uncheckindex = getindex(unchecked, filepath);
+
+            // If some children are not checked then this item should be partially checked..
+            if (partiallyChecked(filepath, checkindex))
+                return Qt::PartiallyChecked;
+
+            // Is item selected but not unselected?
+            if (checkindex >= 0 && uncheckindex == -1)
                 return Qt::Checked;
-            if (selindex >= 0 && unselindex >= 0 &&
-                selected[selindex].size() > unselected[unselindex].size())
+            if (checkindex >= 0 && uncheckindex >= 0 &&
+                checked[checkindex].size() > unchecked[uncheckindex].size())
                 return Qt::Checked;
 
+            // Item is either not selected at all or else it is unselected
             return Qt::Unchecked;
         }
         return QFileSystemModel::data(index, role);
@@ -77,34 +123,48 @@ public:
     bool setData(const QModelIndex& index, const QVariant& value, int role) {
         if (role == Qt::CheckStateRole) {
             const QString filepath = filePath(index);
-            if (unselected.indexOf(filepath) != -1) {
+
+            bool partiallychecked = partiallyChecked(filepath);
+
+            if (unchecked.indexOf(filepath) != -1) {
                 // remove unchecked path
-                unselected.removeAll(filepath);
-            } else if (selected.indexOf(filepath) != -1) {
+                unchecked.removeAll(filepath);
+            } else if (partiallychecked || checked.indexOf(filepath) != -1) {
                 // remove child selected paths
-                for (int i = selected.size() - 1; i >= 0; --i) {
-                    if (selected[i].startsWith(filepath))
-                        selected.removeAt(i);
+                for (int i = checked.size() - 1; i >= 0; --i) {
+                    if (checked[i].startsWith(filepath))
+                        checked.removeAt(i);
                 }
 
                 // remove child unselected paths
-                for (int i = unselected.size() - 1; i >= 0; --i) {
-                    if (unselected[i].startsWith(filepath))
-                        unselected.removeAt(i);
+                for (int i = unchecked.size() - 1; i >= 0; --i) {
+                    if (unchecked[i].startsWith(filepath))
+                        unchecked.removeAt(i);
                 }
+
+                // If partialChecked then select this item
+                if (partiallychecked)
+                    checked.append(filepath);
             } else {
-                int selindex = getindex(selected, filepath);
-                int unselindex = getindex(unselected, filepath);
-                if (selindex == -1)
-                    selected.append(filepath);
-                else if (unselindex >= 0 && selected[selindex].size() < unselected[unselindex].size())
-                    selected.append(filepath);
+                const int checkindex = getindex(checked, filepath);
+                const int uncheckindex = getindex(unchecked, filepath);
+                if (checkindex == -1)
+                    checked.append(filepath);
+                else if (uncheckindex >= 0 && checked[checkindex].size() < unchecked[uncheckindex].size())
+                    checked.append(filepath);
                 else
-                    unselected.append(filepath);
+                    unchecked.append(filepath);
             }
 
             if (rowCount(index) > 0)
                 emit(dataChanged(index, index.child(rowCount(index)-1,0)));
+
+            // update parents
+            QModelIndex parent = index.parent();
+            while (parent != QModelIndex()) {
+                emit(dataChanged(parent,parent));
+                parent = parent.parent();
+            }
 
             return true;
         }
@@ -114,20 +174,20 @@ public:
     QStringList getFiles() const {
         QStringList ret;
 
-        // List all files in "selected" folders..
+        // List all files in "checked" folders..
         FileList fileLister;
-        fileLister.AddPathList(selected);
+        fileLister.AddPathList(checked);
         ret = fileLister.GetFileList();
 
-        // Remove all items from ret that are unselected but not selected..
+        // Remove all items from ret that are unchecked but not checked..
         for (int i = ret.size() - 1; i >= 0; i--) {
-            int unselindex = getindex(unselected, ret[i]);
-            if (unselindex == -1)
+            int uncheckindex = getindex(unchecked, ret[i]);
+            if (uncheckindex == -1)
                 continue;
 
-            // both selected and unselected, check which to rely on
-            int selindex = getindex(selected, ret[i]);
-            if (selected[selindex].size() < unselected[unselindex].size())
+            // both checked and unchecked, check which to rely on
+            int checkindex = getindex(checked, ret[i]);
+            if (checked[checkindex].size() < unchecked[uncheckindex].size())
                 ret.removeAt(i);
         }
 

@@ -76,7 +76,7 @@ const Token* TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(Token *to
     // check for more complicated syntax errors when using templates..
     for (const Token *tok = tokens; tok; tok = tok->next()) {
         // skip executing scopes..
-        if (Token::Match(tok, ") const| {") || Token::Match(tok, "[,=] {")) {
+        if (Token::simpleMatch(tok, ") {") || Token::Match(tok, ") %var% {") || Token::Match(tok, "[,=] {")) {
             while (tok->str() != "{")
                 tok = tok->next();
             tok = tok->link();
@@ -243,6 +243,7 @@ void TemplateSimplifier::removeTemplates(Token *tok)
             } else if (tok2->str() == ")") {  // garbage code! (#3504)
                 Token::eraseTokens(tok,tok2);
                 tok->deleteThis();
+                break;
             }
 
             else if (tok2->str() == "{") {
@@ -534,8 +535,16 @@ void TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(const std::li
         }
 
         for (std::list<Token *>::iterator it = eq.begin(); it != eq.end(); ++it) {
-            (*it)->deleteNext();
-            (*it)->deleteThis();
+            Token * const eqtok = *it;
+            const Token *tok2;
+            for (tok2 = eqtok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+                else if (tok2->str() == "," || tok2->str() == ">")
+                    break;
+            }
+            Token::eraseTokens(eqtok, tok2);
+            eqtok->deleteThis();
         }
     }
 }
