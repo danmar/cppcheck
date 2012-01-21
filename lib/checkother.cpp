@@ -1922,8 +1922,8 @@ void CheckOther::checkConstantFunctionParameter()
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        for (std::list<Function>::const_iterator j = i->functionList.begin(); j != i->functionList.end(); ++j) {
-            for (const Token* tok = j->arg->next(); tok; tok = tok->nextArgument()) {
+        if (i->type == Scope::eFunction && i->function) {
+            for (const Token* tok = i->function->arg->next(); tok; tok = tok->nextArgument()) {
                 // TODO: False negatives. This pattern only checks for string.
                 //       Investigate if there are other classes in the std
                 //       namespace and add them to the pattern. There are

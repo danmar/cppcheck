@@ -61,7 +61,6 @@ protected:
 public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
-    virtual void reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/) {}
     void run(const std::string &str);
 
     TestFixture(const std::string &_name);

@@ -90,7 +90,7 @@ CmdLineParser::CmdLineParser(Settings *settings)
 {
 }
 
-void CmdLineParser::PrintMessage(const std::string &message)
+void CmdLineParser::PrintMessage(const std::string &message) const
 {
     std::cout << message << std::endl;
 }
@@ -682,7 +682,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     return true;
 }
 
-void CmdLineParser::PrintHelp()
+void CmdLineParser::PrintHelp() const
 {
     std::cout <<   "Cppcheck - A tool for static C/C++ code analysis\n"
               "\n"

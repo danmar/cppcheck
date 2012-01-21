@@ -98,12 +98,12 @@ protected:
     /**
      * Print help text to the console.
      */
-    void PrintHelp();
+    void PrintHelp() const;
 
     /**
      * Print message (to console?).
      */
-    void PrintMessage(const std::string &message);
+    void PrintMessage(const std::string &message) const;
 
 private:
     Settings *_settings;

@@ -677,6 +677,10 @@ private:
             }
         }
 
+        ASSERT(scope != 0);
+        if (!scope)
+            return;
+
         ASSERT_EQUALS("X", scope->className);
 
         // The class has a constructor but the implementation _is not_ seen
@@ -706,6 +710,10 @@ private:
                 break;
             }
         }
+
+        ASSERT(scope != 0);
+        if (!scope)
+            return;
 
         ASSERT_EQUALS("X", scope->className);
 

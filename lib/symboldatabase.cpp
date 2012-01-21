@@ -410,8 +410,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                             addNewFunction(&scope, &tok);
 
-                            if (scope)
+                            if (scope) {
                                 old_scope->functionList.push_back(function);
+                                scope->function = &old_scope->functionList.back();
+                            }
                         }
 
                         // syntax error
@@ -461,8 +463,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                             addNewFunction(&scope, &tok1);
 
-                            if (scope)
+                            if (scope) {
                                 old_scope->functionList.push_back(function);
+                                scope->function = &old_scope->functionList.back();
+                            }
                         }
 
                         // syntax error?
