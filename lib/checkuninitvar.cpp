@@ -474,7 +474,13 @@ private:
         if (tok.varId()) {
             // array variable passed as function parameter..
             if (Token::Match(tok.previous(), "[(,] %var% [+-,)]")) {
-                if (Token::Match(tok.previous(), "( %var% ) )| ="))
+                // skip ')'..
+                const Token *tok2 = tok.next();
+                while (tok2 && tok2->str() == ")")
+                    tok2 = tok2->next();
+
+                // variable is assigned like: "( %var% ) .. ="
+                if (Token::Match(tok.previous(), "( %var% )") && tok2 && tok2->str() == "=")
                     ExecutionPath::bailOutVar(checks, tok.varId());
                 else
                     use(checks, &tok);
