@@ -2392,7 +2392,7 @@ bool Tokenizer::hasEnumsWithTypedef()
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "enum %var% {")) {
             tok = tok->tokAt(2);
-            const Token *tok2 = Token::findmatch(tok, "typedef", tok->link());
+            const Token *tok2 = Token::findsimplematch(tok, "typedef", tok->link());
             if (tok2) {
                 syntaxError(tok2);
                 return true;

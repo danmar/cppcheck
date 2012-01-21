@@ -599,8 +599,7 @@ void CheckOther::checkSwitchCaseFallThrough()
     const char breakPattern[] = "break|continue|return|exit|goto|throw";
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        const Token* const tok = i->classDef;
-        if (i->type != Scope::eSwitch || !tok) // Find the beginning of a switch
+        if (i->type != Scope::eSwitch || !i->classStart) // Find the beginning of a switch
             continue;
 
         // Check the contents of the switch statement
@@ -609,7 +608,7 @@ void CheckOther::checkSwitchCaseFallThrough()
         std::stack<Token *> scopenest;
         bool justbreak = true;
         bool firstcase = true;
-        for (const Token *tok2 = tok->next()->link()->tokAt(2); tok2; tok2 = tok2->next()) {
+        for (const Token *tok2 = i->classStart; tok2 != i->classEnd; tok2 = tok2->next()) {
             if (Token::simpleMatch(tok2, "if (")) {
                 tok2 = tok2->next()->link()->next();
                 if (tok2->link() == NULL) {
@@ -827,11 +826,11 @@ void CheckOther::checkAssignmentInAssert()
     const Token *endTok = tok ? tok->next()->link() : NULL;
 
     while (tok && endTok) {
-        const Token* varTok = Token::findmatch(tok->tokAt(2), "%var% --|++|+=|-=|*=|/=|&=|^=|=", endTok);
-        if (varTok) {
-            assignmentInAssertError(tok, varTok->str());
-        } else if (NULL != (varTok = Token::findmatch(tok->tokAt(2), "--|++ %var%", endTok))) {
-            assignmentInAssertError(tok, varTok->strAt(1));
+        for (tok = tok->tokAt(2); tok != endTok; tok = tok->next()) {
+            if (tok->isName() && (tok->next()->isAssignmentOp() || tok->next()->str() == "++" || tok->next()->str() == "--"))
+                assignmentInAssertError(tok, tok->str());
+            else if (Token::Match(tok, "--|++ %var%"))
+                assignmentInAssertError(tok, tok->strAt(1));
         }
 
         tok = Token::findmatch(endTok->next(), assertPattern);
@@ -1638,7 +1637,7 @@ void CheckOther::checkUnreachableCode()
                 // that the goto jump was intended to skip some code on the first loop iteration.
                 bool labelInFollowingLoop = false;
                 if (labelName && Token::Match(secondBreak, "while|do|for")) {
-                    const Token *scope = Token::findmatch(secondBreak, "{");
+                    const Token *scope = Token::findsimplematch(secondBreak, "{");
                     if (scope) {
                         for (const Token *tokIter = scope; tokIter != scope->link() && tokIter; tokIter = tokIter->next()) {
                             if (Token::Match(tokIter, "[;{}] %any% :") && labelName->str() == tokIter->strAt(1)) {
@@ -2270,24 +2269,12 @@ void CheckOther::checkMisusedScopedObject()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
 
-        unsigned int depth = 0;
-
-        for (const Token *tok = scope->classStart; tok; tok = tok->next()) {
-            if (tok->str() == "{") {
-                ++depth;
-            } else if (tok->str() == "}") {
-                if (depth <= 1)
-                    break;
-                --depth;
-            }
-
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::simpleMatch(tok->linkAt(2), ") ;")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
@@ -2484,15 +2471,15 @@ void CheckOther::checkDuplicateBranch()
 //-----------------------------------------------------------------------------
 void CheckOther::checkDoubleFree()
 {
-    std::set<int> freedVariables;
-    std::set<int> closeDirVariables;
+    std::set<unsigned int> freedVariables;
+    std::set<unsigned int> closeDirVariables;
 
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
         // Keep track of any variables passed to "free()", "g_free()" or "closedir()",
         // and report an error if the same variable is passed twice.
         if (Token::Match(tok, "free|g_free|closedir ( %var% )")) {
-            int var = tok->tokAt(2)->varId();
+            unsigned int var = tok->tokAt(2)->varId();
             if (var) {
                 if (Token::Match(tok, "free|g_free")) {
                     if (freedVariables.find(var) != freedVariables.end())
@@ -2512,7 +2499,7 @@ void CheckOther::checkDoubleFree()
         // and report an error if the same variable is delete'd twice.
         else if (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")) {
             int varIdx = (tok->strAt(1) == "[") ? 3 : 1;
-            int var = tok->tokAt(varIdx)->varId();
+            unsigned int var = tok->tokAt(varIdx)->varId();
             if (var) {
                 if (freedVariables.find(var) != freedVariables.end())
                     doubleFreeError(tok, tok->tokAt(varIdx)->str());
@@ -2531,7 +2518,7 @@ void CheckOther::checkDoubleFree()
         else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf")) {
             for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
                 if (Token::Match(tok2, "%var%")) {
-                    int var = tok2->varId();
+                    unsigned int var = tok2->varId();
                     if (var) {
                         freedVariables.erase(var);
                         closeDirVariables.erase(var);
@@ -2542,7 +2529,7 @@ void CheckOther::checkDoubleFree()
 
         // If a pointer is assigned a new value, remove it from the set of previously freed variables
         else if (Token::Match(tok, "%var% =")) {
-            int var = tok->varId();
+            unsigned int var = tok->varId();
             if (var) {
                 freedVariables.erase(var);
                 closeDirVariables.erase(var);
