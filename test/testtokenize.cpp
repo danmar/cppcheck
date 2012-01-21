@@ -459,7 +459,6 @@ private:
     }
 
     void tokenize3() {
-        errout.str("");
         const std::string code("void foo()\n"
                                "{\n"
                                "    int i;\n"
@@ -474,7 +473,6 @@ private:
     }
 
     void tokenize4() {
-        errout.str("");
         const std::string code("class foo\n"
                                "{\n"
                                "public:\n"
@@ -535,7 +533,6 @@ private:
     }
 
     void tokenize9() {
-        errout.str("");
         const char code[] = "typedef void (*fp)();\n"
                             "typedef fp (*fpp)();\n"
                             "void f() {\n"
@@ -625,21 +622,18 @@ private:
 
     void wrong_syntax1() {
         {
-            errout.str("");
             const std::string code("TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))");
             ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", tokenizeAndStringify(code.c_str(), true));
             ASSERT_EQUALS("", errout.str());
         }
 
         {
-            errout.str("");
             const std::string code("struct A { template<int> struct { }; };");
             ASSERT_EQUALS("", tokenizeAndStringify(code.c_str(), true));
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
         }
 
         {
-            errout.str("");
             const std::string code("enum ABC { A,B, typedef enum { C } };");
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
@@ -647,7 +641,6 @@ private:
 
         {
             // #3314 - don't report syntax error.
-            errout.str("");
             const std::string code("struct A { typedef B::C (A::*f)(); };");
             tokenizeAndStringify(code.c_str(), true);
             ASSERT_EQUALS("[test.cpp:1]: (debug) Failed to parse 'typedef B :: C ( A :: * f ) ( ) ;'. The checking continues anyway.\n", errout.str());
@@ -668,7 +661,6 @@ private:
 
     void wrong_syntax_if_macro() {
         // #2518
-        errout.str("");
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
@@ -6104,6 +6096,7 @@ private:
     }
 
     void platformWin32() {
+        // WIN32A
         const char code[] = "unsigned int sizeof_short = sizeof(short);"
                             "unsigned int sizeof_unsigned_short = sizeof(unsigned short);"
                             "unsigned int sizeof_int = sizeof(int);"
@@ -6163,7 +6156,45 @@ private:
                             "SIZE_T Q;"
                             "HRESULT R;"
                             "LONG_PTR S;"
-                            "HANDLE T;";
+                            "HANDLE T;"
+                            "BOOL _bool;"
+                            "HFILE hfile;"
+                            "LONG32 long32;"
+                            "LCID lcid;"
+                            "LCTYPE lctype;"
+                            "LGRPID lgrpid;"
+                            "LONG64 long64;"
+                            "SSIZE_T _ssize_t;"
+                            "PUCHAR puchar;"
+                            "LPCOLORREF lpcolorref;"
+                            "PDWORD pdword;"
+                            "PULONG pulong;"
+                            "SERVICE_STATUS_HANDLE service_status_hanlde;"
+                            "SC_LOCK sc_lock;"
+                            "SC_HANDLE sc_handle;"
+                            "HACCEL haccel;"
+                            "HCONV hconv;"
+                            "HCONVLIST hconvlist;"
+                            "HDDEDATA hddedata;"
+                            "HDESK hdesk;"
+                            "HDROP hdrop;"
+                            "HDWP hdwp;"
+                            "HENHMETAFILE henhmetafile;"
+                            "HHOOK hhook;"
+                            "HKL hkl;"
+                            "HMONITOR hmonitor;"
+                            "HSZ hsz;"
+                            "HWINSTA hwinsta;"
+                            "PWCHAR pwchar;"
+                            "PUSHORT pushort;"
+                            "UINT_PTR uint_ptr;"
+                            "WPARAM wparam;"
+                            "LANGID langid;"
+                            "DWORD64 dword64;"
+                            "ULONG64 ulong64;"
+                            "HALF_PTR half_ptr;"
+                            "INT_PTR int_ptr;"
+                            "LPCWSTR lpcwstr;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -6224,7 +6255,45 @@ private:
                                 "unsigned long Q ; "
                                 "long R ; "
                                 "long S ; "
-                                "void * T ;";
+                                "void * T ; "
+                                "int _bool ; "
+                                "int hfile ; "
+                                "int long32 ; "
+                                "unsigned long lcid ; "
+                                "unsigned long lctype ; "
+                                "unsigned long lgrpid ; "
+                                "long long long64 ; "
+                                "long _ssize_t ; "
+                                "unsigned char * puchar ; "
+                                "unsigned long * lpcolorref ; "
+                                "unsigned long * pdword ; "
+                                "unsigned long * pulong ; "
+                                "void * service_status_hanlde ; "
+                                "void * sc_lock ; "
+                                "void * sc_handle ; "
+                                "void * haccel ; "
+                                "void * hconv ; "
+                                "void * hconvlist ; "
+                                "void * hddedata ; "
+                                "void * hdesk ; "
+                                "void * hdrop ; "
+                                "void * hdwp ; "
+                                "void * henhmetafile ; "
+                                "void * hhook ; "
+                                "void * hkl ; "
+                                "void * hmonitor ; "
+                                "void * hsz ; "
+                                "void * hwinsta ; "
+                                "unsigned short * pwchar ; "
+                                "unsigned short * pushort ; "
+                                "unsigned int uint_ptr ; "
+                                "unsigned int wparam ; "
+                                "unsigned short langid ; "
+                                "unsigned long dword64 ; "
+                                "unsigned long ulong64 ; "
+                                "short half_ptr ; "
+                                "int int_ptr ; "
+                                "const unsigned short * lpcwstr ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32A));
     }
@@ -6249,7 +6318,8 @@ private:
                             "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\n\"));"
                             "    _tscanf(_T(\"%s\"), dst);"
                             "    _stscanf(dst, _T(\"%s\"), dst);"
-                            "}";
+                            "}"
+                            "TBYTE tbyte;";
         const char expected[] = "unsigned short wc ; "
                                 "char c ; "
                                 "char * ptstr ; "
@@ -6269,7 +6339,8 @@ private:
                                 "snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\n\" ) ; "
                                 "scanf ( \"%s\" , dst ) ; "
                                 "sscanf ( dst , \"%s\" , dst ) ; "
-                                "}";
+                                "} "
+                                "unsigned short tbyte ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32A));
     }
 
@@ -6280,6 +6351,7 @@ private:
                             "LPTSTR lptstr;"
                             "PCTSTR pctstr;"
                             "LPCTSTR lpctstr;"
+                            "TBYTE tbyte;"
                             "void foo() {"
                             "    TCHAR tc = _T(\'c\');"
                             "    TCHAR src[10] = _T(\"123456789\");"
@@ -6300,6 +6372,7 @@ private:
                                 "unsigned short * lptstr ; "
                                 "const unsigned short * pctstr ; "
                                 "const unsigned short * lpctstr ; "
+                                "unsigned char tbyte ; "
                                 "void foo ( ) { "
                                 "unsigned short tc ; tc = \'c\' ; "
                                 "unsigned short src [ 10 ] = \"123456789\" ; "
@@ -6342,7 +6415,11 @@ private:
                             "SIZE_T Q;"
                             "HRESULT R;"
                             "LONG_PTR S;"
-                            "HANDLE T;";
+                            "HANDLE T;"
+                            "SSIZE_T _ssize_t;"
+                            "UINT_PTR uint_ptr;"
+                            "WPARAM wparam;"
+                            "INT_PTR int_ptr;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
@@ -6368,7 +6445,12 @@ private:
                                 "unsigned long long Q ; "
                                 "long R ; "
                                 "long long S ; "
-                                "void * T ;";
+                                "void * T ; "
+                                "long long _ssize_t ; "
+                                "unsigned long long uint_ptr ; "
+                                "unsigned long long wparam ; "
+                                "long long int_ptr ;"
+                                ;
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win64));
     }

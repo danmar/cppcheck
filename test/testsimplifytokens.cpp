@@ -2409,7 +2409,6 @@ private:
 
     void whileAssign2() {
         // #1909 - Internal error
-        errout.str("");
         tok("void f()\n"
             "{\n"
             "  int b;\n"

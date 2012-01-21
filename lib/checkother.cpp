@@ -1212,7 +1212,8 @@ void CheckOther::invalidScanf()
             }
 
             else if (std::isalpha(formatstr[i])) {
-                invalidScanfError(tok);
+                if (formatstr[i] != 'c')  // #3490 - field width limits are not necessary for %c
+                    invalidScanfError(tok);
                 format = false;
             }
         }
@@ -1921,8 +1922,8 @@ void CheckOther::checkConstantFunctionParameter()
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        for (std::list<Function>::const_iterator j = i->functionList.begin(); j != i->functionList.end(); ++j) {
-            for (const Token* tok = j->arg->next(); tok; tok = tok->nextArgument()) {
+        if (i->type == Scope::eFunction && i->function) {
+            for (const Token* tok = i->function->arg->next(); tok; tok = tok->nextArgument()) {
                 // TODO: False negatives. This pattern only checks for string.
                 //       Investigate if there are other classes in the std
                 //       namespace and add them to the pattern. There are
@@ -1995,7 +1996,7 @@ void CheckOther::checkCharVariable()
                 continue;
 
             // This is an error..
-            charBitOpError(tok);
+            charBitOpError(tok->tokAt(4));
         }
 
         else if (Token::Match(tok, "[;{}] %var% = %any% [&|] ( * %var% ) ;")) {
@@ -2012,7 +2013,7 @@ void CheckOther::checkCharVariable()
                 continue;
 
             // This is an error..
-            charBitOpError(tok);
+            charBitOpError(tok->tokAt(4));
         }
     }
 }
@@ -2475,6 +2476,96 @@ void CheckOther::checkDuplicateBranch()
                 duplicateBranchError(tok, tok1->tokAt(2));
         }
     }
+}
+
+//-----------------------------------------------------------------------------
+// Check for double free
+// free(p); free(p);
+//-----------------------------------------------------------------------------
+void CheckOther::checkDoubleFree()
+{
+    std::set<int> freedVariables;
+    std::set<int> closeDirVariables;
+
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+
+        // Keep track of any variables passed to "free()", "g_free()" or "closedir()",
+        // and report an error if the same variable is passed twice.
+        if (Token::Match(tok, "free|g_free|closedir ( %var% )")) {
+            int var = tok->tokAt(2)->varId();
+            if (var) {
+                if (Token::Match(tok, "free|g_free")) {
+                    if (freedVariables.find(var) != freedVariables.end())
+                        doubleFreeError(tok, tok->tokAt(2)->str());
+                    else
+                        freedVariables.insert(var);
+                } else if (tok->str() == "closedir") {
+                    if (closeDirVariables.find(var) != closeDirVariables.end())
+                        doubleCloseDirError(tok, tok->tokAt(2)->str());
+                    else
+                        closeDirVariables.insert(var);
+                }
+            }
+        }
+
+        // Keep track of any variables operated on by "delete" or "delete[]"
+        // and report an error if the same variable is delete'd twice.
+        else if (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")) {
+            int varIdx = (tok->strAt(1) == "[") ? 3 : 1;
+            int var = tok->tokAt(varIdx)->varId();
+            if (var) {
+                if (freedVariables.find(var) != freedVariables.end())
+                    doubleFreeError(tok, tok->tokAt(varIdx)->str());
+                else
+                    freedVariables.insert(var);
+            }
+        }
+
+        // If this scope doesn't return, clear the set of previously freed variables
+        else if (tok->str() == "}" && _tokenizer->IsScopeNoReturn(tok)) {
+            freedVariables.clear();
+            closeDirVariables.clear();
+        }
+
+        // If a variable is passed to a function, remove it from the set of previously freed variables
+        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf")) {
+            for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+                if (Token::Match(tok2, "%var%")) {
+                    int var = tok2->varId();
+                    if (var) {
+                        freedVariables.erase(var);
+                        closeDirVariables.erase(var);
+                    }
+                }
+            }
+        }
+
+        // If a pointer is assigned a new value, remove it from the set of previously freed variables
+        else if (Token::Match(tok, "%var% =")) {
+            int var = tok->varId();
+            if (var) {
+                freedVariables.erase(var);
+                closeDirVariables.erase(var);
+            }
+        }
+
+        // Any control statements in-between delete, free() or closedir() statements
+        // makes it unclear whether any subsequent statements would be redundant.
+        if (Token::Match(tok, "else|break|continue|goto|return")) {
+            freedVariables.clear();
+            closeDirVariables.clear();
+        }
+    }
+}
+
+void CheckOther::doubleFreeError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "doubleFree", "Memory pointed to by '" + varname +"' is freed twice.");
+}
+
+void CheckOther::doubleCloseDirError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "doubleCloseDir", "Directory handle '" + varname +"' closed twice.");
 }
 
 void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)

@@ -112,7 +112,7 @@ private:
               "    char ch;\n"
               "    result = a | ch;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
     void bitop2() {
@@ -159,7 +159,7 @@ private:
               "    ret |= *p;\n"
               "    return ret;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
 
         // fixed code
         check("void f(char *p) {\n"

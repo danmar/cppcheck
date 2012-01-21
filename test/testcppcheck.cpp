@@ -53,9 +53,6 @@ private:
         void reportErr(const ErrorLogger::ErrorMessage &msg) {
             id.push_back(msg._id);
         }
-
-        void reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/) {
-        }
     };
 
     void run() {

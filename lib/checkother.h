@@ -107,6 +107,7 @@ public:
         checkOther.checkAssignBoolToPointer();
         checkOther.checkSignOfUnsignedVariable();
         checkOther.checkBitwiseOnBoolean();
+        checkOther.checkDoubleFree();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -261,6 +262,9 @@ public:
     /** @brief %Check for suspicious use of semicolon */
     void checkSuspiciousSemicolon();
 
+    /** @brief %Check for double free or double close operations */
+    void checkDoubleFree();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
@@ -307,6 +311,8 @@ public:
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok);
     void SuspiciousSemicolonError(const Token *tok);
+    void doubleFreeError(const Token *tok, const std::string &varname);
+    void doubleCloseDirError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckOther c(0, settings, errorLogger);
@@ -391,6 +397,7 @@ public:
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
                "* wrong number of arguments given to 'printf' or 'scanf;'\n"
+               "* double free() or double closedir()\n"
 
                // style
                "* C-style pointer cast in cpp file\n"

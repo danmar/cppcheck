@@ -81,7 +81,7 @@ public:
     void clear() {
         _varUsage.clear();
     }
-    const VariableMap &varUsage() {
+    const VariableMap &varUsage() const {
         return _varUsage;
     }
     void addVar(const Token *name, VariableType type, const Scope *scope, bool write_);

@@ -917,7 +917,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                         tok->str(MathLib::calculate(tok->str(), tok->strAt(2), tok->next()->str()[0]));
                     } catch (InternalError &e) {
                         e.token = tok;
-                        throw e;
+                        throw;
                     }
                 }
 

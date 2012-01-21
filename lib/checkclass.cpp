@@ -637,16 +637,9 @@ void CheckClass::noMemset()
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        std::list<Function>::const_iterator func;
-
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            // only check functions with bodies
-            if (!func->hasBody)
-                continue;
-
+        if (scope->type == Scope::eFunction) {
             // Locate all 'memset' tokens..
-            const Token *end = func->start->link();
-            for (const Token *tok = func->start; tok && tok != end; tok = tok->next()) {
+            for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
                 if (!Token::Match(tok, "memset|memcpy|memmove"))
                     continue;
 
