@@ -194,10 +194,9 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
         *(end->tokensBack) = end;
     }
 
-    // Update _progressValue
-    for (Token *tok = start; tok != end->next(); tok = tok->next()) {
+    // Update _progressValue, fileIndex and linenr
+    for (Token *tok = start; tok != end->next(); tok = tok->next())
         tok->_progressValue = replaceThis->_progressValue;
-    }
 
     // Delete old token, which is replaced
     delete replaceThis;
