@@ -194,6 +194,11 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
         *(end->tokensBack) = end;
     }
 
+    // Update _progressValue
+    for (Token *tok = start; tok != end->next(); tok = tok->next()) {
+        tok->_progressValue = replaceThis->_progressValue;
+    }
+
     // Delete old token, which is replaced
     delete replaceThis;
 }
@@ -778,7 +783,7 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
     newLocation->next(srcStart);
 
     // Update _progressValue
-    for (Token *tok = srcStart; tok && tok != srcEnd; tok = tok->next())
+    for (Token *tok = srcStart; tok != srcEnd->next(); tok = tok->next())
         tok->_progressValue = newLocation->_progressValue;
 }
 
