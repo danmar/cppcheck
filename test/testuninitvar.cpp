@@ -1139,6 +1139,13 @@ private:
                        "    return header[0];\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"    // Ticket #3497
+                       "    char header[1];\n"
+                       "    *((unsigned char*)((unsigned char *)(header))) = 0xff;\n"
+                       "    return header[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..

@@ -35,24 +35,25 @@ private:
         TEST_CASE(destructors);
         TEST_CASE(deallocThrow1);
         TEST_CASE(deallocThrow2);
+        TEST_CASE(deallocThrow3);
         TEST_CASE(rethrowCopy1);
         TEST_CASE(rethrowCopy2);
         TEST_CASE(rethrowCopy3);
         TEST_CASE(rethrowCopy4);
     }
 
-    void check(const std::string &code) {
+    void check(const std::string &code, bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("all");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
 
         // Check char variable usage..
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
@@ -83,24 +84,57 @@ private:
 
     void deallocThrow1() {
         check("int * p;\n"
-              "void f(int x)\n"
-              "{\n"
+              "void f(int x) {\n"
               "    delete p;\n"
               "    if (x)\n"
               "        throw 123;\n"
               "    p = 0;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
+
+        check("void f() {\n"
+              "    static int* p = foo;\n"
+              "    delete p;\n"
+              "    if (foo)\n"
+              "        throw 1;\n"
+              "    p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
     }
 
     void deallocThrow2() {
         check("void f() {\n"
               "    int* p = 0;\n"
               "    delete p;\n"
-              "    throw 1;\n"
+              "    if (foo)\n"
+              "        throw 1;\n"
               "    p = new int;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static int* p = 0;\n"
+              "    delete p;\n"
+              "    reset(p);\n"
+              "    throw 1;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocThrow3() {
+        check("void f() {\n"
+              "    static int* p = 0;\n"
+              "    delete p;\n"
+              "    throw 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static int* p = 0;\n"
+              "    delete p;\n"
+              "    throw 1;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
     }
 
     void rethrowCopy1() {

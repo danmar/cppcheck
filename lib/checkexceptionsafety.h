@@ -74,7 +74,7 @@ private:
     }
 
     void deallocThrowError(const Token * const tok, const std::string &varname) {
-        reportError(tok, Severity::error, "exceptDeallocThrow", "Throwing exception in invalid state, " + varname + " points at deallocated memory");
+        reportError(tok, Severity::warning, "exceptDeallocThrow", "Throwing exception in invalid state, " + varname + " points at deallocated memory");
     }
 
     void rethrowCopyError(const Token * const tok, const std::string &varname) {

@@ -58,6 +58,9 @@ void CheckExceptionSafety::destructors()
 
 void CheckExceptionSafety::deallocThrow()
 {
+    if (!_settings->isEnabled("style"))
+        return;
+
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Deallocate a global/member pointer and then throw exception
@@ -81,7 +84,7 @@ void CheckExceptionSafety::deallocThrow()
 
         // we only look for global variables
         const Variable* var = symbolDatabase->getVariableFromVarId(varid);
-        if (!var || !var->isGlobal())
+        if (!var || !(var->isGlobal() || var->isStatic()))
             continue;
 
         // indentlevel..
@@ -100,16 +103,24 @@ void CheckExceptionSafety::deallocThrow()
                 --indentlevel;
             }
 
-            else if (tok2->str() == "throw")
+            // Throw after delete -> Dead pointer
+            else if (tok2->str() == "throw") {
+                if (_settings->inconclusive) { // For inconclusive checking, throw directly.
+                    deallocThrowError(tok2, tok->str());
+                    break;
+                }
                 ThrowToken = tok2;
+            }
 
-            // if the variable is not assigned after the throw then it
-            // is assumed that it is not the intention that it is a dead pointer.
+            // Variable is assigned -> Bail out
             else if (Token::Match(tok2, "%varid% =", varid)) {
-                if (ThrowToken)
-                    deallocThrowError(ThrowToken, tok->str());
+                if (ThrowToken) // For non-inconclusive checking, wait until we find an assignement to it. Otherwise we assume it is safe to leave a dead pointer.
+                    deallocThrowError(ThrowToken, tok2->str());
                 break;
             }
+            // Variable passed to function. Assume it becomes assigned -> Bail out
+            else if (Token::Match(tok2, "[,(] &| %varid% [,)]", varid)) // TODO: No bailout if passed by value or as const reference
+                break;
         }
     }
 }

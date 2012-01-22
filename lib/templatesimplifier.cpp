@@ -83,15 +83,15 @@ const Token* TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(Token *to
         }
 
         // skip executing scopes (ticket #1984)..
-        if (Token::simpleMatch(tok, "; {"))
+        else if (Token::simpleMatch(tok, "; {"))
             tok = tok->next()->link();
 
         // skip executing scopes (ticket #3183)..
-        if (Token::simpleMatch(tok, "( {"))
+        else if (Token::simpleMatch(tok, "( {"))
             tok = tok->next()->link();
 
         // skip executing scopes (ticket #1985)..
-        if (Token::simpleMatch(tok, "try {")) {
+        else if (Token::simpleMatch(tok, "try {")) {
             tok = tok->next()->link();
             while (Token::simpleMatch(tok, "} catch (")) {
                 tok = tok->linkAt(2);

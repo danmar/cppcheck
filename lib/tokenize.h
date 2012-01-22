@@ -557,7 +557,7 @@ public:
      * @param last last token to copy
      * @return new location of last token copied
      */
-    Token *copyTokens(Token *dest, const Token *first, const Token *last);
+    Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
     /**
      * Send error message to error logger about internal bug.

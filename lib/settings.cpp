@@ -79,16 +79,18 @@ std::string Settings::addEnabled(const std::string &str)
 
     bool handled = false;
 
-    std::set<std::string> id;
-    id.insert("style");
-    id.insert("performance");
-    id.insert("portability");
-    id.insert("information");
-    id.insert("missingInclude");
-    id.insert("unusedFunction");
+    static std::set<std::string> id;
+    if (id.empty()) {
+        id.insert("style");
+        id.insert("performance");
+        id.insert("portability");
+        id.insert("information");
+        id.insert("missingInclude");
+        id.insert("unusedFunction");
 #ifndef NDEBUG
-    id.insert("internal");
+        id.insert("internal");
 #endif
+    }
 
     if (str == "all") {
         std::set<std::string>::const_iterator it;

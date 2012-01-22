@@ -119,16 +119,18 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
 void CheckInternal::checkMissingPercentCharacter()
 {
-    std::set<std::string> magics;
-    magics.insert("%any%");
-    magics.insert("%var%");
-    magics.insert("%type%");
-    magics.insert("%num%");
-    magics.insert("%bool%");
-    magics.insert("%str%");
-    magics.insert("%varid%");
-    magics.insert("%or%");
-    magics.insert("%oror%");
+    static std::set<std::string> magics;
+    if (magics.empty()) {
+        magics.insert("%any%");
+        magics.insert("%var%");
+        magics.insert("%type%");
+        magics.insert("%num%");
+        magics.insert("%bool%");
+        magics.insert("%str%");
+        magics.insert("%varid%");
+        magics.insert("%or%");
+        magics.insert("%oror%");
+    }
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))

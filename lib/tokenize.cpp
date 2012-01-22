@@ -225,15 +225,17 @@ void Tokenizer::insertTokens(Token *dest, const Token *src, unsigned int n)
 
 //---------------------------------------------------------------------------
 
-Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
+Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last, bool one_line)
 {
     std::stack<Token *> links;
     Token *tok2 = dest;
+    unsigned int linenrs = dest->linenr();
+    unsigned int commonFileIndex = dest->fileIndex();
     for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
         tok2->insertToken(tok->str());
         tok2 = tok2->next();
-        tok2->fileIndex(dest->fileIndex());
-        tok2->linenr(dest->linenr());
+        tok2->fileIndex(commonFileIndex);
+        tok2->linenr(linenrs);
         tok2->isName(tok->isName());
         tok2->isNumber(tok->isNumber());
         tok2->isBoolean(tok->isBoolean());
@@ -256,6 +258,8 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last)
 
             links.pop();
         }
+        if (!one_line && tok->next())
+            linenrs += tok->next()->linenr() - tok->linenr();
     }
     return tok2;
 }
@@ -2388,7 +2392,7 @@ bool Tokenizer::hasEnumsWithTypedef()
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "enum %var% {")) {
             tok = tok->tokAt(2);
-            const Token *tok2 = Token::findmatch(tok, "typedef", tok->link());
+            const Token *tok2 = Token::findsimplematch(tok, "typedef", tok->link());
             if (tok2) {
                 syntaxError(tok2);
                 return true;
