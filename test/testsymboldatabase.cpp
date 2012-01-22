@@ -136,6 +136,7 @@ private:
         TEST_CASE(symboldatabase21);
         TEST_CASE(symboldatabase22); // ticket #3437 (segmentation fault)
         TEST_CASE(symboldatabase23); // ticket #3435
+        TEST_CASE(symboldatabase24); // ticket #3508 (constructor, destructor)
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -971,6 +972,48 @@ private:
         const Variable &var = scope.varlist.front();
         ASSERT_EQUALS(std::string("ints"), var.name());
         ASSERT_EQUALS(true, var.isClass());
+    }
+
+    // #ticket 3508 (constructor, destructor)
+    void symboldatabase24() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    ~Fred();\n"
+                      "    Fred();\n"
+                      "};\n"
+                      "Fred::Fred() { }\n"
+                      "Fred::~Fred() { }");
+        // Global scope, Fred, Fred::Fred, Fred::~Fred
+        ASSERT_EQUALS(4U, db->scopeList.size());
+
+        // Find the scope for the Fred struct..
+        const Scope *fredScope = NULL;
+        for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
+            if (scope->isClassOrStruct() && scope->className == "Fred")
+                fredScope = &(*scope);
+        }
+        ASSERT(fredScope != NULL);
+        if (fredScope == NULL)
+            return;
+
+        // The struct Fred has two functions, a constructor and a destructor
+        ASSERT_EQUALS(2U, fredScope->functionList.size());
+
+        // Get linenumbers where the bodies for the constructor and destructor are..
+        unsigned int constructor = 0;
+        unsigned int destructor = 0;
+        for (std::list<Function>::const_iterator it = fredScope->functionList.begin(); it != fredScope->functionList.end(); ++it) {
+            if (it->type == Function::eConstructor)
+                constructor = it->token->linenr();  // line number for constructor body
+            if (it->type == Function::eDestructor)
+                destructor = it->token->linenr();  // line number for destructor body
+        }
+
+        // The body for the constructor is located at line 5..
+        ASSERT_EQUALS(5U, constructor);
+
+        // The body for the destructor is located at line 6..
+        ASSERT_EQUALS(6U, destructor);
+
     }
 
 

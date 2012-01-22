@@ -906,8 +906,10 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
     unsigned int path_length = 0;
     const Token *tok1;
 
+    const bool destructor((*tok)->previous()->str() == "~");
+
     // skip class/struct name
-    if ((*tok)->previous()->str() == "~")
+    if (destructor)
         tok1 = (*tok)->tokAt(-3);
     else
         tok1 = (*tok)->tokAt(-2);
@@ -977,10 +979,8 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
             std::list<Function>::iterator func;
 
             for (func = scope1->functionList.begin(); func != scope1->functionList.end(); ++func) {
-                if (!func->hasBody) {
-                    if (func->type == Function::eDestructor &&
-                        (*tok)->previous()->str() == "~" &&
-                        func->tokenDef->str() == (*tok)->str()) {
+                if (!func->hasBody && func->tokenDef->str() == (*tok)->str()) {
+                    if (func->type == Function::eDestructor && destructor) {
                         if (argsMatch(scope1, func->tokenDef->next(), (*tok)->next(), path, path_length)) {
                             func->hasBody = true;
                             func->token = *tok;
@@ -990,7 +990,7 @@ void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *
                                 start = start->next();
                             func->start = start;
                         }
-                    } else if (func->tokenDef->str() == (*tok)->str() && (*tok)->previous()->str() != "~") {
+                    } else if (func->type != Function::eDestructor && !destructor) {
                         if (argsMatch(scope1, func->tokenDef->next(), (*tok)->next(), path, path_length)) {
                             // normal function?
                             if (!func->retFuncPtr && (*tok)->next()->link()) {
