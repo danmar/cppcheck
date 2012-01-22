@@ -29,4 +29,5 @@ astyle $style $options test/*.h
 
 astyle $style $options tools/*.cpp
 astyle $style $options --recursive "samples/*.c"
+astyle $style $options --recursive "samples/*.cpp"
 
