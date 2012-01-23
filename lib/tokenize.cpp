@@ -1992,7 +1992,8 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Convert K&R function declarations to modern C
     simplifyVarDecl(true);
-    simplifyFunctionParameters();
+    if (!simplifyFunctionParameters())
+        return false;
 
     // check for simple syntax errors..
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
@@ -4801,7 +4802,7 @@ void Tokenizer::simplifyCasts()
 }
 
 
-void Tokenizer::simplifyFunctionParameters()
+bool Tokenizer::simplifyFunctionParameters()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "{" || tok->str() == "[" || tok->str() == "(") {
@@ -4812,79 +4813,123 @@ void Tokenizer::simplifyFunctionParameters()
         else if (Token::Match(tok, "%var% ( %var% [,)]")) {
             // We have found old style function, now we need to change it
 
-            // backup pointer to the '(' token
-            Token * const tok1 = tok->next();
-
-            // Get list of argument names
-            std::map<std::string, Token*> argumentNames;
+            // First step: Get list of argument names in parenthesis
+            std::map<std::string, Token *> argumentNames;
             bool bailOut = false;
-            for (tok = tok->tokAt(2); tok; tok = tok->tokAt(2)) {
-                if (!Token::Match(tok, "%var% [,)]")) {
+            Token * tokparam = NULL;
+
+            //floating token used to check for parameters
+            Token *tok1 = tok;
+
+            //goto '('
+            tok = tok->next();
+
+            while (NULL != (tok1 = tok1->tokAt(2))) {
+                if (!Token::Match(tok1, "%var% [,)]")) {
                     bailOut = true;
                     break;
                 }
 
-                if (argumentNames.find(tok->str()) != argumentNames.end()) {
-                    // Invalid code, two arguments with the same name.
-                    // syntaxError(tok);
-                    // If you uncomment it, testrunner will fail:
-                    // testclass.cpp:3910
-                    // because of void Fred::foo5(int, int).
-                    // how should this be handled?
-                    bailOut = true;
-                    break;
-                }
+                //same parameters: take note of the parameter
+                if (argumentNames.find(tok1->str()) != argumentNames.end())
+                    tokparam = tok1;
+                else
+                    argumentNames[tok1->str()] = tok1;
 
-                argumentNames[tok->str()] = tok;
-                if (tok->next()->str() == ")") {
-                    tok = tok->tokAt(2);
+                if (tok1->next()->str() == ")") {
+                    tok1 = tok1->tokAt(2);
+                    //expect at least a type name after round brace..
+                    if (!tok1 || !tok1->isName())
+                        bailOut = true;
                     break;
                 }
             }
 
             if (bailOut) {
-                tok = tok1->link();
+                tok = tok->link();
                 continue;
             }
 
-            Token *start = tok;
-            while (tok && tok->str() != "{") {
-                if (tok->str() == ";") {
-                    tok = tok->previous();
-                    // Move tokens from start to tok into the place of
-                    // argumentNames[tok->str()] and remove the ";"
+            //there should be the sequence '; {' after the round parenthesis
+            if (!Token::findsimplematch(tok1, "; {")) {
+                tok = tok->link();
+                continue;
+            }
 
-                    if (argumentNames.find(tok->str()) == argumentNames.end()) {
+            // Last step: check out if the declarations between ')' and '{' match the parameters list
+            std::map<std::string, Token *> argumentNames2;
+
+            while (tok1 && tok1->str() != "{") {
+                if (tok1->str() == ";") {
+                    if (tokparam) {
+                        syntaxError(tokparam);
+                        return false;
+                    }
+                    Token *tok2 = tok1->previous();
+                    while (tok2->str() == "]")
+                        tok2 = tok2->link()->previous();
+
+                    //it should be a name..
+                    if (!tok2->isName()) {
                         bailOut = true;
                         break;
                     }
 
-                    // Remove the following ";"
-                    Token *temp = tok->tokAt(2);
-                    tok->deleteNext();
+                    if (argumentNames2.find(tok2->str()) != argumentNames2.end()) {
+                        //same parameter names...
+                        syntaxError(tok1);
+                        return false;
+                    } else
+                        argumentNames2[tok2->str()] = tok2;
 
-                    // Replace "x" with "int x" or similar
-                    Token::replace(argumentNames[tok->str()], start, tok);
-                    argumentNames.erase(tok->str());
-                    tok = temp;
-                    start = tok;
-                } else {
-                    tok = tok->next();
+                    if (argumentNames.find(tok2->str()) == argumentNames.end()) {
+                        //non-matching parameter... bailout
+                        bailOut = true;
+                        break;
+                    }
                 }
-            }
-
-            if (Token::simpleMatch(tok, "{"))
-                tok = tok->link();
-
-            if (tok == NULL) {
-                break;
+                tok1 = tok1->next();
             }
 
             if (bailOut) {
+                tok = tok->link();
                 continue;
             }
+
+            //the two containers should hold the same size..
+            if (argumentNames.size() != argumentNames2.size()) {
+                tok = tok->link();
+                //error if the second container is not empty
+                if (!argumentNames2.empty()) {
+                    syntaxError(tok);
+                    return false;
+                }
+                continue;
+            }
+
+            while (tok->str() != ")") {
+                //initialize start and end tokens to be moved
+                Token *declStart = argumentNames2[tok->next()->str()];
+                Token *declEnd = declStart;
+                while (declStart->previous()->str() != ";" && declStart->previous()->str() != ")")
+                    declStart = declStart->previous();
+                while (declEnd->next()->str() != ";" && declEnd->next()->str() != "{")
+                    declEnd = declEnd->next();
+
+                //remove ';' after declaration
+                declEnd->deleteNext();
+
+                //replace the parameter name in the parenthesis with all the declaration
+                Token::replace(tok->next(), declStart, declEnd);
+
+                //since there are changes to tokens, put tok where tok1 is
+                tok = declEnd->next();
+            }
+            //goto forward and continue
+            tok = tok->next()->link();
         }
     }
+    return true;
 }
 
 void Tokenizer::simplifyPointerToStandardType()

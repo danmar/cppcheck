@@ -170,11 +170,10 @@ private:
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
 
-        // Syntax error
-        TEST_CASE(argumentsWithSameName)
-
         TEST_CASE(simplifyAtol)
+
         TEST_CASE(simplifyHexInString)
+
         TEST_CASE(simplifyTypedef1)
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
@@ -3390,25 +3389,6 @@ private:
                               "strcat ( dst , \" \" ) ;";
 
         ASSERT_EQUALS(expect, tok(code));
-    }
-
-    void argumentsWithSameName() {
-        // This code has syntax error, two variables can not have the same name
-        {
-            const char code[] = "void foo(x, x)\n"
-                                " int x;\n"
-                                " int x;\n"
-                                "{}\n";
-            ASSERT_EQUALS("void foo ( x , x ) int x ; int x ; { }", tok(code));
-        }
-
-        {
-            const char code[] = "void foo(x, y)\n"
-                                " int x;\n"
-                                " int x;\n"
-                                "{}\n";
-            ASSERT_EQUALS("void foo ( int x , y ) int x ; { }", tok(code));
-        }
     }
 
     void simplifyAtol() {

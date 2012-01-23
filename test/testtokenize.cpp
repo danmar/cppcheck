@@ -240,7 +240,8 @@ private:
 
         TEST_CASE(macrodoublesharp);
 
-        TEST_CASE(simplify_function_parameters);
+        TEST_CASE(simplifyFunctionParameters);
+        TEST_CASE(simplifyFunctionParametersErrors);
 
         TEST_CASE(removeParentheses1);       // Ticket #61
         TEST_CASE(removeParentheses2);
@@ -3985,7 +3986,7 @@ private:
         ASSERT_EQUALS("DBG ( fmt , args . . . ) printf ( fmt , ## args ) ", ostr.str());
     }
 
-    void simplify_function_parameters() {
+    void simplifyFunctionParameters() {
         {
             const char code[] = "char a [ ABC ( DEF ) ] ;";
             ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
@@ -3998,6 +3999,7 @@ private:
 
         ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));
         ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }", true));
+        ASSERT_EQUALS("int main ( int argc , char * argv [ ] ) { }", tokenizeAndStringify("int main(argc,argv) int argc; char *argv[]; { }", true));
 
         // #1067 - Not simplified. Feel free to fix so it is simplified correctly but this syntax is obsolete.
         ASSERT_EQUALS("int ( * d ( a , b , c ) ) ( ) int a ; int b ; int c ; { }", tokenizeAndStringify("int (*d(a,b,c))()int a,b,c; { }", true));
@@ -4012,6 +4014,32 @@ private:
                                 "}";
             ASSERT_EQUALS("void foo ( ) { if ( x ) { } { } }", tokenizeAndStringify(code, true));
         }
+    }
+
+    void simplifyFunctionParametersErrors() {
+        //same parameters...
+        tokenizeAndStringify("void foo(x, x)\n"
+                             " int x;\n"
+                             " int x;\n"
+                             "{}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        tokenizeAndStringify("void foo(x, y)\n"
+                             " int x;\n"
+                             " int x;\n"
+                             "{}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
+
+        tokenizeAndStringify("void foo(int, int)\n"
+                             "{}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        //non-matching arguments after round braces
+        tokenizeAndStringify("void foo(x, y, z)\n"
+                             " int x;\n"
+                             " int y;\n"
+                             "{}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     // Simplify "((..))" into "(..)"

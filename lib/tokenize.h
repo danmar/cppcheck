@@ -449,8 +449,9 @@ public:
     /**
      * Simplify functions like "void f(x) int x; {"
      * into "void f(int x) {"
+     * @return false only if there's a syntax error
      */
-    void simplifyFunctionParameters();
+    bool simplifyFunctionParameters();
 
     /**
      * Simplify templates
