@@ -1395,8 +1395,9 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << "    nestedIn: " << scope->nestedIn;
         if (scope->nestedIn) {
             std::cout << " " << scope->nestedIn->type << " "
-                      << scope->nestedIn->className << std::endl;
+                      << scope->nestedIn->className;
         }
+        std::cout << std::endl;
 
         std::cout << "    nestedList[" << scope->nestedList.size() << "] = (";
 
