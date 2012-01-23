@@ -124,6 +124,7 @@ private:
         TEST_CASE(localvarFor);         // for ( ; var; )
         TEST_CASE(localvarShift1);      // 1 >> var
         TEST_CASE(localvarShift2);      // x = x >> 1
+        TEST_CASE(localvarShift3);      // x << y
         TEST_CASE(localvarCast);
         TEST_CASE(localvarClass);
         TEST_CASE(localvarUnused);
@@ -2538,6 +2539,15 @@ private:
                               "{\n"
                               "    int var = 1;\n"
                               "    while (var = var >> 1) { }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarShift3() {  // #3509
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    QList<int *> ints;\n"
+                              "    ints << 1;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
