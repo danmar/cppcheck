@@ -8580,8 +8580,11 @@ void Tokenizer::simplifyBitfields()
             if (tok1 && tok1->tokAt(2) &&
                 (tok1->tokAt(2)->isBoolean() || Token::Match(tok1->tokAt(2), "%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
-                while (tok1->next() && !Token::Match(tok1->next(), ";|,"))
+                while (tok1->next() && !Token::Match(tok1->next(), "[;,)]{}]")) {
+                    if (Token::Match(tok1->next(), "[([]"))
+                        Token::eraseTokens(tok1, tok1->next()->link());
                     tok1->deleteNext();
+                }
 
                 last = tok1->next();
             }

@@ -344,6 +344,7 @@ private:
         TEST_CASE(bitfields10);
         TEST_CASE(bitfields11); // ticket #2845 (segmentation fault)
         TEST_CASE(bitfields12); // ticket #3485 (segmentation fault)
+        TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
 
         TEST_CASE(microsoftMFC);
         TEST_CASE(microsoftMemory);
@@ -5705,6 +5706,10 @@ private:
     void bitfields12() { // ticket #3485 (segmentation fault)
         const char code[] = "{a:1;};\n";
         ASSERT_EQUALS("{ } ;", tokenizeAndStringify(code,false));
+    }
+
+    void bitfields13() { // ticket #3502 (segmentation fault)
+        ASSERT_EQUALS("x y ;", tokenizeAndStringify("struct{x y:};\n",false));
     }
 
     void microsoftMFC() {
