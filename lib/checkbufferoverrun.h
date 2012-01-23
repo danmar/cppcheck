@@ -108,6 +108,9 @@ public:
     /** Check for negative index */
     void negativeIndex();
 
+    /** Check for memset being used on non-pointer variable */
+    void checkMemoryAllocationToNormalVariables();
+
     /** Information about N-dimensional array */
     class ArrayInfo {
     private:
@@ -230,6 +233,7 @@ public:
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
+    void memoryAllocationToNormalVariablesError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckBufferOverrun c(0, settings, errorLogger);
