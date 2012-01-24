@@ -1422,7 +1422,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::stack<unsigned int> lineNumbers;
     std::istringstream istr(filedata);
     std::string line;
-    while (getline(istr, line)) {
+    while (std::getline(istr, line)) {
         ++lineno;
 
         if (line.compare(0, 11, "#pragma asm") == 0) {
@@ -1494,6 +1494,11 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 } else
                     cfgmap[line.substr(8, pos - 8)] = "";
             }
+        }
+
+        else if (line.compare(0, 7, "#undef ") == 0) {
+            const std::string name(line.substr(7));
+            cfgmap.erase(name);
         }
 
         else if (!emptymatch && line.compare(0, 7, "#elif !") == 0) {

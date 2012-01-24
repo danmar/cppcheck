@@ -205,6 +205,7 @@ private:
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
+        TEST_CASE(undef_ifdef);
         TEST_CASE(endfile);
 
         TEST_CASE(redundant_config);
@@ -2632,6 +2633,18 @@ private:
         Preprocessor preprocessor(NULL, this);
         ASSERT_EQUALS("\n\n\n\n\n\n$int me;\n", preprocessor.getcode(filedata, "", "a.cpp"));
         ASSERT_EQUALS("\n\n\n\n\n\n$char me;\n", preprocessor.getcode(filedata, "A", "a.cpp"));
+    }
+
+    void undef_ifdef() {
+        const char filedata[] = "#undef A\n"
+                                "#ifdef A\n"
+                                "123\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        Preprocessor preprocessor(NULL, this);
+        ASSERT_EQUALS("\n\n\n\n", preprocessor.getcode(filedata, "", "a.cpp"));
+        ASSERT_EQUALS("\n\n\n\n", preprocessor.getcode(filedata, "A", "a.cpp"));
     }
 
     void redundant_config() {
