@@ -4679,6 +4679,18 @@ private:
             "  delete[] p;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "~LineMarker() {"
+            "  delete pxpm;"
+            "}"
+            "LineMarker &operator=(const LineMarker &) {"
+            "  delete pxpm;"
+            "  pxpm = NULL;"
+            "  return *this;"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void coutCerrMisusage() {

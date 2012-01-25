@@ -329,6 +329,7 @@ public:
         c.sizeofForStrncmpError(0);
         c.sizeofForNumericParameterError(0);
         c.coutCerrMisusageError(0, "cout");
+        c.doubleFreeError(0, "varname");
 
         // style/warning
         c.cstyleCastError(0);

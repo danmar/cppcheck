@@ -2514,14 +2514,24 @@ void CheckOther::checkDoubleFree()
             closeDirVariables.clear();
         }
 
+
         // If a variable is passed to a function, remove it from the set of previously freed variables
-        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf")) {
-            for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-                if (Token::Match(tok2, "%var%")) {
-                    unsigned int var = tok2->varId();
-                    if (var) {
-                        freedVariables.erase(var);
-                        closeDirVariables.erase(var);
+        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf|if|while")) {
+
+            // If this is a new function definition, clear all variables
+            if (Token::Match(tok->next()->link(), ") {")) {
+                freedVariables.clear();
+                closeDirVariables.clear();
+            }
+            // If it is a function call, then clear those variables in its argument list
+            else if (Token::Match(tok->next()->link(), ") ;")) {
+                for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "%var%")) {
+                        unsigned int var = tok2->varId();
+                        if (var) {
+                            freedVariables.erase(var);
+                            closeDirVariables.erase(var);
+                        }
                     }
                 }
             }
