@@ -26,6 +26,7 @@
 #include "settings.h"
 
 class Token;
+class SymbolDatabase;
 
 /// @addtogroup Checks
 /// @{
@@ -80,7 +81,7 @@ public:
      * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
      * @return true => there is a dereference
      */
-    static bool isPointerDeRef(const Token *tok, bool &unknown);
+    static bool isPointerDeRef(const Token *tok, bool &unknown, const SymbolDatabase* symbolDatabase);
 
     /** @brief possible null pointer dereference */
     void nullPointer();

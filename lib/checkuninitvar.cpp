@@ -1262,7 +1262,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
     }
 
     bool unknown = false;
-    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
+    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown, _tokenizer->getSymbolDatabase())) {
         // function parameter?
         bool functionParameter = false;
         if (Token::Match(vartok->tokAt(-2), "%var% (") || vartok->previous()->str() == ",")

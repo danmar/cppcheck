@@ -60,6 +60,7 @@ private:
         TEST_CASE(nullpointer_in_for_loop);
         TEST_CASE(nullpointerDelete);
         TEST_CASE(nullpointerExit);
+        TEST_CASE(nullpointerStdString);
 
         TEST_CASE(functioncall);
     }
@@ -1283,6 +1284,15 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int foo(int *p) {\n"
+              "    if (!p) {\n"
+              "        x = *p;\n"
+              "        return 5+*p;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n"
+                      "[test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n", errout.str());
+
         // operator!
         check("void f() {\n"
               "    A a;\n"
@@ -1486,6 +1496,12 @@ private:
               "    image1.fseek(0, SEEK_SET);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int* p = 0;\n"
+              "    return p[4];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
     }
 
     void gcc_statement_expression() {
@@ -1717,6 +1733,42 @@ private:
               "  k->f();\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointerStdString() {
+        check("void f(std::string s1) {\n"
+              "    void* p = 0;\n"
+              "    s1 = 0;\n"
+              "    std::string s2 = 0;\n"
+              "    std::string s3(0);\n"
+              "    foo(std::string(0));\n"
+              "    s1 = p;\n"
+              "    std::string s4 = p;\n"
+              "    std::string s5(p);\n"
+              "    foo(std::string(p));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n"
+                      "[test.cpp:4]: (error) Null pointer dereference\n"
+                      "[test.cpp:5]: (error) Null pointer dereference\n"
+                      "[test.cpp:6]: (error) Null pointer dereference\n"
+                      "[test.cpp:7]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:8]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:9]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:10]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        check("void f(std::string s1, const std::string& s2, const std::string* s3) {\n"
+              "    void* p = 0;\n"
+              "    foo(s1 == p);\n"
+              "    foo(s2 == p);\n"
+              "    foo(s3 == p);\n"
+              "    foo(p == s1);\n"
+              "    foo(p == s2);\n"
+              "    foo(p == s3);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n"
+                      "[test.cpp:4]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:6]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:7]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls
