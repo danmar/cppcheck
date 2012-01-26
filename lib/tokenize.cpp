@@ -3955,7 +3955,7 @@ bool Tokenizer::removeRedundantConditions()
         if (Token::simpleMatch(elseTag, "else {")) {
             // Handle else
             if (boolValue == false) {
-                // Convert "if( false ) {aaa;} else {bbb;}" => "{bbb;}" or ";{bbb;}"
+                // Convert "if( false ) {aaa;} else {bbb;}" => "{bbb;}"
 
                 //remove '(false)'
                 tok->deleteNext(3);
@@ -4505,6 +4505,30 @@ bool Tokenizer::simplifyConditions()
                  Token::simpleMatch(tok, "&& false )")) {
             tok = tok->next();
             Token::eraseTokens(tok->next()->link(), tok);
+            ret = true;
+        }
+
+        else if (Token::simpleMatch(tok, "&& false &&") ||
+                 Token::simpleMatch(tok, "|| true ||")) {
+            //goto '('
+            Token *tok2 = tok;
+            while (tok2->previous()) {
+                if (tok2->previous()->str() == ")")
+                    tok2 = tok2->previous()->link();
+                else {
+                    tok2 = tok2->previous();
+                    if (tok2->str() == "(")
+                        break;
+                }
+            }
+            if (!tok2)
+                continue;
+            //move tok to 'true|false' position
+            tok = tok->next();
+            //remove everything before 'true|false'
+            Token::eraseTokens(tok2, tok);
+            //remove everything after 'true|false'
+            Token::eraseTokens(tok, tok2->link());
             ret = true;
         }
 

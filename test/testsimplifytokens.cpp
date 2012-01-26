@@ -6359,6 +6359,42 @@ private:
                 "}";
             ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
         }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a || true || b) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a && false && b) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a || (b && false && c) || d) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { if ( a || d ) { g ( ) ; } }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if ((a && b) || true || (c && d)) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
+        }
     }
 
 
