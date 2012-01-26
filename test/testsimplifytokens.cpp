@@ -7546,19 +7546,55 @@ private:
     }
 
     void return_strncat() {
-        const char code[] = "char *f()\n"
-                            "{\n"
-                            "    char *temp=malloc(2);\n"
-                            "    strcpy(temp,\"\");\n"
-                            "    return (strncat(temp,\"a\",1));\n"
-                            "}";
-        ASSERT_EQUALS("char * f ( ) { "
-                      "char * temp ; "
-                      "temp = malloc ( 2 ) ; "
-                      "strcpy ( temp , \"\" ) ; "
-                      "strncat ( temp , \"a\" , 1 ) ; "
-                      "return temp ; "
-                      "}", tok(code, true));
+        {
+            const char code[] = "char *f()\n"
+                                "{\n"
+                                "    char *temp=malloc(2);\n"
+                                "    strcpy(temp,\"\");\n"
+                                "    return (strncat(temp,\"a\",1));\n"
+                                "}";
+            ASSERT_EQUALS("char * f ( ) {"
+                          " char * temp ;"
+                          " temp = malloc ( 2 ) ;"
+                          " strcpy ( temp , \"\" ) ;"
+                          " strncat ( temp , \"a\" , 1 ) ;"
+                          " return temp ; "
+                          "}", tok(code, true));
+        }
+        {
+            const char code[] = "char *f()\n"
+                                "{\n"
+                                "    char **temp=malloc(8);\n"
+                                "    *temp = malloc(2);\n"
+                                "    strcpy(*temp,\"\");\n"
+                                "    return (strncat(*temp,\"a\",1));\n"
+                                "}";
+            ASSERT_EQUALS("char * f ( ) {"
+                          " char * * temp ;"
+                          " temp = malloc ( 8 ) ;"
+                          " * temp = malloc ( 2 ) ;"
+                          " strcpy ( * temp , \"\" ) ;"
+                          " strncat ( * temp , \"a\" , 1 ) ;"
+                          " return * temp ; "
+                          "}", tok(code, true));
+        }
+        {
+            const char code[] = "char *f()\n"
+                                "{\n"
+                                "    char **temp=malloc(8);\n"
+                                "    *temp = malloc(2);\n"
+                                "    strcpy(*temp,\"\");\n"
+                                "    return (strncat(temp[0],foo(b),calc(c-d)));\n"
+                                "}";
+            ASSERT_EQUALS("char * f ( ) {"
+                          " char * * temp ;"
+                          " temp = malloc ( 8 ) ;"
+                          " * temp = malloc ( 2 ) ;"
+                          " strcpy ( * temp , \"\" ) ;"
+                          " strncat ( temp [ 0 ] , foo ( b ) , calc ( c - d ) ) ;"
+                          " return temp [ 0 ] ; "
+                          "}", tok(code, true));
+        }
     }
 
     void removeRedundantFor() { // ticket #3069

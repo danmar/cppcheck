@@ -4515,12 +4515,12 @@ bool Tokenizer::simplifyConditions()
 
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "! %num%") || Token::Match(tok, "! %bool%")) {
-            if (tok->next()->str() == "0" || tok->next()->str() == "false")
+            tok->deleteThis();
+            if (tok->str() == "0" || tok->str() == "false")
                 tok->str("true");
             else
                 tok->str("false");
 
-            tok->deleteNext();
             ret = true;
         }
 
@@ -9115,15 +9115,46 @@ void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::strin
 void Tokenizer::simplifyReturnStrncat()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "return strncat ( %any% , %any% , %any% ) ;")) {
-            // Change to: strncat ( %any% , %any% , %any% ) ;
-            tok->deleteNext();
-            tok->str("strncat");
+        if (Token::simpleMatch(tok, "return strncat (") &&
+            Token::simpleMatch(tok->linkAt(2), ") ;") &&
+            tok->strAt(3) != ")" && tok->strAt(3) != ",") {
 
-            // Change to: strncat ( %any% , %any% , %any% ) ; return %any% ;
-            tok->tokAt(8)->insertToken("return");
-            copyTokens(tok->tokAt(9), tok->tokAt(2), tok->tokAt(2));
-            tok->tokAt(10)->insertToken(";");
+            //first argument
+            Token *tok2 = tok->tokAt(3);
+
+            //check if there are at least three arguments
+            for (unsigned char i = 0; i < 2; ++i) {
+                tok2 = tok2->nextArgument();
+                if (!tok2) {
+                    tok = tok->linkAt(2)->next();
+                    break;
+                }
+            }
+            if (!tok2)
+                continue;
+
+            tok2 = tok2->nextArgument();
+            //we want only three arguments
+            if (tok2) {
+                tok = tok->linkAt(2)->next();
+                continue;
+            }
+
+            // Remove 'return'
+            tok->deleteThis();
+
+            // Add 'return arg1 ;' after 'strncat(arg1, arg2, arg3);'
+            tok = tok->next();
+
+            tok2 = tok->link()->next();
+            tok2->insertToken(";");
+
+            //the last token of the first argument before ','
+            Token *end = tok->next()->nextArgument()->tokAt(-2);
+
+            //all the first argument is copied
+            copyTokens(tok2, tok->next(), end);
+            tok2->insertToken("return");
         }
     }
 }
