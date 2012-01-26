@@ -3784,7 +3784,7 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
-    simplifyReturn();
+    simplifyReturnStrncat();
 
     removeRedundantAssignment();
 
@@ -9112,7 +9112,7 @@ void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::strin
         Check::reportError(errmsg);
 }
 
-void Tokenizer::simplifyReturn()
+void Tokenizer::simplifyReturnStrncat()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "return strncat ( %any% , %any% , %any% ) ;")) {

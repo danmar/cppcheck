@@ -723,7 +723,7 @@ public:
      * Simplify e.g. 'return(strncat(temp,"a",1));' into
      * strncat(temp,"a",1); return temp;
      */
-    void simplifyReturn();
+    void simplifyReturnStrncat();
 
     /**
      * Output list of unknown types.
