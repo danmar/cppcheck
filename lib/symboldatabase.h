@@ -39,7 +39,7 @@ class SymbolDatabase;
 /**
  * @brief Access control enumerations.
  */
-enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local };
+enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local, Throw };
 
 /**
  * @brief Array dimension information.
@@ -246,6 +246,14 @@ public:
     }
 
     /**
+     * Is variable a throw type.
+     * @return true if throw type, false if not
+     */
+    bool isThrow() const {
+        return _access == Throw;
+    }
+
+    /**
      * Is variable a user defined (or unknown) type.
      * @return true if user defined type, false if not
      */
@@ -407,7 +415,7 @@ public:
         Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch };
     enum NeedInitialization { Unknown, True, False };
 
     Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);

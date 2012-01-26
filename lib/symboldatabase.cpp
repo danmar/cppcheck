@@ -545,6 +545,22 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     tok = tok1;
                     scope = &scopeList.back();
                     scope->nestedIn->nestedList.push_back(scope);
+                } else if (Token::simpleMatch(tok, "try {")) {
+                    const Token *tok1 = tok->next();
+                    scopeList.push_back(Scope(this, tok, scope, Scope::eTry, tok1));
+                    tok = tok1;
+                    scope = &scopeList.back();
+                    scope->nestedIn->nestedList.push_back(scope);
+                } else if (Token::simpleMatch(tok, "catch (") &&
+                           Token::simpleMatch(tok->next()->link(), ") {")) {
+                    const Token *tok1 = tok->next()->link()->next();
+                    const Token *tok2 = tok->tokAt(2);
+                    scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, tok1));
+                    tok = tok1;
+                    scope = &scopeList.back();
+                    scope->nestedIn->nestedList.push_back(scope);
+                    // check for variable declaration and add it to new scope if found
+                    scope->checkVariable(tok2, Throw);
                 } else if (tok->str() == "{") {
                     if (!Token::Match(tok->previous(), "=|,")) {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
@@ -1228,6 +1244,8 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
           type == Scope::eWhile ? "While" :
           type == Scope::eDo ? "Do" :
           type == Scope::eSwitch ? "Switch" :
+          type == Scope::eTry ? "Try" :
+          type == Scope::eCatch ? "Catch" :
           type == Scope::eUnconditional ? "Unconditional" :
           "Unknown");
     return s;
@@ -1254,6 +1272,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
                var->isNamespace() ? "Namespace" :
                var->isArgument() ? "Argument" :
                var->isLocal() ? "Local" :
+               var->isThrow() ? "Throw" :
                "???")  << std::endl;
     std::cout << indent << "_flags: " << std::endl;
     std::cout << indent << "    isMutable: " << (var->isMutable() ? "true" : "false") << std::endl;
@@ -1766,6 +1785,15 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     const Token *vartok = NULL;
     const Token *typetok = NULL;
 
+    // Is it a throw..?
+    if (Token::Match(tok, "throw %any% (") &&
+        Token::simpleMatch(tok->linkAt(2), ") ;")) {
+        return tok->linkAt(2);
+    } else if ((Token::Match(tok, "throw %any% :: %any% (") &&
+                Token::simpleMatch(tok->linkAt(4), ") ;"))) {
+        return tok->linkAt(4);
+    }
+
     // Is it const..?
     bool isConst = false;
     if (tok->str() == "const") {
@@ -1903,7 +1931,14 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         vartok = localVarTok;
         typetok = localTypeTok;
         isArray = false;
+    } else if (type == eCatch &&
+               (Token::Match(localTypeTok, "%var% )") ||
+                Token::Match(localTypeTok, "%var% &| %var% )"))) {
+        vartok = localVarTok;
+        typetok = localTypeTok;
+        isArray = false;
     }
+
     isPointer = vartok && (vartok->strAt(-1) == "*" || Token::simpleMatch(vartok->tokAt(-2), "* const"));
 
     return NULL != vartok;
