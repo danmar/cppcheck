@@ -3944,93 +3944,56 @@ bool Tokenizer::removeRedundantConditions()
             continue;
 
         // Find matching else
-        const Token *elseTag = 0;
+        Token *elseTag = 0;
 
         // Find the closing "}"
         elseTag = tok->linkAt(4)->next();
 
-        bool boolValue = false;
-        if (tok->strAt(2) == "true")
-            boolValue = true;
+        bool boolValue = (tok->strAt(2) == "true");
 
         // Handle if with else
-        if (elseTag && elseTag->str() == "else") {
-            if (Token::simpleMatch(elseTag->next(), "if (")) {
-                // Handle "else if"
-                if (boolValue == false) {
-                    // Convert "if( false ) {aaa;} else if() {bbb;}" => "if() {bbb;}"
-                    Token::eraseTokens(tok, elseTag->tokAt(2));
-                    ret = true;
-                } else {
-                    // Keep first if, remove every else if and else after it
-                    const Token *lastTagInIf = elseTag->tokAt(2);
-                    while (lastTagInIf) {
-                        if (lastTagInIf->str() == "(") {
-                            lastTagInIf = lastTagInIf->link()->next();
-                        }
+        if (Token::simpleMatch(elseTag, "else {")) {
+            // Handle else
+            if (boolValue == false) {
+                // Convert "if( false ) {aaa;} else {bbb;}" => "{bbb;}" or ";{bbb;}"
 
-                        lastTagInIf = lastTagInIf->link()->next();
-                        if (!Token::simpleMatch(lastTagInIf, "else"))
-                            break;
-
-                        lastTagInIf = lastTagInIf->next();
-                        if (lastTagInIf->str() == "if")
-                            lastTagInIf = lastTagInIf->next();
-                    }
-
-                    Token::eraseTokens(elseTag->previous(), lastTagInIf);
-                    ret = true;
-                }
+                //remove '(false)'
+                tok->deleteNext(3);
+                //delete dead code inside scope
+                eraseDeadCode(tok, elseTag);
+                //remove 'else'
+                elseTag->deleteThis();
+                //remove 'if'
+                tok->deleteThis();
             } else {
-                // Handle else
-                if (boolValue == false) {
-                    // Convert "if( false ) {aaa;} else {bbb;}" => "{bbb;}" or ";{bbb;}"
-                    if (tok->previous())
-                        tok = tok->previous();
-                    else
-                        tok->str(";");
+                // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
+                const Token *end = elseTag->next()->link()->next();
 
-                    Token::eraseTokens(tok, elseTag->next());
-                } else {
-                    if (elseTag->next()->str() == "{") {
-                        // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
-                        const Token *end = elseTag->next()->link();
+                // Remove "else { bbb; }"
+                elseTag = elseTag->previous();
+                eraseDeadCode(elseTag, end);
 
-                        // Remove the "else { aaa; }"
-                        Token::eraseTokens(elseTag->previous(), end->next());
-                    }
-
-                    // Remove "if( true )"
-                    if (tok->previous())
-                        tok = tok->previous();
-                    else
-                        tok->str(";");
-
-                    tok->deleteNext(4);
-                }
-
-                ret = true;
+                // Remove "if( true )"
+                tok->deleteNext(3);
+                tok->deleteThis();
             }
+
+            ret = true;
         }
 
         // Handle if without else
         else {
             if (boolValue == false) {
-                // Remove if and its content
-                if (tok->previous())
-                    tok = tok->previous();
-                else
-                    tok->str(";");
-
-                Token::eraseTokens(tok, elseTag);
+                //remove '(false)'
+                tok->deleteNext(3);
+                //delete dead code inside scope
+                eraseDeadCode(tok, elseTag);
+                //remove 'if'
+                tok->deleteThis();
             } else {
                 // convert "if( true ) {aaa;}" => "{aaa;}"
-                if (tok->previous())
-                    tok = tok->previous();
-                else
-                    tok->str(";");
-
-                tok->deleteNext(4);
+                tok->deleteNext(3);
+                tok->deleteThis();
             }
 
             ret = true;
