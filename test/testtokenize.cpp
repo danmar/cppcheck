@@ -90,8 +90,9 @@ private:
         TEST_CASE(ifAddBraces13);
         TEST_CASE(ifAddBraces14); // #2610 - segfault: if()<{}
         TEST_CASE(ifAddBraces15); // #2616 - unknown macro before if
-        TEST_CASE(ifAddBraces16); // '} else' should be in the same line
-        TEST_CASE(ifAddBraces17); // #3424 - if if { } else else
+        TEST_CASE(ifAddBraces16); // ticket # 2739 (segmentation fault)
+        TEST_CASE(ifAddBraces17); // '} else' should be in the same line
+        TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -384,8 +385,6 @@ private:
 
         // a = b = 0;
         TEST_CASE(multipleAssignment);
-
-        TEST_CASE(simplifyIfAddBraces); // ticket # 2739 (segmentation fault)
 
         TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
@@ -974,7 +973,21 @@ private:
         ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
     }
 
-    void ifAddBraces16() {
+    void ifAddBraces16() { // ticket # 2739 (segmentation fault)
+        tokenizeAndStringify("if()x");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        // ticket #2873 - the fix is not needed anymore.
+        {
+            const char code[] = "void f() { "
+                                "(void) ( { if(*p) (*p) = x(); } ) "
+                                "}";
+            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) ( * p ) = x ( ) ; } ) }",
+                          tokenizeAndStringify(code));
+        }
+    }
+
+    void ifAddBraces17() {
         const char code[] = "void f()\n"
                             "{\n"
                             "    if (a)\n"
@@ -992,7 +1005,7 @@ private:
                       "}", tokenizeAndStringify(code, true));
     }
 
-    void ifAddBraces17() {
+    void ifAddBraces18() {
         // ticket #3424 - if if { } else else
         ASSERT_EQUALS("{ if ( x ) { if ( y ) { } else { ; } } else { ; } }",
                       tokenizeAndStringify("{ if(x) if(y){}else;else;}", false));
@@ -6112,20 +6125,6 @@ private:
 
     void multipleAssignment() {
         ASSERT_EQUALS("a = b = 0 ;", tokenizeAndStringify("a=b=0;"));
-    }
-
-    void simplifyIfAddBraces() { // ticket # 2739 (segmentation fault)
-        tokenizeAndStringify("if()x");
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
-
-        // ticket #2873 - the fix is not needed anymore.
-        {
-            const char code[] = "void f() { "
-                                "(void) ( { if(*p) (*p) = x(); } ) "
-                                "}";
-            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) ( * p ) = x ( ) ; } ) }",
-                          tokenizeAndStringify(code));
-        }
     }
 
     void platformWin32() {
