@@ -1137,8 +1137,8 @@ private:
         if (Token::simpleMatch(&tok, "try {")) {
             // Bail out all used variables
             const Token* tok2 = &tok;
-            const Token* end = tok.linkAt(1);
-            for (; tok2 && tok2 != end; tok2 = tok2->next()) {
+            const Token* endtok = tok.linkAt(1);
+            for (; tok2 && tok2 != endtok; tok2 = tok2->next()) {
                 if (tok2->varId())
                     bailOutVar(checks,tok2->varId());
             }
