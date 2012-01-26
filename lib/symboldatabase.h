@@ -56,13 +56,14 @@ struct Dimension {
 class Variable {
     /** @brief flags mask used to access specific bit. */
     enum {
-        fIsMutable  = (1 << 0), /** @brief mutable variable */
-        fIsStatic   = (1 << 1), /** @brief static variable */
-        fIsConst    = (1 << 2), /** @brief const variable */
-        fIsClass    = (1 << 3), /** @brief user defined type */
-        fIsArray    = (1 << 4), /** @brief array variable */
-        fIsPointer  = (1 << 5), /** @brief pointer variable */
-        fHasDefault = (1 << 6)  /** @brief function argument with default value */
+        fIsMutable   = (1 << 0), /** @brief mutable variable */
+        fIsStatic    = (1 << 1), /** @brief static variable */
+        fIsConst     = (1 << 2), /** @brief const variable */
+        fIsClass     = (1 << 3), /** @brief user defined type */
+        fIsArray     = (1 << 4), /** @brief array variable */
+        fIsPointer   = (1 << 5), /** @brief pointer variable */
+        fIsReference = (1 << 6), /** @brief reference variable */
+        fHasDefault  = (1 << 7)  /** @brief function argument with default value */
     };
 
     /**
@@ -87,8 +88,8 @@ public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, bool mutable_,
              bool static_, bool const_, bool class_, const Scope *type_,
-             const Scope *scope_, bool array_, bool pointer_, bool default_,
-             const std::vector<Dimension> &dimensions_)
+             const Scope *scope_, bool array_, bool pointer_, bool reference_,
+             bool default_, const std::vector<Dimension> &dimensions_)
         : _name(name_),
           _start(start_),
           _end(end_),
@@ -103,6 +104,7 @@ public:
         setFlag(fIsClass, class_);
         setFlag(fIsArray, array_);
         setFlag(fIsPointer, pointer_);
+        setFlag(fIsReference, reference_);
         setFlag(fHasDefault, default_);
         _dimensions = dimensions_;
     }
@@ -270,11 +272,19 @@ public:
     }
 
     /**
-     * Is pointer or array variable.
+     * Is pointer variable.
      * @return true if pointer, false otherwise
      */
     bool isPointer() const {
         return getFlag(fIsPointer);
+    }
+
+    /**
+     * Is reference variable.
+     * @return true if reference, false otherwise
+     */
+    bool isReference() const {
+        return getFlag(fIsReference);
     }
 
     /**
@@ -469,11 +479,11 @@ public:
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, bool mutable_,
                      bool static_, bool const_, bool class_, const Scope *type_,
-                     const Scope *scope_, bool array_, bool pointer_,
+                     const Scope *scope_, bool array_, bool pointer_, bool reference_,
                      const std::vector<Dimension> &dimensions_) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_, mutable_, static_, const_, class_,
-                                   type_, scope_, array_, pointer_, false, dimensions_));
+                                   type_, scope_, array_, pointer_, reference_, false, dimensions_));
     }
 
     /** @brief initialize varlist */
@@ -518,7 +528,7 @@ private:
      * @param isPointer reference to variable to set if pointer is found
      * @return true if tok points to a variable declaration, false otherwise
      */
-    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer) const;
+    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer, bool &isReference) const;
     bool isSimpleVariable(const Token* tok) const;
     bool isArrayVariable(const Token* tok) const;
     bool findClosingBracket(const Token* tok, const Token*& close) const;
