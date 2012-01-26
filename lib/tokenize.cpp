@@ -4646,19 +4646,14 @@ bool Tokenizer::simplifyQuestionMark()
 
         // Find the ":" token..
         Token *semicolon = 0;
-        {
-            unsigned int parlevel = 0;
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")") {
-                    if (parlevel == 0)
-                        break;
-                    --parlevel;
-                } else if (parlevel == 0 && tok2->str() == ":") {
-                    semicolon = tok2;
-                    break;
-                }
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+            if (tok2->str() == "(" || tok2->str() == "[")
+                tok2 = tok2->link();
+            else if (tok2->str() == ")" || tok2->str() == "]")
+                break;
+            else if (tok2->str() == ":") {
+                semicolon = tok2;
+                break;
             }
         }
         if (!semicolon || !semicolon->next())
