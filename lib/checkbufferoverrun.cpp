@@ -2143,7 +2143,7 @@ void CheckBufferOverrun::executionPaths()
 
     // Perform checking - check how the arrayInfo arrays are used
     ExecutionPathBufferOverrun c(this, arrayInfo);
-    checkExecutionPaths(_tokenizer->tokens(), &c);
+    checkExecutionPaths(_tokenizer->getSymbolDatabase(), &c);
 }
 
 

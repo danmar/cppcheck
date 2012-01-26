@@ -1032,7 +1032,7 @@ void CheckUninitVar::executionPaths()
             UninitVar::analyseFunctions(_tokenizer->tokens(), UninitVar::uvarFunctions);
 
         UninitVar c(this);
-        checkExecutionPaths(_tokenizer->tokens(), &c);
+        checkExecutionPaths(_tokenizer->getSymbolDatabase(), &c);
     }
 }
 

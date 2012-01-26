@@ -1769,6 +1769,19 @@ private:
                       "[test.cpp:4]: (error) Possible null pointer dereference: p\n"
                       "[test.cpp:6]: (error) Possible null pointer dereference: p\n"
                       "[test.cpp:7]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        check("class Bar {\n"
+              "    std::string s;\n"
+              "    Bar() : s(0) {}\n"
+              "};\n"
+              "class Foo {\n"
+              "    std::string s;\n"
+              "    Foo();\n"
+              "};\n"
+              "Foo::Foo() : s(0) {}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n"
+                           "[test.cpp:9]: (error) Null pointer dereference\n",
+                           "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls

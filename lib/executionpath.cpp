@@ -19,6 +19,7 @@
 
 #include "executionpath.h"
 #include "token.h"
+#include "symboldatabase.h"
 #include <memory>
 #include <set>
 #include <iterator>
@@ -448,29 +449,23 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
     }
 }
 
-void checkExecutionPaths(const Token *tok, ExecutionPath *c)
+void checkExecutionPaths(const SymbolDatabase *symbolDatabase, ExecutionPath *c)
 {
-    for (; tok; tok = tok->next()) {
-        if (tok->str() != ")")
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eFunction || !i->classStart)
             continue;
 
-        // Start of implementation..
-        if (Token::Match(tok, ") const| {")) {
-            // goto the "{"
-            tok = tok->next();
-            if (tok->str() == "const")
-                tok = tok->next();
+        // Check function
+        std::list<ExecutionPath *> checks;
+        checks.push_back(c->copy());
+        ExecutionPath::checkScope(i->classStart, checks);
 
-            std::list<ExecutionPath *> checks;
-            checks.push_back(c->copy());
-            ExecutionPath::checkScope(tok, checks);
+        c->end(checks, i->classEnd);
 
-            c->end(checks, tok->link());
-
-            while (!checks.empty()) {
-                delete checks.back();
-                checks.pop_back();
-            }
+        // Cleanup
+        while (checks.size() > 1) {
+            delete checks.back();
+            checks.pop_back();
         }
     }
 }

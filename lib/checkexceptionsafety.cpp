@@ -136,28 +136,17 @@ void CheckExceptionSafety::checkRethrowCopy()
     if (!_settings->isEnabled("style"))
         return;
 
-    const char catchPattern1[] = "catch (";
-    const char catchPattern2[] = "%var% ) { %any%";
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const Token* tok = Token::findsimplematch(_tokenizer->tokens(), catchPattern1);
-    while (tok) {
-        const Token* endScopeTok = tok->next();
-        const Token* endBracketTok = tok->next()->link();
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eCatch)
+            continue;
 
-        if (endBracketTok && Token::Match(endBracketTok->previous(), catchPattern2)) {
-            const Token* startScopeTok = endBracketTok->next();
-            endScopeTok = startScopeTok->link();
-            const unsigned int varid = endBracketTok->previous()->varId();
-
-            if (varid > 0) {
-                const Token* rethrowTok = Token::findmatch(startScopeTok->next(), "throw %varid%", endScopeTok->previous(), varid);
-                if (rethrowTok) {
-                    rethrowCopyError(rethrowTok, endBracketTok->strAt(-1));
-                }
-            }
+        const unsigned int varid = i->classStart->tokAt(-2)->varId();
+        if (varid) {
+            const Token* rethrowTok = Token::findmatch(i->classStart->next(), "throw %varid% ;", i->classEnd->previous(), varid);
+            if (rethrowTok)
+                rethrowCopyError(rethrowTok, rethrowTok->strAt(1));
         }
-
-        tok = Token::findsimplematch(endScopeTok->next(), catchPattern1);
     }
 }
-

@@ -248,8 +248,11 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
     // std::string dereferences nullpointers
     if (Token::Match(tok->tokAt(-4), "std :: string ( %var% )"))
         return true;
-    if (Token::Match(tok->tokAt(-5), "std :: string %var% ( %var% )"))
-        return true;
+    if (Token::Match(tok->tokAt(-2), "%var% ( %var% )")) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(-2)->varId());
+        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+            return true;
+    }
 
     unsigned int ovarid = 0;
     if (Token::Match(tok, "%var% ==|!= %var%"))
@@ -687,7 +690,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // - logical operators
         // - while
         const Token* const tok = i->classDef;
-        if (i->type == Scope::eIf && tok && !tok->isExpandedMacro() && Token::Match(tok->previous(), "; if ( !| %var% )|%oror%|&&")) {
+        if (i->type == Scope::eIf && tok && !tok->isExpandedMacro() && Token::Match(tok, "if ( !| %var% )|%oror%|&&")) {
             const Token * vartok = tok->tokAt(2);
             if (vartok->str() == "!")
                 vartok = vartok->next();
@@ -824,7 +827,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         if (!i->classDef || i->classDef->isExpandedMacro())
             continue;
 
-        const Token* const tok = i->type != Scope::eElseIf ? i->classDef : i->classDef->next();
+        const Token* const tok = i->type != Scope::eElseIf ? i->classDef->next() : i->classDef->tokAt(2);
         // TODO: investigate false negatives:
         // - handle "while"?
         // - if there are logical operators
@@ -836,12 +839,12 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
         // vartok : token for the variable
         const Token *vartok = 0;
-        if (Token::Match(tok, "if ( ! %var% )|&&"))
-            vartok = tok->tokAt(3);
-        else if (Token::Match(tok, "if|while ( %var% )|&&"))
+        if (Token::Match(tok, "( ! %var% )|&&"))
             vartok = tok->tokAt(2);
-        else if (Token::Match(tok, "if ( ! ( %var% ="))
-            vartok = tok->tokAt(4);
+        else if (Token::Match(tok, "( %var% )|&&"))
+            vartok = tok->next();
+        else if (Token::Match(tok, "( ! ( %var% ="))
+            vartok = tok->tokAt(3);
         else
             continue;
 
@@ -849,8 +852,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         const unsigned int varid(vartok->varId());
         if (varid == 0)
             continue;
-
-        const unsigned int linenr = vartok->linenr();
 
         const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
         // Check if variable is a pointer
@@ -866,7 +867,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         // start token = inside the if-body
         const Token *tok1 = i->classStart;
 
-        if (Token::Match(tok, "if|while ( %var% )|&&")) {
+        if (Token::Match(tok, "( %var% )|&&")) {
             // pointer might be null
             null = false;
 
@@ -876,10 +877,11 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 continue;
         }
 
-        unsigned int indentlevel = 0;
-
-        // Name of the pointer
+        // Name and line of the pointer
         const std::string &pointerName = vartok->str();
+        const unsigned int linenr = vartok->linenr();
+
+        unsigned int indentlevel = 0;
 
         // Set to true if we would normally bail out the check.
         bool inconclusive = false;
@@ -929,9 +931,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // parameters to sizeof are not dereferenced
             if (Token::Match(tok2, "decltype|sizeof")) {
                 if (tok2->strAt(1) != "(")
-                    break;
-
-                tok2 = tok2->next()->link();
+                    tok2 = tok2->next();
+                else
+                    tok2 = tok2->next()->link();
                 continue;
             }
 
@@ -948,16 +950,16 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             }
 
             // calling unknown function (abort/init)..
-            if (Token::simpleMatch(tok2, ") ;") &&
-                (Token::Match(tok2->link()->tokAt(-2), "[;{}.] %var% (") ||
-                 Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) ("))) {
+            else if (Token::simpleMatch(tok2, ") ;") &&
+                     (Token::Match(tok2->link()->tokAt(-2), "[;{}.] %var% (") ||
+                      Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) ("))) {
                 // noreturn function?
                 bool unknown = false;
                 if (_tokenizer->IsScopeNoReturn(tok2->tokAt(2), &unknown)) {
                     if (!unknown || !_settings->inconclusive) {
                         break;
                     }
-                    inconclusive = true;
+                    inconclusive = _settings->inconclusive;
                 }
 
                 // init function (global variables)
@@ -1006,7 +1008,12 @@ void CheckNullPointer::nullConstantDereference()
         if (i->type != Scope::eFunction || !i->classStart)
             continue;
 
-        for (const Token *tok = i->classStart; tok != i->classEnd; tok = tok->next()) {
+        const Token *tok = i->classStart;
+
+        if (i->function && (i->function->type == Function::eConstructor || i->function->type == Function::eCopyConstructor))
+            tok = i->function->token; // Check initialization list
+
+        for (; tok != i->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "sizeof|decltype|typeid ("))
                 tok = tok->next()->link();
 
@@ -1031,8 +1038,11 @@ void CheckNullPointer::nullConstantDereference()
                 }
             } else if (Token::Match(tok, "std :: string ( 0 )"))
                 nullPointerError(tok);
-            if (Token::Match(tok, "std :: string %var% ( 0 )"))
-                nullPointerError(tok);
+            else if (Token::Match(tok, "%var% ( 0 )")) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+                    nullPointerError(tok);
+            }
 
             unsigned int ovarid = 0;
             if (Token::Match(tok, "0 ==|!= %var%"))
@@ -1239,7 +1249,7 @@ void CheckNullPointer::executionPaths()
 {
     // Check for null pointer errors..
     Nullpointer c(this, _tokenizer->getSymbolDatabase());
-    checkExecutionPaths(_tokenizer->tokens(), &c);
+    checkExecutionPaths(_tokenizer->getSymbolDatabase(), &c);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok)
