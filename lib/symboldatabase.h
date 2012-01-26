@@ -553,6 +553,10 @@ public:
         return _variableList[varId];
     }
 
+    size_t getVariableListSize() const {
+        return _variableList.size();
+    }
+
     /**
      * @brief output a debug message
      */

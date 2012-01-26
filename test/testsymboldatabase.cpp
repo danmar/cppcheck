@@ -113,6 +113,8 @@ private:
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
 
+        TEST_CASE(tryCatch1);
+
         TEST_CASE(symboldatabase1);
         TEST_CASE(symboldatabase2);
         TEST_CASE(symboldatabase3); // ticket #2000
@@ -723,6 +725,22 @@ private:
         const Function *function = &(scope->functionList.front());
         ASSERT_EQUALS("X", function->tokenDef->str());
         ASSERT_EQUALS(true, function->hasBody);
+    }
+
+
+    void tryCatch1() {
+        const std::string str("void foo() {\n"
+                              "    try { }\n"
+                              "    catch (const Error1 & x) { }\n"
+                              "    catch (const X::Error2 & x) { }\n"
+                              "    catch (Error3 x) { }\n"
+                              "    catch (X::Error4 x) { }\n"
+                              "}\n");
+        GET_SYMBOL_DB(str.c_str())
+        check(str.c_str(), false);
+        ASSERT_EQUALS("", errout.str());
+        ASSERT(db && db->getVariableListSize() == 5); // index 0 + 4 variables
+        ASSERT(db && db->scopeList.size() == 7); // global + function + try + 4 catch
     }
 
 
