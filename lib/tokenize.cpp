@@ -3598,13 +3598,7 @@ bool Tokenizer::simplifyTokenList()
 
     simplifySizeof();
 
-    // change array to pointer..
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "%type% %var% [ ] [,;=]")) {
-            tok->next()->deleteNext(2);
-            tok->insertToken("*");
-        }
-    }
+    simplifyUndefinedSizeArray();
 
     // Replace constants..
     for (Token *tok = _tokens; tok; tok = tok->next()) {
@@ -4730,6 +4724,35 @@ bool Tokenizer::simplifyQuestionMark()
     }
 
     return ret;
+}
+
+void Tokenizer::simplifyUndefinedSizeArray()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (Token::Match(tok, "%type%")) {
+            Token *tok2 = tok->next();
+            while (tok2 && tok2->str() == "*")
+                tok2 = tok2->next();
+            if (!Token::Match(tok2, "%var% [ ]"))
+                continue;
+
+            tok = tok2->previous();
+            Token *end = tok2->next();
+            unsigned int count = 0;
+            while (Token::Match(end, "[ ] [;=[]")) {
+                end = end->tokAt(2);
+                ++count;
+            }
+            if (Token::Match(end, "[;=]")) {
+                do {
+                    tok2->deleteNext(2);
+                    tok->insertToken("*");
+                } while (--count);
+                tok = end;
+            } else
+                tok = tok->tokAt(3);
+        }
+    }
 }
 
 void Tokenizer::simplifyCasts()

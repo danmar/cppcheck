@@ -402,6 +402,8 @@ private:
         TEST_CASE(removeRedundantFor);
 
         TEST_CASE(consecutiveBraces);
+
+        TEST_CASE(undefinedSizeArray);
     }
 
     std::string tok(std::string code, bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -7622,6 +7624,15 @@ private:
         ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}", true));
         ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f () { for(;;){} }", true));
         ASSERT_EQUALS("void f ( ) { { scope_lock lock ; foo ( ) ; } { scope_lock lock ; bar ( ) ; } }", tok("void f () { {scope_lock lock; foo();} {scope_lock lock; bar();} }", true));
+    }
+
+    void undefinedSizeArray() {
+        ASSERT_EQUALS("int * x ;", tok("int x [];"));
+        ASSERT_EQUALS("int * * x ;", tok("int x [][];"));
+        ASSERT_EQUALS("int * * x ;", tok("int * x [];"));
+        ASSERT_EQUALS("int * * * x ;", tok("int * x [][];"));
+        ASSERT_EQUALS("int * * * * x ;", tok("int * * x [][];"));
+        ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
     }
 };
 

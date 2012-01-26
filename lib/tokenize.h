@@ -350,6 +350,11 @@ public:
     void simplifyCasts();
 
     /**
+     * Change (multiple) arrays to (multiple) pointers.
+     */
+    void simplifyUndefinedSizeArray();
+
+    /**
      * A simplify function that replaces a variable with its value in cases
      * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
      *
