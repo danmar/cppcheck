@@ -1957,7 +1957,7 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // if MACRO
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "if|for|while %var% (")) {
+        if (Token::Match(tok, "if|for|while|BOOST_FOREACH %var% (")) {
             syntaxError(tok);
             return false;
         }
@@ -6278,7 +6278,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         //       then it can't be changed by the function call.
         if (tok3->str() == ")" && tok3->link() &&
             Token::Match(tok3->link()->tokAt(-2), "[;{}] %var% (") &&
-            !Token::Match(tok3->link()->previous(), "if|for|while|switch"))
+            !Token::Match(tok3->link()->previous(), "if|for|while|switch|BOOST_FOREACH"))
             break;
 
         // Stop if something like 'while (--var)' is found
@@ -7057,7 +7057,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
         if (end) {
             if (Token::simpleMatch(end, ") {")) { // function parameter ?
                 // make sure it's not a conditional
-                if (Token::Match(end->link()->previous(), "if|for|while|switch"))
+                if (Token::Match(end->link()->previous(), "if|for|while|switch|BOOST_FOREACH"))
                     return false;
 
                 // look backwards
