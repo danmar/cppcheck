@@ -7567,6 +7567,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
 {
     if (!begin)
         return;
+    bool isgoto = Token::Match(begin->tokAt(-2), "goto %var% ;");
     unsigned int indentlevel = 1,
                  indentcase = 0,
                  indentswitch = 0,
@@ -7698,6 +7699,26 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                 }
                 break;  //stop removing tokens, we arrived to the label.
             }
+        } else if (isgoto && Token::Match(tok, "[{};] do|while|for|BOOST_FOREACH")) {
+            //it's possible that code inside loop is not dead,
+            //because of the possible presence of the label pointed by 'goto'
+            std::string labelpattern = "[{};] " + begin->previous()->str() + " : ;";
+            Token *start = tok->tokAt(2);
+            if (start && start->str() == "(")
+                start = start->link()->next();
+            if (start && start->str() == "{") {
+                bool simplify = true;
+                for (Token *tok2 = start->next(); tok2 != start->link(); tok2 = tok2->next()) {
+                    if (Token::Match(tok2, labelpattern.c_str())) {
+                        simplify = false;
+                        break;
+                    }
+                }
+                //bailout for now
+                if (!simplify)
+                    break;
+            }
+            tok->deleteNext();
         } else {        //no need to keep the other strings, remove them.
             tok->deleteNext();
         }

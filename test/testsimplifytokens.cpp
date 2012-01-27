@@ -162,6 +162,8 @@ private:
         TEST_CASE(goto2);
         // ticket #3138
         TEST_CASE(goto3);
+        // ticket #3459
+        TEST_CASE(goto4);
 
         //remove dead code after flow control statements
         TEST_CASE(flowControl);
@@ -3178,6 +3180,29 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+    }
+
+    void goto4() {
+        const char code[] = "int main()\n"
+                            "{\n"
+                            "   goto SkipIncr;\n"
+                            "   do {\n"
+                            "       f();\n"
+                            "       SkipIncr:\n"
+                            "       printf(\".\");\n"
+                            "   } while (bar());\n"
+                            "}\n";
+
+        const char expected[] = "int main ( ) "
+                                "{"
+                                " goto SkipIncr ;"
+                                " do {"
+                                " f ( ) ;"
+                                " SkipIncr : ;"
+                                " printf ( \".\" ) ;"
+                                " } while ( bar ( ) ) ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void flowControl() {
