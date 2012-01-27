@@ -232,6 +232,12 @@ public:
     /** Remove redundant assignment */
     void removeRedundantAssignment();
 
+    /** Simplifies some realloc usage like
+      * 'x = realloc (0, n);' => 'x = malloc(n);'
+      * 'x = realloc (y, 0);' => 'x = 0; free(y);'
+      */
+    void simplifyRealloc();
+
     /**
      * Replace sizeof() to appropriate size.
      */
@@ -245,9 +251,7 @@ public:
 
     /**
      * Simplify variable initialization
-     * ; int *p(0);
-     * =>
-     * ; int *p = 0;
+     * '; int *p(0);' => '; int *p = 0;'
      */
     void simplifyInitVar();
     Token * initVar(Token * tok);

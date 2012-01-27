@@ -3681,41 +3681,7 @@ bool Tokenizer::simplifyTokenList()
         }
     }*/
 
-    // simplify "x=realloc(y,0);" => "free(y); x=0;"..
-    // and "x = realloc (0, n);" => "x = malloc(n);"
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}:] %var% = realloc ( %var% , 0 ) ;")) {
-            const std::string varname(tok->next()->str());
-            const unsigned int varid(tok->next()->varId());
-
-            // Delete the "%var% ="
-            tok->deleteNext(2);
-
-            // Change function name "realloc" to "free"
-            tok->next()->str("free");
-
-            // delete the ", 0"
-            tok = tok->tokAt(3);
-            tok->deleteNext(2);
-
-            // goto the ";"
-            tok = tok->tokAt(2);
-
-            // insert "var=0;"
-            tok->insertToken(";");
-            tok->insertToken("0");
-            tok->insertToken("=");
-            tok->insertToken(varname);
-            tok->next()->varId(varid);
-        } else if (Token::Match(tok, "[;{}:] %var% = realloc ( 0 , %num% ) ;")) {
-            tok = tok->tokAt(3);
-            // Change function name "realloc" to "malloc"
-            tok->str("malloc");
-
-            // delete "0 ,"
-            tok->next()->deleteNext(2);
-        }
-    }
+    simplifyRealloc();
 
     // Change initialisation of variable to assignment
     simplifyInitVar();
@@ -3875,6 +3841,51 @@ void Tokenizer::removeRedundantAssignment()
                     } else
                         tok2 = tok2->next();
                 }
+            }
+        }
+    }
+}
+
+void Tokenizer::simplifyRealloc()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == "(" || tok->str() == "[" ||
+            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "="))
+            tok = tok->link();
+        else if (Token::Match(tok, "[;{}] %var% = realloc (")) {
+            tok = tok->tokAt(3);
+            if (Token::Match(tok->next(), "( 0 ,")) {
+                //no "x = realloc(0,);"
+                if (!Token::Match(tok->next()->link(), ") ;") || tok->next()->link()->previous() == tok->tokAt(3))
+                    continue;
+
+                // delete "0 ,"
+                tok->next()->deleteNext(2);
+
+                // Change function name "realloc" to "malloc"
+                tok->str("malloc");
+                tok = tok->next()->link();
+            } else {
+                Token *tok2 = tok->next()->link()->tokAt(-2);
+                //no "x = realloc(,0);"
+                if (!Token::simpleMatch(tok2, ", 0 ) ;") || tok2 == tok->tokAt(2))
+                    continue;
+
+                //remove ", 0"
+                tok2 = tok2->previous();
+                tok2->deleteNext(2);
+                //change "realloc" to "free"
+                tok->str("free");
+                //insert "0" after "var ="
+                tok = tok->previous();
+                tok->insertToken("0");
+                //move "var = 0" between "free(...)" and ";"
+                tok2 = tok2->next();
+                Token::move(tok->previous(), tok->next(), tok2);
+                //add missing ";" after "free(...)"
+                tok2->insertToken(";");
+                //goto before last ";" and continue
+                tok = tok->next();
             }
         }
     }

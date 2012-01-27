@@ -7001,12 +7001,14 @@ private:
     }
 
     void simplifyRealloc() {
-        ASSERT_EQUALS("; free ( p ) ; p = 0 ;",
-                      tok("; p = realloc(p,0);"));
-        ASSERT_EQUALS("; p = malloc ( 100 ) ;",
-                      tok("; p = realloc(0, 100);"));
-        ASSERT_EQUALS("; p = malloc ( 0 ) ;",
-                      tok("; p = realloc(0, sizeof(char)*0);"));
+        ASSERT_EQUALS("; free ( p ) ; p = 0 ;", tok("; p = realloc(p, 0);"));
+        ASSERT_EQUALS("; p = malloc ( 100 ) ;", tok("; p = realloc(0, 100);"));
+        ASSERT_EQUALS("; p = malloc ( 0 ) ;", tok("; p = realloc(0, 0);"));
+        ASSERT_EQUALS("; free ( q ) ; p = 0 ;", tok("; p = realloc(q, 0);"));
+        ASSERT_EQUALS("; free ( * q ) ; p = 0 ;", tok("; p = realloc(*q, 0);"));
+        ASSERT_EQUALS("; free ( f ( z ) ) ; p = 0 ;", tok("; p = realloc(f(z), 0);"));
+        ASSERT_EQUALS("; p = malloc ( n * m ) ;", tok("; p = realloc(0, n*m);"));
+        ASSERT_EQUALS("; p = malloc ( f ( 1 ) ) ;", tok("; p = realloc(0, f(1));"));
     }
 
     void simplifyErrNoInWhile() {
