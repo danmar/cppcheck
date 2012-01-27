@@ -90,8 +90,9 @@ private:
         TEST_CASE(ifAddBraces13);
         TEST_CASE(ifAddBraces14); // #2610 - segfault: if()<{}
         TEST_CASE(ifAddBraces15); // #2616 - unknown macro before if
-        TEST_CASE(ifAddBraces16); // '} else' should be in the same line
-        TEST_CASE(ifAddBraces17); // #3424 - if if { } else else
+        TEST_CASE(ifAddBraces16); // ticket # 2739 (segmentation fault)
+        TEST_CASE(ifAddBraces17); // '} else' should be in the same line
+        TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -240,7 +241,8 @@ private:
 
         TEST_CASE(macrodoublesharp);
 
-        TEST_CASE(simplify_function_parameters);
+        TEST_CASE(simplifyFunctionParameters);
+        TEST_CASE(simplifyFunctionParametersErrors);
 
         TEST_CASE(removeParentheses1);       // Ticket #61
         TEST_CASE(removeParentheses2);
@@ -344,6 +346,7 @@ private:
         TEST_CASE(bitfields10);
         TEST_CASE(bitfields11); // ticket #2845 (segmentation fault)
         TEST_CASE(bitfields12); // ticket #3485 (segmentation fault)
+        TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
 
         TEST_CASE(microsoftMFC);
         TEST_CASE(microsoftMemory);
@@ -382,8 +385,6 @@ private:
 
         // a = b = 0;
         TEST_CASE(multipleAssignment);
-
-        TEST_CASE(simplifyIfAddBraces); // ticket # 2739 (segmentation fault)
 
         TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
@@ -972,7 +973,21 @@ private:
         ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
     }
 
-    void ifAddBraces16() {
+    void ifAddBraces16() { // ticket # 2739 (segmentation fault)
+        tokenizeAndStringify("if()x");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        // ticket #2873 - the fix is not needed anymore.
+        {
+            const char code[] = "void f() { "
+                                "(void) ( { if(*p) (*p) = x(); } ) "
+                                "}";
+            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) ( * p ) = x ( ) ; } ) }",
+                          tokenizeAndStringify(code));
+        }
+    }
+
+    void ifAddBraces17() {
         const char code[] = "void f()\n"
                             "{\n"
                             "    if (a)\n"
@@ -990,7 +1005,7 @@ private:
                       "}", tokenizeAndStringify(code, true));
     }
 
-    void ifAddBraces17() {
+    void ifAddBraces18() {
         // ticket #3424 - if if { } else else
         ASSERT_EQUALS("{ if ( x ) { if ( y ) { } else { ; } } else { ; } }",
                       tokenizeAndStringify("{ if(x) if(y){}else;else;}", false));
@@ -3984,7 +3999,7 @@ private:
         ASSERT_EQUALS("DBG ( fmt , args . . . ) printf ( fmt , ## args ) ", ostr.str());
     }
 
-    void simplify_function_parameters() {
+    void simplifyFunctionParameters() {
         {
             const char code[] = "char a [ ABC ( DEF ) ] ;";
             ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
@@ -3997,6 +4012,7 @@ private:
 
         ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));
         ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }", true));
+        ASSERT_EQUALS("int main ( int argc , char * argv [ ] ) { }", tokenizeAndStringify("int main(argc,argv) int argc; char *argv[]; { }", true));
 
         // #1067 - Not simplified. Feel free to fix so it is simplified correctly but this syntax is obsolete.
         ASSERT_EQUALS("int ( * d ( a , b , c ) ) ( ) int a ; int b ; int c ; { }", tokenizeAndStringify("int (*d(a,b,c))()int a,b,c; { }", true));
@@ -4011,6 +4027,32 @@ private:
                                 "}";
             ASSERT_EQUALS("void foo ( ) { if ( x ) { } { } }", tokenizeAndStringify(code, true));
         }
+    }
+
+    void simplifyFunctionParametersErrors() {
+        //same parameters...
+        tokenizeAndStringify("void foo(x, x)\n"
+                             " int x;\n"
+                             " int x;\n"
+                             "{}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        tokenizeAndStringify("void foo(x, y)\n"
+                             " int x;\n"
+                             " int x;\n"
+                             "{}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
+
+        tokenizeAndStringify("void foo(int, int)\n"
+                             "{}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        //non-matching arguments after round braces
+        tokenizeAndStringify("void foo(x, y, z)\n"
+                             " int x;\n"
+                             " int y;\n"
+                             "{}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     // Simplify "((..))" into "(..)"
@@ -5707,6 +5749,10 @@ private:
         ASSERT_EQUALS("{ } ;", tokenizeAndStringify(code,false));
     }
 
+    void bitfields13() { // ticket #3502 (segmentation fault)
+        ASSERT_EQUALS("x y ;", tokenizeAndStringify("struct{x y:};\n",false));
+    }
+
     void microsoftMFC() {
         const char code1[] = "class MyDialog : public CDialog { DECLARE_MESSAGE_MAP() private: CString text; };";
         ASSERT_EQUALS("class MyDialog : public CDialog { private: CString text ; } ;", tokenizeAndStringify(code1,false,true,Settings::Win32A));
@@ -6079,20 +6125,6 @@ private:
 
     void multipleAssignment() {
         ASSERT_EQUALS("a = b = 0 ;", tokenizeAndStringify("a=b=0;"));
-    }
-
-    void simplifyIfAddBraces() { // ticket # 2739 (segmentation fault)
-        tokenizeAndStringify("if()x");
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
-
-        // ticket #2873 - the fix is not needed anymore.
-        {
-            const char code[] = "void f() { "
-                                "(void) ( { if(*p) (*p) = x(); } ) "
-                                "}";
-            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) ( * p ) = x ( ) ; } ) }",
-                          tokenizeAndStringify(code));
-        }
     }
 
     void platformWin32() {

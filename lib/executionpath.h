@@ -23,6 +23,7 @@
 
 class Token;
 class Check;
+class SymbolDatabase;
 
 /**
  * Base class for Execution Paths checking
@@ -126,7 +127,7 @@ public:
 };
 
 
-void checkExecutionPaths(const Token *tok, ExecutionPath *c);
+void checkExecutionPaths(const SymbolDatabase *symbolDatabase, ExecutionPath *c);
 
 
 #endif

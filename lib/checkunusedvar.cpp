@@ -600,7 +600,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             type = Variables::reference;
         else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
             type = Variables::pointerPointer;
-        else if (i->nameToken()->previous()->str() == "*" || i->nameToken()->strAt(-2) == "*")
+        else if (i->nameToken()->previous()->str() == "*" || Token::Match(i->nameToken()->tokAt(-2), "* %type%"))
             type = Variables::pointer;
         else if (i->typeEndToken()->isStandardType() || isRecordTypeWithoutSideEffects(*i) || Token::simpleMatch(i->nameToken()->tokAt(-3), "std :: string"))
             type = Variables::standard;

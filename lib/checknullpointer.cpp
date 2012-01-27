@@ -129,7 +129,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // 2nd parameter..
-    if (Token::Match(&tok, "%var% ( %any%")) {
+    if (Token::Match(&tok, "%var% ( !!)")) {
         const Token* secondParameter = tok.tokAt(2)->nextArgument();
         if (secondParameter && ((value == 0 && secondParameter->str() == "0") || (Token::Match(secondParameter, "%var%") && secondParameter->varId() > 0))) {
             if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
@@ -216,14 +216,14 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
  * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
  * @return true => there is a dereference
  */
-bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
+bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const SymbolDatabase* symbolDatabase)
 {
     const bool inconclusive = unknown;
 
     unknown = false;
 
     // Dereferencing pointer..
-    if (Token::Match(tok->tokAt(-3), "!!sizeof [;{}=+-/(,] * %var%") && Token::Match(tok->tokAt(-3), "!!decltype [;{}=+-/(,] * %var%"))
+    if (tok->strAt(-1) == "*" && (Token::Match(tok->tokAt(-2), "return|throw|;|{|}|:|[|(|,") || tok->tokAt(-2)->isOp() || tok->tokAt(-2)->isAssignmentOp()) && !Token::Match(tok->tokAt(-3), "sizeof|decltype"))
         return true;
 
     // read/write member variable
@@ -234,7 +234,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         return false;
     }
 
-    if (Token::Match(tok->previous(), "!!& %var% ["))
+    if (Token::Match(tok, "%var% [") && (tok->previous()->str() != "&" || Token::Match(tok->next()->link()->next(), "[.(]")))
         return true;
 
     if (Token::Match(tok, "%var% ("))
@@ -244,6 +244,26 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         tok->varId() > 0 &&
         tok->varId() == tok->tokAt(2)->varId())
         return true;
+
+    // std::string dereferences nullpointers
+    if (Token::Match(tok->tokAt(-4), "std :: string ( %var% )"))
+        return true;
+    if (Token::Match(tok->tokAt(-2), "%var% ( %var% )")) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(-2)->varId());
+        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+            return true;
+    }
+
+    unsigned int ovarid = 0;
+    if (Token::Match(tok, "%var% ==|!= %var%"))
+        ovarid = tok->tokAt(2)->varId();
+    else if (Token::Match(tok->tokAt(-2), "%var% ==|!=|=|+= %var%"))
+        ovarid = tok->tokAt(-2)->varId();
+    if (ovarid) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
+        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+            return true;
+    }
 
     // Check if it's NOT a pointer dereference.
     // This is most useful in inconclusive checking
@@ -382,7 +402,7 @@ void CheckNullPointer::nullPointerAfterLoop()
                 bool unknown = _settings->inconclusive;
 
                 // Is the loop variable dereferenced?
-                if (CheckNullPointer::isPointerDeRef(tok2, unknown)) {
+                if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase)) {
                     nullPointerError(tok2, varname, tok->linenr(), inconclusive);
                 }
 
@@ -422,31 +442,33 @@ void CheckNullPointer::nullPointerLinkedList()
                 if (varid == 0)
                     continue;
 
+                // Is this variable a pointer?
+                const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+                if (!var || !var->isPointer())
+                    continue;
+
                 if (Token::Match(tok2->tokAt(-2), "%varid% ?", varid))
                     continue;
 
-                // Variable name of dereferenced variable
-                const std::string varname(tok2->str());
-
                 // Check usage of dereferenced variable in the loop..
-                for (const Token *tok3 = i->classStart->next(); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
+                for (std::list<Scope*>::const_iterator j = i->nestedList.begin(); j != i->nestedList.end(); ++j) {
+                    Scope* scope = *j;
+                    if (scope->type != Scope::eWhile)
+                        continue;
+
                     // TODO: are there false negatives for "while ( %varid% ||"
-                    if (Token::Match(tok3, "while ( %varid% &&|)", varid)) {
+                    if (Token::Match(scope->classDef->next(), "( %varid% &&|)", varid)) {
                         // Make sure there is a "break" or "return" inside the loop.
                         // Without the "break" a null pointer could be dereferenced in the
                         // for statement.
                         // indentlevel4 is a counter for { and }. When scanning the code with tok4
                         unsigned int indentlevel4 = 1;
-                        for (const Token *tok4 = tok3->next()->link(); tok4; tok4 = tok4->next()) {
+                        for (const Token *tok4 = scope->classStart; tok4; tok4 = tok4->next()) {
                             if (tok4->str() == "{")
                                 ++indentlevel4;
                             else if (tok4->str() == "}") {
                                 if (indentlevel4 <= 1) {
-                                    const Variable* var = symbolDatabase->getVariableFromVarId(varid);
-                                    // Is this variable a pointer?
-                                    if (var && var->isPointer())
-                                        nullPointerError(tok1, varname, tok3->linenr());
-
+                                    nullPointerError(tok1, var->name(), scope->classDef->linenr());
                                     break;
                                 }
                                 --indentlevel4;
@@ -668,7 +690,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // - logical operators
         // - while
         const Token* const tok = i->classDef;
-        if (i->type == Scope::eIf && tok && !tok->isExpandedMacro() && Token::Match(tok->previous(), "; if ( !| %var% )|%oror%|&&")) {
+        if (i->type == Scope::eIf && tok && !tok->isExpandedMacro() && Token::Match(tok, "if ( !| %var% )|%oror%|&&")) {
             const Token * vartok = tok->tokAt(2);
             if (vartok->str() == "!")
                 vartok = vartok->next();
@@ -758,7 +780,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
                     // unknown : this is set by isPointerDeRef if it is
                     //           uncertain
-                    bool unknown = false;
+                    bool unknown = _settings->inconclusive;
 
                     if (Token::Match(tok1->tokAt(-2), "%varid% = %varid% .", varid)) {
                         break;
@@ -772,7 +794,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                         break;
                     } else if (Token::Match(tok1->tokAt(-2), "&&|%oror% !")) {
                         break;
-                    } else if (CheckNullPointer::isPointerDeRef(tok1, unknown)) {
+                    } else if (CheckNullPointer::isPointerDeRef(tok1, unknown, symbolDatabase)) {
                         nullPointerError(tok1, varname, tok->linenr(), inconclusive);
                         break;
                     } else if (Token::simpleMatch(tok1->previous(), "&")) {
@@ -805,7 +827,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         if (!i->classDef || i->classDef->isExpandedMacro())
             continue;
 
-        const Token* const tok = i->type != Scope::eElseIf ? i->classDef : i->classDef->next();
+        const Token* const tok = i->type != Scope::eElseIf ? i->classDef->next() : i->classDef->tokAt(2);
         // TODO: investigate false negatives:
         // - handle "while"?
         // - if there are logical operators
@@ -817,12 +839,12 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
         // vartok : token for the variable
         const Token *vartok = 0;
-        if (Token::Match(tok, "if ( ! %var% )|&&"))
-            vartok = tok->tokAt(3);
-        else if (Token::Match(tok, "if|while ( %var% )|&&"))
+        if (Token::Match(tok, "( ! %var% )|&&"))
             vartok = tok->tokAt(2);
-        else if (Token::Match(tok, "if ( ! ( %var% ="))
-            vartok = tok->tokAt(4);
+        else if (Token::Match(tok, "( %var% )|&&"))
+            vartok = tok->next();
+        else if (Token::Match(tok, "( ! ( %var% ="))
+            vartok = tok->tokAt(3);
         else
             continue;
 
@@ -830,8 +852,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         const unsigned int varid(vartok->varId());
         if (varid == 0)
             continue;
-
-        const unsigned int linenr = vartok->linenr();
 
         const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
         // Check if variable is a pointer
@@ -847,7 +867,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         // start token = inside the if-body
         const Token *tok1 = i->classStart;
 
-        if (Token::Match(tok, "if|while ( %var% )|&&")) {
+        if (Token::Match(tok, "( %var% )|&&")) {
             // pointer might be null
             null = false;
 
@@ -857,10 +877,11 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 continue;
         }
 
-        unsigned int indentlevel = 0;
-
-        // Name of the pointer
+        // Name and line of the pointer
         const std::string &pointerName = vartok->str();
+        const unsigned int linenr = vartok->linenr();
+
+        unsigned int indentlevel = 0;
 
         // Set to true if we would normally bail out the check.
         bool inconclusive = false;
@@ -891,22 +912,28 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 }
             }
 
-            if (Token::Match(tok2, "goto|return|continue|break|throw|if|switch|for")) {
-                bool dummy = false;
-                if (Token::Match(tok2, "return * %varid%", varid))
-                    nullPointerError(tok2, pointerName, linenr, inconclusive);
-                else if (Token::Match(tok2, "return %varid%", varid) &&
-                         CheckNullPointer::isPointerDeRef(tok2->next(), dummy))
-                    nullPointerError(tok2, pointerName, linenr, inconclusive);
+            if (tok2->str() == "return" || tok2->str() == "throw") {
+                bool unknown = _settings->inconclusive;
+                for (; tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
+                    if (tok2->varId() == varid) {
+                        if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase))
+                            nullPointerError(tok2, pointerName, linenr, inconclusive);
+                        else if (unknown)
+                            nullPointerError(tok2, pointerName, linenr, true);
+                    }
+                }
                 break;
             }
+
+            if (Token::Match(tok2, "goto|continue|break|if|switch|for"))
+                break;
 
             // parameters to sizeof are not dereferenced
             if (Token::Match(tok2, "decltype|sizeof")) {
                 if (tok2->strAt(1) != "(")
-                    break;
-
-                tok2 = tok2->next()->link();
+                    tok2 = tok2->next();
+                else
+                    tok2 = tok2->next()->link();
                 continue;
             }
 
@@ -923,16 +950,16 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             }
 
             // calling unknown function (abort/init)..
-            if (Token::simpleMatch(tok2, ") ;") &&
-                (Token::Match(tok2->link()->tokAt(-2), "[;{}.] %var% (") ||
-                 Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) ("))) {
+            else if (Token::simpleMatch(tok2, ") ;") &&
+                     (Token::Match(tok2->link()->tokAt(-2), "[;{}.] %var% (") ||
+                      Token::Match(tok2->link()->tokAt(-5), "[;{}] ( * %var% ) ("))) {
                 // noreturn function?
                 bool unknown = false;
                 if (_tokenizer->IsScopeNoReturn(tok2->tokAt(2), &unknown)) {
                     if (!unknown || !_settings->inconclusive) {
                         break;
                     }
-                    inconclusive = true;
+                    inconclusive = _settings->inconclusive;
                 }
 
                 // init function (global variables)
@@ -949,7 +976,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 if (Token::Match(tok2->previous(), "[;{}=] %var% = 0 ;"))
                     ;
 
-                else if (CheckNullPointer::isPointerDeRef(tok2, unknown))
+                else if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase))
                     nullPointerError(tok2, pointerName, linenr, inconclusive);
 
                 else if (unknown && _settings->inconclusive)
@@ -981,15 +1008,23 @@ void CheckNullPointer::nullConstantDereference()
         if (i->type != Scope::eFunction || !i->classStart)
             continue;
 
-        for (const Token *tok = i->classStart; tok != i->classEnd; tok = tok->next()) {
-            if (tok->str() == "(" && Token::Match(tok->previous(), "sizeof|decltype|typeid"))
-                tok = tok->link();
+        const Token *tok = i->classStart;
+
+        if (i->function && (i->function->type == Function::eConstructor || i->function->type == Function::eCopyConstructor))
+            tok = i->function->token; // Check initialization list
+
+        for (; tok != i->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "sizeof|decltype|typeid ("))
+                tok = tok->next()->link();
 
             else if (Token::simpleMatch(tok, "* 0")) {
-                if (Token::Match(tok->previous(), "return|;|{|}|=|(|,|%op%")) {
+                if (Token::Match(tok->previous(), "return|throw|;|{|}|:|[|(|,") || tok->previous()->isOp() || tok->previous()->isAssignmentOp()) {
                     nullPointerError(tok);
                 }
             }
+
+            else if (Token::Match(tok, "0 [") && (tok->previous()->str() != "&" || !Token::Match(tok->next()->link()->next(), "[.(]")))
+                nullPointerError(tok);
 
             else if (Token::Match(tok->previous(), "[={};] %var% (")) {
                 std::list<const Token *> var;
@@ -1001,6 +1036,23 @@ void CheckNullPointer::nullConstantDereference()
                         nullPointerError(*it);
                     }
                 }
+            } else if (Token::Match(tok, "std :: string ( 0 )"))
+                nullPointerError(tok);
+            else if (Token::Match(tok, "%var% ( 0 )")) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+                    nullPointerError(tok);
+            }
+
+            unsigned int ovarid = 0;
+            if (Token::Match(tok, "0 ==|!= %var%"))
+                ovarid = tok->tokAt(2)->varId();
+            else if (Token::Match(tok, "%var% ==|!=|=|+= 0"))
+                ovarid = tok->varId();
+            if (ovarid) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
+                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+                    nullPointerError(tok);
             }
         }
     }
@@ -1018,13 +1070,16 @@ void CheckNullPointer::nullConstantDereference()
 class Nullpointer : public ExecutionPath {
 public:
     /** Startup constructor */
-    explicit Nullpointer(Check *c) : ExecutionPath(c, 0), null(false) {
+    Nullpointer(Check *c, const SymbolDatabase* symbolDatabase_) : ExecutionPath(c, 0), symbolDatabase(symbolDatabase_), null(false) {
     }
 
 private:
+    const SymbolDatabase* symbolDatabase;
+
     /** Create checking of specific variable: */
-    Nullpointer(Check *c, const unsigned int id, const std::string &name)
+    Nullpointer(Check *c, const unsigned int id, const std::string &name, const SymbolDatabase* symbolDatabase_)
         : ExecutionPath(c, id),
+          symbolDatabase(symbolDatabase_),
           varname(name),
           null(false) {
     }
@@ -1082,56 +1137,22 @@ private:
 
     /** parse tokens */
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const {
-        if (Token::Match(tok.previous(), "[;{}] const| struct| %type% * %var% ;")) {
-            const Token * vartok = tok.tokAt(2);
-
-            if (tok.str() == "const")
-                vartok = vartok->next();
-
-            if (tok.str() == "struct")
-                vartok = vartok->next();
-
-            if (vartok->varId() != 0)
-                checks.push_back(new Nullpointer(owner, vartok->varId(), vartok->str()));
-            return vartok->next();
-        }
-
-        // Template pointer variable..
-        if (Token::Match(tok.previous(), "[;{}] %type% ::|<")) {
-            const Token * vartok = &tok;
-            while (Token::Match(vartok, "%type% ::"))
-                vartok = vartok->tokAt(2);
-            if (Token::Match(vartok, "%type% < %type%")) {
-                vartok = vartok->tokAt(3);
-                while (vartok && (vartok->str() == "*" || vartok->isName()))
-                    vartok = vartok->next();
-            }
-            if (vartok
-                && (vartok->str() == ">" || vartok->isName())
-                && Token::Match(vartok->next(), "* %var% ;|=")) {
-                vartok = vartok->tokAt(2);
-                checks.push_back(new Nullpointer(owner, vartok->varId(), vartok->str()));
-                if (Token::simpleMatch(vartok->next(), "= 0 ;"))
-                    setnull(checks, vartok->varId());
-                return vartok->next();
-            }
+        if (tok.varId() != 0) {
+            // Pointer declaration declaration?
+            const Variable* var = symbolDatabase->getVariableFromVarId(tok.varId());
+            if (var && var->isPointer() && var->nameToken() == &tok)
+                checks.push_back(new Nullpointer(owner, var->varId(), var->name(), symbolDatabase));
         }
 
         if (Token::simpleMatch(&tok, "try {")) {
             // Bail out all used variables
-            unsigned int indentlevel = 0;
-            for (const Token *tok2 = &tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "{")
-                    ++indentlevel;
-                else if (tok2->str() == "}") {
-                    if (indentlevel == 0)
-                        break;
-                    if (indentlevel == 1 && !Token::simpleMatch(tok2,"} catch ("))
-                        return tok2;
-                    --indentlevel;
-                } else if (tok2->varId())
+            const Token* tok2 = &tok;
+            const Token* endtok = tok.linkAt(1);
+            for (; tok2 && tok2 != endtok; tok2 = tok2->next()) {
+                if (tok2->varId())
                     bailOutVar(checks,tok2->varId());
             }
+            return tok2;
         }
 
         if (Token::Match(&tok, "%var% (")) {
@@ -1149,21 +1170,21 @@ private:
             return tok.link();
 
         if (tok.varId() != 0) {
-            // unknown : not really used. it is passed to isPointerDeRef.
-            //           if isPointerDeRef fails to determine if there
-            //           is a dereference the this will be set to true.
+            // unknown: if isPointerDeRef fails to determine if there
+            //          is a dereference this will be set to true.
             bool unknown = owner->inconclusiveFlag();
+            bool deref = CheckNullPointer::isPointerDeRef(&tok, unknown, symbolDatabase);
 
-            if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
-                setnull(checks, tok.varId());
-            else if (CheckNullPointer::isPointerDeRef(&tok, unknown))
+            if (deref)
                 dereference(checks, &tok);
             else if (unknown && owner->inconclusiveFlag())
                 dereference(checks, &tok);
-            else
-                // TODO: Report debug warning that it's unknown if a
-                // pointer is dereferenced
-                bailOutVar(checks, tok.varId());
+            if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
+                setnull(checks, tok.varId());
+            else if (!deref &&
+                     !tok.previous()->isOp() && !tok.previous()->isAssignmentOp() &&
+                     (!tok.next()->isOp() || tok.next()->str() == ">>"))
+                bailOutVar(checks, tok.varId()); // If its possible that the pointers value changes, bail out.
         }
 
         else if (tok.str() == "delete") {
@@ -1175,13 +1196,15 @@ private:
         }
 
         else if (tok.str() == "return") {
-            bool unknown = false;
-            const Token *vartok = tok.next();
-            if (vartok->str() == "*")
-                vartok = vartok->next();
-            if (vartok->varId() && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
-                dereference(checks, vartok);
+            bool unknown = owner->inconclusiveFlag();
+            const Token* tok2 = &tok;
+            for (; tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
+                if (tok2->varId()) {
+                    if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase) || unknown)
+                        dereference(checks, tok2);
+                }
             }
+            return tok2;
         }
 
         return &tok;
@@ -1192,8 +1215,9 @@ private:
         for (const Token *tok2 = &tok; tok2; tok2 = tok2->next()) {
             if (tok2->str() == "(" || tok2->str() == ")")
                 break;
-            if (Token::Match(tok2, "[<>=] * %var%"))
-                dereference(checks, tok2->tokAt(2));
+            bool unknown = owner->inconclusiveFlag();
+            if (tok2->varId() && (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase) || unknown))
+                dereference(checks, tok2);
         }
 
         if (Token::Match(&tok, "!| %var% (")) {
@@ -1224,8 +1248,8 @@ private:
 void CheckNullPointer::executionPaths()
 {
     // Check for null pointer errors..
-    Nullpointer c(this);
-    checkExecutionPaths(_tokenizer->tokens(), &c);
+    Nullpointer c(this, _tokenizer->getSymbolDatabase());
+    checkExecutionPaths(_tokenizer->getSymbolDatabase(), &c);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok)
@@ -1246,6 +1270,3 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     else
         reportError(tok, Severity::error, "nullPointer", errmsg);
 }
-
-
-

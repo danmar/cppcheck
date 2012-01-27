@@ -162,6 +162,8 @@ private:
         TEST_CASE(goto2);
         // ticket #3138
         TEST_CASE(goto3);
+        // ticket #3459
+        TEST_CASE(goto4);
 
         //remove dead code after flow control statements
         TEST_CASE(flowControl);
@@ -170,11 +172,10 @@ private:
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
 
-        // Syntax error
-        TEST_CASE(argumentsWithSameName)
-
         TEST_CASE(simplifyAtol)
+
         TEST_CASE(simplifyHexInString)
+
         TEST_CASE(simplifyTypedef1)
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
@@ -403,6 +404,8 @@ private:
         TEST_CASE(removeRedundantFor);
 
         TEST_CASE(consecutiveBraces);
+
+        TEST_CASE(undefinedSizeArray);
     }
 
     std::string tok(std::string code, bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -3179,6 +3182,29 @@ private:
         }
     }
 
+    void goto4() {
+        const char code[] = "int main()\n"
+                            "{\n"
+                            "   goto SkipIncr;\n"
+                            "   do {\n"
+                            "       f();\n"
+                            "       SkipIncr:\n"
+                            "       printf(\".\");\n"
+                            "   } while (bar());\n"
+                            "}\n";
+
+        const char expected[] = "int main ( ) "
+                                "{"
+                                " goto SkipIncr ;"
+                                " do {"
+                                " f ( ) ;"
+                                " SkipIncr : ;"
+                                " printf ( \".\" ) ;"
+                                " } while ( bar ( ) ) ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
     void flowControl() {
         std::list<std::string> beforedead;
         beforedead.push_back("return");
@@ -3390,25 +3416,6 @@ private:
                               "strcat ( dst , \" \" ) ;";
 
         ASSERT_EQUALS(expect, tok(code));
-    }
-
-    void argumentsWithSameName() {
-        // This code has syntax error, two variables can not have the same name
-        {
-            const char code[] = "void foo(x, x)\n"
-                                " int x;\n"
-                                " int x;\n"
-                                "{}\n";
-            ASSERT_EQUALS("void foo ( x , x ) int x ; int x ; { }", tok(code));
-        }
-
-        {
-            const char code[] = "void foo(x, y)\n"
-                                " int x;\n"
-                                " int x;\n"
-                                "{}\n";
-            ASSERT_EQUALS("void foo ( int x , y ) int x ; { }", tok(code));
-        }
     }
 
     void simplifyAtol() {
@@ -6377,6 +6384,42 @@ private:
                 "}";
             ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
         }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a || true || b) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a && false && b) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if (a || (b && false && c) || d) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { if ( a || d ) { g ( ) ; } }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f(int a)\n"
+                "{\n"
+                "if ((a && b) || true || (c && d)) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
+        }
     }
 
 
@@ -6983,12 +7026,14 @@ private:
     }
 
     void simplifyRealloc() {
-        ASSERT_EQUALS("; free ( p ) ; p = 0 ;",
-                      tok("; p = realloc(p,0);"));
-        ASSERT_EQUALS("; p = malloc ( 100 ) ;",
-                      tok("; p = realloc(0, 100);"));
-        ASSERT_EQUALS("; p = malloc ( 0 ) ;",
-                      tok("; p = realloc(0, sizeof(char)*0);"));
+        ASSERT_EQUALS("; free ( p ) ; p = 0 ;", tok("; p = realloc(p, 0);"));
+        ASSERT_EQUALS("; p = malloc ( 100 ) ;", tok("; p = realloc(0, 100);"));
+        ASSERT_EQUALS("; p = malloc ( 0 ) ;", tok("; p = realloc(0, 0);"));
+        ASSERT_EQUALS("; free ( q ) ; p = 0 ;", tok("; p = realloc(q, 0);"));
+        ASSERT_EQUALS("; free ( * q ) ; p = 0 ;", tok("; p = realloc(*q, 0);"));
+        ASSERT_EQUALS("; free ( f ( z ) ) ; p = 0 ;", tok("; p = realloc(f(z), 0);"));
+        ASSERT_EQUALS("; p = malloc ( n * m ) ;", tok("; p = realloc(0, n*m);"));
+        ASSERT_EQUALS("; p = malloc ( f ( 1 ) ) ;", tok("; p = realloc(0, f(1));"));
     }
 
     void simplifyErrNoInWhile() {
@@ -7566,19 +7611,55 @@ private:
     }
 
     void return_strncat() {
-        const char code[] = "char *f()\n"
-                            "{\n"
-                            "    char *temp=malloc(2);\n"
-                            "    strcpy(temp,\"\");\n"
-                            "    return (strncat(temp,\"a\",1));\n"
-                            "}";
-        ASSERT_EQUALS("char * f ( ) { "
-                      "char * temp ; "
-                      "temp = malloc ( 2 ) ; "
-                      "strcpy ( temp , \"\" ) ; "
-                      "strncat ( temp , \"a\" , 1 ) ; "
-                      "return temp ; "
-                      "}", tok(code, true));
+        {
+            const char code[] = "char *f()\n"
+                                "{\n"
+                                "    char *temp=malloc(2);\n"
+                                "    strcpy(temp,\"\");\n"
+                                "    return (strncat(temp,\"a\",1));\n"
+                                "}";
+            ASSERT_EQUALS("char * f ( ) {"
+                          " char * temp ;"
+                          " temp = malloc ( 2 ) ;"
+                          " strcpy ( temp , \"\" ) ;"
+                          " strncat ( temp , \"a\" , 1 ) ;"
+                          " return temp ; "
+                          "}", tok(code, true));
+        }
+        {
+            const char code[] = "char *f()\n"
+                                "{\n"
+                                "    char **temp=malloc(8);\n"
+                                "    *temp = malloc(2);\n"
+                                "    strcpy(*temp,\"\");\n"
+                                "    return (strncat(*temp,\"a\",1));\n"
+                                "}";
+            ASSERT_EQUALS("char * f ( ) {"
+                          " char * * temp ;"
+                          " temp = malloc ( 8 ) ;"
+                          " * temp = malloc ( 2 ) ;"
+                          " strcpy ( * temp , \"\" ) ;"
+                          " strncat ( * temp , \"a\" , 1 ) ;"
+                          " return * temp ; "
+                          "}", tok(code, true));
+        }
+        {
+            const char code[] = "char *f()\n"
+                                "{\n"
+                                "    char **temp=malloc(8);\n"
+                                "    *temp = malloc(2);\n"
+                                "    strcpy(*temp,\"\");\n"
+                                "    return (strncat(temp[0],foo(b),calc(c-d)));\n"
+                                "}";
+            ASSERT_EQUALS("char * f ( ) {"
+                          " char * * temp ;"
+                          " temp = malloc ( 8 ) ;"
+                          " * temp = malloc ( 2 ) ;"
+                          " strcpy ( * temp , \"\" ) ;"
+                          " strncat ( temp [ 0 ] , foo ( b ) , calc ( c - d ) ) ;"
+                          " return temp [ 0 ] ; "
+                          "}", tok(code, true));
+        }
     }
 
     void removeRedundantFor() { // ticket #3069
@@ -7606,6 +7687,15 @@ private:
         ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}", true));
         ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f () { for(;;){} }", true));
         ASSERT_EQUALS("void f ( ) { { scope_lock lock ; foo ( ) ; } { scope_lock lock ; bar ( ) ; } }", tok("void f () { {scope_lock lock; foo();} {scope_lock lock; bar();} }", true));
+    }
+
+    void undefinedSizeArray() {
+        ASSERT_EQUALS("int * x ;", tok("int x [];"));
+        ASSERT_EQUALS("int * * x ;", tok("int x [][];"));
+        ASSERT_EQUALS("int * * x ;", tok("int * x [];"));
+        ASSERT_EQUALS("int * * * x ;", tok("int * x [][];"));
+        ASSERT_EQUALS("int * * * * x ;", tok("int * * x [][];"));
+        ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
     }
 };
 
