@@ -5281,7 +5281,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 
             unsigned int level = 0;
             while (tok2) {
-                if (Token::Match(tok2, "[{(]"))
+                if (tok2->str() == "{" || tok2->str() == "(")
                     tok2 = tok2->link();
 
                 else if (tok2->str() == "<") {
