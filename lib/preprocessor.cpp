@@ -876,7 +876,26 @@ std::string Preprocessor::getdef(std::string line, bool def)
     return line;
 }
 
+/**
+ * Simplifies the variable map. For example if the map contains A=>B, B=>1, then A=>B is simplified to A=>1.
+ * @param [in,out] variables - a map of variable name to variable value. This map will be modified.
+ */
+static void simplifyVarMap(std::map<std::string, std::string> &variables)
+{
+    for (std::map<std::string, std::string>::iterator i = variables.begin(); i != variables.end(); ++i) {
+        const std::string& varName = i->first;
+        std::string& varValue = i->second;
 
+        // TODO: 1. tokenize the value, replace each token like this.
+        // TODO: 2. handle function-macros too.
+
+        std::map<std::string, std::string>::iterator it = variables.find(varValue);
+        while (it != variables.end()) {
+            varValue = it->second;
+            it = variables.find(varValue);
+        }
+    }
+}
 
 std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename)
 {
@@ -998,6 +1017,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                     varmap[varname] = value;
                 }
 
+                simplifyVarMap(varmap);
                 simplifyCondition(varmap, def, false);
             }
 
@@ -1350,7 +1370,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         condition = "0";
 }
 
-bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def)
+bool Preprocessor::match_cfg_def(std::map<std::string, std::string> cfg, std::string def)
 {
     /*
         std::cout << "cfg: \"";
@@ -1365,6 +1385,7 @@ bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, 
         std::cout << "def: \"" << def << "\"\n";
     */
 
+    simplifyVarMap(cfg);
     simplifyCondition(cfg, def, true);
 
     if (cfg.find(def) != cfg.end())
