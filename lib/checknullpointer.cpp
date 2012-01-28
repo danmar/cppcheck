@@ -1203,6 +1203,14 @@ private:
                     if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase) || unknown)
                         dereference(checks, tok2);
                 }
+
+                // If return statement contains "?" then assume there
+                // is no dangours dereferencing later
+                if (tok2->str() == "?") {
+                    while (tok2 && tok2->str() != ";")
+                        tok2 = tok2->next();
+                    return tok2;
+                }
             }
             return tok2;
         }

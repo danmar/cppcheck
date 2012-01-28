@@ -48,6 +48,7 @@ private:
         TEST_CASE(nullpointer12); // ticket #2470
         TEST_CASE(nullpointer13); // ticket #1708
         TEST_CASE(nullpointer14);
+        TEST_CASE(nullpointer15); // #3560 (fp: return p ? f(*p) : f(0))
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -1162,6 +1163,15 @@ private:
               "    frexp(1.0, q);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: q\n", errout.str());
+    }
+
+    void nullpointer15() {  // #3560
+        check("void f() {\n"
+              "    char *p = 0;\n"
+              "    if (x) p = \"abcd\";\n"
+              "    return p ? f(*p) : f(0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Check if pointer is null and the dereference it
