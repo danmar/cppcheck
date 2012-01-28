@@ -3894,7 +3894,6 @@ void Tokenizer::simplifyRealloc()
 void Tokenizer::simplifyFlowControl()
 {
     unsigned int indentlevel = 0;
-    Token *beginindent = 0;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "(" || tok->str() == "[") {
             tok = tok->link();
@@ -3906,7 +3905,6 @@ void Tokenizer::simplifyFlowControl()
                 tok = tok->link();
                 continue;
             }
-            beginindent = tok;
             ++indentlevel;
         } else if (tok->str() == "}") {
             if (!indentlevel)
@@ -3917,22 +3915,18 @@ void Tokenizer::simplifyFlowControl()
         if (!indentlevel)
             continue;
 
-        if (Token::Match(tok, "goto %var% ;")) {
-            tok = tok->tokAt(2);
-            eraseDeadCode(tok, beginindent->link());
-
-        } else if (Token::Match(tok,"continue|break ;")) {
+        if (Token::Match(tok,"continue|break ;")) {
             tok = tok->next();
-            eraseDeadCode(tok, beginindent->link());
+            eraseDeadCode(tok, 0);
 
-        } else if (Token::Match(tok,"return|throw|exit|abort")) {
+        } else if (Token::Match(tok,"return|throw|exit|abort|goto")) {
             //catch the first ';'
             for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "[") {
                     tok2 = tok2->link();
                 } else if (tok2->str() == ";") {
                     tok = tok2;
-                    eraseDeadCode(tok, beginindent->link());
+                    eraseDeadCode(tok, 0);
                     break;
                 } else if (Token::Match(tok2, "[{}]"))
                     break;  //Wrong code.
