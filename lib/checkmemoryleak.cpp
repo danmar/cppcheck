@@ -2401,9 +2401,12 @@ void CheckMemoryLeakInClass::check()
         if (scope->isClassOrStruct()) {
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                if (!var->isStatic() && var->nameToken()->previous()->str() == "*") {
+                if (!var->isStatic() && var->isPointer()) {
                     // allocation but no deallocation of private variables in public function..
-                    if (var->nameToken()->tokAt(-2)->isStandardType()) {
+                    const Token *tok = var->typeStartToken();
+                    if (tok->str() == "const")
+                        tok = tok->next();
+                    if (tok && tok->isStandardType()) {
                         if (var->isPrivate())
                             checkPublicFunctions(&(*scope), var->nameToken());
 
