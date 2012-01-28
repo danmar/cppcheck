@@ -883,7 +883,6 @@ std::string Preprocessor::getdef(std::string line, bool def)
 static void simplifyVarMap(std::map<std::string, std::string> &variables)
 {
     for (std::map<std::string, std::string>::iterator i = variables.begin(); i != variables.end(); ++i) {
-        const std::string& varName = i->first;
         std::string& varValue = i->second;
 
         // TODO: 1. tokenize the value, replace each token like this.
