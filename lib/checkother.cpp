@@ -1066,20 +1066,17 @@ void CheckOther::checkCatchExceptionByValue()
     if (!_settings->isEnabled("style"))
         return;
 
-    const char catchPattern[] = "} catch (";
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), catchPattern);
-    const Token *endTok = tok ? tok->linkAt(2) : NULL;
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    while (tok && endTok) {
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eCatch)
+            continue;
+
         // Find a pass-by-value declaration in the catch(), excluding basic types
         // e.g. catch (std::exception err)
-        const Token *tokType = Token::findmatch(tok, "%type% %var% )", endTok);
-        if (tokType && !tokType->isStandardType()) {
-            catchExceptionByValueError(tokType);
-        }
-
-        tok = Token::findmatch(endTok->next(), catchPattern);
-        endTok = tok ? tok->linkAt(2) : NULL;
+        const Variable* var = symbolDatabase->getVariableFromVarId(i->classStart->tokAt(-2)->varId());
+        if (var && var->isClass() && !var->isPointer() && !var->isReference())
+            catchExceptionByValueError(i->classDef);
     }
 }
 
@@ -1677,32 +1674,51 @@ void CheckOther::unreachableCodeError(const Token *tok)
 //---------------------------------------------------------------------------
 static bool isUnsigned(const Variable* var)
 {
-    return(var && var->typeStartToken()->isUnsigned() && var->typeStartToken() == var->typeEndToken());
+    return(var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray());
+}
+static bool isSigned(const Variable* var)
+{
+    return(var && !var->typeStartToken()->isUnsigned() && Token::Match(var->typeEndToken(), "int|char|short|long") && !var->isPointer() && !var->isArray());
 }
 
 void CheckOther::checkUnsignedDivision()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    bool style = _settings->isEnabled("style");
 
+    const Token* ifTok = 0;
     // Check for "ivar / uvar" and "uvar / ivar"
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %num%")) {
-            if (tok->strAt(3)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->next()->varId()))) {
-                udivError(tok->next());
-            }
-        }
+        if (Token::Match(tok, "[).]")) // Don't check members or casted variables
+            continue;
 
-        else if (Token::Match(tok, "(|[|=|%op% %num% / %var%")) {
-            if (tok->strAt(1)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()))) {
-                udivError(tok->next());
+        if (Token::Match(tok->next(), "%var% / %num%")) {
+            if (tok->strAt(3)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->next()->varId()))) {
+                udivError(tok->next(), false);
             }
-        }
+        } else if (Token::Match(tok->next(), "%num% / %var%")) {
+            if (tok->strAt(1)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()))) {
+                udivError(tok->next(), false);
+            }
+        } else if (Token::Match(tok->next(), "%var% / %var%") && _settings->inconclusive && style && !ifTok) {
+            const Variable* var1 = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+            const Variable* var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+            if ((isUnsigned(var1) && isSigned(var2)) || (isUnsigned(var2) && isSigned(var1))) {
+                udivError(tok->next(), true);
+            }
+        } else if (!ifTok && Token::Match(tok, "if ("))
+            ifTok = tok->next()->link()->next()->link();
+        else if (ifTok == tok)
+            ifTok = 0;
     }
 }
 
-void CheckOther::udivError(const Token *tok)
+void CheckOther::udivError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
+    if (inconclusive)
+        reportError(tok, Severity::warning, "udivError", "Division with signed and unsigned operators. The result might be wrong.");
+    else
+        reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
 }
 
 //---------------------------------------------------------------------------
@@ -1956,9 +1972,14 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 //---------------------------------------------------------------------------
 // Check usage of char variables..
 //---------------------------------------------------------------------------
+static bool isChar(const Variable* var)
+{
+    return(var && !var->isPointer() && !var->isArray() && (var->typeEndToken()->str() == "char" || var->typeEndToken()->previous()->str() == "char"));
+}
+
 static bool isSignedChar(const Variable* var)
 {
-    return(var && var->nameToken()->previous()->str() == "char" && !var->nameToken()->previous()->isUnsigned() && var->nameToken()->next()->str() != "[");
+    return(isChar(var) && !var->typeEndToken()->isUnsigned() && !var->typeEndToken()->previous()->isUnsigned());
 }
 
 void CheckOther::checkCharVariable()
@@ -2092,10 +2113,6 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 //---------------------------------------------------------------------------
 // str plus char
 //---------------------------------------------------------------------------
-static bool isChar(const Variable* var)
-{
-    return(var && var->nameToken()->previous()->str() == "char" && var->nameToken()->next()->str() != "[");
-}
 
 void CheckOther::strPlusChar()
 {
@@ -2159,7 +2176,9 @@ void CheckOther::checkMathFunctions()
             continue;
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (tok->varId() == 0 && Token::Match(tok, "log|log10 ( %num% )")) {
+            if (tok->varId())
+                continue;
+            if (Token::Match(tok, "log|log10 ( %num% )")) {
                 bool isNegative = MathLib::isNegative(tok->strAt(2));
                 bool isInt = MathLib::isInt(tok->strAt(2));
                 bool isFloat = MathLib::isFloat(tok->strAt(2));
@@ -2175,33 +2194,29 @@ void CheckOther::checkMathFunctions()
             }
 
             // acos( x ), asin( x )  where x is defined for intervall [-1,+1], but not beyound
-            else if (tok->varId() == 0 &&
-                     Token::Match(tok, "acos|asin ( %num% )") &&
+            else if (Token::Match(tok, "acos|asin ( %num% )") &&
                      std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0) {
                 mathfunctionCallError(tok);
             }
             // sqrt( x ): if x is negative the result is undefined
-            else if (tok->varId() == 0 &&
-                     Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )") &&
+            else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )") &&
                      MathLib::isNegative(tok->strAt(2))) {
                 mathfunctionCallError(tok);
             }
             // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
-            else if (tok->varId() == 0 &&
-                     Token::Match(tok, "atan2 ( %num% , %num% )") &&
+            else if (Token::Match(tok, "atan2 ( %num% , %num% )") &&
                      MathLib::isNullValue(tok->strAt(2)) &&
                      MathLib::isNullValue(tok->strAt(4))) {
                 mathfunctionCallError(tok, 2);
             }
             // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
-            else if (tok->varId() == 0 &&
-                     Token::Match(tok, "fmod ( %num% , %num% )") &&
-                     MathLib::isNullValue(tok->strAt(4))) {
-                mathfunctionCallError(tok, 2);
+            else if (Token::Match(tok, "fmod ( %any%")) {
+                const Token* nextArg = tok->tokAt(2)->nextArgument();
+                if (nextArg && nextArg->isNumber() && MathLib::isNullValue(nextArg->str()))
+                    mathfunctionCallError(tok, 2);
             }
             // pow ( x , y) If x is zero, and y is negative --> division by zero
-            else if (tok->varId() == 0 &&
-                     Token::Match(tok, "pow ( %num% , %num% )") &&
+            else if (Token::Match(tok, "pow ( %num% , %num% )") &&
                      MathLib::isNullValue(tok->strAt(2))  &&
                      MathLib::isNegative(tok->strAt(4))) {
                 mathfunctionCallError(tok, 2);

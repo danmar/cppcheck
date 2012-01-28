@@ -35,13 +35,13 @@ public:
     { }
 
 private:
-    void check(const char code[], bool style = true) {
+    void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        if (style)
-            settings.addEnabled("style");
+        settings.addEnabled("style");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -66,14 +66,20 @@ private:
     }
 
     void division1() {
+        check("void f() {\n"
+              "    int ivar = -2;\n"
+              "    unsigned int uvar = 2;\n"
+              "    return ivar / uvar;\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
         check("void f()\n"
               "{\n"
               "    int ivar = -2;\n"
               "    unsigned int uvar = 2;\n"
               "    return ivar / uvar;\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Division with signed and unsigned operators\n",
-                           "", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
     }
 
     void division2() {
@@ -82,9 +88,8 @@ private:
               "    int ivar = -2;\n"
               "    unsigned int uvar = 2;\n"
               "    return uvar / ivar;\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Division with signed and unsigned operators\n",
-                           "", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
     }
 
     void division4() {
@@ -96,8 +101,8 @@ private:
               "void f2(unsigned int i1)\n"
               "{\n"
               "    unsigned int i2;\n"
-              "    result = i2 / i1;}\n"
-             );
+              "    result = i2 / i1;"
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f1()\n"
@@ -107,8 +112,8 @@ private:
               "\n"
               "void f2(int X)\n"
               "{\n"
-              "    X = X / z;}\n"
-             );
+              "    X = X / z;"
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -117,8 +122,8 @@ private:
               "void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
-              "    val = val / USER_HASH;}\n"
-             );
+              "    val = val / USER_HASH;"
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -147,7 +152,7 @@ private:
               "         unsigned int a;\n"
               "         unsigned int c = a / b;\n"
               "    }\n"
-              "}\n", true);
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int b)\n"
@@ -157,16 +162,16 @@ private:
               "         unsigned int a;\n"
               "         unsigned int c = a / b;\n"
               "    }\n"
-              "}\n", true);
-        TODO_ASSERT_EQUALS("unsigned division",
-                           "",  errout.str());
+              "}", true);
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (warning) Division with signed and unsigned operators. The result might be wrong.\n",
+                           "", errout.str());
 
         check("void a(int i) { }\n"
               "int foo( unsigned int sz )\n"
               "{\n"
               "    register unsigned int i=1;\n"
               "    return i/sz;\n"
-              "}\n", true);
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -176,27 +181,23 @@ private:
               "    int ivar = -2;\n"
               "    unsigned long uvar = 2;\n"
               "    return ivar / uvar;\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("unsigned division",
-                           "", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    int ivar = -2;\n"
               "    unsigned long long uvar = 2;\n"
               "    return ivar / uvar;\n"
-              "}\n");
-        TODO_ASSERT_EQUALS("unsigned division",
-                           "", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
     }
 
     void division10() {
         // Ticket: #2932 - don't segfault
-        check("i / i");
+        check("i / i", true);
         ASSERT_EQUALS("", errout.str());
     }
 };
 
 REGISTER_TEST(TestDivision)
-
-

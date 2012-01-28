@@ -57,7 +57,9 @@ public:
 
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
-        CheckUnusedVar checkUnusedVar(tokenizer, settings, errorLogger);
+        (void)tokenizer;
+        (void)settings;
+        (void)errorLogger;
     }
 
     /** @brief %Check for unused function variables */

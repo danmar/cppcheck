@@ -269,7 +269,7 @@ public:
     void cstyleCastError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
-    void udivError(const Token *tok);
+    void udivError(const Token *tok, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
     void charArrayIndexError(const Token *tok);
@@ -320,7 +320,7 @@ public:
         // error
         c.assignBoolToPointerError(0);
         c.sprintfOverlappingDataError(0, "varname");
-        c.udivError(0);
+        c.udivError(0, false);
         c.zerodivError(0);
         c.mathfunctionCallError(0);
         c.fflushOnInputStreamError(0, "stdin");
