@@ -1036,7 +1036,7 @@ void CheckNullPointer::nullConstantDereference()
                         nullPointerError(*it);
                     }
                 }
-            } else if (Token::Match(tok, "std :: string ( 0 )"))
+            } else if (Token::simpleMatch(tok, "std :: string ( 0 )"))
                 nullPointerError(tok);
             else if (Token::Match(tok, "%var% ( 0 )")) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());

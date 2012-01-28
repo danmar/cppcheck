@@ -3854,9 +3854,9 @@ void Tokenizer::simplifyRealloc()
             tok = tok->link();
         else if (Token::Match(tok, "[;{}] %var% = realloc (")) {
             tok = tok->tokAt(3);
-            if (Token::Match(tok->next(), "( 0 ,")) {
+            if (Token::simpleMatch(tok->next(), "( 0 ,")) {
                 //no "x = realloc(0,);"
-                if (!Token::Match(tok->next()->link(), ") ;") || tok->next()->link()->previous() == tok->tokAt(3))
+                if (!Token::simpleMatch(tok->next()->link(), ") ;") || tok->next()->link()->previous() == tok->tokAt(3))
                     continue;
 
                 // delete "0 ,"
