@@ -1905,6 +1905,9 @@ inline const Token* skipPointers(const Token* tok)
 
 bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer, bool &isReference) const
 {
+    if (tok && tok->str() == "throw" && check->_tokenizer->isCPP())
+        return false;
+
     const Token* localTypeTok = skipScopeIdentifiers(tok);
     const Token* localVarTok = NULL;
 

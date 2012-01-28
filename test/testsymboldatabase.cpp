@@ -28,6 +28,14 @@
     tokenizer.tokenize(istr, "test.cpp"); \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase();
 
+#define GET_SYMBOL_DB_C(code) \
+    errout.str(""); \
+    Settings settings; \
+    Tokenizer tokenizer(&settings, this); \
+    std::istringstream istr(code); \
+    tokenizer.tokenize(istr, "test.c"); \
+    const SymbolDatabase *db = tokenizer.getSymbolDatabase();
+
 class TestSymbolDatabase: public TestFixture {
 public:
     TestSymbolDatabase()
@@ -143,6 +151,8 @@ private:
         TEST_CASE(symboldatabase22); // ticket #3437 (segmentation fault)
         TEST_CASE(symboldatabase23); // ticket #3435
         TEST_CASE(symboldatabase24); // ticket #3508 (constructor, destructor)
+        TEST_CASE(symboldatabase25); // ticket #3561 (throw C++)
+        TEST_CASE(symboldatabase26); // ticket #3561 (throw C)
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -1085,6 +1095,28 @@ private:
 
     }
 
+    // #ticket #3561 (throw C++)
+    void symboldatabase25() {
+        const std::string str("int main() {\n"
+                              "    foo bar;\n"
+                              "    throw bar;\n"
+                              "}");
+        GET_SYMBOL_DB(str.c_str());
+        check(str.c_str(), false);
+        ASSERT_EQUALS("", errout.str());
+        ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
+    }
+
+    // #ticket #3561 (throw C)
+    void symboldatabase26() {
+        const std::string str("int main() {\n"
+                              "    throw bar;\n"
+                              "}");
+        GET_SYMBOL_DB_C(str.c_str());
+        check(str.c_str(), false);
+        ASSERT_EQUALS("", errout.str());
+        ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
+    }
 
 };
 

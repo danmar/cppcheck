@@ -2855,7 +2855,7 @@ void Tokenizer::setVarId()
         if (tok->str() == "new")
             continue;
 
-        if (tok->str() == "throw")
+        if (tok->str() == "throw" && isCPP())
             continue;
 
         if (tok->str() == "virtual")
