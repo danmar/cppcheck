@@ -261,7 +261,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Select files to check</source>
-        <translation type="unfinished">Sélectionner les fichiers à vérifier</translation>
+        <translation type="obsolete">Sélectionner les fichiers à vérifier</translation>
     </message>
     <message>
         <source>Select directory to check</source>
@@ -589,6 +589,18 @@ Do you want to remove the file from the recently used projects -list?</source>
         <source>Platforms</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>C++11</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C99</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Posix</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -872,6 +884,17 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>%p% (%1 of %2 files checked)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SelectFilesDialog</name>
+    <message>
+        <source>Select files to check</source>
+        <translation type="unfinished">Sélectionner les fichiers à vérifier</translation>
+    </message>
+    <message>
+        <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
