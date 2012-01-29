@@ -672,6 +672,11 @@ public:
     void simplifyQtSignalsSlots();
 
     /**
+     * Remove wxWidgets macros
+     */
+    void simplifyWxWidgets();
+
+    /**
      * Collapse operator name tokens into single token
      * operator = => operator=
      */

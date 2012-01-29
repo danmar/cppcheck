@@ -2108,6 +2108,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove Borland stuff..
     simplifyBorland();
 
+    // remove wxWidgets stuff..
+    simplifyWxWidgets();
+
     // Remove "volatile", "inline", "register", and "restrict"
     simplifyKeyword();
 
@@ -8991,6 +8994,32 @@ void Tokenizer::simplifyQtSignalsSlots()
                 tok2->deleteNext();
             }
         }
+    }
+}
+
+void Tokenizer::simplifyWxWidgets()
+{
+    std::set<std::string> macros;
+
+    macros.insert("WXDLLIMPEXP_FWD_BASE");
+    macros.insert("WXDLLIMPEXP_FWD_NET");
+    macros.insert("WXDLLIMPEXP_FWD_CORE");
+    macros.insert("WXDLLIMPEXP_FWD_ADV");
+    macros.insert("WXDLLIMPEXP_FWD_QA");
+    macros.insert("WXDLLIMPEXP_FWD_HTML");
+    macros.insert("WXDLLIMPEXP_FWD_GL");
+    macros.insert("WXDLLIMPEXP_FWD_XML");
+    macros.insert("WXDLLIMPEXP_FWD_XRC");
+    macros.insert("WXDLLIMPEXP_FWD_AUI");
+    macros.insert("WXDLLIMPEXP_FWD_PROPGRID");
+    macros.insert("WXDLLIMPEXP_FWD_RICHTEXT");
+    macros.insert("WXDLLIMPEXP_FWD_MEDIA");
+    macros.insert("WXDLLIMPEXP_FWD_STC");
+    macros.insert("WXDLLIMPEXP_FWD_WEBVIEW");
+
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->next() && macros.find(tok->next()->str()) != macros.end())
+            tok->deleteNext();
     }
 }
 
