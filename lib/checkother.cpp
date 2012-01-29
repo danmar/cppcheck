@@ -1706,7 +1706,7 @@ void CheckOther::checkUnsignedDivision()
             if ((isUnsigned(var1) && isSigned(var2)) || (isUnsigned(var2) && isSigned(var1))) {
                 udivError(tok->next(), true);
             }
-        } else if (!ifTok && Token::Match(tok, "if ("))
+        } else if (!ifTok && Token::simpleMatch(tok, "if ("))
             ifTok = tok->next()->link()->next()->link();
         else if (ifTok == tok)
             ifTok = 0;
@@ -2534,12 +2534,12 @@ void CheckOther::checkDoubleFree()
         else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf|if|while")) {
 
             // If this is a new function definition, clear all variables
-            if (Token::Match(tok->next()->link(), ") {")) {
+            if (Token::simpleMatch(tok->next()->link(), ") {")) {
                 freedVariables.clear();
                 closeDirVariables.clear();
             }
             // If it is a function call, then clear those variables in its argument list
-            else if (Token::Match(tok->next()->link(), ") ;")) {
+            else if (Token::simpleMatch(tok->next()->link(), ") ;")) {
                 for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
                     if (Token::Match(tok2, "%var%")) {
                         unsigned int var = tok2->varId();
