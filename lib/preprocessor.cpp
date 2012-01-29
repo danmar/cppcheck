@@ -889,7 +889,7 @@ static void simplifyVarMap(std::map<std::string, std::string> &variables)
         // TODO: 2. handle function-macros too.
 
         std::map<std::string, std::string>::iterator it = variables.find(varValue);
-        while (it != variables.end()) {
+        while (it != variables.end() && it != i) {
             varValue = it->second;
             it = variables.find(varValue);
         }
