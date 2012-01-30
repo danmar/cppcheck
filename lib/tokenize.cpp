@@ -1147,11 +1147,13 @@ void Tokenizer::simplifyTypedef()
                     // name token wasn't a name, it was part of the type
                     typeEnd = typeEnd->next();
                     functionPtr = true;
-                    funcStart = tokOffset->next();
-                    funcEnd = tokOffset->next();
-                    typeName = tokOffset->tokAt(2);
-                    argStart = tokOffset->tokAt(4);
-                    argEnd = tokOffset->linkAt(4);
+                    tokOffset = tokOffset->next();
+                    funcStart = tokOffset;
+                    funcEnd = tokOffset;
+                    tokOffset = tokOffset->tokAt(3);
+                    typeName = tokOffset->tokAt(-2);
+                    argStart = tokOffset;
+                    argEnd = tokOffset->link();
                     tok = argEnd->next();
                 }
 
@@ -1221,10 +1223,11 @@ void Tokenizer::simplifyTypedef()
             else
                 function = true;
             funcStart = tokOffset->next();
-            funcEnd = tokOffset->link()->tokAt(-2);
-            typeName = tokOffset->link()->previous();
-            argStart = tokOffset->link()->next();
-            argEnd = tokOffset->link()->next()->link();
+            tokOffset = tokOffset->link();
+            funcEnd = tokOffset->tokAt(-2);
+            typeName = tokOffset->previous();
+            argStart = tokOffset->next();
+            argEnd = tokOffset->next()->link();
             tok = argEnd->next();
             Token *spec = tok;
             if (Token::Match(spec, "const|volatile")) {
@@ -1243,10 +1246,11 @@ void Tokenizer::simplifyTypedef()
         else if (Token::Match(tokOffset, "( %type% (")) {
             function = true;
             if (tokOffset->link()->next()) {
-                typeName = tokOffset->next();
-                argStart = tokOffset->tokAt(2);
-                argEnd = tokOffset->linkAt(2);
                 tok = tokOffset->link()->next();
+                tokOffset = tokOffset->tokAt(2);
+                typeName = tokOffset->previous();
+                argStart = tokOffset;
+                argEnd = tokOffset->link();
             } else {
                 // internal error
                 continue;
@@ -1259,12 +1263,13 @@ void Tokenizer::simplifyTypedef()
                  Token::Match(tokOffset->linkAt(6)->linkAt(2), ") ;|,")) {
             functionPtrRetFuncPtr = true;
 
-            typeName = tokOffset->tokAt(4);
-            argStart = tokOffset->tokAt(6);
-            argEnd = tokOffset->linkAt(6);
+            tokOffset = tokOffset->tokAt(6);
+            typeName = tokOffset->tokAt(-2);
+            argStart = tokOffset;
+            argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
-            argFuncRetEnd = argEnd->linkAt(2);
+            argFuncRetEnd = argFuncRetStart->link();
 
             tok = argFuncRetEnd->next();
         }
@@ -1275,23 +1280,25 @@ void Tokenizer::simplifyTypedef()
                  Token::Match(tokOffset->linkAt(3)->linkAt(2), ") ;|,")) {
             functionRetFuncPtr = true;
 
-            typeName = tokOffset->tokAt(2);
-            argStart = tokOffset->tokAt(3);
-            argEnd = tokOffset->linkAt(3);
+            tokOffset = tokOffset->tokAt(3);
+            typeName = tokOffset->previous();
+            argStart = tokOffset;
+            argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
-            argFuncRetEnd = argEnd->linkAt(2);
+            argFuncRetEnd = argFuncRetStart->link();
 
             tok = argFuncRetEnd->next();
         } else if (Token::Match(tokOffset, "( * ( %type% ) (")) {
             functionRetFuncPtr = true;
 
-            typeName = tokOffset->tokAt(3);
-            argStart = tokOffset->tokAt(5);
-            argEnd = tokOffset->linkAt(5);
+            tokOffset = tokOffset->tokAt(5);
+            typeName = tokOffset->tokAt(-2);
+            argStart = tokOffset;
+            argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
-            argFuncRetEnd = argEnd->linkAt(2);
+            argFuncRetEnd = argFuncRetStart->link();
 
             tok = argFuncRetEnd->next();
         }
@@ -1300,19 +1307,22 @@ void Tokenizer::simplifyTypedef()
         else if (Token::Match(tokOffset, "( *|& %type% ) [")) {
             ptrToArray = (tokOffset->next()->str() == "*");
             refToArray = (tokOffset->next()->str() == "&");
-            typeName = tokOffset->tokAt(2);
-            arrayStart = tokOffset->tokAt(4);
+            tokOffset = tokOffset->tokAt(2);
+            typeName = tokOffset;
+            arrayStart = tokOffset->tokAt(2);
             arrayEnd = arrayStart->link();
             tok = arrayEnd->next();
         }
 
         // pointer to class member
         else if (Token::Match(tokOffset, "( %type% :: * %type% ) ;")) {
-            namespaceStart = tokOffset->next();
-            namespaceEnd = tokOffset->tokAt(2);
+            tokOffset = tokOffset->tokAt(2);
+            namespaceStart = tokOffset->previous();
+            namespaceEnd = tokOffset;
             ptrMember = true;
-            typeName = tokOffset->tokAt(4);
-            tok = tokOffset->tokAt(6);
+            tokOffset = tokOffset->tokAt(2);
+            typeName = tokOffset;
+            tok = tokOffset->tokAt(2);
         }
 
         // unhandled typedef, skip it and continue
