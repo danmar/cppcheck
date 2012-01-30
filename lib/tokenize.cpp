@@ -1237,11 +1237,11 @@ void Tokenizer::simplifyTypedef()
                 functionPtr = true;
             else
                 function = true;
-            funcStart = tok->tokAt(offset + 1);
-            funcEnd = tok->linkAt(offset)->tokAt(-2);
-            typeName = tok->linkAt(offset)->previous();
-            argStart = tok->linkAt(offset)->next();
-            argEnd = tok->linkAt(offset)->next()->link();
+            funcStart = tokOffset->next();
+            funcEnd = tokOffset->link()->tokAt(-2);
+            typeName = tokOffset->link()->previous();
+            argStart = tokOffset->link()->next();
+            argEnd = tokOffset->link()->next()->link();
             tok = argEnd->next();
             Token *spec = tok;
             if (Token::Match(spec, "const|volatile")) {
@@ -1257,13 +1257,13 @@ void Tokenizer::simplifyTypedef()
                 tok = tok->next();
         }
 
-        else if (Token::Match(tok->tokAt(offset), "( %type% (")) {
+        else if (Token::Match(tokOffset, "( %type% (")) {
             function = true;
-            if (tok->linkAt(offset)->next()) {
-                typeName = tok->tokAt(offset + 1);
-                argStart = tok->tokAt(offset + 2);
-                argEnd = tok->linkAt(offset + 2);
-                tok = tok->linkAt(offset)->next();
+            if (tokOffset->link()->next()) {
+                typeName = tokOffset->next();
+                argStart = tokOffset->tokAt(2);
+                argEnd = tokOffset->linkAt(2);
+                tok = tokOffset->link()->next();
             } else {
                 // internal error
                 continue;
@@ -1271,14 +1271,14 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer to function returning pointer to function
-        else if (Token::Match(tok->tokAt(offset), "( * ( * %type% ) (") &&
-                 Token::simpleMatch(tok->linkAt(offset + 6), ") ) (") &&
-                 Token::Match(tok->linkAt(offset + 6)->linkAt(2), ") ;|,")) {
+        else if (Token::Match(tokOffset, "( * ( * %type% ) (") &&
+                 Token::simpleMatch(tokOffset->linkAt(6), ") ) (") &&
+                 Token::Match(tokOffset->linkAt(6)->linkAt(2), ") ;|,")) {
             functionPtrRetFuncPtr = true;
 
-            typeName = tok->tokAt(offset + 4);
-            argStart = tok->tokAt(offset + 6);
-            argEnd = tok->linkAt(offset + 6);
+            typeName = tokOffset->tokAt(4);
+            argStart = tokOffset->tokAt(6);
+            argEnd = tokOffset->linkAt(6);
 
             argFuncRetStart = argEnd->tokAt(2);
             argFuncRetEnd = argEnd->linkAt(2);
