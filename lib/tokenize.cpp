@@ -1014,18 +1014,27 @@ void Tokenizer::simplifyTypedef()
                 tokOffset = tokOffset->next();
             }
 
-            typeEnd = tok->tokAt(offset++);
+            ++offset;
+            typeEnd = tokOffset;
+            tokOffset = tokOffset->next();
 
             bool atEnd = false;
             while (!atEnd) {
-                if (Token::simpleMatch(tok->tokAt(offset), "::"))
-                    typeEnd = tok->tokAt(offset++);
+                if (tokOffset && tokOffset->str() == "::") {
+                    ++offset;
+                    typeEnd = tokOffset;
+                    tokOffset = tokOffset->next();
+                }
 
-                if (Token::Match(tok->tokAt(offset), "%type%") &&
-                    tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,|("))
-                    typeEnd = tok->tokAt(offset++);
-                else if (Token::simpleMatch(tok->tokAt(offset), "const (")) {
-                    typeEnd = tok->tokAt(offset++);
+                if (Token::Match(tokOffset, "%type%") &&
+                    tokOffset->next() && !Token::Match(tokOffset->next(), "[|;|,|(")) {
+                    ++offset;
+                    typeEnd = tokOffset;
+                    tokOffset = tokOffset->next();
+                } else if (Token::simpleMatch(tokOffset, "const (")) {
+                    ++offset;
+                    typeEnd = tokOffset;
+                    tokOffset = tokOffset->next();
                     atEnd = true;
                 } else
                     atEnd = true;
