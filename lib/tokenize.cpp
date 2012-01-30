@@ -1101,25 +1101,31 @@ void Tokenizer::simplifyTypedef()
             tokOffset = tokOffset->next();
 
             // check for array
-            if (tok->tokAt(offset) && tok->strAt(offset) == "[") {
-                arrayStart = tok->tokAt(offset);
+            if (tokOffset && tokOffset->str() == "[") {
+                arrayStart = tokOffset;
 
                 bool atEnd = false;
                 while (!atEnd) {
-                    while (tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), ";|,"))
+                    while (tokOffset->next() && !Token::Match(tokOffset->next(), ";|,")) {
                         ++offset;
+                        tokOffset = tokOffset->next();
+                    }
 
-                    if (!tok->tokAt(offset + 1))
+                    if (!tokOffset->next())
                         return; // invalid input
-                    else if (tok->strAt(offset + 1) == ";")
+                    else if (tokOffset->next()->str() == ";")
                         atEnd = true;
-                    else if (tok->strAt(offset) == "]")
+                    else if (tokOffset->str() == "]")
                         atEnd = true;
-                    else
+                    else {
                         ++offset;
+                        tokOffset = tokOffset->next();
+                    }
                 }
 
-                arrayEnd = tok->tokAt(offset++);
+                ++offset;
+                arrayEnd = tokOffset;
+                tokOffset = tokOffset->next();
             }
 
             // check for end or another
