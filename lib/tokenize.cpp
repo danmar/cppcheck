@@ -1324,12 +1324,12 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer to class member
-        else if (Token::Match(tok->tokAt(offset), "( %type% :: * %type% ) ;")) {
-            namespaceStart = tok->tokAt(offset + 1);
-            namespaceEnd = tok->tokAt(offset + 2);
+        else if (Token::Match(tokOffset, "( %type% :: * %type% ) ;")) {
+            namespaceStart = tokOffset->next();
+            namespaceEnd = tokOffset->tokAt(2);
             ptrMember = true;
-            typeName = tok->tokAt(offset + 4);
-            tok = tok->tokAt(offset + 6);
+            typeName = tokOffset->tokAt(4);
+            tok = tokOffset->tokAt(6);
         }
 
         // unhandled typedef, skip it and continue
