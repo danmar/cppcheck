@@ -1040,24 +1040,18 @@ void Tokenizer::simplifyTypedef()
         // check for template
         if (tok->strAt(offset) == "<") {
             unsigned int level = 0;
-            unsigned int paren = 0;
             typeEnd = tok->tokAt(offset + 1);
             for (; typeEnd ; typeEnd = typeEnd->next()) {
                 if (typeEnd->str() == ">") {
-                    if (!paren) {
-                        if (!level)
-                            break;
-                        --level;
-                    }
-                } else if (typeEnd->str() == "<") {
-                    if (!paren)
-                        ++level;
-                } else if (typeEnd->str() == "(")
-                    ++paren;
-                else if (typeEnd->str() == ")") {
-                    if (!paren)
+                    if (!level)
                         break;
-                    --paren;
+                    --level;
+                } else if (typeEnd->str() == "<") {
+                    ++level;
+                } else if (typeEnd->str() == "(" || typeEnd->str() == "[")
+                    typeEnd = typeEnd->link();
+                else if (typeEnd->str() == ")" || typeEnd->str() == "]") {
+                    break;
                 }
             }
 
