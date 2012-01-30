@@ -1202,11 +1202,11 @@ void Tokenizer::simplifyTypedef()
         }
 
         // typeof: typedef __typeof__ ( ... ) type;
-        else if (Token::simpleMatch(tok->tokAt(offset - 1), "__typeof__ (") &&
-                 Token::Match(tok->linkAt(offset), ") %type% ;")) {
-            argStart = tok->tokAt(offset);
-            argEnd = tok->linkAt(offset);
-            typeName = tok->linkAt(offset)->next();
+        else if (Token::simpleMatch(tokOffset->previous(), "__typeof__ (") &&
+                 Token::Match(tokOffset->link(), ") %type% ;")) {
+            argStart = tokOffset;
+            argEnd = tokOffset->link();
+            typeName = tokOffset->link()->next();
             tok = typeName->next();
             typeOf = true;
         }
@@ -1214,24 +1214,26 @@ void Tokenizer::simplifyTypedef()
         // function: typedef ... ( .... type )( ... );
         //           typedef ... (( .... type )( ... ));
         //           typedef ... ( * ( .... type )( ... ));
-        else if ((tok->strAt(offset) == "(" &&
-                  Token::Match(tok->linkAt(offset)->previous(), "%type% ) (") &&
-                  Token::Match(tok->linkAt(offset)->next()->link(), ") const|volatile|;")) ||
-                 (Token::simpleMatch(tok->tokAt(offset), "( (") &&
-                  Token::Match(tok->linkAt(offset + 1)->previous(), "%type% ) (") &&
-                  Token::Match(tok->linkAt(offset + 1)->next()->link(), ") const|volatile| ) ;|,")) ||
-                 (Token::simpleMatch(tok->tokAt(offset), "( * (") &&
-                  Token::Match(tok->linkAt(offset + 2)->previous(), "%type% ) (") &&
-                  Token::Match(tok->linkAt(offset + 2)->next()->link(), ") const|volatile| ) ;|,"))) {
-            if (tok->strAt(offset + 1) == "(")
+        else if ((tokOffset->str() == "(" &&
+                  Token::Match(tokOffset->link()->previous(), "%type% ) (") &&
+                  Token::Match(tokOffset->link()->next()->link(), ") const|volatile|;")) ||
+                 (Token::simpleMatch(tokOffset, "( (") &&
+                  Token::Match(tokOffset->next()->link()->previous(), "%type% ) (") &&
+                  Token::Match(tokOffset->next()->link()->next()->link(), ") const|volatile| ) ;|,")) ||
+                 (Token::simpleMatch(tokOffset, "( * (") &&
+                  Token::Match(tokOffset->linkAt(2)->previous(), "%type% ) (") &&
+                  Token::Match(tokOffset->linkAt(2)->next()->link(), ") const|volatile| ) ;|,"))) {
+            if (tokOffset->next()->str() == "(") {
                 ++offset;
-            else if (Token::simpleMatch(tok->tokAt(offset), "( * (")) {
+                tokOffset = tokOffset->next();
+            } else if (Token::simpleMatch(tokOffset, "( * (")) {
                 ++offset;
                 pointers.push_back("*");
                 ++offset;
+                tokOffset = tokOffset->tokAt(2);
             }
 
-            if (tok->linkAt(offset)->strAt(-2) == "*")
+            if (tokOffset->link()->strAt(-2) == "*")
                 functionPtr = true;
             else
                 function = true;
