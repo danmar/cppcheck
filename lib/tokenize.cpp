@@ -984,7 +984,6 @@ void Tokenizer::simplifyTypedef()
         Token *argFuncRetEnd = 0;
         Token *funcStart = 0;
         Token *funcEnd = 0;
-        unsigned int offset = 1;
         Token *tokOffset = tok->next();
         bool function = false;
         bool functionPtr = false;
@@ -1008,30 +1007,24 @@ void Tokenizer::simplifyTypedef()
             typeStart = tok->next();
 
             while (Token::Match(tokOffset, "const|signed|unsigned|struct|enum %type%") ||
-                   (tokOffset->next() && tokOffset->next()->isStandardType())) {
-                ++offset;
+                   (tokOffset->next() && tokOffset->next()->isStandardType()))
                 tokOffset = tokOffset->next();
-            }
 
-            ++offset;
             typeEnd = tokOffset;
             tokOffset = tokOffset->next();
 
             bool atEnd = false;
             while (!atEnd) {
                 if (tokOffset && tokOffset->str() == "::") {
-                    ++offset;
                     typeEnd = tokOffset;
                     tokOffset = tokOffset->next();
                 }
 
                 if (Token::Match(tokOffset, "%type%") &&
                     tokOffset->next() && !Token::Match(tokOffset->next(), "[|;|,|(")) {
-                    ++offset;
                     typeEnd = tokOffset;
                     tokOffset = tokOffset->next();
                 } else if (Token::simpleMatch(tokOffset, "const (")) {
-                    ++offset;
                     typeEnd = tokOffset;
                     tokOffset = tokOffset->next();
                     atEnd = true;
@@ -1077,14 +1070,12 @@ void Tokenizer::simplifyTypedef()
                 typeEnd = typeEnd->next();
 
             tok = typeEnd;
-            offset = 1;
             tokOffset = tok->next();
         }
 
         // check for pointers and references
         while (Token::Match(tokOffset, "*|&|const")) {
             pointers.push_back(tokOffset->str());
-            ++offset;
             tokOffset = tokOffset->next();
         }
 
@@ -1096,7 +1087,6 @@ void Tokenizer::simplifyTypedef()
 
         if (Token::Match(tokOffset, "%type%")) {
             // found the type name
-            ++offset;
             typeName = tokOffset;
             tokOffset = tokOffset->next();
 
@@ -1107,7 +1097,6 @@ void Tokenizer::simplifyTypedef()
                 bool atEnd = false;
                 while (!atEnd) {
                     while (tokOffset->next() && !Token::Match(tokOffset->next(), ";|,")) {
-                        ++offset;
                         tokOffset = tokOffset->next();
                     }
 
@@ -1117,13 +1106,10 @@ void Tokenizer::simplifyTypedef()
                         atEnd = true;
                     else if (tokOffset->str() == "]")
                         atEnd = true;
-                    else {
-                        ++offset;
+                    else
                         tokOffset = tokOffset->next();
-                    }
                 }
 
-                ++offset;
                 arrayEnd = tokOffset;
                 tokOffset = tokOffset->next();
             }
@@ -1223,13 +1209,10 @@ void Tokenizer::simplifyTypedef()
                  (Token::simpleMatch(tokOffset, "( * (") &&
                   Token::Match(tokOffset->linkAt(2)->previous(), "%type% ) (") &&
                   Token::Match(tokOffset->linkAt(2)->next()->link(), ") const|volatile| ) ;|,"))) {
-            if (tokOffset->next()->str() == "(") {
-                ++offset;
+            if (tokOffset->next()->str() == "(")
                 tokOffset = tokOffset->next();
-            } else if (Token::simpleMatch(tokOffset, "( * (")) {
-                ++offset;
+            else if (Token::simpleMatch(tokOffset, "( * (")) {
                 pointers.push_back("*");
-                ++offset;
                 tokOffset = tokOffset->tokAt(2);
             }
 
@@ -1813,38 +1796,42 @@ void Tokenizer::simplifyTypedef()
             else if (tok->str() == ",") {
                 arrayStart = 0;
                 arrayEnd = 0;
-                offset = 1;
+                tokOffset = tok->next();
                 pointers.clear();
 
-                while (Token::Match(tok->tokAt(offset), "*|&"))
-                    pointers.push_back(tok->strAt(offset++));
+                while (Token::Match(tokOffset, "*|&")) {
+                    pointers.push_back(tokOffset->str());
+                    tokOffset = tokOffset->next();
+                }
 
-                if (Token::Match(tok->tokAt(offset), "%type%")) {
-                    typeName = tok->tokAt(offset++);
+                if (Token::Match(tokOffset, "%type%")) {
+                    typeName = tokOffset;
+                    tokOffset = tokOffset->next();
 
-                    if (tok->tokAt(offset) && tok->strAt(offset) == "[") {
-                        arrayStart = tok->tokAt(offset);
+                    if (tokOffset && tokOffset->str() == "[") {
+                        arrayStart = tokOffset;
 
                         bool atEnd = false;
                         while (!atEnd) {
-                            while (tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), ";|,"))
-                                ++offset;
+                            while (tokOffset->next() && !Token::Match(tokOffset->next(), ";|,"))
+                                tokOffset = tokOffset->next();
 
-                            if (!tok->tokAt(offset + 1))
+                            if (!tokOffset->next())
                                 return; // invalid input
-                            else if (tok->strAt(offset + 1) == ";")
+                            else if (tokOffset->next()->str() == ";")
                                 atEnd = true;
-                            else if (tok->strAt(offset) == "]")
+                            else if (tokOffset->str() == "]")
                                 atEnd = true;
                             else
-                                ++offset;
+                                tokOffset = tokOffset->next();
                         }
 
-                        arrayEnd = tok->tokAt(offset++);
+                        arrayEnd = tokOffset;
+                        tokOffset = tokOffset->next();
                     }
 
-                    if (Token::Match(tok->tokAt(offset), ";|,"))
-                        tok = tok->tokAt(offset);
+                    if (Token::Match(tokOffset, ";|,"))
+                        tok = tokOffset;
                     else {
                         // we encountered a typedef we don't support yet so just continue
                         done = true;
