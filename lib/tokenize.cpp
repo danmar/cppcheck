@@ -2005,11 +2005,6 @@ bool Tokenizer::tokenize(std::istream &code,
     // simplify weird but legal code: "[;{}] ( { code; } ) ;"->"[;{}] code;"
     simplifyRoundCurlyParenthesis();
 
-    // Convert K&R function declarations to modern C
-    simplifyVarDecl(true);
-    if (!simplifyFunctionParameters())
-        return false;
-
     // check for simple syntax errors..
     for (const Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "> struct {") &&
@@ -2019,9 +2014,6 @@ bool Tokenizer::tokenize(std::istream &code,
             return false;
         }
     }
-
-    // specify array size..
-    arraySize();
 
     simplifyDoWhileAddBraces();
 
@@ -2074,6 +2066,14 @@ bool Tokenizer::tokenize(std::istream &code,
             }
         }
     }
+
+    // Convert K&R function declarations to modern C
+    simplifyVarDecl(true);
+    if (!simplifyFunctionParameters())
+        return false;
+
+    // specify array size..
+    arraySize();
 
     // simplify labels and 'case|default'-like syntaxes
     simplifyLabelsCaseDefault();
@@ -2278,6 +2278,9 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Split up variable declarations.
     simplifyVarDecl(false);
+
+    // specify array size.. needed when arrays are split
+    arraySize();
 
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
@@ -5126,10 +5129,12 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 
         bool isconst = false;
         bool isstatic = false;
+        bool ispointer = false;
         Token *tok2 = type0;
         unsigned int typelen = 1;
 
-        while (Token::Match(tok2, "%type% %type% *| *| %var%")) {
+        //check if variable is declared 'const' or 'static' or both
+        while (Token::Match(tok2, "const|static")) {
             if (tok2->str() == "const")
                 isconst = true;
 
@@ -5140,13 +5145,14 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
             ++typelen;
         }
 
-        // Don't split up const declaration..
-        if (isconst && Token::Match(tok2, "%type% %var% ="))
-            continue;
-
         // strange looking variable declaration => don't split up.
         if (Token::Match(tok2, "%type% *| %var% , %type% *| %var%"))
             continue;
+
+        if (Token::Match(tok2, "struct|class %type%")) {
+            tok2 = tok2->next();
+            ++typelen;
+        }
 
         // check for qualification..
         if (Token::Match(tok2,  ":: %type%")) {
@@ -5154,80 +5160,12 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
             tok2 = tok2->next();
         }
 
-        if (Token::Match(tok2, "%type% :: %type%")) {
-            while (tok2 && Token::Match(tok2, "%type% ::")) {
-                typelen += 2;
-                tok2 = tok2->tokAt(2);
-            }
-        }
-
-        if (Token::Match(tok2, "%type% *| %var% ,|=")) {
-            const bool isPointer = (tok2->next()->str() == "*");
-            const Token *varName = tok2->tokAt((isPointer ? 2 : 1));
-
-            if (varName->str() != "operator") {
-                tok2 = varName->next(); // The ',' or '=' token
-
-                if (isstatic && tok2->str() == "=") {
-                    if (Token::Match(tok2->next(), "%num% ,"))
-                        tok2 = tok2->tokAt(2);
-                    else
-                        tok2 = NULL;
-                }
-            } else
-                tok2 = NULL;
-        }
-
-        else if (Token::Match(tok2, "%type% * * %var% ,|=")) {
-            if (tok2->strAt(3) != "operator")
-                tok2 = tok2->tokAt(4);    // The ',' token
-            else
-                tok2 = NULL;
-        }
-
-        else if (Token::Match(tok2, "%type% * const %var% ,|=")) {
-            if (tok2->strAt(3) != "operator") {
-                tok2 = tok2->tokAt(4);    // The ',' token
-            } else {
-                tok2 = NULL;
-            }
-        }
-
-        else if (Token::Match(tok2, "%type% %var% [ %any% ] ,|=|[")) {
-            tok2 = tok2->tokAt(2);
-            if (tok2->next()->isName() || tok2->next()->isNumber()) {
-                tok2 = tok2->link()->next();    // The ',' token
-                while (Token::Match(tok2, "[ %any% ]") &&
-                       (tok2->next()->isName() || tok2->next()->isNumber()))
-                    tok2 = tok2->link()->next();
-                if (!Token::Match(tok2, "=|,")) {
-                    tok2 = NULL;
-                }
-
-                if (tok2 && tok2->str() == "=") {
-                    while (tok2 && tok2->str() != "," && tok2->str() != ";") {
-                        if (tok2->str() == "{")
-                            tok2 = tok2->link();
-                        tok2 = tok2->next();
-                    }
-                    if (tok2 && tok2->str() == ";")
-                        tok2 = NULL;
-                }
-            } else
-                tok2 = NULL;
-        }
-
-        else if (Token::Match(tok2, "%type% * %var% [ %any% ] ,")) {
-            tok2 = tok2->tokAt(3);
-            if (tok2->next()->isName() || tok2->next()->isNumber())
-                tok2 = tok2->link()->next();    // The ',' token
-            else
-                tok2 = NULL;
-        }
-
-        else if (Token::Match(tok2, "%type% <")) {
+        //skip combinations of templates and namespaces
+        while (Token::Match(tok2, "%type% <") || Token::Match(tok2, "%type% ::")) {
             typelen += 2;
             tok2 = tok2->tokAt(2);
+            if (tok2 && tok2->previous()->str() == "::")
+                continue;
             size_t indentlevel = 1;
 
             for (Token *tok3 = tok2; tok3; tok3 = tok3->next()) {
@@ -5246,27 +5184,77 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 }
             }
 
-            if (!tok2) // syntax error
-                break;
-
-            if (Token::Match(tok2, ":: %type%")) {
-                typelen += 2;
-                tok2 = tok2->tokAt(2);
-            }
-
-            if (!tok2) // syntax error
-                break;
-
-            if (tok2->str() == "*") {
+            if (Token::Match(tok2,  ":: %type%")) {
+                ++typelen;
                 tok2 = tok2->next();
             }
+        }
 
-            if (Token::Match(tok2, "%var% ,|=")) {
-                tok2 = tok2->next();    // The ',' token
+        //pattern: "%type% *| ... *| const| %var% ,|="
+        if (Token::Match(tok2, "%type%") ||
+            (tok2 && tok2->previous() && tok2->previous()->str() == ">")) {
+            Token *varName = tok2;
+            if (!tok2->previous() || tok2->previous()->str() != ">")
+                varName = varName->next();
+            else
                 --typelen;
-            } else {
-                tok2 = NULL;
+            //skip all the pointer part
+            while (varName && varName->str() == "*") {
+                ispointer = true;
+                varName = varName->next();
             }
+
+            while (Token::Match(varName, "%type% %type%")) {
+                if (varName->str() != "const") {
+                    ++typelen;
+                }
+                varName = varName->next();
+            }
+            //non-VLA case
+            if (Token::Match(varName, "%var% ,|=")) {
+                if (varName->str() != "operator") {
+                    tok2 = varName->next(); // The ',' or '=' token
+
+                    if (tok2->str() == "=") {
+                        if (isstatic) {
+                            if (Token::Match(tok2->next(), "%num% ,"))
+                                tok2 = tok2->tokAt(2);
+                            else
+                                tok2 = NULL;
+                        } else if (isconst && !ispointer) {
+                            //do not split const non-pointer variables..
+                            while (tok2 && tok2->str() != "," && tok2->str() != ";") {
+                                if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
+                                    tok2 = tok2->link();
+                                tok2 = tok2->next();
+                            }
+                            if (tok2 && tok2->str() == ";")
+                                tok2 = NULL;
+                        }
+                    }
+                } else
+                    tok2 = NULL;
+            }
+
+            //VLA case
+            else if (Token::Match(varName, "%var% [")) {
+                tok2 = varName->next();
+
+                while (Token::Match(tok2->link(), "] ,|=|["))
+                    tok2 = tok2->link()->next();
+                if (!Token::Match(tok2, "=|,"))
+                    tok2 = NULL;
+                if (tok2 && tok2->str() == "=") {
+                    while (tok2 && tok2->str() != "," && tok2->str() != ";") {
+                        if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
+                            tok2 = tok2->link();
+                        tok2 = tok2->next();
+                    }
+                    if (tok2 && tok2->str() == ";")
+                        tok2 = NULL;
+                }
+            } else
+                tok2 = NULL;
         } else {
             tok2 = NULL;
         }
