@@ -3207,13 +3207,13 @@ private:
 
     void flowControl() {
         std::list<std::string> beforedead;
-        beforedead.push_back("return");
-        beforedead.push_back("throw ( 10 )");
+        //beforedead.push_back("return");
+        //beforedead.push_back("throw ( 10 )");
         beforedead.push_back("exit ( 0 )");
-        beforedead.push_back("abort ( )");
-        beforedead.push_back("goto labels");
-        beforedead.push_back("break");
-        beforedead.push_back("continue");
+        //beforedead.push_back("abort ( )");
+        //beforedead.push_back("goto labels");
+        //beforedead.push_back("break");
+        //beforedead.push_back("continue");
 
         for (std::list<std::string>::iterator it = beforedead.begin(); it != beforedead.end(); ++it) {
             {
@@ -3394,6 +3394,28 @@ private:
                                        "}";
                 ASSERT_EQUALS(expected, tok(code));
             }
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    A *a = 0;\n"
+                                "    if (!a) {\n"
+                                "        nondeadcode;\n"
+                                "        return;\n"
+                                "        dead;\n"
+                                "    }\n"
+                                "    stilldead;\n"
+                                "    a->_a;\n"
+                                "}\n";
+            const char expected[] = "void foo ( ) "
+                                    "{"
+                                    " A * a ; a = 0 ; {"
+                                    " nondeadcode ;"
+                                    " return ;"
+                                    " } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 

@@ -2064,7 +2064,7 @@ private:
                             "    }"
                             "    return 10 / x;"
                             "}";
-        const char expected[] = "int f ( ) { int x ; x = 0 ; { return 0 ; } return 10 / x ; }";
+        const char expected[] = "int f ( ) { int x ; x = 0 ; { return 0 ; } }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 

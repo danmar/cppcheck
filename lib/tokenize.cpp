@@ -3909,6 +3909,7 @@ void Tokenizer::simplifyRealloc()
 void Tokenizer::simplifyFlowControl()
 {
     unsigned int indentlevel = 0;
+    bool stilldead = false;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "(" || tok->str() == "[") {
             tok = tok->link();
@@ -3925,6 +3926,12 @@ void Tokenizer::simplifyFlowControl()
             if (!indentlevel)
                 break;
             --indentlevel;
+            if (stilldead) {
+                eraseDeadCode(tok, 0);
+                if (indentlevel == 1 || tok->next()->str() != "}" || !Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                    stilldead = false;
+                continue;
+            }
         }
 
         if (!indentlevel)
@@ -3946,6 +3953,10 @@ void Tokenizer::simplifyFlowControl()
                 } else if (Token::Match(tok2, "[{}]"))
                     break;  //Wrong code.
             }
+            //if everything is removed, then remove also the code after an inferior scope
+            //only if the actual scope is not special
+            if (indentlevel > 1 && tok->next()->str() == "}" && Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                stilldead = true;
         }
     }
 }
