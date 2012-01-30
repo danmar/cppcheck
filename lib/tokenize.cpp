@@ -984,7 +984,7 @@ void Tokenizer::simplifyTypedef()
         Token *argFuncRetEnd = 0;
         Token *funcStart = 0;
         Token *funcEnd = 0;
-        unsigned short offset = 1;
+        unsigned int offset = 1;
         bool function = false;
         bool functionPtr = false;
         bool functionRef = false;
