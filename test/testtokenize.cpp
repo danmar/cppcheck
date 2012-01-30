@@ -355,8 +355,6 @@ private:
 
         TEST_CASE(Qt);
 
-        TEST_CASE(wxWidgets); // ticket #3527
-
         TEST_CASE(sql);
 
         TEST_CASE(simplifyLogicalOperators);
@@ -5903,25 +5901,6 @@ private:
 
         ASSERT_EQUALS(result3, tokenizeAndStringify(code3,false));
         ASSERT_EQUALS("", errout.str());
-    }
-
-    // ticket #3527
-    void wxWidgets() {
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_BASE wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_NET wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_CORE wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_ADV wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_QA wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_HTML wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_GL wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_XML wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_XRC wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_AUI wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_PROPGRID wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_RICHTEXT wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_MEDIA wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_STC wxCheckBox;"));
-        ASSERT_EQUALS("class wxCheckBox ;", tokenizeAndStringify("class WXDLLIMPEXP_FWD_WEBVIEW wxCheckBox;"));
     }
 
     void sql() {
