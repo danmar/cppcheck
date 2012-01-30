@@ -1287,25 +1287,25 @@ void Tokenizer::simplifyTypedef()
         }
 
         // function returning pointer to function
-        else if (Token::Match(tok->tokAt(offset), "( * %type% (") &&
-                 Token::simpleMatch(tok->linkAt(offset + 3), ") ) (") &&
-                 Token::Match(tok->linkAt(offset + 3)->linkAt(2), ") ;|,")) {
+        else if (Token::Match(tokOffset, "( * %type% (") &&
+                 Token::simpleMatch(tokOffset->linkAt(3), ") ) (") &&
+                 Token::Match(tokOffset->linkAt(3)->linkAt(2), ") ;|,")) {
             functionRetFuncPtr = true;
 
-            typeName = tok->tokAt(offset + 2);
-            argStart = tok->tokAt(offset + 3);
-            argEnd = tok->linkAt(offset + 3);
+            typeName = tokOffset->tokAt(2);
+            argStart = tokOffset->tokAt(3);
+            argEnd = tokOffset->linkAt(3);
 
             argFuncRetStart = argEnd->tokAt(2);
             argFuncRetEnd = argEnd->linkAt(2);
 
             tok = argFuncRetEnd->next();
-        } else if (Token::Match(tok->tokAt(offset), "( * ( %type% ) (")) {
+        } else if (Token::Match(tokOffset, "( * ( %type% ) (")) {
             functionRetFuncPtr = true;
 
-            typeName = tok->tokAt(offset + 3);
-            argStart = tok->tokAt(offset + 5);
-            argEnd = tok->linkAt(offset + 5);
+            typeName = tokOffset->tokAt(3);
+            argStart = tokOffset->tokAt(5);
+            argEnd = tokOffset->linkAt(5);
 
             argFuncRetStart = argEnd->tokAt(2);
             argFuncRetEnd = argEnd->linkAt(2);
@@ -1314,11 +1314,11 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer/reference to array
-        else if (Token::Match(tok->tokAt(offset), "( *|& %type% ) [")) {
-            ptrToArray = (tok->strAt(offset + 1) == "*");
-            refToArray = (tok->strAt(offset + 1) == "&");
-            typeName = tok->tokAt(offset + 2);
-            arrayStart = tok->tokAt(offset + 4);
+        else if (Token::Match(tokOffset, "( *|& %type% ) [")) {
+            ptrToArray = (tokOffset->next()->str() == "*");
+            refToArray = (tokOffset->next()->str() == "&");
+            typeName = tokOffset->tokAt(2);
+            arrayStart = tokOffset->tokAt(4);
             arrayEnd = arrayStart->link();
             tok = arrayEnd->next();
         }
