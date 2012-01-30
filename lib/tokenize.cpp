@@ -985,6 +985,7 @@ void Tokenizer::simplifyTypedef()
         Token *funcStart = 0;
         Token *funcEnd = 0;
         unsigned int offset = 1;
+        Token *tokOffset = tok->next();
         bool function = false;
         bool functionPtr = false;
         bool functionRef = false;
@@ -1003,14 +1004,15 @@ void Tokenizer::simplifyTypedef()
             return;
         }
 
-        if (Token::simpleMatch(tok->next(), "::") ||
-            Token::Match(tok->next(), "%type%")) {
+        if (tok->next()->str() == "::" || Token::Match(tok->next(), "%type%")) {
             typeStart = tok->next();
             offset = 1;
 
-            while (Token::Match(tok->tokAt(offset), "const|signed|unsigned|struct|enum %type%") ||
-                   (tok->tokAt(offset + 1) && tok->tokAt(offset + 1)->isStandardType()))
+            while (Token::Match(tokOffset, "const|signed|unsigned|struct|enum %type%") ||
+                   (tokOffset->next() && tokOffset->next()->isStandardType())) {
                 ++offset;
+                tokOffset = tokOffset->next();
+            }
 
             typeEnd = tok->tokAt(offset++);
 
