@@ -1006,7 +1006,6 @@ void Tokenizer::simplifyTypedef()
 
         if (tok->next()->str() == "::" || Token::Match(tok->next(), "%type%")) {
             typeStart = tok->next();
-            offset = 1;
 
             while (Token::Match(tokOffset, "const|signed|unsigned|struct|enum %type%") ||
                    (tokOffset->next() && tokOffset->next()->isStandardType())) {
