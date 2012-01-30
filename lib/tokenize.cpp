@@ -1129,11 +1129,11 @@ void Tokenizer::simplifyTypedef()
             }
 
             // check for end or another
-            if (Token::Match(tok->tokAt(offset), ";|,"))
-                tok = tok->tokAt(offset);
+            if (Token::Match(tokOffset, ";|,"))
+                tok = tokOffset;
 
             // or a function typedef
-            else if (Token::simpleMatch(tok->tokAt(offset), "(")) {
+            else if (tokOffset && tokOffset->str() == "(") {
                 // unhandled typedef, skip it and continue
                 if (typeName->str() == "void") {
                     unsupportedTypedef(typeDef);
@@ -1146,8 +1146,8 @@ void Tokenizer::simplifyTypedef()
 
                 // unhandled function pointer, skip it and continue
                 // TODO: handle such typedefs. See ticket #3314
-                else if (Token::Match(tok->tokAt(offset), "( %type% ::") &&
-                         Token::Match(tok->linkAt(offset)->tokAt(-3), ":: * %var% ) (")) {
+                else if (Token::Match(tokOffset, "( %type% ::") &&
+                         Token::Match(tokOffset->link()->tokAt(-3), ":: * %var% ) (")) {
                     unsupportedTypedef(typeDef);
                     tok = deleteInvalidTypedef(typeDef);
                     if (tok == _tokens)
@@ -1157,27 +1157,27 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // function pointer
-                else if (Token::Match(tok->tokAt(offset), "( * %var% ) (")) {
+                else if (Token::Match(tokOffset, "( * %var% ) (")) {
                     // name token wasn't a name, it was part of the type
                     typeEnd = typeEnd->next();
                     functionPtr = true;
-                    funcStart = tok->tokAt(offset + 1);
-                    funcEnd = tok->tokAt(offset + 1);
-                    typeName = tok->tokAt(offset + 2);
-                    argStart = tok->tokAt(offset + 4);
-                    argEnd = tok->linkAt(offset + 4);
+                    funcStart = tokOffset->next();
+                    funcEnd = tokOffset->next();
+                    typeName = tokOffset->tokAt(2);
+                    argStart = tokOffset->tokAt(4);
+                    argEnd = tokOffset->linkAt(4);
                     tok = argEnd->next();
                 }
 
                 // function
-                else if (Token::Match(tok->linkAt(offset), ") const| ;|,")) {
+                else if (Token::Match(tokOffset->link(), ") const| ;|,")) {
                     function = true;
-                    if (tok->linkAt(offset)->next()->str() == "const") {
-                        specStart = tok->linkAt(offset)->next();
+                    if (tokOffset->link()->next()->str() == "const") {
+                        specStart = tokOffset->link()->next();
                         specEnd = specStart;
                     }
-                    argStart = tok->tokAt(offset);
-                    argEnd = tok->linkAt(offset);
+                    argStart = tokOffset;
+                    argEnd = tokOffset->link();
                     tok = argEnd->next();
                     if (specStart)
                         tok = tok->next();
