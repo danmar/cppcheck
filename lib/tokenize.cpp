@@ -1043,15 +1043,15 @@ void Tokenizer::simplifyTypedef()
             continue; // invalid input
 
         // check for invalid input
-        if (!tok->tokAt(offset)) {
+        if (!tokOffset) {
             syntaxError(tok);
             return;
         }
 
         // check for template
-        if (tok->strAt(offset) == "<") {
+        if (tokOffset->str() == "<") {
             unsigned int level = 0;
-            typeEnd = tok->tokAt(offset + 1);
+            typeEnd = tokOffset->next();
             for (; typeEnd ; typeEnd = typeEnd->next()) {
                 if (typeEnd->str() == ">") {
                     if (!level)
@@ -1079,21 +1079,27 @@ void Tokenizer::simplifyTypedef()
 
             tok = typeEnd;
             offset = 1;
+            tokOffset = tok->next();
         }
 
         // check for pointers and references
-        while (Token::Match(tok->tokAt(offset), "*|&|const"))
-            pointers.push_back(tok->strAt(offset++));
+        while (Token::Match(tokOffset, "*|&|const")) {
+            pointers.push_back(tokOffset->str());
+            ++offset;
+            tokOffset = tokOffset->next();
+        }
 
         // check for invalid input
-        if (!tok->tokAt(offset)) {
+        if (!tokOffset) {
             syntaxError(tok);
             return;
         }
 
-        if (Token::Match(tok->tokAt(offset), "%type%")) {
+        if (Token::Match(tokOffset, "%type%")) {
             // found the type name
-            typeName = tok->tokAt(offset++);
+            ++offset;
+            typeName = tokOffset;
+            tokOffset = tokOffset->next();
 
             // check for array
             if (tok->tokAt(offset) && tok->strAt(offset) == "[") {
