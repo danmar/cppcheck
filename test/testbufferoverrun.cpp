@@ -111,6 +111,7 @@ private:
         TEST_CASE(array_index_39);
         TEST_CASE(array_index_40); // loop variable calculation, taking address
         TEST_CASE(array_index_41); // structs with the same name
+        TEST_CASE(array_index_42);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1342,6 +1343,26 @@ private:
               "    fred.data[4] = 0;\n"  // <- error
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Array 'fred.data[3]' index 4 out of bounds\n", errout.str());
+    }
+
+    void array_index_42(){ // ticket #3569
+
+        check("void f()\n"
+              "{\n"
+              "  char *p = (char*)malloc(10);\n"
+              "  p[10] = 7;\n"
+              "  free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'p[10]' index 10 out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  char *p = (char*)malloc(10);\n"
+              "  p[0] = 0;\n"
+              "  p[9] = 9;\n"
+              "  free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
