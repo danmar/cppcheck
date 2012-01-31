@@ -5166,19 +5166,28 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
             tok2 = tok2->tokAt(2);
             if (tok2 && tok2->previous()->str() == "::")
                 continue;
-            size_t indentlevel = 1;
+            unsigned int indentlevel = 0;
+            unsigned int parens = 0;
 
             for (Token *tok3 = tok2; tok3; tok3 = tok3->next()) {
                 ++typelen;
 
-                if (tok3->str() == "<") {
+                if (tok3->str() == "<" && !parens) {
                     ++indentlevel;
-                } else if (tok3->str() == ">") {
-                    --indentlevel;
-                    if (indentlevel == 0) {
+                } else if (tok3->str() == ">" && !parens) {
+                    if (!indentlevel) {
                         tok2 = tok3->next();
                         break;
                     }
+                    --indentlevel;
+                } else if (tok3->str() == "(") {
+                    ++parens;
+                } else if (tok3->str() == ")") {
+                    if (!parens) {
+                        tok2 = NULL;
+                        break;
+                    }
+                    --parens;
                 } else if (tok3->str() == ";") {
                     break;
                 }

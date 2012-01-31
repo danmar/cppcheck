@@ -4426,6 +4426,8 @@ private:
         const char code1[] = "b<(1<<24),10,24> u, v;";
         const char res1[]  = "b < ( 1 << 24 ) , 10 , 24 > u ; b < ( 1 << 24 ) , 10 , 24 > v ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
+        // ticket #3571 (segmentation fault)
+        tokenizeAndStringify("template <int i = (3>4) > class X4 {};");
     }
 
     void vardecl_union() {
