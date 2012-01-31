@@ -153,6 +153,7 @@ private:
         TEST_CASE(symboldatabase24); // ticket #3508 (constructor, destructor)
         TEST_CASE(symboldatabase25); // ticket #3561 (throw C++)
         TEST_CASE(symboldatabase26); // ticket #3561 (throw C)
+        TEST_CASE(symboldatabase27); // ticket #3543 (segmentation fault)
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -1116,6 +1117,16 @@ private:
         check(str.c_str(), false);
         ASSERT_EQUALS("", errout.str());
         ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
+    }
+
+    // #ticket #3543 (segmentation fault)
+    void symboldatabase27() {
+        check("class C : public B1\n"
+              "{\n"
+              "    B1()\n"
+              "    {} C(int) : B1() class\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

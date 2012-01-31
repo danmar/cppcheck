@@ -324,6 +324,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // find start of function '{'
                         while (end && end->str() != "{")
                             end = end->next();
+                        if (!end)
+                            continue;
 
                         // save start of function
                         function.start = end;
