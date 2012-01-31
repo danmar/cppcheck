@@ -1974,12 +1974,12 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 //---------------------------------------------------------------------------
 static bool isChar(const Variable* var)
 {
-    return(var && !var->isPointer() && !var->isArray() && (var->typeEndToken()->str() == "char" || var->typeEndToken()->previous()->str() == "char"));
+    return(var && !var->isPointer() && !var->isArray() && (var->typeEndToken()->str() == "char" || (var->typeEndToken()->previous() && var->typeEndToken()->previous()->str() == "char")));
 }
 
 static bool isSignedChar(const Variable* var)
 {
-    return(isChar(var) && !var->typeEndToken()->isUnsigned() && !var->typeEndToken()->previous()->isUnsigned());
+    return(isChar(var) && !var->typeEndToken()->isUnsigned() && (!var->typeEndToken()->previous() || !var->typeEndToken()->previous()->isUnsigned()));
 }
 
 void CheckOther::checkCharVariable()

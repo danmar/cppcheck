@@ -439,6 +439,9 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 return;
         }
 
+        if (!tok)
+            break;
+
         // return/throw ends all execution paths
         if (tok->str() == "return" ||
             tok->str() == "throw" ||

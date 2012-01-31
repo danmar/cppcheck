@@ -62,8 +62,9 @@ private:
         TEST_CASE(nullpointerDelete);
         TEST_CASE(nullpointerExit);
         TEST_CASE(nullpointerStdString);
-
         TEST_CASE(functioncall);
+
+        TEST_CASE(crash1);
     }
 
     void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
@@ -1872,6 +1873,12 @@ private:
                   "}", true);
             ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
         }
+    }
+
+    void crash1() {
+        check("int f() {\n"
+              "    return if\n"
+              "}");
     }
 };
 
