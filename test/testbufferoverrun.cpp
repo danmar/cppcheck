@@ -1363,6 +1363,38 @@ private:
               "  free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  char *p = new char[10];\n"
+              "  p[0] = 0;\n"
+              "  p[9] = 9;\n"
+              "  delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  char *p(new char[10]);\n"
+              "  p[0] = 0;\n"
+              "  p[9] = 9;\n"
+              "  delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  try{\n"
+              "  char *p(new char[10]);\n"
+              "  }\n"
+              "  catch(...){\n"
+              "  return;\n"
+              "  }"
+              "  p[0] = 0;\n"
+              "  p[9] = 9;\n"
+              "  delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
