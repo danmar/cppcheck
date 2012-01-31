@@ -2746,9 +2746,12 @@ private:
 
         {
             // Ticket #2885
-            const char code[] = "; s = x ? \" \" : \"-\" ;";
-            tok(code);
+            const char code[] = "; const char *cx16 = has_cmpxchg16b ? \" -mcx16\" : \" -mno-cx16\";";
+            const char expected[] = "; const char * cx16 ; if ( has_cmpxchg16b ) { cx16 = \" -mcx16\" ; } else { cx16 = \" -mno-cx16\" ; }";
+            ASSERT_EQUALS(expected, tok(code));
         }
+        // Ticket #3572 (segmentation fault)
+        ASSERT_EQUALS("0 ; x = { ? y : z ; }", tok("0; x = { ? y : z; }"));
     }
 
     void calculations() {

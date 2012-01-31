@@ -4432,26 +4432,40 @@ void Tokenizer::simplifyConditionOperator()
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (tok->str() == "(")
             ++parlevel;
-        else if (tok->str() == ")")
+        else if (tok->str() == ")") {
+            if (!parlevel)
+                break;
             --parlevel;
-        else if (parlevel == 0 && (Token::Match(tok, ";|{|} *| %any% = %any% ? %any% : %any% ;") ||
-                                   Token::Match(tok, ";|{|} return %any% ? %any% : %any% ;"))) {
+        }
+
+        if (parlevel)
+            continue;
+
+        if (Token::Match(tok, "[{};] *| %var% = %any% ? %any% : %any% ;") ||
+            Token::Match(tok, "[{};] return %any% ? %any% : %any% ;")) {
             std::string var(tok->next()->str());
             bool isPointer = false;
             bool isReturn = false;
-            int offset = 0;
             if (tok->next()->str() == "*") {
                 tok = tok->next();
                 var += " " + tok->next()->str();
                 isPointer = true;
             } else if (tok->next()->str() == "return") {
                 isReturn = true;
-                offset = -1;
             }
 
-            const std::string condition(tok->strAt(3 + offset));
-            const std::string value1(tok->strAt(5 + offset));
-            const std::string value2(tok->strAt(7 + offset));
+            Token *tok2 = tok->tokAt(3 - (isReturn ? 1 : 0));
+            if (!tok2->isName() && !tok2->isNumber() && tok2->str()[0] != '\"')
+                continue;
+            const std::string condition(tok2->str());
+            tok2 = tok2->tokAt(2);
+            if (!tok2->isName() && !tok2->isNumber() && tok2->str()[0] != '\"')
+                continue;
+            const std::string value1(tok2->str());
+            tok2 = tok2->tokAt(2);
+            if (!tok2->isName() && !tok2->isNumber() && tok2->str()[0] != '\"')
+                continue;
+            const std::string value2(tok2->str());
 
             if (isPointer) {
                 tok = tok->previous();
