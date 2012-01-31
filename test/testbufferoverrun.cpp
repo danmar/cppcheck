@@ -1345,7 +1345,7 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (error) Array 'fred.data[3]' index 4 out of bounds\n", errout.str());
     }
 
-    void array_index_42(){ // ticket #3569
+    void array_index_42() { // ticket #3569
 
         check("void f()\n"
               "{\n"
