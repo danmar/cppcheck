@@ -365,6 +365,7 @@ private:
         TEST_CASE(simplifyStructDecl2); // ticket #2579
         TEST_CASE(simplifyStructDecl3);
         TEST_CASE(simplifyStructDecl4);
+        TEST_CASE(simplifyStructDecl5); // ticket #3533 (segmentation fault)
 
         // register int var; => int var;
         // inline int foo() {} => int foo() {}
@@ -7375,33 +7376,42 @@ private:
     }
 
     void simplifyStructDecl4() {
-        {
-            const char code[] = "class ABC {\n"
-                                "    void foo() {\n"
-                                "        union {\n"
-                                "            int i;\n"
-                                "            float f;\n"
-                                "        };\n"
-                                "        struct Fee { } fee;\n"
-                                "    }\n"
-                                "    union {\n"
-                                "        long long ll;\n"
-                                "        double d;\n"
-                                "    };\n"
-                                "} abc;\n";
-            const char expected[] = "class ABC { "
-                                    "void foo ( ) { "
-                                    "int i ; "
-                                    "float & f = i ; "
-                                    "struct Fee { } ; Fee fee ; "
-                                    "} "
-                                    "union { "
-                                    "long long ll ; "
-                                    "double d ; "
-                                    "} ; "
-                                    "} ; ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
-        }
+        const char code[] = "class ABC {\n"
+                            "    void foo() {\n"
+                            "        union {\n"
+                            "            int i;\n"
+                            "            float f;\n"
+                            "        };\n"
+                            "        struct Fee { } fee;\n"
+                            "    }\n"
+                            "    union {\n"
+                            "        long long ll;\n"
+                            "        double d;\n"
+                            "    };\n"
+                            "} abc;\n";
+        const char expected[] = "class ABC { "
+                                "void foo ( ) { "
+                                "int i ; "
+                                "float & f = i ; "
+                                "struct Fee { } ; Fee fee ; "
+                                "} "
+                                "union { "
+                                "long long ll ; "
+                                "double d ; "
+                                "} ; "
+                                "} ; ABC abc ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyStructDecl5() {
+        const char code[] = "<class T>\n"
+                            "{\n"
+                            "    struct {\n"
+                            "        typename D4:typename Base<T*>\n"
+                            "    };\n"
+                            "};\n";
+        //don't crash
+        tok(code, false);
     }
 
     void removeUnwantedKeywords() {
