@@ -1384,8 +1384,9 @@ private:
 
         check("void f()\n"
               "{\n"
+              "  char *p = NULL;"
               "  try{\n"
-              "  char *p(new char[10]);\n"
+              "  p = new char[10];\n"
               "  }\n"
               "  catch(...){\n"
               "  return;\n"
