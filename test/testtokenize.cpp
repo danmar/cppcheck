@@ -2195,6 +2195,21 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
         }
+
+        // 3538
+        {
+            const char code[] = "void f() {\n"
+                                "    char s[10];\n"
+                                "    strcpy(s, \"123\");\n"
+                                "    if (s[6] == ' ');\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char s [ 10 ] ;\n"
+                                    "strcpy ( s , \"123\" ) ;\n"
+                                    "if ( s [ 6 ] == ' ' ) { ; }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+        }
     }
 
     void simplifyKnownVariables43() {

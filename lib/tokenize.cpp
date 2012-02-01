@@ -6494,7 +6494,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         }
 
         // array usage
-        if (Token::Match(tok3, ("[(,] " + structname + " %varid% [|%op%").c_str(), varid)) {
+        if (value[0] != '\"' && Token::Match(tok3, ("[(,] " + structname + " %varid% [|%op%").c_str(), varid)) {
             if (!structname.empty()) {
                 tok3->deleteNext(2);
             }

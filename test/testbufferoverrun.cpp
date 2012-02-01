@@ -1773,14 +1773,14 @@ private:
               "    int i = 10;\n"
               "    bar(str[i]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: \"abc\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[4]' index 10 out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    const char *str = \"abc\";\n"
               "    bar(str[4]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: \"abc\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' index 4 out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1794,7 +1794,7 @@ private:
               "    const char *str = \"a\tc\";\n"
               "    bar(str[4]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: \"a\tc\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' index 4 out of bounds\n", errout.str());
 
     }
 
