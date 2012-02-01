@@ -978,6 +978,31 @@ private:
               "    fred->do_something();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #3570 - parsing of conditions
+        {
+            check("void f() {\n"
+                  "    int *p = NULL;\n"
+                  "    if (x)\n"
+                  "        p = q;\n"
+                  "    if (p && *p) { }\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+            check("void f() {\n"
+                  "    int *p = NULL;\n"
+                  "    if (x)\n"
+                  "        p = q;\n"
+                  "    if (!p || *p) { }\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+            check("void f() {\n"
+                  "    int *p = NULL;\n"
+                  "    if (x)\n"
+                  "        p = q;\n"
+                  "    if (p || *p) { }\n"
+                  "}");
+            TODO_ASSERT_EQUALS("error", "", errout.str());
+        }
     }
 
     // Ticket #2350

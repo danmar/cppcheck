@@ -1221,7 +1221,7 @@ private:
     /** parse condition. @sa ExecutionPath::parseCondition */
     bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) {
         for (const Token *tok2 = &tok; tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(" || tok2->str() == ")")
+            if (tok2->str() == "(" || tok2->str() == ")" || tok2->str() == "&&" || tok2->str() == "||")
                 break;
             bool unknown = owner->inconclusiveFlag();
             if (tok2->varId() && (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase) || unknown))
