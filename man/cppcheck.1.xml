@@ -125,6 +125,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
       <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>            
       <arg choice="opt"><option>--style</option></arg>
+      <arg choice="opt"><option>--std=&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
       <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--template='&lt;text&gt;'</option></arg>
@@ -388,6 +389,34 @@ Directory name is matched to all parts of the path.</para>
           <para>Deprecated, use --enable=style</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option>--std=&lt;id&gt;</option></term>
+        <listitem>
+          <para>Enable some environment related checks. The available options are:
+            <glosslist>
+              <glossentry>
+                <glossterm>posix</glossterm>
+                <glossdef>
+                  <para>Use this if you want to see posix related errors</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>c99</glossterm>
+                <glossdef>
+                  <para>Use this if the compiler is C99 compatible</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>c++11</glossterm>
+                <glossdef>
+                  <para>Use this if the compiler is C++11 compatible. Note: you probably want to also use 'c99'.</para>
+                </glossdef>
+              </glossentry>
+            </glosslist>          
+            By default all are disabled. To enable more than one, just use --std more than once: 'cppcheck --std=c99 --std=c++11 file.cpp'
+          </para>
+        </listitem>
+      </varlistentry>      
       <varlistentry>
         <term><option>--suppress=&lt;spec&gt;</option></term>
         <listitem>
