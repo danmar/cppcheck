@@ -459,7 +459,8 @@ public:
     bool isLocal() const {
         return (type == eIf || type == eElse || type == eElseIf ||
                 type == eFor || type == eWhile || type == eDo ||
-                type == eSwitch || type == eUnconditional);
+                type == eSwitch || type == eUnconditional ||
+                type == eTry || type == eCatch);
     }
 
     /**

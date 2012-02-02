@@ -56,6 +56,7 @@ public:
         checkExceptionSafety.destructors();
         checkExceptionSafety.deallocThrow();
         checkExceptionSafety.checkRethrowCopy();
+        checkExceptionSafety.checkCatchExceptionByValue();
     }
 
     /** Don't throw exceptions in destructors */
@@ -66,6 +67,9 @@ public:
 
     /** Don't rethrow a copy of the caught exception; use a bare throw instead */
     void checkRethrowCopy();
+
+    /** @brief %Check for exceptions that are caught by value instead of by reference */
+    void checkCatchExceptionByValue();
 
 private:
     /** Don't throw exceptions in destructors */
@@ -84,12 +88,20 @@ private:
                     "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'.");
     }
 
+    void catchExceptionByValueError(const Token *tok) {
+        reportError(tok, Severity::style,
+                    "catchExceptionByValue", "Exception should be caught by reference.\n"
+                    "The exception is caught as a value. It could be caught "
+                    "as a (const) reference which is usually recommended in C++.");
+    }
+
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
         CheckExceptionSafety c(0, settings, errorLogger);
         c.destructorsError(0);
         c.deallocThrowError(0, "p");
         c.rethrowCopyError(0, "varname");
+        c.catchExceptionByValueError(0);
     }
 
     /** Short description of class (for --doc) */
@@ -102,7 +114,8 @@ private:
         return "Checking exception safety\n"
                "* Throwing exceptions in destructors\n"
                "* Throwing exception during invalid state\n"
-               "* Throwing a copy of a caught exception instead of rethrowing the original exception";
+               "* Throwing a copy of a caught exception instead of rethrowing the original exception\n"
+               "* exception caught by value instead of by reference";
     }
 };
 /// @}

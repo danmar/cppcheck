@@ -1059,36 +1059,6 @@ void CheckOther::secondAlwaysTrueFalseWhenFirstTrueError(const Token *tok, const
 }
 
 //---------------------------------------------------------------------------
-//    try {} catch (std::exception err) {} <- Should be "std::exception& err"
-//---------------------------------------------------------------------------
-void CheckOther::checkCatchExceptionByValue()
-{
-    if (!_settings->isEnabled("style"))
-        return;
-
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eCatch)
-            continue;
-
-        // Find a pass-by-value declaration in the catch(), excluding basic types
-        // e.g. catch (std::exception err)
-        const Variable* var = symbolDatabase->getVariableFromVarId(i->classStart->tokAt(-2)->varId());
-        if (var && var->isClass() && !var->isPointer() && !var->isReference())
-            catchExceptionByValueError(i->classDef);
-    }
-}
-
-void CheckOther::catchExceptionByValueError(const Token *tok)
-{
-    reportError(tok, Severity::style,
-                "catchExceptionByValue", "Exception should be caught by reference.\n"
-                "The exception is caught as a value. It could be caught "
-                "as a (const) reference which is usually recommended in C++.");
-}
-
-//---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 void CheckOther::invalidFunctionUsage()

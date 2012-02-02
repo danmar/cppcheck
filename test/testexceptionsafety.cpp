@@ -40,6 +40,8 @@ private:
         TEST_CASE(rethrowCopy2);
         TEST_CASE(rethrowCopy3);
         TEST_CASE(rethrowCopy4);
+        TEST_CASE(rethrowCopy5);
+        TEST_CASE(catchExceptionByValue);
     }
 
     void check(const std::string &code, bool inconclusive = false) {
@@ -157,7 +159,7 @@ private:
               "    {\n"
               "       foo();\n"
               "    }\n"
-              "    catch(exception err)\n"
+              "    catch(exception& err)\n"
               "    {\n"
               "        throw err;\n"
               "    }\n"
@@ -170,7 +172,7 @@ private:
               "    try {\n"
               "       foo();\n"
               "    }\n"
-              "    catch(std::runtime_error err) {\n"
+              "    catch(std::runtime_error& err) {\n"
               "        throw err;\n"
               "    }\n"
               "}");
@@ -183,7 +185,7 @@ private:
               "    {\n"
               "       foo();\n"
               "    }\n"
-              "    catch(exception err)\n"
+              "    catch(const exception& err)\n"
               "    {\n"
               "        exception err2;\n"
               "        throw err2;\n"
@@ -191,7 +193,110 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void rethrowCopy5() {
+        check("void f() {\n"
+              "    try {\n"
+              "       foo();\n"
+              "    }\n"
+              "    catch(const exception& outer) {\n"
+              "        try {\n"
+              "           foo(outer);\n"
+              "        }\n"
+              "        catch(const exception& inner) {\n"
+              "            throw inner;\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+
+        check("void f() {\n"
+              "    try {\n"
+              "       foo();\n"
+              "    }\n"
+              "    catch(const exception& outer) {\n"
+              "        try {\n"
+              "           foo(outer);\n"
+              "        }\n"
+              "        catch(const exception& inner) {\n"
+              "            throw outer;\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void catchExceptionByValue() {
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    }\n"
+              "    catch( ::std::exception err) {\n"
+              "        foo(err);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout.str());
+
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    }\n"
+              "    catch(const exception err) {\n"
+              "        foo(err);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout.str());
+
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    }\n"
+              "    catch( ::std::exception& err) {\n"
+              "        foo(err);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    }\n"
+              "    catch(exception* err) {\n"
+              "        foo(err);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    }\n"
+              "    catch(const exception& err) {\n"
+              "        foo(err);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    }\n"
+              "    catch(int err) {\n"
+              "        foo(err);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    try {\n"
+              "        bar();\n"
+              "    }\n"
+              "    catch(exception* const err) {\n"
+              "        foo(err);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestExceptionSafety)
-

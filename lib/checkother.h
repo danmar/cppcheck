@@ -96,7 +96,6 @@ public:
         checkOther.checkCoutCerrMisusage();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
-        checkOther.checkCatchExceptionByValue();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
@@ -208,9 +207,6 @@ public:
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
 
-    /** @brief %Check for exceptions that are caught by value instead of by reference */
-    void checkCatchExceptionByValue();
-
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
 
@@ -289,7 +285,6 @@ public:
     void incorrectLogicOperatorError(const Token *tok, bool always);
     void secondAlwaysTrueFalseWhenFirstTrueError(const Token *tok, const std::string &truefalse);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void catchExceptionByValueError(const Token *tok);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
     void sizeofForStrncmpError(const Token *tok);
@@ -349,7 +344,6 @@ public:
         c.invalidScanfError(0);
         c.incorrectLogicOperatorError(0, true);
         c.secondAlwaysTrueFalseWhenFirstTrueError(0, "when first comparison is true, the 2nd comparison is always true");
-        c.catchExceptionByValueError(0);
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
@@ -418,7 +412,6 @@ public:
                "* look for calculations inside sizeof()\n"
                "* assignment of a variable to itself\n"
                "* mutual exclusion over || always evaluating to true\n"
-               "* exception caught by value instead of by reference\n"
                "* Clarify calculation with parentheses\n"
                "* using increment on boolean\n"
                "* comparison of a boolean with a non-zero integer\n"

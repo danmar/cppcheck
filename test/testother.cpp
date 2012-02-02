@@ -114,8 +114,6 @@ private:
         TEST_CASE(incorrectLogicOperator2);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
 
-        TEST_CASE(catchExceptionByValue);
-
         TEST_CASE(memsetZeroBytes);
 
         TEST_CASE(sizeofForArrayParameter);
@@ -3064,99 +3062,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void catchExceptionByValue() {
-        check("void f() {\n"
-              "    try\n"
-              "    {\n"
-              "        foo();\n"
-              "    }\n"
-              "    catch( ::std::exception err)\n"
-              "    {\n"
-              "        throw err;\n"
-              "    }\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:6]: (style) Exception should be caught by reference.\n", errout.str());
-
-        check("void f() {\n"
-              "    try\n"
-              "    {\n"
-              "        foo();\n"
-              "    }\n"
-              "    catch(const exception err)\n"
-              "    {\n"
-              "        throw err;\n"
-              "    }\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:6]: (style) Exception should be caught by reference.\n", errout.str());
-
-        check("void f() {\n"
-              "    try\n"
-              "    {\n"
-              "        foo();\n"
-              "    }\n"
-              "    catch( ::std::exception& err)\n"
-              "    {\n"
-              "        throw err;\n"
-              "    }\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    try\n"
-              "    {\n"
-              "        foo();\n"
-              "    }\n"
-              "    catch(exception* err)\n"
-              "    {\n"
-              "        throw err;\n"
-              "    }\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    try\n"
-              "    {\n"
-              "        foo();\n"
-              "    }\n"
-              "    catch(const exception& err)\n"
-              "    {\n"
-              "        throw err;\n"
-              "    }\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    try\n"
-              "    {\n"
-              "        foo();\n"
-              "    }\n"
-              "    catch(int err)\n"
-              "    {\n"
-              "        throw err;\n"
-              "    }\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    try\n"
-              "    {\n"
-              "        foo();\n"
-              "    }\n"
-              "    catch(exception* const err)\n"
-              "    {\n"
-              "        throw err;\n"
-              "    }\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-    }
 
     void memsetZeroBytes() {
         check("void f() {\n"

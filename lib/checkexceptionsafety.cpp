@@ -144,9 +144,34 @@ void CheckExceptionSafety::checkRethrowCopy()
 
         const unsigned int varid = i->classStart->tokAt(-2)->varId();
         if (varid) {
-            const Token* rethrowTok = Token::findmatch(i->classStart->next(), "throw %varid% ;", i->classEnd->previous(), varid);
-            if (rethrowTok)
-                rethrowCopyError(rethrowTok, rethrowTok->strAt(1));
+            for (const Token* tok = i->classStart->next(); tok && tok != i->classEnd; tok = tok->next()) {
+                if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) // Don't check inner catch - it is handled in another iteration of outer loop.
+                    tok = tok->next()->link()->next()->link();
+                else if (Token::Match(tok, "throw %varid% ;", varid))
+                    rethrowCopyError(tok, tok->strAt(1));
+            }
         }
+    }
+}
+
+//---------------------------------------------------------------------------
+//    try {} catch (std::exception err) {} <- Should be "std::exception& err"
+//---------------------------------------------------------------------------
+void CheckExceptionSafety::checkCatchExceptionByValue()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eCatch)
+            continue;
+
+        // Find a pass-by-value declaration in the catch(), excluding basic types
+        // e.g. catch (std::exception err)
+        const Variable* var = symbolDatabase->getVariableFromVarId(i->classStart->tokAt(-2)->varId());
+        if (var && var->isClass() && !var->isPointer() && !var->isReference())
+            catchExceptionByValueError(i->classDef);
     }
 }
