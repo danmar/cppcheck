@@ -411,7 +411,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path = Path::simplifyPath(path.c_str());
                 path = Path::removeQuotationMarks(path);
 
-                if (!FileLister::fileExists(path) && FileLister::isDirectory(path)) {
+                if (FileLister::isDirectory(path)) {
                     // If directory name doesn't end with / or \, add it
                     if (path[path.length()-1] != '/')
                         path += '/';
