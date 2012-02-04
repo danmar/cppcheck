@@ -4596,6 +4596,24 @@ private:
             "}"
         );
         ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void bug()"
+            "{"
+            "  int* ptr = NULL;"
+            "  try"
+            "    {"
+            "      ptr = new int(4);"
+            "    }"
+            "  catch(...)"
+            "    {"
+            "      delete ptr;"
+            "      throw;"
+            "    }"
+            "  delete ptr;"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void coutCerrMisusage() {

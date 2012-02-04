@@ -2533,7 +2533,7 @@ void CheckOther::checkDoubleFree()
 
         // Any control statements in-between delete, free() or closedir() statements
         // makes it unclear whether any subsequent statements would be redundant.
-        if (Token::Match(tok, "else|break|continue|goto|return")) {
+        if (Token::Match(tok, "else|break|continue|goto|return|throw")) {
             freedVariables.clear();
             closeDirVariables.clear();
         }
