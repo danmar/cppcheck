@@ -75,6 +75,11 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
             if (!PathName.empty()) {
                 PathName = Path::fromNativeSeparators(PathName);
                 PathName = Path::removeQuotationMarks(PathName);
+
+                // If path doesn't end with / or \, add it
+                if (PathName[PathName.length()-1] != '/')
+                    PathName += '/';
+
                 PathNames.push_back(PathName);
             }
         }
