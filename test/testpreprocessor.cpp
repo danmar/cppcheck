@@ -46,7 +46,7 @@ public:
         }
 
         static std::string expandMacros(std::string code, ErrorLogger *errorLogger = 0) {
-            return Preprocessor::expandMacros(code, "file.cpp", errorLogger);
+            return Preprocessor::expandMacros(code, "file.cpp", "", errorLogger);
         }
 
         static int getHeaderFileName(std::string &str) {
@@ -227,6 +227,7 @@ private:
         TEST_CASE(predefine1);
         TEST_CASE(predefine2);
         TEST_CASE(predefine3);
+        TEST_CASE(predefine4);
 
         // Test Preprocessor::simplifyCondition
         TEST_CASE(simplifyCondition);
@@ -2866,6 +2867,14 @@ private:
         Preprocessor preprocessor(NULL,this);
         const std::string actual = preprocessor.getcode(code, "TEST", "test.c");
         ASSERT_EQUALS("\n\n\nFred & Wilma\n\n", actual);
+    }
+
+    void predefine4() {
+        // #3577
+        const char code[] = "char buf[X];\n";
+        Preprocessor preprocessor(NULL,this);
+        const std::string actual = preprocessor.getcode(code, "X=123", "test.c");
+        ASSERT_EQUALS("char buf[$123];\n", actual);
     }
 
     void simplifyCondition() {

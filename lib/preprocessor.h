@@ -130,10 +130,11 @@ protected:
      * expand macros in code. ifdefs etc are ignored so the code must be a single configuration
      * @param code The input code
      * @param filename filename of source file
+     * @param cfg user given -D configuration
      * @param errorLogger Error logger to write errors to (if any)
      * @return the expanded string
      */
-    static std::string expandMacros(const std::string &code, std::string filename, ErrorLogger *errorLogger);
+    static std::string expandMacros(const std::string &code, std::string filename, const std::string &cfg, ErrorLogger *errorLogger);
 
     /**
      * Remove comments from code. This should only be called from read().

@@ -1380,19 +1380,13 @@ bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, 
 }
 
 
-std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
+/**
+ * Get cfgmap - a map of macro names and values
+ */
+static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
 {
-    // For the error report
-    unsigned int lineno = 0;
-
-    std::ostringstream ret;
-
-    bool match = true;
-    std::list<bool> matching_ifdef;
-    std::list<bool> matched_ifdef;
-
-    // Create a map for the cfg for faster access to defines
     std::map<std::string, std::string> cfgmap;
+
     if (!cfg.empty()) {
         std::string::size_type pos = 0;
         for (;;) {
@@ -1416,6 +1410,24 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             pos = pos2 + 1;
         }
     }
+
+    return cfgmap;
+}
+
+
+std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
+{
+    // For the error report
+    unsigned int lineno = 0;
+
+    std::ostringstream ret;
+
+    bool match = true;
+    std::list<bool> matching_ifdef;
+    std::list<bool> matched_ifdef;
+
+    // Create a map for the cfg for faster access to defines
+    std::map<std::string, std::string> cfgmap(getcfgmap(cfg));
 
     std::stack<std::string> filenames;
     filenames.push(filename);
@@ -1596,7 +1608,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         ret << line << "\n";
     }
 
-    return expandMacros(ret.str(), filename, _errorLogger);
+    return expandMacros(ret.str(), filename, cfg, _errorLogger);
 }
 
 void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)
@@ -2445,13 +2457,26 @@ static bool getlines(std::istream &istr, std::string &line)
     return true;
 }
 
-std::string Preprocessor::expandMacros(const std::string &code, std::string filename, ErrorLogger *errorLogger)
+std::string Preprocessor::expandMacros(const std::string &code, std::string filename, const std::string &cfg, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
     // --------------------------------------------
 
     // Available macros (key=macroname, value=macro).
     std::map<std::string, PreprocessorMacro *> macros;
+
+    {
+        // fill up "macros" with user defined macros
+        const std::map<std::string,std::string> cfgmap(getcfgmap(cfg));
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = cfgmap.begin(); it != cfgmap.end(); ++it) {
+            std::string s = it->first;
+            if (!it->second.empty())
+                s += " " + it->second;
+            PreprocessorMacro *macro = new PreprocessorMacro(s);
+            macros[it->first] = macro;
+        }
+    }
 
     // Current line number
     unsigned int linenr = 1;
