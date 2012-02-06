@@ -1113,8 +1113,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
         }
 
         // assignment with nonzero constant..
-        if (Token::Match(tok, "[;{}] %var% = - %var% ;") && tok->next()->varId() > 0)
-            notzero.insert(tok->next()->varId());
+        if (Token::Match(tok->previous(), "[;{}] %var% = - %var% ;") && tok->varId() > 0)
+            notzero.insert(tok->varId());
 
         // Inner scope..
         if (Token::simpleMatch(tok, "if (")) {

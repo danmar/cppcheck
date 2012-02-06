@@ -1893,6 +1893,16 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int i, y;\n"
+                        "    if (x) {\n"
+                        "        y = -ENOMEM;\n"
+                        "        if (y != 0) return;\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // for, while
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
