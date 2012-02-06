@@ -1088,6 +1088,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
 
     unsigned int number_of_if = 0;
 
+    // variables that are known to be non-zero
+    std::set<unsigned int> notzero;
+
     for (; tok; tok = tok->next()) {
         // End of scope..
         if (tok->str() == "}") {
@@ -1109,11 +1112,19 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const unsigned int 
             continue;
         }
 
+        // assignment with nonzero constant..
+        if (Token::Match(tok, "[;{}] %var% = - %var% ;") && tok->next()->varId() > 0)
+            notzero.insert(tok->next()->varId());
+
         // Inner scope..
         if (Token::simpleMatch(tok, "if (")) {
             // initialization / usage in condition..
             if (checkIfForWhileHead(tok->next(), varid, ispointer, suppressErrors, bool(number_of_if == 0)))
                 return true;
+
+            // checking if a not-zero variable is zero => bail out
+            if (Token::Match(tok, "if ( %var% )") && notzero.find(tok->tokAt(2)->varId()) != notzero.end())
+                return true;   // this scope is not fully analysed => return true
 
             // goto the {
             tok = tok->next()->link()->next();

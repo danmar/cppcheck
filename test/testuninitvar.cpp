@@ -1889,6 +1889,17 @@ private:
                         "}\n");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
+        // if goto is simplified there might be conditions that are always true
+        checkUninitVar2("void f() {\n"
+                        "    int i;\n"
+                        "    if (x) {\n"
+                        "        int y = -ENOMEM;\n"
+                        "        if (y != 0) return;\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // for, while
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
