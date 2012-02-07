@@ -146,6 +146,7 @@ private:
         TEST_CASE(simplifyKnownVariables43);
         TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
         TEST_CASE(simplifyKnownVariables45);    // ticket #3281 - static constant variable not simplified
+        TEST_CASE(simplifyKnownVariables46);    // ticket #3587 - >>
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
@@ -2262,6 +2263,32 @@ private:
                                 "int array [ 2 ] ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables46() {
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    cin >> x;\n"
+                            "    return x;\n"
+                            "}";
+
+        {
+            const char expected[] = "void f ( ) {\n"
+                                    "int x ; x = 0 ;\n"
+                                    "cin >> x ;\n"
+                                    "return x ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.cpp"));
+        }
+
+        {
+            const char expected[] = "void f ( ) {\n"
+                                    "\n"
+                                    "cin >> 0 ;\n"
+                                    "return 0 ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+        }
     }
 
     void simplifyKnownVariablesBailOutAssign1() {

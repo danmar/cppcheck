@@ -6504,6 +6504,16 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             ret = true;
         }
 
+        // The >> operator is sometimes used to assign a variable in C++
+        if (isCPP() && Token::Match(tok3, (">> " + structname + " %varid%").c_str(), varid)) {
+            // bailout for such code:   ; std :: cin >> i ;
+            const Token *prev = tok3->previous();
+            while (prev && prev->str() != "return" && (prev->isName() || prev->str() == "::"))
+                prev = prev->previous();
+            if (Token::Match(prev, "[;{}]"))
+                break;
+        }
+
         // Variable is used in calculation..
         if (((tok3->previous()->varId() > 0) && Token::Match(tok3, ("& " + structname + " %varid%").c_str(), varid)) ||
             Token::Match(tok3, ("[=+-*/%^|[] " + structname + " %varid% [=?+-*/%^|;])]").c_str(), varid) ||
