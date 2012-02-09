@@ -228,7 +228,7 @@ Example: '-UDEBUG'</para>
                 </glossdef>
               </glossentry>              
             </glosslist>          
-            By default none of the additional checks are enabled. Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunction.
+            By default none of the additional checks are enabled. Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunction. See also --std
           </para>
         </listitem>
       </varlistentry>
@@ -392,28 +392,28 @@ Directory name is matched to all parts of the path.</para>
       <varlistentry>
         <term><option>--std=&lt;id&gt;</option></term>
         <listitem>
-          <para>Enable some environment related checks. The available options are:
+          <para>Enable some standard related checks. The available options are:
             <glosslist>
               <glossentry>
                 <glossterm>posix</glossterm>
                 <glossdef>
-                  <para>Use this if you want to see posix related errors</para>
+                  <para>Checks related to POSIX-specific functionality</para>
                 </glossdef>
               </glossentry>
               <glossentry>
                 <glossterm>c99</glossterm>
                 <glossdef>
-                  <para>Use this if the compiler is C99 compatible</para>
+                  <para>C99 standard related checks</para>
                 </glossdef>
               </glossentry>
               <glossentry>
                 <glossterm>c++11</glossterm>
                 <glossdef>
-                  <para>Use this if the compiler is C++11 compatible. Note: you probably want to also use 'c99'.</para>
+                  <para>C++11 standard related checks</para>
                 </glossdef>
               </glossentry>
             </glosslist>          
-            By default all are disabled. To enable more than one, just use --std more than once: 'cppcheck --std=c99 --std=c++11 file.cpp'
+            Example to enable more than one checks: 'cppcheck --std=c99 --std=posix file.cpp'
           </para>
         </listitem>
       </varlistentry>      
