@@ -5,37 +5,8 @@ ifndef HAVE_RULES
     HAVE_RULES=no
 endif
 
-ifndef COMSPEC
-    ifdef ComSpec
-        #### ComSpec is defined on some WIN32's.
-        COMSPEC=$(ComSpec)
-    endif # ComSpec
-endif # COMSPEC
-
-ifdef COMSPEC
-    #### Maybe Windows
-    ifndef CPPCHK_GLIBCXX_DEBUG
-        CPPCHK_GLIBCXX_DEBUG=
-    endif # !CPPCHK_GLIBCXX_DEBUG
-else # !COMSPEC
-    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-
-    ifeq ($(uname_S),Linux)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # Linux
-
-    ifeq ($(uname_S),GNU/kFreeBSD)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # GNU/kFreeBSD
-
-endif # COMSPEC
-
 ifndef CXXFLAGS
-    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
+    CXXFLAGS=-O2 -DNDEBUG -Wall
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -266,7 +237,7 @@ lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/suppressions.
 lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/suppressions.h lib/path.h lib/cppcheck.h lib/settings.h lib/standards.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/errorlogger.o lib/errorlogger.cpp
 
-lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
+lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/executionpath.o lib/executionpath.cpp
 
 lib/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/errorlogger.h lib/suppressions.h
