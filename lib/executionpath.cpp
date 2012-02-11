@@ -402,6 +402,11 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 if (tok && tok->str() == "if")
                     continue;
 
+                if (!tok) {
+                    ExecutionPath::bailOut(newchecks);
+                    return;
+                }
+
                 // there is no "if"..
                 ExecutionPath::checkScope(tok->next(), checks);
                 tok = tok->link();
