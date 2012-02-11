@@ -1521,6 +1521,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
 
+        // Ticket #1171
+        check("void foo(void* bar) {\n"
+              "  if(strcmp(0, bar) == 0)\n"
+              "    func();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+
         // Ticket #2413 - it's ok to pass NULL to fflush
         check("void foo() {\n"
               "  fflush(NULL);\n"

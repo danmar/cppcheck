@@ -199,14 +199,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scope->access = Private;
                     else if (tok->str() == "protected")
                         scope->access = Protected;
-                    else if (tok->str() == "public")
+                    else
                         scope->access = Public;
 
                     tok = tok->tokAt(2);
                 }
 
                 // class function?
-                else if (tok->previous()->str() != "::" && isFunction(tok, &funcStart, &argStart)) {
+                else if (tok->previous()->str() != "::" && isFunction(tok, scope, &funcStart, &argStart)) {
                     Function function;
 
                     // save the function definition argument start '('
@@ -347,12 +347,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
 
                 // nested class or friend function?
-                else if (tok->previous()->str() == "::" && isFunction(tok, &funcStart, &argStart)) {
+                else if (tok->previous()->str() == "::" && isFunction(tok, scope, &funcStart, &argStart)) {
                     /** @todo check entire qualification for match */
                     Scope * nested = scope->findInNestedListRecursive(tok->strAt(-2));
 
                     if (nested)
-                        addFunction(&scope, &tok, argStart);
+                        addClassFunction(&scope, &tok, argStart);
                     else {
                         /** @todo handle friend functions */
                     }
@@ -373,54 +373,23 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 const Token *argStart = 0;
 
                 // function?
-                if (isFunction(tok, &funcStart, &argStart)) {
+                if (isFunction(tok, scope, &funcStart, &argStart)) {
                     // has body?
                     if (Token::Match(argStart->link(), ") const| {|:")) {
                         Scope *old_scope = scope;
 
                         // class function
                         if (tok->previous() && tok->previous()->str() == "::")
-                            addFunction(&scope, &tok, argStart);
+                            addClassFunction(&scope, &tok, argStart);
 
                         // class destructor
                         else if (tok->previous() && tok->previous()->str() == "~" &&
                                  tok->tokAt(-2) && tok->strAt(-2) == "::")
-                            addFunction(&scope, &tok, argStart);
+                            addClassFunction(&scope, &tok, argStart);
 
                         // regular function
-                        else {
-                            Function function;
-
-                            // save the function definition argument start '('
-                            function.argDef = argStart;
-
-                            // save the access type
-                            function.access = Public;
-
-                            // save the function name location
-                            function.tokenDef = funcStart;
-                            function.token = funcStart;
-
-                            function.isInline = false;
-                            function.hasBody = true;
-                            function.arg = function.argDef;
-                            function.type = Function::eFunction;
-
-                            // find start of function '{'
-                            const Token *start = tok;
-                            while (start && start->str() != "{")
-                                start = start->next();
-
-                            // save start of function
-                            function.start = start;
-
-                            addNewFunction(&scope, &tok);
-
-                            if (scope) {
-                                old_scope->functionList.push_back(function);
-                                scope->function = &old_scope->functionList.back();
-                            }
-                        }
+                        else
+                            addGlobalFunction(scope, tok, argStart, funcStart);
 
                         // syntax error
                         if (!scope) {
@@ -432,47 +401,17 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // function returning function pointer with body
                     else if (Token::simpleMatch(argStart->link(), ") ) (") &&
                              Token::Match(argStart->link()->linkAt(2), ") const| {")) {
-                        const Token *tok1 = funcStart;
+                        tok = funcStart;
                         Scope *old_scope = scope;
 
                         // class function
-                        if (tok1->previous()->str() == "::")
-                            addFunction(&scope, &tok1, argStart);
+                        if (tok->previous()->str() == "::")
+                            addClassFunction(&scope, &tok, argStart);
 
                         // regular function
                         else {
-                            Function function;
-
-                            // save the function definition argument start '('
-                            function.argDef = argStart;
-
-                            // save the access type
-                            function.access = Public;
-
-                            // save the function name location
-                            function.tokenDef = funcStart;
-                            function.token = funcStart;
-
-                            function.isInline = false;
-                            function.hasBody = true;
-                            function.arg = function.argDef;
-                            function.type = Function::eFunction;
-                            function.retFuncPtr = true;
-
-                            // find start of function '{'
-                            const Token *start = tok;
-                            while (start && start->str() != "{")
-                                start = start->next();
-
-                            // save start of function
-                            function.start = start;
-
-                            addNewFunction(&scope, &tok1);
-
-                            if (scope) {
-                                old_scope->functionList.push_back(function);
-                                scope->function = &old_scope->functionList.back();
-                            }
+                            Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
+                            function->retFuncPtr = true;
                         }
 
                         // syntax error?
@@ -480,8 +419,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             scope = old_scope;
                             break;
                         }
-
-                        tok = tok1;
                     }
 
                     // function prototype
@@ -810,7 +747,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     }
 }
 
-bool SymbolDatabase::isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const
+bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart) const
 {
     // function returning function pointer? '... ( ... %var% ( ... ))( ... ) {'
     if (tok->str() == "(" &&
@@ -825,7 +762,10 @@ bool SymbolDatabase::isFunction(const Token *tok, const Token **funcStart, const
     }
 
     // regular function?
-    else if (Token::Match(tok, "%var% (") &&
+    else if (Token::Match(tok, "%var% (") && tok->previous() &&
+             (tok->previous()->isName() || tok->previous()->str() == "&" || tok->previous()->str() == "*" || // Either a return type in front of tok
+              tok->previous()->str() == "::" || tok->previous()->str() == "~" || // or a scope qualifier in front of tok
+              outerScope->isClassOrStruct()) && // or a ctor/dtor
              (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
               Token::Match(tok->next()->link(), ") : %var% (|::"))) {
         *funcStart = tok;
@@ -848,10 +788,18 @@ bool SymbolDatabase::argsMatch(const Scope *scope, const Token *first, const Tok
 
         // skip default value assignment
         else if (first->next()->str() == "=") {
-            first = first->tokAt(2);
+            first = first->nextArgument();
 
-            if (second->next()->str() == "=")
-                second = second->tokAt(2);
+            if (second->next()->str() == "=") {
+                second = second->nextArgument();
+                if (!first || !second) { // End of argument list (first or second)
+                    match = !first && !second;
+                    break;
+                }
+            } else if (!first) { // End of argument list (first)
+                match = second->next() && second->next()->str() == ")";
+                break;
+            }
         }
 
         // definition missing variable name
@@ -877,10 +825,6 @@ bool SymbolDatabase::argsMatch(const Scope *scope, const Token *first, const Tok
             // skip variable names
             first = first->next();
             second = second->next();
-
-            // skip default value assignment
-            if (first->next()->str() == "=")
-                first = first->tokAt(2);
         }
 
         // variable with class path
@@ -920,7 +864,45 @@ bool SymbolDatabase::argsMatch(const Scope *scope, const Token *first, const Tok
     return match;
 }
 
-void SymbolDatabase::addFunction(Scope **scope, const Token **tok, const Token *argStart)
+Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
+{
+    Function function;
+
+    // save the function definition argument start '('
+    function.argDef = argStart;
+
+    // save the access type
+    function.access = Public;
+
+    // save the function name location
+    function.tokenDef = funcStart;
+    function.token = funcStart;
+
+    function.isInline = false;
+    function.hasBody = true;
+    function.arg = function.argDef;
+    function.type = Function::eFunction;
+
+    // find start of function '{'
+    const Token *start = tok;
+    while (start && start->str() != "{")
+        start = start->next();
+
+    // save start of function
+    function.start = start;
+
+    Scope* old_scope = scope;
+    addNewFunction(&scope, &tok);
+
+    if (scope) {
+        old_scope->functionList.push_back(function);
+        scope->function = &old_scope->functionList.back();
+        return scope->function;
+    }
+    return 0;
+}
+
+void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const Token *argStart)
 {
     int count = 0;
     bool added = false;
@@ -1880,29 +1862,25 @@ const Variable *Scope::getVariable(const std::string &varname) const
     return NULL;
 }
 
-inline const Token* skipScopeIdentifiers(const Token* tok)
+static const Token* skipScopeIdentifiers(const Token* tok)
 {
-    const Token* ret = tok;
-
-    if (Token::simpleMatch(ret, "::")) {
-        ret = ret->next();
+    if (Token::simpleMatch(tok, "::")) {
+        tok = tok->next();
     }
-    while (Token::Match(ret, "%type% ::")) {
-        ret = ret->tokAt(2);
+    while (Token::Match(tok, "%type% ::")) {
+        tok = tok->tokAt(2);
     }
 
-    return ret;
+    return tok;
 }
 
-inline const Token* skipPointers(const Token* tok)
+static const Token* skipPointers(const Token* tok)
 {
-    const Token* ret = tok;
-
-    while (Token::Match(ret, "*|&")) {
-        ret = ret->next();
+    while (Token::Match(tok, "*|&")) {
+        tok = tok->next();
     }
 
-    return ret;
+    return tok;
 }
 
 bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer, bool &isReference) const
@@ -1928,11 +1906,11 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         localVarTok = skipPointers(localTypeTok->next());
     }
 
-    if (isSimpleVariable(localVarTok)) {
+    if (Token::Match(localVarTok, "%var% ;|=")) {
         vartok = localVarTok;
         typetok = localTypeTok;
         isArray = false;
-    } else if (isArrayVariable(localVarTok)) {
+    } else if (Token::Match(localVarTok, "%var% [") && localVarTok->str() != "operator") {
         vartok = localVarTok;
         typetok = localTypeTok;
         isArray = true;
@@ -1954,16 +1932,6 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     isReference = vartok && vartok->strAt(-1) == "&";
 
     return NULL != vartok;
-}
-
-bool Scope::isSimpleVariable(const Token* tok) const
-{
-    return Token::Match(tok, "%var% ;|=");
-}
-
-bool Scope::isArrayVariable(const Token* tok) const
-{
-    return Token::Match(tok, "%var% [") && tok->next()->str() != "operator";
 }
 
 bool Scope::findClosingBracket(const Token* tok, const Token*& close) const

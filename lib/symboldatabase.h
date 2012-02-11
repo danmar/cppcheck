@@ -530,8 +530,6 @@ private:
      * @return true if tok points to a variable declaration, false otherwise
      */
     bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer, bool &isReference) const;
-    bool isSimpleVariable(const Token* tok) const;
-    bool isArrayVariable(const Token* tok) const;
     bool findClosingBracket(const Token* tok, const Token*& close) const;
 };
 
@@ -589,10 +587,11 @@ private:
     // Needed by Borland C++:
     friend class Scope;
 
-    void addFunction(Scope **info, const Token **tok, const Token *argStart);
+    void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
+    Function* addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
     const Token *initBaseInfo(Scope *info, const Token *tok);
-    bool isFunction(const Token *tok, const Token **funcStart, const Token **argStart) const;
+    bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart) const;
 
     /** class/struct types */
     std::set<std::string> classAndStructTypes;

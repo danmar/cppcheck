@@ -226,7 +226,7 @@ private:
 
     // ticket #3121
     void test_declared_function() {
-        check("ftime ( int a )\n"
+        check("int ftime ( int a )\n"
               "{\n"
               "    return a;\n"
               "}\n"

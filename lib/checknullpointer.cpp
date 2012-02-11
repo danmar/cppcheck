@@ -115,28 +115,31 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames2_nullptr.insert("modf");
     }
 
+    if (Token::Match(&tok, "%var% ( )") || !tok.tokAt(2))
+        return;
+
+    const Token* firstParam = tok.tokAt(2);
+    const Token* secondParam = firstParam->nextArgument();
+
     // 1st parameter..
-    if ((Token::Match(&tok, "%var% ( %var% ,|)") && tok.tokAt(2)->varId() > 0) ||
-        (value == 0 && Token::Match(&tok, "%var% ( 0 ,|)"))) {
+    if ((Token::Match(firstParam, "%var% ,|)") && firstParam->varId() > 0) ||
+        (value == 0 && Token::Match(firstParam, "0 ,|)"))) {
         if (functionNames1_all.find(tok.str()) != functionNames1_all.end())
-            var.push_back(tok.tokAt(2));
+            var.push_back(firstParam);
         else if (value == 0 && functionNames1_nullptr.find(tok.str()) != functionNames1_nullptr.end())
-            var.push_back(tok.tokAt(2));
-        else if (value != 0 && Token::simpleMatch(&tok, "fflush"))
-            var.push_back(tok.tokAt(2));
-        else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && tok.strAt(4) != "0") // Only if length is not zero
-            var.push_back(tok.tokAt(2));
+            var.push_back(firstParam);
+        else if (value != 0 && tok.str() == "fflush")
+            var.push_back(firstParam);
+        else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
+            var.push_back(firstParam);
     }
 
     // 2nd parameter..
-    if (Token::Match(&tok, "%var% ( !!)")) {
-        const Token* secondParameter = tok.tokAt(2)->nextArgument();
-        if (secondParameter && ((value == 0 && secondParameter->str() == "0") || (Token::Match(secondParameter, "%var%") && secondParameter->varId() > 0))) {
-            if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
-                var.push_back(secondParameter);
-            else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
-                var.push_back(secondParameter);
-        }
+    if (secondParam && ((value == 0 && secondParam->str() == "0") || (Token::Match(secondParam, "%var%") && secondParam->varId() > 0))) {
+        if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
+            var.push_back(secondParam);
+        else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
+            var.push_back(secondParam);
     }
 
     if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf")) {
@@ -145,25 +148,22 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         bool scan = Token::Match(&tok, "scanf|sscanf|fscanf");
 
         if (Token::Match(&tok, "printf|scanf ( %str%")) {
-            formatString = tok.strAt(2);
-            if (tok.strAt(3) == ",")
-                argListTok = tok.tokAt(4);
-            else
-                argListTok = 0;
-        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf ( %any%")) {
-            const Token* formatStringTok = tok.tokAt(2)->nextArgument(); // Find second parameter (format string)
-            if (formatStringTok && Token::Match(formatStringTok, "%str%")) {
+            formatString = firstParam->strValue();
+            argListTok = secondParam;
+        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf")) {
+            const Token* formatStringTok = secondParam; // Find second parameter (format string)
+            if (formatStringTok && formatStringTok->str()[0] == '"') {
                 argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
-                formatString = formatStringTok->str();
+                formatString = formatStringTok->strValue();
             }
-        } else if (Token::Match(&tok, "snprintf|fnprintf ( %any%")) {
-            const Token* formatStringTok = tok.tokAt(2);
-            for (int i = 0; i < 2 && formatStringTok; i++) {
+        } else if (Token::Match(&tok, "snprintf|fnprintf")) {
+            const Token* formatStringTok = secondParam;
+            for (int i = 0; i < 1 && formatStringTok; i++) {
                 formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
             }
-            if (formatStringTok && Token::Match(formatStringTok, "%str%")) {
+            if (formatStringTok && formatStringTok->str()[0] == '"') {
                 argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
-                formatString = formatStringTok->str();
+                formatString = formatStringTok->strValue();
             }
         }
 
@@ -191,7 +191,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                         continue;
 
                     if ((*i == 'n' || *i == 's' || scan) && (!scan || value == 0)) {
-                        if ((value == 0 && argListTok->str() == "0") || (Token::Match(argListTok, "%var%") && argListTok->varId() > 0)) {
+                        if ((value == 0 && argListTok->str() == "0") || (argListTok->varId() > 0)) {
                             var.push_back(argListTok);
                         }
                     }
@@ -1026,7 +1026,13 @@ void CheckNullPointer::nullConstantDereference()
             else if (Token::Match(tok, "0 [") && (tok->previous()->str() != "&" || !Token::Match(tok->next()->link()->next(), "[.(]")))
                 nullPointerError(tok);
 
-            else if (Token::Match(tok->previous(), "[={};] %var% (")) {
+            else if (Token::Match(tok->previous(), "!!. %var% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
+                if (Token::Match(tok->tokAt(2), "0 )")) {
+                    const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                    if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+                        nullPointerError(tok);
+                }
+
                 std::list<const Token *> var;
                 parseFunctionCall(*tok, var, 0);
 
@@ -1038,11 +1044,6 @@ void CheckNullPointer::nullConstantDereference()
                 }
             } else if (Token::simpleMatch(tok, "std :: string ( 0 )"))
                 nullPointerError(tok);
-            else if (Token::Match(tok, "%var% ( 0 )")) {
-                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
-                    nullPointerError(tok);
-            }
 
             unsigned int ovarid = 0;
             if (Token::Match(tok, "0 ==|!= %var%"))
