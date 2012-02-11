@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-  <?define ProductName = "Cppcheck 1.52" ?>
+  <?define ProductName = "Cppcheck 1.53" ?>
   <?define ProductNameShort = "Cppcheck" ?>
-  <?define ProductVersion = "1.52.0" ?>
+  <?define ProductVersion = "1.53.0" ?>
 
   <?define ProductManufacturer = "The Cppcheck team" ?>
   <?define ProductDescription = "Cppcheck is a tool for static analysis of C/C++ code" ?>
