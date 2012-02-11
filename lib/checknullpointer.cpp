@@ -839,13 +839,17 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
         // vartok : token for the variable
         const Token *vartok = 0;
-        if (Token::Match(tok, "( ! %var% )|&&"))
+        const Token *checkConditionStart = 0;
+        if (Token::Match(tok, "( ! %var% )|&&")) {
             vartok = tok->tokAt(2);
-        else if (Token::Match(tok, "( %var% )|&&"))
+            checkConditionStart = vartok->next();
+        } else if (Token::Match(tok, "( %var% )|&&")) {
             vartok = tok->next();
-        else if (Token::Match(tok, "( ! ( %var% ="))
+        } else if (Token::Match(tok, "( ! ( %var% =")) {
             vartok = tok->tokAt(3);
-        else
+            if (Token::Match(tok->tokAt(2)->link(), ") &&"))
+                checkConditionStart = tok->tokAt(2)->link();
+        } else
             continue;
 
         // variable id for pointer
@@ -853,16 +857,41 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         if (varid == 0)
             continue;
 
-        const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
         // Check if variable is a pointer
+        const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
         if (!var || !var->isPointer())
             continue;
 
         if (Token::Match(vartok->next(), "&& ( %varid% =", varid))
             continue;
 
+        // Name and line of the pointer
+        const std::string &pointerName = vartok->str();
+        const unsigned int linenr = vartok->linenr();
+
         // if this is true then it is known that the pointer is null
         bool null = true;
+
+        // Check the condition (eg. ( !x && x->i )
+        if (checkConditionStart) {
+            const Token * const conditionEnd = tok->link();
+            for (const Token *tok2 = checkConditionStart; tok2 != conditionEnd; tok2 = tok2->next()) {
+                // If we hit a || operator, abort
+                if (Token::Match(tok2, "%oror%", varid)) {
+                    break;
+                }
+                // Pointer is used
+                else if (Token::Match(tok2, "* %varid%", varid)) {
+                    nullPointerError(tok2->tokAt(2), pointerName, linenr, false);
+                    break;
+                }
+                // Pointer is used
+                else if (Token::Match(tok2, "%varid% .", varid)) {
+                    nullPointerError(tok2, pointerName, linenr, false);
+                    break;
+                }
+            }
+        }
 
         // start token = inside the if-body
         const Token *tok1 = i->classStart;
@@ -876,10 +905,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             if (!tok1)
                 continue;
         }
-
-        // Name and line of the pointer
-        const std::string &pointerName = vartok->str();
-        const unsigned int linenr = vartok->linenr();
 
         unsigned int indentlevel = 0;
 

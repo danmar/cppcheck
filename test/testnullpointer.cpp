@@ -1478,6 +1478,59 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // check, assign and use
+        check("void f() {\n"
+              "    char *p;\n"
+              "    if (p == 0 && (p = malloc(10)) != a && (*p = a)) {\n"
+              "        *p = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // check, and use
+        check("void f() {\n"
+              "    char *p;\n"
+              "    if (p == 0 && (*p = 0)) {\n"
+              "        return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 3\n", errout.str());
+
+        // check, and use
+        check("void f() {\n"
+              "    struct foo *p;\n"
+              "    if (p == 0 && p->x == 10) {\n"
+              "        return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 3\n", errout.str());
+
+        // check, and use
+        check("void f() {\n"
+              "    struct foo *p;\n"
+              "    if (p == 0 || p->x == 10) {\n"
+              "        return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // check, and use
+        check("void f() {\n"
+              "    char *p;\n"
+              "    if ((p = malloc(10)) == NULL && (*p = a)) {\n"
+              "        return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 3\n", errout.str());
+
+        // check, and use
+        check("void f(struct X *p, int x) {\n"
+              "    if (!p && x==1 || p && p->x==0) {\n"
+              "        return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         {
             const char code[] = "void f(Fred *fred) {\n"
                                 "    if (fred == NULL) { }\n"
