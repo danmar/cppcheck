@@ -215,6 +215,7 @@ private:
         TEST_CASE(varid_in_class2);
         TEST_CASE(varid_in_class3);     // #3092 - shadow variable in member function
         TEST_CASE(varid_in_class4);     // #3271 - public: class C;
+        TEST_CASE(varid_in_class5);     // #3584 - std::vector<::FOO::B> b;
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
@@ -3509,6 +3510,17 @@ private:
                       "1: class Foo {\n"
                       "2: public: class C ;\n"
                       "3: } ;\n",
+                      tokenizeDebugListing(code));
+    }
+
+    void varid_in_class5() {
+        const char code[] = "struct Foo {\n"
+                            "    std::vector<::X> v;\n"
+                            "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct Foo {\n"
+                      "2: std :: vector < :: X > v@1 ;\n"
+                      "3: }\n",
                       tokenizeDebugListing(code));
     }
 

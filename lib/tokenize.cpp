@@ -2937,6 +2937,9 @@ void Tokenizer::setVarId()
                 if (tok2 && tok2->str() == "const")
                     tok2 = tok2->next();
 
+                if (tok2 && tok2->str() == "::")
+                    tok2 = tok2->next();
+
                 while (Token::Match(tok2, "%var% ::"))
                     tok2 = tok2->tokAt(2);
 
