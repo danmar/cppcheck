@@ -25,7 +25,7 @@
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
     mCurrentLanguage("en"),
-    mTranslator(new QTranslator(this))
+    mTranslator(NULL)
 {
     // Add our available languages
     // Keep this list sorted
@@ -40,15 +40,6 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Serbian"), "cppcheck_sr");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Spanish"), "cppcheck_es");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Swedish"), "cppcheck_sv");
-
-    //Load English as a fallback language
-    QTranslator *english = new QTranslator();
-    if (english->load("cppcheck_en")) {
-        qApp->installTranslator(english);
-    } else {
-        qDebug() << "Failed to load English translation!";
-        delete english;
-    }
 }
 
 TranslationHandler::~TranslationHandler()
@@ -71,6 +62,8 @@ bool TranslationHandler::SetLanguage(const QString &code, QString &error)
         //Just remove all extra translators
         if (mTranslator) {
             qApp->removeTranslator(mTranslator);
+            delete mTranslator;
+            mTranslator = NULL;
         }
 
         mCurrentLanguage = code;
@@ -83,6 +76,10 @@ bool TranslationHandler::SetLanguage(const QString &code, QString &error)
         error = QObject::tr("Unknown language specified!");
         return false;
     }
+
+    // Make sure there is a translator
+    if (!mTranslator)
+        mTranslator = new QTranslator(this);
 
     //Load the new language
     if (!mTranslator->load(mTranslations[index].mFilename)) {

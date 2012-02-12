@@ -34,7 +34,6 @@ FORMS = about.ui \
         selectfilesdialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
-                cppcheck_en.ts \
                 cppcheck_es.ts \
                 cppcheck_fi.ts \
                 cppcheck_fr.ts \
