@@ -205,41 +205,43 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
+    // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
+    fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
+         << "# The _GLIBCXX_DEBUG define doesn't work in cygin or other Win32 systems.\n"
+         << "ifndef COMSPEC\n"
+         << "    ifdef ComSpec\n"
+         << "        #### ComSpec is defined on some WIN32's.\n"
+         << "        COMSPEC=$(ComSpec)\n"
+         << "    endif # ComSpec\n"
+         << "endif # COMSPEC\n"
+         << "\n"
+         << "ifdef COMSPEC\n"
+         << "    #### Maybe Windows\n"
+         << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
+         << "        CPPCHK_GLIBCXX_DEBUG=\n"
+         << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
+         << "else # !COMSPEC\n"
+         << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
+         << "\n"
+         << "    ifeq ($(uname_S),Linux)\n"
+         << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
+         << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
+         << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
+         << "    endif # Linux\n"
+         << "\n"
+         << "    ifeq ($(uname_S),GNU/kFreeBSD)\n"
+         << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
+         << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
+         << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
+         << "    endif # GNU/kFreeBSD\n"
+         << "\n"
+         << "endif # COMSPEC\n"
+         << "\n";
+
     // Makefile settings..
     if (release) {
         makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
     } else {
-        // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
-        fout << "ifndef COMSPEC\n"
-             << "    ifdef ComSpec\n"
-             << "        #### ComSpec is defined on some WIN32's.\n"
-             << "        COMSPEC=$(ComSpec)\n"
-             << "    endif # ComSpec\n"
-             << "endif # COMSPEC\n"
-             << "\n"
-             << "ifdef COMSPEC\n"
-             << "    #### Maybe Windows\n"
-             << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
-             << "        CPPCHK_GLIBCXX_DEBUG=\n"
-             << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
-             << "else # !COMSPEC\n"
-             << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
-             << "\n"
-             << "    ifeq ($(uname_S),Linux)\n"
-             << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
-             << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
-             << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
-             << "    endif # Linux\n"
-             << "\n"
-             << "    ifeq ($(uname_S),GNU/kFreeBSD)\n"
-             << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
-             << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
-             << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
-             << "    endif # GNU/kFreeBSD\n"
-             << "\n"
-             << "endif # COMSPEC\n"
-             << "\n";
-
         // TODO: add more compiler warnings.
         // -Wlogical-op       : doesn't work on older GCC
         // -Wconversion       : too many warnings
