@@ -381,32 +381,6 @@ void Tokenizer::createTokens(std::istream &code)
         } else if (CurrentToken.empty() && ch == '.' && std::isdigit(code.peek())) {
             // tokenize .125 into 0.125
             CurrentToken = "0";
-        } else if (ch=='&' && code.peek() == '&') {
-            if (!CurrentToken.empty()) {
-                addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
-                if (!CurrentToken.empty())
-                    _tokensBack->setExpandedMacro(expandedMacro);
-                CurrentToken.clear();
-            }
-
-            // &&
-            ch = (char)code.get();
-            addtoken("&&", lineno, FileIndex, true);
-            _tokensBack->setExpandedMacro(expandedMacro);
-            continue;
-        } else if (ch==':' && CurrentToken.empty() && code.peek() == ' ') {
-            // :
-            addtoken(":", lineno, FileIndex, true);
-            _tokensBack->setExpandedMacro(expandedMacro);
-            CurrentToken.clear();
-            continue;
-        } else if (ch==':' && CurrentToken.empty() && code.peek() == ':') {
-            // ::
-            ch = (char)code.get();
-            addtoken("::", lineno, FileIndex, true);
-            _tokensBack->setExpandedMacro(expandedMacro);
-            CurrentToken.clear();
-            continue;
         } else if (strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch)) {
             if (CurrentToken == "#file") {
                 // Handle this where strings are handled
@@ -440,8 +414,8 @@ void Tokenizer::createTokens(std::istream &code)
             }
 
             CurrentToken += ch;
-            // Add "++", "--" or ">>" token
-            if ((ch == '+' || ch == '-' || ch == '>') && (code.peek() == ch))
+            // Add "++", "--", ">>" or ... token
+            if (strchr("+-<>=:&|", ch) && (code.peek() == ch))
                 CurrentToken += (char)code.get();
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             _tokensBack->setExpandedMacro(expandedMacro);
@@ -2027,19 +2001,8 @@ bool Tokenizer::tokenize(std::istream &code,
         if (tok->str().length() == 1 && tok->next()->str().length() == 1) {
             const char c2 = tok->next()->str()[0];
 
-            // combine equal tokens..
-            if (c1 == c2 && (c1 == '<' || c1 == '|' || c1 == ':')) {
-                tok->str(tok->str() + c2);
-                tok->deleteNext();
-                if (c1 == '<' && Token::simpleMatch(tok->next(), "=")) {
-                    tok->str("<<=");
-                    tok->deleteNext();
-                }
-                continue;
-            }
-
             // combine +-*/ and =
-            else if (c2 == '=' && (strchr("+-*/%&|^=!<>", c1))) {
+            if (c2 == '=' && (strchr("+-*/%&|^=!<>", c1))) {
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
                 continue;
@@ -2055,6 +2018,11 @@ bool Tokenizer::tokenize(std::istream &code,
 
         else if (tok->str() == ">>" && tok->next()->str() == "=") {
             tok->str(">>=");
+            tok->deleteNext();
+        }
+
+        else if (tok->str() == "<<" && tok->next()->str() == "=") {
+            tok->str("<<=");
             tok->deleteNext();
         }
 

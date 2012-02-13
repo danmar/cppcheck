@@ -1763,7 +1763,7 @@ private:
                             "\n"
                             "template<typename T> inline B<T> h() { return B<T>(); }\n";
 
-        ASSERT_EQUALS(";", sizeof_(code));
+        ASSERT_EQUALS("", sizeof_(code));
 
         ASSERT_EQUALS("class A { } ;", sizeof_("class A{ template<typename T> int foo(T d);};"));
     }
@@ -2279,7 +2279,7 @@ private:
                                 "{ }";
 
             // The expected result..
-            const std::string expected(";");
+            const std::string expected("");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
 
@@ -4487,7 +4487,7 @@ private:
     void simplifyTypedef39() {
         const char code[] = "typedef int A;\n"
                             "template <const A, volatile A>::value;";
-        const char expected[] = ";";
+        const char expected[] = "";
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
@@ -5253,7 +5253,7 @@ private:
 
     void simplifyTypedef75() { // ticket #2426
         const char code[] = "typedef _Packed struct S { long l; }; \n";
-        const std::string expected = ";";
+        const std::string expected = "";
         ASSERT_EQUALS(expected, sizeof_(code));
         ASSERT_EQUALS("", errout.str());
     }
@@ -6950,7 +6950,7 @@ private:
 
     void enum20() { // ticket #2600 segmentation fault
         const char code[] = "enum { const }\n";
-        ASSERT_EQUALS(";", tok(code, false));
+        ASSERT_EQUALS("", tok(code, false));
     }
 
     void enum21() { // ticket #2720 syntax error

@@ -118,7 +118,7 @@ std::string Token::strValue() const
 {
     assert(_str.length() >= 2);
     assert(_str[0] == '"');
-    assert(_str[_str.length()-1] == '"');
+    assert(_str.back() == '"');
     return _str.substr(1, _str.length() - 2);
 }
 
@@ -138,7 +138,7 @@ void Token::deleteNext(unsigned long index)
 
 void Token::deleteThis()
 {
-    if (_next) {
+    if (_next) { // Copy next to this and delete next
         _str = _next->_str;
         _isName = _next->_isName;
         _isNumber = _next->_isNumber;
@@ -158,14 +158,34 @@ void Token::deleteThis()
             _link->link(this);
 
         deleteNext();
-    } else if (_previous) {
-        // This should never be used for tokens
-        // at the end of the list
-        str(";");
+    } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
+        _str = _previous->_str;
+        _isName = _previous->_isName;
+        _isNumber = _previous->_isNumber;
+        _isBoolean = _previous->_isBoolean;
+        _isUnsigned = _previous->_isUnsigned;
+        _isSigned = _previous->_isSigned;
+        _isPointerCompare = _previous->_isPointerCompare;
+        _isLong = _previous->_isLong;
+        _isUnused = _previous->_isUnused;
+        _isStandardType = _previous->_isStandardType;
+        _isExpandedMacro = _previous->_isExpandedMacro;
+        _varId = _previous->_varId;
+        _fileIndex = _previous->_fileIndex;
+        _linenr = _previous->_linenr;
+        _link = _previous->_link;
+        if (_link)
+            _link->link(this);
+
+        Token* toDelete = _previous;
+        _previous = _previous->_previous;
+        _previous->_next = this;
+
+        delete toDelete;
     } else {
         // We are the last token in the list, we can't delete
-        // ourselves, so just make us ;
-        str(";");
+        // ourselves, so just make us empty
+        str("");
     }
 }
 
@@ -839,25 +859,31 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], const Toke
 
 void Token::insertToken(const std::string &tokenStr)
 {
-    Token *newToken = new Token(tokensBack);
+    Token *newToken;
+    if (_str == "")
+        newToken = this;
+    else
+        newToken = new Token(tokensBack);
     newToken->str(tokenStr);
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
     newToken->_progressValue = _progressValue;
-    if (this->next()) {
-        newToken->next(this->next());
-        newToken->next()->previous(newToken);
-    } else if (tokensBack) {
-        *tokensBack = newToken;
-    }
 
-    this->next(newToken);
-    newToken->previous(this);
+    if (newToken != this) {
+        if (this->next()) {
+            newToken->next(this->next());
+            newToken->next()->previous(newToken);
+        } else if (tokensBack) {
+            *tokensBack = newToken;
+        }
+        this->next(newToken);
+        newToken->previous(this);
+    }
 }
 
 void Token::eraseTokens(Token *begin, const Token *end)
 {
-    if (!begin)
+    if (!begin || begin == end)
         return;
 
     while (begin->next() && begin->next() != end) {
@@ -901,6 +927,8 @@ std::string Token::stringify(const Token* end) const
     ret << str();
 
     for (const Token *tok = this->next(); tok && tok != end; tok = tok->next()) {
+        if (tok->str() == "")
+            continue;
         if (tok->isUnsigned())
             ret << " unsigned";
         else if (tok->isSigned())
