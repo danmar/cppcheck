@@ -49,6 +49,7 @@ private:
         TEST_CASE(nullpointer13); // ticket #1708
         TEST_CASE(nullpointer14);
         TEST_CASE(nullpointer15); // #3560 (fp: return p ? f(*p) : f(0))
+        TEST_CASE(nullpointer16); // #3591
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -1196,6 +1197,15 @@ private:
               "    char *p = 0;\n"
               "    if (x) p = \"abcd\";\n"
               "    return p ? f(*p) : f(0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer16() {  // #3591
+        check("void foo() {\n"
+              "    int *p = 0;\n"
+              "    bar(&p);\n"
+              "    *p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

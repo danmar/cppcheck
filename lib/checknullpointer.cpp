@@ -1208,7 +1208,7 @@ private:
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
             else if (!deref &&
-                     !tok.previous()->isOp() && !tok.previous()->isAssignmentOp() &&
+                     (!tok.previous()->isOp() || tok.previous()->str() == "&") && !tok.previous()->isAssignmentOp() &&
                      (!tok.next()->isOp() || tok.next()->str() == ">>"))
                 bailOutVar(checks, tok.varId()); // If its possible that the pointers value changes, bail out.
         }
