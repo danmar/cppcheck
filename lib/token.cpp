@@ -118,7 +118,7 @@ std::string Token::strValue() const
 {
     assert(_str.length() >= 2);
     assert(_str[0] == '"');
-    assert(_str.back() == '"');
+    assert(_str[_str.length()-1] == '"');
     return _str.substr(1, _str.length() - 2);
 }
 
