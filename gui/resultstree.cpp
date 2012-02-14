@@ -134,7 +134,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(line.file, hide),
+    QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(line.file, item.file0, hide),
                              line,
                              hide,
                              SeverityToIcon(line.severity));
@@ -152,6 +152,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     data["line"]  = item.lines[0];
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
+    data["file0"] = item.file0;
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
@@ -303,6 +304,25 @@ void ResultsTree::Clear()
     mModel.removeRows(0, mModel.rowCount());
 }
 
+void ResultsTree::Clear(const QString &filename)
+{
+    const QString stripped = StripPath(filename, false);
+
+    for (int i = 0; i < mModel.rowCount(); ++i) {
+        const QStandardItem *item = mModel.item(i, 0);
+        if (!item)
+            continue;
+
+        QVariantMap data = item->data().toMap();
+        if (stripped == data["file"].toString() ||
+            filename == data["file0"].toString()) {
+            mModel.removeRow(i);
+            break;
+        }
+    }
+}
+
+
 void ResultsTree::LoadSettings()
 {
     for (int i = 0; i < mModel.columnCount(); i++) {
@@ -433,7 +453,7 @@ void ResultsTree::RefreshTree()
     }
 }
 
-QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, bool hide)
+QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, const QString &file0, bool hide)
 {
     QString name = StripPath(fullpath, false);
     // Since item has path with native separators we must use path with
@@ -452,6 +472,7 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, bool hide)
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["file"] = fullpath;
+    data["file0"] = file0;
     item->setData(QVariant(data));
     mModel.appendRow(item);
 
@@ -828,6 +849,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         item.message = data["message"].toString();
         item.errorId = data["id"].toString();
         item.inconclusive = data["inconclusive"].toBool();
+        item.file0 = data["file0"].toString();
         QString file = StripPath(data["file"].toString(), true);
         unsigned int line = data["line"].toUInt();
 

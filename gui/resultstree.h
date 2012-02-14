@@ -67,6 +67,11 @@ public:
     void Clear();
 
     /**
+     * @brief Clear errors for a specific file from the tree
+     */
+    void Clear(const QString &filename);
+
+    /**
     * @brief Function to show/hide certain type of errors
     * Refreshes the tree.
     *
@@ -339,10 +344,11 @@ protected:
     * @brief Ensures there's a item in the model for the specified file
     *
     * @param fullpath Full path to the file item.
+    * @param file0 Source file
     * @param hide is the error (we want this file item for) hidden?
     * @return QStandardItem to be used as a parent for all errors for specified file
     */
-    QStandardItem *EnsureFileItem(const QString &fullpath, bool hide);
+    QStandardItem *EnsureFileItem(const QString &fullpath, const QString &file0, bool hide);
 
     /**
     * @brief Show a file item

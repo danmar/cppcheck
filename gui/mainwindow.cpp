@@ -582,12 +582,16 @@ void MainWindow::ProgramSettings()
 
 void MainWindow::ReCheck()
 {
-    ClearResults();
-    CheckLockDownUI(); // lock UI while checking
+    const QStringList files = mThread->GetReCheckFiles();
+    if (files.empty())
+        return;
 
-    const int filesCount = mThread->GetPreviousFilesCount();
-    Q_ASSERT(filesCount > 0); // If no files should not be able to recheck
-    mUI.mResults->CheckingStarted(filesCount);
+    // Clear results for changed files
+    for (int i = 0; i < files.size(); ++i)
+        mUI.mResults->Clear(files[i]);
+
+    CheckLockDownUI(); // lock UI while checking
+    mUI.mResults->CheckingStarted(files.size());
 
     if (mProject)
         qDebug() << "Rechecking project file" << mProject->GetProjectFile()->GetFilename();

@@ -27,6 +27,7 @@ ErrorItem::ErrorItem()
 ErrorItem::ErrorItem(const ErrorItem &item)
 {
     file = item.file;
+    file0 = item.file0;
     files = item.files;
     lines = item.lines;
     errorId = item.errorId;

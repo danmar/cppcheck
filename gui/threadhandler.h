@@ -22,7 +22,8 @@
 
 #include <QObject>
 #include <QStringList>
-#include <QTime>
+#include <QDateTime>
+#include <set>
 #include "settings.h"
 #include "cppcheck.h"
 #include "threadresult.h"
@@ -117,6 +118,12 @@ public:
     */
     int GetPreviousScanDuration() const;
 
+    /**
+     * @brief Get files that should be rechecked because they have been
+     * changed.
+     */
+    QStringList GetReCheckFiles() const;
+
 signals:
     /**
     * @brief Signal that all threads are done
@@ -146,6 +153,14 @@ protected:
     *
     */
     QStringList mLastFiles;
+
+    /** @brief date and time when current checking started */
+    QDateTime mCheckStartTime;
+
+    /**
+     * @brief when was the files checked the last time (used when rechecking)
+     */
+    QDateTime mLastCheckTime;
 
     /**
     * @brief Timer used for measuring scan duration
@@ -183,6 +198,12 @@ protected:
     */
     int mRunningThreadCount;
 private:
+
+    /**
+     * @brief Check if a file needs to be rechecked. Recursively checks
+     * included headers. Used by GetReCheckFiles()
+     */
+    bool NeedsReCheck(const QString &filename, std::set<QString> &modified, std::set<QString> &unmodified) const;
 };
 /// @}
 #endif // THREADHANDLER_H

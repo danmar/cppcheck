@@ -65,6 +65,11 @@ public:
     void Clear();
 
     /**
+     * @brief Clear results for a specific file
+     */
+    void Clear(const QString &filename);
+
+    /**
     * @brief Save results to a file
     *
     * @param filename Filename to save results to

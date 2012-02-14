@@ -72,14 +72,15 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     }
 
     ErrorItem item;
-    item.file = QString(callStackToString(msg._callStack).c_str());
+    item.file = QString::fromStdString(callStackToString(msg._callStack));
     item.files = files;
-    item.errorId = QString(msg._id.c_str());
+    item.errorId = QString::fromStdString(msg._id);
     item.lines = lines;
     item.summary = QString::fromStdString(msg.shortMessage());
     item.message = QString::fromStdString(msg.verboseMessage());
     item.severity = msg._severity;
     item.inconclusive = msg._inconclusive;
+    item.file0 = QString::fromStdString(msg.file0);
 
     if (msg._severity != Severity::debug)
         emit Error(item);

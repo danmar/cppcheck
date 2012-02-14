@@ -80,6 +80,19 @@ void ResultsView::Clear()
     mUI.mProgress->setFormat("%p%");
 }
 
+void ResultsView::Clear(const QString &filename)
+{
+    mUI.mTree->Clear(filename);
+    mUI.mDetails->setText("");
+    mErrorsFound = false;
+    mStatistics->Clear();
+
+    // Clear the progressbar
+    mUI.mProgress->setMaximum(PROGRESS_MAX);
+    mUI.mProgress->setValue(0);
+    mUI.mProgress->setFormat("%p%");
+}
+
 void ResultsView::Progress(int value, const QString& description)
 {
     mUI.mProgress->setValue(value);

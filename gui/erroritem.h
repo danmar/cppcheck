@@ -105,6 +105,7 @@ public:
 
     QString file;
     QStringList files;
+    QString file0;
     QList<unsigned int> lines;
     QString errorId;
     Severity::SeverityType severity;

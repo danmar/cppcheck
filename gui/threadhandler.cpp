@@ -17,6 +17,7 @@
  */
 
 #include <QObject>
+#include <QFileInfo>
 #include <QStringList>
 #include <QDebug>
 #include "settings.h"
@@ -51,7 +52,8 @@ void ThreadHandler::SetFiles(const QStringList &files)
 void ThreadHandler::Check(const Settings &settings, bool recheck)
 {
     if (recheck && mRunningThreadCount == 0) {
-        mResults.SetFiles(mLastFiles);
+        // only recheck changed files
+        mResults.SetFiles(GetReCheckFiles());
     }
 
     if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs <= 0) {
@@ -71,6 +73,9 @@ void ThreadHandler::Check(const Settings &settings, bool recheck)
     for (int i = 0; i < mRunningThreadCount; i++) {
         mThreads[i]->Check(settings);
     }
+
+    // Date and time when checking starts..
+    mCheckStartTime = QDateTime::currentDateTime();
 
     mTime.start();
 }
@@ -124,11 +129,18 @@ void ThreadHandler::ThreadDone()
         emit Done();
 
         mScanDuration = mTime.elapsed();
+
+        // Set date/time used by the recheck
+        if (!mCheckStartTime.isNull()) {
+            mLastCheckTime = mCheckStartTime;
+            mCheckStartTime = QDateTime();
+        }
     }
 }
 
 void ThreadHandler::Stop()
 {
+    mCheckStartTime = QDateTime();
     for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->stop();
     }
@@ -176,4 +188,60 @@ int ThreadHandler::GetPreviousFilesCount() const
 int ThreadHandler::GetPreviousScanDuration() const
 {
     return mScanDuration;
+}
+
+QStringList ThreadHandler::GetReCheckFiles() const
+{
+    if (mLastCheckTime.isNull())
+        return mLastFiles;
+
+    std::set<QString> modified;
+    std::set<QString> unmodified;
+
+    QStringList files;
+    for (int i = 0; i < mLastFiles.size(); ++i) {
+        if (NeedsReCheck(mLastFiles[i], modified, unmodified))
+            files.push_back(mLastFiles[i]);
+    }
+    return files;
+}
+
+bool ThreadHandler::NeedsReCheck(const QString &filename, std::set<QString> &modified, std::set<QString> &unmodified) const
+{
+    if (modified.find(filename) != modified.end())
+        return true;
+
+    if (unmodified.find(filename) != unmodified.end())
+        return false;
+
+    if (QFileInfo(filename).lastModified() > mLastCheckTime) {
+        return true;
+    }
+
+    // Parse included files recursively
+    QFile f(filename);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    // prevent recursion..
+    unmodified.insert(filename);
+
+    QTextStream in(&f);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        if (line.startsWith("#include \"")) {
+            line.remove(0,10);
+            int i = line.indexOf("\"");
+            if (i > 0) {
+                line.remove(i,line.length());
+                line = QFileInfo(filename).absolutePath() + "/" + line;
+                if (NeedsReCheck(line, modified, unmodified)) {
+                    modified.insert(line);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
