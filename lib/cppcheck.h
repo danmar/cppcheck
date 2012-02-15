@@ -131,6 +131,13 @@ public:
      */
     void analyseFile(std::istream &f, const std::string &filename);
 
+    /**
+     * @brief Get dependencies. Use this after calling 'check'.
+     */
+    std::set<std::string> dependencies() const {
+        return _dependencies;
+    }
+
 private:
 
     /** @brief Process one file. */
@@ -175,6 +182,7 @@ private:
     bool _useGlobalSuppressions;
     std::string _filename;
     std::string _fileContent;
+    std::set<std::string> _dependencies;
 
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
 
