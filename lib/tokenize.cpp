@@ -1970,7 +1970,7 @@ bool Tokenizer::tokenize(std::istream &code,
     // replace __LINE__ macro with line number
     simplifyLineMacro();
 
-    // replace 'NULL' and similiar '0'-defined macros with '0'
+    // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
 
     // combine "- %num%"
