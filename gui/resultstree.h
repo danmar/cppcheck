@@ -130,7 +130,7 @@ public:
 
     /**
     * @brief Save all settings
-    * Colum widths
+    * Column widths
     */
     void SaveSettings();
 
@@ -302,7 +302,7 @@ protected:
 
     /**
     * @brief Load all settings
-    * Colum widths
+    * Column widths
     */
     void LoadSettings();
 
