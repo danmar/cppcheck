@@ -535,7 +535,7 @@ private:
                       "2: int x1@1 ; x1@1 = g ( ) ;\n"
                       "3: int x2@2 ; x2@2 = x1@1 ;\n"
                       "4: }\n",
-                      tokenizeDebugListing(code.c_str(), false));
+                      tokenizeDebugListing(code, false));
     }
 
     void tokenize9() {
@@ -581,6 +581,7 @@ private:
     void tokenize14() {
         ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0x10;"));
         ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0X10;"));
+        ASSERT_EQUALS("; 292 ;", tokenizeAndStringify(";0444;"));
     }
 
     // Ticket #2429: 0.125
@@ -4064,7 +4065,7 @@ private:
 
         {
             const char code[] = "module ( a , a , sizeof ( a ) , 0444 ) ;";
-            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 292 ) ;", tokenizeAndStringify(code, true));
         }
 
         ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));

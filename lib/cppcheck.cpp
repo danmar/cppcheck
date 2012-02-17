@@ -189,8 +189,6 @@ unsigned int CppCheck::processFile()
             return 0;
         }
 
-        _settings.ifcfg = bool(configurations.size() > 1);
-
         if (!_settings.userDefines.empty()) {
             configurations.clear();
             configurations.push_back(_settings.userDefines);

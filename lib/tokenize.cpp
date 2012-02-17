@@ -117,8 +117,8 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
     // Replace hexadecimal value with decimal
     std::ostringstream str2;
-    if (strncmp(str, "0x", 2) == 0 || strncmp(str, "0X", 2) == 0) {
-        str2 << std::strtoul(str + 2, NULL, 16);
+    if (strncmp(str, "0x", 2) == 0 || strncmp(str, "0X", 2) == 0 || (str[0] == '0' && std::isdigit(str[1]))) {
+        str2 << MathLib::toLongNumber(str);
     } else if (strncmp(str, "_Bool", 5) == 0) {
         str2 << "bool";
     } else {

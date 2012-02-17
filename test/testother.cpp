@@ -3723,6 +3723,12 @@ private:
               "   else if ((x = x / 2) < 100) { b = 2; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "   if(i == 0x02e2000000 || i == 0xa0c6000000)\n"
+              "       foo(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateBranch() {

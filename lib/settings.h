@@ -159,12 +159,6 @@ public:
     /** @brief --report-progress */
     bool reportProgress;
 
-    /**
-     * @brief Is there any preprocessor configurations in the source code?
-     * As usual, include guards are not counted.
-     */
-    bool ifcfg;
-
     /** Rule */
     class Rule {
     public:

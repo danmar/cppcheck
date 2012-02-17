@@ -22,31 +22,23 @@
 
 #include <fstream>
 #include <set>
-#include <stack>
 
 Settings::Settings()
+    : debug(false), debugwarnings(false), debugFalsePositive(false),
+      _errorsOnly(false),
+      _inlineSuppressions(false),
+      _verbose(false),
+      _force(false), _maxConfigs(12),
+      _xml(false), _xml_version(1),
+      _jobs(1),
+      _exitCode(0),
+      _showtime(0),
+      _terminate(false),
+      inconclusive(false), experimental(false),
+      test_2_pass(false),
+      reportProgress(false),
+      checkConfiguration(false)
 {
-    debug = debugwarnings = false;
-    debugFalsePositive = false;
-    _errorsOnly = false;
-    _inlineSuppressions = false;
-    _verbose = false;
-    _force = false;
-    _xml = false;
-    _xml_version = 1;
-    _jobs = 1;
-    _exitCode = 0;
-    _showtime = 0; // TODO: use enum
-    _append = "";
-    _terminate = false;
-    _maxConfigs = 12;
-    inconclusive = false;
-    experimental = false;
-    test_2_pass = false;
-    reportProgress = false;
-    ifcfg = false;
-    checkConfiguration = false;
-
     // This assumes the code you are checking is for the same architecture this is compiled on.
 #if defined(_WIN64)
     platform(Win64);

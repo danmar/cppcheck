@@ -29,24 +29,22 @@
 
 MathLib::bigint MathLib::toLongNumber(const std::string &str)
 {
+    bool sign = str[0]=='-'||str[0]=='+';
     // hexadecimal numbers:
-    if (str.compare(0, 2, "0x") == 0
-        || str.compare(0, 3, "+0x") == 0
-        || str.compare(0, 3, "-0x") == 0) {
+    if (str.compare(sign?1:0, 2, "0x") == 0
+        || str.compare(sign?1:0, 2, "0X") == 0) {
         bigint ret = 0;
-        std::istringstream istr(str.substr((str[0]=='0') ? 2U : 3U));
+        std::istringstream istr(str);
         istr >> std::hex >> ret;
-        return (str[0]=='-') ? -ret : ret;
+        return ret;
     }
 
     // octal numbers:
-    if (str.compare(0, 1, "0") == 0
-        ||  str.compare(0, 2, "+0") == 0
-        ||  str.compare(0, 2, "-0") == 0) {
+    if (str[sign?1:0] == '0') {
         bigint ret = 0;
-        std::istringstream istr(str.substr((str[0]=='0') ? 1U : 2U));
+        std::istringstream istr(str);
         istr >> std::oct >> ret;
-        return (str[0]=='-') ? -ret : ret;
+        return ret;
     }
 
     if (str.find_first_of("eE") != std::string::npos)
