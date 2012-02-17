@@ -2501,7 +2501,7 @@ void CheckOther::checkDoubleFree()
 
 
         // If a variable is passed to a function, remove it from the set of previously freed variables
-        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf|if|while")) {
+        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf")) {
 
             // If this is a new function definition, clear all variables
             if (Token::simpleMatch(tok->next()->link(), ") {")) {
@@ -2533,7 +2533,7 @@ void CheckOther::checkDoubleFree()
 
         // Any control statements in-between delete, free() or closedir() statements
         // makes it unclear whether any subsequent statements would be redundant.
-        if (Token::Match(tok, "else|break|continue|goto|return|throw")) {
+        if (Token::Match(tok, "if|else|for|while|break|continue|goto|return|throw|switch")) {
             freedVariables.clear();
             closeDirVariables.clear();
         }

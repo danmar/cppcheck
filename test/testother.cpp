@@ -4614,6 +4614,22 @@ private:
             "}"
         );
         ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int foo()\n"
+            "{\n"
+            "	int* a = new int;\n"
+            "	bool doDelete = true;\n"
+            "	if (a != 0)\n"
+            "	{\n"
+            "		doDelete = false;\n"
+            "		delete a;\n"
+            "	}\n"
+            "	if(doDelete)\n"
+            "		delete a;\n"
+            "	return 0;\n"
+            "}"
+        );
     }
 
     void coutCerrMisusage() {
