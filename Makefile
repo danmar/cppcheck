@@ -6,7 +6,7 @@ ifndef HAVE_RULES
 endif
 
 # Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.
-# The _GLIBCXX_DEBUG define doesn't work in cygin or other Win32 systems.
+# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.
 ifndef COMSPEC
     ifdef ComSpec
         #### ComSpec is defined on some WIN32's.

@@ -207,7 +207,7 @@ int main(int argc, char **argv)
 
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
     fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
-         << "# The _GLIBCXX_DEBUG define doesn't work in cygin or other Win32 systems.\n"
+         << "# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.\n"
          << "ifndef COMSPEC\n"
          << "    ifdef ComSpec\n"
          << "        #### ComSpec is defined on some WIN32's.\n"
