@@ -6367,23 +6367,23 @@ private:
     }
 
     void constIfCfg() {
-        const char code[] = "class foo {\n"
-                            "    void f() { }\n"
+        const char code[] = "struct foo {\n"
+                            "    int i;\n"
+                            "    void f() {\n"
+                            //"#ifdef ABC\n"
+                            //"        i = 4;\n"
+                            //"endif\n"
+                            "    }\n"
                             "};";
 
         Settings settings;
         settings.addEnabled("style");
 
-        settings.ifcfg = false;
-        checkConst(code, &settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Technically the member function 'foo::f' can be const.\n", errout.str());
-
-        settings.ifcfg = true;
-        checkConst(code, &settings, false);
-        ASSERT_EQUALS("", errout.str());
-
         checkConst(code, &settings, true);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Technically the member function 'foo::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Technically the member function 'foo::f' can be const.\n", errout.str());
+
+        checkConst(code, &settings, false); // TODO: Set inconclusive to true (preprocess it)
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constFriend() { // ticket #1921
