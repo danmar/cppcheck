@@ -24,17 +24,18 @@
 #include <set>
 
 Settings::Settings()
-    : debug(false), debugwarnings(false), debugFalsePositive(false),
+    : _terminate(false),
+      debug(false), debugwarnings(false), debugFalsePositive(false),
+      inconclusive(false), experimental(false),
       _errorsOnly(false),
       _inlineSuppressions(false),
       _verbose(false),
-      _force(false), _maxConfigs(12),
+      _force(false),
       _xml(false), _xml_version(1),
       _jobs(1),
       _exitCode(0),
       _showtime(0),
-      _terminate(false),
-      inconclusive(false), experimental(false),
+      _maxConfigs(12),
       test_2_pass(false),
       reportProgress(false),
       checkConfiguration(false)
