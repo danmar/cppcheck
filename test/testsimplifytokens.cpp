@@ -3289,6 +3289,38 @@ private:
                                    "    " + *it + ";"
                                    "    switch (n) {"
                                    "        case 1:"
+                                   "            {"
+                                   "                foo();"
+                                   "            }"
+                                   "            label:"
+                                   "            bar();"
+                                   "    }"
+                                   "}";
+                std::string expected = "void foo ( ) { " + *it + " ; { label : ; bar ( ) ; } }";
+                ASSERT_EQUALS(expected, tok(code));
+            }
+
+            {
+                std::string code = "void foo () {"
+                                   "    " + *it + ";"
+                                   "    switch (n) {"
+                                   "        case a:"
+                                   "            {"
+                                   "                foo();"
+                                   "            }"
+                                   "        case b|c:"
+                                   "            bar();"
+                                   "    }"
+                                   "}";
+                std::string expected = "void foo ( ) { " + *it + " ; }";
+                ASSERT_EQUALS(expected, tok(code));
+            }
+
+            {
+                std::string code = "void foo () {"
+                                   "    " + *it + ";"
+                                   "    switch (n) {"
+                                   "        case 1:"
                                    "            label:"
                                    "            foo(); break;"
                                    "        default:"

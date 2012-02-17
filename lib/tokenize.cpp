@@ -7608,12 +7608,11 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
             continue;
         }
 
-        if (Token::Match(tok, "[{};] switch (") && tok->linkAt(2)) {
+        if (Token::Match(tok, "[{};] switch (")) {
             if (!checklabel) {
                 if (!indentlabel) {
                     //remove 'switch ( ... )'
-                    const Token *endround = tok->linkAt(2);
-                    Token::eraseTokens(tok, endround->next());
+                    Token::eraseTokens(tok, tok->linkAt(2)->next());
                 } else {
                     tok = tok->linkAt(2);
                 }
@@ -7670,15 +7669,31 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                 else
                     indentcase = switchindents[indentswitch-1];
             }
-        } else if (Token::Match(tok, "[{};] case %any% : ;") || Token::Match(tok, "[{};] default : ;")) {
+        } else if (Token::Match(tok, "[{};] case")) {
+            const Token *tok2 = Token::findsimplematch(tok->next(), ": ;", end);
+            if (!tok2) {
+                tok->deleteNext();
+                continue;
+            }
+            if (indentlevel == 1)
+                break;      //it seems like the function was called inside a case-default block.
+            if (indentlevel == indentcase)
+                ++indentlevel;
+            tok2 = tok2->next();
+            if (!checklabel || !indentswitch) {
+                Token::eraseTokens(tok, tok2->next());
+            } else {
+                tok = const_cast<Token *>(tok2);
+            }
+        }  else if (Token::Match(tok, "[{};] default : ;")) {
             if (indentlevel == 1)
                 break;      //it seems like the function was called inside a case-default block.
             if (indentlevel == indentcase)
                 ++indentlevel;
             if (!checklabel || !indentswitch) {
-                tok->deleteNext(3+(tok->next()->str()=="case"));
+                tok->deleteNext(3);
             } else {
-                tok = tok->tokAt(3+(tok->next()->str()=="case"));
+                tok = tok->tokAt(3);
             }
         } else if (Token::Match(tok, "[{};] %var% : ;") && tok->next()->str() != "default") {
             if (checklabel) {
@@ -7692,13 +7707,19 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                     //instruction is removed, there's no sense to keep the
                     //case instructions. Remove them, if there are any.
                     Token *tok2 = tok->tokAt(3);
-                    const Token *end2 = tokcheck->next()->link();
                     unsigned int indentlevel2 = indentlevel;
-                    while (tok2->next() && tok2->next() != end2->next()) {
+                    while (tok2->next() && tok2->next() != end) {
                         if (Token::Match(tok2->next(), "{|[|(")) {
                             tok2 = tok2->next()->link();
-                        } else if (Token::Match(tok2, "[{};] case %any% : ;") || Token::Match(tok2, "[{};] default : ;")) {
-                            tok2->deleteNext(3+(tok2->next()->str()=="case"));
+                        } else if (Token::Match(tok2, "[{};] case")) {
+                            const Token *tok3 = Token::findsimplematch(tok2->next(), ": ;", end);
+                            if (!tok3) {
+                                tok2 = tok2->next();
+                                continue;
+                            }
+                            Token::eraseTokens(tok2, tok3->next());
+                        } else if (Token::Match(tok2, "[{};] default : ;")) {
+                            tok2->deleteNext(3);
                         } else if (tok2->next()->str() == "}") {
                             --indentlevel2;
                             if (indentlevel2 <= indentcase)
