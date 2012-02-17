@@ -587,6 +587,7 @@ private:
     // Ticket #2429: 0.125
     void tokenize15() {
         ASSERT_EQUALS("0.125", tokenizeAndStringify(".125"));
+        ASSERT_EQUALS("005.125", tokenizeAndStringify("005.125")); // Don't confuse with octal values
     }
 
     // #2612 - segfault for "<><<"
@@ -683,7 +684,7 @@ private:
 
 
     void longtok() {
-        std::string filedata(10000, 'a');
+        const std::string filedata(10000, 'a');
 
         errout.str("");
 
@@ -695,7 +696,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(std::string(10000, 'a'), tokenizer.tokens()->str());
+        ASSERT_EQUALS(filedata, tokenizer.tokens()->str());
     }
 
 

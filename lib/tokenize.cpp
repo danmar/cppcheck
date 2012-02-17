@@ -117,7 +117,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
     // Replace hexadecimal value with decimal
     std::ostringstream str2;
-    if (strncmp(str, "0x", 2) == 0 || strncmp(str, "0X", 2) == 0 || (str[0] == '0' && std::isdigit(str[1]))) {
+    if (MathLib::isHex(str) || MathLib::isOct(str)) {
         str2 << MathLib::toLongNumber(str);
     } else if (strncmp(str, "_Bool", 5) == 0) {
         str2 << "bool";
@@ -374,9 +374,9 @@ void Tokenizer::createTokens(std::istream &code)
         } else if (strchr("+-", ch) &&
                    CurrentToken.length() > 0 &&
                    std::isdigit(CurrentToken[0]) &&
-                   CurrentToken.compare(0,2,"0x") != 0 &&
                    (CurrentToken[CurrentToken.length()-1] == 'e' ||
-                    CurrentToken[CurrentToken.length()-1] == 'E')) {
+                    CurrentToken[CurrentToken.length()-1] == 'E') &&
+                   !MathLib::isHex(CurrentToken)) {
             // Don't separate doubles "4.2e+10"
         } else if (CurrentToken.empty() && ch == '.' && std::isdigit(code.peek())) {
             // tokenize .125 into 0.125

@@ -28,8 +28,6 @@
 
 /** @brief simple math functions that uses operands stored in std::string. useful when performing math on tokens. */
 
-class Tokenizer;
-
 class MathLib {
 public:
     typedef long long bigint;
@@ -41,11 +39,7 @@ public:
     static std::string toString(const T &d) {
         std::ostringstream result;
         result << d;
-        std::string strResult(result.str());
-        if (strResult == "-0"
-            || strResult == "+0"
-            || strResult == "-0."
-            || strResult == "+0.")
+        if (isNullValue(result.str()))
             return std::string("0");
         return result.str();
     }
@@ -53,6 +47,8 @@ public:
     static bool isInt(const std::string & str);
     static bool isFloat(const std::string &str);
     static bool isNegative(const std::string &str);
+    static bool isHex(const std::string& str);
+    static bool isOct(const std::string& str);
 
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);
