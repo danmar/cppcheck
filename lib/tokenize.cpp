@@ -4765,7 +4765,7 @@ void Tokenizer::simplifyCasts()
             tok = tok->linkAt(2);
             continue;
         }
-        while (Token::Match(tok->next(), "( %type% *| *| *| ) *|&| %var%") ||
+        while ((Token::Match(tok->next(), "( %type% *| *| *| ) *|&| %var%") && (tok->str() != ")" || tok->tokAt(2)->isStandardType())) ||
                Token::Match(tok->next(), "( %type% %type% *| *| *| ) *|&| %var%") ||
                (!tok->isName() && (Token::Match(tok->next(), "( %type% * *| *| ) (") ||
                                    Token::Match(tok->next(), "( %type% %type% * *| *| ) (")))) {
