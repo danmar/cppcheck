@@ -2056,7 +2056,6 @@ private:
                         "    int a, a2, a2*x; if () ;\n"
                         "  )\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a2\n", errout.str());
     }
 };
 

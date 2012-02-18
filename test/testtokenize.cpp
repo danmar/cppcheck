@@ -287,6 +287,7 @@ private:
         TEST_CASE(vardecl15);
         TEST_CASE(vardecl16);
         TEST_CASE(vardecl17);
+        TEST_CASE(vardecl18);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template);
@@ -4634,6 +4635,16 @@ private:
         const char code[] = "a < b > :: c :: d :: e < f > x = foo(), y = bar();\n";
         ASSERT_EQUALS("a < b > :: c :: d :: e < f > x ; x = foo ( ) ; "
                       "a < b > :: c :: d :: e < f > y ; y = bar ( ) ;", tokenizeAndStringify(code));
+    }
+
+    void vardecl18() {
+        const char code[] = "void f() {\n"
+                            "    g((double)v1*v2, v3, v4);\n"
+                            "}\n";
+
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "g ( ( double ) v1 * v2 , v3 , v4 ) ;\n"
+                      "}", tokenizeAndStringify(code));
     }
 
     void volatile_variables() {

@@ -5101,6 +5101,8 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                     continue;
             } else
                 continue;
+        } else if (tok->str() == "(") {
+            tok = tok->link();
         }
 
         if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|)|public:|protected:|private:"))
