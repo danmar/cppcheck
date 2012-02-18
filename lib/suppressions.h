@@ -118,7 +118,7 @@ public:
     bool isSuppressedLocal(const std::string &errorId, const std::string &file, unsigned int line);
 
     struct SuppressionEntry {
-        SuppressionEntry(const std::string &aid, const std::string &afile, const unsigned int &aline)
+        SuppressionEntry(const std::string &aid, const std::string &afile, unsigned int aline)
             : id(aid), file(afile), line(aline)
         { }
 

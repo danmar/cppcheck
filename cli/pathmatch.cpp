@@ -25,7 +25,7 @@ PathMatch::PathMatch(const std::vector<std::string> &masks)
 {
 }
 
-bool PathMatch::Match(const std::string &path, bool caseSensitive)
+bool PathMatch::Match(const std::string &path, bool caseSensitive) const
 {
     if (path.empty())
         return false;

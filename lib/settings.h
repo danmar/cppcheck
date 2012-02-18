@@ -162,12 +162,9 @@ public:
     /** Rule */
     class Rule {
     public:
-        Rule() {
-            // default id
-            id = "rule";
-
-            // default severity
-            severity = "style";
+        Rule()
+            : id("rule") // default id
+            , severity("style") { // default severity
         }
 
         std::string pattern;

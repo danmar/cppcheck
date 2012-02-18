@@ -181,11 +181,12 @@ bool Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned i
 
     for (std::map<std::string, std::map<unsigned int, bool> >::iterator g = _globs.begin(); g != _globs.end(); ++g) {
         if (match(g->first, file)) {
-            if (g->second.find(0U) != g->second.end()) {
-                g->second[0U] = true;
+            std::map<unsigned int, bool>::iterator l = g->second.find(0U);
+            if (l != g->second.end()) {
+                l->second = true;
                 return true;
             }
-            std::map<unsigned int, bool>::iterator l = g->second.find(line);
+            l = g->second.find(line);
             if (l != g->second.end()) {
                 l->second = true;
                 return true;
@@ -200,11 +201,12 @@ bool Suppressions::FileMatcher::isSuppressedLocal(const std::string &file, unsig
 {
     std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(file);
     if (f != _files.end()) {
-        if (f->second.find(0U) != f->second.end()) {
-            f->second[0U] = true;
+        std::map<unsigned int, bool>::iterator l = f->second.find(0U);
+        if (l != f->second.end()) {
+            l->second = true;
             return true;
         }
-        std::map<unsigned int, bool>::iterator l = f->second.find(line);
+        l = f->second.find(line);
         if (l != f->second.end()) {
             l->second = true;
             return true;

@@ -30,9 +30,8 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg) :
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage()
-    :_severity(Severity::none)
+    : _severity(Severity::none), _inconclusive(false)
 {
-    _inconclusive = false;
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive)
@@ -327,15 +326,14 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 std::string ErrorLogger::ErrorMessage::FileLocation::getfile(bool convert) const
 {
-    std::string f = Path::simplifyPath(_file.c_str());
-
     if (convert)
-        f = Path::toNativeSeparators(f);
-    return f;
+        return Path::toNativeSeparators(_file);
+    return _file;
 }
 
 void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
 {
     _file = file;
     _file = Path::fromNativeSeparators(_file);
+    _file = Path::simplifyPath(_file.c_str());
 }

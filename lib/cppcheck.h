@@ -173,7 +173,7 @@ private:
      * @brief Replace "from" strings with "to" strings in "code"
      * and return it.
      */
-    std::string replaceAll(std::string code, const std::string &from, const std::string &to);
+    std::string replaceAll(std::string code, const std::string &from, const std::string &to) const;
 
     unsigned int exitcode;
     std::list<std::string> _errorList;

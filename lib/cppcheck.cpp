@@ -80,7 +80,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return retval;
 }
 
-std::string CppCheck::replaceAll(std::string code, const std::string &from, const std::string &to)
+std::string CppCheck::replaceAll(std::string code, const std::string &from, const std::string &to) const
 {
     size_t pos = 0;
     while ((pos = code.find(from, pos)) != std::string::npos) {

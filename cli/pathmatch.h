@@ -44,7 +44,7 @@ public:
      *   matching paths?
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool Match(const std::string &path, bool caseSensitive = true);
+    bool Match(const std::string &path, bool caseSensitive = true) const;
 
 protected:
 
@@ -53,7 +53,7 @@ protected:
      * @param path Path to edit.
      * @return path without filename part.
      */
-    std::string RemoveFilename(const std::string &path);
+    static std::string RemoveFilename(const std::string &path);
 
 private:
     std::vector<std::string> _masks;

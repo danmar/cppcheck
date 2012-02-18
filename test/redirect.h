@@ -51,7 +51,7 @@ public:
     }
 
     /** Return what would be printed to cout. See also clearOutput() */
-    std::string getOutput() {
+    std::string getOutput() const {
         return _out.str();
     }
 
