@@ -120,7 +120,8 @@ private:
         TEST_CASE(template26);  // #2721 - passing 'char[2]' as template parameter
         TEST_CASE(template27);  // #3350 - removing unused template in macro call
         TEST_CASE(template28);
-        TEST_CASE(template29);  // #3449
+        TEST_CASE(template29);  // #3449 - don't crash for garbage code
+        TEST_CASE(template30);  // #3529 - template < template < ..
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2150,6 +2151,12 @@ private:
                             "struct B { template<typename T> struct C };\n"
                             "{};";
         ASSERT_EQUALS("struct B { } ; { } ;", sizeof_(code));
+    }
+
+    void template30() {
+        // #3529 - template < template < ..
+        const char code[] = "template<template<class> class A, class B> void f(){}";
+        ASSERT_EQUALS("", sizeof_(code));
     }
 
     void template_unhandled() {

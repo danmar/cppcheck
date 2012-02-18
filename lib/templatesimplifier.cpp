@@ -236,6 +236,7 @@ void TemplateSimplifier::removeTemplates(Token *tok)
         if (!Token::simpleMatch(tok, "template <"))
             continue;
 
+        int indentlevel = 0;
         for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
 
             if (tok2->str() == "(") {
@@ -275,7 +276,16 @@ void TemplateSimplifier::removeTemplates(Token *tok)
                 break;
             }
 
-            if (Token::Match(tok2, ">|>> class|struct %var% [,)]")) {
+            if (tok2->str() == "<")
+                ++indentlevel;
+
+            else if (indentlevel >= 2 && tok2->str() == ">")
+                --indentlevel;
+
+            else if (indentlevel >= 3 && tok2->str() == ">>")
+                indentlevel -= 2;
+
+            else if (Token::Match(tok2, ">|>> class|struct %var% [,)]")) {
                 tok2 = tok2->next();
                 Token::eraseTokens(tok, tok2);
                 tok->deleteThis();
