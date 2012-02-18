@@ -4636,6 +4636,7 @@ private:
             "	return 0;\n"
             "}"
         );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void coutCerrMisusage() {
