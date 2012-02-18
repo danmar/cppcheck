@@ -36,7 +36,7 @@
  * errors or places that could be improved.
  * Usage: See check() for more info.
  */
-class CppCheck : public ErrorLogger {
+class CppCheck : ErrorLogger {
 public:
     /**
      * @brief Constructor.
@@ -134,7 +134,7 @@ public:
     /**
      * @brief Get dependencies. Use this after calling 'check'.
      */
-    std::set<std::string> dependencies() const {
+    const std::set<std::string>& dependencies() const {
         return _dependencies;
     }
 
@@ -190,7 +190,7 @@ private:
     ErrorLogger &_errorLogger;
 
     /** @brief Current preprocessor configuration */
-    std::string     cfg;
+    std::string cfg;
 };
 
 /// @}

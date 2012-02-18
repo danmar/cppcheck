@@ -123,7 +123,7 @@ private:
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
         c.noConstructorError(0, "classname", false);
         c.uninitVarError(0, "classname", "varname");

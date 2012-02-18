@@ -55,7 +55,7 @@ public:
 private:
     void boostForeachError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBoost c(0, settings, errorLogger);
         c.boostForeachError(0);
     }

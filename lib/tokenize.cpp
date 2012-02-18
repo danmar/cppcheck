@@ -8280,7 +8280,7 @@ void Tokenizer::simplifyConst()
     }
 }
 
-void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
+void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
 {
     Tokenizer t(settings, errorLogger);
     t.syntaxError(0, ' ');

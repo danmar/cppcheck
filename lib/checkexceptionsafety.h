@@ -96,7 +96,7 @@ private:
     }
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckExceptionSafety c(0, settings, errorLogger);
         c.destructorsError(0);
         c.deallocThrowError(0, "p");

@@ -82,7 +82,7 @@ private:
         }
     }
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNonReentrantFunctions c(0, settings, errorLogger);
 
         std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());

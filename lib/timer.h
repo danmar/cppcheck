@@ -52,7 +52,7 @@ public:
     TimerResults() {
     }
 
-    void ShowResults();
+    void ShowResults() const;
     virtual void AddResults(const std::string& str, std::clock_t clocks);
 
 private:

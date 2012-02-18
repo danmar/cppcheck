@@ -72,7 +72,7 @@ private:
 
     void multiConditionError(const Token *tok, unsigned int line1);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckAssignIf c(0, settings, errorLogger);
         c.assignIfError(0, false);
         c.comparisonError(0, 6, "==", 1, false);

@@ -33,14 +33,12 @@
 #include "pathmatch.h"
 
 CppCheckExecutor::CppCheckExecutor()
+    : time1(0), errorlist(false)
 {
-    time1 = 0;
-    errorlist = false;
 }
 
 CppCheckExecutor::~CppCheckExecutor()
 {
-
 }
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])

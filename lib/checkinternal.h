@@ -68,7 +68,7 @@ private:
     void complexPatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void missingPercentCharacterError(const Token *tok, const std::string &pattern, const std::string &funcname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckInternal c(0, settings, errorLogger);
         c.simplePatternError(0, "class {", "Match");
         c.complexPatternError(0, "%type% ( )", "Match");

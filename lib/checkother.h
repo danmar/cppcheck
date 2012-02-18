@@ -309,7 +309,7 @@ public:
     void doubleFreeError(const Token *tok, const std::string &varname);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
 
         // error

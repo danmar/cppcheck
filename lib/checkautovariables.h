@@ -87,7 +87,7 @@ private:
     void errorInvalidDeallocation(const Token *tok);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckAutoVariables c(0,settings,errorLogger);
         c.errorAutoVariableAssignment(0, false);
         c.errorReturnAddressToAutoVariable(0);

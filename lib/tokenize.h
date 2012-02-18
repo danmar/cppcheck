@@ -204,7 +204,7 @@ public:
     /**
      * get error messages that the tokenizer generate
      */
-    virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
+    virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
 
     /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
      */

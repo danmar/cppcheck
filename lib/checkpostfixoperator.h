@@ -54,7 +54,7 @@ private:
     /** Report Error */
     void postfixOperatorError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckPostfixOperator c(0, settings, errorLogger);
         c.postfixOperatorError(0);
     }

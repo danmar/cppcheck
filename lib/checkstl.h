@@ -172,7 +172,7 @@ private:
     void uselessCallsSwapError(const Token *tok, const std::string &varname);
     void uselessCallsSubstrError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckStl c(0, settings, errorLogger);
         c.invalidIteratorError(0, "iterator");
         c.iteratorsError(0, "container1", "container2");

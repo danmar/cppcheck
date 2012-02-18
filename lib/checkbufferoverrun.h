@@ -231,7 +231,7 @@ public:
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBufferOverrun c(0, settings, errorLogger);
         std::vector<MathLib::bigint> indexes;
         indexes.push_back(2);

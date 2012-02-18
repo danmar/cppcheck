@@ -103,7 +103,7 @@ public:
     void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive = false);
 
     /** Get error messages. Used by --errorlist */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNullPointer c(0, settings, errorLogger);
         c.nullPointerError(0, "pointer");
     }

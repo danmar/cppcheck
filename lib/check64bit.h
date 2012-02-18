@@ -64,7 +64,7 @@ private:
     void assignmentAddressToIntegerError(const Token *tok);
     void assignmentIntegerToAddressError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         Check64BitPortability c(0, settings, errorLogger);
         c.assignmentAddressToIntegerError(0);
         c.assignmentIntegerToAddressError(0);

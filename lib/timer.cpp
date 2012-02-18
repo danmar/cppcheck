@@ -31,7 +31,7 @@
 */
 
 
-void TimerResults::ShowResults()
+void TimerResults::ShowResults() const
 {
     std::clock_t overallClocks = 0;
 

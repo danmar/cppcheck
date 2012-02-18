@@ -306,7 +306,7 @@ public:
     void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
     /** Report all possible errors (for the --errorlist) */
-    void getErrorMessages(ErrorLogger *e, const Settings *settings) {
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakInFunction c(0, settings, e);
 
         c.memleakError(0, "varname");
@@ -381,7 +381,7 @@ private:
     void checkPublicFunctions(const Scope *scope, const Token *classtok);
     void publicAllocationError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
+    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
     { }
 
     std::string myName() const {
@@ -420,7 +420,7 @@ private:
 
     void checkStructVariable(const Token * const vartok);
 
-    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
+    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
     { }
 
     std::string myName() const {
@@ -456,7 +456,7 @@ private:
 
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
 
-    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/)
+    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
     { }
 
     std::string myName() const {

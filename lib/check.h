@@ -42,7 +42,7 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : _name(aname), _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
+        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger), _name(aname)
     { }
 
     virtual ~Check() {
@@ -85,7 +85,7 @@ public:
     virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
 
     /** get error messages */
-    virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) = 0;
+    virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
 
     /** class name, used to generate documentation */
     const std::string& name() const {
@@ -109,7 +109,6 @@ public:
     }
 
 protected:
-    const std::string _name;
     const Tokenizer * const _tokenizer;
     const Settings * const _settings;
     ErrorLogger * const _errorLogger;
@@ -123,7 +122,7 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg) {
         reportError(callstack, severity, id, msg, false);
     }
 
@@ -136,17 +135,19 @@ protected:
     }
 
     /** report an inconclusive error */
-    void reportInconclusiveError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg) {
+    void reportInconclusiveError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg) {
         reportError(callstack, severity, id, msg, true);
     }
 
 
 private:
+    const std::string _name;
+
     /** disabled assignment operator */
     void operator=(const Check &);
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, std::string msg, bool inconclusive) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg, bool inconclusive) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
             // --errorlist can provide null values here
@@ -180,7 +181,7 @@ namespace std {
 }
 
 inline Check::Check(const std::string &aname)
-    : _name(aname), _tokenizer(0), _settings(0), _errorLogger(0)
+    : _tokenizer(0), _settings(0), _errorLogger(0), _name(aname)
 {
     instances().push_back(this);
     instances().sort(std::less<Check *>());
