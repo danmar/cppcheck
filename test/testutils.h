@@ -27,21 +27,18 @@ class Token;
 class givenACodeSampleToTokenize {
 private:
     std::istringstream _sample;
-    const Token* _tokens;
     Settings _settings;
     Tokenizer _tokenizer;
 
 public:
     givenACodeSampleToTokenize(const std::string& sample)
-        :_sample(sample)
-        ,_tokens(NULL) {
-        _tokenizer.setSettings(&_settings);
+        : _sample(sample)
+        , _tokenizer(&_settings, 0) {
         _tokenizer.tokenize(_sample, "test.cpp");
-        _tokens = _tokenizer.tokens();
     }
 
     const Token* tokens() const {
-        return _tokens;
+        return _tokenizer.tokens();
     }
 };
 

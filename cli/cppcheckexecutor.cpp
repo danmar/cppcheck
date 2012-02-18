@@ -54,7 +54,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             const char * extraVersion = cppcheck->extraVersion();
             if (strlen(extraVersion) > 0)
                 std::cout << "Cppcheck " << cppcheck->version() << " ("
-                          << extraVersion << ")" << std::endl;
+                          << extraVersion << ')' << std::endl;
             else
                 std::cout << "Cppcheck " << cppcheck->version() << std::endl;
         }
@@ -84,7 +84,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             else {
                 // If the include path is not found, warn user and remove the
                 // non-existing path from the list.
-                std::cout << "cppcheck: warning: Couldn't find path given by -I '" + path + "'" << std::endl;
+                std::cout << "cppcheck: warning: Couldn't find path given by -I '" << path << '\'' << std::endl;
                 iter = _settings._includePaths.erase(iter);
             }
         }
@@ -262,7 +262,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
         std::ostringstream ostr;
         ostr << "progress: "
              << stage
-             << " " << int(value) << "%";
+             << ' ' << int(value) << '%';
         if (_settings._verbose)
             ostr << " time=" << str.substr(11, 8);
 
@@ -275,7 +275,7 @@ void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, long siz
 {
     if (filecount > 1) {
         std::ostringstream oss;
-        oss << fileindex << "/" << filecount
+        oss << fileindex << '/' << filecount
             << " files checked " <<
             (sizetotal > 0 ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal*100) : 0)
             << "% done";

@@ -277,7 +277,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         if (!_callStack.empty())
             text << callStackToString(_callStack) << ": ";
         if (_severity != Severity::none)
-            text << "(" << Severity::toString(_severity) << ") ";
+            text << '(' << Severity::toString(_severity) << ") ";
         text << (verbose ? _verboseMessage : _shortMessage);
         return text.str();
     }
@@ -316,10 +316,10 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 {
     std::ostringstream ostr;
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
-        ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).getfile();
+        ostr << (tok == callStack.begin() ? "" : " -> ") << '[' << (*tok).getfile();
         if ((*tok).line != 0)
-            ostr << ":" << (*tok).line;
-        ostr << "]";
+            ostr << ':' << (*tok).line;
+        ostr << ']';
     }
     return ostr.str();
 }

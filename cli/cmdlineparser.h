@@ -68,7 +68,7 @@ public:
     /**
      * Return the path names user gave to command line.
      */
-    std::vector<std::string> GetPathNames() const {
+    const std::vector<std::string>& GetPathNames() const {
         return _pathnames;
     }
 
@@ -89,7 +89,7 @@ public:
     /**
      * Return a list of paths user wants to ignore.
      */
-    std::vector<std::string> GetIgnoredPaths() const {
+    const std::vector<std::string>& GetIgnoredPaths() const {
         return _ignoredPaths;
     }
 

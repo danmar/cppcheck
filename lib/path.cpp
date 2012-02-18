@@ -80,7 +80,7 @@ std::string Path::simplifyPath(const char *originalPath)
     if (subPath.length() > 0)
         pathParts.push_back(subPath);
 
-    for (unsigned int i = 0; i < pathParts.size(); ++i) {
+    for (unsigned int i = 1; i < pathParts.size(); ++i) {
         if (i > 1 && pathParts[i-2] != ".." && pathParts[i] == ".." && pathParts.size() > i + 1) {
             pathParts.erase(pathParts.begin() + static_cast<int>(i) + 1);
             pathParts.erase(pathParts.begin() + static_cast<int>(i));
@@ -90,7 +90,7 @@ std::string Path::simplifyPath(const char *originalPath)
         } else if (i > 0 && pathParts[i] == ".") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i));
             i = 0;
-        } else if (pathParts[i] == "/" && i > 0 && pathParts[i-1] == "/") {
+        } else if (i > 0 && pathParts[i] == "/" && pathParts[i-1] == "/") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
             i = 0;
         }
@@ -158,11 +158,7 @@ bool Path::isC(const std::string &path)
 {
     // In unix, ".C" is concidered C++ file
     const std::string extension = getFilenameExtension(path);
-    if (extension == ".c") {
-        return true;
-    }
-
-    return false;
+    return(extension == ".c");
 }
 
 bool Path::isCPP(const std::string &path)
@@ -178,40 +174,23 @@ bool Path::isCPP(const std::string &path)
     }
 
     // In unix, ".C" is concidered C++ file
-    if (getFilenameExtension(path) == ".C") {
-        return true;
-    }
-
-    return false;
+    return(getFilenameExtension(path) == ".C");
 }
 
 bool Path::isJava(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
-    if (extension == ".java") {
-        return true;
-    }
-
-    return false;
+    return(extension == ".java");
 }
 
 bool Path::isCSharp(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
-    if (extension == ".cs") {
-        return true;
-    }
-
-    return false;
+    return(extension == ".cs");
 }
 
 bool Path::acceptFile(const std::string &filename)
 {
-    if (Path::isCPP(filename) ||
-        Path::isC(filename)) {
-        return true;
-    }
-
-    return false;
+    return(Path::isCPP(filename) || Path::isC(filename));
 }
 
