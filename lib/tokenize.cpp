@@ -1374,6 +1374,8 @@ void Tokenizer::simplifyTypedef()
                 // check for member functions
                 else if (Token::Match(tok2, ") const| {")) {
                     const Token *func = tok2->link()->previous();
+                    if (!func)
+                        continue;
 
                     /** @todo add support for multi-token operators */
                     if (func->previous()->str() == "operator")
