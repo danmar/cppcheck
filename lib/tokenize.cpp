@@ -8643,13 +8643,15 @@ void Tokenizer::simplifyAsm()
             Token::eraseTokens(tok, partok->link()->next());
         }
 
-        else if (Token::simpleMatch(tok, "__asm")) {
+        else if (Token::Match(tok, "_asm|__asm")) {
             const Token *tok2 = tok;
-            while (tok2 && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
+            while (tok2 && tok2->linenr() == tok->linenr() && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
                 tok2 = tok2->next();
-            if (tok2 && tok2->str() == ";") {
+            if (!tok2 || tok2->str() == ";" || tok2->linenr() != tok->linenr()) {
                 instruction = tok->next()->stringify(tok2);
                 Token::eraseTokens(tok, tok2);
+                if (!tok2 || tok2->str() != ";")
+                    tok->insertToken(";");
             } else
                 continue;
         }
