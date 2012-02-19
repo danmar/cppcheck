@@ -662,17 +662,24 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             break;
         }
 
-        if (Token::Match(tok, "%type% const| *|&| const| *| const| %var% [;=[(]") && tok->str() != "return" && tok->str() != "throw") { // Declaration: Skip
-            tok = tok->next();
-            while (Token::Match(tok, "const|*|&"))
+        if (Token::Match(tok, "%type% const| *|&| const| *| const| %var% [;=[(]")) { // Declaration: Skip
+            // Before a declaration there should be ;{}
+            const Token *prev = tok;
+            while (prev && prev->isName() && prev->str() != "return" && prev->str() != "throw")
+                prev = prev->previous();
+            if (Token::Match(prev, "[;{}]")) {
+
                 tok = tok->next();
-            tok = Token::findmatch(tok, "[;=[(]");
-            if (tok && Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
-                tok = tok->next();
-            else if (tok && Token::Match(tok, "= %var% ;")) // Simple initialization
-                tok = tok->next();
-            if (!tok)
-                break;
+                while (Token::Match(tok, "const|*|&"))
+                    tok = tok->next();
+                tok = Token::findmatch(tok, "[;=[(]");
+                if (tok && Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
+                    tok = tok->next();
+                else if (tok && Token::Match(tok, "= %var% ;")) // Simple initialization
+                    tok = tok->next();
+                if (!tok)
+                    break;
+            }
         }
         // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
         if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||

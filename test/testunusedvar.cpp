@@ -87,6 +87,7 @@ private:
         TEST_CASE(localvar39); // ticket #3454
         TEST_CASE(localvar40); // ticket #3473
         TEST_CASE(localvar41); // ticket #3481
+        TEST_CASE(localvar42); // ticket #3603
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1397,6 +1398,16 @@ private:
         functionVariableUsage("{\n"
                               "    if (1) = x\n"
                               "    else abort s[2]\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar42() {
+        // #3603 - false positive 'x is assigned a value that is never used'
+        functionVariableUsage("int f() {\n"
+                              "    int x = 1;\n"
+                              "    int y = FOO::VALUE * x;\n"
+                              "    return y;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
