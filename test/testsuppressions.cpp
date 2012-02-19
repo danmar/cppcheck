@@ -130,9 +130,8 @@ private:
         errout.str("");
         output.str("");
 
-        std::vector<std::string> filenames;
-        std::map<std::string, long> filesizes;
-        filenames.push_back("test.cpp");
+        std::map<std::string, size_t> files;
+        files["test.cpp"] = 1;
 
         Settings settings;
         settings._jobs = 1;
@@ -141,9 +140,9 @@ private:
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
         }
-        ThreadExecutor executor(filenames, filesizes, settings, *this);
-        for (unsigned int i = 0; i < filenames.size(); ++i)
-            executor.addFileContent(filenames[i], code);
+        ThreadExecutor executor(files, settings, *this);
+        for (std::map<std::string, size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
+            executor.addFileContent(i->first, code);
 
         executor.check();
 

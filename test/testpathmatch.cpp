@@ -99,8 +99,8 @@ private:
     void onemasksamepathdifferentcase() {
         std::vector<std::string> masks;
         masks.push_back("sRc/");
-        PathMatch match(masks);
-        ASSERT(match.Match("srC/", false));
+        PathMatch match(masks, false);
+        ASSERT(match.Match("srC/"));
     }
 
     void onemasksamepathwithfile() {
@@ -201,8 +201,8 @@ private:
     void filemaskdifferentcase() {
         std::vector<std::string> masks;
         masks.push_back("foo.cPp");
-        PathMatch match(masks);
-        ASSERT(match.Match("fOo.cpp", false));
+        PathMatch match(masks, false);
+        ASSERT(match.Match("fOo.cpp"));
     }
 
     void filemask2() {

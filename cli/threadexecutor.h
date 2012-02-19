@@ -19,7 +19,7 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
-#include <vector>
+#include <map>
 #include <string>
 #include <list>
 #include "settings.h"
@@ -38,7 +38,7 @@
  */
 class ThreadExecutor : public ErrorLogger {
 public:
-    ThreadExecutor(const std::vector<std::string> &filenames, const std::map<std::string, long> &filesizes, Settings &settings, ErrorLogger &_errorLogger);
+    ThreadExecutor(const std::map<std::string, size_t> &files, Settings &settings, ErrorLogger &_errorLogger);
     virtual ~ThreadExecutor();
     unsigned int check();
     virtual void reportOut(const std::string &outmsg);
@@ -54,16 +54,15 @@ public:
     void addFileContent(const std::string &path, const std::string &content);
 
 private:
-    const std::vector<std::string> &_filenames;
-    const std::map<std::string, long> &_filesizes;
+    const std::map<std::string, size_t> &_files;
     Settings &_settings;
     ErrorLogger &_errorLogger;
     unsigned int _fileCount;
 
+#ifdef THREADING_MODEL_FORK
+
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
-
-#ifdef THREADING_MODEL_FORK
 private:
     enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='3'};
 

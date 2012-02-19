@@ -22,8 +22,7 @@
 #include "errorlogger.h"
 #include "settings.h"
 #include <ctime>
-#include <vector>
-#include <list>
+#include <set>
 #include <string>
 
 class CppCheck;
@@ -81,7 +80,7 @@ public:
      * @param sizedone The sum of sizes of the files checked.
      * @param sizetotal The total sizes of the files.
      */
-    static void reportStatus(size_t fileindex, size_t filecount, long sizedone, long sizetotal);
+    static void reportStatus(size_t fileindex, size_t filecount, size_t sizedone, size_t sizetotal);
 
 protected:
 
@@ -111,7 +110,7 @@ private:
     /**
      * Used to filter out duplicate error messages.
      */
-    std::list<std::string> _errorList;
+    std::set<std::string> _errorList;
 
     /**
      * Report progress time
@@ -124,14 +123,9 @@ private:
     bool errorlist;
 
     /**
-     * List of files to check.
+     * Filename associated with size of file
      */
-    std::vector<std::string> _filenames;
-
-    /**
-     * Sizes of files in _filenames.
-     */
-    std::map<std::string, long> _filesizes;
+    std::map<std::string, size_t> _files;
 };
 
 #endif // CPPCHECKEXECUTOR_H

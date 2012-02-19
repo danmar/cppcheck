@@ -522,7 +522,7 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
     _errorLogger.reportProgress(filename, stage, value);
 }
 
-void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, long /*sizedone*/, long /*sizetotal*/)
+void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, size_t /*sizedone*/, size_t /*sizetotal*/)
 {
 
 }

@@ -111,7 +111,7 @@ public:
      */
     static const char * extraVersion();
 
-    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, long sizedone, long sizetotal);
+    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, size_t sizedone, size_t sizetotal);
 
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.

@@ -19,8 +19,8 @@
 #include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 #include "cppcheck.h"
-#include <algorithm>
 #ifdef THREADING_MODEL_FORK
+#include <algorithm>
 #include <iostream>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -33,8 +33,8 @@
 #include <cstring>
 #endif
 
-ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const std::map<std::string, long> &filesizes, Settings &settings, ErrorLogger &errorLogger)
-    : _filenames(filenames), _filesizes(filesizes), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+ThreadExecutor::ThreadExecutor(const std::map<std::string, size_t> &files, Settings &settings, ErrorLogger &errorLogger)
+    : _files(files), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 #ifdef THREADING_MODEL_FORK
     _wpipe = 0;
@@ -46,16 +46,17 @@ ThreadExecutor::~ThreadExecutor()
     //dtor
 }
 
-void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
-{
-    _fileContents[ path ] = content;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for platforms that support fork() only ////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef THREADING_MODEL_FORK
+
+void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
+{
+    _fileContents[ path ] = content;
+}
 
 int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 {
@@ -123,19 +124,19 @@ unsigned int ThreadExecutor::check()
     _fileCount = 0;
     unsigned int result = 0;
 
-    long totalfilesize = 0;
-    for (std::map<std::string, long>::const_iterator i = _filesizes.begin(); i != _filesizes.end(); ++i) {
+    size_t totalfilesize = 0;
+    for (std::map<std::string, size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
         totalfilesize += i->second;
     }
 
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
-    long processedsize = 0;
-    unsigned int i = 0;
+    size_t processedsize = 0;
+    std::map<std::string, size_t>::const_iterator i = _files.begin();
     while (true) {
         // Start a new child
-        if (i < _filenames.size() && rpipes.size() < _settings._jobs) {
+        if (i != _files.end() && rpipes.size() < _settings._jobs) {
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "pipe() failed: "<< strerror(errno) << std::endl;
@@ -166,12 +167,12 @@ unsigned int ThreadExecutor::check()
                 fileChecker.settings(_settings);
                 unsigned int resultOfCheck = 0;
 
-                if (_fileContents.size() > 0 && _fileContents.find(_filenames[i]) != _fileContents.end()) {
+                if (_fileContents.size() > 0 && _fileContents.find(i->first) != _fileContents.end()) {
                     // File content was given as a string
-                    resultOfCheck = fileChecker.check(_filenames[i], _fileContents[ _filenames[i] ]);
+                    resultOfCheck = fileChecker.check(i->first, _fileContents[ i->first ]);
                 } else {
                     // Read file from a file
-                    resultOfCheck = fileChecker.check(_filenames[i]);
+                    resultOfCheck = fileChecker.check(i->first);
                 }
 
                 std::ostringstream oss;
@@ -182,8 +183,8 @@ unsigned int ThreadExecutor::check()
 
             close(pipes[1]);
             rpipes.push_back(pipes[0]);
-            childFile[pid] = _filenames[i];
-            pipeFile[pipes[0]] = _filenames[i];
+            childFile[pid] = i->first;
+            pipeFile[pipes[0]] = i->first;
 
             ++i;
         } else if (!rpipes.empty()) {
@@ -205,8 +206,8 @@ unsigned int ThreadExecutor::check()
                             if (p != pipeFile.end()) {
                                 std::string name = p->second;
                                 pipeFile.erase(p);
-                                std::map<std::string, long>::const_iterator fs = _filesizes.find(name);
-                                if (fs != _filesizes.end()) {
+                                std::map<std::string, size_t>::const_iterator fs = _files.find(name);
+                                if (fs != _files.end()) {
                                     size = fs->second;
                                 }
                             }
@@ -214,7 +215,7 @@ unsigned int ThreadExecutor::check()
                             _fileCount++;
                             processedsize += size;
                             if (!_settings._errorsOnly)
-                                CppCheckExecutor::reportStatus(_fileCount, _filenames.size(), processedsize, totalfilesize);
+                                CppCheckExecutor::reportStatus(_fileCount, _files.size(), processedsize, totalfilesize);
 
                             close(*rp);
                             rp = rpipes.erase(rp);
@@ -289,6 +290,12 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 }
 
 #else
+
+void ThreadExecutor::addFileContent(const std::string &/*path*/, const std::string &/*content*/)
+{
+
+}
+
 unsigned int ThreadExecutor::check()
 {
     return 0;

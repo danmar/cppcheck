@@ -19,7 +19,6 @@
 #include "testsuite.h"
 #include "filelister.h"
 #include <fstream>
-#include <algorithm>
 
 #ifndef _WIN32
 #include <limits.h>
@@ -66,29 +65,26 @@ private:
 
     void recursiveAddFiles() {
         // Recursively add add files..
-        std::vector<std::string> filenames;
-        std::map<std::string, long> filesizes;
-        FileLister::recursiveAddFiles(filenames, filesizes, ".");
-
-        // Ensure a size entry is present for each listed file
-        for (std::vector<std::string>::const_iterator i = filenames.begin(); i != filenames.end(); ++i) {
-            ASSERT(filesizes.find(*i) != filesizes.end());
-        }
+        std::map<std::string, size_t> files;
+        FileLister::recursiveAddFiles(files, ".");
 
         // In case there are leading "./"..
-        for (unsigned int i = 0; i < filenames.size(); ++i) {
-            if (filenames[i].compare(0,2,"./") == 0)
-                filenames[i].erase(0,2);
+        for (std::map<std::string, size_t>::iterator i = files.begin(); i != files.end();) {
+            if (i->first.compare(0,2,"./") == 0) {
+                files[i->first.substr(2)] = i->second;
+                files.erase(i++);
+            } else
+                ++i;
         }
 
         // Make sure source files are added..
-        ASSERT(std::find(filenames.begin(), filenames.end(), "cli/main.cpp") != filenames.end());
-        ASSERT(std::find(filenames.begin(), filenames.end(), "lib/token.cpp") != filenames.end());
-        ASSERT(std::find(filenames.begin(), filenames.end(), "lib/tokenize.cpp") != filenames.end());
-        ASSERT(std::find(filenames.begin(), filenames.end(), "test/testfilelister.cpp") != filenames.end());
+        ASSERT(files.find("cli/main.cpp") != files.end());
+        ASSERT(files.find("lib/token.cpp") != files.end());
+        ASSERT(files.find("lib/tokenize.cpp") != files.end());
+        ASSERT(files.find("test/testfilelister.cpp") != files.end());
 
         // Make sure headers are not added..
-        ASSERT(std::find(filenames.begin(), filenames.end(), "lib/tokenize.h") == filenames.end());
+        ASSERT(files.find("lib/tokenize.h") == files.end());
     }
 };
 

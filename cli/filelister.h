@@ -19,7 +19,6 @@
 #ifndef filelisterH
 #define filelisterH
 
-#include <vector>
 #include <string>
 #include <set>
 #include <map>
@@ -31,17 +30,14 @@
 class FileLister {
 public:
     /**
-     * @brief Recursively add source files to a vector.
+     * @brief Recursively add source files to a map.
      * Add source files from given directory and all subdirectries to the
-     * given vector. Only files with accepted extensions
+     * given map. Only files with accepted extensions
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
-     * @param filenames output vector that filenames are written to
-     * @param filesizes output map that contains the size of each file
+     * @param files output map that associates the size of each file with its name
      * @param path root path
      */
-    static void recursiveAddFiles(std::vector<std::string> &filenames,
-                                  std::map<std::string, long> &filesizes,
-                                  const std::string &path);
+    static void recursiveAddFiles(std::map<std::string, size_t> &files, const std::string &path);
 
     /**
      * @brief Is given path a directory?
@@ -58,9 +54,8 @@ public:
 #ifndef _WIN32
     static std::string getAbsolutePath(const std::string& path);
 
-    static void recursiveAddFiles2(std::vector<std::string> &relative,
-                                   std::set<std::string> &seen_paths,
-                                   std::map<std::string, long> &filesizes,
+    static void recursiveAddFiles2(std::set<std::string> &seen_paths,
+                                   std::map<std::string, size_t> &files,
                                    const std::string &path);
 #endif
 };

@@ -28,7 +28,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 extern std::ostringstream errout;
 extern std::ostringstream output;
@@ -52,19 +51,18 @@ private:
             return;
         }
 
-        std::vector<std::string> filenames;
-        std::map<std::string, long> filesizes;
+        std::map<std::string, size_t> filemap;
         for (int i = 1; i <= files; ++i) {
             std::ostringstream oss;
             oss << "file_" << i << ".cpp";
-            filenames.push_back(oss.str());
+            filemap[oss.str()] = 1;
         }
 
         Settings settings;
         settings._jobs = jobs;
-        ThreadExecutor executor(filenames, filesizes, settings, *this);
-        for (unsigned int i = 0; i < filenames.size(); ++i)
-            executor.addFileContent(filenames[i], data);
+        ThreadExecutor executor(filemap, settings, *this);
+        for (std::map<std::string, size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
+            executor.addFileContent(i->first, data);
 
         ASSERT_EQUALS(result, executor.check());
     }

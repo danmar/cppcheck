@@ -88,18 +88,16 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         }
     }
 
-    std::vector<std::string> pathnames = parser.GetPathNames();
-    std::vector<std::string> filenames;
-    std::map<std::string, long> filesizes;
+    const std::vector<std::string>& pathnames = parser.GetPathNames();
 
     if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            FileLister::recursiveAddFiles(filenames, filesizes, Path::toNativeSeparators(*iter));
+            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter));
     }
 
-    if (!filenames.empty()) {
+    if (!_files.empty()) {
         // Remove header files from the list of ignored files.
         // Also output a warning for the user.
         // TODO: Remove all unknown files? (use FileLister::acceptFile())
@@ -118,16 +116,16 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
         }
 
-        PathMatch matcher(parser.GetIgnoredPaths());
-        for (std::vector<std::string>::iterator i = filenames.begin() ; i != filenames.end();) {
 #if defined(_WIN32)
-            // For Windows we want case-insensitive path matching
-            const bool caseSensitive = false;
+        // For Windows we want case-insensitive path matching
+        const bool caseSensitive = false;
 #else
-            const bool caseSensitive = true;
+        const bool caseSensitive = true;
 #endif
-            if (matcher.Match(*i, caseSensitive))
-                i = filenames.erase(i);
+        PathMatch matcher(parser.GetIgnoredPaths(), caseSensitive);
+        for (std::map<std::string, size_t>::iterator i = _files.begin(); i != _files.end();) {
+            if (matcher.Match(i->first))
+                _files.erase(i++);
             else
                 ++i;
         }
@@ -136,13 +134,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         return false;
     }
 
-    if (!filenames.empty()) {
-        std::vector<std::string>::iterator iter;
-        for (iter = filenames.begin(); iter != filenames.end(); ++iter) {
-            _filenames.push_back(*iter);
-            _filesizes[*iter] = filesizes[*iter];
-        }
-
+    if (!_files.empty()) {
         return true;
     } else {
         std::cout << "cppcheck: error: no files to check - all paths ignored." << std::endl;
@@ -171,19 +163,19 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (_settings._jobs == 1) {
         // Single process
 
-        long totalfilesize = 0;
-        for (std::map<std::string, long>::const_iterator i = _filesizes.begin(); i != _filesizes.end(); ++i) {
+        size_t totalfilesize = 0;
+        for (std::map<std::string, size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
             totalfilesize += i->second;
         }
 
-        long processedsize = 0;
-        for (size_t c = 0; c < _filenames.size(); c++) {
-            returnValue += cppCheck.check(_filenames[c]);
-            if (_filesizes.find(_filenames[c]) != _filesizes.end()) {
-                processedsize += _filesizes[_filenames[c]];
-            }
+        size_t processedsize = 0;
+        unsigned int c = 0;
+        for (std::map<std::string, size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+            returnValue += cppCheck.check(i->first);
+            processedsize += i->second;
             if (!_settings._errorsOnly)
-                reportStatus(c + 1, _filenames.size(), processedsize, totalfilesize);
+                reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+            c++;
         }
 
         cppCheck.checkFunctionUsage();
@@ -192,7 +184,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     } else {
         // Multiple processes
         Settings &settings = cppCheck.settings();
-        ThreadExecutor executor(_filenames, _filesizes, settings, *this);
+        ThreadExecutor executor(_files, settings, *this);
         returnValue = executor.check();
     }
 
@@ -229,10 +221,10 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 void CppCheckExecutor::reportErr(const std::string &errmsg)
 {
     // Alert only about unique errors
-    if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
+    if (_errorList.find(errmsg) != _errorList.end())
         return;
 
-    _errorList.push_back(errmsg);
+    _errorList.insert(errmsg);
     std::cerr << errmsg << std::endl;
 }
 
@@ -269,7 +261,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, long sizedone, long sizetotal)
+void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, size_t sizedone, size_t sizetotal)
 {
     if (filecount > 1) {
         std::ostringstream oss;

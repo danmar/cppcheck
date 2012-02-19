@@ -35,7 +35,7 @@ public:
      * The constructor.
      * @param masks List of masks.
      */
-    explicit PathMatch(const std::vector<std::string> &masks);
+    PathMatch(const std::vector<std::string> &masks, bool caseSensitive = true);
 
     /**
      * @brief Match path against list of masks.
@@ -44,7 +44,7 @@ public:
      *   matching paths?
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool Match(const std::string &path, bool caseSensitive = true) const;
+    bool Match(const std::string &path) const;
 
 protected:
 
@@ -57,6 +57,7 @@ protected:
 
 private:
     std::vector<std::string> _masks;
+    bool _caseSensitive;
 };
 
 /// @}

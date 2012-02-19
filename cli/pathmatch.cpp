@@ -16,28 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pathmatch.h"
 #include <algorithm>
 #include <ctype.h>      // Borland: tolower
-#include "pathmatch.h"
 
-PathMatch::PathMatch(const std::vector<std::string> &masks)
-    : _masks(masks)
+PathMatch::PathMatch(const std::vector<std::string> &masks, bool caseSensitive)
+    : _masks(masks), _caseSensitive(caseSensitive)
 {
+    if (!_caseSensitive)
+        for (std::vector<std::string>::iterator i = _masks.begin(); i != _masks.end(); ++i)
+            std::transform(i->begin(), i->end(), i->begin(), ::tolower);
 }
 
-bool PathMatch::Match(const std::string &path, bool caseSensitive) const
+bool PathMatch::Match(const std::string &path) const
 {
     if (path.empty())
         return false;
 
-    std::vector<std::string>::const_iterator iterMask;
-    for (iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask) {
-        std::string mask(*iterMask);
-        if (!caseSensitive)
-            std::transform(mask.begin(), mask.end(), mask.begin(), ::tolower);
+    for (std::vector<std::string>::const_iterator iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask) {
+        const std::string& mask(*iterMask);
 
         std::string findpath(path);
-        if (!caseSensitive)
+        if (!_caseSensitive)
             std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
 
         // Filtering directory name
