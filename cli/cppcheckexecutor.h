@@ -57,7 +57,7 @@ public:
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    virtual int check(int argc, const char* const argv[]);
+    int check(int argc, const char* const argv[]);
 
     /**
      * Information about progress is directed here. This should be
@@ -88,7 +88,7 @@ protected:
      * Helper function to print out errors. Appends a line change.
      * @param errmsg String printed to error stream
      */
-    virtual void reportErr(const std::string &errmsg);
+    void reportErr(const std::string &errmsg);
 
     /**
      * @brief Parse command line args and get settings and file lists

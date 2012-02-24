@@ -113,6 +113,8 @@ private:
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
 
+        TEST_CASE(classWithFriend);
+
         TEST_CASE(parseFunctionCorrect);
 
         TEST_CASE(hasGlobalVariables1);
@@ -628,6 +630,25 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
             ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+        }
+    }
+
+    void classWithFriend() {
+        GET_SYMBOL_DB("class Foo {}; class Bar1 { friend class Foo; }; class Bar2 { friend Foo; };")
+        // 3 scopes: Global, 3 classes
+        ASSERT(db && db->scopeList.size() == 4);
+        if (db) {
+            const Scope* foo = db->findScopeByName("Foo");
+            ASSERT(foo != 0);
+            const Scope* bar1 = db->findScopeByName("Bar1");
+            ASSERT(bar1 != 0);
+            const Scope* bar2 = db->findScopeByName("Bar2");
+            ASSERT(bar2 != 0);
+
+            if (foo && bar1 && bar2) {
+                ASSERT(bar1->friendList.size() == 1 && bar1->friendList.front().name == "Foo" && bar1->friendList.front().scope == foo);
+                ASSERT(bar2->friendList.size() == 1 && bar2->friendList.front().name == "Foo" && bar2->friendList.front().scope == foo);
+            }
         }
     }
 

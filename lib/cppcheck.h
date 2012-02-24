@@ -141,7 +141,7 @@ public:
 private:
 
     /** @brief Process one file. */
-    unsigned int processFile();
+    unsigned int processFile(const std::string& filename);
 
     /** @brief Check file */
     void checkFile(const std::string &code, const char FileName[]);
@@ -173,14 +173,13 @@ private:
      * @brief Replace "from" strings with "to" strings in "code"
      * and return it.
      */
-    std::string replaceAll(std::string code, const std::string &from, const std::string &to) const;
+    static void replaceAll(std::string& code, const std::string &from, const std::string &to);
 
     unsigned int exitcode;
     std::list<std::string> _errorList;
     std::ostringstream _errout;
     Settings _settings;
     bool _useGlobalSuppressions;
-    std::string _filename;
     std::string _fileContent;
     std::set<std::string> _dependencies;
 

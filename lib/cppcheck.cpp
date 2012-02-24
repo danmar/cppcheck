@@ -67,28 +67,24 @@ const char * CppCheck::extraVersion()
 
 unsigned int CppCheck::check(const std::string &path)
 {
-    _filename = path;
-    return processFile();
+    return processFile(path);
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
-    _filename = path;
     _fileContent = content;
-    const unsigned int retval = processFile();
+    const unsigned int retval = processFile(path);
     _fileContent.clear();
     return retval;
 }
 
-std::string CppCheck::replaceAll(std::string code, const std::string &from, const std::string &to) const
+void CppCheck::replaceAll(std::string& code, const std::string &from, const std::string &to)
 {
     size_t pos = 0;
     while ((pos = code.find(from, pos)) != std::string::npos) {
         code.replace(pos, from.length(), to);
         pos += to.length();
     }
-
-    return code;
 }
 
 bool CppCheck::findError(std::string code, const char FileName[])
@@ -126,8 +122,8 @@ bool CppCheck::findError(std::string code, const char FileName[])
 
         // Add '\n' so that "\n#file" on first line would be found
         code = "// " + error + "\n" + code;
-        code = replaceAll(code, "\n#file", "\n// #file");
-        code = replaceAll(code, "\n#endfile", "\n// #endfile");
+        replaceAll(code, "\n#file", "\n// #file");
+        replaceAll(code, "\n#endfile", "\n// #endfile");
 
         // We have reduced the code as much as we can. Print out
         // the code and quit.
@@ -138,23 +134,23 @@ bool CppCheck::findError(std::string code, const char FileName[])
     return true;
 }
 
-unsigned int CppCheck::processFile()
+unsigned int CppCheck::processFile(const std::string& filename)
 {
     exitcode = 0;
 
     // only show debug warnings for C/C++ source files (don't fix
     // debug warnings for java/c#/etc files)
-    if (!Path::acceptFile(_filename))
+    if (!Path::acceptFile(filename))
         _settings.debugwarnings = false;
 
     // TODO: Should this be moved out to its own function so all the files can be
     // analysed before any files are checked?
     if (_settings.test_2_pass && _settings._jobs == 1) {
-        const std::string printname = Path::toNativeSeparators(_filename);
+        const std::string printname = Path::toNativeSeparators(filename);
         reportOut("Analysing " + printname + "...");
 
-        std::ifstream f(_filename.c_str());
-        analyseFile(f, _filename);
+        std::ifstream f(filename.c_str());
+        analyseFile(f, filename);
     }
 
     _errout.str("");
@@ -163,7 +159,7 @@ unsigned int CppCheck::processFile()
         return exitcode;
 
     if (_settings._errorsOnly == false) {
-        std::string fixedpath(_filename);
+        std::string fixedpath(filename);
         fixedpath = Path::simplifyPath(fixedpath.c_str());
         fixedpath = Path::toNativeSeparators(fixedpath);
         _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
@@ -177,12 +173,12 @@ unsigned int CppCheck::processFile()
         if (!_fileContent.empty()) {
             // File content was given as a string
             std::istringstream iss(_fileContent);
-            preprocessor.preprocess(iss, filedata, configurations, _filename, _settings._includePaths);
+            preprocessor.preprocess(iss, filedata, configurations, filename, _settings._includePaths);
         } else {
             // Only file name was given, read the content from file
-            std::ifstream fin(_filename.c_str());
+            std::ifstream fin(filename.c_str());
             Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
-            preprocessor.preprocess(fin, filedata, configurations, _filename, _settings._includePaths);
+            preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
         }
 
         if (_settings.checkConfiguration) {
@@ -200,7 +196,7 @@ unsigned int CppCheck::processFile()
             // was used.
             if (!_settings._force && checkCount >= _settings._maxConfigs) {
 
-                const std::string fixedpath = Path::toNativeSeparators(_filename);
+                const std::string fixedpath = Path::toNativeSeparators(filename);
                 ErrorLogger::ErrorMessage::FileLocation location;
                 location.setfile(fixedpath);
                 std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
@@ -225,12 +221,12 @@ unsigned int CppCheck::processFile()
 
             cfg = *it;
             Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-            const std::string codeWithoutCfg = preprocessor.getcode(filedata, *it, _filename);
+            const std::string codeWithoutCfg = preprocessor.getcode(filedata, *it, filename);
             t.Stop();
 
             // If only errors are printed, print filename after the check
             if (_settings._errorsOnly == false && it != configurations.begin()) {
-                std::string fixedpath = Path::simplifyPath(_filename.c_str());
+                std::string fixedpath = Path::simplifyPath(filename.c_str());
                 fixedpath = Path::toNativeSeparators(fixedpath);
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
             }
@@ -238,23 +234,23 @@ unsigned int CppCheck::processFile()
             const std::string &appendCode = _settings.append();
 
             if (_settings.debugFalsePositive) {
-                if (findError(codeWithoutCfg + appendCode, _filename.c_str())) {
+                if (findError(codeWithoutCfg + appendCode, filename.c_str())) {
                     return exitcode;
                 }
             } else {
-                checkFile(codeWithoutCfg + appendCode, _filename.c_str());
+                checkFile(codeWithoutCfg + appendCode, filename.c_str());
             }
 
             ++checkCount;
         }
     } catch (std::runtime_error &e) {
         // Exception was thrown when checking this file..
-        const std::string fixedpath = Path::toNativeSeparators(_filename);
+        const std::string fixedpath = Path::toNativeSeparators(filename);
         _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
     }
 
     if (!_settings._errorsOnly)
-        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(_filename));
+        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename));
 
     _errorList.clear();
     return exitcode;

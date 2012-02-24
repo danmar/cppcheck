@@ -39,7 +39,7 @@ class Settings;
 class TemplateSimplifier {
 public:
     TemplateSimplifier();
-    virtual ~TemplateSimplifier();
+    ~TemplateSimplifier();
 
     /**
      * Used after simplifyTemplates to perform a little cleanup.

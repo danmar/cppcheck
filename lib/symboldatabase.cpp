@@ -363,7 +363,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     Scope::FriendInfo friendInfo;
 
                     friendInfo.name = tok->strAt(1) == "class" ? tok->strAt(2) : tok->strAt(1);
-                    /** @todo fill this in later after parsing is complete */
+                    // fill this in after parsing is complete
                     friendInfo.scope = 0;
 
                     scope->friendList.push_back(friendInfo);
@@ -540,6 +540,23 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 if (scope1) {
                     // set found scope
                     scope->derivedFrom[i].scope = const_cast<Scope *>(scope1);
+                    break;
+                }
+            }
+        }
+    }
+
+    // fill in friend info
+    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+        for (std::list<Scope::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
+            for (std::list<Scope>::iterator j = scopeList.begin(); j != scopeList.end(); ++j) {
+                // check scope for match
+                const Scope *scope = j->findQualifiedScope(i->name);
+
+                // found match?
+                if (scope && scope->isClassOrStruct()) {
+                    // set found scope
+                    i->scope = const_cast<Scope *>(scope);
                     break;
                 }
             }
@@ -1651,8 +1668,6 @@ AccessControl Scope::defaultAccess() const
     default:
         return Local;
     }
-
-    return Public;
 }
 
 // Get variable list..
@@ -2026,6 +2041,17 @@ const Function *SymbolDatabase::findFunctionByToken(const Token *tok) const
             if (func->token == tok)
                 return &(*func);
         }
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+const Scope* SymbolDatabase::findScopeByName(const std::string& name) const
+{
+    for (std::list<Scope>::const_iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+        if (it->className == name)
+            return &*it;
     }
     return 0;
 }

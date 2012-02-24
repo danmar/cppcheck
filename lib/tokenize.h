@@ -47,7 +47,7 @@ private:
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
-    virtual ~Tokenizer();
+    ~Tokenizer();
 
     /** Returns the source file path. e.g. "file.cpp" */
     std::string getSourceFilePath() const;
@@ -204,7 +204,7 @@ public:
     /**
      * get error messages that the tokenizer generate
      */
-    virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
 
     /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
      */

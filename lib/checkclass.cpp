@@ -508,6 +508,52 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
 // ClassCheck: Unused private functions
 //---------------------------------------------------------------------------
 
+static bool checkBaseFunctionsRec(const Scope* scope, std::list<const Token*>& FuncList, bool& whole)
+{
+    for (std::vector<Scope::BaseInfo>::const_iterator i = scope->derivedFrom.begin(); i != scope->derivedFrom.end(); ++i) {
+        if (!i->scope || !i->scope->classStart) {
+            whole = false; // We need to see the complete definition of the class
+            return false;
+        }
+        for (std::list<Function>::const_iterator func = i->scope->functionList.begin(); func != i->scope->functionList.end(); ++func) {
+            if (func->isVirtual) { // Only virtual functions can be overriden
+                // Remove function from FuncList. TODO: Handle overloads
+                bool found = false;
+                std::list<const Token*>::iterator it = FuncList.begin();
+                while (it != FuncList.end()) {
+                    if (func->token->str() == (*it)->str()) {
+                        FuncList.erase(it++);
+                        found = true;
+                    } else
+                        ++it;
+                }
+                if (found)
+                    return false;
+            }
+        }
+        if (!checkBaseFunctionsRec(i->scope, FuncList, whole))
+            return false;
+    }
+    return true;
+}
+
+static bool checkFunctionUsage(const std::string& name, const Scope* scope)
+{
+    if (!scope)
+        return true; // Assume its used, if scope is not seen
+
+    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        if (func->start) {
+            for (const Token *ftok = func->start; ftok != func->start->link(); ftok = ftok->next()) {
+                if (ftok->str() == name && ftok->next()->str() == "(") // Function called. TODO: Handle overloads
+                    return true;
+            }
+        }
+    }
+
+    return false; // Unused in this scope
+}
+
 void CheckClass::privateFunctions()
 {
     if (!_settings->isEnabled("style"))
@@ -518,15 +564,9 @@ void CheckClass::privateFunctions()
     if (_tokenizer->codeWithTemplates())
         return;
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check classes and structures
         if (!scope->isClassOrStruct())
-            continue;
-
-        // skip checking if there are friends
-        if (!scope->friendList.empty())
             continue;
 
         // dont check borland classes with properties..
@@ -561,63 +601,36 @@ void CheckClass::privateFunctions()
         }
 
         // Bailout for overriden virtual functions of base classes
-        if (!scope->derivedFrom.empty()) {
-            for (std::vector<Scope::BaseInfo>::const_iterator i = scope->derivedFrom.begin(); i != scope->derivedFrom.end(); ++i) {
-                if (!i->scope || !i->scope->classStart) {
-                    whole = false; // We need to see the complete definition of the class
-                    break;
-                }
-                for (std::list<Function>::const_iterator func = i->scope->functionList.begin(); func != i->scope->functionList.end(); ++func) {
-                    if (func->isVirtual) { // Only virtual functions can be overriden
-                        // Remove function from FuncList. TODO: Handle overloads
-                        std::list<const Token *>::iterator it = FuncList.begin();
-                        while (it != FuncList.end()) {
-                            if (func->token->str() == (*it)->str())
-                                FuncList.erase(it++);
-                            else
-                                ++it;
-                        }
-                    }
-                }
-            }
-        }
+        if (!scope->derivedFrom.empty())
+            checkBaseFunctionsRec(&*scope, FuncList, whole);
         if (!whole)
             continue;
 
-        // Check that all private functions are used..
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->start) {
-                for (const Token *ftok = func->start; ftok != func->start->link(); ftok = ftok->next()) {
-                    if (Token::Match(ftok, "%var% (")) {
-                        // Remove function from FuncList. TODO: Handle overloads
-                        std::list<const Token *>::iterator it = FuncList.begin();
-                        while (it != FuncList.end()) {
-                            if (ftok->str() == (*it)->str())
-                                FuncList.erase(it++);
-                            else
-                                ++it;
-                        }
-                    }
+        while (!FuncList.empty()) {
+            // Check that all private functions are used
+            bool used = checkFunctionUsage(FuncList.front()->str(), &*scope); // Usage in this class
+            // Check in friend classes
+            for (std::list<Scope::FriendInfo>::const_iterator i = scope->friendList.begin(); !used && i != scope->friendList.end(); ++i)
+                used = checkFunctionUsage(FuncList.front()->str(), i->scope);
+
+            if (!used) {
+                // Final check; check if the function pointer is used somewhere..
+                const std::string _pattern("return|throw|(|)|,|= &|" + FuncList.front()->str());
+
+                // or if the function address is used somewhere...
+                // eg. sigc::mem_fun(this, &className::classFunction)
+                const std::string _pattern2("& " + scope->className + " :: " + FuncList.front()->str());
+                const std::string methodAsArgument("(|, " + scope->className + " :: " + FuncList.front()->str() + " ,|)");
+                const std::string methodAssigned("%var% = &| " + scope->className + " :: " + FuncList.front()->str());
+
+                if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()) &&
+                    !Token::findmatch(_tokenizer->tokens(), _pattern2.c_str()) &&
+                    !Token::findmatch(_tokenizer->tokens(), methodAsArgument.c_str()) &&
+                    !Token::findmatch(_tokenizer->tokens(), methodAssigned.c_str())) {
+                    unusedPrivateFunctionError(FuncList.front(), scope->className, FuncList.front()->str());
                 }
             }
-        }
 
-        while (!FuncList.empty()) {
-            // Final check; check if the function pointer is used somewhere..
-            const std::string _pattern("return|throw|(|)|,|= &|" + FuncList.front()->str());
-
-            // or if the function address is used somewhere...
-            // eg. sigc::mem_fun(this, &className::classFunction)
-            const std::string _pattern2("& " + scope->className + " :: " + FuncList.front()->str());
-            const std::string methodAsArgument("(|, " + scope->className + " :: " + FuncList.front()->str() + " ,|)");
-            const std::string methodAssigned("%var% = &| " + scope->className + " :: " + FuncList.front()->str());
-
-            if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()) &&
-                !Token::findmatch(_tokenizer->tokens(), _pattern2.c_str()) &&
-                !Token::findmatch(_tokenizer->tokens(), methodAsArgument.c_str()) &&
-                !Token::findmatch(_tokenizer->tokens(), methodAssigned.c_str())) {
-                unusedPrivateFunctionError(FuncList.front(), scope->className, FuncList.front()->str());
-            }
             FuncList.pop_front();
         }
     }

@@ -423,16 +423,53 @@ private:
               "    void bar() {}\n" // Don't skip if no function is overriden
               "};");
         ASSERT_EQUALS("[test.cpp:9]: (style) Unused private function 'derived::bar'\n", errout.str());
+
+        check("class Base {\n"
+              "private:\n"
+              "    virtual void func() = 0;\n"
+              "public:\n"
+              "    void public_func() {\n"
+              "        func();\n"
+              "    };\n"
+              "};\n"
+              "\n"
+              "class Derived1: public Base {\n"
+              "private:\n"
+              "    void func() {}\n"
+              "};\n"
+              "class Derived2: public Derived1 {\n"
+              "private:\n"
+              "    void func() {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void friendClass() {
         // ticket #2459 - friend class
         check("class Foo {\n"
               "private:\n"
+              "    friend Bar;\n" // Unknown friend class
+              "    void f() { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Bar {\n"
+              "    void g() { f(); }\n" // Friend class seen, but f() used in it
+              "};\n"
+              "class Foo {\n"
+              "private:\n"
               "    friend Bar;\n"
               "    void f() { }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class Bar {\n" // Friend class seen, f() not used in it
+              "};\n"
+              "class Foo {\n"
+              "    friend Bar;\n"
+              "    void f() { }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Unused private function 'Foo::f'\n", errout.str());
     }
 
     void borland() {
