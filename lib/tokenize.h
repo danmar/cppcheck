@@ -199,7 +199,7 @@ public:
      * @param tok The given token
      * @return filename for the given token
      */
-    std::string file(const Token *tok) const;
+    const std::string& file(const Token *tok) const;
 
     /**
      * get error messages that the tokenizer generate

@@ -418,6 +418,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds\n", errout.str());
 
+        check("void foo(std::vector<int> foo) {\n"
+              "    for (unsigned int ii = 0; ii <= foo.size(); ++ii) {\n"
+              "       foo.at(ii) = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo.at(ii) is out of bounds\n", errout.str());
+
         check("void foo()\n"
               "{\n"
               "    std::vector<int> foo;\n"
@@ -1478,13 +1485,6 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
-        // Implicit conversion back to std::string
-        check("std::string get_msg() {\n"
-              "    std::string errmsg;\n"
-              "    return errmsg.c_str();\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
         check("void f() {\n"
               "    std::ostringstream errmsg;\n"
               "    const char *c = errmsg.str().c_str();\n"
@@ -1498,13 +1498,89 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
-
         check("const char* foo() {\n"
               "    static std::string text;\n"
               "    text = \"hello world\n\";\n"
               "    return text.c_str();\n"
               "}");
         ASSERT_EQUALS("", errout.str()); // #3427
+
+        // Implicit conversion back to std::string
+        check("std::string get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return errmsg.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Returning the result of c_str() in a function that returns std::string is slow and redundant.\n", errout.str());
+
+        check("const std::string& get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return errmsg.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Returning the result of c_str() in a function that returns std::string is slow and redundant.\n", errout.str());
+
+        check("std::string get_msg() {\n"
+              "    std::string errmsg;\n"
+              "    return errmsg;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("void Foo1(const std::string& str) {}\n"
+              "void Foo2(char* c, const std::string str) {}\n"
+              "void Foo3(std::string& rstr) {}\n"
+              "void Foo4(std::string str, const std::string& str) {}\n"
+              "void Bar() {\n"
+              "    std::string str = \"bar\";\n"
+              "    Foo1(str);\n"
+              "    Foo1(str.c_str());\n"
+              "    Foo2(str.c_str(), str);\n"
+              "    Foo2(str.c_str(), str.c_str());\n"
+              "    Foo3(str.c_str());\n"
+              "    Foo4(str, str);\n"
+              "    Foo4(str.c_str(), str);\n"
+              "    Foo4(str, str.c_str());\n"
+              "    Foo4(str.c_str(), str.c_str());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n"
+                      "[test.cpp:10]: (performance) Passing the result of c_str() to a function that takes std::string as argument 2 is slow and redundant.\n"
+                      "[test.cpp:13]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n"
+                      "[test.cpp:14]: (performance) Passing the result of c_str() to a function that takes std::string as argument 2 is slow and redundant.\n"
+                      "[test.cpp:15]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n"
+                      "[test.cpp:15]: (performance) Passing the result of c_str() to a function that takes std::string as argument 2 is slow and redundant.\n", errout.str());
+
+        check("void Foo1(const std::string& str) {}\n"
+              "void Foo2(char* c, const std::string str) {}\n"
+              "void Bar() {\n"
+              "    std::string str = \"bar\";\n"
+              "    Foo1(str, foo);\n" // Don't crash
+              "    Foo2(str.c_str());\n" // Don't crash
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {\n"
+              "    void func(std::string str) const {}\n"
+              "    static void sfunc(std::string str) {}\n"
+              "};\n"
+              "void func(std::string str) {}\n"
+              "void Bar() {\n"
+              "    std::string str = \"bar\";\n"
+              "    Foo foo;\n"
+              "    func(str.c_str());\n"
+              "    Foo::sfunc(str.c_str());\n"
+              "    foo.func(str.c_str());\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n"
+                           "[test.cpp:10]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n",
+                           "", errout.str());
+
+        check("void Foo(const char* p) {}\n"
+              "void Foo(const std::string& str) {Foo(str.c_str());}\n" // Overloaded
+              "void Bar() {\n"
+              "    std::string str = \"bar\";\n"
+              "    Foo(str);\n"
+              "    Foo(str.c_str());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void autoPointer() {

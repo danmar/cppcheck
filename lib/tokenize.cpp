@@ -7787,7 +7787,7 @@ std::string Tokenizer::fileLine(const Token *tok) const
     return ostr.str();
 }
 
-std::string Tokenizer::file(const Token *tok) const
+const std::string& Tokenizer::file(const Token *tok) const
 {
     return _files.at(tok->fileIndex());
 }

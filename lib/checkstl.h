@@ -135,6 +135,8 @@ public:
     void string_c_str();
     void string_c_strThrowError(const Token *tok);
     void string_c_strError(const Token *tok);
+    void string_c_strReturn(const Token *tok);
+    void string_c_strParam(const Token *tok, unsigned int number);
 
     /** @brief %Check for use and copy auto pointer */
     void checkAutoPointer();
@@ -153,7 +155,7 @@ private:
      */
     void eraseCheckLoop(const Token *it);
 
-    void stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var);
+    void stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var, bool at);
     void invalidIteratorError(const Token *tok, const std::string &iteratorName);
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
     void mismatchingContainersError(const Token *tok);
@@ -178,7 +180,7 @@ private:
         c.iteratorsError(0, "container1", "container2");
         c.mismatchingContainersError(0);
         c.dereferenceErasedError(0, "iter");
-        c.stlOutOfBoundsError(0, "i", "foo");
+        c.stlOutOfBoundsError(0, "i", "foo", false);
         c.eraseError(0);
         c.invalidIteratorError(0, "push_back|push_front|insert", "iterator");
         c.invalidPointerError(0, "pointer");
@@ -186,6 +188,8 @@ private:
         c.if_findError(0, false);
         c.if_findError(0, true);
         c.string_c_strError(0);
+        c.string_c_strReturn(0);
+        c.string_c_strParam(0, 0);
         c.sizeError(0);
         c.redundantIfRemoveError(0);
         c.autoPointerError(0);
