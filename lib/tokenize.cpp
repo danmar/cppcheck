@@ -845,7 +845,7 @@ static Token *processFunc(Token *tok2, bool inOperator)
                 }
 
                 // skip over typedef parameter
-                if (tok2->next()->str() == "(") {
+                if (tok2->next() && tok2->next()->str() == "(") {
                     tok2 = tok2->next()->link();
 
                     if (tok2->next()->str() == "(")
