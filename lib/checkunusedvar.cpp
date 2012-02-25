@@ -584,52 +584,52 @@ static const Token * skipBrackets(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables)
 {
-    if (scope->type == Scope::eClass || scope->type == Scope::eUnion || scope->type == Scope::eStruct)
-        return;
-
-    // Find declarations
-    for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
-        Variables::VariableType type = Variables::none;
-        if (i->isArray() && (i->nameToken()->previous()->str() == "*" || i->nameToken()->strAt(-2) == "*"))
-            type = Variables::pointerArray;
-        else if (i->isArray() && i->nameToken()->previous()->str() == "&")
-            type = Variables::referenceArray;
-        else if (i->isArray())
-            type = Variables::array;
-        else if (i->isReference())
-            type = Variables::reference;
-        else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
-            type = Variables::pointerPointer;
-        else if (i->isPointer())
-            type = Variables::pointer;
-        else if (i->typeEndToken()->isStandardType() || isRecordTypeWithoutSideEffects(*i) || Token::simpleMatch(i->nameToken()->tokAt(-3), "std :: string"))
-            type = Variables::standard;
-        if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
-            continue;
-        const Token* defValTok = i->nameToken()->next();
-        for (; defValTok; defValTok = defValTok->next()) {
-            if (defValTok->str() == "[")
-                defValTok = defValTok->link();
-            else if (defValTok->str() == "(" || defValTok->str() == "=") {
-                variables.addVar(i->nameToken(), type, scope, true);
-                break;
-            } else if (defValTok->str() == ";" || defValTok->str() == "," || defValTok->str() == ")") {
-                variables.addVar(i->nameToken(), type, scope, i->isStatic());
-                break;
+    // Find declarations if the scope is executable..
+    if (scope->type != Scope::eClass && scope->type != Scope::eUnion && scope->type != Scope::eStruct) {
+        // Find declarations
+        for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
+            Variables::VariableType type = Variables::none;
+            if (i->isArray() && (i->nameToken()->previous()->str() == "*" || i->nameToken()->strAt(-2) == "*"))
+                type = Variables::pointerArray;
+            else if (i->isArray() && i->nameToken()->previous()->str() == "&")
+                type = Variables::referenceArray;
+            else if (i->isArray())
+                type = Variables::array;
+            else if (i->isReference())
+                type = Variables::reference;
+            else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
+                type = Variables::pointerPointer;
+            else if (i->isPointer())
+                type = Variables::pointer;
+            else if (i->typeEndToken()->isStandardType() || isRecordTypeWithoutSideEffects(*i) || Token::simpleMatch(i->nameToken()->tokAt(-3), "std :: string"))
+                type = Variables::standard;
+            if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
+                continue;
+            const Token* defValTok = i->nameToken()->next();
+            for (; defValTok; defValTok = defValTok->next()) {
+                if (defValTok->str() == "[")
+                    defValTok = defValTok->link();
+                else if (defValTok->str() == "(" || defValTok->str() == "=") {
+                    variables.addVar(i->nameToken(), type, scope, true);
+                    break;
+                } else if (defValTok->str() == ";" || defValTok->str() == "," || defValTok->str() == ")") {
+                    variables.addVar(i->nameToken(), type, scope, i->isStatic());
+                    break;
+                }
             }
-        }
-        if (i->isArray() && Token::Match(i->nameToken(), "%var% [ %var% ]")) // Array index variable read.
-            variables.read(i->nameToken()->tokAt(2)->varId());
+            if (i->isArray() && Token::Match(i->nameToken(), "%var% [ %var% ]")) // Array index variable read.
+                variables.read(i->nameToken()->tokAt(2)->varId());
 
-        if (defValTok && defValTok->str() == "=") {
-            if (defValTok->next() && defValTok->next()->str() == "{") {
-                for (const Token* tok = defValTok; tok && tok != defValTok->linkAt(1); tok = tok->next())
-                    if (Token::Match(tok, "%var%")) // Variables used to initialize the array read.
-                        variables.read(tok->varId());
-            } else
-                doAssignment(variables, i->nameToken(), false, scope);
-        } else if (Token::Match(defValTok, "( %var% )")) // Variables used to initialize the variable read.
-            variables.readAll(defValTok->next()->varId()); // ReadAll?
+            if (defValTok && defValTok->str() == "=") {
+                if (defValTok->next() && defValTok->next()->str() == "{") {
+                    for (const Token* tok = defValTok; tok && tok != defValTok->linkAt(1); tok = tok->next())
+                        if (Token::Match(tok, "%var%")) // Variables used to initialize the array read.
+                            variables.read(tok->varId());
+                } else
+                    doAssignment(variables, i->nameToken(), false, scope);
+            } else if (Token::Match(defValTok, "( %var% )")) // Variables used to initialize the variable read.
+                variables.readAll(defValTok->next()->varId()); // ReadAll?
+        }
     }
 
     // Check variable usage
