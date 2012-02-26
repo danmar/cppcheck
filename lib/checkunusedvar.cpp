@@ -579,6 +579,21 @@ static const Token * skipBrackets(const Token *tok)
 }
 
 
+// Skip [ .. ] . x
+static const Token * skipBracketsAndMembers(const Token *tok)
+{
+    while (tok) {
+        if (tok->str() == "[")
+            tok = tok->link()->next();
+        else if (Token::Match(tok, ". %var%"))
+            tok = tok->tokAt(2);
+        else
+            break;
+    }
+    return tok;
+}
+
+
 //---------------------------------------------------------------------------
 // Usage of function variables
 //---------------------------------------------------------------------------
@@ -804,7 +819,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 }
             }
 
-            const Token *equal = skipBrackets(tok->next());
+            const Token * const equal = skipBracketsAndMembers(tok->next());
 
             // checked for chained assignments
             if (tok != start && equal && equal->str() == "=") {
@@ -818,7 +833,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // assignment
-        else if (Token::Match(tok, "%var% [") && Token::simpleMatch(skipBrackets(tok->next()), "=")) {
+        else if (Token::Match(tok, "%var% [") && Token::simpleMatch(skipBracketsAndMembers(tok->next()), "=")) {
             unsigned int varid = tok->varId();
             const Variables::VariableUsage *var = variables.find(varid);
 

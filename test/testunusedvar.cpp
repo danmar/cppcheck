@@ -117,6 +117,7 @@ private:
         TEST_CASE(localvarStruct4); // Ticket #31: sigsegv on incomplete struct
         TEST_CASE(localvarStruct5);
         TEST_CASE(localvarStruct6);
+        TEST_CASE(localvarStructArray);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
         TEST_CASE(localvarInvert);      // Usage with inverted variable
@@ -2460,6 +2461,15 @@ private:
                               "    Type t;\n"
                               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStructArray() {
+        // #3633 - detect that struct array is assigned a value
+        functionVariableUsage("void f() {\n"
+                              "    struct X x[10];\n"
+                              "    x[0].a = 0;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used\n", errout.str());
     }
 
     void localvarOp() {
