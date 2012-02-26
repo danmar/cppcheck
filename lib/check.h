@@ -161,8 +161,8 @@ private:
         }
 
         ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id, inconclusive);
-        if (_tokenizer && _tokenizer->getFiles() && !_tokenizer->getFiles()->empty())
-            errmsg.file0 = _tokenizer->getFiles()->at(0);
+        if (_tokenizer && !_tokenizer->getFiles().empty())
+            errmsg.file0 = _tokenizer->getFiles()[0];
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

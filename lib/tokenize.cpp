@@ -82,9 +82,9 @@ const Token *Tokenizer::tokens() const
 }
 
 
-const std::vector<std::string> *Tokenizer::getFiles() const
+const std::vector<std::string>& Tokenizer::getFiles() const
 {
-    return &_files;
+    return _files;
 }
 
 //---------------------------------------------------------------------------
@@ -5522,12 +5522,13 @@ void Tokenizer::simplifyStdType()
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         // long unsigned => unsigned long
         if (Token::Match(tok, "char|short|int|long|__int8|__int16|__int32|__int64 unsigned|signed")) {
-            std::string temp = tok->str();
-            tok->str(tok->next()->str());
-            tok->next()->str(temp);
+            bool isUnsigned = tok->next()->str() == "unsigned";
+            tok->deleteNext();
+            tok->isUnsigned(isUnsigned);
+            tok->isSigned(!isUnsigned);
         }
 
-        if (!Token::Match(tok, "unsigned|signed|char|short|int|long|__int8|__int16|__int32|__int64"))
+        else if (!Token::Match(tok, "unsigned|signed|char|short|int|long|__int8|__int16|__int32|__int64"))
             continue;
 
         // check if signed or unsigned specified
@@ -7397,7 +7398,7 @@ void Tokenizer::simplifyEnum()
             }
 
             if (enumType) {
-                const std::string pattern(className.empty() ? "" : (className + " :: " + enumType->str()).c_str());
+                const std::string pattern(className.empty() ? std::string("") : (className + " :: " + enumType->str()));
 
                 // count { and } for tok2
                 int level = 0;

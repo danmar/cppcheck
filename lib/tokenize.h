@@ -150,7 +150,7 @@ public:
      * Simplify '* & ( %var% ) =' or any combination of '* &' and '()'
      * parentheses around '%var%' to '%var% ='
      */
-    void simplifyMulAndParens(void);
+    void simplifyMulAndParens();
 
     /**
      * Get parameter name of function
@@ -181,7 +181,7 @@ public:
      * The first filename is the filename for the sourcefile
      * @return vector with filenames
      */
-    const std::vector<std::string> *getFiles() const;
+    const std::vector<std::string>& getFiles() const;
 
     /**
      * Get function token by function name

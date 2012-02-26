@@ -65,6 +65,7 @@ private:
         TEST_CASE(varScope12);      // variable usage in inner loop
 
         TEST_CASE(oldStylePointerCast);
+        TEST_CASE(invalidPointerCast);
 
         TEST_CASE(dangerousStrolUsage);
 
@@ -778,6 +779,85 @@ private:
                                  "  virtual void abc(const B *) const = 0;\n"
                                  "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkInvalidPointerCast(const char code[], bool portability = false) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.addEnabled("style");
+        if (portability)
+            settings.addEnabled("portability");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        CheckOther checkOtherCpp(&tokenizer, &settings, this);
+        checkOtherCpp.invalidPointerCast();
+    }
+
+
+    void invalidPointerCast() {
+        checkInvalidPointerCast("void test() {\n"
+                                "    float *f = new float[10];\n"
+                                "    delete [] (double*)f;\n"
+                                "    delete [] (long double const*)(new float[10]);\n"
+                                "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Casting between float* and double* which have an incompatible binary data representation\n"
+                           "[test.cpp:4]: (warning) Casting between float* and long double* which have an incompatible binary data representation\n",
+                           "[test.cpp:3]: (warning) Casting between float* and double* which have an incompatible binary data representation\n"
+                           "[test.cpp:4]: (warning) Casting between float* and double* which have an incompatible binary data representation\n", errout.str());
+
+        checkInvalidPointerCast("void test(const float* f) {\n"
+                                "    double *d = (double*)f;\n"
+                                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between float* and double* which have an incompatible binary data representation\n", errout.str());
+
+        checkInvalidPointerCast("void test(double* d1) {\n"
+                                "    long double *ld = (long double*)d1;\n"
+                                "    double *d2 = (double*)ld;\n"
+                                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and long double* which have an incompatible binary data representation\n"
+                      "[test.cpp:3]: (warning) Casting between long double* and double* which have an incompatible binary data representation\n", errout.str());
+
+        checkInvalidPointerCast("char* test(int* i) {\n"
+                                "    long double *d = (long double*)(i);\n"
+                                "    double *d = (double*)(i);\n"
+                                "    float *f = reinterpret_cast<float*>(i);\n"
+                                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between integer* and long double* which have an incompatible binary data representation\n"
+                      "[test.cpp:3]: (warning) Casting between integer* and double* which have an incompatible binary data representation\n"
+                      "[test.cpp:4]: (warning) Casting between integer* and float* which have an incompatible binary data representation\n", errout.str());
+
+        checkInvalidPointerCast("float* test(unsigned int* i) {\n"
+                                "    return (float*)i;\n"
+                                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between integer* and float* which have an incompatible binary data representation\n", errout.str());
+
+        checkInvalidPointerCast("float* test(unsigned int* i) {\n"
+                                "    return (float*)i[0];\n"
+                                "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInvalidPointerCast("float* test(double& d) {\n"
+                                "    return (float*)&d;\n"
+                                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and float* which have an incompatible binary data representation\n", errout.str());
+
+
+        checkInvalidPointerCast("long long* test(float* f) {\n"
+                                "    return (long long*)f;\n"
+                                "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        checkInvalidPointerCast("long long* test(float* f, char* c) {\n"
+                                "    foo((long long*)f);\n"
+                                "    return reinterpret_cast<long long*>(c);\n"
+                                "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to integer* is not portable due to different binary data representations on different platforms\n", errout.str());
     }
 
     void dangerousStrolUsage() {

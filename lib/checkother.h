@@ -51,6 +51,7 @@ public:
 
         // Coding style checks
         checkOther.warningOldStylePointerCast();
+        checkOther.invalidPointerCast();
         checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
         checkOther.strPlusChar();
@@ -119,6 +120,9 @@ public:
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
+
+    /** @brief Check for pointer casts to a type with an incompatible binary data representation */
+    void invalidPointerCast();
 
     /**
      * @brief Invalid function usage (invalid radix / overlapping data)
@@ -263,6 +267,7 @@ public:
 
     // Error messages..
     void cstyleCastError(const Token *tok);
+    void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to);
     void dangerousUsageStrtolError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok, bool inconclusive);
@@ -325,6 +330,7 @@ public:
         c.sizeofForNumericParameterError(0);
         c.coutCerrMisusageError(0, "cout");
         c.doubleFreeError(0, "varname");
+        c.invalidPointerCastError(0, "float", "double");
 
         // style/warning
         c.cstyleCastError(0);
@@ -396,6 +402,7 @@ public:
 
                // style
                "* C-style pointer cast in cpp file\n"
+               "* casting between incompatible pointer types\n"
                "* redundant if\n"
                "* bad usage of the function 'strtol'\n"
                "* [[CheckUnsignedDivision|unsigned division]]\n"

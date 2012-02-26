@@ -551,12 +551,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         for (std::list<Scope::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
             for (std::list<Scope>::iterator j = scopeList.begin(); j != scopeList.end(); ++j) {
                 // check scope for match
-                const Scope *scope = j->findQualifiedScope(i->name);
+                scope = const_cast<Scope*>(j->findQualifiedScope(i->name));
 
                 // found match?
                 if (scope && scope->isClassOrStruct()) {
                     // set found scope
-                    i->scope = const_cast<Scope *>(scope);
+                    i->scope = scope;
                     break;
                 }
             }

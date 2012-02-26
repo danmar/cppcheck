@@ -37,6 +37,7 @@ private:
         TEST_CASE(array_index_2);
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
+        TEST_CASE(bitop3);
         TEST_CASE(return1);
         TEST_CASE(assignChar);
         TEST_CASE(and03);
@@ -122,6 +123,13 @@ private:
               "    func(&ch);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void bitop3() {
+        check("void f(int& i, char& c) {\n"
+              "    i &= c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
     void return1() {

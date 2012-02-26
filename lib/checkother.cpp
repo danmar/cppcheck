@@ -323,6 +323,97 @@ void CheckOther::cstyleCastError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
+// float* f; double* d = (double*)f; <-- Pointer cast to a type with an incompatible binary data representation
+//---------------------------------------------------------------------------
+
+static std::string analyzeType(const Token* tok)
+{
+    if (tok->str() == "double")
+        if (tok->isLong())
+            return "long double";
+        else
+            return "double";
+    if (tok->str() == "float")
+        return "float";
+    if (Token::Match(tok, "unsigned| int|long|short|char|size_t"))
+        return "integer";
+    return "";
+}
+
+void CheckOther::invalidPointerCast()
+{
+    if (!_settings->isEnabled("style") && !_settings->isEnabled("portability"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        const Token* toTok = 0;
+        const Token* nextTok = 0;
+        // Find cast
+        if (Token::Match(tok, "( const| %type% const| * )") || Token::Match(tok, "( const| %type% %type% const| * )")) {
+            toTok = tok->next();
+            nextTok = tok->link()->next();
+            if (nextTok->str() == "(")
+                nextTok = nextTok->next();
+        } else if (Token::Match(tok, "reinterpret_cast < const| %type% const| * > (") || Token::Match(tok, "reinterpret_cast < const| %type% %type% const| * > (")) {
+            nextTok = tok->tokAt(5);
+            while (nextTok->str() != "(")
+                nextTok = nextTok->next();
+            nextTok = nextTok->next();
+            toTok = tok->tokAt(2);
+        }
+        if (toTok && toTok->str() == "const")
+            toTok = toTok->next();
+
+        if (!nextTok || !toTok || !toTok->isStandardType())
+            continue;
+
+        // Find casted variable
+        unsigned int varid = 0;
+        bool allocation = false;
+        bool ref = false;
+        if (Token::Match(nextTok, "new %type%"))
+            allocation = true;
+        else if (Token::Match(nextTok, "%var% !!["))
+            varid = nextTok->varId();
+        else if (Token::Match(nextTok, "& %var%") && !Token::Match(nextTok->tokAt(2), "(|[")) {
+            varid = nextTok->next()->varId();
+            ref = true;
+        }
+
+        const Token* fromTok = 0;
+
+        if (allocation) {
+            fromTok = nextTok->next();
+        } else {
+            const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+            if (!var || (!ref && !var->isPointer() && !var->isArray()) || (ref && (var->isPointer() || var->isArray())))
+                continue;
+            fromTok = var->typeStartToken();
+        }
+
+        while (Token::Match(fromTok, "static|const"))
+            fromTok = fromTok->next();
+        if (!fromTok->isStandardType())
+            continue;
+
+        std::string fromType = analyzeType(fromTok);
+        std::string toType = analyzeType(toTok);
+        if (fromType != toType && !fromType.empty() && !toType.empty() && (toType != "integer" || _settings->isEnabled("portability")))
+            invalidPointerCastError(tok, fromType, toType);
+    }
+}
+
+void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to)
+{
+    if (to == "integer") // If we cast something to int*, this can be useful to play with its binary data representation
+        reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms");
+    else
+        reportError(tok, Severity::warning, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation");
+}
+
+//---------------------------------------------------------------------------
 // fflush(stdin) <- fflush only applies to output streams in ANSI C
 //---------------------------------------------------------------------------
 void CheckOther::checkFflushOnInputStream()
@@ -1944,7 +2035,7 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 //---------------------------------------------------------------------------
 static bool isChar(const Variable* var)
 {
-    return(var && !var->isPointer() && !var->isArray() && (var->typeEndToken()->str() == "char" || (var->typeEndToken()->previous() && var->typeEndToken()->previous()->str() == "char")));
+    return(var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "static| const| char"));
 }
 
 static bool isSignedChar(const Variable* var)
@@ -1982,11 +2073,8 @@ void CheckOther::checkCharVariable()
 
             // is the result stored in a short|int|long?
             const Variable *var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            if (!(var && Token::Match(var->typeEndToken(), "short|int|long")))
-                continue;
-
-            // This is an error..
-            charBitOpError(tok->tokAt(4));
+            if (var && Token::Match(var->typeStartToken(), "static| const| short|int|long") && !var->isPointer() && !var->isArray())
+                charBitOpError(tok->tokAt(4)); // This is an error..
         }
 
         else if (Token::Match(tok, "[;{}] %var% = %any% [&|] ( * %var% ) ;")) {
@@ -1999,11 +2087,8 @@ void CheckOther::checkCharVariable()
 
             // is the result stored in a short|int|long?
             var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            if (!(var && Token::Match(var->typeEndToken(), "short|int|long")))
-                continue;
-
-            // This is an error..
-            charBitOpError(tok->tokAt(4));
+            if (var && Token::Match(var->typeStartToken(), "static| const| short|int|long") && !var->isPointer() && !var->isArray())
+                charBitOpError(tok->tokAt(4)); // This is an error..
         }
     }
 }
