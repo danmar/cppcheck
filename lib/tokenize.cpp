@@ -6611,16 +6611,17 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 void Tokenizer::elseif()
 {
     for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (tok->str() == "(" || tok->str() == "[" ||
+            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "="))
+            tok = tok->link();
+
         if (!Token::simpleMatch(tok, "else if"))
             continue;
-        int indent = 0;
-        for (Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "(|{"))
-                ++indent;
-            else if (Token::Match(tok2, ")|}"))
-                --indent;
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+            if (Token::Match(tok2, "(|{|["))
+                tok2 = tok2->link();
 
-            if (indent == 0 && Token::Match(tok2, "}|;")) {
+            if (Token::Match(tok2, "}|;")) {
                 if (tok2->next() && tok2->next()->str() != "else") {
                     tok->insertToken("{");
                     tok2->insertToken("}");
