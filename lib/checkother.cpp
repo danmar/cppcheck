@@ -328,11 +328,12 @@ void CheckOther::cstyleCastError(const Token *tok)
 
 static std::string analyzeType(const Token* tok)
 {
-    if (tok->str() == "double")
+    if (tok->str() == "double"){
         if (tok->isLong())
             return "long double";
         else
             return "double";
+    }
     if (tok->str() == "float")
         return "float";
     if (Token::Match(tok, "unsigned| int|long|short|char|size_t"))
