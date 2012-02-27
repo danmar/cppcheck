@@ -74,6 +74,7 @@ private:
         TEST_CASE(removeCast7);
         TEST_CASE(removeCast8);
         TEST_CASE(removeCast9);
+        TEST_CASE(removeCast10);
 
         TEST_CASE(inlineasm);
 
@@ -779,6 +780,10 @@ private:
 
     void removeCast9() {
         ASSERT_EQUALS("f ( ( double ) v1 * v2 )", tokenizeAndStringify("f((double)(v1)*v2)", true));
+    }
+
+    void removeCast10() {
+        ASSERT_EQUALS("; ( * f ) ( p ) ;", tokenizeAndStringify("; (*(void (*)(char *))f)(p);", true));
     }
 
     void inlineasm() {
