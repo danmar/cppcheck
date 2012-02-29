@@ -50,7 +50,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     if (success) {
         if (parser.GetShowVersion() && !parser.GetShowErrorMessages()) {
             const char * extraVersion = cppcheck->extraVersion();
-            if (strlen(extraVersion) > 0)
+            if (*extraVersion != 0)
                 std::cout << "Cppcheck " << cppcheck->version() << " ("
                           << extraVersion << ')' << std::endl;
             else
