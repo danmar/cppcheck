@@ -1003,6 +1003,42 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
             if (! deflist.empty() && line.compare(0, 6, "#elif ") == 0)
                 deflist.pop_back();
+
+            // translate A==1 condition to A=1 configuration
+            if (def.find("==") != std::string::npos) {
+                // Check if condition match pattern "%var% == %num%"
+                // %var%
+                std::string::size_type pos = 0;
+                if (std::isalpha(def[pos]) || def[pos] == '_') {
+                    ++pos;
+                    while (std::isalnum(def[pos]) || def[pos] == '_')
+                        ++pos;
+                }
+
+                // ==
+                if (def.compare(pos,2,"==",0,2)==0)
+                    pos += 2;
+
+                // %num%
+                if (pos<def.size() && std::isdigit(def[pos])) {
+                    if (def.compare(pos,2,"0x",0,2)==0) {
+                        pos += 2;
+                        if (pos >= def.size())
+                            pos = 0;
+                        while (pos < def.size() && std::isxdigit(def[pos]))
+                            ++pos;
+                    } else {
+                        while (pos < def.size() && std::isdigit(def[pos]))
+                            ++pos;
+                    }
+
+                    // Does the condition match the pattern "%var% == %num%"?
+                    if (pos == def.size()) {
+                        def.erase(def.find("=="),1);
+                    }
+                }
+            }
+
             deflist.push_back(def);
             def = "";
 

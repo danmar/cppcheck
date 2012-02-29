@@ -76,6 +76,7 @@ private:
         TEST_CASE(test7c);
         TEST_CASE(test7d);
         TEST_CASE(test7e);
+        TEST_CASE(test8);  // #if A==1  => cfg: A=1
 
         // #error => don't extract any code
         TEST_CASE(error1);
@@ -617,6 +618,27 @@ private:
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
+    void test8() {
+        const char filedata[] = "#ifdef A == 1\n"
+                                "1\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // No error..
+        ASSERT_EQUALS("", errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS(2U, actual.size());
+        ASSERT_EQUALS("\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n1\n\n", actual["A=1"]);
+    }
 
     void error1() {
         const char filedata[] = "#ifdef A\n"
