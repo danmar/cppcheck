@@ -35,23 +35,25 @@ namespace {
 }
 
 
-bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
+bool CheckAutoVariables::isRefArg(unsigned int varId)
 {
-    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(left->varId());
+    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
 
-    if (!var || !var->isArgument() ||
-        (!var->isArray() && !Token::Match(var->nameToken()->tokAt(-3), "%type% * *")) ||
-        (var->isArray() && !Token::Match(var->nameToken()->tokAt(-2), "%type% *")))
-        return false;
+    return(var && var->isArgument() && var->isReference());
+}
 
-    return isAutoVar(right->varId());
+bool CheckAutoVariables::isPtrArg(unsigned int varId)
+{
+    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
+
+    return(var && var->isArgument() && var->isPointer());
 }
 
 bool CheckAutoVariables::isAutoVar(unsigned int varId)
 {
     const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
 
-    if (!var || !var->isLocal() || var->isStatic() || var->isArray() || var->isPointer())
+    if (!var || !var->isLocal() || var->isStatic())
         return false;
 
     if (var->isReference()) {
@@ -68,10 +70,13 @@ bool CheckAutoVariables::isAutoVarArray(unsigned int varId)
 {
     const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
 
-    if (!var || !var->isLocal() || var->isStatic() || !var->isArray())
-        return false;
+    return (var && var->isLocal() && !var->isStatic() && var->isArray());
+}
 
-    return true;
+// Verification that we really take the address of a local variable
+static bool checkRvalueExpression(const Variable* var, const Token* next)
+{
+    return((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
 void CheckAutoVariables::autoVariables()
@@ -86,19 +91,23 @@ void CheckAutoVariables::autoVariables()
             continue;
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            //Critical assignment
-            if (Token::Match(tok, "[;{}] * %var% = & %var%") && errorAv(tok->tokAt(2), tok->tokAt(5))) {
+            // Critical assignment
+            if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefArg(tok->next()->varId()) && isAutoVar(tok->tokAt(4)->varId())) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(4)->varId());
+                if (checkRvalueExpression(var, tok->tokAt(5)))
+                    errorAutoVariableAssignment(tok->next(), false);
+            } else if (Token::Match(tok, "[;{}] * %var% = & %var%") && isPtrArg(tok->tokAt(2)->varId()) && isAutoVar(tok->tokAt(5)->varId())) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
-                if (var && (!var->isClass() || var->type()))
+                if (checkRvalueExpression(var, tok->tokAt(6)))
                     errorAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (_settings->inconclusive) {
                     const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-                    if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *")) {
+                    if (var1 && var1->isArgument() && var1->isPointer()) {
                         const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(6)->varId());
-                        if (var2 && var2->isLocal() && !var2->isStatic() && !Token::simpleMatch(var2->typeEndToken(), "*"))
-                            errorAutoVariableAssignment(tok->next(), _settings->inconclusive);
+                        if (isAutoVar(tok->tokAt(6)->varId()) && checkRvalueExpression(var2, tok->tokAt(7)))
+                            errorAutoVariableAssignment(tok->next(), true);
                     }
                 }
                 tok = tok->tokAt(6);
@@ -106,23 +115,24 @@ void CheckAutoVariables::autoVariables()
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (_settings->inconclusive) {
                     const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-                    if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-2), "%type% *")) {
-                        const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId());
-                        if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
-                            errorAutoVariableAssignment(tok->next(), _settings->inconclusive);
+                    if (var1 && var1->isArgument() && var1->isPointer()) {
+                        if (isAutoVarArray(tok->tokAt(5)->varId()))
+                            errorAutoVariableAssignment(tok->next(), true);
                     }
                 }
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok, "[;{}] * %var% = %var% ;")) {
                 const Variable * var1 = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
                 if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-3), "%type% * *")) {
-                    const Variable * var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(4)->varId());
-                    if (var2 && var2->isLocal() && var2->isArray() && !var2->isStatic())
+                    if (isAutoVarArray(tok->tokAt(4)->varId()))
                         errorAutoVariableAssignment(tok->next(), false);
                 }
                 tok = tok->tokAt(4);
-            } else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->next(), tok->tokAt(7))) {
-                errorAutoVariableAssignment(tok->next(), false);
+            } else if (Token::Match(tok, "[;{}] %var% [") && Token::Match(tok->linkAt(2), "] = & %var%") && isPtrArg(tok->next()->varId()) && isAutoVar(tok->linkAt(2)->tokAt(3)->varId())) {
+                const Token* const varTok = tok->linkAt(2)->tokAt(3);
+                const Variable * var = symbolDatabase->getVariableFromVarId(varTok->varId());
+                if (checkRvalueExpression(var, varTok->next()))
+                    errorAutoVariableAssignment(tok->next(), false);
             }
             // Critical return
             else if (Token::Match(tok, "return & %var% ;") && isAutoVar(tok->tokAt(2)->varId())) {
@@ -154,14 +164,10 @@ void CheckAutoVariables::returnPointerToLocalArray()
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
-        if (scope->type != Scope::eFunction)
+        if (scope->type != Scope::eFunction || !scope->function)
             continue;
 
-        const Token *tok = scope->classDef;
-
-        // skip any qualification
-        while (Token::Match(tok->tokAt(-2), "%type% ::"))
-            tok = tok->tokAt(-2);
+        const Token *tok = scope->function->tokenDef;
 
         // have we reached a function that returns a pointer
         if (tok->previous() && tok->previous()->str() == "*") {
@@ -224,6 +230,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
 {
     if (!Token::Match(tok, "return %var% ("))
         return false;
+    // TODO: Find all functions that return objects by value
     return bool(NULL != Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->next()->str() + " (").c_str()));
 }
 
@@ -237,14 +244,10 @@ void CheckAutoVariables::returnReference()
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
-        if (scope->type != Scope::eFunction)
+        if (scope->type != Scope::eFunction || !scope->function)
             continue;
 
-        const Token *tok = scope->classDef;
-
-        // skip any qualification
-        while (Token::Match(tok->tokAt(-2), "%type% ::"))
-            tok = tok->tokAt(-2);
+        const Token *tok = scope->function->tokenDef;
 
         // have we reached a function that returns a reference?
         if (tok->previous() && tok->previous()->str() == "&") {
@@ -310,6 +313,8 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
 // Return c_str
 void CheckAutoVariables::returncstr()
 {
+    // TODO: Move this to CheckStl::string_c_str
+
     // locate function that returns a const char *..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
@@ -317,43 +322,22 @@ void CheckAutoVariables::returncstr()
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
-        if (scope->type != Scope::eFunction)
+        if (scope->type != Scope::eFunction || !scope->function)
             continue;
 
-        const Token *tok = scope->classDef;
-
-        // skip any qualification
-        while (Token::Match(tok->tokAt(-2), "%type% ::"))
-            tok = tok->tokAt(-2);
+        const Token *tok = scope->function->tokenDef;
 
         // have we reached a function that returns a const char *
         if (Token::simpleMatch(tok->tokAt(-3), "const char *")) {
             for (const Token *tok2 = scope->classStart; tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
-                // return..
-                if (Token::Match(tok2, "return %var% . c_str ( ) ;")) {
-                    // is the returned variable a local variable?
-                    const unsigned int varid = tok2->next()->varId();
-                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-
-                    if (var && var->isLocal() && !var->isStatic()) {
-                        // report error..
-                        errorReturnAutocstr(tok2);
-                    }
-                }
-
                 // return pointer to temporary..
-                else if (returnTemporary(tok2)) {
+                if (returnTemporary(tok2)) {
                     // report error..
                     errorReturnTempPointer(tok2);
                 }
             }
         }
     }
-}
-
-void CheckAutoVariables::errorReturnAutocstr(const Token *tok)
-{
-    reportError(tok, Severity::error, "returnAutocstr", "Returning pointer to auto variable");
 }
 
 void CheckAutoVariables::errorReturnTempPointer(const Token *tok)

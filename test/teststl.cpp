@@ -1498,6 +1498,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
 
+        check("class Foo {\n"
+              "    const char *f();\n"
+              "};\n"
+              "const char *Foo::f() {\n"
+              "    std::string s;\n"
+              "    return s.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
+
         check("const char* foo() {\n"
               "    static std::string text;\n"
               "    text = \"hello world\n\";\n"

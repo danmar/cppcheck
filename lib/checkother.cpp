@@ -328,7 +328,7 @@ void CheckOther::cstyleCastError(const Token *tok)
 
 static std::string analyzeType(const Token* tok)
 {
-    if (tok->str() == "double"){
+    if (tok->str() == "double") {
         if (tok->isLong())
             return "long double";
         else

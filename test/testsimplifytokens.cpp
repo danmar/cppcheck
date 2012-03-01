@@ -2857,7 +2857,7 @@ private:
                                   "9: c ( ) ;\n"
                                   "10: }\n";
 
-            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList(""));
+            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList());
         }
 
         {
@@ -2893,7 +2893,7 @@ private:
                                   "8: d ( ) ; }\n"
                                   "9: }\n";
 
-            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList(""));
+            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList());
         }
 
         {

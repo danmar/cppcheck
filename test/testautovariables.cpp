@@ -47,7 +47,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
-        checkAutoVariables.runChecks(&tokenizer, &settings, this);
+        checkAutoVariables.returnReference();
 
         tokenizer.simplifyTokenList();
 
@@ -65,6 +65,8 @@ private:
         TEST_CASE(testautovar5); // ticket #2926
         TEST_CASE(testautovar6); // ticket #2931
         TEST_CASE(testautovar7); // ticket #3066
+        TEST_CASE(testautovar8);
+        TEST_CASE(testautovar9);
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -87,8 +89,7 @@ private:
         TEST_CASE(returnReference5);
 
         // return c_str()..
-        TEST_CASE(returncstr1);
-        TEST_CASE(returncstr2);
+        TEST_CASE(returncstr);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -211,6 +212,27 @@ private:
               "    return scrollpane;\n"
               "}", false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar8() {
+        check("void foo(int*& p) {\n"
+              "    int i = 0;\n"
+              "    p = &i;\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+    }
+
+    void testautovar9() {
+        check("struct FN {int i;};\n"
+              "struct FP {FN* f};\n"
+              "void foo(int*& p, FN* p_fp) {\n"
+              "    FN fn;\n"
+              "    FP fp;\n"
+              "    p = &fn.i;\n"
+              "    p = &p_fp->i;\n"
+              "    p = &fp.f->i;\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar_array1() {
@@ -498,21 +520,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returncstr1() {
-        check("const char *foo()\n"
-              "{\n"
-              "    std::string s;\n"
-              "    return s.c_str();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to auto variable\n", errout.str());
-
-        check("const char *Foo::f()\n"
-              "{\n"
-              "    std::string s;\n"
-              "    return s.c_str();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to auto variable\n", errout.str());
-
+    void returncstr() {
         check("std::string hello()\n"
               "{\n"
               "     return \"hello\";\n"
@@ -523,28 +531,6 @@ private:
               "    return hello().c_str();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Returning pointer to temporary\n", errout.str());
-    }
-
-    void returncstr2() {
-        check("class Fred {\n"
-              "    const char *foo();\n"
-              "};\n"
-              "const char *Fred::foo()\n"
-              "{\n"
-              "    std::string s;\n"
-              "    return s.c_str();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Returning pointer to auto variable\n", errout.str());
-
-        check("class Fred {\n"
-              "    const char *foo();\n"
-              "};\n"
-              "const char *Foo::f()\n"
-              "{\n"
-              "    std::string s;\n"
-              "    return s.c_str();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Returning pointer to auto variable\n", errout.str());
 
         check("class Fred {\n"
               "    std::string hello();\n"

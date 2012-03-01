@@ -66,7 +66,8 @@ public:
     void returncstr();
 
 private:
-    bool errorAv(const Token* left, const Token* right);
+    bool isRefArg(unsigned int varId);
+    bool isPtrArg(unsigned int varId);
     bool isAutoVar(unsigned int varId);
     bool isAutoVarArray(unsigned int varId);
 
@@ -82,7 +83,6 @@ private:
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
-    void errorReturnAutocstr(const Token *tok);
     void errorReturnTempPointer(const Token *tok);
     void errorInvalidDeallocation(const Token *tok);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
@@ -94,7 +94,6 @@ private:
         c.errorReturnPointerToLocalArray(0);
         c.errorReturnReference(0);
         c.errorReturnTempReference(0);
-        c.errorReturnAutocstr(0);
         c.errorReturnTempPointer(0);
         c.errorInvalidDeallocation(0);
         c.errorReturnAddressOfFunctionParameter(0, "parameter");
