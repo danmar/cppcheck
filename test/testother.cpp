@@ -3501,6 +3501,31 @@ private:
               "    if(a | !b) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
+
+        check("void f(bool a, int b) {\n"
+              "    if(a & b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+
+        check("void f(int a, bool b) {\n"
+              "    if(a & b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'b' is used in bitwise operation. Did you mean && ?\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "    if(a & b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "    if(a & b) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    foo(bar, &b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectStringCompare() {
