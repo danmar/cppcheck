@@ -623,6 +623,9 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         //Replace (file) with filename
         QString file = data["file"].toString();
         file = QDir::toNativeSeparators(file);
+#ifdef Q_WS_WIN
+        file.replace(QString("\\"), QString("\\\\"));
+#endif
         qDebug() << "Opening file: " << file;
 
         QFileInfo info(file);
