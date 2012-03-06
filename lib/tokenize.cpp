@@ -4360,7 +4360,7 @@ void Tokenizer::simplifyCompoundAssignment()
                             break;
                         }
 
-                        someOperator |= (tok2->isOp() || (tok2->str() == "?"));
+                        someOperator |= (tok2->isOp() || (tok2->str() == "?") || tok2->isAssignmentOp());
                     }
                 }
 
