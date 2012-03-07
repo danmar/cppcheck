@@ -6045,6 +6045,13 @@ private:
                       tokenizeAndStringify("bool f(int i) { switch (i) { case 10 + 5: return true; } }", true));
         // ticket #3512 - Don't crash on garbage code
         ASSERT_EQUALS("p = const", tokenizeAndStringify("1 *p = const", true));
+
+        // ticket #3576 - False positives in boolean expressions
+        ASSERT_EQUALS("int foo ( ) { return 1 ; }",
+                      tokenizeAndStringify("int foo ( ) { int i; int j; i = 1 || j; return i; }", true));
+
+        ASSERT_EQUALS("int foo ( ) { return 0 ; }",
+                      tokenizeAndStringify("int foo ( ) { int i; int j; i = 0 && j; return i; }", true));
     }
 
     void simplifyCompoundAssignment() {

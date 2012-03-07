@@ -784,7 +784,36 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok->deleteThis();
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 0 * %any% ,|:|;|=|%op%")) {
+                           Token::Match(tok->previous(), "[=[(,] 0 && %any% ,|]|)|;|=|%op%") ||
+                           Token::Match(tok->previous(), "return|case 0 * %any% ,|:|;|=|%op%") ||
+                           Token::Match(tok->previous(), "return|case 0 && %any% ,|:|;|=|%op%")) {
+                    tok->deleteNext();
+                    if (tok->next()->str() == "(")
+                        Token::eraseTokens(tok, tok->next()->link());
+                    tok->deleteNext();
+                    ret = true;
+                } else if (Token::Match(tok->previous(), "[=[(,] 0 && *|& %any% ,|]|)|;|=|%op%") ||
+                           Token::Match(tok->previous(), "return|case 0 && *|& %any% ,|:|;|=|%op%")) {
+                    tok->deleteNext();
+                    tok->deleteNext();
+                    if (tok->next()->str() == "(")
+                        Token::eraseTokens(tok, tok->next()->link());
+                    tok->deleteNext();
+                    ret = true;
+                }
+            }
+
+            if (tok->str() == "1") {
+                if (Token::Match(tok->previous(), "[=[(,] 1 %oror% %any% ,|]|)|;|=|%op%") ||
+                    Token::Match(tok->previous(), "return|case 1 %oror% %any% ,|:|;|=|%op%")) {
+                    tok->deleteNext();
+                    if (tok->next()->str() == "(")
+                        Token::eraseTokens(tok, tok->next()->link());
+                    tok->deleteNext();
+                    ret = true;
+                } else if (Token::Match(tok->previous(), "[=[(,] 1 %oror% *|& %any% ,|]|)|;|=|%op%") ||
+                           Token::Match(tok->previous(), "return|case 1 %oror% *|& %any% ,|:|;|=|%op%")) {
+                    tok->deleteNext();
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
                         Token::eraseTokens(tok, tok->next()->link());

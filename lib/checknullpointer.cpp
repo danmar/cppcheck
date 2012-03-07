@@ -1152,6 +1152,13 @@ private:
         for (it = checks.begin(); it != checks.end(); ++it) {
             Nullpointer *c = dynamic_cast<Nullpointer *>(*it);
             if (c && c->varId == varid && c->null) {
+                if ((Token::Match(tok->tokAt(-4), "[=[(,] %var% && * %var% ,|]|)|;|=|%op%") ||
+                     Token::Match(tok->tokAt(-5), "[=[(,] ! %var% %oror% * %var% ,|]|)|;|=|%op%") ||
+                     Token::Match(tok->tokAt(-4), "return|case %var% && * %var% ,|:|;|=|%op%") ||
+                     Token::Match(tok->tokAt(-5), "return|case ! %var% %oror% * %var% ,|:|;|=|%op%")) &&
+                    tok->tokAt(-3) && (tok->tokAt(-3)->varId() == tok->varId()))
+                    return;
+
                 CheckNullPointer *checkNullPointer = dynamic_cast<CheckNullPointer *>(c->owner);
                 if (checkNullPointer) {
                     checkNullPointer->nullPointerError(tok, c->varname);
