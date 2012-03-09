@@ -616,11 +616,11 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             //    case 3: b = 1;    // <== redundant
             //    case 4: b = 2;
             if (Token::Match(tok2->previous(), ";|{|}|: %var% = %any% ;") && tok2->varId() != 0) {
-                std::map<unsigned int, const Token*>::iterator i = varsAssigned.find(tok2->varId());
-                if (i == varsAssigned.end())
+                std::map<unsigned int, const Token*>::iterator i2 = varsAssigned.find(tok2->varId());
+                if (i2 == varsAssigned.end())
                     varsAssigned[tok2->varId()] = tok2;
                 else
-                    redundantAssignmentInSwitchError(i->second, i->second->str());
+                    redundantAssignmentInSwitchError(i2->second, i2->second->str());
 
                 stringsCopied.erase(tok2->varId());
             }
@@ -628,11 +628,11 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             //    case 3: strcpy(str, "a");    // <== redundant
             //    case 4: strcpy(str, "b");
             else if (Token::Match(tok2->previous(), ";|{|}|: strcpy|strncpy ( %var% ,") && tok2->tokAt(2)->varId() != 0) {
-                std::map<unsigned int, const Token*>::iterator i = stringsCopied.find(tok2->tokAt(2)->varId());
-                if (i == stringsCopied.end())
+                std::map<unsigned int, const Token*>::iterator i2 = stringsCopied.find(tok2->tokAt(2)->varId());
+                if (i2 == stringsCopied.end())
                     stringsCopied[tok2->tokAt(2)->varId()] = tok2->tokAt(2);
                 else
-                    redundantStrcpyInSwitchError(i->second, i->second->str());
+                    redundantStrcpyInSwitchError(i2->second, i2->second->str());
             }
             // Not a simple assignment so there may be good reason if this variable is assigned to twice. E.g.:
             //    case 3: b = 1;
