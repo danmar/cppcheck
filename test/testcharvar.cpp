@@ -35,6 +35,7 @@ private:
     void run() {
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
+        TEST_CASE(array_index_3);
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
         TEST_CASE(bitop3);
@@ -62,32 +63,36 @@ private:
     }
 
     void array_index_1() {
-        check("void foo()\n"
+        check("int buf[256];\n"
+              "void foo()\n"
               "{\n"
               "    unsigned char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo()\n"
+        check("int buf[256];\n"
+              "void foo()\n"
               "{\n"
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Using char type as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Using char type as array index\n", errout.str());
 
-        check("void foo()\n"
+        check("int buf[256];\n"
+              "void foo()\n"
               "{\n"
               "    signed char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Using char type as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Using char type as array index\n", errout.str());
 
-        check("void foo(char ch)\n"
+        check("int buf[256];\n"
+              "void foo(char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Using char type as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Using char type as array index\n", errout.str());
 
         check("void foo(const char str[])\n"
               "{\n"
@@ -102,6 +107,29 @@ private:
               "void bar(int i) {\n"
               "    const char *s = \"abcde\";\n"
               "    foo(s[i]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_3() {
+        // only write error message when array is more than
+        // 0x80 elements in size. Otherwise the full valid
+        // range is accessible with a char.
+
+        check("char buf[0x81];\n"
+              "void bar(char c) {\n"
+              "    buf[c] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Using char type as array index\n", errout.str());
+
+        check("char buf[0x80];\n"
+              "void bar(char c) {\n"
+              "    buf[c] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar(char c) {\n"
+              "    buf[c] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

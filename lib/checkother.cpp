@@ -2032,8 +2032,10 @@ void CheckOther::checkCharVariable()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if ((tok->str() != ".") && Token::Match(tok->next(), "%var% [ %var% ]")) {
-            const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
-            if (isSignedChar(var))
+            const Variable* arrayvar = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+            const Variable* indexvar = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+            const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
+            if (isSignedChar(indexvar) && arraysize > 0x80)
                 charArrayIndexError(tok->next());
         }
 
