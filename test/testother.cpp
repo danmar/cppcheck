@@ -2207,7 +2207,7 @@ private:
               "    fprintf(stderr,\"%u%s\");\n"
               "    snprintf(str,10,\"%u%s\");\n"
               "    sprintf(string1, \"%-*.*s\", 32, string2);\n" // #3364
-              "    sprintf(string1, \"%*\", 32);\n" // #3364
+              "    snprintf(a, 9, \"%s%d\", \"11223344\");\n" // #3655
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) printf format string has 1 parameters but only 0 are given\n"
                       "[test.cpp:3]: (error) printf format string has 2 parameters but only 1 are given\n"
@@ -2216,7 +2216,8 @@ private:
                       "[test.cpp:6]: (error) printf format string has 3 parameters but only 2 are given\n"
                       "[test.cpp:7]: (error) fprintf format string has 2 parameters but only 0 are given\n"
                       "[test.cpp:8]: (error) snprintf format string has 2 parameters but only 0 are given\n"
-                      "[test.cpp:9]: (error) sprintf format string has 3 parameters but only 2 are given\n", errout.str());
+                      "[test.cpp:9]: (error) sprintf format string has 3 parameters but only 2 are given\n"
+                      "[test.cpp:10]: (error) snprintf format string has 2 parameters but only 1 are given\n", errout.str());
 
         check("void foo(char *str) {\n"
               "    printf(\"\", 0);\n"
@@ -2239,6 +2240,7 @@ private:
               "    fprintf(stderr, \"error: %m\n\");\n" // #3339
               "    printf(\"string: %.*s\n\", len, string);\n" // #3311
               "    fprintf(stderr, \"%*cText.\n\", indent, ' ');\n" // #3313
+              "    sprintf(string1, \"%*\", 32);\n" // #3364
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -4138,6 +4140,30 @@ private:
             "  }"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int main() {\n"
+            "  if (\"str\" == \"str\") {\n"
+            "    std::cout << \"Equal\n\"\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of always identical static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int main() {\n"
+            "  if (\"str\" != \"str\") {\n"
+            "    std::cout << \"Equal\n\"\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of always identical static strings.\n", errout.str());
+
+        check_preprocess_suppress(
+            "int main() {\n"
+            "  if (a+\"str\" != \"str\"+b) {\n"
+            "    std::cout << \"Equal\n\"\n"
+            "  }\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkStrncmpSizeof() {

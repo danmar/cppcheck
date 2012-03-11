@@ -112,11 +112,9 @@ public:
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
-    void clarifyCalculationError(const Token *tok, const std::string &op);
 
     /** @brief Suspicious condition (assignment+comparison) */
     void clarifyCondition();
-    void clarifyConditionError(const Token *tok, bool assign, bool boolop);
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
@@ -167,28 +165,15 @@ public:
 
     /** @brief %Check for 'sizeof sizeof ..' */
     void sizeofsizeof();
-    void sizeofsizeofError(const Token *tok);
 
     /** @brief %Check for calculations inside sizeof */
     void sizeofCalculation();
-    void sizeofCalculationError(const Token *tok);
 
     /** @brief scanf can crash if width specifiers are not used */
     void invalidScanf();
-    void invalidScanfError(const Token *tok);
 
     /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
     void checkWrongPrintfScanfArguments();
-    void wrongPrintfScanfArgumentsError(const Token* tok,
-                                        const std::string &function,
-                                        unsigned int numFormat,
-                                        unsigned int numFunction);
-    void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
-    void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
 
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
@@ -265,7 +250,23 @@ public:
     /** @brief %Check for double free or double close operations */
     void checkDoubleFree();
 
+private:
     // Error messages..
+    void clarifyCalculationError(const Token *tok, const std::string &op);
+    void clarifyConditionError(const Token *tok, bool assign, bool boolop);
+    void sizeofsizeofError(const Token *tok);
+    void sizeofCalculationError(const Token *tok);
+    void invalidScanfError(const Token *tok);
+    void wrongPrintfScanfArgumentsError(const Token* tok,
+                                        const std::string &function,
+                                        unsigned int numFormat,
+                                        unsigned int numFunction);
+    void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
+    void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
+    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to);
     void dangerousUsageStrtolError(const Token *tok);
@@ -301,7 +302,7 @@ public:
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
-    void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
+    void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2, bool warning);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void unreachableCodeError(const Token* tok);
@@ -360,7 +361,7 @@ public:
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
-        c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
+        c.alwaysTrueFalseStringCompareError(0, "str1", "str2", true);
         c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0);
         c.unreachableCodeError(0);
@@ -438,8 +439,6 @@ public:
                "* optimisation: detect post increment/decrement\n";
     }
 
-private:
-
     /**
      * @brief Used in warningRedundantCode()
      * Iterates through the %var% tokens in a fully qualified name and concatenates them.
@@ -452,7 +451,7 @@ private:
             *tok = (*tok)->tokAt(2);
         }
 
-        if (Token::Match(*tok, "%var%"))
+        if ((*tok)->isName())
             varname.append((*tok)->str());
 
         return varname;

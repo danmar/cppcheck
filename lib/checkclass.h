@@ -131,7 +131,7 @@ private:
         c.unusedPrivateFunctionError(0, "classname", "funcname");
         c.memsetError(0, "memfunc", "classname", "class");
         c.operatorEqReturnError(0, "class");
-        //c.virtualDestructorError(0, "Base", "Derived");
+        c.virtualDestructorError(0, "Base", "Derived");
         c.thisSubtractionError(0);
         c.operatorEqRetRefThisError(0);
         c.operatorEqToSelfError(0);
@@ -175,10 +175,10 @@ private:
         Usage() : assign(false), init(false) { }
 
         /** @brief has this variable been assigned? */
-        bool        assign;
+        bool assign;
 
         /** @brief has this variable been initialized? */
-        bool        init;
+        bool init;
     };
 
     bool isBaseClassFunc(const Token *tok, const Scope *scope);

@@ -477,7 +477,7 @@ void CheckOther::checkSizeofForArrayParameter()
                         while (declTok->str() == "[") {
                             declTok = declTok->link()->next();
                         }
-                        if (!(Token::Match(declTok, "= %str%")) && !(Token::simpleMatch(declTok, "= {")) && !(Token::simpleMatch(declTok, ";"))) {
+                        if (!(Token::Match(declTok, "= %str%")) && !(Token::simpleMatch(declTok, "= {")) && declTok->str() != ";") {
                             if (declTok->str() == ",") {
                                 while (declTok->str() != ";") {
                                     if (declTok->str() == ")") {
@@ -1344,8 +1344,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
             if (Token::Match(formatStringTok, "%str% ,")) {
                 argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
                 formatString = formatStringTok->str();
-            }
-            if (Token::Match(formatStringTok, "%str% )")) {
+            } else if (Token::Match(formatStringTok, "%str% )")) {
                 argListTok = 0; // Find fourth parameter (first argument of va_args)
                 formatString = formatStringTok->str();
             } else {
@@ -1401,7 +1400,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
                     numFormat++;
 
                     // Perform type checks
-                    if (_settings->isEnabled("style") && Token::Match(argListTok, "%any% ,|)")) { // We can currently only check the type of arguments matching this simple pattern.
+                    if (_settings->isEnabled("style") && argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
                         const Variable* variableInfo = symbolDatabase->getVariableFromVarId(argListTok->varId());
                         const Token* varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
                         if (varTypeTok && varTypeTok->str() == "static")
@@ -1906,7 +1905,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
             if (indentlevel == 0)
                 return;
             used1 = true;
-            if (for_or_while && !Token::simpleMatch(tok->next(), "="))
+            if (for_or_while && tok->strAt(1) != "=")
                 used2 = true;
             if (used1 && used2)
                 return;
@@ -1916,7 +1915,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
             // %unknown% ( %any% ) {
             // If %unknown% is anything except if, we assume
             // that it is a for or while loop or a macro hiding either one
-            if (Token::simpleMatch(tok->next(), "(") &&
+            if (tok->strAt(1) == "(" &&
                 Token::simpleMatch(tok->next()->link(), ") {")) {
                 if (tok->str() != "if")
                     for_or_while = true;
@@ -2971,35 +2970,45 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 
     const Token *tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL) {
-        alwaysTrueFalseStringCompareError(tok, tok->strAt(2), tok->strAt(4));
+        const std::string &str1 = tok->strAt(2);
+        const std::string &str2 = tok->strAt(4);
+        alwaysTrueFalseStringCompareError(tok, str1, str2, str1==str2);
         tok = tok->tokAt(5);
     }
 
     tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL) {
-        alwaysTrueFalseStringCompareError(tok, tok->strAt(4), tok->strAt(6));
+        const std::string &str1 = tok->strAt(4);
+        const std::string &str2 = tok->strAt(6);
+        alwaysTrueFalseStringCompareError(tok, str1, str2, str1==str2);
         tok = tok->tokAt(7);
     }
 
     tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern3)) != NULL) {
-        const Token *var1 = tok->tokAt(2);
-        const Token *var2 = tok->tokAt(4);
-        const std::string &str1 = var1->str();
-        const std::string &str2 = var2->str();
+        const std::string &str1 = tok->strAt(2);
+        const std::string &str2 = tok->strAt(4);
         if (str1 == str2)
             alwaysTrueStringVariableCompareError(tok, str1, str2);
         tok = tok->tokAt(5);
     }
+
+    tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, "!!+ %str% ==|!= %str% !!+")) != NULL) {
+        const std::string &str1 = tok->strAt(1);
+        const std::string &str2 = tok->strAt(3);
+        alwaysTrueFalseStringCompareError(tok, str1, str2, str1==str2);
+        tok = tok->tokAt(5);
+    }
 }
 
-void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2)
+void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2, bool warning)
 {
     const std::size_t stringLen = 10;
     const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
     const std::string string2 = (str2.size() < stringLen) ? str2 : (str2.substr(0, stringLen-2) + "..");
 
-    if (str1 == str2) {
+    if (warning) {
         reportError(tok, Severity::warning, "staticStringCompare",
                     "Comparison of always identical static strings.\n"
                     "The compared strings, '" + string1 + "' and '" + string2 + "', are always identical. "
