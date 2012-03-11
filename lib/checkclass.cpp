@@ -297,7 +297,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 if (var->varId() == ftok->next()->varId()) {
                     /** @todo false negative: we assume function changes variable state */
                     assignVar(ftok->next()->str(), scope, usage);
-                    continue;
+                    break;
                 }
             }
 
@@ -338,9 +338,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
 
         // Clearing array..
         else if (Token::Match(ftok, "::| memset ( %var% ,")) {
-            const int offset = ftok->str() == "::" ? 1 : 0;
-            assignVar(ftok->strAt(2 + offset), scope, usage);
-            ftok = ftok->linkAt(1 + offset);
+            if (ftok->str() == "::")
+                ftok = ftok->next();
+            assignVar(ftok->strAt(2), scope, usage);
+            ftok = ftok->linkAt(1);
             continue;
         }
 
@@ -496,7 +497,7 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "uninitVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.");
+    reportError(tok, Severity::warning, "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.");
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
@@ -1140,7 +1141,7 @@ void CheckClass::thisSubtraction()
         if (!tok)
             break;
 
-        if (!Token::simpleMatch(tok->previous(), "*"))
+        if (tok->strAt(-1) != "*")
             thisSubtractionError(tok);
 
         tok = tok->next();
