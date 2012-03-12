@@ -114,6 +114,7 @@ private:
         TEST_CASE(incorrectLogicOperator1);
         TEST_CASE(incorrectLogicOperator2);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
+        TEST_CASE(incorrectLogicOp_condSwapping);
 
         TEST_CASE(memsetZeroBytes);
 
@@ -2859,23 +2860,23 @@ private:
         check("void f(int x) {\n"
               "    if (x >= 3 || x <= 3)\n"
               "        a++;\n"
-              "}\n"
+              "}"
              );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 3)\n"
               "        a++;\n"
-              "}\n"
+              "}"
              );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 3)\n"
               "        a++;\n"
-              "}\n"
+              "}"
              );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 10 || x < 3)\n"
@@ -3005,6 +3006,55 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void incorrectLogicOp_condSwapping() {
+        check("void f(int x) {\n"
+              "    if (x < 1 && x > 3)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (1 > x && x > 3)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x < 1 && 3 < x)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (1 > x && 3 < x)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 3 && x < 1)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (3 < x && x < 1)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 3 && 1 > x)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (3 < x && 1 > x)\n"
+              "        a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+    }
 
     void comparisonOfBoolExpressionWithInt() {
         check("void f(int x) {\n"

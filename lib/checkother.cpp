@@ -943,38 +943,86 @@ void CheckOther::assignmentInAssertError(const Token *tok, const std::string &va
 //
 //    Inform that second comparison is always true when first comparison is true.
 //---------------------------------------------------------------------------
+
+enum Position { First, Second, NA };
+enum Relation { Equal, NotEqual, Less, LessEqual, More, MoreEqual };
+struct Condition {
+    Position   position;
+    const char *opTokStr;
+};
+
+static std::string invertOperatorForOperandSwap(std::string s)
+{
+    for (std::string::size_type i = 0; i < s.length(); i++) {
+        if (s[i] == '>')
+            s[i] = '<';
+        else if (s[i] == '<')
+            s[i] = '>';
+    }
+    return s;
+}
+
+static bool analyzeLogicOperatorCondition(const Condition& c1, const Condition& c2,
+        bool inv1, bool inv2,
+        bool varFirst1, bool varFirst2,
+        const std::string& firstConstant, const std::string& secondConstant,
+        const Token* op1Tok, const Token* op3Tok,
+        Relation relation)
+{
+    if (!(c1.position == NA || (c1.position == First && varFirst1) || (c1.position == Second && !varFirst1)))
+        return false;
+
+    if (!(c2.position == NA || (c2.position == First && varFirst2) || (c2.position == Second && !varFirst2)))
+        return false;
+
+    if (!Token::Match(op1Tok, inv1?invertOperatorForOperandSwap(c1.opTokStr).c_str():c1.opTokStr))
+        return false;
+
+    if (!Token::Match(op3Tok, inv2?invertOperatorForOperandSwap(c2.opTokStr).c_str():c2.opTokStr))
+        return false;
+
+    return (relation == Equal     && MathLib::isEqual(firstConstant, secondConstant)) ||
+           (relation == NotEqual  && MathLib::isNotEqual(firstConstant, secondConstant)) ||
+           (relation == Less      && MathLib::isLess(firstConstant, secondConstant)) ||
+           (relation == LessEqual && MathLib::isLessEqual(firstConstant, secondConstant)) ||
+           (relation == More      && MathLib::isGreater(firstConstant, secondConstant)) ||
+           (relation == MoreEqual && MathLib::isGreaterEqual(firstConstant, secondConstant));
+}
+
 void CheckOther::checkIncorrectLogicOperator()
 {
     if (!_settings->isEnabled("style"))
         return;
 
-    const char conditionPattern[] = "if|while (";
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), conditionPattern);
-    const Token *endTok = tok ? tok->next()->link() : NULL;
-
-    while (tok && endTok) {
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Find a pair of comparison expressions with or without parenthesis
         // with a shared variable and constants and with a logical operator between them.
         // e.g. if (x != 3 || x != 4)
-        const Token *logicTok = NULL, *term1Tok = NULL, *term2Tok = NULL;
+        const Token *term1Tok = NULL, *term2Tok = NULL;
         const Token *op1Tok = NULL, *op2Tok = NULL, *op3Tok = NULL, *nextTok = NULL;
-        if (NULL != (logicTok = Token::findmatch(tok, "( %any% !=|==|<|>|>=|<= %any% ) &&|%oror% ( %any% !=|==|<|>|>=|<= %any% ) %any%", endTok))) {
-            term1Tok = logicTok->next();
-            term2Tok = logicTok->tokAt(7);
-            op1Tok = logicTok->tokAt(2);
-            op2Tok = logicTok->tokAt(5);
-            op3Tok = logicTok->tokAt(8);
-            nextTok = logicTok->tokAt(11);
-        } else if (NULL != (logicTok = Token::findmatch(tok, "%any% !=|==|<|>|>=|<= %any% &&|%oror% %any% !=|==|<|>|>=|<= %any% %any%", endTok))) {
-            term1Tok = logicTok;
-            term2Tok = logicTok->tokAt(4);
-            op1Tok = logicTok->next();
-            op2Tok = logicTok->tokAt(3);
-            op3Tok = logicTok->tokAt(5);
-            nextTok = logicTok->tokAt(7);
+
+        if (Token::Match(tok, "( %any% !=|==|<|>|>=|<= %any% ) &&|%oror%")) {
+            term1Tok = tok->next();
+            op1Tok = tok->tokAt(2);
+            op2Tok = tok->tokAt(5);
+        } else if (Token::Match(tok, "%any% !=|==|<|>|>=|<= %any% &&|%oror%")) {
+            term1Tok = tok;
+            op1Tok = tok->next();
+            op2Tok = tok->tokAt(3);
+        }
+        if (op2Tok) {
+            if (Token::Match(op2Tok->next(), "( %any% !=|==|<|>|>=|<= %any% ) %any%")) {
+                term2Tok = op2Tok->tokAt(2);
+                op3Tok = op2Tok->tokAt(3);
+                nextTok = op2Tok->tokAt(6);
+            } else if (Token::Match(op2Tok->next(), "%any% !=|==|<|>|>=|<= %any% %any%")) {
+                term2Tok = op2Tok->next();
+                op3Tok = op2Tok->tokAt(2);
+                nextTok = op2Tok->tokAt(4);
+            }
         }
 
-        if (logicTok) {
+        if (nextTok) {
             // Find the common variable and the two different-valued constants
             unsigned int variableTested = 0;
             std::string firstConstant, secondConstant;
@@ -985,8 +1033,6 @@ void CheckOther::checkIncorrectLogicOperator()
                 varTok = term1Tok;
                 varId = varTok->varId();
                 if (!varId) {
-                    tok = Token::findmatch(endTok->next(), conditionPattern);
-                    endTok = tok ? tok->next()->link() : NULL;
                     continue;
                 }
                 varFirst1 = true;
@@ -995,130 +1041,138 @@ void CheckOther::checkIncorrectLogicOperator()
                 varTok = term1Tok->tokAt(2);
                 varId = varTok->varId();
                 if (!varId) {
-                    tok = Token::findmatch(endTok->next(), conditionPattern);
-                    endTok = tok ? tok->next()->link() : NULL;
                     continue;
                 }
                 varFirst1 = false;
                 firstConstant = term1Tok->str();
             } else {
-                tok = Token::findmatch(endTok->next(), conditionPattern);
-                endTok = tok ? tok->next()->link() : NULL;
                 continue;
             }
 
             if (Token::Match(term2Tok, "%var% %any% %num%")) {
                 const unsigned int varId2 = term2Tok->varId();
                 if (!varId2 || varId != varId2) {
-                    tok = Token::findmatch(endTok->next(), conditionPattern);
-                    endTok = tok ? tok->next()->link() : NULL;
                     continue;
                 }
                 varFirst2 = true;
                 secondConstant = term2Tok->strAt(2);
                 variableTested = varId;
             } else if (Token::Match(term2Tok, "%num% %any% %var%")) {
-                const unsigned int varId2 = term1Tok->tokAt(2)->varId();
+                const unsigned int varId2 = term2Tok->tokAt(2)->varId();
                 if (!varId2 || varId != varId2) {
-                    tok = Token::findmatch(endTok->next(), conditionPattern);
-                    endTok = tok ? tok->next()->link() : NULL;
                     continue;
                 }
                 varFirst2 = false;
                 secondConstant = term2Tok->str();
                 variableTested = varId;
             } else {
-                tok = Token::findmatch(endTok->next(), conditionPattern);
-                endTok = tok ? tok->next()->link() : NULL;
                 continue;
             }
 
             if (variableTested == 0 || firstConstant.empty() || secondConstant.empty()) {
-                tok = Token::findmatch(endTok->next(), conditionPattern);
-                endTok = tok ? tok->next()->link() : NULL;
                 continue;
             }
 
-            enum Position { First, Second, NA };
-            enum Relation { Equal, NotEqual, Less, LessEqual, More, MoreEqual };
-            enum LogicError { Exclusion, AlwaysTrue, AlwaysFalse, AlwaysFalseOr };
-            static const struct Condition {
+            enum LogicError { AlwaysFalse, AlwaysTrue, FirstTrue, FirstFalse, SecondTrue, SecondFalse };
+
+            static const struct LinkedConditions {
                 const char *before;
-                Position   position1;
-                const char *op1TokStr;
+                Condition  c1;
                 const char *op2TokStr;
-                Position   position2;
-                const char *op3TokStr;
+                Condition  c2;
                 const char *after;
                 Relation   relation;
                 LogicError error;
             } conditions[] = {
-                { "!!&&", NA,     "!=",   "||", NA,     "!=",   "!!&&", NotEqual,  Exclusion     }, // (x != 1) || (x != 3) <- always true
-                { "(",    NA,     "==",   "&&", NA,     "==",   ")",    NotEqual,  AlwaysFalseOr }, // (x == 1) && (x == 3) <- always false
-                { "(",    First,  "<",    "&&", First,  ">",    ")",    LessEqual, AlwaysFalseOr }, // (x < 1)  && (x > 3)  <- always false
-                { "(",    First,  ">",    "&&", First,  "<",    ")",    MoreEqual, AlwaysFalseOr }, // (x > 3)  && (x < 1)  <- always false
-                { "(",    Second, ">",    "&&", First,  ">",    ")",    LessEqual, AlwaysFalseOr }, // (1 > x)  && (x > 3)  <- always false
-                { "(",    First,  ">",    "&&", Second, ">",    ")",    MoreEqual, AlwaysFalseOr }, // (x > 3)  && (1 > x)  <- always false
-                { "(",    First,  "<",    "&&", Second, "<",    ")",    LessEqual, AlwaysFalseOr }, // (x < 1)  && (3 < x)  <- always false
-                { "(",    Second, "<",    "&&", First,  "<",    ")",    MoreEqual, AlwaysFalseOr }, // (3 < x)  && (x < 1)  <- always false
-                { "(",    Second, ">",    "&&", Second, "<",    ")",    LessEqual, AlwaysFalseOr }, // (1 > x)  && (3 < x)  <- always false
-                { "(",    Second, "<",    "&&", Second, ">",    ")",    MoreEqual, AlwaysFalseOr }, // (3 < x)  && (1 > x)  <- always false
-                { "(",    First , ">|>=", "||", First,  "<|<=", ")",    Less,      Exclusion     }, // (x > 3)  || (x < 10) <- always true
-                { "(",    First , "<|<=", "||", First,  ">|>=", ")",    More,      Exclusion     }, // (x < 10) || (x > 3)  <- always true
-                { "(",    Second, "<|<=", "||", First,  "<|<=", ")",    Less,      Exclusion     }, // (3 < x)  || (x < 10) <- always true
-                { "(",    First,  "<|<=", "||", Second, "<|<=", ")",    More,      Exclusion     }, // (x < 10) || (3 < x)  <- always true
-                { "(",    First,  ">|>=", "||", Second, ">|>=", ")",    Less,      Exclusion     }, // (x > 3)  || (10 > x) <- always true
-                { "(",    Second, ">|>=", "||", First,  ">|>=", ")",    More,      Exclusion     }, // (10 > x) || (x > 3)  <- always true
-                { "(",    Second, "<|<=", "||", Second, ">|<=", ")",    Less,      Exclusion     }, // (3 < x)  || (10 > x) <- always true
-                { "(",    Second, ">|>=", "||", Second, "<|<=", ")",    More,      Exclusion     }, // (10 > x) || (3 < x)  <- always true
-                { "(",    First,  ">",    "&&", NA,     "!=",   ")",    More,      AlwaysTrue    }, // (x > 5)  && (x != 1) <- second expression always true
-                { "(",    Second, "<",    "&&", NA,     "!=",   ")",    More,      AlwaysTrue    }, // (5 < x)  && (x != 1) <- second expression always true
-                { "(",    First,  ">",    "&&", NA,     "==",   ")",    More,      AlwaysFalse   }, // (x > 5)  && (x == 1) <- second expression always false
-                { "(",    Second, "<",    "&&", NA,     "==",   ")",    More,      AlwaysFalse   }, // (5 < x)  && (x == 1) <- second expression always false
+                { "!!&&", { NA,     "!=" }, "%oror%", { NA,    "!="   }, "!!&&", NotEqual,  AlwaysTrue  }, // (x != 1) || (x != 3)  <- always true
+                { 0,      { NA,     "==" }, "&&",     { NA,    "=="   }, 0,      NotEqual,  AlwaysFalse }, // (x == 1) && (x == 3)  <- always false
+                { 0,      { First,  "<"  }, "&&",     { First, ">"    }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x > 3)   <- always false
+                { 0,      { First,  "<=" }, "&&",     { First, ">|>=" }, 0,      LessEqual, AlwaysFalse }, // (x <= 1) && (x > 3)   <- always false
+                { 0,      { First,  "<"  }, "&&",     { First, ">="   }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x >= 3)  <- always false
+                { "!!&&", { First , ">"  }, "%oror%", { First, "<"    }, "!!&&", Less,      AlwaysTrue  }, // (x > 3)  || (x < 10)  <- always true
+                { "!!&&", { First , ">=" }, "%oror%", { First, "<|<=" }, "!!&&", LessEqual, AlwaysTrue  }, // (x >= 3) || (x < 10)  <- always true
+                { "!!&&", { First , ">"  }, "%oror%", { First, "<="   }, "!!&&", LessEqual, AlwaysTrue  }, // (x > 3)  || (x <= 10) <- always true
+                { 0,      { First,  ">"  }, "&&",     { NA,    "!="   }, 0,      MoreEqual, SecondTrue  }, // (x > 5)  && (x != 1)  <- second expression always true
+                { 0,      { First,  "<"  }, "&&",     { NA,    "!="   }, 0,      LessEqual, SecondTrue  }, // (x < 1)  && (x != 3)  <- second expression always true
+                { 0,      { First,  ">=" }, "&&",     { NA,    "!="   }, 0,      More,      SecondTrue  }, // (x >= 5) && (x != 1)  <- second expression always true
+                { 0,      { First,  "<=" }, "&&",     { NA,    "!="   }, 0,      Less,      SecondTrue  }, // (x <= 1) && (x != 3)  <- second expression always true
+                { 0,      { First,  ">"  }, "&&",     { NA,    "=="   }, 0,      MoreEqual, SecondFalse }, // (x > 5)  && (x == 1)  <- second expression always false
+                { 0,      { First,  "<"  }, "&&",     { NA,    "=="   }, 0,      LessEqual, SecondFalse }, // (x < 1)  && (x == 3)  <- second expression always false
+                { 0,      { First,  ">=" }, "&&",     { NA,    "=="   }, 0,      More,      SecondFalse }, // (x >= 5) && (x == 1)  <- second expression always false
+                { 0,      { First,  "<=" }, "&&",     { NA,    "=="   }, 0,      Less,      SecondFalse }, // (x <= 1) && (x == 3)  <- second expression always false
             };
 
             for (unsigned int i = 0; i < (sizeof(conditions) / sizeof(conditions[0])); i++) {
-                if (!((conditions[i].position1 == NA) || (((conditions[i].position1 == First) && varFirst1) || ((conditions[i].position1 == Second) && !varFirst1))))
-                    continue;
-
-                if (!((conditions[i].position2 == NA) || (((conditions[i].position2 == First) && varFirst2) || ((conditions[i].position2 == Second) && !varFirst2))))
-                    continue;
-
-                if (!Token::Match(op1Tok, conditions[i].op1TokStr))
-                    continue;
-
                 if (!Token::Match(op2Tok, conditions[i].op2TokStr))
                     continue;
 
-                if (!Token::Match(op3Tok, conditions[i].op3TokStr))
+                if (conditions[i].before != 0 && !Token::Match(tok->previous(), conditions[i].before))
                     continue;
 
-                if (!Token::Match(logicTok->previous(), conditions[i].before))
+                if (conditions[i].after != 0 && !Token::Match(nextTok, conditions[i].after))
                     continue;
 
-                if (!Token::Match(nextTok, conditions[i].after))
-                    continue;
+                // cond1 op cond2
+                bool error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, false,
+                             varFirst1, varFirst2, firstConstant, secondConstant,
+                             op1Tok, op3Tok,
+                             conditions[i].relation);
+                // inv(cond1) op cond2 // invert first condition
+                if (!error && conditions[i].c1.position != NA)
+                    error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, false,
+                                                          !varFirst1, varFirst2, firstConstant, secondConstant,
+                                                          op1Tok, op3Tok,
+                                                          conditions[i].relation);
+                // cond1 op inv(cond2) // invert second condition
+                if (!error && conditions[i].c2.position != NA)
+                    error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, true,
+                                                          varFirst1, !varFirst2, firstConstant, secondConstant,
+                                                          op1Tok, op3Tok,
+                                                          conditions[i].relation);
+                // inv(cond1) op inv(cond2) // invert both conditions
+                if (!error && conditions[i].c1.position != NA && conditions[i].c2.position != NA)
+                    error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, true,
+                                                          !varFirst1, !varFirst2, firstConstant, secondConstant,
+                                                          op1Tok, op3Tok,
+                                                          conditions[i].relation);
+                // cond2 op cond1 // swap conditions
+                if (!error)
+                    error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, false,
+                                                          varFirst2, varFirst1, secondConstant, firstConstant,
+                                                          op3Tok, op1Tok,
+                                                          conditions[i].relation);
+                // cond2 op inv(cond1) // swap conditions; invert first condition
+                if (!error && conditions[i].c1.position != NA)
+                    error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, false,
+                                                          !varFirst2, varFirst1, secondConstant, firstConstant,
+                                                          op3Tok, op1Tok,
+                                                          conditions[i].relation);
+                // inv(cond2) op cond1 // swap conditions; invert second condition
+                if (!error && conditions[i].c2.position != NA)
+                    error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, true,
+                                                          varFirst2, !varFirst1, secondConstant, firstConstant,
+                                                          op3Tok, op1Tok,
+                                                          conditions[i].relation);
+                // inv(cond2) op inv(cond1) // swap conditions; invert both conditions
+                if (!error && conditions[i].c1.position != NA && conditions[i].c2.position != NA)
+                    error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, true,
+                                                          !varFirst2, !varFirst1, secondConstant, firstConstant,
+                                                          op3Tok, op1Tok,
+                                                          conditions[i].relation);
 
-                if ((conditions[i].relation == Equal     && MathLib::isEqual(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == NotEqual  && MathLib::isNotEqual(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == Less      && MathLib::isLess(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == LessEqual && MathLib::isLessEqual(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == More      && MathLib::isGreater(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == MoreEqual && MathLib::isGreaterEqual(firstConstant, secondConstant))) {
-                    if (conditions[i].error == Exclusion || conditions[i].error == AlwaysFalseOr)
-                        incorrectLogicOperatorError(term1Tok, conditions[i].error == Exclusion);
+                if (error) {
+                    if (conditions[i].error == AlwaysFalse || conditions[i].error == AlwaysTrue)
+                        incorrectLogicOperatorError(term1Tok, conditions[i].error == AlwaysTrue);
                     else {
                         std::string text("When " + varTok->str() + " is greater than " + firstConstant + ", the comparison " +
-                                         varTok->str() + " " + conditions[i].op3TokStr + " " + secondConstant +
-                                         " is always " + (conditions[i].error == AlwaysTrue ? "true." : "false."));
+                                         varTok->str() + " " + conditions[i].c2.opTokStr + " " + secondConstant +
+                                         " is always " + (conditions[i].error == SecondTrue ? "true." : "false."));
                         secondAlwaysTrueFalseWhenFirstTrueError(term1Tok, text);
                     }
+                    break;
                 }
             }
         }
-
-        tok = Token::findmatch(endTok->next(), conditionPattern);
-        endTok = tok ? tok->next()->link() : NULL;
     }
 }
 
