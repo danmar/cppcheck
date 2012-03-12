@@ -6115,6 +6115,22 @@ bool Tokenizer::simplifyKnownVariables()
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
             }
 
+            else if (Token::Match(tok2, "( %var% == %num% ) {")) {
+                const unsigned int varid = tok2->next()->varId();
+                if (varid == 0)
+                    continue;
+
+                const std::string structname = "";
+
+                const Token *valueToken = tok2->tokAt(3);
+                std::string value(tok2->strAt(3));
+                const unsigned int valueVarId = 0;
+                const bool valueIsPointer = false;
+
+                Token *scopeStart = tok2->tokAt(6);
+                ret |= simplifyKnownVariablesSimplify(&scopeStart, scopeStart, varid, structname, value, valueIsPointer, valueVarId, valueToken, 0);
+            }
+
             else if (Token::Match(tok2, "strcpy ( %var% , %str% ) ;")) {
                 const unsigned int varid(tok2->tokAt(2)->varId());
                 if (varid == 0)
