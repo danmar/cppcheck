@@ -897,9 +897,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     // check each index for overflow
                     for (unsigned int i = 0; i < indexes.size(); ++i) {
                         if (indexes[i] >= arrayInfo.num(i)) {
+                            if (indexes.size() == 1U) {
+                                arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), arrayInfo, indexes);
+                                break; // only warn about the first one
+                            }
+
                             // The access is still within the memory range for the array
                             // so it may be intentional.
-                            if (_settings->inconclusive) {
+                            else if (_settings->inconclusive) {
                                 arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), arrayInfo, indexes);
                                 break; // only warn about the first one
                             }
