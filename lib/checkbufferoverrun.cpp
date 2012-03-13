@@ -1136,14 +1136,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 // strncpy takes entire variable length as input size
                 unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6 + offset));
 
-                if (num >= total_size) {
+                // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
+                if (num >= total_size && _settings->isEnabled("style") && _settings->inconclusive) {
                     const Token *tok2 = tok->next()->link()->next();
                     for (; tok2; tok2 = tok2->next()) {
                         if (tok2->varId() == tok->tokAt(2)->varId()) {
                             if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId())) {
-                                // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
-                                if (_settings->isEnabled("style") && _settings->inconclusive)
-                                    terminateStrncpyError(tok, tok->strAt(2));
+                                terminateStrncpyError(tok, tok->strAt(2));
                             }
 
                             break;
