@@ -2559,8 +2559,10 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
         return;
 
     const unsigned int varid = classtok->varId();
-    if (varid == 0)
+    if (varid == 0) {
+        _tokenizer->getSymbolDatabase()->debugMessage(classtok, "CheckMemoryInClass::checkPublicFunctions found variable \'" + classtok->str() + "\' with varid 0");
         return;
+    }
 
     // Parse public functions..
     // If they allocate member variables, they should also deallocate
