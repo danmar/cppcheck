@@ -456,6 +456,8 @@ private:
 
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
 
+    void missingAssignementLeak(const Token *loc, const std::string &alloc);
+
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
     { }
 
