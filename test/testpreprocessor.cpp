@@ -128,6 +128,8 @@ private:
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
 
+        TEST_CASE(if_macro_eq_macro); // #3536
+
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
         TEST_CASE(multiline3);
@@ -1501,6 +1503,23 @@ private:
         ASSERT_EQUALS("\na1;\n\n", preprocessor.getcode(code, "Y", "test.c"));
     }
 
+    void if_macro_eq_macro() {
+        const std::string code("#define A B\n"
+                               "#define B 1\n"
+                               "#define C 1\n"
+                               "#if A == C\n"
+                               "Wilma\n"
+                               "#else\n"
+                               "Betty\n"
+                               "#endif\n");
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        ASSERT_EQUALS("\n\n\n\nWilma\n\n\n\n", actual[""]);
+    }
 
     void multiline1() {
         const char filedata[] = "#define str \"abc\"     \\\n"
