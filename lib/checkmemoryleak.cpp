@@ -2879,6 +2879,11 @@ void CheckMemoryLeakNoVar::check()
                     }
                 }
             }
+
+            // Handle the case were the user is calling a function returning something which is leaking
+            // and never assigns the returned value to a variable, which will lead to a leak.
+            else if (Token::Match(tok2, "[;{}] %var% (") && getAllocationType(tok2->next(), 0) != No)
+                missingAssignementLeak(tok2, tok2->next()->str());
         }
     }
 }
@@ -2886,6 +2891,11 @@ void CheckMemoryLeakNoVar::check()
 void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall)
 {
     reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.");
+}
+
+void CheckMemoryLeakNoVar::missingAssignementLeak(const Token *loc, const std::string &alloc)
+{
+    reportError(loc, Severity::error, "leakNoVar", "Allocation with " + alloc + " never assigned.");
 }
 
 

@@ -5198,6 +5198,8 @@ private:
     void run() {
         // pass allocated memory to function..
         TEST_CASE(functionParameter);
+        // never use leakable resource
+        TEST_CASE(missingAssignement);
     }
 
     void functionParameter() {
@@ -5234,6 +5236,24 @@ private:
               "    close(fd);\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with strdup, mkstemp doesn't release it.\n", "", errout.str());
+    }
+
+    void missingAssignement() {
+        check("void x()\n"
+              "{\n"
+              "    malloc(10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with malloc never assigned.\n", errout.str());
+
+        check("void *f()\n"
+              "{\n"
+              "    return malloc(10);\n"
+              "}\n"
+              "void x()\n"
+              "{\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Allocation with f never assigned.\n", errout.str());
     }
 };
 static TestMemleakNoVar testMemleakNoVar;
