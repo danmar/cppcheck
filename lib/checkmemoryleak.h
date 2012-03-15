@@ -452,18 +452,18 @@ public:
 
     void check();
 
+private:
+
+    void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
+
+    void missingAssignementLeak(const Token *loc, const std::string &alloc);
+
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakNoVar c(0, settings, e);
 
         c.functionCallLeak(0, "funcName", "funcName");
         c.missingAssignementLeak(0, "funcName");
     }
-
-private:
-
-    void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
-
-    void missingAssignementLeak(const Token *loc, const std::string &alloc);
 
     std::string myName() const {
         return "Memory leaks (address not taken)";
