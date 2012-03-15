@@ -350,7 +350,7 @@ private:
         c.assignmentInAssertError(0, "varname");
         c.invalidScanfError(0);
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
-        c.redundantConditionError(0, "when first comparison is true, the 2nd comparison is always true");
+        c.redundantConditionError(0, "If x > 10 the condition x > 11 is always true.");
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);

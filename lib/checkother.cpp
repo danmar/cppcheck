@@ -1173,7 +1173,7 @@ void CheckOther::checkIncorrectLogicOperator()
                         incorrectLogicOperatorError(term1Tok, text, conditions[i].error == AlwaysTrue);
                     } else {
                         const std::string text = "If " + cond1str + ", the comparison " + cond2str +
-                                                 " is always " + ((conditions[i].error == SecondTrue || conditions[i].error == AlwaysTrue) ? "true" : "false") + ".\n";
+                                                 " is always " + ((conditions[i].error == SecondTrue || conditions[i].error == AlwaysTrue) ? "true" : "false") + ".";
                         redundantConditionError(term1Tok, text);
                     }
                     break;
