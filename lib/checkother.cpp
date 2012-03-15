@@ -1024,22 +1024,21 @@ void CheckOther::checkIncorrectLogicOperator()
 
         if (nextTok) {
             // Find the common variable and the two different-valued constants
-            unsigned int variableTested = 0;
             std::string firstConstant, secondConstant;
             bool varFirst1, varFirst2;
             unsigned int varId;
-            const Token *varTok = NULL;
+            const Token *var1Tok = NULL, *var2Tok = NULL;
             if (Token::Match(term1Tok, "%var% %any% %num%")) {
-                varTok = term1Tok;
-                varId = varTok->varId();
+                var1Tok = term1Tok;
+                varId = var1Tok->varId();
                 if (!varId) {
                     continue;
                 }
                 varFirst1 = true;
                 firstConstant = term1Tok->strAt(2);
             } else if (Token::Match(term1Tok, "%num% %any% %var%")) {
-                varTok = term1Tok->tokAt(2);
-                varId = varTok->varId();
+                var1Tok = term1Tok->tokAt(2);
+                varId = var1Tok->varId();
                 if (!varId) {
                     continue;
                 }
@@ -1050,26 +1049,18 @@ void CheckOther::checkIncorrectLogicOperator()
             }
 
             if (Token::Match(term2Tok, "%var% %any% %num%")) {
-                const unsigned int varId2 = term2Tok->varId();
-                if (!varId2 || varId != varId2) {
-                    continue;
-                }
+                var2Tok = term2Tok;
                 varFirst2 = true;
                 secondConstant = term2Tok->strAt(2);
-                variableTested = varId;
             } else if (Token::Match(term2Tok, "%num% %any% %var%")) {
-                const unsigned int varId2 = term2Tok->tokAt(2)->varId();
-                if (!varId2 || varId != varId2) {
-                    continue;
-                }
+                var2Tok = term2Tok->tokAt(2);
                 varFirst2 = false;
                 secondConstant = term2Tok->str();
-                variableTested = varId;
             } else {
                 continue;
             }
 
-            if (variableTested == 0 || firstConstant.empty() || secondConstant.empty()) {
+            if (varId != var2Tok->varId() || firstConstant.empty() || secondConstant.empty()) {
                 continue;
             }
 
@@ -1084,22 +1075,34 @@ void CheckOther::checkIncorrectLogicOperator()
                 Relation   relation;
                 LogicError error;
             } conditions[] = {
-                { "!!&&", { NA,     "!=" }, "%oror%", { NA,    "!="   }, "!!&&", NotEqual,  AlwaysTrue  }, // (x != 1) || (x != 3)  <- always true
-                { 0,      { NA,     "==" }, "&&",     { NA,    "=="   }, 0,      NotEqual,  AlwaysFalse }, // (x == 1) && (x == 3)  <- always false
-                { 0,      { First,  "<"  }, "&&",     { First, ">"    }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x > 3)   <- always false
-                { 0,      { First,  "<=" }, "&&",     { First, ">|>=" }, 0,      LessEqual, AlwaysFalse }, // (x <= 1) && (x > 3)   <- always false
-                { 0,      { First,  "<"  }, "&&",     { First, ">="   }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x >= 3)  <- always false
-                { "!!&&", { First , ">"  }, "%oror%", { First, "<"    }, "!!&&", Less,      AlwaysTrue  }, // (x > 3)  || (x < 10)  <- always true
-                { "!!&&", { First , ">=" }, "%oror%", { First, "<|<=" }, "!!&&", LessEqual, AlwaysTrue  }, // (x >= 3) || (x < 10)  <- always true
-                { "!!&&", { First , ">"  }, "%oror%", { First, "<="   }, "!!&&", LessEqual, AlwaysTrue  }, // (x > 3)  || (x <= 10) <- always true
-                { 0,      { First,  ">"  }, "&&",     { NA,    "!="   }, 0,      MoreEqual, SecondTrue  }, // (x > 5)  && (x != 1)  <- second expression always true
-                { 0,      { First,  "<"  }, "&&",     { NA,    "!="   }, 0,      LessEqual, SecondTrue  }, // (x < 1)  && (x != 3)  <- second expression always true
-                { 0,      { First,  ">=" }, "&&",     { NA,    "!="   }, 0,      More,      SecondTrue  }, // (x >= 5) && (x != 1)  <- second expression always true
-                { 0,      { First,  "<=" }, "&&",     { NA,    "!="   }, 0,      Less,      SecondTrue  }, // (x <= 1) && (x != 3)  <- second expression always true
-                { 0,      { First,  ">"  }, "&&",     { NA,    "=="   }, 0,      MoreEqual, SecondFalse }, // (x > 5)  && (x == 1)  <- second expression always false
-                { 0,      { First,  "<"  }, "&&",     { NA,    "=="   }, 0,      LessEqual, SecondFalse }, // (x < 1)  && (x == 3)  <- second expression always false
-                { 0,      { First,  ">=" }, "&&",     { NA,    "=="   }, 0,      More,      SecondFalse }, // (x >= 5) && (x == 1)  <- second expression always false
-                { 0,      { First,  "<=" }, "&&",     { NA,    "=="   }, 0,      Less,      SecondFalse }, // (x <= 1) && (x == 3)  <- second expression always false
+                { "!!&&", { NA,    "!="   }, "%oror%", { NA,    "!="   }, "!!&&", NotEqual,  AlwaysTrue  }, // (x != 1) || (x != 3)  <- always true
+                { 0,      { NA,    "=="   }, "&&",     { NA,    "=="   }, 0,      NotEqual,  AlwaysFalse }, // (x == 1) && (x == 3)  <- always false
+                { "!!&&", { First, ">"    }, "%oror%", { First, "<"    }, "!!&&", Less,      AlwaysTrue  }, // (x > 3)  || (x < 10)  <- always true
+                { "!!&&", { First, ">="   }, "%oror%", { First, "<|<=" }, "!!&&", LessEqual, AlwaysTrue  }, // (x >= 3) || (x < 10)  <- always true
+                { "!!&&", { First, ">"    }, "%oror%", { First, "<="   }, "!!&&", LessEqual, AlwaysTrue  }, // (x > 3)  || (x <= 10) <- always true
+                { 0,      { First, "<"    }, "&&",     { First, ">"    }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x > 3)   <- always false
+                { 0,      { First, "<="   }, "&&",     { First, ">|>=" }, 0,      Less,      AlwaysFalse }, // (x <= 1) && (x > 3)   <- always false
+                { 0,      { First, "<"    }, "&&",     { First, ">="   }, 0,      Less,      AlwaysFalse }, // (x < 1)  && (x >= 3)  <- always false
+                { "!!&&", { First, ">"    }, "%oror%", { NA,    "=="   }, "!!&&", LessEqual, AlwaysTrue  }, // (x > 3)  || (x == 4)  <- always true
+                { "!!&&", { First, "<"    }, "%oror%", { NA,    "=="   }, "!!&&", MoreEqual, AlwaysTrue  }, // (x < 5)  || (x == 4)  <- always true
+                { "!!&&", { First, ">="   }, "%oror%", { NA,    "=="   }, "!!&&", Less,      AlwaysTrue  }, // (x >= 3) || (x == 4)  <- always true
+                { "!!&&", { First, "<="   }, "%oror%", { NA,    "=="   }, "!!&&", More,      AlwaysTrue  }, // (x <= 5) || (x == 4)  <- always true
+                { 0,      { First, ">"    }, "&&",     { NA,    "=="   }, 0,      MoreEqual, AlwaysFalse }, // (x > 5)  && (x == 1)  <- always false
+                { 0,      { First, "<"    }, "&&",     { NA,    "=="   }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x == 3)  <- always false
+                { 0,      { First, ">="   }, "&&",     { NA,    "=="   }, 0,      More,      AlwaysFalse }, // (x >= 5) && (x == 1)  <- always false
+                { 0,      { First, "<="   }, "&&",     { NA,    "=="   }, 0,      Less,      AlwaysFalse }, // (x <= 1) && (x == 3)  <- always false
+                { "!!&&", { First, ">"    }, "%oror%", { NA,    "!="   }, "!!&&", MoreEqual, SecondTrue  }, // (x > 5)  || (x != 1)  <- second expression always true
+                { "!!&&", { First, "<"    }, "%oror%", { NA,    "!="   }, "!!&&", LessEqual, SecondTrue  }, // (x < 1)  || (x != 3)  <- second expression always true
+                { "!!&&", { First, ">="   }, "%oror%", { NA,    "!="   }, "!!&&", More,      SecondTrue  }, // (x >= 5) || (x != 1)  <- second expression always true
+                { "!!&&", { First, "<="   }, "%oror%", { NA,    "!="   }, "!!&&", Less,      SecondTrue  }, // (x <= 1) || (x != 3)  <- second expression always true
+                { 0,      { First, ">"    }, "&&",     { NA,    "!="   }, 0,      MoreEqual, SecondTrue  }, // (x > 5)  && (x != 1)  <- second expression always true
+                { 0,      { First, "<"    }, "&&",     { NA,    "!="   }, 0,      LessEqual, SecondTrue  }, // (x < 1)  && (x != 3)  <- second expression always true
+                { 0,      { First, ">="   }, "&&",     { NA,    "!="   }, 0,      More,      SecondTrue  }, // (x >= 5) && (x != 1)  <- second expression always true
+                { 0,      { First, "<="   }, "&&",     { NA,    "!="   }, 0,      Less,      SecondTrue  }, // (x <= 1) && (x != 3)  <- second expression always true
+                { "!!&&", { First, ">|>=" }, "%oror%", { First, ">|>=" }, "!!&&", LessEqual, SecondTrue  }, // (x > 4)  || (x > 5)   <- second expression always true
+                { "!!&&", { First, "<|<=" }, "%oror%", { First, "<|<=" }, "!!&&", MoreEqual, SecondTrue  }, // (x < 5)  || (x < 4)   <- second expression always true
+                { 0,      { First, ">|>=" }, "&&",     { First, ">|>=" }, 0,      LessEqual, SecondTrue  }, // (x > 4)  && (x > 5)   <- second expression always true
+                { 0,      { First, "<|<=" }, "&&",     { First, "<|<=" }, 0,      MoreEqual, SecondTrue  }, // (x < 5)  && (x < 4)   <- second expression always true
             };
 
             for (unsigned int i = 0; i < (sizeof(conditions) / sizeof(conditions[0])); i++) {
@@ -1112,6 +1115,8 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (conditions[i].after != 0 && !Token::Match(nextTok, conditions[i].after))
                     continue;
 
+                std::string cond1str = var1Tok->str() + " " + (varFirst1?op1Tok->str():invertOperatorForOperandSwap(op1Tok->str())) + " " + firstConstant;
+                std::string cond2str = var2Tok->str() + " " + (varFirst2?op3Tok->str():invertOperatorForOperandSwap(op3Tok->str())) + " " + secondConstant;
                 // cond1 op cond2
                 bool error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, false,
                              varFirst1, varFirst2, firstConstant, secondConstant,
@@ -1135,6 +1140,8 @@ void CheckOther::checkIncorrectLogicOperator()
                                                           !varFirst1, !varFirst2, firstConstant, secondConstant,
                                                           op1Tok, op3Tok,
                                                           conditions[i].relation);
+                if (!error)
+                    std::swap(cond1str, cond2str);
                 // cond2 op cond1 // swap conditions
                 if (!error)
                     error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, false,
@@ -1161,13 +1168,13 @@ void CheckOther::checkIncorrectLogicOperator()
                                                           conditions[i].relation);
 
                 if (error) {
-                    if (conditions[i].error == AlwaysFalse || conditions[i].error == AlwaysTrue)
-                        incorrectLogicOperatorError(term1Tok, conditions[i].error == AlwaysTrue);
-                    else {
-                        std::string text("When " + varTok->str() + " is greater than " + firstConstant + ", the comparison " +
-                                         varTok->str() + " " + conditions[i].c2.opTokStr + " " + secondConstant +
-                                         " is always " + (conditions[i].error == SecondTrue ? "true." : "false."));
-                        secondAlwaysTrueFalseWhenFirstTrueError(term1Tok, text);
+                    if (conditions[i].error == AlwaysFalse || conditions[i].error == AlwaysTrue) {
+                        const std::string text = cond1str + " " + op2Tok->str() + " " + cond2str;
+                        incorrectLogicOperatorError(term1Tok, text, conditions[i].error == AlwaysTrue);
+                    } else {
+                        const std::string text = "If " + cond1str + ", the comparison " + cond2str +
+                                                 " is always " + ((conditions[i].error == SecondTrue || conditions[i].error == AlwaysTrue) ? "true" : "false") + ".\n";
+                        redundantConditionError(term1Tok, text);
                     }
                     break;
                 }
@@ -1176,19 +1183,21 @@ void CheckOther::checkIncorrectLogicOperator()
     }
 }
 
-void CheckOther::incorrectLogicOperatorError(const Token *tok, bool always)
+void CheckOther::incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always)
 {
     if (always)
-        reportError(tok, Severity::warning,
-                    "incorrectLogicOperator", "Mutual exclusion over || always evaluates to true. Did you intend to use && instead?");
+        reportError(tok, Severity::warning, "incorrectLogicOperator",
+                    "Logical disjunction always evaluates to true: " + condition + ".\n"
+                    "Are these conditions necessary? Did you intend to use && instead? Are the numbers correct? Are you comparing the correct variables?");
     else
-        reportError(tok, Severity::warning,
-                    "incorrectLogicOperator", "Expression always evaluates to false. Did you intend to use || instead?");
+        reportError(tok, Severity::warning, "incorrectLogicOperator",
+                    "Logical conjunction always evaluates to false: " + condition + ".\n"
+                    "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?");
 }
 
-void CheckOther::secondAlwaysTrueFalseWhenFirstTrueError(const Token *tok, const std::string &truefalse)
+void CheckOther::redundantConditionError(const Token *tok, const std::string &text)
 {
-    reportError(tok, Severity::style, "secondAlwaysTrueFalseWhenFirstTrue", truefalse);
+    reportError(tok, Severity::style, "redundantCondition", "Redundant condition: " + text);
 }
 
 //---------------------------------------------------------------------------
@@ -3015,7 +3024,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 //---------------------------------------------------------------------------
 void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 {
-    if (!_settings->isEnabled("style") && !_settings->isEnabled("performance"))
+    if (!_settings->isEnabled("style"))
         return;
 
     const char pattern1[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% ";
@@ -3026,7 +3035,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL) {
         const std::string &str1 = tok->strAt(2);
         const std::string &str2 = tok->strAt(4);
-        alwaysTrueFalseStringCompareError(tok, str1, str2, str1==str2);
+        alwaysTrueFalseStringCompareError(tok, str1, str2);
         tok = tok->tokAt(5);
     }
 
@@ -3034,7 +3043,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL) {
         const std::string &str1 = tok->strAt(4);
         const std::string &str2 = tok->strAt(6);
-        alwaysTrueFalseStringCompareError(tok, str1, str2, str1==str2);
+        alwaysTrueFalseStringCompareError(tok, str1, str2);
         tok = tok->tokAt(7);
     }
 
@@ -3051,29 +3060,21 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     while (tok && (tok = Token::findmatch(tok, "!!+ %str% ==|!= %str% !!+")) != NULL) {
         const std::string &str1 = tok->strAt(1);
         const std::string &str2 = tok->strAt(3);
-        alwaysTrueFalseStringCompareError(tok, str1, str2, str1==str2);
+        alwaysTrueFalseStringCompareError(tok, str1, str2);
         tok = tok->tokAt(5);
     }
 }
 
-void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2, bool warning)
+void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2)
 {
     const std::size_t stringLen = 10;
     const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
     const std::string string2 = (str2.size() < stringLen) ? str2 : (str2.substr(0, stringLen-2) + "..");
 
-    if (warning) {
-        reportError(tok, Severity::warning, "staticStringCompare",
-                    "Comparison of always identical static strings.\n"
-                    "The compared strings, '" + string1 + "' and '" + string2 + "', are always identical. "
-                    "If the purpose is to compare these two strings, the comparison is unnecessary. "
-                    "If the strings are supposed to be different, then there is a bug somewhere.");
-    } else if (_settings->isEnabled("performance")) {
-        reportError(tok, Severity::performance, "staticStringCompare",
-                    "Unnecessary comparison of static strings.\n"
-                    "The compared strings, '" + string1 + "' and '" + string2 + "', are static and always different. "
-                    "If the purpose is to compare these two strings, the comparison is unnecessary.");
-    }
+    reportError(tok, Severity::warning, "staticStringCompare",
+                "Unnecessary comparision of static strings.\n"
+                "The compared strings, '" + string1 + "' and '" + string2 + "', are always " + (str1==str2?"identical":"unequal") + ". "
+                "Therefore the comparision is unnecessary and looks suspicious.");
 }
 
 void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2)

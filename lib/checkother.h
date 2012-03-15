@@ -288,8 +288,8 @@ private:
     void switchCaseFallThrough(const Token *tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
-    void incorrectLogicOperatorError(const Token *tok, bool always);
-    void secondAlwaysTrueFalseWhenFirstTrueError(const Token *tok, const std::string &truefalse);
+    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
+    void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
@@ -302,7 +302,7 @@ private:
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
-    void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2, bool warning);
+    void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok);
     void unreachableCodeError(const Token* tok);
@@ -349,8 +349,8 @@ private:
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
         c.invalidScanfError(0);
-        c.incorrectLogicOperatorError(0, true);
-        c.secondAlwaysTrueFalseWhenFirstTrueError(0, "when first comparison is true, the 2nd comparison is always true");
+        c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
+        c.redundantConditionError(0, "when first comparison is true, the 2nd comparison is always true");
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
@@ -361,7 +361,7 @@ private:
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
-        c.alwaysTrueFalseStringCompareError(0, "str1", "str2", true);
+        c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0);
         c.unreachableCodeError(0);

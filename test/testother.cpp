@@ -113,6 +113,7 @@ private:
 
         TEST_CASE(incorrectLogicOperator1);
         TEST_CASE(incorrectLogicOperator2);
+        TEST_CASE(incorrectLogicOperator3);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
 
@@ -2615,21 +2616,14 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (x != 1 || x != 3)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (1 != x || 3 != x)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n", errout.str());
 
         check("void f(int x, int y) {\n"
               "    if (x != 1 || y != 1)\n"
@@ -2695,7 +2689,7 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n", errout.str());
 
         check("void f(int x, int y) {\n"
               "    const int ERR1 = 5;\n"
@@ -2717,20 +2711,6 @@ private:
     }
 
     void incorrectLogicOperator2() {
-        check("void f(int x) {\n"
-              "    if ((x == 1) && (x == 3))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x == 1.0) && (x == 3.0))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
-
         check("void f(float x) {\n"
               "    if ((x == 1) && (x == 1.0))\n"
               "        a++;\n"
@@ -2750,14 +2730,14 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x == 1.0 && x == 3.0)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1.0 && x == 3.0.\n", errout.str());
 
         check("void f(float x) {\n"
               "    if (x == 1 && x == 1.0)\n"
@@ -2771,49 +2751,42 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1.0 && x > 1.0)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1.0 && x > 1.0.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1 && x > 1.0)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.0.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1 && x > 3)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(float x) {\n"
               "    if (x < 1.0 && x > 3.0)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1.0 && x > 3.0.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (1 > x && 3 < x)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (x < 1 && x > 1)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 3 && x > 1)\n"
@@ -2827,28 +2800,28 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x < 10.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x <= 10)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 10.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 10)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 10.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 10)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 10.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x < 3)\n"
@@ -2862,24 +2835,38 @@ private:
               "        a++;\n"
               "}"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 3)\n"
               "        a++;\n"
               "}"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 3)\n"
               "        a++;\n"
               "}"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Mutual exclusion over || always evaluates to true. Did you intend to use && instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 10 || x < 3)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5 && x == 1)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 5 && x == 1.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x > 5 && x == 6)\n"
               "        a++;\n"
               "}\n"
              );
@@ -2892,13 +2879,37 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void incorrectLogicOperator3() {
+        check("void f(int x, bool& b) {\n"
+              "    b = x > 3 || x == 4;\n"
+              "    b = x < 5 || x == 4;\n"
+              "    b = x >= 3 || x == 4;\n"
+              "    b = x <= 5 || x == 4;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x == 4.\n"
+                      "[test.cpp:3]: (warning) Logical disjunction always evaluates to true: x < 5 || x == 4.\n"
+                      "[test.cpp:4]: (warning) Logical disjunction always evaluates to true: x >= 3 || x == 4.\n"
+                      "[test.cpp:5]: (warning) Logical disjunction always evaluates to true: x <= 5 || x == 4.\n", errout.str());
+
+        check("void f(int x, bool& b) {\n"
+              "    b = x > 5 && x == 1;\n"
+              "    b = x < 1 && x == 3;\n"
+              "    b = x >= 5 && x == 1;\n"
+              "    b = x <= 1 && x == 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 5 && x == 1.\n"
+                      "[test.cpp:3]: (warning) Logical conjunction always evaluates to false: x < 1 && x == 3.\n"
+                      "[test.cpp:4]: (warning) Logical conjunction always evaluates to false: x >= 5 && x == 1.\n"
+                      "[test.cpp:5]: (warning) Logical conjunction always evaluates to false: x <= 1 && x == 3.\n", errout.str());
+    }
+
     void secondAlwaysTrueFalseWhenFirstTrueError() {
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 5, the comparison x != 1 is always true.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 5 && x != 6)\n"
@@ -2912,7 +2923,7 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 5, the comparison x != 1 is always true.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x > 5) && (x != 6))\n"
@@ -2921,89 +2932,27 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int x) {\n"
-              "    if (5 < x && x != 1)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
+        check("void f(int x, bool& b) {\n"
+              "    b = x > 5 || x != 1;\n"
+              "    b = x < 1 || x != 3;\n"
+              "    b = x >= 5 || x != 1;\n"
+              "    b = x <= 1 || x != 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 5, the comparison x != 1 is always true.\n"
+                      "[test.cpp:3]: (style) Redundant condition: If x < 1, the comparison x != 3 is always true.\n"
+                      "[test.cpp:4]: (style) Redundant condition: If x >= 5, the comparison x != 1 is always true.\n"
+                      "[test.cpp:5]: (style) Redundant condition: If x <= 1, the comparison x != 3 is always true.\n", errout.str());
 
-        check("void f(int x) {\n"
-              "    if (5 < x && x != 6)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 < x) && (x != 1))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x != 1 is always true.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 < x) && (x != 6))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (x > 5 && x == 1)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (x > 5 && x == 6)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x > 5) && (x == 1))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x > 5) && (x == 6))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (5 < x && x == 1)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (5 < x && x == 6)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 < x) && (x == 1))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (style) When x is greater than 5, the comparison x == 1 is always false.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 < x) && (x == 6))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
+        check("void f(int x, bool& b) {\n"
+              "    b = x > 6 && x > 5;\n"
+              "    b = x > 5 || x > 6;\n"
+              "    b = x < 6 && x < 5;\n"
+              "    b = x < 5 || x < 6;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 5, the comparison x > 6 is always true.\n"
+                      "[test.cpp:3]: (style) Redundant condition: If x > 5, the comparison x > 6 is always true.\n"
+                      "[test.cpp:4]: (style) Redundant condition: If x < 6, the comparison x < 5 is always true.\n"
+                      "[test.cpp:5]: (style) Redundant condition: If x < 6, the comparison x < 5 is always true.\n", errout.str());
     }
 
     void incorrectLogicOp_condSwapping() {
@@ -3011,49 +2960,49 @@ private:
               "    if (x < 1 && x > 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (1 > x && x > 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1 && 3 < x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (1 > x && 3 < x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 && x < 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (3 < x && x < 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 && 1 > x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (3 < x && 1 > x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression always evaluates to false. Did you intend to use || instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt() {
@@ -4138,7 +4087,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of always identical static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparision of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main()\n"
@@ -4148,7 +4097,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Unnecessary comparison of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparision of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "#define MACRO \"Hotdog\"\n"
@@ -4159,7 +4108,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Unnecessary comparison of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparision of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main()\n"
@@ -4179,7 +4128,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of always identical static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparision of static strings.\n", errout.str());
 
         check(
             "int foo(const char *buf)\n"
@@ -4197,7 +4146,7 @@ private:
             "    std::cout << \"Equal\n\"\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of always identical static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparision of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main() {\n"
@@ -4205,7 +4154,7 @@ private:
             "    std::cout << \"Equal\n\"\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of always identical static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparision of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main() {\n"
