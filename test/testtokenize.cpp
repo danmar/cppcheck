@@ -149,6 +149,7 @@ private:
         TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
         TEST_CASE(simplifyKnownVariables45);    // ticket #3281 - static constant variable not simplified
         TEST_CASE(simplifyKnownVariables46);    // ticket #3587 - >>
+        TEST_CASE(simplifyKnownVariables47);    // ticket #3627 - >>
         TEST_CASE(simplifyKnownVariablesIfEq);  // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
@@ -2305,6 +2306,19 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
         }
+    }
+
+    void simplifyKnownVariables47() {
+        // #3621
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    cin >> std::hex >> x;\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "int x ; x = 0 ;\n"
+                                "cin >> std :: hex >> x ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.cpp"));
     }
 
     void simplifyKnownVariablesIfEq() {

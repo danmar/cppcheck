@@ -6504,7 +6504,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             const Token *prev = tok3->previous();
             while (prev && prev->str() != "return" && (prev->isName() || prev->str() == "::"))
                 prev = prev->previous();
-            if (Token::Match(prev, "[;{}]"))
+            if (Token::Match(prev, ";|{|}|>>"))
                 break;
         }
 
