@@ -305,6 +305,10 @@ public:
      */
     void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
+    /** parse tokens to see what functions are "noreturn" */
+    void parse_noreturn();
+
+private:
     /** Report all possible errors (for the --errorlist) */
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakInFunction c(0, settings, e);
@@ -335,9 +339,6 @@ public:
     std::string classInfo() const {
         return "Is there any allocated memory when a function goes out of scope";
     }
-
-    /** parse tokens to see what functions are "noreturn" */
-    void parse_noreturn();
 
     /** Function names for functions that are "noreturn" */
     std::set<std::string> noreturn;
