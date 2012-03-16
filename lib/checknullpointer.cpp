@@ -254,6 +254,25 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
             return true;
     }
 
+    // streams dereference nullpointers
+    if (Token::Match(tok->previous(), "<<|>> %var%")) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+        if (var && Token::Match(var->typeStartToken(), "const| char const| *")) { // Only outputing or reading to char* can cause problems
+            const Token* tok2 = tok->previous(); // Find start of statement
+            for (; tok2; tok2 = tok2->previous()) {
+                if (Token::Match(tok2->previous(), ";|{|}|:"))
+                    break;
+            }
+            if (Token::Match(tok2, "std :: cout|cin|cerr"))
+                return true;
+            if (tok2 && tok2->varId() != 0) {
+                const Variable* var2 = symbolDatabase->getVariableFromVarId(tok2->varId());
+                if (var2 && Token::Match(var2->typeStartToken(), "const| std :: istream|ifstream|istringstream|ostream|ofstream|ostringstream|stringstream|fstream|iostream"))
+                    return true;
+            }
+        }
+    }
+
     unsigned int ovarid = 0;
     if (Token::Match(tok, "%var% ==|!= %var%"))
         ovarid = tok->tokAt(2)->varId();
@@ -505,7 +524,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 tok1 = tok1->next();
             skipvar.insert(tok1->varId());
             continue;
-        } else if (Token::Match(tok1, "( ! %var% ||") ||
+        } else if (Token::Match(tok1, "( ! %var% %oror%") ||
                    Token::Match(tok1, "( %var% &&")) {
             // TODO: there are false negatives caused by this. The
             // variable should be removed from skipvar after the
@@ -724,7 +743,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     if (Token::Match(tok1->link()->previous(), "while ( %varid%", varid))
                         break;
 
-                    if (Token::Match(tok1->link(), "( ! %varid% ||", varid) ||
+                    if (Token::Match(tok1->link(), "( ! %varid% %oror%", varid) ||
                         Token::Match(tok1->link(), "( %varid% &&", varid)) {
                         tok1 = tok1->link();
                         continue;
@@ -797,9 +816,9 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     } else if (CheckNullPointer::isPointerDeRef(tok1, unknown, symbolDatabase)) {
                         nullPointerError(tok1, varname, tok->linenr(), inconclusive);
                         break;
-                    } else if (Token::simpleMatch(tok1->previous(), "&")) {
+                    } else if (tok1->strAt(-1) == "&") {
                         break;
-                    } else if (Token::simpleMatch(tok1->next(), "=")) {
+                    } else if (tok1->strAt(1) == "=") {
                         break;
                     }
                 }
@@ -847,7 +866,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             vartok = tok->next();
         } else if (Token::Match(tok, "( ! ( %var% =")) {
             vartok = tok->tokAt(3);
-            if (Token::Match(tok->tokAt(2)->link(), ") &&"))
+            if (Token::simpleMatch(tok->tokAt(2)->link(), ") &&"))
                 checkConditionStart = tok->tokAt(2)->link();
         } else
             continue;
@@ -877,7 +896,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             const Token * const conditionEnd = tok->link();
             for (const Token *tok2 = checkConditionStart; tok2 != conditionEnd; tok2 = tok2->next()) {
                 // If we hit a || operator, abort
-                if (Token::Match(tok2, "%oror%", varid)) {
+                if (tok2->str() == "||") {
                     break;
                 }
                 // Pointer is used
@@ -1052,7 +1071,7 @@ void CheckNullPointer::nullConstantDereference()
                 nullPointerError(tok);
 
             else if (Token::Match(tok->previous(), "!!. %var% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
-                if (Token::Match(tok->tokAt(2), "0 )")) {
+                if (Token::simpleMatch(tok->tokAt(2), "0 )")) {
                     const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
                     if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
                         nullPointerError(tok);
@@ -1069,6 +1088,21 @@ void CheckNullPointer::nullConstantDereference()
                 }
             } else if (Token::simpleMatch(tok, "std :: string ( 0 )"))
                 nullPointerError(tok);
+
+            else if (Token::simpleMatch(tok->previous(), ">> 0")) { // Only checking input stream operations is safe here, because otherwise 0 can be an integer as well
+                const Token* tok2 = tok->previous(); // Find start of statement
+                for (; tok2; tok2 = tok2->previous()) {
+                    if (Token::Match(tok2->previous(), ";|{|}|:"))
+                        break;
+                }
+                if (Token::simpleMatch(tok2, "std :: cin"))
+                    nullPointerError(tok);
+                if (tok2 && tok2->varId() != 0) {
+                    const Variable* var = symbolDatabase->getVariableFromVarId(tok2->varId());
+                    if (var && Token::Match(var->typeStartToken(), "const| std :: istream|ifstream|istringstream|stringstream|fstream|iostream"))
+                        nullPointerError(tok);
+                }
+            }
 
             unsigned int ovarid = 0;
             if (Token::Match(tok, "0 ==|!= %var%"))

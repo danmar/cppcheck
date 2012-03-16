@@ -102,6 +102,8 @@ public:
     void nullPointerError(const Token *tok, const std::string &varname);
     void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive = false);
 
+private:
+
     /** Get error messages. Used by --errorlist */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNullPointer c(0, settings, errorLogger);
@@ -118,8 +120,6 @@ public:
         return "Null pointers\n"
                "* null pointer dereferencing\n";
     }
-
-private:
 
     /**
      * @brief Does one part of the check for nullPointer().

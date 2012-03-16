@@ -64,6 +64,7 @@ private:
         TEST_CASE(nullpointerDelete);
         TEST_CASE(nullpointerExit);
         TEST_CASE(nullpointerStdString);
+        TEST_CASE(nullpointerStdStream);
         TEST_CASE(functioncall);
 
         TEST_CASE(crash1);
@@ -1903,6 +1904,56 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n"
                            "[test.cpp:9]: (error) Null pointer dereference\n",
                            "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+    }
+
+    void nullpointerStdStream() {
+        check("void f(std::ifstream& is) {\n"
+              "    char* p = 0;\n"
+              "    is >> p;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        check("void f(const std::ostringstream& oss, char* q) {\n"
+              "    char const* p = 0;\n" // Simplification makes detection of bug difficult
+              "    oss << p;\n"
+              "    oss << foo << p;\n"
+              "    if(q == 0)\n"
+              "        oss << foo << q;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n"
+                           "[test.cpp:4]: (error) Possible null pointer dereference: p\n"
+                           "[test.cpp:6]: (error) Possible null pointer dereference: q - otherwise it is redundant to check if q is null at line 5\n",
+                           "[test.cpp:6]: (error) Possible null pointer dereference: q - otherwise it is redundant to check if q is null at line 5\n", errout.str());
+
+        check("void f(const char* p) {\n"
+              "    if(p == 0) {\n"
+              "        std::cout << p;\n"
+              "        std::cerr << p;\n"
+              "        std::cin >> p;\n"
+              "        std::cout << abc << p;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n"
+                      "[test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n"
+                      "[test.cpp:5]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n"
+                      "[test.cpp:6]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n", errout.str());
+
+        check("void f() {\n"
+              "    void* p1 = 0;\n"
+              "    std::cout << p1;\n" // No char*
+              "    char* p2 = 0;\n"
+              "    std::cin >> (int)p;\n" // result casted
+              "    std::cout << (int)p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& str) {\n"
+              "    long long ret = 0;\n"
+              "    std::istringstream istr(str);\n"
+              "    istr >> std::hex >> ret;\n" // Read integer
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls
