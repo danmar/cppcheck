@@ -490,6 +490,17 @@ private:
 
             // Used..
             if (Token::Match(tok.previous(), "[[(,+-*/|=] %var% ]|)|,|;|%op%")) {
+                // Taking address of array..
+                std::list<ExecutionPath *>::const_iterator it;
+                for (it = checks.begin(); it != checks.end(); ++it) {
+                    UninitVar *c = dynamic_cast<UninitVar *>(*it);
+                    if (c && c->varId == tok.varId()) {
+                        if (c->array)
+                            bailOutVar(checks, tok.varId());
+                        break;
+                    }
+                }
+
                 // initialize reference variable
                 if (Token::Match(tok.tokAt(-3), "& %var% ="))
                     bailOutVar(checks, tok.varId());

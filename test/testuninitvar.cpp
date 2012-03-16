@@ -66,7 +66,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Check for redundant code..
+        // Check code..
         CheckUninitVar check(&tokenizer, &settings, this);
         check.executionPaths();
     }
@@ -1145,6 +1145,16 @@ private:
                        "    *((unsigned char*)((unsigned char *)(header))) = 0xff;\n"
                        "    return header[0];\n"
                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    ABC abc;\n"
+                       "    int a[1];\n"
+                       "\n"
+                       "    abc.a = a;\n"
+                       "    init(&abc);\n"
+                       "    return a[0];\n"
+                       "}");
         ASSERT_EQUALS("", errout.str());
     }
 
