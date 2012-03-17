@@ -2879,7 +2879,7 @@ void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string 
 
 void CheckMemoryLeakNoVar::missingAssignementLeak(const Token *loc, const std::string &alloc)
 {
-    reportError(loc, Severity::error, "leakNoVar", "Return value of allocation method " + alloc + " is not used.");
+    reportError(loc, Severity::error, "leakNoVar", "Return value of allocation function " + alloc + " is not used.");
 }
 
 
