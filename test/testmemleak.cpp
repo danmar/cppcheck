@@ -5243,7 +5243,7 @@ private:
               "{\n"
               "    malloc(10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with malloc never assigned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation method malloc is not used.\n", errout.str());
 
         check("void *f()\n"
               "{\n"
@@ -5253,7 +5253,7 @@ private:
               "{\n"
               "    f();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Allocation with f never assigned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Return value of allocation method f is not used.\n", errout.str());
     }
 };
 static TestMemleakNoVar testMemleakNoVar;
