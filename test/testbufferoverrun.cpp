@@ -206,6 +206,8 @@ private:
 
         TEST_CASE(memset1);
         TEST_CASE(memset2);
+        TEST_CASE(memset3);
+
         TEST_CASE(counter_test);
         TEST_CASE(strncpy1);
         TEST_CASE(unknownType);
@@ -3074,6 +3076,15 @@ private:
               "    memset(array, 0, sizeof(array));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void memset3() {
+        check("void f()\n"
+              "{\n"
+              "    int i = 10;\n"
+              "    memset(&i, 0, 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) memset allocating memory to non-dynamic variable.\n", errout.str());
     }
 
     void counter_test() {

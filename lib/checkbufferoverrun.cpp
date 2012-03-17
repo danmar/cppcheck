@@ -175,6 +175,13 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
     reportInconclusiveError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg);
 }
 
+void CheckBufferOverrun::memoryAllocationToNormalVariablesError(const Token *tok)
+{
+    reportError(tok, Severity::warning ,
+                "MemoryAllocationToNormalVariablesError",
+                "memset allocating memory to non-dynamic variable.");
+}
+
 //---------------------------------------------------------------------------
 
 
@@ -1561,6 +1568,7 @@ void CheckBufferOverrun::bufferOverrun()
     checkStructVariable();
     checkBufferAllocatedWithStrlen();
     checkInsecureCmdLineArgs();
+    checkMemoryAllocationToNormalVariables();
 }
 //---------------------------------------------------------------------------
 
@@ -1861,6 +1869,19 @@ void CheckBufferOverrun::negativeIndex()
     }
 }
 
+void CheckBufferOverrun::checkMemoryAllocationToNormalVariables()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "memset ( & %any%")) {
+            const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+            const Variable *var(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()));
+
+            if (var && !(var->isPointer() || var->isArray())) {
+                memoryAllocationToNormalVariablesError(tok);
+            }
+        }
+    }
+}
 
 
 
