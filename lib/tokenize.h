@@ -50,7 +50,7 @@ public:
     ~Tokenizer();
 
     /** Returns the source file path. e.g. "file.cpp" */
-    std::string getSourceFilePath() const;
+    const std::string& getSourceFilePath() const;
 
     /** Is the code JAVA. Used for bailouts */
     bool isJava() const;

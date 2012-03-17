@@ -2439,7 +2439,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
         const bool destructor = func->type == Function::eDestructor;
         bool body = false;
         bool initlist = func->token->linkAt(1)->strAt(1) == ":";
-        const Token *end = func->start->link();
+        const Token *end = func->start?func->start->link():0;
         for (const Token *tok = func->token; tok != end; tok = tok->next()) {
             if (tok == func->start)
                 body = true;
