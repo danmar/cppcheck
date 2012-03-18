@@ -96,6 +96,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.standards.posix = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -103,7 +104,7 @@ private:
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
-        CheckMemoryLeak check(&tokenizer, 0);
+        CheckMemoryLeak check(&tokenizer, 0, settings.standards);
         ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }
 };
@@ -126,6 +127,7 @@ private:
 
         Settings settings;
         settings.experimental = experimental;
+        settings.standards.posix = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -353,6 +355,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.standards.posix = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -392,6 +395,8 @@ private:
         ASSERT_EQUALS(";;alloc;", getcode("int * const a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("const int * const a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("char *a = g_strdup_printf(\"%i\", f());", "a"));
+        ASSERT_EQUALS(";;alloc;", getcode("int i = open(a,b);", "i"));
+        ASSERT_EQUALS(";;assign;", getcode("int i = open();", "i"));
 
         // alloc; return use;
         ASSERT_EQUALS(";;alloc;returnuse;", getcode("int *a = new int[10]; return a;", "a"));
@@ -456,8 +461,8 @@ private:
         ASSERT_EQUALS(";;while1{}", getcode("char *s; for(;;) { }", "s"));
         ASSERT_EQUALS(";;while(var){}", getcode("char *s; while (s) { }", "s"));
         ASSERT_EQUALS(";;while(!var){}", getcode("char *s; while (!s) { }", "s"));
-        ASSERT_EQUALS(";;alloc;while(var){}", getcode("int fd = open(); while (fd >= 0) { }", "fd"));
-        ASSERT_EQUALS(";;alloc;while(!var){}", getcode("int fd = open(); while (fd < 0) { }", "fd"));
+        ASSERT_EQUALS(";;alloc;while(var){}", getcode("int fd = open(a,b); while (fd >= 0) { }", "fd"));
+        ASSERT_EQUALS(";;alloc;while(!var){}", getcode("int fd = open(a,b); while (fd < 0) { }", "fd"));
 
         // asprintf..
         ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"xyz\");", "s"));
@@ -514,8 +519,8 @@ private:
         ASSERT_EQUALS(";;exit;{}", getcode("char *s; list_for_each(x,y,z) { }", "s"));
 
         // open/close
-        ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int f; f=open(); if(f>=0)close(f);", "f"));
-        ASSERT_EQUALS(";;alloc;ifv{;}", getcode("int f; f=open(); if(f!=-1 || x);", "f"));
+        ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int f; f=open(a,b); if(f>=0)close(f);", "f"));
+        ASSERT_EQUALS(";;alloc;ifv{;}", getcode("int f; f=open(a,b); if(f!=-1 || x);", "f"));
         ASSERT_EQUALS(";;;dealloc;loop{}}", getcode(";int f; while (close(f) == -1) { } }", "f"));
         ASSERT_EQUALS(";;;dealloc;assign;;}", getcode(";int res; res = close(res); }", "res"));
 
@@ -3447,7 +3452,7 @@ private:
               "{\n"
               "  int handle;\n"
               "  \n"
-              "  handle = open(\"myfile\");\n"
+              "  handle = open(\"myfile\", O_RDONLY);\n"
               "  if (handle < 0) return 1;\n"
               "  \n"
               "    while (some_condition()) \n"
@@ -5183,6 +5188,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.standards.posix = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
