@@ -621,7 +621,7 @@ private:
     }
 
     void test8() {
-        const char filedata[] = "#ifdef A == 1\n"
+        const char filedata[] = "#if A == 1\n"
                                 "1\n"
                                 "#endif\n";
 

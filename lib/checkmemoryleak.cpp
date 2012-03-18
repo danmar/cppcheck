@@ -39,6 +39,24 @@ namespace {
     CheckMemoryLeakNoVar instance4;
 }
 
+/**
+ * Count function parameters
+ * \param tok Function name token before the '('
+ */
+static unsigned int countParameters(const Token *tok)
+{
+    tok = tok->tokAt(2);
+    if (tok->str() == ")")
+        return 0;
+
+    unsigned int numpar = 1;
+    while (NULL != (tok = tok->nextArgument()))
+        numpar++;
+
+    return numpar;
+}
+
+
 /** List of functions that can be ignored when searching for memory leaks.
  * These functions don't take the address of the given pointer
  * This list needs to be alphabetically sorted so we can run bsearch on it.
@@ -168,18 +186,26 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     if (Token::Match(tok2, "fopen|tmpfile|g_fopen ("))
         return File;
 
-    if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp (")) {
-        // is there a user function with this name?
-        if (tokenizer && Token::findmatch(tokenizer->tokens(), ("%type% *|&| " + tok2->str()).c_str()))
-            return No;
-        return Fd;
+    if (standards.posix) {
+        if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp (")) {
+            // simple sanity check of function parameters..
+            // TODO: Make such check for all these functions
+            unsigned int num = countParameters(tok2);
+            if (tok2->str() == "open" && num != 2 && num != 3)
+                return No;
+
+            // is there a user function with this name?
+            if (tokenizer && Token::findmatch(tokenizer->tokens(), ("%type% *|&| " + tok2->str()).c_str()))
+                return No;
+            return Fd;
+        }
+
+        if (Token::simpleMatch(tok2, "popen ("))
+            return Pipe;
+
+        if (Token::Match(tok2, "opendir|fdopendir ("))
+            return Dir;
     }
-
-    if (Token::simpleMatch(tok2, "popen ("))
-        return Pipe;
-
-    if (Token::Match(tok2, "opendir|fdopendir ("))
-        return Dir;
 
     // User function
     const Token *ftok = tokenizer->getFunctionTokenByName(tok2->str().c_str());
@@ -603,18 +629,6 @@ bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, boo
 }
 
 
-static unsigned int countParameters(const Token *tok)
-{
-    tok = tok->tokAt(2);
-    if (tok->str() == ")")
-        return 0;
-
-    unsigned int numpar = 1;
-    while (NULL != (tok = tok->nextArgument()))
-        numpar++;
-
-    return numpar;
-}
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
 {
@@ -1041,7 +1055,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             // if else switch
             if (Token::simpleMatch(tok, "if (")) {
                 if (alloctype == Fd) {
-                    if (Token::Match(tok, "if ( 0 <=|< %varid% )", varid) ||
+                    if (Token::Match(tok, "if ( 0|-1 <=|< %varid% )", varid) ||
                         Token::Match(tok, "if ( %varid% != -1 )", varid)) {
                         addtoken(&rettail, tok, "if(var)");
                         tok = tok->next()->link();
