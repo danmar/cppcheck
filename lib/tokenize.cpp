@@ -2814,7 +2814,7 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "( %type% *|& %var% [),]") && !tok->next()->isStandardType()) {
             if (!Token::Match(tok->previous(), "%type%"))
                 continue;
-            if (tok->previous() && tok->previous()->str() == "return")
+            if (Token::Match(tok->previous(), "return|if|while"))
                 continue;
             if (tok->link() && !Token::Match(tok->link()->next(), "const| {") &&
                 (!tok->link()->next() || tok->link()->next()->str() != ":"))
