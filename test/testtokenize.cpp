@@ -5052,6 +5052,33 @@ private:
             ASSERT_EQUALS(true, tok->linkAt(8) == tok->tokAt(9));
             ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(8));
         }
+
+        {
+            const char code[] = "bool foo(C<z> a, bar<int, x<float>>& f, int b) {\n"
+                                "    return(a<b && b>f);\n"
+                                "}";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            // template<
+            ASSERT_EQUALS((long long)tok->tokAt(6), (long long)tok->linkAt(4));
+            ASSERT_EQUALS((long long)tok->tokAt(4), (long long)tok->linkAt(6));
+
+            // bar<
+            ASSERT_EQUALS((long long)tok->tokAt(17), (long long)tok->linkAt(10));
+            ASSERT_EQUALS((long long)tok->tokAt(10), (long long)tok->linkAt(17));
+
+            // x<
+            ASSERT_EQUALS((long long)tok->tokAt(16), (long long)tok->linkAt(14));
+            ASSERT_EQUALS((long long)tok->tokAt(14), (long long)tok->linkAt(16));
+
+            // a<b && b>f
+            ASSERT_EQUALS(0, (long long)tok->linkAt(28));
+            ASSERT_EQUALS(0, (long long)tok->linkAt(32));
+        }
     }
 
     void removeExceptionSpecification1() {
@@ -5317,8 +5344,7 @@ private:
     void cpp0xtemplate2() {
         // tokenize ">>" into "> >"
         const char *code = "list<list<int>> ints;\n";
-        TODO_ASSERT_EQUALS("list < list < int > > ints ;",
-                           "list < list < int >> ints ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS("list < list < int > > ints ;", tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate3() {

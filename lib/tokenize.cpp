@@ -2299,6 +2299,8 @@ bool Tokenizer::tokenize(std::istream &code,
     if (!preprocessorCondition) {
         setVarId();
 
+        createLinks2();
+
         // Change initialisation of variable to assignment
         simplifyInitVar();
     }
@@ -3294,6 +3296,62 @@ bool Tokenizer::createLinks()
     }
 
     return true;
+}
+
+void Tokenizer::createLinks2()
+{
+    std::stack<const Token*> type;
+    std::stack<Token*> links;
+    for (Token *token = _tokens; token; token = token->next()) {
+        if (token->link()) {
+            if (Token::Match(token, "{|[|("))
+                type.push(token);
+            else if (Token::Match(token, "}|]|)")) {
+                while (type.top()->str() == "<")
+                    type.pop();
+                type.pop();
+            } else
+                token->link(0);
+        }
+
+        else if (token->str() == ";")
+            while (!links.empty())
+                links.pop();
+        else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {
+            type.push(token);
+            links.push(token);
+        } else if (token->str() == ">" || token->str() == ">>") {
+            if (links.empty()) // < and > don't match.
+                continue;
+            if (token->next() && !token->next()->isName() && !Token::Match(token->next(), ">|&|*|::|,"))
+                continue;
+
+            // Check type of open link
+            if (type.empty() || type.top()->str() != "<" || (token->str() == ">>" && type.size() < 2)) {
+                if (!links.empty())
+                    links.pop();
+                continue;
+            }
+            const Token* top = type.top();
+            type.pop();
+            if (token->str() == ">>" && type.top()->str() != "<") {
+                type.push(top);
+                if (!links.empty())
+                    links.pop();
+                continue;
+            }
+
+            if (token->str() == ">>") { // C++11 right angle bracket
+                if (links.size() < 2)
+                    continue;
+                token->str(">");
+                token->insertToken(">");
+            }
+
+            Token::createMutualLinks(links.top(), token);
+            links.pop();
+        }
+    }
 }
 
 void Tokenizer::simplifySizeof()
@@ -8069,17 +8127,16 @@ bool Tokenizer::validate() const
     const Token *lastTok = 0;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         lastTok = tok;
-        if (Token::Match(tok, "[{([]")) {
+        if (Token::Match(tok, "[{([]") || (tok->str() == "<" && tok->link())) {
             if (tok->link() == 0) {
                 cppcheckError(tok);
                 return false;
             }
 
             linktok.push(tok);
-            continue;
         }
 
-        else if (Token::Match(tok, "[})]]")) {
+        else if (Token::Match(tok, "[})]]") || (tok->str() == ">" && tok->link())) {
             if (tok->link() == 0) {
                 cppcheckError(tok);
                 return false;
@@ -8101,10 +8158,9 @@ bool Tokenizer::validate() const
             }
 
             linktok.pop();
-            continue;
         }
 
-        if (tok->link() != 0) {
+        else if (tok->link() != 0) {
             cppcheckError(tok);
             return false;
         }
