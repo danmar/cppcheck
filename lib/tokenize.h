@@ -583,6 +583,11 @@ public:
      */
     bool createLinks();
 
+    /**
+     * Setup links between < and >.
+     */
+    void createLinks2();
+
     /** Syntax error */
     void syntaxError(const Token *tok);
 

@@ -620,6 +620,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     break;
                 }
             }
+            if (i->isArray() && i->isClass()) // Array of class/struct members. Initialized by ctor.
+                variables.write(i->varId());
             if (i->isArray() && Token::Match(i->nameToken(), "%var% [ %var% ]")) // Array index variable read.
                 variables.read(i->nameToken()->tokAt(2)->varId());
 
@@ -706,7 +708,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
-        else if (Token::Match(tok, "return|throw %var%")) {
+        else if (Token::Match(tok, "return|throw")) {
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->varId())
                     variables.readAll(tok2->varId());
@@ -838,7 +840,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
-        else if (Token::Match(tok, ">>|& %var%"))
+        else if (Token::Match(tok, "& %var%")) {
+            if (tok->previous()->isName() || tok->previous()->isNumber()) { // bitop
+                variables.read(tok->next()->varId());
+            } else // addressof
+                variables.use(tok->next()->varId()); // use = read + write
+        } else if (Token::Match(tok, ">> %var%"))
             variables.use(tok->next()->varId()); // use = read + write
         else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]"))
             variables.read(tok->varId());
@@ -865,8 +872,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         else if (Token::Match(tok, "%var% ."))
             variables.use(tok->varId());   // use = read + write
 
-        else if ((Token::Match(tok, "[(=&!]") || tok->isExtendedOp()) &&
-                 (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new")) && tok->strAt(2) != "=")
+        else if (tok->isExtendedOp() &&
+                 Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new") && tok->strAt(2) != "=")
             variables.readAll(tok->next()->varId());
 
         else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || tok->next()->isExtendedOp()))
@@ -994,9 +1001,9 @@ void CheckUnusedVar::checkStructMemberUsage()
 
         if (Token::Match(tok, "struct|union %type% {")) {
             structname.clear();
-            if (Token::simpleMatch(tok->previous(), "extern"))
+            if (tok->strAt(-1) == "extern")
                 continue;
-            if ((!tok->previous() || Token::simpleMatch(tok->previous(), ";")) && Token::Match(tok->linkAt(2), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
+            if ((!tok->previous() || tok->previous()->str() == ";") && Token::Match(tok->linkAt(2), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
                 continue;
 
             structname = tok->strAt(1);
