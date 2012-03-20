@@ -151,6 +151,7 @@ private:
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(checkStrncmpSizeof);
+        TEST_CASE(checkMallocSizeof);
         TEST_CASE(checkSignOfUnsignedVariable);
 
         TEST_CASE(checkForSuspiciousSemicolon1);
@@ -4179,6 +4180,23 @@ private:
             "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Passing sizeof(pointer) as the last argument to strncmp.\n", errout.str());
+    }
+
+    void checkMallocSizeof() {
+        check(
+            "int *x = malloc(sizeof(*x));\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int));\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(x));\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Using size of pointer x for allocation.\n", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
