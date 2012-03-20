@@ -206,7 +206,6 @@ private:
         TEST_CASE(varid40);   // ticket #3279
         TEST_CASE(varid41);   // ticket #3340 (varid for union type)
         TEST_CASE(varid42);   // ticket #3316 (varid for array)
-        TEST_CASE(varid43);
         TEST_CASE(varid44);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -224,6 +223,7 @@ private:
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
+        TEST_CASE(varid_using);  // ticket #3648
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -3249,13 +3249,6 @@ private:
                       tokenizeDebugListing(code));
     }
 
-    void varid43() {
-        const std::string code("int main(int flag) { if(a & flag) { return 1; } }");
-        ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: int main ( int flag@1 ) { if ( a & flag@1 ) { return 1 ; } }\n",
-                      tokenizeDebugListing(code));
-    }
-
     void varid44() {
         const std::string code("class A:public B,public C,public D {};");
         ASSERT_EQUALS("\n\n##file 0\n"
@@ -3632,6 +3625,14 @@ private:
                                 "3: AAA\n"
                                 "4: a@1 [ 0 ] = 0 ;\n"
                                 "5: }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid_using() {
+        // #3648
+        const char code[] = "using std::size_t;";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: using long ;\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
@@ -5052,33 +5053,6 @@ private:
             ASSERT_EQUALS(true, tok->linkAt(8) == tok->tokAt(9));
             ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(8));
         }
-
-        {
-            const char code[] = "bool foo(C<z> a, bar<int, x<float>>& f, int b) {\n"
-                                "    return(a<b && b>f);\n"
-                                "}";
-            errout.str("");
-            Settings settings;
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
-            // template<
-            ASSERT_EQUALS((long long)tok->tokAt(6), (long long)tok->linkAt(4));
-            ASSERT_EQUALS((long long)tok->tokAt(4), (long long)tok->linkAt(6));
-
-            // bar<
-            ASSERT_EQUALS((long long)tok->tokAt(17), (long long)tok->linkAt(10));
-            ASSERT_EQUALS((long long)tok->tokAt(10), (long long)tok->linkAt(17));
-
-            // x<
-            ASSERT_EQUALS((long long)tok->tokAt(16), (long long)tok->linkAt(14));
-            ASSERT_EQUALS((long long)tok->tokAt(14), (long long)tok->linkAt(16));
-
-            // a<b && b>f
-            ASSERT_EQUALS(0, (long long)tok->linkAt(28));
-            ASSERT_EQUALS(0, (long long)tok->linkAt(32));
-        }
     }
 
     void removeExceptionSpecification1() {
@@ -5344,7 +5318,8 @@ private:
     void cpp0xtemplate2() {
         // tokenize ">>" into "> >"
         const char *code = "list<list<int>> ints;\n";
-        ASSERT_EQUALS("list < list < int > > ints ;", tokenizeAndStringify(code));
+        TODO_ASSERT_EQUALS("list < list < int > > ints ;",
+                           "list < list < int >> ints ;", tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate3() {

@@ -70,7 +70,6 @@ public:
     /** @brief %Check that all struct members are used */
     void checkStructMemberUsage();
 
-private:
     // Error messages..
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname);
     void unusedVariableError(const Token *tok, const std::string &varname);
