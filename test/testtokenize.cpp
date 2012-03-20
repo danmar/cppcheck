@@ -224,6 +224,7 @@ private:
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
+        TEST_CASE(varid_using);  // ticket #3648
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -3632,6 +3633,14 @@ private:
                                 "3: AAA\n"
                                 "4: a@1 [ 0 ] = 0 ;\n"
                                 "5: }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid_using() {
+        // #3648
+        const char code[] = "using std::size_t;";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: using long ;\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
