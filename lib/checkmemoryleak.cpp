@@ -2881,7 +2881,7 @@ void CheckMemoryLeakNoVar::check()
             // Handle the case where the user is calling an allocation function
             // and never assigns the returned value to a variable, which will lead to a leak.
             else if (Token::Match(tok2, "[;{}] %var% (") && getAllocationType(tok2->next(), 0) != No)
-                missingAssignementLeak(tok2, tok2->next()->str());
+                missingAssignementLeak(tok2->next(), tok2->next()->str());
         }
     }
 }
