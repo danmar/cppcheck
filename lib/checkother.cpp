@@ -562,6 +562,40 @@ void CheckOther::sizeofForStrncmpError(const Token *tok)
                             "compared, which is probably not what was expected.");
 }
 
+void CheckOther::checkSizeofForMallocSize()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (")) {
+            const Token *tokVar = tok->tokAt(5);
+            if (Token::Match(tokVar, "sizeof ( %var% ) )") || Token::Match(tokVar, "sizeof %var% )")) {
+                // Get the variable name
+                tokVar = tokVar->next();
+                if (tokVar->str() == "(")
+                    tokVar = tokVar->next();
+
+                // Check if it matches the assignment variable
+                if (tok->tokAt(1)->str() == tokVar->str()) {
+                    sizeofForMallocError(tok->tokAt(1), tok->tokAt(1)->str());
+                }
+            }
+        }
+    }
+
+    // TODO: This test should be renamed into something more generic
+    // and should provide tests for functions like memcpy, memset and so
+    // on. Test would be done the same way. To prevent misuse with arrays
+    // var->isPointer() is to be used.
+}
+
+void CheckOther::sizeofForMallocError(const Token *tok, const std::string &varname)
+{
+    reportInconclusiveError(tok, Severity::warning, "mallocSize",
+                            "Using size of pointer " + varname + " for allocation.\n"
+                            "Using size of pointer " + varname + " for allocation instead "
+                            "of using the size of the type. This is likely to lead to a "
+                            "buffer overflow. You should use sizeof(*" + varname + ")");
+}
+
 //---------------------------------------------------------------------------
 //    switch (x)
 //    {
