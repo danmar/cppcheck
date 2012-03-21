@@ -5017,6 +5017,8 @@ private:
             // f ()
             ASSERT_EQUALS(true, tok->linkAt(5) == tok->tokAt(6));
             ASSERT_EQUALS(true, tok->linkAt(6) == tok->tokAt(5));
+
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -5041,6 +5043,8 @@ private:
             // a[0]
             ASSERT_EQUALS(true, tok->linkAt(21) == tok->tokAt(23));
             ASSERT_EQUALS(true, tok->linkAt(23) == tok->tokAt(21));
+
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -5060,6 +5064,8 @@ private:
             // g(
             ASSERT_EQUALS(true, tok->linkAt(8) == tok->tokAt(9));
             ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(8));
+
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -5087,6 +5093,26 @@ private:
             // a<b && b>f
             ASSERT_EQUALS(0, (long long)tok->linkAt(28));
             ASSERT_EQUALS(0, (long long)tok->linkAt(32));
+
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "void foo() {\n"
+                                "    return static_cast<bar>(a);\n"
+                                "}";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            // static_cast<
+            ASSERT_EQUALS((long long)tok->tokAt(9), (long long)tok->linkAt(7));
+            ASSERT_EQUALS((long long)tok->tokAt(7), (long long)tok->linkAt(9));
+
+            ASSERT_EQUALS("", errout.str());
         }
     }
 

@@ -133,6 +133,7 @@ private:
         TEST_CASE(localvarUnused);
         TEST_CASE(localvarFunction); // ticket #1799
         TEST_CASE(localvarIfNOT);    // #3104 - if ( NOT var )
+        TEST_CASE(localvarAnd);      // #3672
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -3002,6 +3003,16 @@ private:
         functionVariableUsage("void f() {\n"
                               "    bool x = foo();\n"
                               "    if (NOT x) { }\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarAnd() { // #3672
+        functionVariableUsage("int main() {\n"
+                              "    unsigned flag = 0x1 << i;\n"
+                              "    if (m_errorflags & flag) {\n"
+                              "        return 1;\n"
+                              "    }\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
