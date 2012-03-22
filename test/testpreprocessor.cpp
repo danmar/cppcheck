@@ -129,6 +129,7 @@ private:
         TEST_CASE(if_or_2);
 
         TEST_CASE(if_macro_eq_macro); // #3536
+        TEST_CASE(ticket_3675);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -1519,6 +1520,23 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         ASSERT_EQUALS("\n\n\n\nWilma\n\n\n\n", actual[""]);
+    }
+
+    void ticket_3675() {
+        const std::string code("#ifdef YYSTACKSIZE\n"
+                               "#define YYMAXDEPTH YYSTACKSIZE\n"
+                               "#else\n"
+                               "#define YYSTACKSIZE YYMAXDEPTH\n"
+                               "#endif\n"
+                               "#if YYDEBUG\n"
+                               "#endif\n");
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // There's nothing to assert. It just needs to not hang.
     }
 
     void multiline1() {
