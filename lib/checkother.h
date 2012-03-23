@@ -60,8 +60,7 @@ public:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
-        checkOther.checkSizeofForStrncmpSize();
-        checkOther.checkSizeofForMallocSize();
+        checkOther.checkSizeofForPointerSize();
         checkOther.checkSizeofForNumericParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
@@ -203,11 +202,8 @@ public:
     /** @brief %Check for using sizeof with array given as function argument */
     void checkSizeofForArrayParameter();
 
-    /** @brief %Check for using sizeof with a char pointer */
-    void checkSizeofForStrncmpSize();
-
     /** @brief %Check for using sizeof of a variable when allocating it */
-    void checkSizeofForMallocSize();
+    void checkSizeofForPointerSize();
 
     /** @brief %Check for using sizeof with numeric given as function argument */
     void checkSizeofForNumericParameter();
@@ -297,8 +293,7 @@ private:
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
-    void sizeofForStrncmpError(const Token *tok);
-    void sizeofForMallocError(const Token *tok, const std::string &varname);
+    void sizeofForPointerError(const Token *tok, const std::string &varname);
     void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
@@ -332,8 +327,7 @@ private:
         c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
         c.sizeofForArrayParameterError(0);
-        c.sizeofForStrncmpError(0);
-        c.sizeofForMallocError(0, "varname");
+        c.sizeofForPointerError(0, "varname");
         c.sizeofForNumericParameterError(0);
         c.coutCerrMisusageError(0, "cout");
         c.doubleFreeError(0, "varname");
@@ -402,7 +396,7 @@ private:
                "* assignment in an assert statement\n"
                "* sizeof for array given as function argument\n"
                "* sizeof for numeric given as function argument\n"
-               "* using sizeof(pointer) for its own allocation\n"
+               "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
                "* wrong number of arguments given to 'printf' or 'scanf;'\n"
