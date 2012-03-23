@@ -2074,7 +2074,7 @@ void CheckOther::checkConstantFunctionParameter()
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type == Scope::eFunction && i->function) {
+        if (i->type == Scope::eFunction && i->function && i->function->arg) {
             for (const Token* tok = i->function->arg->next(); tok; tok = tok->nextArgument()) {
                 // TODO: False negatives. This pattern only checks for string.
                 //       Investigate if there are other classes in the std
@@ -2850,13 +2850,13 @@ namespace {
             typedef std::map<std::string, std::list<Function> > StringFunctionMap;
             StringFunctionMap functionsByName;
             for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-                StringFunctionMap::iterator it = functionsByName.find(func->token->str());
+                StringFunctionMap::iterator it = functionsByName.find(func->tokenDef->str());
                 Scope *currScope = const_cast<Scope*>(&*scope);
                 if (it == functionsByName.end()) {
                     std::list<Function> tmp;
                     tmp.push_back(*func);
                     tmp.back().functionScope = currScope;
-                    functionsByName[func->token->str()] = tmp;
+                    functionsByName[func->tokenDef->str()] = tmp;
                 } else {
                     it->second.push_back(*func);
                     it->second.back().functionScope = currScope;

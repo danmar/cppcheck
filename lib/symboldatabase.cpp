@@ -423,7 +423,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                     // function prototype
                     else if (Token::simpleMatch(argStart->link(), ") ;")) {
-                        /** @todo save function prototypes in database someday */
+                        bool newFunc = true; // Is this function already in the database?
+                        for (std::list<Function>::const_iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
+                            if (i->tokenDef->str() == tok->str() && argsMatch(scope, i->argDef, argStart, "", 0))
+                                newFunc = false;
+                        }
+                        // save function prototype in database
+                        if (newFunc)
+                            addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+
                         tok = argStart->link()->next();
                         continue;
                     }
@@ -431,7 +439,17 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // function returning function pointer prototype
                     else if (Token::simpleMatch(argStart->link(), ") ) (") &&
                              Token::simpleMatch(argStart->link()->linkAt(2), ") ;")) {
-                        /** @todo save function prototypes in database someday */
+                        bool newFunc = true; // Is this function already in the database?
+                        for (std::list<Function>::const_iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
+                            if (i->tokenDef->str() == tok->str() && argsMatch(scope, i->argDef, argStart, "", 0))
+                                newFunc = false;
+                        }
+                        // save function prototype in database
+                        if (newFunc) {
+                            Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+                            func->retFuncPtr = true;
+                        }
+
                         tok = argStart->link()->linkAt(2)->next();
                         continue;
                     }
@@ -565,19 +583,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     // fill in variable info
     for (it = scopeList.begin(); it != scopeList.end(); ++it) {
-        scope = &(*it);
-
         // find variables
-        scope->getVariableList();
+        it->getVariableList();
     }
 
     // fill in function arguments
     for (it = scopeList.begin(); it != scopeList.end(); ++it) {
-        scope = &(*it);
-
         std::list<Function>::iterator func;
 
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // add arguments
             func->addArguments(this, &*func, scope);
         }
@@ -883,6 +897,30 @@ bool SymbolDatabase::argsMatch(const Scope *scope, const Token *first, const Tok
 
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
 {
+    Function* function = 0;
+    for (std::list<Function>::iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
+        if (i->tokenDef->str() == tok->str() && argsMatch(scope, i->argDef, argStart, "", 0))
+            function = &*i;
+    }
+    if (!function)
+        function = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+
+    function->arg = argStart;
+    function->token = funcStart;
+    function->hasBody = true;
+
+    Scope* old_scope = scope;
+    addNewFunction(&scope, &tok);
+
+    if (scope) {
+        scope->function = &old_scope->functionList.back();
+        return function;
+    }
+    return 0;
+}
+
+Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
+{
     Function function;
 
     // save the function definition argument start '('
@@ -893,11 +931,9 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 
     // save the function name location
     function.tokenDef = funcStart;
-    function.token = funcStart;
 
     function.isInline = false;
-    function.hasBody = true;
-    function.arg = function.argDef;
+    function.hasBody = false;
     function.type = Function::eFunction;
 
     // find start of function '{'
@@ -908,15 +944,8 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     // save start of function
     function.start = start;
 
-    Scope* old_scope = scope;
-    addNewFunction(&scope, &tok);
-
-    if (scope) {
-        old_scope->functionList.push_back(function);
-        scope->function = &old_scope->functionList.back();
-        return scope->function;
-    }
-    return 0;
+    scope->functionList.push_back(function);
+    return &scope->functionList.back();
 }
 
 void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const Token *argStart)
@@ -1370,8 +1399,10 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
             std::cout << "        tokenDef: " << _tokenizer->fileLine(func->tokenDef) << std::endl;
             std::cout << "        argDef: " << _tokenizer->fileLine(func->argDef) << std::endl;
-            std::cout << "        token: " << _tokenizer->fileLine(func->token) << std::endl;
-            std::cout << "        arg: " << _tokenizer->fileLine(func->arg) << std::endl;
+            if (func->hasBody) {
+                std::cout << "        token: " << _tokenizer->fileLine(func->token) << std::endl;
+                std::cout << "        arg: " << _tokenizer->fileLine(func->arg) << std::endl;
+            }
             std::cout << "        functionScope: ";
             if (func->functionScope) {
                 std::cout << func->functionScope->className << " "
@@ -1494,7 +1525,7 @@ unsigned int Function::initializedArgCount() const
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
-    if (arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )")) {
+    if (arg && arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )")) {
         unsigned int count = 0;
 
         for (const Token* tok = arg->next(); tok; tok = tok->next()) {
@@ -1800,20 +1831,19 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     }
 
     // Is it const..?
-    bool isConst = false;
-    if (tok->str() == "const") {
+    bool isConst(tok->str() == "const");
+    if (isConst) {
         tok = tok->next();
-        isConst = true;
     }
 
     // Is it a static variable?
-    const bool isStatic(Token::simpleMatch(tok, "static"));
+    const bool isStatic(tok->str() == "static");
     if (isStatic) {
         tok = tok->next();
     }
 
     // Is it a mutable variable?
-    const bool isMutable(Token::simpleMatch(tok, "mutable"));
+    const bool isMutable(tok->str() == "mutable");
     if (isMutable) {
         tok = tok->next();
     }
@@ -1977,8 +2007,8 @@ const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *t
     std::list<Scope>::const_iterator scope;
 
     for (scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
-        // skip namespaces and functions
-        if (scope->type == Scope::eNamespace || scope->type == Scope::eFunction || scope->type == Scope::eGlobal)
+        // skip namespaces, functions, ...
+        if (scope->type != Scope::eClass && scope->type != Scope::eStruct && scope->type != Scope::eUnion)
             continue;
 
         // do the names match?

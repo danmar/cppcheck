@@ -1080,18 +1080,18 @@ void CheckStl::string_c_str()
     std::multimap<std::string, unsigned int> c_strFuncParam;
     if (_settings->isEnabled("performance")) {
         for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-            if (scope->type == Scope::eFunction && scope->function) {
-                if (c_strFuncParam.erase(scope->className) != 0) { // Check if function with this name was already found
-                    c_strFuncParam.insert(std::make_pair(scope->className, 0)); // Disable, because there are overloads. TODO: Handle overloads
+            for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                if (c_strFuncParam.erase(func->tokenDef->str()) != 0) { // Check if function with this name was already found
+                    c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), 0)); // Disable, because there are overloads. TODO: Handle overloads
                     continue;
                 }
 
                 unsigned int numpar = 0;
-                c_strFuncParam.insert(std::make_pair(scope->className, numpar)); // Insert function as dummy, to indicate that there is at least one function with that name
-                for (const Token* tok = scope->function->arg->next(); tok != 0; tok = tok->nextArgument()) {
+                c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar)); // Insert function as dummy, to indicate that there is at least one function with that name
+                for (const Token* tok = func->argDef->next(); tok != 0; tok = tok->nextArgument()) {
                     numpar++;
                     if (Token::Match(tok, "std :: string !!&") || Token::simpleMatch(tok, "const std :: string"))
-                        c_strFuncParam.insert(std::make_pair(scope->className, numpar));
+                        c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar));
                 }
             }
         }

@@ -590,6 +590,7 @@ private:
     friend class Scope;
 
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
+    Function* addGlobalFunctionDecl(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     Function* addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
     const Token *initBaseInfo(Scope *info, const Token *tok);

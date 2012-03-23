@@ -112,6 +112,7 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+        TEST_CASE(functionDeclarations);
 
         TEST_CASE(classWithFriend);
 
@@ -630,6 +631,31 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
             ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+        }
+    }
+
+    void functionDeclarations() {
+        GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("foo"));
+
+        if (db) {
+            const Scope *scope = &db->scopeList.front();
+
+            ASSERT(scope && scope->functionList.size() == 2);
+
+            const Function *foo = &scope->functionList.front();
+            const Function *foo_int = &scope->functionList.back();
+
+            ASSERT(foo && foo->token->str() == "foo");
+            ASSERT(foo && foo->hasBody);
+            ASSERT(foo && foo->token->strAt(2) == ")");
+
+            ASSERT(foo_int && !foo_int->token);
+            ASSERT(foo_int && foo_int->tokenDef->str() == "foo");
+            ASSERT(foo_int && !foo_int->hasBody);
+            ASSERT(foo_int && foo_int->tokenDef->strAt(2) == "int");
         }
     }
 
