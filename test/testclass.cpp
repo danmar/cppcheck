@@ -196,6 +196,7 @@ private:
         TEST_CASE(constoperator2);  // operator<<
         TEST_CASE(constoperator3);
         TEST_CASE(constoperator4);
+        TEST_CASE(constoperator5); // ticket #3252
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constassign1);
         TEST_CASE(constassign2);
@@ -4083,6 +4084,30 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void constoperator5() { // ticket #3252
+        checkConst("class A {\n"
+                   "    int c;\n"
+                   "public:\n"
+                   "    operator int& () {return c}\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A {\n"
+                   "    int c;\n"
+                   "public:\n"
+                   "    operator const int& () {return c}\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Technically the member function 'A::operatorconstint&' can be const.\n", errout.str());
+
+        checkConst("class A {\n"
+                   "    int c;\n"
+                   "public:\n"
+                   "    operator int () {return c}\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Technically the member function 'A::operatorint' can be const.\n", errout.str());
+    }
+
 
     void const5() {
         // ticket #1482

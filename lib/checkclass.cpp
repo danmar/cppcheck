@@ -26,6 +26,7 @@
 
 #include <string>
 #include <algorithm>
+#include <cctype>
 
 //---------------------------------------------------------------------------
 
@@ -1143,7 +1144,7 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
-    // This is an inconclusive check. False positives: #3252, #3322, #3360.
+    // This is an inconclusive check. False positives: #2340, #3322, #3360.
     if (!_settings->inconclusive)
         return;
 
@@ -1192,15 +1193,19 @@ void CheckClass::checkConst()
 
                     if (temp->str() != "const")
                         continue;
+                } else if (func->isOperator && Token::Match(func->tokenDef->previous(), ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
+                    const std::string& name = func->token->str();
+                    if (name.compare(8, 5, "const") != 0 && name[name.size()-1] == '&')
+                        continue;
                 } else {
                     // don't warn for unknown types..
                     // LPVOID, HDC, etc
                     if (previous->isName()) {
                         bool allupper = true;
-                        const std::string s(previous->str());
+                        const std::string& s(previous->str());
                         for (std::string::size_type pos = 0; pos < s.size(); ++pos) {
                             const char ch = s[pos];
-                            if (!(ch == '_' || (ch >= 'A' && ch <= 'Z'))) {
+                            if (ch != '_' && !std::isupper(ch)) {
                                 allupper = false;
                                 break;
                             }
