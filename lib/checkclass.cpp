@@ -509,35 +509,6 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
 // ClassCheck: Unused private functions
 //---------------------------------------------------------------------------
 
-static bool checkBaseFunctionsRec(const Scope* scope, std::list<const Token*>& FuncList, bool& whole)
-{
-    for (std::vector<Scope::BaseInfo>::const_iterator i = scope->derivedFrom.begin(); i != scope->derivedFrom.end(); ++i) {
-        if (!i->scope || !i->scope->classStart) {
-            whole = false; // We need to see the complete definition of the class
-            return false;
-        }
-        for (std::list<Function>::const_iterator func = i->scope->functionList.begin(); func != i->scope->functionList.end(); ++func) {
-            if (func->isVirtual) { // Only virtual functions can be overriden
-                // Remove function from FuncList. TODO: Handle overloads
-                bool found = false;
-                std::list<const Token*>::iterator it = FuncList.begin();
-                while (it != FuncList.end()) {
-                    if (func->token->str() == (*it)->str()) {
-                        FuncList.erase(it++);
-                        found = true;
-                    } else
-                        ++it;
-                }
-                if (found)
-                    return false;
-            }
-        }
-        if (!checkBaseFunctionsRec(i->scope, FuncList, whole))
-            return false;
-    }
-    return true;
-}
-
 static bool checkFunctionUsage(const std::string& name, const Scope* scope)
 {
     if (!scope)
@@ -602,10 +573,23 @@ void CheckClass::privateFunctions()
         }
 
         // Bailout for overriden virtual functions of base classes
-        if (!scope->derivedFrom.empty())
-            checkBaseFunctionsRec(&*scope, FuncList, whole);
-        if (!whole)
-            continue;
+        if (!scope->derivedFrom.empty()) {
+            // All base classes seen?
+            for (unsigned int i = 0; i < scope->derivedFrom.size() && whole; ++i) {
+                if (!scope->derivedFrom[i].scope || !scope->derivedFrom[i].scope->classStart)
+                    whole = false;
+            }
+            if (!whole)
+                continue;
+
+            // Check virtual functions
+            for (std::list<const Token*>::iterator i = FuncList.begin(); i != FuncList.end();) {
+                if (isVirtualFunc(&*scope, *i))
+                    FuncList.erase(i++);
+                else
+                    ++i;
+            }
+        }
 
         while (!FuncList.empty()) {
             // Check that all private functions are used
@@ -1581,7 +1565,7 @@ void CheckClass::initializerList()
 
         // iterate through all member functions looking for constructors
         for (func = info->functionList.begin(); func != info->functionList.end(); ++func) {
-            if (func->type == Function::eConstructor && func->hasBody) {
+            if ((func->type == Function::eConstructor || func->type == Function::eCopyConstructor) && func->hasBody) {
                 // check for initializer list
                 const Token *tok = func->arg->link()->next();
 
@@ -1603,17 +1587,16 @@ void CheckClass::initializerList()
                                 if (var)
                                     vars.push_back(VarInfo(var, tok->tokAt(2)));
                             }
-                        }
-                        tok = tok->next();
+                            tok = tok->next()->link()->next();
+                        } else
+                            tok = tok->next();
                     }
 
                     // need at least 2 members to have out of order initialization
-                    if (vars.size() > 1) {
-                        for (unsigned int i = 1; i < vars.size(); i++) {
-                            // check for out of order initialization
-                            if (vars[i].var->index() < vars[i - 1].var->index())
-                                initializerListError(vars[i].tok,vars[i].var->nameToken(), info->className, vars[i].var->name());
-                        }
+                    for (unsigned int i = 1; i < vars.size(); i++) {
+                        // check for out of order initialization
+                        if (vars[i].var->index() < vars[i - 1].var->index())
+                            initializerListError(vars[i].tok,vars[i].var->nameToken(), info->className, vars[i].var->name());
                     }
                 }
             }
@@ -1626,11 +1609,11 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
     std::list<const Token *> toks;
     toks.push_back(tok1);
     toks.push_back(tok2);
-    reportError(toks, Severity::style, "initializerList",
-                "Member variable '" + classname + "::" +
-                varname + "' is in the wrong order in the initializer list.\n"
-                "Members are initialized in the order they are declared, not the "
-                "order they are in the initializer list.  Keeping the initializer list "
-                "in the same order that the members were declared prevents order dependent "
-                "initialization errors.");
+    reportInconclusiveError(toks, Severity::style, "initializerList",
+                            "Member variable '" + classname + "::" +
+                            varname + "' is in the wrong order in the initializer list.\n"
+                            "Members are initialized in the order they are declared, not the "
+                            "order they are in the initializer list.  Keeping the initializer list "
+                            "in the same order that the members were declared prevents order dependent "
+                            "initialization errors.");
 }
