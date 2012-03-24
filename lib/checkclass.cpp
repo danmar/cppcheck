@@ -1144,7 +1144,7 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
-    // This is an inconclusive check. False positives: #2340, #3322, #3360.
+    // This is an inconclusive check. False positives: #2340, #3322.
     if (!_settings->inconclusive)
         return;
 

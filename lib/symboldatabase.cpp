@@ -1948,7 +1948,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
             }
         }
     } else if (Token::Match(localTypeTok, "%type%")) {
-        localVarTok = skipPointers(localTypeTok->next());
+        localVarTok = skipPointers(localTypeTok->strAt(1)=="const"?localTypeTok->tokAt(2):localTypeTok->next());
     }
 
     if (Token::Match(localVarTok, "%var% ;|=")) {
