@@ -259,7 +259,7 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void sizeofsizeofError(const Token *tok);
-    void sizeofCalculationError(const Token *tok);
+    void sizeofCalculationError(const Token *tok, bool inconclusive);
     void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &function,
@@ -349,7 +349,7 @@ private:
         c.variableScopeError(0, "varname");
         c.strPlusCharError(0);
         c.sizeofsizeofError(0);
-        c.sizeofCalculationError(0);
+        c.sizeofCalculationError(0, false);
         c.redundantAssignmentInSwitchError(0, "varname");
         c.switchCaseFallThrough(0);
         c.selfAssignmentError(0, "varname");

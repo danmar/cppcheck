@@ -3151,16 +3151,10 @@ void CheckOther::sizeofCalculation()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            unsigned int parlevel = 0;
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")") {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                } else if (Token::Match(tok2, "+|/")) {
-                    sizeofCalculationError(tok2);
+            const Token* const end = tok->linkAt(1);
+            for (const Token *tok2 = tok->tokAt(2); tok2 != end; tok2 = tok2->next()) {
+                if (tok2->isOp() && (!tok2->isExpandedMacro() || _settings->inconclusive) && !Token::Match(tok2, ">|<|&|*")) {
+                    sizeofCalculationError(tok2, tok2->isExpandedMacro());
                     break;
                 }
             }
@@ -3168,10 +3162,14 @@ void CheckOther::sizeofCalculation()
     }
 }
 
-void CheckOther::sizeofCalculationError(const Token *tok)
+void CheckOther::sizeofCalculationError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::warning,
-                "sizeofCalculation", "Found calculation inside sizeof()");
+    if (inconclusive)
+        reportInconclusiveError(tok, Severity::warning,
+                                "sizeofCalculation", "Found calculation inside sizeof()");
+    else
+        reportError(tok, Severity::warning,
+                    "sizeofCalculation", "Found calculation inside sizeof()");
 }
 
 //-----------------------------------------------------------------------------
@@ -3253,22 +3251,22 @@ void CheckOther::checkSignOfUnsignedVariable()
 
         // check all the code in the function
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::Match(tok, ";|(|&&|%oror% %var% <|<= 0 ;|)|&&|%oror%") && tok->next()->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+            if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok->next(), tok->next()->str(), inconclusive);
-            } else if (Token::Match(tok, ";|(|&&|%oror% 0 > %var% ;|)|&&|%oror%") && tok->tokAt(3)->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                    unsignedLessThanZeroError(tok, tok->str(), inconclusive);
+            } else if (Token::Match(tok, "0 >|>= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok->tokAt(3), tok->strAt(3), inconclusive);
-            } else if (Token::Match(tok, ";|(|&&|%oror% 0 <= %var% ;|)|&&|%oror%") && tok->tokAt(3)->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                    unsignedLessThanZeroError(tok, tok->strAt(2), inconclusive);
+            } else if (Token::Match(tok, "0 <= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok->tokAt(3), tok->strAt(3), inconclusive);
-            } else if (Token::Match(tok, ";|(|&&|%oror% %var% >= 0 ;|)|&&|%oror%") && tok->next()->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                    unsignedPositiveError(tok, tok->strAt(2), inconclusive);
+            } else if (Token::Match(tok, "%var% >= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok->next(), tok->next()->str(), inconclusive);
+                    unsignedPositiveError(tok, tok->str(), inconclusive);
             }
         }
     }
@@ -3286,8 +3284,8 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "Checking if unsigned variable '" + varname + "' is less than zero.\n"
-                    "An unsigned variable will never be negative so it is either pointless or "
-                    "an error to check if it is.");
+                    "The unsigned variable '" + varname + "' will never be negative so it"
+                    "is either pointless or an error to check if it is.");
     }
 }
 

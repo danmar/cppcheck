@@ -1297,7 +1297,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
 
         check("sizeof(-a)");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
 
         check("sizeof(void * const)");
         ASSERT_EQUALS("", errout.str());
