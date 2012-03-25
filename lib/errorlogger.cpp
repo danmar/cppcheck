@@ -233,15 +233,13 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 
     // The xml format you get when you use --xml-version=2
     else if (version == 2) {
-        // TODO: How should inconclusive messages be saved in the xml version 2?
-        if (_inconclusive)
-            return "";
-
         xml << "  <error";
         xml << " id=\"" << _id << "\"";
         xml << " severity=\"" << Severity::toString(_severity) << "\"";
         xml << " msg=\"" << stringToXml(_shortMessage) << "\"";
         xml << " verbose=\"" << stringToXml(_verboseMessage) << "\"";
+        if (_inconclusive)
+            xml << " inconclusive=\"true\"";
         xml << ">" << std::endl;
 
         for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
