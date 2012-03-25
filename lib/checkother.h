@@ -268,7 +268,7 @@ private:
     void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
     void cstyleCastError(const Token *tok);
-    void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to);
+    void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void dangerousUsageStrtolError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok, bool inconclusive);
@@ -331,7 +331,7 @@ private:
         c.sizeofForNumericParameterError(0);
         c.coutCerrMisusageError(0, "cout");
         c.doubleFreeError(0, "varname");
-        c.invalidPointerCastError(0, "float", "double");
+        c.invalidPointerCastError(0, "float", "double", false);
 
         // style/warning
         c.cstyleCastError(0);

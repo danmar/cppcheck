@@ -333,7 +333,7 @@ static std::string analyzeType(const Token* tok)
     }
     if (tok->str() == "float")
         return "float";
-    if (Token::Match(tok, "unsigned| int|long|short|char|size_t"))
+    if (Token::Match(tok, "int|long|short|char|size_t"))
         return "integer";
     return "";
 }
@@ -398,16 +398,19 @@ void CheckOther::invalidPointerCast()
 
         std::string fromType = analyzeType(fromTok);
         std::string toType = analyzeType(toTok);
-        if (fromType != toType && !fromType.empty() && !toType.empty() && (toType != "integer" || _settings->isEnabled("portability")))
-            invalidPointerCastError(tok, fromType, toType);
+        if (fromType != toType && !fromType.empty() && !toType.empty() && (toType != "integer" || _settings->isEnabled("portability")) && (toTok->str() != "char" || _settings->inconclusive))
+            invalidPointerCastError(tok, fromType, toType, toTok->str() == "char");
     }
 }
 
-void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to)
+void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive)
 {
-    if (to == "integer") // If we cast something to int*, this can be useful to play with its binary data representation
-        reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms");
-    else
+    if (to == "integer") { // If we cast something to int*, this can be useful to play with its binary data representation
+        if (!inconclusive)
+            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms");
+        else
+            reportInconclusiveError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* might be not portable due to different binary data representations on different platforms");
+    } else
         reportError(tok, Severity::warning, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation");
 }
 
