@@ -522,7 +522,7 @@ void CheckOther::checkSizeofForPointerSize()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    if(!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -546,8 +546,8 @@ void CheckOther::checkSizeofForPointerSize()
             variable = tok->tokAt(2);
             tokVar = variable->tokAt(2)->nextArgument();
 
-        // The following tests can be inconclusive in case the variable in sizeof
-        // is constant string by intention
+            // The following tests can be inconclusive in case the variable in sizeof
+            // is constant string by intention
         } else if (!_settings->inconclusive) {
             continue;
 
@@ -571,7 +571,7 @@ void CheckOther::checkSizeofForPointerSize()
         if (variable2) {
             var = symbolDatabase->getVariableFromVarId(variable2->varId());
             if (!var || !var->isPointer()) {
-               variable2 = 0;
+                variable2 = 0;
             }
         }
 
@@ -583,17 +583,17 @@ void CheckOther::checkSizeofForPointerSize()
 
         // Jump to the next sizeof token in the function and in the parameter
         // This is to allow generic operations with sizeof
-        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()); 
+        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next());
 
         // Now check for the sizeof usage. Once here, everything using sizeof(varid)
         // looks suspicious
         // Do it for first variable
         if (variable && (Token::Match(tokVar, "sizeof ( %varid% )", variable->varId()) ||
-            Token::Match(tokVar, "sizeof %varid%", variable->varId()))) {
+                         Token::Match(tokVar, "sizeof %varid%", variable->varId()))) {
             sizeofForPointerError(variable, variable->str());
-        // Then do it for second - TODO: Perhaps we should invert?
+            // Then do it for second - TODO: Perhaps we should invert?
         } else if (variable2 && (Token::Match(tokVar, "sizeof ( %varid% )", variable2->varId()) ||
-            Token::Match(tokVar, "sizeof %varid%", variable2->varId()))) {
+                                 Token::Match(tokVar, "sizeof %varid%", variable2->varId()))) {
             sizeofForPointerError(variable2, variable2->str());
         }
     }

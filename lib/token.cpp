@@ -383,7 +383,7 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
     bool emptyStringFound = false;
     const char *needlePointer = needle;
-    for(;;) {
+    for (;;) {
         if (*needlePointer == *haystack) {
             if (*needlePointer == '\0')
                 return 1;
