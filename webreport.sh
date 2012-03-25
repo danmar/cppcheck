@@ -11,7 +11,7 @@ doxygen 2> devinfo/doxygen-errors.txt
 mv doxyoutput/html devinfo/doxyoutput
 
 # Detect duplicate code..
-~/pmd-bin-4.3/bin/cpd.sh lib/ > devinfo/cpd.txt
+~/pmd-4.2.6/bin/cpd.sh lib/ > devinfo/cpd.txt
 
 #scp -r devinfo/ danielmarjamaki,cppcheck@web.sourceforge.net:/home/groups/c/cp/cppcheck/htdocs
 
