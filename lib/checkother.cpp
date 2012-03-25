@@ -518,82 +518,94 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
                );
 }
 
-void CheckOther::checkSizeofForStrncmpSize()
+void CheckOther::checkSizeofForPointerSize()
 {
-    // danmar : this is inconclusive in case the size parameter is
-    //          sizeof(char *) by intention.
-    if (!_settings->inconclusive || !_settings->isEnabled("style"))
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    if(!_settings->isEnabled("style"))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    static const char pattern0[] = "strncmp (";
-    static const char pattern1[] = "sizeof ( %var% ) )";
-    static const char pattern2[] = "sizeof %var% )";
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, pattern0)) {
-            const Token *tokVar = tok->tokAt(2);
-            if (tokVar)
-                tokVar = tokVar->nextArgument();
-            if (tokVar)
-                tokVar = tokVar->nextArgument();
-            if (Token::Match(tokVar, pattern1) || Token::Match(tokVar, pattern2)) {
-                tokVar = tokVar->next();
-                if (tokVar->str() == "(")
-                    tokVar = tokVar->next();
-                if (tokVar->varId() > 0) {
-                    const Variable *var = symbolDatabase->getVariableFromVarId(tokVar->varId());
-                    if (var && var->isPointer()) {
-                        sizeofForStrncmpError(tokVar);
-                    }
-                }
-            }
-        }
-    }
-}
+        const Token *tokVar;
+        const Token *variable;
+        const Token *variable2 = 0;
 
-void CheckOther::sizeofForStrncmpError(const Token *tok)
-{
-    reportInconclusiveError(tok, Severity::warning, "strncmpLen",
-                            "Passing sizeof(pointer) as the last argument to strncmp.\n"
-                            "Passing a pointer to sizeof returns the size of the pointer, not "
-                            "the number of characters pointed to by that pointer. This "
-                            "means that only 4 or 8 (on 64-bit systems) characters are "
-                            "compared, which is probably not what was expected.");
-}
-
-void CheckOther::checkSizeofForMallocSize()
-{
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        // Find any function that may use sizeof on a pointer
+        // Once leaving those tests, it is mandatory to have:
+        // - variable matching the used pointer
+        // - tokVar pointing on the argument where sizeof may be used
         if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (")) {
-            const Token *tokVar = tok->tokAt(5);
-            if (Token::Match(tokVar, "sizeof ( %var% ) )") || Token::Match(tokVar, "sizeof %var% )")) {
-                // Get the variable name
-                tokVar = tokVar->next();
-                if (tokVar->str() == "(")
-                    tokVar = tokVar->next();
+            variable = tok->next();
+            tokVar = tok->tokAt(5);
 
-                // Check if it matches the assignment variable
-                if (tok->tokAt(1)->str() == tokVar->str()) {
-                    sizeofForMallocError(tok->tokAt(1), tok->tokAt(1)->str());
-                }
+        } else if (Token::Match(tok, "[*;{}] %var% = calloc (")) {
+            variable = tok->next();
+            tokVar = tok->tokAt(5)->nextArgument();
+
+        } else if (Token::Match(tok, "memset (")) {
+            variable = tok->tokAt(2);
+            tokVar = variable->tokAt(2)->nextArgument();
+
+        // The following tests can be inconclusive in case the variable in sizeof
+        // is constant string by intention
+        } else if (!_settings->inconclusive) {
+            continue;
+
+        } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
+            variable = tok->tokAt(2);
+            variable2 = variable->nextArgument();
+            tokVar = variable2->nextArgument();
+
+        } else {
+            continue;
+        }
+
+        // Ensure the variables are in the symbol database
+        // Also ensure the variables are pointers
+        // Only keep variables which are pointers
+        const Variable *var = symbolDatabase->getVariableFromVarId(variable->varId());
+        if (!var || !var->isPointer()) {
+            variable = 0;
+        }
+
+        if (variable2) {
+            var = symbolDatabase->getVariableFromVarId(variable2->varId());
+            if (!var || !var->isPointer()) {
+               variable2 = 0;
             }
         }
-    }
 
-    // TODO: This test should be renamed into something more generic
-    // and should provide tests for functions like memcpy, memset and so
-    // on. Test would be done the same way. To prevent misuse with arrays
-    // var->isPointer() is to be used.
+        // If there are no pointer variable at this point, there is
+        // no need to continue
+        if (variable == 0 && variable2 == 0) {
+            continue;
+        }
+
+        // Jump to the next sizeof token in the function and in the parameter
+        // This is to allow generic operations with sizeof
+        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()); 
+
+        // Now check for the sizeof usage. Once here, everything using sizeof(varid)
+        // looks suspicious
+        // Do it for first variable
+        if (variable && (Token::Match(tokVar, "sizeof ( %varid% )", variable->varId()) ||
+            Token::Match(tokVar, "sizeof %varid%", variable->varId()))) {
+            sizeofForPointerError(variable, variable->str());
+        // Then do it for second - TODO: Perhaps we should invert?
+        } else if (variable2 && (Token::Match(tokVar, "sizeof ( %varid% )", variable2->varId()) ||
+            Token::Match(tokVar, "sizeof %varid%", variable2->varId()))) {
+            sizeofForPointerError(variable2, variable2->str());
+        }
+    }
 }
 
-void CheckOther::sizeofForMallocError(const Token *tok, const std::string &varname)
+void CheckOther::sizeofForPointerError(const Token *tok, const std::string &varname)
 {
-    reportInconclusiveError(tok, Severity::warning, "mallocSize",
-                            "Using size of pointer " + varname + " for allocation.\n"
-                            "Using size of pointer " + varname + " for allocation instead "
-                            "of using the size of the type. This is likely to lead to a "
-                            "buffer overflow. You should use sizeof(*" + varname + ")");
+    reportInconclusiveError(tok, Severity::warning, "pointerSize",
+                            "Using size of pointer " + varname + " instead of size of its data.\n"
+                            "Using size of pointer " + varname + " instead of size of its data. "
+                            "This is likely to lead to a buffer overflow. You probably intend to "
+                            "write sizeof(*" + varname + ")");
 }
 
 //---------------------------------------------------------------------------

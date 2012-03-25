@@ -150,8 +150,7 @@ private:
         TEST_CASE(duplicateExpression4); // ticket #3354 (++)
 
         TEST_CASE(alwaysTrueFalseStringCompare);
-        TEST_CASE(checkStrncmpSizeof);
-        TEST_CASE(checkMallocSizeof);
+        TEST_CASE(checkPointerSizeof);
         TEST_CASE(checkSignOfUnsignedVariable);
 
         TEST_CASE(checkForSuspiciousSemicolon1);
@@ -4166,23 +4165,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkStrncmpSizeof() {
+    void checkPointerSizeof() {
         check(
-            "int fun(const char *buf1)\n"
-            "{\n"
-            "  const char *buf1_ex = \"foobarbaz\";\n"
-            "  return strncmp(buf1, buf1_ex, sizeof(buf1_ex)) == 0;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Passing sizeof(pointer) as the last argument to strncmp.\n", errout.str());
+            "char *x = malloc(10);\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
 
-        check(
-            "int fun(const char *buf1) {\n"
-            "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Passing sizeof(pointer) as the last argument to strncmp.\n", errout.str());
-    }
-
-    void checkMallocSizeof() {
         check(
             "int *x = malloc(sizeof(*x));\n"
             "free(x);");
@@ -4196,7 +4184,17 @@ private:
         check(
             "int *x = malloc(sizeof(x));\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x for allocation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(100 * sizeof(x));\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(x) * 100);\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(sizeof *x);\n"
@@ -4206,7 +4204,121 @@ private:
         check(
             "int *x = malloc(sizeof x);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x for allocation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(100 * sizeof x);\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = calloc(1, sizeof(*x));\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = calloc(1, sizeof *x);\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = calloc(1, sizeof(x));\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = calloc(1, sizeof x);\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = calloc(1, sizeof(int));\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "char x[10];\n"
+            "memset(x, 0, sizeof(x));");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "char x[10];\n"
+            "memset(x, 0, sizeof x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int));\n"
+            "memset(x, 0, sizeof(int));\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int));\n"
+            "memset(x, 0, sizeof(*x));\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int));\n"
+            "memset(x, 0, sizeof *x);\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int));\n"
+            "memset(x, 0, sizeof x);\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int));\n"
+            "memset(x, 0, sizeof(x));\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int) * 10);\n"
+            "memset(x, 0, sizeof(x) * 10);\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int) * 10);\n"
+            "memset(x, 0, sizeof x * 10);\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int) * 10);\n"
+            "memset(x, 0, sizeof(*x) * 10);\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int) * 10);\n"
+            "memset(x, 0, sizeof *x * 10);\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(int) * 10);\n"
+            "memset(x, 0, sizeof(int) * 10);\n"
+            "free(x);");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int fun(const char *buf1)\n"
+            "{\n"
+            "  const char *buf1_ex = \"foobarbaz\";\n"
+            "  return strncmp(buf1, buf1_ex, sizeof(buf1_ex)) == 0;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Using size of pointer buf1_ex instead of size of its data.\n", errout.str());
+
+        check(
+            "int fun(const char *buf1) {\n"
+            "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer buf1 instead of size of its data.\n", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
