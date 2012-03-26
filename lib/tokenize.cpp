@@ -6701,6 +6701,13 @@ bool Tokenizer::simplifyRedundantParenthesis()
             ret = true;
         }
 
+        if (Token::Match(tok->previous(), "! ( %var% )")) {
+            // Remove the parenthesis
+            tok->deleteThis();
+            tok->deleteNext();
+            ret = true;
+        }
+
         while (Token::Match(tok->previous(), "[,;{}(] ( %var% (") &&
                tok->link()->previous() == tok->linkAt(2)) {
             // We have "( func ( *something* ))", remove the outer

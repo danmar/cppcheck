@@ -124,6 +124,7 @@ private:
         TEST_CASE(if_cond11);
         TEST_CASE(if_cond12);
         TEST_CASE(if_cond13);
+        TEST_CASE(if_cond14);
 
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
@@ -1458,6 +1459,14 @@ private:
 
     void if_cond13() {
         const char filedata[] = "#if ('A' == 0x41)\n"
+                                "123\n"
+                                "#endif\n";
+        Preprocessor preprocessor(NULL, this);
+        ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(filedata,"",""));
+    }
+
+    void if_cond14() {
+        const char filedata[] = "#if !(A)\n"
                                 "123\n"
                                 "#endif\n";
         Preprocessor preprocessor(NULL, this);
