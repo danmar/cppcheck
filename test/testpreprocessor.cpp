@@ -36,8 +36,9 @@ extern std::ostringstream output;
 
 class TestPreprocessor : public TestFixture {
 public:
-    TestPreprocessor() : TestFixture("TestPreprocessor")
-    { }
+    TestPreprocessor() : TestFixture("TestPreprocessor") {
+        Preprocessor::macroChar = '$';
+    }
 
     class OurPreprocessor : public Preprocessor {
     public:
@@ -256,6 +257,7 @@ private:
         TEST_CASE(undef8);
         TEST_CASE(undef9);
 
+        TEST_CASE(macroChar);
     }
 
 
@@ -3421,6 +3423,14 @@ private:
         // Compare results..
         ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\n\nFred & Wilma\n\n\n\n", actual[""]);
+    }
+
+    void macroChar() {
+        const char filedata[] = "#define X 1\nX\n";
+        ASSERT_EQUALS("\n$1\n", OurPreprocessor::expandMacros(filedata,NULL));
+        OurPreprocessor::macroChar = '¤';
+        ASSERT_EQUALS("\n¤1\n", OurPreprocessor::expandMacros(filedata,NULL));
+        OurPreprocessor::macroChar = '$';
     }
 };
 

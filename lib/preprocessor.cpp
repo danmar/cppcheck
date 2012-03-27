@@ -35,6 +35,8 @@
 
 bool Preprocessor::missingIncludeFlag;
 
+char Preprocessor::macroChar = char(1);
+
 Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
@@ -2759,7 +2761,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         macrocode.append(1,' ');
 
                     // insert expanded macro code
-                    line.insert(pos1, "$" + macrocode);
+                    line.insert(pos1, macroChar + macrocode);
 
                     // position = start position.
                     pos = pos1;
