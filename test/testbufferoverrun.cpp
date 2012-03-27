@@ -69,8 +69,6 @@ private:
         TEST_CASE(sizeof2);
         TEST_CASE(sizeof3);
 
-        TEST_CASE(arrayInfo);
-
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
         TEST_CASE(array_index_3);
@@ -343,24 +341,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-
-    void arrayInfo() {
-        // Clear the error buffer..
-        errout.str("");
-
-        Settings settings;
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr("XY(1) const int a[2] = { 1, 2 };");
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifySizeof();
-
-        CheckBufferOverrun::ArrayInfo ai;
-        ASSERT_EQUALS(false, ai.declare(tokenizer.tokens()->tokAt(5), tokenizer));
-    }
 
 
     void array_index_1() {
@@ -1032,25 +1012,23 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' index 32768 out of bounds\n"
                       "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
-        if (sizeof(int) == 4) {
-            check("void f(int n) {\n"
-                  "    int a[n];\n"     // n <= INT_MAX
-                  "    a[-1] = 0;\n"    // negative index
-                  "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        check("void f(int n) {\n"
+              "    int a[n];\n"     // n <= INT_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
-            check("void f(unsigned int n) {\n"
-                  "    int a[n];\n"     // n <= UINT_MAX
-                  "    a[-1] = 0;\n"    // negative index
-                  "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        check("void f(unsigned int n) {\n"
+              "    int a[n];\n"     // n <= UINT_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
-            check("void f(signed int n) {\n"
-                  "    int a[n];\n"     // n <= INT_MAX
-                  "    a[-1] = 0;\n"    // negative index
-                  "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
-        }
+        check("void f(signed int n) {\n"
+              "    int a[n];\n"     // n <= INT_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
     }
 
     void array_index_25() {

@@ -140,14 +140,6 @@ public:
         /** Create a copy ArrayInfo where the number of elements have been limited by a value */
         ArrayInfo limit(MathLib::bigint value) const;
 
-        /**
-         * Declare array - set info
-         * \param tok first token in array declaration
-         * \param tokenizer The tokenizer (for type size)
-         * \return success => true
-         */
-        bool declare(const Token *tok, const Tokenizer &tokenizer);
-
         /** array sizes */
         const std::vector<MathLib::bigint> &num() const {
             return _num;

@@ -84,13 +84,6 @@ public:
     void mismatchingContainers();
 
     /**
-     * Dereferencing an erased iterator
-     * @param tok token where error occurs
-     * @param itername iterator name
-     */
-    void dereferenceErasedError(const Token *tok, const std::string &itername);
-
-    /**
      * Dangerous usage of erase. The iterator is invalidated by erase so
      * it is bad to dereference it after the erase.
      */
@@ -129,14 +122,9 @@ public:
      *  - may unintentionally skip elements in list/set etc
      */
     void missingComparison();
-    void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
 
     /** Check for common mistakes when using the function string::c_str() */
     void string_c_str();
-    void string_c_strThrowError(const Token *tok);
-    void string_c_strError(const Token *tok);
-    void string_c_strReturn(const Token *tok);
-    void string_c_strParam(const Token *tok, unsigned int number);
 
     /** @brief %Check for use and copy auto pointer */
     void checkAutoPointer();
@@ -154,6 +142,19 @@ private:
      * @param it iterator token
      */
     void eraseCheckLoop(const Token *it);
+
+    /**
+     * Dereferencing an erased iterator
+     * @param tok token where error occurs
+     * @param itername iterator name
+     */
+    void dereferenceErasedError(const Token *tok, const std::string &itername);
+
+    void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
+    void string_c_strThrowError(const Token *tok);
+    void string_c_strError(const Token *tok);
+    void string_c_strReturn(const Token *tok);
+    void string_c_strParam(const Token *tok, unsigned int number);
 
     void stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var, bool at);
     void invalidIteratorError(const Token *tok, const std::string &iteratorName);
