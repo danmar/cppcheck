@@ -27,6 +27,7 @@
 #include "path.h"
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
+#include "preprocessor.h"   // Preprocessor::macroChar
 
 #include <string>
 #include <cstring>
@@ -293,8 +294,8 @@ void Tokenizer::createTokens(std::istream &code)
 
     // Read one byte at a time from code and create tokens
     for (char ch = (char)code.get(); code.good(); ch = (char)code.get()) {
-        if (ch == '$') {
-            while (code.peek() == '$')
+        if (ch == Preprocessor::macroChar) {
+            while (code.peek() == Preprocessor::macroChar)
                 code.get();
             ch = ' ';
             expandedMacro = true;
@@ -845,7 +846,7 @@ static Token *processFunc(Token *tok2, bool inOperator)
                 }
 
                 // skip over typedef parameter
-                if (tok2->next()->str() == "(") {
+                if (tok2->next() && tok2->next()->str() == "(") {
                     tok2 = tok2->next()->link();
 
                     if (tok2->next()->str() == "(")
@@ -6698,6 +6699,13 @@ bool Tokenizer::simplifyRedundantParenthesis()
             // parenthesis
             tok->deleteNext();
             tok->link()->tokAt(-2)->deleteNext();
+            ret = true;
+        }
+
+        if (Token::Match(tok->previous(), "! ( %var% )")) {
+            // Remove the parenthesis
+            tok->deleteThis();
+            tok->deleteNext();
             ret = true;
         }
 

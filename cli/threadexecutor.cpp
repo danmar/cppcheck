@@ -134,7 +134,7 @@ unsigned int ThreadExecutor::check()
     std::map<int, std::string> pipeFile;
     size_t processedsize = 0;
     std::map<std::string, size_t>::const_iterator i = _files.begin();
-    while (true) {
+    for (;;) {
         // Start a new child
         if (i != _files.end() && rpipes.size() < _settings._jobs) {
             int pipes[2];

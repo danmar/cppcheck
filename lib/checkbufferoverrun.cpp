@@ -1239,7 +1239,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% [ %num% ]")) {
             std::string str = tok->strValue();
-            std::size_t index = std::atoi(tok->tokAt(2)->str().c_str());
+            std::size_t index = std::atoi(tok->strAt(2).c_str());
             if (index > str.length()) {
                 bufferOverrunError(tok, tok->str());
             }
@@ -1892,70 +1892,6 @@ CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigi
     return ArrayInfo(_varid, _varname, _element_size, n - uvalue);
 }
 
-bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &tokenizer)
-{
-    _num.clear();
-    _element_size = 0;
-    _varname.clear();
-
-    if (!tok)
-        return false;
-
-    if (!tok->isName() || tok->str() == "return")
-        return false;
-
-    while (tok && (tok->str() == "static" ||
-                   tok->str() == "const" ||
-                   tok->str() == "extern"))
-        tok = tok->next();
-
-    // ivar : number of type tokens
-    int ivar = 0;
-    if (Token::Match(tok, "%type% *| %var% ["))
-        ivar = 1;
-    else if (Token::Match(tok, "%type% %type% *| %var% ["))
-        ivar = 2;
-    else
-        return false;
-
-    if (tok->str().find(":") != std::string::npos)
-        return false;
-
-    // Goto variable name token, get element size..
-    const Token *vartok = tok->tokAt(ivar);
-    if (vartok->str() == "*") {
-        _element_size = tokenizer.sizeOfType(vartok);
-        vartok = vartok->next();
-    } else if (tok->str() == "struct") {
-        _element_size = 100;
-    } else {
-        _element_size = tokenizer.sizeOfType(tok);
-    }
-
-    _varname = vartok->str();
-    _varid = vartok->varId();
-    if (!_varid)
-        return false;
-
-    const Token *atok = vartok->tokAt(2);
-
-    if (!Token::Match(atok, "%num% ] ;|=|["))
-        return false;
-
-    while (Token::Match(atok, "%num% ] ;|=|[")) {
-        _num.push_back(MathLib::toLongNumber(atok->str()));
-        atok = atok->next();
-        if (Token::simpleMatch(atok, "] ["))
-            atok = atok->tokAt(2);
-    }
-
-    if (Token::Match(atok, "] = !!{"))
-        return false;
-
-    return (!_num.empty() && Token::Match(atok, "] ;|="));
-}
-
-
 
 /**
  * @brief %Check for buffer overruns (using ExecutionPath)
@@ -2028,20 +1964,17 @@ private:
             return;
 
         // Locate array info corresponding to varid1
-        CheckBufferOverrun::ArrayInfo ai;
-        {
-            ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(checks.front());
-            std::map<unsigned int, CheckBufferOverrun::ArrayInfo>::const_iterator it;
-            it = c->arrayInfo.find(varid1);
-            if (it == c->arrayInfo.end())
-                return;
-            ai = it->second;
-        }
+        ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(checks.front());
+        std::map<unsigned int, CheckBufferOverrun::ArrayInfo>::const_iterator it1;
+        it1 = c->arrayInfo.find(varid1);
+        if (it1 == c->arrayInfo.end())
+            return;
+        const CheckBufferOverrun::ArrayInfo& ai = it1->second;
 
         // Check if varid2 variable has a value that is out-of-bounds
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it) {
-            ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
+            c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
             if (c && c->varId == varid2 && c->value >= ai.num(0)) {
                 // variable value is out of bounds, report error
                 CheckBufferOverrun *checkBufferOverrun = dynamic_cast<CheckBufferOverrun *>(c->owner);

@@ -35,6 +35,8 @@
 
 bool Preprocessor::missingIncludeFlag;
 
+char Preprocessor::macroChar = char(1);
+
 Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
@@ -889,7 +891,7 @@ static void simplifyVarMap(std::map<std::string, std::string> &variables)
         // TODO: 2. handle function-macros too.
 
         std::map<std::string, std::string>::iterator it = variables.find(varValue);
-        while (it != variables.end() && it != i) {
+        while (it != variables.end() && it->first != it->second && it != i) {
             varValue = it->second;
             it = variables.find(varValue);
         }
@@ -2759,7 +2761,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         macrocode.append(1,' ');
 
                     // insert expanded macro code
-                    line.insert(pos1, "$" + macrocode);
+                    line.insert(pos1, macroChar + macrocode);
 
                     // position = start position.
                     pos = pos1;

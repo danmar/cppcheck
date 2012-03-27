@@ -36,8 +36,9 @@ extern std::ostringstream output;
 
 class TestPreprocessor : public TestFixture {
 public:
-    TestPreprocessor() : TestFixture("TestPreprocessor")
-    { }
+    TestPreprocessor() : TestFixture("TestPreprocessor") {
+        Preprocessor::macroChar = '$';
+    }
 
     class OurPreprocessor : public Preprocessor {
     public:
@@ -124,11 +125,13 @@ private:
         TEST_CASE(if_cond11);
         TEST_CASE(if_cond12);
         TEST_CASE(if_cond13);
+        TEST_CASE(if_cond14);
 
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
 
         TEST_CASE(if_macro_eq_macro); // #3536
+        TEST_CASE(ticket_3675);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -254,6 +257,7 @@ private:
         TEST_CASE(undef8);
         TEST_CASE(undef9);
 
+        TEST_CASE(macroChar);
     }
 
 
@@ -1463,6 +1467,14 @@ private:
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(filedata,"",""));
     }
 
+    void if_cond14() {
+        const char filedata[] = "#if !(A)\n"
+                                "123\n"
+                                "#endif\n";
+        Preprocessor preprocessor(NULL, this);
+        ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(filedata,"",""));
+    }
+
 
 
     void if_or_1() {
@@ -1521,6 +1533,23 @@ private:
         ASSERT_EQUALS("\n\n\n\nWilma\n\n\n\n", actual[""]);
     }
 
+    void ticket_3675() {
+        const std::string code("#ifdef YYSTACKSIZE\n"
+                               "#define YYMAXDEPTH YYSTACKSIZE\n"
+                               "#else\n"
+                               "#define YYSTACKSIZE YYMAXDEPTH\n"
+                               "#endif\n"
+                               "#if YYDEBUG\n"
+                               "#endif\n");
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // There's nothing to assert. It just needs to not hang.
+    }
+
     void multiline1() {
         const char filedata[] = "#define str \"abc\"     \\\n"
                                 "            \"def\"       \n"
@@ -1572,7 +1601,7 @@ private:
 #ifdef __GNUC__
         ASSERT_EQUALS("\n\n$int a = 4; int b = 5;\n", actual[""]);
 #else
-        ASSERT_EQUALS("\nint b = 5;\nint a = 4;\\\n", actual[""]);
+        ASSERT_EQUALS("\nint b = 5;\n$int a = 4;\\\n", actual[""]);
 #endif
         ASSERT_EQUALS("", errout.str());
     }
@@ -3394,6 +3423,14 @@ private:
         // Compare results..
         ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\n\nFred & Wilma\n\n\n\n", actual[""]);
+    }
+
+    void macroChar() {
+        const char filedata[] = "#define X 1\nX\n";
+        ASSERT_EQUALS("\n$1\n", OurPreprocessor::expandMacros(filedata,NULL));
+        OurPreprocessor::macroChar = char(1);
+        ASSERT_EQUALS("\n" + std::string(char(1),1U) + "1\n", OurPreprocessor::expandMacros(filedata,NULL));
+        OurPreprocessor::macroChar = '$';
     }
 };
 

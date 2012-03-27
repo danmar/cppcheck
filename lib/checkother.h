@@ -255,7 +255,7 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void sizeofsizeofError(const Token *tok);
-    void sizeofCalculationError(const Token *tok);
+    void sizeofCalculationError(const Token *tok, bool inconclusive);
     void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &function,
@@ -268,7 +268,7 @@ private:
     void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
     void cstyleCastError(const Token *tok);
-    void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to);
+    void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void dangerousUsageStrtolError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok, bool inconclusive);
@@ -331,7 +331,7 @@ private:
         c.sizeofForNumericParameterError(0);
         c.coutCerrMisusageError(0, "cout");
         c.doubleFreeError(0, "varname");
-        c.invalidPointerCastError(0, "float", "double");
+        c.invalidPointerCastError(0, "float", "double", false);
 
         // style/warning
         c.cstyleCastError(0);
@@ -343,7 +343,7 @@ private:
         c.variableScopeError(0, "varname");
         c.strPlusCharError(0);
         c.sizeofsizeofError(0);
-        c.sizeofCalculationError(0);
+        c.sizeofCalculationError(0, false);
         c.redundantAssignmentInSwitchError(0, "varname");
         c.switchCaseFallThrough(0);
         c.selfAssignmentError(0, "varname");

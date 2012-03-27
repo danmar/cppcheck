@@ -97,6 +97,7 @@ private:
         TEST_CASE(isVariableDeclarationIdentifiesNestedTemplateVariable);
         TEST_CASE(isVariableDeclarationIdentifiesReference);
         TEST_CASE(isVariableDeclarationDoesNotIdentifyTemplateClass);
+        TEST_CASE(isVariableDeclarationPointerConst);
         TEST_CASE(canFindMatchingBracketsNeedsOpen);
         TEST_CASE(canFindMatchingBracketsInnerPair);
         TEST_CASE(canFindMatchingBracketsOuterPair);
@@ -431,6 +432,16 @@ private:
         ASSERT_EQUALS(false, result);
         ASSERT(false == isArray);
         ASSERT(false == isPointer);
+        ASSERT(false == isReference);
+    }
+
+    void isVariableDeclarationPointerConst() {
+        reset();
+        givenACodeSampleToTokenize var("std::string const* s;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok, isArray, isPointer, isReference);
+        ASSERT_EQUALS(true, result);
+        ASSERT(false == isArray);
+        ASSERT(true == isPointer);
         ASSERT(false == isReference);
     }
 

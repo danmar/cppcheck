@@ -333,7 +333,7 @@ static std::string analyzeType(const Token* tok)
     }
     if (tok->str() == "float")
         return "float";
-    if (Token::Match(tok, "unsigned| int|long|short|char|size_t"))
+    if (Token::Match(tok, "int|long|short|char|size_t"))
         return "integer";
     return "";
 }
@@ -398,16 +398,19 @@ void CheckOther::invalidPointerCast()
 
         std::string fromType = analyzeType(fromTok);
         std::string toType = analyzeType(toTok);
-        if (fromType != toType && !fromType.empty() && !toType.empty() && (toType != "integer" || _settings->isEnabled("portability")))
-            invalidPointerCastError(tok, fromType, toType);
+        if (fromType != toType && !fromType.empty() && !toType.empty() && (toType != "integer" || _settings->isEnabled("portability")) && (toTok->str() != "char" || _settings->inconclusive))
+            invalidPointerCastError(tok, fromType, toType, toTok->str() == "char");
     }
 }
 
-void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to)
+void CheckOther::invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive)
 {
-    if (to == "integer") // If we cast something to int*, this can be useful to play with its binary data representation
-        reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms");
-    else
+    if (to == "integer") { // If we cast something to int*, this can be useful to play with its binary data representation
+        if (!inconclusive)
+            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms");
+        else
+            reportInconclusiveError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* might be not portable due to different binary data representations on different platforms");
+    } else
         reportError(tok, Severity::warning, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation");
 }
 
@@ -522,7 +525,7 @@ void CheckOther::checkSizeofForPointerSize()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    if(!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("style"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -546,8 +549,8 @@ void CheckOther::checkSizeofForPointerSize()
             variable = tok->tokAt(2);
             tokVar = variable->tokAt(2)->nextArgument();
 
-        // The following tests can be inconclusive in case the variable in sizeof
-        // is constant string by intention
+            // The following tests can be inconclusive in case the variable in sizeof
+            // is constant string by intention
         } else if (!_settings->inconclusive) {
             continue;
 
@@ -571,7 +574,7 @@ void CheckOther::checkSizeofForPointerSize()
         if (variable2) {
             var = symbolDatabase->getVariableFromVarId(variable2->varId());
             if (!var || !var->isPointer()) {
-               variable2 = 0;
+                variable2 = 0;
             }
         }
 
@@ -583,17 +586,17 @@ void CheckOther::checkSizeofForPointerSize()
 
         // Jump to the next sizeof token in the function and in the parameter
         // This is to allow generic operations with sizeof
-        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()); 
+        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next());
 
         // Now check for the sizeof usage. Once here, everything using sizeof(varid)
         // looks suspicious
         // Do it for first variable
         if (variable && (Token::Match(tokVar, "sizeof ( %varid% )", variable->varId()) ||
-            Token::Match(tokVar, "sizeof %varid%", variable->varId()))) {
+                         Token::Match(tokVar, "sizeof %varid%", variable->varId()))) {
             sizeofForPointerError(variable, variable->str());
-        // Then do it for second - TODO: Perhaps we should invert?
+            // Then do it for second - TODO: Perhaps we should invert?
         } else if (variable2 && (Token::Match(tokVar, "sizeof ( %varid% )", variable2->varId()) ||
-            Token::Match(tokVar, "sizeof %varid%", variable2->varId()))) {
+                                 Token::Match(tokVar, "sizeof %varid%", variable2->varId()))) {
             sizeofForPointerError(variable2, variable2->str());
         }
     }
@@ -3163,16 +3166,10 @@ void CheckOther::sizeofCalculation()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            unsigned int parlevel = 0;
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")") {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                } else if (Token::Match(tok2, "+|/")) {
-                    sizeofCalculationError(tok2);
+            const Token* const end = tok->linkAt(1);
+            for (const Token *tok2 = tok->tokAt(2); tok2 != end; tok2 = tok2->next()) {
+                if (tok2->isOp() && (!tok2->isExpandedMacro() || _settings->inconclusive) && !Token::Match(tok2, ">|<|&|*")) {
+                    sizeofCalculationError(tok2, tok2->isExpandedMacro());
                     break;
                 }
             }
@@ -3180,10 +3177,14 @@ void CheckOther::sizeofCalculation()
     }
 }
 
-void CheckOther::sizeofCalculationError(const Token *tok)
+void CheckOther::sizeofCalculationError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::warning,
-                "sizeofCalculation", "Found calculation inside sizeof()");
+    if (inconclusive)
+        reportInconclusiveError(tok, Severity::warning,
+                                "sizeofCalculation", "Found calculation inside sizeof()");
+    else
+        reportError(tok, Severity::warning,
+                    "sizeofCalculation", "Found calculation inside sizeof()");
 }
 
 //-----------------------------------------------------------------------------
@@ -3265,22 +3266,22 @@ void CheckOther::checkSignOfUnsignedVariable()
 
         // check all the code in the function
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::Match(tok, ";|(|&&|%oror% %var% <|<= 0 ;|)|&&|%oror%") && tok->next()->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+            if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok->next(), tok->next()->str(), inconclusive);
-            } else if (Token::Match(tok, ";|(|&&|%oror% 0 > %var% ;|)|&&|%oror%") && tok->tokAt(3)->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                    unsignedLessThanZeroError(tok, tok->str(), inconclusive);
+            } else if (Token::Match(tok, "0 >|>= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok->tokAt(3), tok->strAt(3), inconclusive);
-            } else if (Token::Match(tok, ";|(|&&|%oror% 0 <= %var% ;|)|&&|%oror%") && tok->tokAt(3)->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                    unsignedLessThanZeroError(tok, tok->strAt(2), inconclusive);
+            } else if (Token::Match(tok, "0 <= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok->tokAt(3), tok->strAt(3), inconclusive);
-            } else if (Token::Match(tok, ";|(|&&|%oror% %var% >= 0 ;|)|&&|%oror%") && tok->next()->varId()) {
-                const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                    unsignedPositiveError(tok, tok->strAt(2), inconclusive);
+            } else if (Token::Match(tok, "%var% >= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
+                const Variable * var = symbolDatabase->getVariableFromVarId(tok->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok->next(), tok->next()->str(), inconclusive);
+                    unsignedPositiveError(tok, tok->str(), inconclusive);
             }
         }
     }
@@ -3298,8 +3299,8 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "Checking if unsigned variable '" + varname + "' is less than zero.\n"
-                    "An unsigned variable will never be negative so it is either pointless or "
-                    "an error to check if it is.");
+                    "The unsigned variable '" + varname + "' will never be negative so it"
+                    "is either pointless or an error to check if it is.");
     }
 }
 

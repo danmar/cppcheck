@@ -82,6 +82,7 @@ public:
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
 
+private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckUninitVar c(0, settings, errorLogger);
 

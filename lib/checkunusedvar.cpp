@@ -591,6 +591,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     if (scope->type != Scope::eClass && scope->type != Scope::eUnion && scope->type != Scope::eStruct) {
         // Find declarations
         for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
+            if (i->isThrow())
+                continue;
             Variables::VariableType type = Variables::none;
             if (i->isArray() && (i->nameToken()->previous()->str() == "*" || i->nameToken()->strAt(-2) == "*"))
                 type = Variables::pointerArray;
@@ -639,7 +641,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
     // Check variable usage
     for (const Token *tok = scope->classDef->next(); tok && tok != scope->classEnd; tok = tok->next()) {
-        if (tok->str() == "for" || tok->str() == "catch") {
+        if (tok->str() == "for") {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classDef == tok) { // Find associated scope
                     checkFunctionVariableUsage_iterateScopes(*i, variables); // Scan child scope

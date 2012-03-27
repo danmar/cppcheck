@@ -289,8 +289,11 @@ private:
         // Don't save inconclusive messages if the xml version is 1
         ASSERT_EQUALS("", msg.toXML(false, 1));
 
-        // TODO: how should inconclusive messages be saved when the xml version is 2?
-        ASSERT_EQUALS("", msg.toXML(false, 2));
+        // xml version 2 error message
+        ASSERT_EQUALS("  <error id=\"errorId\" severity=\"error\" msg=\"Programming error\" verbose=\"Programming error\" inconclusive=\"true\">\n"
+                      "    <location file=\"foo.cpp\" line=\"5\"/>\n"
+                      "  </error>",
+                      msg.toXML(false, 2));
     }
 
     void SerializeInconclusiveMessage() {

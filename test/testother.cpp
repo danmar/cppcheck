@@ -783,7 +783,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkInvalidPointerCast(const char code[], bool portability = false) {
+    void checkInvalidPointerCast(const char code[], bool portability = false, bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -791,6 +791,7 @@ private:
         settings.addEnabled("style");
         if (portability)
             settings.addEnabled("portability");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -848,6 +849,16 @@ private:
                                 "    return (float*)&d;\n"
                                 "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and float* which have an incompatible binary data representation\n", errout.str());
+
+        checkInvalidPointerCast("void test(float* data) {\n" // #3639
+                                "    f.write((char*)data,sizeof(float));\n"
+                                "}", true, false);
+        ASSERT_EQUALS("", errout.str());
+
+        checkInvalidPointerCast("void test(float* data) {\n"
+                                "    f.write((char*)data,sizeof(float));\n"
+                                "}", true, true);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to char* might be not portable due to different binary data representations on different platforms\n", errout.str());
 
 
         checkInvalidPointerCast("long long* test(float* f) {\n"
@@ -1296,7 +1307,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
 
         check("sizeof(-a)");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
 
         check("sizeof(void * const)");
         ASSERT_EQUALS("", errout.str());

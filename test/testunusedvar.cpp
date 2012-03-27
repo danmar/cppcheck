@@ -110,6 +110,8 @@ private:
         TEST_CASE(localvarconst1);
         TEST_CASE(localvarconst2);
 
+        TEST_CASE(localvarthrow); // ticket #3687
+
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
         TEST_CASE(localvarStruct2);
@@ -2995,6 +2997,14 @@ private:
                               "    const int N = 10;\n"
                               "    struct X { int x[N]; };\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarthrow() { // ticket #3687
+        functionVariableUsage("void foo() {\n"
+                              "    try {}"
+                              "    catch(Foo& bar) {}\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
