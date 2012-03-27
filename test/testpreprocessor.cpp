@@ -1601,7 +1601,7 @@ private:
 #ifdef __GNUC__
         ASSERT_EQUALS("\n\n$int a = 4; int b = 5;\n", actual[""]);
 #else
-        ASSERT_EQUALS("\nint b = 5;\nint a = 4;\\\n", actual[""]);
+        ASSERT_EQUALS("\nint b = 5;\n$int a = 4;\\\n", actual[""]);
 #endif
         ASSERT_EQUALS("", errout.str());
     }
@@ -3428,8 +3428,8 @@ private:
     void macroChar() {
         const char filedata[] = "#define X 1\nX\n";
         ASSERT_EQUALS("\n$1\n", OurPreprocessor::expandMacros(filedata,NULL));
-        OurPreprocessor::macroChar = '¤';
-        ASSERT_EQUALS("\n¤1\n", OurPreprocessor::expandMacros(filedata,NULL));
+        OurPreprocessor::macroChar = char(1);
+        ASSERT_EQUALS("\n" + std::string(char(1),1U) + "1\n", OurPreprocessor::expandMacros(filedata,NULL));
         OurPreprocessor::macroChar = '$';
     }
 };
