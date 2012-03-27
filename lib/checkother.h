@@ -49,7 +49,7 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
-        // Coding style checks
+        // Checks
         checkOther.warningOldStylePointerCast();
         checkOther.invalidPointerCast();
         checkOther.checkUnsignedDivision();
@@ -69,10 +69,7 @@ public:
         checkOther.checkUnreachableCode();
         checkOther.checkSuspiciousSemicolon();
         checkOther.checkWrongPrintfScanfArguments();
-
-        // information checks
         checkOther.checkVariableScope();
-
         checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkComparisonOfBoolExpressionWithInt();
     }
@@ -81,9 +78,8 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
+        // Checks
         checkOther.clarifyCalculation();
-
-        // Coding style checks
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
 
