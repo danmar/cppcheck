@@ -260,9 +260,9 @@ void CheckAutoVariables::returnReference()
 
                     if (var1 && var1->isLocal() && !var1->isStatic()) {
                         // If reference variable is used, check what it references
-                        if (Token::Match(var1->nameToken(), "%var% =")) {
+                        if (Token::Match(var1->nameToken(), "%var% [=(]")) {
                             const Token *tok3 = var1->nameToken()->tokAt(2);
-                            if (!Token::Match(tok3, "%var% [;.]"))
+                            if (!Token::Match(tok3, "%var% [);.]"))
                                 continue;
 
                             // Only report error if variable that is referenced is

@@ -87,6 +87,7 @@ private:
         TEST_CASE(returnReference3);
         TEST_CASE(returnReference4);
         TEST_CASE(returnReference5);
+        TEST_CASE(returnReference6);
 
         // return c_str()..
         TEST_CASE(returncstr);
@@ -517,6 +518,14 @@ private:
               "        return ra;\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference6() {
+        check("Fred & create() {\n"
+              "    Fred &fred(*new Fred);\n"
+              "    return fred;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
