@@ -8839,11 +8839,11 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
         return;
 
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "CopyMemory (")) {
+        if (Token::Match(tok, "CopyMemory|RtlCopyMemory|RtlCopyBytes (")) {
             tok->str("memcpy");
-        } else if (Token::simpleMatch(tok, "MoveMemory (")) {
+        } else if (Token::Match(tok, "MoveMemory|RtlMoveMemory (")) {
             tok->str("memmove");
-        } else if (Token::simpleMatch(tok, "FillMemory (")) {
+        } else if (Token::Match(tok, "FillMemory|RtlFillMemory|RtlFillBytes (")) {
             // FillMemory(dst, len, val) -> memset(dst, val, len)
             tok->str("memset");
 
@@ -8856,7 +8856,7 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
                 if (tok2)
                     Token::move(tok1->previous(), tok2->tokAt(-2), tok->next()->link()->previous()); // Swap third with second argument
             }
-        } else if (Token::simpleMatch(tok, "ZeroMemory (")) {
+        } else if (Token::Match(tok, "ZeroMemory|RtlZeroMemory|RtlZeroBytes|RtlSecureZeroMemory (")) {
             // ZeroMemory(dst, len) -> memset(dst, 0, len)
             tok->str("memset");
 
@@ -8870,6 +8870,14 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
                 tok1 = tok1->next();
                 tok1->insertToken(",");
             }
+        } else if (Token::simpleMatch(tok, "RtlCompareMemory (")) {
+            // RtlCompareMemory(src1, src2, len) -> memcmp(src1, src2, len)
+            tok->str("memcmp");
+            // For the record, when memcmp returns 0, both strings are equal.
+            // When RtlCompareMemory returns len, both strings are equal.
+            // It might be needed to improve this replacement by something
+            // like ((len - memcmp(src1, src2, len)) % (len + 1)) to
+            // respect execution path (if required)
         }
     }
 }
