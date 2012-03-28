@@ -72,6 +72,7 @@ public:
         checkOther.checkVariableScope();
         checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkComparisonOfBoolExpressionWithInt();
+        checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
     }
 
     /** @brief Run checks against the simplified token list */
@@ -101,7 +102,6 @@ public:
         checkOther.checkAlwaysTrueOrFalseStringCompare();
 
         checkOther.checkAssignBoolToPointer();
-        checkOther.checkSignOfUnsignedVariable();
         checkOther.checkBitwiseOnBoolean();
         checkOther.checkDoubleFree();
     }
