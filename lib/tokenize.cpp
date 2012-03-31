@@ -5124,12 +5124,13 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 {
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
+    bool finishedwithkr = true;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "= {")) {
             tok = tok->next()->link();
         }
 
-        if (only_k_r_fpar) {
+        if (only_k_r_fpar && finishedwithkr) {
             if (tok->str() == "(" || tok->str() == "[" || tok->str() == "{") {
                 tok = tok->link();
                 if (tok->next() && Token::Match(tok, ") !!{"))
@@ -5292,8 +5293,11 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
             tok2 = NULL;
         }
 
-        if (!tok2)
+        if (!tok2) {
+            if (only_k_r_fpar)
+                finishedwithkr = false;
             continue;
+        }
 
         if (tok2->str() == ",") {
             tok2->str(";");
@@ -5352,6 +5356,8 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 tok2 = tok2->next();
             }
         }
+        if (only_k_r_fpar && !finishedwithkr && tok2->strAt(1) == "{")
+            finishedwithkr = true;
     }
 }
 

@@ -293,6 +293,7 @@ private:
         TEST_CASE(vardecl16);
         TEST_CASE(vardecl17);
         TEST_CASE(vardecl18);
+        TEST_CASE(vardecl19);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template);
@@ -4696,6 +4697,21 @@ private:
 
         ASSERT_EQUALS("void f ( ) {\n"
                       "g ( ( double ) v1 * v2 , v3 , v4 ) ;\n"
+                      "}", tokenizeAndStringify(code));
+    }
+
+    void vardecl19() {
+        const char code[] = "void func(in, r, m)\n"
+                            "int in;"
+                            "int r,m;"
+                            "{\n"
+                            "}\n";
+
+        ASSERT_EQUALS("void func (\n"
+                      "int in,\n"
+                      "int r,\n"
+                      "int m)\n"
+                      "{\n"
                       "}", tokenizeAndStringify(code));
     }
 
