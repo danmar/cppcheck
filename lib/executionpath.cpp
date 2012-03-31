@@ -471,7 +471,7 @@ void checkExecutionPaths(const SymbolDatabase *symbolDatabase, ExecutionPath *c)
         c->end(checks, i->classEnd);
 
         // Cleanup
-        while (checks.size() > 1) {
+        while (!checks.empty()) {
             delete checks.back();
             checks.pop_back();
         }
