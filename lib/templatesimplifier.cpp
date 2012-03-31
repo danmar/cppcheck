@@ -237,6 +237,7 @@ void TemplateSimplifier::removeTemplates(Token *tok)
             continue;
 
         int indentlevel = 0;
+        unsigned int countgt = 0;   // Counter for ">"
         for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
 
             if (tok2->str() == "(") {
@@ -260,8 +261,14 @@ void TemplateSimplifier::removeTemplates(Token *tok)
                 tok->deleteThis();
                 break;
             }
+
+            // Count ">"
+            if (tok2->str() == ">")
+                countgt++;
+
             // don't remove constructor
-            if (tok2->str() == "explicit") {
+            if (tok2->str() == "explicit" ||
+                (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") && Token::simpleMatch(tok2->next()->link(), ") {"))) {
                 Token::eraseTokens(tok, tok2);
                 tok->deleteThis();
                 goback = true;
@@ -282,10 +289,7 @@ void TemplateSimplifier::removeTemplates(Token *tok)
             else if (indentlevel >= 2 && tok2->str() == ">")
                 --indentlevel;
 
-            else if (indentlevel >= 3 && tok2->str() == ">>")
-                indentlevel -= 2;
-
-            else if (Token::Match(tok2, ">|>> class|struct %var% [,)]")) {
+            else if (Token::Match(tok2, "> class|struct %var% [,)]")) {
                 tok2 = tok2->next();
                 Token::eraseTokens(tok, tok2);
                 tok->deleteThis();
