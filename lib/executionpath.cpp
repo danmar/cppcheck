@@ -241,9 +241,10 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
                 // it is not certain that a for/while will be executed:
                 for (std::list<ExecutionPath *>::iterator it = checks.begin(); it != checks.end();) {
-                    if ((*it)->numberOfIf > 0)
+                    if ((*it)->numberOfIf > 0) {
+                        delete *it;
                         checks.erase(it++);
-                    else
+                    } else
                         ++it;
                 }
 
