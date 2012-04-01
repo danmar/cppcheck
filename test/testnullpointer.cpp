@@ -51,7 +51,7 @@ private:
         TEST_CASE(nullpointer15); // #3560 (fp: return p ? f(*p) : f(0))
         TEST_CASE(nullpointer16); // #3591
         TEST_CASE(nullpointer17); // #3567
-		TEST_CASE(nullpointer18); // #1927
+        TEST_CASE(nullpointer18); // #1927
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -1231,13 +1231,13 @@ private:
         check("void f ()\n"
               "{\n"
               "  int i=0;\n"
-			  "  char *str=NULL;\n"
-			  "  while (str[i])\n"
-			  "  {\n"
-			  "    i++;\n"
-			  "  };\n"
-			  "}\n"
-              );
+              "  char *str=NULL;\n"
+              "  while (str[i])\n"
+              "  {\n"
+              "    i++;\n"
+              "  };\n"
+              "}\n"
+             );
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n", errout.str());
     }
 
