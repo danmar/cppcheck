@@ -276,7 +276,9 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
     unsigned int ovarid = 0;
     if (Token::Match(tok, "%var% ==|!= %var%"))
         ovarid = tok->tokAt(2)->varId();
-    else if (Token::Match(tok->tokAt(-2), "%var% ==|!=|=|+= %var%"))
+    else if (Token::Match(tok->tokAt(-2), "%var% ==|!= %var%"))
+        ovarid = tok->tokAt(-2)->varId();
+    else if (Token::Match(tok->tokAt(-2), "%var% =|+=|+ %var% )|]|,|;|+"))
         ovarid = tok->tokAt(-2)->varId();
     if (ovarid) {
         const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
@@ -1071,19 +1073,19 @@ void CheckNullPointer::nullConstantDereference()
                 nullPointerError(tok);
 
             else if (Token::Match(tok->previous(), "!!. %var% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
-                if (Token::simpleMatch(tok->tokAt(2), "0 )")) {
+                if (Token::simpleMatch(tok->tokAt(2), "0 )") && tok->varId()) { // constructor call
                     const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
                     if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
                         nullPointerError(tok);
-                }
+                } else { // function call
+                    std::list<const Token *> var;
+                    parseFunctionCall(*tok, var, 0);
 
-                std::list<const Token *> var;
-                parseFunctionCall(*tok, var, 0);
-
-                // is one of the var items a NULL pointer?
-                for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
-                    if (Token::Match(*it, "0 [,)]")) {
-                        nullPointerError(*it);
+                    // is one of the var items a NULL pointer?
+                    for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
+                        if (Token::Match(*it, "0 [,)]")) {
+                            nullPointerError(*it);
+                        }
                     }
                 }
             } else if (Token::simpleMatch(tok, "std :: string ( 0 )"))
@@ -1107,7 +1109,9 @@ void CheckNullPointer::nullConstantDereference()
             unsigned int ovarid = 0;
             if (Token::Match(tok, "0 ==|!= %var%"))
                 ovarid = tok->tokAt(2)->varId();
-            else if (Token::Match(tok, "%var% ==|!=|=|+= 0"))
+            else if (Token::Match(tok, "%var% ==|!= 0"))
+                ovarid = tok->varId();
+            else if (Token::Match(tok, "%var% =|+=|+ 0 )|]|,|;|+"))
                 ovarid = tok->varId();
             if (ovarid) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
