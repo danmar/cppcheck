@@ -1582,6 +1582,14 @@ private:
                            "[test.cpp:10]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n",
                            "", errout.str());
 
+        check("void svgFile(const std::string &content, const std::string &fileName, const double end = 1000., const double start = 0.);\n"
+              "void Bar(std::string filename) {\n"
+              "    std::string str = \"bar\";\n"
+              "    std::ofstream svgFile(filename.c_str(), std::ios::trunc);\n"
+              "    svgFile << \"test\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void Foo(const char* p) {}\n"
               "void Foo(const std::string& str) {Foo(str.c_str());}\n" // Overloaded
               "void Bar() {\n"

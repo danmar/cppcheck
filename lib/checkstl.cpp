@@ -1124,7 +1124,8 @@ void CheckStl::string_c_str()
                 const Variable* var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                 if (var && var->isPointer())
                     string_c_strError(tok);
-            } else if (Token::Match(tok, "%var% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() && _settings->isEnabled("performance") && !Token::Match(tok->previous(), "::|.")) { // calling function. TODO: Add support for member functions
+            } else if (Token::Match(tok, "%var% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() &&
+                       _settings->isEnabled("performance") && !Token::Match(tok->previous(), "::|.") && tok->varId() == 0) { // calling function. TODO: Add support for member functions
                 std::pair<std::multimap<std::string, unsigned int>::const_iterator, std::multimap<std::string, unsigned int>::const_iterator> range = c_strFuncParam.equal_range(tok->str());
                 for (std::multimap<std::string, unsigned int>::const_iterator i = range.first; i != range.second; ++i) {
                     if (i->second == 0)
