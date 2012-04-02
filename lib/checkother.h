@@ -294,7 +294,7 @@ private:
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void incrementBooleanError(const Token *tok);
-    void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression);
+    void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
@@ -306,7 +306,7 @@ private:
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
-    void comparisonOfBoolExpressionWithIntError(const Token *tok);
+    void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void SuspiciousSemicolonError(const Token *tok);
     void doubleFreeError(const Token *tok, const std::string &varname);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
@@ -353,7 +353,7 @@ private:
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
         c.incrementBooleanError(0);
-        c.comparisonOfBoolWithIntError(0, "varname");
+        c.comparisonOfBoolWithIntError(0, "varname", true);
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
@@ -364,7 +364,7 @@ private:
         c.unsignedLessThanZeroError(0, "varname", false);
         c.unsignedPositiveError(0, "varname", false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
-        c.comparisonOfBoolExpressionWithIntError(0);
+        c.comparisonOfBoolExpressionWithIntError(0, true);
         c.SuspiciousSemicolonError(0);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
         c.invalidScanfArgTypeError(0, "scanf", 1);
