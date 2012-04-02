@@ -2888,6 +2888,13 @@ private:
               "    if ( &q != &a && &q != &b ) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3676
+        check("void f(int m_x2, int w, int x) {\n"
+              "    if (x + w - 1 > m_x2 || m_x2 < 0 )\n"
+              "        m_x2 = x + w - 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator3() {

@@ -1164,6 +1164,9 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (conditions[i].after != 0 && !Token::Match(nextTok, conditions[i].after))
                     continue;
 
+                if (tok->previous()->isArithmeticalOp() || nextTok->isArithmeticalOp())
+                    continue;
+
                 std::string cond1str = var1Tok->str() + " " + (varFirst1?op1Tok->str():invertOperatorForOperandSwap(op1Tok->str())) + " " + firstConstant;
                 std::string cond2str = var2Tok->str() + " " + (varFirst2?op3Tok->str():invertOperatorForOperandSwap(op3Tok->str())) + " " + secondConstant;
                 // cond1 op cond2
