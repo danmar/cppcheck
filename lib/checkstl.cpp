@@ -722,111 +722,107 @@ void CheckStl::if_find()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if ((i->type != Scope::eIf && i->type != Scope::eElseIf) || !i->classDef)
+        if ((i->type != Scope::eIf && i->type != Scope::eElseIf && i->type != Scope::eWhile) || !i->classDef)
             continue;
 
         const Token* tok = i->classDef->next();
         if (tok->str() == "if")
             tok = tok->next();
 
-        if (Token::Match(tok, "( !| %var% . find (")) {
-            // goto %var%
-            tok = tok->next();
+        for (const Token* const end = tok->link(); tok != end; tok = tok->next()) {
+            if (Token::Match(tok, "&&|(|%oror%"))
+                tok = tok->next();
+            else
+                continue;
+
+            while (tok->str() == "(")
+                tok = tok->next();
+
             if (tok->str() == "!")
                 tok = tok->next();
-            if (!Token::simpleMatch(tok->linkAt(3), ") )"))
-                continue;
 
-            const unsigned int varid = tok->varId();
-            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-            if (var) {
-                // Is the variable a std::string or STL container?
-                const Token * decl = var->typeStartToken();
-
-                if (decl->str() == "const")
-                    decl = decl->next();
-                // stl container
-                if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
-                    if_findError(tok, false);
-                else if (Token::Match(decl, "std :: string &| %varid%", varid))
-                    if_findError(tok, true);
-            }
-        }
-
-        //check also for vector-like or pointer containers
-        else if (Token::Match(tok, "( !| * %var%") || Token::Match(tok, "( !| %var% [")) {
-            tok = tok->next();
-
-            const Token *tok2 = tok;
-            if (tok2->str() == "!")
-                tok2 = tok2->next();
-            tok2 = tok2->next();
-            if (tok2->str() == "[")
-                tok2 = tok2->link();
-            tok2 = tok2->next();
-
-            if (!Token::simpleMatch(tok2, ". find ("))
-                continue;
-            if (!Token::simpleMatch(tok2->linkAt(2), ") )"))
-                continue;
-
-            // goto %var%
-            if (tok->str() == "!")
-                tok = tok->next();
-            if (tok->str() == "*")
-                tok = tok->next();
-
-            const unsigned int varid = tok->varId();
-            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-            if (var) {
-                // Is the variable a std::string or STL container?
-                const Token * decl = var->typeStartToken();
-
-                //jump next to 'const'
-                if (decl->str() == "const")
-                    decl = decl->next();
-                //pretty bad limitation.. but it is there in order to avoid
-                //own implementations of 'find' or any container
-                if (!Token::simpleMatch(decl, "std ::"))
+            if (Token::Match(tok, "%var% . find (")) {
+                if (!Token::Match(tok->linkAt(3), ") &&|)|%oror%"))
                     continue;
 
-                decl = decl->tokAt(2);
+                const unsigned int varid = tok->varId();
+                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                if (var) {
+                    // Is the variable a std::string or STL container?
+                    const Token * decl = var->typeStartToken();
 
-                if (Token::Match(decl, "%var% <")) {
-                    decl = decl->tokAt(2);
-                    //stl-like
-                    if (Token::Match(decl, "std :: %var% < %type% >| >>|> &| %varid%", varid))
+                    if (decl->str() == "const")
+                        decl = decl->next();
+                    // stl container
+                    if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
                         if_findError(tok, false);
-                    //not stl-like, then let's hope it's a pointer or an array
-                    else if (Token::Match(decl, "%type% >")) {
-                        decl = decl->tokAt(2);
-                        if (Token::Match(decl, "* &| %varid%", varid) ||
-                            Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid))
-                            if_findError(tok, false);
-                    }
-
-                    else if (Token::Match(decl, "std :: string > &| %varid%", varid))
-                        if_findError(tok, true);
-                }
-
-                else if (decl && decl->str() == "string") {
-                    decl = decl->next();
-                    if (Token::Match(decl, "* &| %varid%", varid) ||
-                        Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid))
+                    else if (Token::Match(decl, "std :: string &| %varid%", varid))
                         if_findError(tok, true);
                 }
             }
-        }
 
-        else if (Token::Match(tok, "( !| std :: find|find_if (")) {
-            // goto '(' for the find
-            tok = tok->tokAt(3);
-            if (tok->str() != "(")
-                tok = tok->next();
+            //check also for vector-like or pointer containers
+            else if (Token::Match(tok, "* %var%") || Token::Match(tok, "%var% [")) {
+                // goto %var%
+                if (tok->str() == "*")
+                    tok = tok->next();
 
-            // check that result is checked properly
-            if (Token::simpleMatch(tok->link(), ") )")) {
-                if_findError(tok, false);
+                const Token *tok2 = tok->next();
+                if (tok2->str() == "[")
+                    tok2 = tok2->link()->next();
+
+                if (!Token::simpleMatch(tok2, ". find ("))
+                    continue;
+                if (!Token::Match(tok2->linkAt(2), ") &&|)|%oror%"))
+                    continue;
+
+                const unsigned int varid = tok->varId();
+                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                if (var) {
+                    // Is the variable a std::string or STL container?
+                    const Token * decl = var->typeStartToken();
+
+                    //jump next to 'const'
+                    if (decl->str() == "const")
+                        decl = decl->next();
+                    //pretty bad limitation.. but it is there in order to avoid
+                    //own implementations of 'find' or any container
+                    if (!Token::simpleMatch(decl, "std ::"))
+                        continue;
+
+                    decl = decl->tokAt(2);
+
+                    if (Token::Match(decl, "%var% <")) {
+                        decl = decl->tokAt(2);
+                        //stl-like
+                        if (Token::Match(decl, "std :: %var% < %type% > > &| %varid%", varid))
+                            if_findError(tok, false);
+                        //not stl-like, then let's hope it's a pointer or an array
+                        else if (Token::Match(decl, "%type% >")) {
+                            decl = decl->tokAt(2);
+                            if (Token::Match(decl, "* &| %varid%", varid) ||
+                                Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid))
+                                if_findError(tok, false);
+                        }
+
+                        else if (Token::Match(decl, "std :: string > &| %varid%", varid))
+                            if_findError(tok, true);
+                    }
+
+                    else if (decl && decl->str() == "string") {
+                        decl = decl->next();
+                        if (Token::Match(decl, "* &| %varid%", varid) ||
+                            Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid))
+                            if_findError(tok, true);
+                    }
+                }
+            }
+
+            else if (Token::Match(tok, "std :: find|find_if (")) {
+                // check that result is checked properly
+                if (Token::Match(tok->linkAt(3), ") &&|)|%oror%")) {
+                    if_findError(tok, false);
+                }
             }
         }
     }

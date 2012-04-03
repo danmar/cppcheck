@@ -1239,6 +1239,13 @@ private:
               "    if (s[0].find(\"abc\")) { }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious checking of string::find() return value.\n", errout.str());
+
+        // #3162
+        check("void f(const std::string& s1, const std::string& s2)\n"
+              "{\n"
+              "    if ((!s1.empty()) && (0 == s1.find(s2))) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious checking of string::find() return value.\n", errout.str());
     }
 
 
