@@ -4879,6 +4879,9 @@ bool Tokenizer::simplifyFunctionParameters()
             bool bailOut = false;
             Token * tokparam = NULL;
 
+            //take count of the function name..
+            std::string funcName(tok->str());
+
             //floating token used to check for parameters
             Token *tok1 = tok;
 
@@ -4894,8 +4897,24 @@ bool Tokenizer::simplifyFunctionParameters()
                 //same parameters: take note of the parameter
                 if (argumentNames.find(tok1->str()) != argumentNames.end())
                     tokparam = tok1;
-                else
+                else if (tok1->str() != funcName)
                     argumentNames[tok1->str()] = tok1;
+                else {
+                    if (tok1->next()->str() == ")") {
+                        if (tok1->previous()->str() == ",") {
+                            tok1 = tok1->tokAt(-2);
+                            tok1->deleteNext(2);
+                        } else {
+                            tok1 = tok1->previous();
+                            tok1->deleteNext();
+                            bailOut = true;
+                            break;
+                        }
+                    } else {
+                        tok1 = tok1->tokAt(-2);
+                        tok1->next()->deleteNext(2);
+                    }
+                }
 
                 if (tok1->next()->str() == ")") {
                     tok1 = tok1->tokAt(2);

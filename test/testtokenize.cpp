@@ -4701,18 +4701,69 @@ private:
     }
 
     void vardecl19() {
-        const char code[] = "void func(in, r, m)\n"
-                            "int in;"
-                            "int r,m;"
-                            "{\n"
-                            "}\n";
+        {
+            const char code[] = "void func(in, r, m)\n"
+                                "int in;"
+                                "int r,m;"
+                                "{\n"
+                                "}\n";
 
-        ASSERT_EQUALS("void func (\n"
-                      "int in,\n"
-                      "int r,\n"
-                      "int m)\n"
-                      "{\n"
-                      "}", tokenizeAndStringify(code));
+            ASSERT_EQUALS("void func (\n"
+                          "int in,\n"
+                          "int r,\n"
+                          "int m)\n"
+                          "{\n"
+                          "}", tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "void f(r,f)\n"
+                                "char *r;\n"
+                                "{\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f (\n"
+                          "char * r)\n"
+                          "\n"
+                          "{\n"
+                          "}", tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "void f(f)\n"
+                                "{\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f ( )\n"
+                          "{\n"
+                          "}", tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "void f(f,r)\n"
+                                "char *r;\n"
+                                "{\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f (\n"
+                          "char * r)\n"
+                          "\n"
+                          "{\n"
+                          "}", tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "void f(r,f,s)\n"
+                                "char *r;\n"
+                                "char *s;\n"
+                                "{\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f (\n"
+                          "char * r,\n"
+                          "\n"
+                          "char * s)\n"
+                          "\n"
+                          "\n"
+                          "{\n"
+                          "}", tokenizeAndStringify(code));
+        }
     }
 
     void volatile_variables() {
