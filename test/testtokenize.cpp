@@ -4764,6 +4764,20 @@ private:
                           "{\n"
                           "}", tokenizeAndStringify(code));
         }
+        {
+            const char code[] = "void f(r,s,t)\n"
+                                "char *r,*s,*t;\n"
+                                "{\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f (\n"
+                          "char * r,\n"
+                          "char * s,\n"
+                          "char * t)\n"
+                          "\n"
+                          "{\n"
+                          "}", tokenizeAndStringify(code));
+        }
     }
 
     void volatile_variables() {

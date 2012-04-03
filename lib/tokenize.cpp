@@ -5375,8 +5375,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 tok2 = tok2->next();
             }
         }
-        if (only_k_r_fpar && !finishedwithkr && tok2->strAt(1) == "{")
-            finishedwithkr = true;
+        finishedwithkr = (only_k_r_fpar && tok2->strAt(1) == "{");
     }
 }
 
