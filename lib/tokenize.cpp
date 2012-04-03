@@ -4880,7 +4880,7 @@ bool Tokenizer::simplifyFunctionParameters()
             Token * tokparam = NULL;
 
             //take count of the function name..
-            std::string funcName(tok->str());
+            const std::string funcName(tok->str());
 
             //floating token used to check for parameters
             Token *tok1 = tok;
