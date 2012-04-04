@@ -1335,7 +1335,14 @@ private:
               "    std::list<int> x;\n"
               "    fun(!x.size());\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    fun(a && x.size());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
     }
 
     void redundantCondition1() {

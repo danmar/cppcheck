@@ -884,13 +884,11 @@ void CheckStl::size()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%var% . size ( )") ||
             Token::Match(tok, "%var% . %var% . size ( )")) {
-            int offset = 5;
             const Token *tok1 = tok;
             unsigned int varid = 0;
 
             // get the variable id
             if (tok->strAt(2) != "size") {
-                offset = 7;
                 tok1 = tok1->tokAt(2);
 
                 // found a.b.size(), lookup class/struct variable
@@ -912,18 +910,20 @@ void CheckStl::size()
             } else
                 varid = tok1->varId();
 
+            const Token* const end = tok1->tokAt(5);
+
             if (varid) {
                 // check for comparison to zero
-                if (Token::Match(tok->tokAt(offset), "==|!=|> 0") ||
-                    Token::Match(tok->tokAt(-2), "0 ==|!=|<")) {
+                if (Token::Match(end, "==|<=|!=|> 0") ||
+                    Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<")) {
                     if (isStlContainer(varid))
                         sizeError(tok1);
                 }
 
                 // check for using as boolean expression
-                else if ((Token::Match(tok->tokAt(-2), "if|while (") ||
-                          Token::Match(tok->tokAt(-3), "if|while ( !")) &&
-                         tok->strAt(offset) == ")") {
+                else if (tok->strAt(-1) == "!" ||
+                         (Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
+                         (Token::Match(tok->previous(), "&&|%oror%") && Token::Match(end, "&&|)|%oror%"))) {
                     if (isStlContainer(varid))
                         sizeError(tok1);
                 }
@@ -945,19 +945,17 @@ void CheckStl::sizeError(const Token *tok)
 
 void CheckStl::redundantCondition()
 {
-    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end|rend ( ) ) "
+    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end|rend|cend|crend ( ) ) "
                            "{"
                            "    %var% . remove ( %any% ) ;";
     const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
     while (tok) {
-        bool b(tok->strAt(15) == "{");
-
         // Get tokens for the fields %var% and %any%
         const Token *var1 = tok->tokAt(2);
-        const Token *any1 = tok->tokAt(6);
-        const Token *var2 = tok->tokAt(9);
-        const Token *var3 = tok->tokAt(b ? 16 : 15);
-        const Token *any2 = tok->tokAt(b ? 20 : 19);
+        const Token *any1 = var1->tokAt(4);
+        const Token *var2 = any1->tokAt(3);
+        const Token *var3 = var2->tokAt(7);
+        const Token *any2 = var3->tokAt(4);
 
         // Check if all the "%var%" fields are the same and if all the "%any%" are the same..
         if (var1->str() == var2->str() &&
@@ -993,38 +991,29 @@ void CheckStl::missingComparison()
             if (!Token::Match(tok2, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %var% != %var% . end|rend|cend|crend ( ) ; ++| %var% ++| ) {"))
                 continue;
 
-            // same iterator name
-            if (tok2->str() != tok2->strAt(8))
-                continue;
-
             // same container
             if (tok2->strAt(2) != tok2->strAt(10))
-                continue;
+                break;
+
+            const unsigned int iteratorId(tok2->varId());
+            if (iteratorId == 0)
+                break;
+
+            // same iterator
+            if (iteratorId == tok2->tokAt(10)->varId())
+                break;
 
             // increment iterator
-            if (!Token::simpleMatch(tok2->tokAt(16), ("++ " + tok2->str() + " )").c_str()) &&
-                !Token::simpleMatch(tok2->tokAt(16), (tok2->str() + " ++ )").c_str())) {
-                continue;
+            if (!Token::Match(tok2->tokAt(16), "++ %varid% )", iteratorId) &&
+                !Token::Match(tok2->tokAt(16), "%varid% ++ )", iteratorId)) {
+                break;
             }
-
-            const unsigned int &iteratorId(tok2->varId());
-            if (iteratorId == 0)
-                continue;
 
             const Token *incrementToken = 0;
 
-            // Count { and } for tok3
-            unsigned int indentlevel = 0;
-
             // Parse loop..
-            for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next()) {
-                if (tok3->str() == "{")
-                    ++indentlevel;
-                else if (tok3->str() == "}") {
-                    if (indentlevel == 0)
-                        break;
-                    --indentlevel;
-                } else if (Token::Match(tok3, "%varid% ++", iteratorId))
+            for (const Token *tok3 = i->classStart; tok3 != i->classEnd; tok3 = tok3->next()) {
+                if (Token::Match(tok3, "%varid% ++", iteratorId))
                     incrementToken = tok3;
                 else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
                     incrementToken = tok3;
