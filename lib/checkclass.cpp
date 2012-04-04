@@ -1194,8 +1194,8 @@ void CheckClass::checkConst()
                     if (temp->str() != "const")
                         continue;
                 } else if (func->isOperator && Token::Match(func->tokenDef->previous(), ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
-                    const std::string& name = func->token->str();
-                    if (name.compare(8, 5, "const") != 0 && name[name.size()-1] == '&')
+                    const std::string& opName = func->token->str();
+                    if (opName.compare(8, 5, "const") != 0 && opName[opName.size()-1] == '&')
                         continue;
                 } else {
                     // don't warn for unknown types..
