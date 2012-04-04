@@ -1224,28 +1224,28 @@ private:
               "{\n"
               "    if (s.find(\"abc\")) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious checking of string::find() return value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find in condition; string::compare would be faster.\n", errout.str());
 
         // error (pointer)
         check("void f(const std::string *s)\n"
               "{\n"
               "    if (*s.find(\"abc\")) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious checking of string::find() return value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find in condition; string::compare would be faster.\n", errout.str());
 
         // error (vector)
         check("void f(const std::vector<std::string> &s)\n"
               "{\n"
               "    if (s[0].find(\"abc\")) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious checking of string::find() return value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find in condition; string::compare would be faster.\n", errout.str());
 
         // #3162
         check("void f(const std::string& s1, const std::string& s2)\n"
               "{\n"
               "    if ((!s1.empty()) && (0 == s1.find(s2))) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious checking of string::find() return value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find in condition; string::compare would be faster.\n", errout.str());
     }
 
 
@@ -1783,12 +1783,14 @@ private:
               "    s2 = s1.substr(x);\n"
               "    s1 = s2.substr(0, x);\n"
               "	   s1 = s2.substr(0,std::string::npos);\n"
+              "	   s1 = s2.substr(x+5-n, 0);\n"
               "    \n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Function \'substr\' useless call. Function create copy "
-                      "of the \'s1\' object.\n"
-                      "[test.cpp:8]: (performance) Function \'substr\' useless call. Function create copy "
-                      "of the \'s2\' object.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Useless call of function \'substr\' because it returns a copy of "
+                      "the object. Use operator= instead.\n"
+                      "[test.cpp:8]: (performance) Useless call of function \'substr\' because it returns a copy of "
+                      "the object. Use operator= instead.\n"
+                      "[test.cpp:9]: (performance) Useless call of function \'substr\' because it returns an empty string.\n", errout.str());
 
         check("#include <string>\n"
               "int main()\n"

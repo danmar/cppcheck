@@ -832,12 +832,12 @@ void CheckStl::if_find()
 void CheckStl::if_findError(const Token *tok, bool str)
 {
     if (str)
-        reportError(tok, Severity::warning, "stlIfStrFind",
-                    "Suspicious checking of string::find() return value.\n"
-                    "Checking of string::find() return value looks Suspicious. "
-                    "string::find will return 0 if the string is found at position 0. "
-                    "If that is wanted to check then string::compare is a faster alternative "
-                    "because it doesn't scan through the string.");
+        reportError(tok, Severity::performance, "stlIfStrFind",
+                    "Inefficient usage of string::find in condition; string::compare would be faster.\n"
+                    "Either inefficent or wrong usage of string::find. string::compare will be faster if "
+                    "string::find's result is compared with 0, because it will not scan the whole "
+                    "string. If your intention is to check that there are no findings in the string, "
+                    "you should compare with string::npos.");
     else
         reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find is an iterator, but it is not properly checked.");
 }
@@ -1317,24 +1317,19 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 void CheckStl::uselessCalls()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->varId() == 0)
-            continue;
-        /*if (Token::Match(tok, "%var% . compare (") &&
-            tok->varId() == tok->linkAt(3)->previous()->varId()) {
-            uselessCallsReturnValueError(tok, tok->tokAt(2));
-        } else */
-        if (Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
+        if (tok->varId() && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
             tok->varId() == tok->tokAt(4)->varId()) {
             uselessCallsReturnValueError(tok->tokAt(4), tok->str(), tok->strAt(2));
-        } else if (Token::Match(tok, "%var% . swap ( %var% )") &&
+        } else if (tok->varId() && Token::Match(tok, "%var% . swap ( %var% )") &&
                    tok->varId() == tok->tokAt(4)->varId()) {
             uselessCallsSwapError(tok, tok->str());
-        } else if (Token::Match(tok, "%var% . substr ( )")) {
-            uselessCallsSubstrError(tok, tok->str());
-        } else if (Token::Match(tok, "%var% . substr ( 0")) {
-            if (tok->strAt(5) == ")" ||
-                tok->linkAt(3)->strAt(-1) == "npos")
-                uselessCallsSubstrError(tok, tok->str());
+        } else if (Token::Match(tok, ". substr (")) {
+            if (Token::Match(tok->tokAt(3), "0| )"))
+                uselessCallsSubstrError(tok, false);
+            else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos")
+                uselessCallsSubstrError(tok, false);
+            else if (Token::Match(tok->linkAt(2)->tokAt(-2), ", 0 )"))
+                uselessCallsSubstrError(tok, true);
         }
     }
 }
@@ -1361,10 +1356,10 @@ void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varnam
     reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str());
 }
 
-void CheckStl::uselessCallsSubstrError(const Token *tok, const std::string &varname)
+void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
 {
-    std::ostringstream errmsg;
-    errmsg << "Function \'substr\' useless call. Function create copy of the \'" << varname << "\' object.\n" <<
-           "Function \'substr\' useless call. \'substr\' function create copy of the whole \'" << varname << "\' object which can decrease in performance. Please use \'=\' operator instead.";
-    reportError(tok, Severity::performance, "uselessCallsSubstr", errmsg.str());
+    if (empty)
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Useless call of function 'substr' because it returns an empty string.");
+    else
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Useless call of function 'substr' because it returns a copy of the object. Use operator= instead.");
 }
