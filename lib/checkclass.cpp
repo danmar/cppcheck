@@ -235,18 +235,17 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 
 void CheckClass::initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
-    bool Assign = false;
-    unsigned int indentlevel = 0;
-    const Token *ftok = func.token;
+    bool initList = true;
+    const Token *ftok = func.token->linkAt(1);
 
-    for (; ftok; ftok = ftok->next()) {
+    for (; ftok != func.start->link(); ftok = ftok->next()) {
         if (!ftok->next())
             break;
 
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
-        if (indentlevel == 0) {
-            if (Assign && Token::Match(ftok, "%var% (")) {
+        if (initList) {
+            if (Token::Match(ftok, "%var% (")) {
                 initVar(ftok->str(), scope, usage);
 
                 // assignment in the initializer..
@@ -254,23 +253,13 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 if (Token::Match(ftok->tokAt(2), "%var% ="))
                     assignVar(ftok->strAt(2), scope, usage);
             }
-
-            Assign |= (ftok->str() == ":");
         }
 
 
-        if (ftok->str() == "{") {
-            ++indentlevel;
-            Assign = false;
-        }
+        if (ftok->str() == "{")
+            initList = false;
 
-        else if (ftok->str() == "}") {
-            if (indentlevel <= 1)
-                break;
-            --indentlevel;
-        }
-
-        if (indentlevel < 1)
+        if (initList)
             continue;
 
         // Variable getting value from stream?
@@ -639,24 +628,24 @@ void CheckClass::noMemset()
         if (scope->type == Scope::eFunction) {
             // Locate all 'memset' tokens..
             for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-                if (!Token::Match(tok, "memset|memcpy|memmove"))
+                if (!Token::Match(tok, "memset|memcpy|memmove ( %any%"))
                     continue;
 
+                const Token* arg1 = tok->tokAt(2);
+                const Token* arg3 = arg1;
+                arg3 = arg3->nextArgument();
+                if (arg3)
+                    arg3 = arg3->nextArgument();
+
                 const Token *typeTok = 0;
-                if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
-                    typeTok = tok->tokAt(8);
-                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
-                    typeTok = tok->tokAt(9);
-                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% :: %type% ) )"))
-                    typeTok = tok->tokAt(11);
-                else if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
-                    typeTok = tok->tokAt(9);
-                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
-                    typeTok = tok->tokAt(10);
-                else if (Token::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
-                    typeTok = tok->tokAt(8);
-                else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %var% ) )")) {
-                    unsigned int varid = tok->tokAt(3)->varId();
+                if (Token::Match(arg3, "sizeof ( %type% ) )"))
+                    typeTok = arg3->tokAt(2);
+                else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
+                    typeTok = arg3->tokAt(4);
+                else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
+                    typeTok = arg3->tokAt(3);
+                else if (Token::Match(arg1, "&| %var% ,")) {
+                    unsigned int varid = arg1->str() == "&" ? arg1->next()->varId() : arg1->varId();
                     const Variable *var = symbolDatabase->getVariableFromVarId(varid);
                     if (var && (var->typeStartToken() == var->typeEndToken() ||
                                 Token::Match(var->typeStartToken(), "%type% :: %type%")))
@@ -666,6 +655,9 @@ void CheckClass::noMemset()
                 // No type defined => The tokens didn't match
                 if (!typeTok)
                     continue;
+
+                if (typeTok->str() == "(")
+                    typeTok = typeTok->next();
 
                 const Scope *type = symbolDatabase->findVariableType(&(*scope), typeTok);
 
@@ -887,7 +879,7 @@ void CheckClass::operatorEqToSelf()
                     const Token *rhs = func->argumentList.begin()->nameToken();
 
                     if (!hasAssignSelf(&(*func), rhs)) {
-                        if (hasDeallocation(&(*func)))
+                        if (hasAllocation(&(*func), &*scope))
                             operatorEqToSelfError(func->token);
                     }
                 }
@@ -896,62 +888,34 @@ void CheckClass::operatorEqToSelf()
     }
 }
 
-bool CheckClass::hasDeallocation(const Function *func)
+bool CheckClass::hasAllocation(const Function *func, const Scope* scope)
 {
     // This function is called when no simple check was found for assignment
-    // to self.  We are currently looking for a specific sequence of:
-    // deallocate member ; ... member = allocate
-    // This check is far from ideal because it can cause false negatives.
-    // Unfortunately, this is necessary to prevent false positives.
-    // This check needs to do careful analysis someday to get this
-    // correct with a high degree of certainty.
+    // to self.  We are currently looking for:
+    //    - deallocate member ; ... member =
+    //    - alloc member
+    // That is not ideal because it can cause false negatives but its currently
+    // necessary to prevent false positives.
     const Token *last = func->start->link();
     for (const Token *tok = func->start; tok && (tok != last); tok = tok->next()) {
+        if (Token::Match(tok, "%var% = malloc|realloc|calloc|new") && isMemberVar(scope, tok))
+            return true;
+
         // check for deallocating memory
-        if (Token::Match(tok, "{|;|, free ( %var%")) {
-            const Token *var = tok->tokAt(3);
-
-            // we should probably check that var is a pointer in this class
-
-            const Token *tok1 = tok->tokAt(4);
-
-            while (tok1 && (tok1 != last)) {
+        const Token *var = 0;
+        if (Token::Match(tok, "free ( %var%"))
+            var = tok->tokAt(2);
+        else if (Token::Match(tok, "delete [ ] %var%"))
+            var = tok->tokAt(3);
+        else if (Token::Match(tok, "delete %var%"))
+            var = tok->next();
+        // Check for assignement to the deleted pointer (only if its a member of the class)
+        if (var && isMemberVar(scope, var)) {
+            for (const Token *tok1 = var->next(); tok1 && (tok1 != last); tok1 = tok1->next()) {
                 if (Token::Match(tok1, "%var% =")) {
                     if (tok1->str() == var->str())
                         return true;
                 }
-
-                tok1 = tok1->next();
-            }
-        } else if (Token::Match(tok, "{|;|, delete [ ] %var%")) {
-            const Token *var = tok->tokAt(4);
-
-            // we should probably check that var is a pointer in this class
-
-            const Token *tok1 = tok->tokAt(5);
-
-            while (tok1 && (tok1 != last)) {
-                if (Token::Match(tok1, "%var% = new %type% [")) {
-                    if (tok1->str() == var->str())
-                        return true;
-                }
-
-                tok1 = tok1->next();
-            }
-        } else if (Token::Match(tok, "{|;|, delete %var%")) {
-            const Token *var = tok->tokAt(2);
-
-            // we should probably check that var is a pointer in this class
-
-            const Token *tok1 = tok->tokAt(3);
-
-            while (tok1 && (tok1 != last)) {
-                if (Token::Match(tok1, "%var% = new")) {
-                    if (tok1->str() == var->str())
-                        return true;
-                }
-
-                tok1 = tok1->next();
             }
         }
     }

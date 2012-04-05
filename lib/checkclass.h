@@ -159,7 +159,7 @@ private:
     void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
 
     // operatorEqToSelf helper functions
-    bool hasDeallocation(const Function *func);
+    bool hasAllocation(const Function *func, const Scope* scope);
     bool hasAssignSelf(const Function *func, const Token *rhs);
 
     // checkConst helper functions
