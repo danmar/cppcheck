@@ -5279,6 +5279,22 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                             while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                                 if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
                                     tok2 = tok2->link();
+                                if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
+                                    unsigned int level = 1;
+                                    while (NULL != (tok2 = tok2->next())) {
+                                        if (tok2->str() == "<")
+                                            level++;
+                                        else if (tok2->str() == ">") {
+                                            if (level <= 1)
+                                                break;
+                                            --level;
+                                        } else if (tok2->str() == ">>") {
+                                            if (level <= 2)
+                                                break;
+                                            level -= 2;
+                                        }
+                                    }
+                                }
                                 tok2 = tok2->next();
                             }
                             if (tok2 && tok2->str() == ";")

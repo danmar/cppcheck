@@ -296,7 +296,8 @@ private:
         TEST_CASE(vardecl19);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
-        TEST_CASE(vardecl_template);
+        TEST_CASE(vardecl_template_1);
+        TEST_CASE(vardecl_template_2);
         TEST_CASE(vardecl_union);
         TEST_CASE(vardecl_par);     // #2743 - set links if variable type contains parentheses
         TEST_CASE(volatile_variables);
@@ -4536,13 +4537,20 @@ private:
         ASSERT_EQUALS("{ std :: vector < int > x ; x = y ; }", tokenizeAndStringify(code2));
     }
 
-    void vardecl_template() {
+    void vardecl_template_1() {
         // ticket #1046
         const char code1[] = "b<(1<<24),10,24> u, v;";
         const char res1[]  = "b < ( 1 << 24 ) , 10 , 24 > u ; b < ( 1 << 24 ) , 10 , 24 > v ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
         // ticket #3571 (segmentation fault)
         tokenizeAndStringify("template <int i = (3>4) > class X4 {};");
+    }
+
+    void vardecl_template_2() {
+        // ticket #3650
+        const char code[] = "const string str = x<8,int>();";
+        const char expected[]  = "const string str = x < 8 , int > ( ) ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void vardecl_union() {
