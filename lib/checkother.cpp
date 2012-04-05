@@ -1752,14 +1752,18 @@ void CheckOther::checkUnreachableCode()
             labelName = tok->tokAt(1);
         }
 
-        if (secondBreak) {
+        // Statements follow directly, no line between them. (#3383)
+        // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
+        bool inconclusive = secondBreak && (secondBreak->linenr()-1 > secondBreak->previous()->linenr());
+
+        if (secondBreak && (_settings->inconclusive || !inconclusive)) {
             if (Token::Match(secondBreak, "continue|goto|throw") ||
                 (secondBreak->str() == "return" && (tok->str() == "return" || secondBreak->strAt(1) == ";"))) { // return with value after statements like throw can be necessary to make a function compile
-                duplicateBreakError(secondBreak);
+                duplicateBreakError(secondBreak, inconclusive);
                 tok = Token::findmatch(secondBreak, "[}:]");
             } else if (secondBreak->str() == "break") { // break inside switch as second break statement should not issue a warning
                 if (tok->str() == "break") // If the previous was a break, too: Issue warning
-                    duplicateBreakError(secondBreak);
+                    duplicateBreakError(secondBreak, inconclusive);
                 else {
                     unsigned int indent = 0;
                     for (const Token* tok2 = tok; tok2; tok2 = tok2->previous()) { // Check, if the enclosing scope is a switch (TODO: Can we use SymbolDatabase here?)
@@ -1767,7 +1771,7 @@ void CheckOther::checkUnreachableCode()
                             indent++;
                         else if (indent == 0 && tok2->str() == "{" && tok2->strAt(-1) == ")") {
                             if (tok2->previous()->link()->strAt(-1) != "switch") {
-                                duplicateBreakError(secondBreak);
+                                duplicateBreakError(secondBreak, inconclusive);
                                 break;
                             } else
                                 break;
@@ -1792,7 +1796,7 @@ void CheckOther::checkUnreachableCode()
                     }
                 }
                 if (!labelInFollowingLoop)
-                    unreachableCodeError(secondBreak);
+                    unreachableCodeError(secondBreak, inconclusive);
                 tok = Token::findmatch(secondBreak, "[}:]");
             } else
                 tok = secondBreak;
@@ -1803,17 +1807,26 @@ void CheckOther::checkUnreachableCode()
     }
 }
 
-void CheckOther::duplicateBreakError(const Token *tok)
+void CheckOther::duplicateBreakError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::style, "duplicateBreak",
-                "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
-                "The second of the two statements can never be executed, and so should be removed.");
+    if (inconclusive)
+        reportInconclusiveError(tok, Severity::style, "duplicateBreak",
+                                "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
+                                "The second of the two statements can never be executed, and so should be removed.");
+    else
+        reportError(tok, Severity::style, "duplicateBreak",
+                    "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
+                    "The second of the two statements can never be executed, and so should be removed.");
 }
 
-void CheckOther::unreachableCodeError(const Token *tok)
+void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::style, "unreachableCode",
-                "Statements following return, break, continue, goto or throw will never be executed.");
+    if (inconclusive)
+        reportInconclusiveError(tok, Severity::style, "unreachableCode",
+                                "Statements following return, break, continue, goto or throw will never be executed.");
+    else
+        reportError(tok, Severity::style, "unreachableCode",
+                    "Statements following return, break, continue, goto or throw will never be executed.");
 }
 
 //---------------------------------------------------------------------------

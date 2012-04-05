@@ -159,13 +159,13 @@ private:
         TEST_CASE(checkDoubleFree);
     }
 
-    void check(const char code[], const char *filename = NULL, bool experimental = false) {
+    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
-        settings.inconclusive = true;
+        settings.inconclusive = inconclusive;
         settings.experimental = experimental;
 
         // Tokenize..
@@ -2043,6 +2043,22 @@ private:
         ASSERT_EQUALS("", errout.str()); // #3457
 
         check("%: return ; ()"); // Don't crash. #3441.
+
+        // #3383. TODO: Use preprocessor
+        check("int foo() {\n"
+              "\n" // #ifdef A
+              "    return 0;\n"
+              "\n" // #endif
+              "    return 1;\n"
+              "}", 0, false, false);
+        ASSERT_EQUALS("", errout.str());
+        check("int foo() {\n"
+              "\n" // #ifdef A
+              "    return 0;\n"
+              "\n" // #endif
+              "    return 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
     }
 
 

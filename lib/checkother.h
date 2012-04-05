@@ -300,8 +300,8 @@ private:
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
-    void duplicateBreakError(const Token *tok);
-    void unreachableCodeError(const Token* tok);
+    void duplicateBreakError(const Token *tok, bool inconclusive);
+    void unreachableCodeError(const Token* tok, bool inconclusive);
     void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
@@ -359,8 +359,8 @@ private:
         c.duplicateExpressionError(0, 0, "&&");
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
-        c.duplicateBreakError(0);
-        c.unreachableCodeError(0);
+        c.duplicateBreakError(0, false);
+        c.unreachableCodeError(0, false);
         c.unsignedLessThanZeroError(0, "varname", false);
         c.unsignedPositiveError(0, "varname", false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
