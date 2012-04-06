@@ -34,21 +34,14 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 {
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive)
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
+    _callStack(callStack), // locations for this error message
+    _severity(severity),   // severity for this error message
+    _id(id),               // set the message id
+    _inconclusive(inconclusive)
 {
-    // locations for this error message
-    _callStack = callStack;
-
-    // severity for this error message
-    _severity = severity;
-
     // set the summary and verbose messages
     setmsg(msg);
-
-    // set the message id
-    _id = id;
-
-    _inconclusive = inconclusive;
 }
 
 void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)

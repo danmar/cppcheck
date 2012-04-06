@@ -39,9 +39,8 @@ static const char ExtraVersion[] = "";
 static TimerResults S_timerResults;
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : _useGlobalSuppressions(useGlobalSuppressions), _errorLogger(errorLogger)
+    : _useGlobalSuppressions(useGlobalSuppressions), _errorLogger(errorLogger), exitcode(0)
 {
-    exitcode = 0;
 }
 
 CppCheck::~CppCheck()
@@ -154,8 +153,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
         return exitcode;
 
     if (_settings._errorsOnly == false) {
-        std::string fixedpath(filename);
-        fixedpath = Path::simplifyPath(fixedpath.c_str());
+        std::string fixedpath = Path::simplifyPath(filename.c_str());
         fixedpath = Path::toNativeSeparators(fixedpath);
         _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
     }
@@ -460,8 +458,12 @@ Settings &CppCheck::settings()
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    const std::string errmsg = msg.toString(_settings._verbose);
+    std::string errmsg = msg.toString(_settings._verbose);
     if (errmsg.empty())
+        return;
+
+    // Alert only about unique errors
+    if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
         return;
 
     if (_settings.debugFalsePositive) {
@@ -469,10 +471,6 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         _errorList.push_back(errmsg);
         return;
     }
-
-    // Alert only about unique errors
-    if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
-        return;
 
     std::string file;
     unsigned int line(0);
@@ -493,14 +491,14 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         exitcode = 1;
 
     _errorList.push_back(errmsg);
-    std::string errmsg2(errmsg);
+
     if (_settings._verbose) {
-        errmsg2 += "\n    Defines=\'" + cfg + "\'\n";
+        errmsg += "\n    Defines=\'" + cfg + "\'\n";
     }
 
     _errorLogger.reportErr(msg);
 
-    _errout << errmsg2 << std::endl;
+    _errout << errmsg << std::endl;
 }
 
 void CppCheck::reportOut(const std::string &outmsg)
