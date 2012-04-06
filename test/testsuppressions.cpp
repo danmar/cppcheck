@@ -112,18 +112,17 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings;
+        CppCheck cppCheck(*this, true);
+        Settings& settings = cppCheck.settings();
         settings._inlineSuppressions = true;
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
         }
 
-        CppCheck cppCheck(*this, true);
-        cppCheck.settings(settings);
         cppCheck.check("test.cpp", code);
 
-        reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
     }
 
     void checkSuppressionThreads(const char code[], const std::string &suppression = "") {
@@ -154,17 +153,16 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings;
+        CppCheck cppCheck(*this, true);
+        Settings& settings = cppCheck.settings();
         settings._inlineSuppressions = true;
         if (!suppression.empty())
             settings.nomsg.addSuppressionLine(suppression);
 
-        CppCheck cppCheck(*this, true);
-        cppCheck.settings(settings);
         for (int i = 0; names[i] != NULL; ++i)
             cppCheck.check(names[i], codes[i]);
 
-        reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
     }
 
     void runChecks(void (TestSuppressions::*check)(const char[], const std::string &)) {

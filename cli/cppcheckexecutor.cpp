@@ -33,7 +33,7 @@
 #include "pathmatch.h"
 
 CppCheckExecutor::CppCheckExecutor()
-    : time1(0), errorlist(false)
+    : time1(0), errorlist(false), _settings(0)
 {
 }
 
@@ -43,9 +43,9 @@ CppCheckExecutor::~CppCheckExecutor()
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
 {
-    CmdLineParser parser(&_settings);
+    Settings& settings = cppcheck->settings();
+    CmdLineParser parser(&settings);
     bool success = parser.ParseFromArgs(argc, argv);
-    cppcheck->settings(_settings);   // copy the settings
 
     if (success) {
         if (parser.GetShowVersion() && !parser.GetShowErrorMessages()) {
@@ -59,9 +59,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (parser.GetShowErrorMessages()) {
             errorlist = true;
-            std::cout << ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version);
+            std::cout << ErrorLogger::ErrorMessage::getXMLHeader(settings._xml_version);
             cppcheck->getErrorMessages();
-            std::cout << ErrorLogger::ErrorMessage::getXMLFooter(_settings._xml_version) << std::endl;
+            std::cout << ErrorLogger::ErrorMessage::getXMLFooter(settings._xml_version) << std::endl;
         }
 
         if (parser.ExitAfterPrinting())
@@ -73,8 +73,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     // Check that all include paths exist
     {
         std::list<std::string>::iterator iter;
-        for (iter = _settings._includePaths.begin();
-             iter != _settings._includePaths.end();
+        for (iter = settings._includePaths.begin();
+             iter != settings._includePaths.end();
             ) {
             const std::string path(Path::toNativeSeparators(*iter));
             if (FileLister::isDirectory(path))
@@ -83,7 +83,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                 // If the include path is not found, warn user and remove the
                 // non-existing path from the list.
                 std::cout << "cppcheck: warning: Couldn't find path given by -I '" << path << '\'' << std::endl;
-                iter = _settings._includePaths.erase(iter);
+                iter = settings._includePaths.erase(iter);
             }
         }
     }
@@ -151,16 +151,18 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_FAILURE;
     }
 
-    if (cppCheck.settings().reportProgress)
+    Settings& settings = cppCheck.settings();
+    _settings = &settings;
+
+    if (settings.reportProgress)
         time1 = std::time(0);
 
-    _settings = cppCheck.settings();
-    if (_settings._xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(_settings._xml_version));
+    if (settings._xml) {
+        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(settings._xml_version));
     }
 
     unsigned int returnValue = 0;
-    if (_settings._jobs == 1) {
+    if (settings._jobs == 1) {
         // Single process
 
         size_t totalfilesize = 0;
@@ -173,7 +175,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         for (std::map<std::string, size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
             returnValue += cppCheck.check(i->first);
             processedsize += i->second;
-            if (!_settings._errorsOnly)
+            if (!settings._errorsOnly)
                 reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
             c++;
         }
@@ -183,16 +185,15 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {
         // Multiple processes
-        Settings &settings = cppCheck.settings();
         ThreadExecutor executor(_files, settings, *this);
         returnValue = executor.check();
     }
 
-    if (!cppCheck.settings().checkConfiguration) {
-        if (!_settings._errorsOnly)
-            reportUnmatchedSuppressions(cppCheck.settings().nomsg.getUnmatchedGlobalSuppressions());
+    if (!settings.checkConfiguration) {
+        if (!settings._errorsOnly)
+            reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
 
-        if (_settings.isEnabled("missingInclude") && Preprocessor::missingIncludeFlag) {
+        if (settings.isEnabled("missingInclude") && Preprocessor::missingIncludeFlag) {
             const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
             ErrorLogger::ErrorMessage msg(callStack,
                                           Severity::information,
@@ -208,12 +209,13 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         }
     }
 
-    if (_settings._xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(_settings._xml_version));
+    if (settings._xml) {
+        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(settings._xml_version));
     }
 
+    _settings = 0;
     if (returnValue)
-        return _settings._exitCode;
+        return settings._exitCode;
     else
         return 0;
 }
@@ -253,7 +255,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
         ostr << "progress: "
              << stage
              << ' ' << int(value) << '%';
-        if (_settings._verbose)
+        if (_settings->_verbose)
             ostr << " time=" << str.substr(11, 8);
 
         // Report progress message
@@ -276,10 +278,10 @@ void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, size_t s
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     if (errorlist) {
-        reportOut(msg.toXML(false, _settings._xml_version));
-    } else if (_settings._xml) {
-        reportErr(msg.toXML(_settings._verbose, _settings._xml_version));
+        reportOut(msg.toXML(false, _settings->_xml_version));
+    } else if (_settings->_xml) {
+        reportErr(msg.toXML(_settings->_verbose, _settings->_xml_version));
     } else {
-        reportErr(msg.toString(_settings._verbose, _settings._outputFormat));
+        reportErr(msg.toString(_settings->_verbose, _settings->_outputFormat));
     }
 }

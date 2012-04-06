@@ -37,7 +37,7 @@ CheckThread::~CheckThread()
 
 void CheckThread::Check(const Settings &settings)
 {
-    mCppcheck.settings(settings);
+    mCppcheck.settings() = settings;
     start();
 }
 

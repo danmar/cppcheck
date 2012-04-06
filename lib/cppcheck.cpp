@@ -50,11 +50,6 @@ CppCheck::~CppCheck()
         S_timerResults.ShowResults();
 }
 
-void CppCheck::settings(const Settings &currentSettings)
-{
-    _settings = currentSettings;
-}
-
 const char * CppCheck::version()
 {
     return Version;

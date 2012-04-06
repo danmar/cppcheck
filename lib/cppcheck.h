@@ -84,14 +84,6 @@ public:
     void checkFunctionUsage();
 
     /**
-     * @brief Adjust the settings before doing the check. E.g. show only
-     * actual bugs or also coding style issues.
-     *
-     * @param settings New settings which will overwrite the old.
-     */
-    void settings(const Settings &settings);
-
-    /**
      * @brief Get reference to current settings.
      * @return a reference to current settings
      */

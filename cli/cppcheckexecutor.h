@@ -20,12 +20,12 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "errorlogger.h"
-#include "settings.h"
 #include <ctime>
 #include <set>
 #include <string>
 
 class CppCheck;
+class Settings;
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -100,12 +100,12 @@ protected:
      */
     bool parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[]);
 
-    /**
-     * check() will setup this in the beginning of check().
-     */
-    Settings _settings;
-
 private:
+
+    /**
+     * Pointer to current settings; set while check() is running.
+     */
+    const Settings* _settings;
 
     /**
      * Used to filter out duplicate error messages.
