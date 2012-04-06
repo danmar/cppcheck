@@ -249,6 +249,20 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--force") == 0)
             _settings->_force = true;
 
+        // Output relative paths
+        else if (strcmp(argv[i], "-rp") == 0 || strcmp(argv[i], "--relative-paths") == 0)
+            _settings->_relativePaths = true;
+        else if (strncmp(argv[i], "-rp=", 4) == 0 || strncmp(argv[i], "--relative-paths=", 17) == 0) {
+            _settings->_relativePaths = true;
+            std::string paths = argv[i]+(argv[i][3]=='='?4:17);
+            std::string::size_type pos;
+            do {
+                pos = paths.find(';');
+                _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                paths.erase(0, pos+1);
+            } while (pos != std::string::npos);
+        }
+
         // Write results in results.xml
         else if (strcmp(argv[i], "--xml") == 0)
             _settings->_xml = true;
@@ -684,6 +698,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         return false;
     }
 
+    // Use paths _pathnames if no base paths for relative path output are given
+    if (_settings->_basePaths.empty() && _settings->_relativePaths)
+        _settings->_basePaths = _pathnames;
+
     return true;
 }
 
@@ -780,6 +798,11 @@ void CmdLineParser::PrintHelp() const
               "                          * win64\n"
               "                                 64 bit Windows\n"
               "    -q, --quiet          Only print error messages.\n"
+              "    -rp, --relative-paths\n"
+              "    -rp=<paths>, --relative-paths=<paths>\n"
+              "                         Use relative paths in output. When given, <paths> are\n"
+              "                         used as base. You can separate multiple paths by ';'.\n"
+              "                         Otherwise path where source files are searched is used.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"

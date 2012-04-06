@@ -2002,7 +2002,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         if (!processedFile.empty()) {
             // Remove space characters that are after or before new line character
-            processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
+            processedFile = "#file \"" + Path::fromNativeSeparators(filename) + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
 
             path = filename;

@@ -20,6 +20,7 @@
 #define PATH_H_INCLUDED
 
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -83,6 +84,14 @@ public:
       * @return Filename extension (containing the dot, e.g. ".h").
       */
     static std::string getFilenameExtensionInLowerCase(const std::string &path);
+
+    /**
+      * @brief Create a relative path from an absolute one, if absolute path is inside the basePaths.
+      * @param absolutePath Path to be made relative.
+      * @param basePaths Paths to which it may be made relative.
+      * @return relative path, if possible. Otherwise absolutePath is returned unchanged
+      */
+    static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
 
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.

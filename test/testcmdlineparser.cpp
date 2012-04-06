@@ -42,6 +42,7 @@ private:
         TEST_CASE(debugwarnings);
         TEST_CASE(forceshort);
         TEST_CASE(forcelong);
+        TEST_CASE(relativePaths);
         TEST_CASE(quietshort);
         TEST_CASE(quietlong);
         TEST_CASE(defines_noarg);
@@ -246,6 +247,42 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings._force);
+    }
+
+    void relativePaths() {
+        REDIRECT;
+        Settings settings;
+        CmdLineParser parser(&settings);
+
+        const char *argvs[] = {"cppcheck", "-rp", "file.cpp"};
+        ASSERT(parser.ParseFromArgs(3, argvs));
+        ASSERT_EQUALS(true, settings._relativePaths);
+
+        settings._relativePaths = false;
+
+        const char *argvl[] = {"cppcheck", "--relative-paths", "file.cpp"};
+        ASSERT(parser.ParseFromArgs(3, argvl));
+        ASSERT_EQUALS(true, settings._relativePaths);
+
+        settings._relativePaths = false;
+        settings._basePaths.clear();
+
+        const char *argvsp[] = {"cppcheck", "-rp=C:/foo;C:\\bar", "file.cpp"};
+        ASSERT(parser.ParseFromArgs(3, argvsp));
+        ASSERT_EQUALS(true, settings._relativePaths);
+        ASSERT_EQUALS(2, settings._basePaths.size());
+        ASSERT_EQUALS("C:/foo", settings._basePaths[0]);
+        ASSERT_EQUALS("C:/bar", settings._basePaths[1]);
+
+        settings._relativePaths = false;
+        settings._basePaths.clear();
+
+        const char *argvlp[] = {"cppcheck", "--relative-paths=C:/foo;C:\\bar", "file.cpp"};
+        ASSERT(parser.ParseFromArgs(3, argvlp));
+        ASSERT_EQUALS(true, settings._relativePaths);
+        ASSERT_EQUALS(2, settings._basePaths.size());
+        ASSERT_EQUALS("C:/foo", settings._basePaths[0]);
+        ASSERT_EQUALS("C:/bar", settings._basePaths[1]);
     }
 
     void quietshort() {

@@ -30,6 +30,7 @@ private:
     void run() {
         TEST_CASE(simplify_path);
         TEST_CASE(accept_file);
+        TEST_CASE(getRelative);
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
         TEST_CASE(is_java);
@@ -74,6 +75,19 @@ private:
         ASSERT(Path::acceptFile("index")==false);
         ASSERT(Path::acceptFile("")==false);
         ASSERT(Path::acceptFile("C")==false);
+    }
+
+    void getRelative() {
+        std::vector<std::string> basePaths;
+        basePaths.push_back("C:/foo");
+        basePaths.push_back("C:/bar/");
+        basePaths.push_back("C:/test.cpp");
+
+        ASSERT_EQUALS("x.c", Path::getRelativePath("C:/foo/x.c", basePaths));
+        ASSERT_EQUALS("y.c", Path::getRelativePath("C:/bar/y.c", basePaths));
+        ASSERT_EQUALS("foo/y.c", Path::getRelativePath("C:/bar/foo/y.c", basePaths));
+        ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:/test.cpp", basePaths));
+        ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
     }
 
     void is_c() {

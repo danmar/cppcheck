@@ -20,6 +20,7 @@
 #define settingsH
 
 #include <list>
+#include <vector>
 #include <string>
 #include <set>
 #include "suppressions.h"
@@ -89,6 +90,12 @@ public:
 
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool _force;
+
+    /** @brief Use relative paths in output. */
+    bool _relativePaths;
+
+    /** @brief Paths used as base for conversion to relative paths. */
+    std::vector<std::string> _basePaths;
 
     /** @brief write XML results (--xml) */
     bool _xml;

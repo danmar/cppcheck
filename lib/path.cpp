@@ -154,6 +154,21 @@ std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
     return extension;
 }
 
+std::string Path::getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths)
+{
+    for (std::vector<std::string>::const_iterator i = basePaths.begin(); i != basePaths.end(); ++i) {
+        if (absolutePath == *i) // Seems to be a file
+            continue;
+
+        bool endsWithSep = (*i)[i->length()-1] == '/';
+        if (absolutePath.compare(0, i->length(), *i) == 0 && absolutePath[i->length() - (endsWithSep?1:0)] == '/') {
+            std::string rest = absolutePath.substr(i->length() + (endsWithSep?0:1));
+            return rest;
+        }
+    }
+    return absolutePath;
+}
+
 bool Path::isC(const std::string &path)
 {
     // In unix, ".C" is concidered C++ file

@@ -345,7 +345,7 @@ void Tokenizer::createTokens(std::istream &code)
 
                 if (!foundOurfile) {
                     // The "_files" vector remembers what files have been tokenized..
-                    _files.push_back(Path::simplifyPath(line.c_str()));
+                    _files.push_back(Path::getRelativePath(Path::simplifyPath(line.c_str()), _settings->_basePaths));
                     FileIndex = static_cast<unsigned int>(_files.size() - 1);
                 }
 
@@ -1943,7 +1943,7 @@ bool Tokenizer::tokenize(std::istream &code,
     _configuration = configuration;
 
     // The "_files" vector remembers what files have been tokenized..
-    _files.push_back(Path::simplifyPath(FileName));
+    _files.push_back(Path::getRelativePath(Path::simplifyPath(FileName), _settings->_basePaths));
 
     createTokens(code);
 
