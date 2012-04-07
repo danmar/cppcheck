@@ -39,7 +39,7 @@ static const char ExtraVersion[] = "";
 static TimerResults S_timerResults;
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : _useGlobalSuppressions(useGlobalSuppressions), _errorLogger(errorLogger), exitcode(0)
+    : exitcode(0), _useGlobalSuppressions(useGlobalSuppressions), _errorLogger(errorLogger)
 {
 }
 
