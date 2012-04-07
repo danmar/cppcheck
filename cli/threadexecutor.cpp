@@ -164,7 +164,7 @@ unsigned int ThreadExecutor::check()
                 _wpipe = pipes[1];
 
                 CppCheck fileChecker(*this, false);
-                fileChecker.settings(_settings);
+                fileChecker.settings() = _settings;
                 unsigned int resultOfCheck = 0;
 
                 if (_fileContents.size() > 0 && _fileContents.find(i->first) != _fileContents.end()) {
