@@ -33,7 +33,7 @@
 #include "pathmatch.h"
 
 CppCheckExecutor::CppCheckExecutor()
-    : time1(0), errorlist(false), _settings(0)
+    : _settings(0), time1(0), errorlist(false)
 {
 }
 
