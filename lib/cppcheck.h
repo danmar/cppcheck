@@ -25,7 +25,7 @@
 
 #include <string>
 #include <list>
-#include <sstream>
+#include <istream>
 
 /// @addtogroup Core
 /// @{
@@ -169,7 +169,6 @@ private:
 
     unsigned int exitcode;
     std::list<std::string> _errorList;
-    std::ostringstream _errout;
     Settings _settings;
     bool _useGlobalSuppressions;
     std::string _fileContent;

@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include "timer.h"
 
@@ -147,8 +148,6 @@ unsigned int CppCheck::processFile(const std::string& filename)
         analyseFile(f, filename);
     }
 
-    _errout.str("");
-
     if (_settings.terminated())
         return exitcode;
 
@@ -258,7 +257,6 @@ void CppCheck::checkFunctionUsage()
         const bool verbose_orig = _settings._verbose;
         _settings._verbose = false;
 
-        _errout.str("");
         if (_settings._errorsOnly == false)
             _errorLogger.reportOut("Checking usage of global functions..");
 
@@ -497,8 +495,6 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     }
 
     _errorLogger.reportErr(msg);
-
-    _errout << errmsg << std::endl;
 }
 
 void CppCheck::reportOut(const std::string &outmsg)

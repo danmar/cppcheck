@@ -22,6 +22,7 @@
 #include "preprocessor.h"
 #include "errorlogger.h"
 #include <iostream>
+#include <sstream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <algorithm>
