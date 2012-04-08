@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.53</title>
 
-    <date>2011-10-07</date>
+    <date>2012-04-08</date>
   </bookinfo>
 
   <chapter>
@@ -283,67 +283,124 @@ Checking path/file2.cpp...
   <chapter>
     <title>XML output</title>
 
-    <para>Cppcheck can generate the output in XML format.</para>
+    <para>Cppcheck can generate the output in <literal>XML</literal> format.
+    There is an old <literal>XML</literal> format (version 1) and a new
+    <literal>XML</literal> format (version 2). Please use the new version if
+    you can.</para>
 
-    <para>Use the <parameter class="command">--xml</parameter> flag when you
-    execute cppcheck:</para>
+    <para>The old version is kept for backwards compatibility only. It will
+    not be changed. But it will likely be removed someday. Use
+    <parameter>--xml</parameter> to enable this format.</para>
 
-    <programlisting>cppcheck --xml file1.cpp</programlisting>
+    <para>The new version fixes a few problems with the old format. The new
+    format will probably be updated in future versions of cppcheck with new
+    attributes and elements. A sample command to check a file and output
+    errors in the new <literal>XML</literal> format:</para>
 
-    <para>The XML format is:</para>
+    <para><programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>Here
+    is a sample version 2 report:</para>
 
-    <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;results&gt;
-  &lt;error file="file1.cpp" line="123" id="someError" 
-               severity="error" msg="some error text"/&gt;
+    <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;results version="2"&gt;
+  &lt;cppcheck version="1.53"&gt;
+  &lt;errors&gt;
+    &lt;error id="someError" severity="error" msg="short error text"
+           verbose="long error text" inconclusive="true"&gt;
+      &lt;location file="file.c" line="1"/&gt;
+    &lt;/error&gt;
+  &lt;/errors&gt;
 &lt;/results&gt;</programlisting>
 
-    <para>Attributes:</para>
+    <section>
+      <title>The &lt;error&gt; element</title>
 
-    <variablelist>
-      <varlistentry>
-        <term><sgmltag class="attribute">file</sgmltag></term>
+      <para>Each error is reported in a <literal>&lt;error&gt;</literal>
+      element. Attributes:</para>
 
-        <listitem>
-          <para>filename. Both relative and absolute paths are possible</para>
-        </listitem>
-      </varlistentry>
+      <variablelist>
+        <varlistentry>
+          <term><sgmltag class="attribute">id</sgmltag></term>
 
-      <varlistentry>
-        <term><sgmltag class="attribute">line</sgmltag></term>
+          <listitem>
+            <para>id of error. These are always valid symbolnames.</para>
+          </listitem>
+        </varlistentry>
 
-        <listitem>
-          <para>a number</para>
-        </listitem>
-      </varlistentry>
+        <varlistentry>
+          <term><sgmltag class="attribute">severity</sgmltag></term>
 
-      <varlistentry>
-        <term><sgmltag class="attribute">id</sgmltag></term>
+          <listitem>
+            <para>either: <literal>error</literal>,
+            <literal>warning</literal>, <literal>style</literal>,
+            <literal>performance</literal>, <literal>portability</literal> or
+            <literal>information</literal></para>
+          </listitem>
+        </varlistentry>
 
-        <listitem>
-          <para>id of error. These are always valid symbolnames.</para>
-        </listitem>
-      </varlistentry>
+        <varlistentry>
+          <term><sgmltag class="attribute">msg</sgmltag></term>
 
-      <varlistentry>
-        <term><sgmltag class="attribute">severity</sgmltag></term>
+          <listitem>
+            <para>the error message in short format</para>
+          </listitem>
+        </varlistentry>
 
-        <listitem>
-          <para>either <sgmltag class="attvalue">error</sgmltag> or
-          <sgmltag class="attvalue">style</sgmltag>.</para>
-          <para><literal>warning</literal> and <literal>performance</literal>
-          are saved as <sgmltag class="attvalue">style</sgmltag>.</para>
-        </listitem>
-      </varlistentry>
+        <varlistentry>
+          <term><sgmltag>verbose</sgmltag></term>
 
-      <varlistentry>
-        <term><sgmltag class="attribute">msg</sgmltag></term>
+          <listitem>
+            <para>the error message in long format.</para>
+          </listitem>
+        </varlistentry>
 
-        <listitem>
-          <para>the error message</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
+        <varlistentry>
+          <term><sgmltag>inconclusive</sgmltag></term>
+
+          <listitem>
+            <para>This attribute is only used when the message is
+            inconclusive.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>The &lt;location&gt; element</title>
+
+      <para>All locations related to an error is listed with
+      <literal>&lt;location&gt;</literal> elements. The primary location is
+      listed first.</para>
+
+      <para>Attributes:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><sgmltag class="attribute">file</sgmltag></term>
+
+          <listitem>
+            <para>filename. Both relative and absolute paths are
+            possible</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag class="attribute">line</sgmltag></term>
+
+          <listitem>
+            <para>a number</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag>msg</sgmltag></term>
+
+          <listitem>
+            <para>this attribute doesn't exist yet. But in the future we may
+            add a short message for each location. </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
   </chapter>
 
   <chapter>
