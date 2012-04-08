@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <time.h>
 #include <cstring>
+#include <sstream>
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, size_t> &files, Settings &settings, ErrorLogger &errorLogger)
