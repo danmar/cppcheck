@@ -147,12 +147,13 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     Preprocessor::missingIncludeFlag = false;
 
     CppCheck cppCheck(*this, true);
-    if (!parseFromArgs(&cppCheck, argc, argv)) {
-        return EXIT_FAILURE;
-    }
 
     Settings& settings = cppCheck.settings();
     _settings = &settings;
+
+    if (!parseFromArgs(&cppCheck, argc, argv)) {
+        return EXIT_FAILURE;
+    }
 
     if (settings.reportProgress)
         time1 = std::time(0);
