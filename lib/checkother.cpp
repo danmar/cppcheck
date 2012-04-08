@@ -189,6 +189,15 @@ void CheckOther::clarifyCondition()
                                                  Token::simpleMatch(tok2->previous(), "const &")))
                     continue;
 
+                // #3609 - CWinTraits<WS_CHILD|WS_VISIBLE>::..
+                if (Token::Match(tok->previous(), "%var% <")) {
+                    const Token *tok3 = tok2;
+                    while (Token::Match(tok3, "[&|^] %var%"))
+                        tok3 = tok3->tokAt(2);
+                    if (Token::Match(tok3, ",|>"))
+                        continue;
+                }
+
                 clarifyConditionError(tok,false,true);
             }
         }
