@@ -1876,7 +1876,7 @@ void CheckOther::checkUnsignedDivision()
 void CheckOther::udivError(const Token *tok, bool inconclusive)
 {
     if (inconclusive)
-        reportError(tok, Severity::warning, "udivError", "Division with signed and unsigned operators. The result might be wrong.");
+        reportInconclusiveError(tok, Severity::warning, "udivError", "Division with signed and unsigned operators. The result might be wrong.");
     else
         reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
 }
