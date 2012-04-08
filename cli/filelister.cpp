@@ -57,30 +57,29 @@ static bool TransformAnsiToUcs2(LPCSTR psAnsi, LPWSTR psUcs, UINT nUcs)
     return true;
 }
 
-static BOOL MyIsDirectory(std::string path)
+static BOOL MyIsDirectory(const std::string& path)
 {
     WCHAR * unicodeCleanPath = new WCHAR[path.size() + 1];
-    TransformAnsiToUcs2(path.c_str(), unicodeCleanPath,
-                        (path.size() * sizeof(WCHAR)) + 1);
+    TransformAnsiToUcs2(path.c_str(), unicodeCleanPath, path.size() + 1);
     // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
     BOOL res = PathIsDirectory(unicodeCleanPath);
     delete [] unicodeCleanPath;
     return res;
 }
 
-static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
+static HANDLE MyFindFirstFile(const std::string& path, LPWIN32_FIND_DATA findData)
 {
     WCHAR * unicodeOss = new wchar_t[path.size() + 1];
-    TransformAnsiToUcs2(path.c_str(), unicodeOss, (path.size() + 1) * sizeof(WCHAR));
+    TransformAnsiToUcs2(path.c_str(), unicodeOss, path.size() + 1);
     HANDLE hFind = FindFirstFile(unicodeOss, findData);
     delete [] unicodeOss;
     return hFind;
 }
 
-static BOOL MyFileExists(std::string path)
+static BOOL MyFileExists(const std::string& path)
 {
     WCHAR * unicodeOss = new wchar_t[path.size() + 1];
-    TransformAnsiToUcs2(path.c_str(), unicodeOss, (path.size() + 1) * sizeof(WCHAR));
+    TransformAnsiToUcs2(path.c_str(), unicodeOss, path.size() + 1);
     BOOL result = PathFileExists(unicodeOss);
     delete [] unicodeOss;
     return result;
@@ -88,7 +87,7 @@ static BOOL MyFileExists(std::string path)
 
 #else // defined(UNICODE)
 
-static BOOL MyIsDirectory(std::string path)
+static BOOL MyIsDirectory(const std::string& path)
 {
 #ifdef __BORLANDC__
     return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
@@ -98,13 +97,13 @@ static BOOL MyIsDirectory(std::string path)
 #endif
 }
 
-static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
+static HANDLE MyFindFirstFile(const std::string& path, LPWIN32_FIND_DATA findData)
 {
     HANDLE hFind = FindFirstFile(path.c_str(), findData);
     return hFind;
 }
 
-static BOOL MyFileExists(std::string path)
+static BOOL MyFileExists(const std::string& path)
 {
 #ifdef __BORLANDC__
     DWORD fa = GetFileAttributes(path.c_str());
@@ -162,8 +161,9 @@ void FileLister::recursiveAddFiles(std::map<std::string, size_t> &files, const s
             continue;
 
 #if defined(UNICODE)
-        char * ansiFfd = new char[wcslen(ffd.cFileName) + 1];
-        TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, wcslen(ffd.cFileName) + 1);
+        size_t length = wcslen(ffd.cFileName);
+        char * ansiFfd = new char[length + 1];
+        TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, length + 1);
 #else // defined(UNICODE)
         const char * ansiFfd = &ffd.cFileName[0];
         if (strchr(ansiFfd,'?')) {
@@ -178,13 +178,14 @@ void FileLister::recursiveAddFiles(std::map<std::string, size_t> &files, const s
             // File
 
             // If recursive is not used, accept all files given by user
-            if (Path::sameFileName(path,ansiFfd) || Path::acceptFile(ansiFfd)) {
+            if (Path::sameFileName(path, ansiFfd) || Path::acceptFile(ansiFfd)) {
                 const std::string nativename = Path::fromNativeSeparators(fname.str());
                 // Limitation: file sizes are assumed to fit in a 'size_t'
-                if (sizeof(size_t) > 4)
-                    files[nativename] = (static_cast<size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
-                else
-                    files[nativename] = ffd.nFileSizeLow;
+#ifdef _WIN64
+                files[nativename] = (static_cast<size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
+#else
+                files[nativename] = ffd.nFileSizeLow;
+#endif
             }
         } else {
             // Directory
