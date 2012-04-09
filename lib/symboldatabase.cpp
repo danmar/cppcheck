@@ -192,7 +192,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope->access = Private;
                 else if (tok->str() == "protected:")
                     scope->access = Protected;
-                else if (tok->str() == "public:")
+                else if (tok->str() == "public:" || tok->str() == "__published:")
                     scope->access = Public;
                 else if (Token::Match(tok, "public|protected|private %var% :")) {
                     if (tok->str() == "private")

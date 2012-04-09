@@ -56,7 +56,8 @@ private:
 
         TEST_CASE(friendClass);
 
-        TEST_CASE(borland);     // skip FP when using __property
+        TEST_CASE(borland1);     // skip FP when using __property
+        TEST_CASE(borland2);     // skip FP when using __published
 
         // No false positives when there are "unused" templates that are removed in the simplified token list
         TEST_CASE(template1);
@@ -472,7 +473,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Unused private function 'Foo::f'\n", errout.str());
     }
 
-    void borland() {
+    void borland1() {
         // ticket #2034 - Borland C++ __property
         check("class Foo {\n"
               "private:\n"
@@ -482,6 +483,19 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void borland2() {
+        // ticket #3661 - Borland C++ __published
+        check("class Foo {\n"
+              "__published:\n"
+              "    int getx() {\n"
+              "        return 123;\n"
+              "    }\n"
+              "public:\n"
+              "    Foo() { }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
