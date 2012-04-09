@@ -60,26 +60,23 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
         if (Token::Match(tok, "%type% %var% ("))
             funcname = tok->next();
-        else if (Token::Match(tok, "%type% * %var% ("))
+        else if (Token::Match(tok, "%type% *|& %var% ("))
             funcname = tok->tokAt(2);
         else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2).c_str()))
             funcname = tok->tokAt(2);
 
         // Don't assume throw as a function name: void foo() throw () {}
-        if (Token::Match(tok->previous(), ")|const"))
-            funcname = 0;
+        if (Token::Match(tok->previous(), ")|const") || funcname == 0)
+            continue;
+
+        tok = funcname->linkAt(1);
 
         // Check that ") {" is found..
-        for (const Token *tok2 = funcname; tok2; tok2 = tok2->next()) {
-            if (tok2->str() == ")") {
-                if (! Token::simpleMatch(tok2, ") {") &&
-                    ! Token::simpleMatch(tok2, ") const {") &&
-                    ! Token::simpleMatch(tok2, ") const throw ( ) {") &&
-                    ! Token::simpleMatch(tok2, ") throw ( ) {"))
-                    funcname = 0;
-                break;
-            }
-        }
+        if (! Token::simpleMatch(tok, ") {") &&
+            ! Token::simpleMatch(tok, ") const {") &&
+            ! Token::simpleMatch(tok, ") const throw ( ) {") &&
+            ! Token::simpleMatch(tok, ") throw ( ) {"))
+            funcname = 0;
 
         if (funcname) {
             FunctionUsage &func = _functions[ funcname->str()];
@@ -118,19 +115,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
         // funcname ( => Assert that the end parenthesis isn't followed by {
         if (Token::Match(funcname, "%var% (")) {
-            int parlevel = 0;
-            for (const Token *tok2 = funcname; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    ++parlevel;
-
-                else if (tok2->str() == ")") {
-                    --parlevel;
-                    if (parlevel == 0 && (Token::Match(tok2, ") const|{")))
-                        funcname = NULL;
-                    if (parlevel <= 0)
-                        break;
-                }
-            }
+            if (Token::Match(funcname->linkAt(1), ") const|{"))
+                funcname = NULL;
         }
 
         if (funcname) {
