@@ -46,6 +46,7 @@ private:
         TEST_CASE(iterator12);
 
         TEST_CASE(dereference);
+        TEST_CASE(dereference_break);  // #3644 - handle "break"
         TEST_CASE(dereference_member);
 
         TEST_CASE(STLSize);
@@ -381,6 +382,23 @@ private:
               "    std::cout << (*iter) << std::endl;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
+    }
+
+    void dereference_break() {  // #3644
+        check("void f(std::vector<int> &ints) {\n"
+              "    std::vector<int>::iterator iter;\n"
+              "    for (iter=ints.begin();iter!=ints.end();++iter) {\n"
+              "        if (*iter == 2) {\n"
+              "            ints.erase(iter);\n"
+              "            break;\n"
+              "        }\n"
+              "        if (*iter == 3) {\n"
+              "            ints.erase(iter);\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereference_member() {

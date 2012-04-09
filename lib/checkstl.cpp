@@ -69,6 +69,8 @@ void CheckStl::iterators()
 
         // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = true;
+
+        // When "validatingToken" is reached the validIterator is set to true
         const Token* validatingToken = 0;
 
         // counter for { and }
@@ -166,7 +168,7 @@ void CheckStl::iterators()
             // bailout handling. Assume that the iterator becomes valid if we see return/break.
             // TODO: better handling
             else if (Token::Match(tok2, "return|break")) {
-                validatingToken = Token::findsimplematch(tok->next(), ";");
+                validatingToken = Token::findsimplematch(tok2->next(), ";");
             }
 
             // bailout handling. Assume that the iterator becomes valid if we see else.
