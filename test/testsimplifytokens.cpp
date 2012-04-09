@@ -161,10 +161,9 @@ private:
         // Simplify goto..
         TEST_CASE(goto1);
         TEST_CASE(goto2);
-        // ticket #3138
-        TEST_CASE(goto3);
-        // ticket #3459
-        TEST_CASE(goto4);
+        TEST_CASE(goto3);  // #3138
+        TEST_CASE(goto4);  // #3459
+        TEST_CASE(goto5);  // #3705 - return ({asm("");});
 
         //remove dead code after flow control statements
         TEST_CASE(flowControl);
@@ -3223,6 +3222,18 @@ private:
                                 " } while ( bar ( ) ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void goto5() {
+        const char code[] = "int foo() {\n"
+                            "    goto err;\n"
+                            "err:\n"
+                            "    return ( { __asm__(X); } ); "
+                            "}\n";
+        ASSERT_EQUALS("int foo ( ) {"
+                      " return { asm ( \"X\" ) ; } ;"
+                      " return { asm ( \"X\" ) ; } ; "
+                      "}", tok(code));
     }
 
     void flowControl() {

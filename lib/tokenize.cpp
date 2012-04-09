@@ -6987,9 +6987,10 @@ void Tokenizer::simplifyGoto()
                                 break;
                             --lev;
                         }
-                        if (!roundbraces && tok2->str() == "{") {
+                        else if (!roundbraces && tok2->str() == "{") {
                             ++lev;
-                        } else if (!roundbraces && tok2->str() == "return") {
+                        }
+                        else if (!roundbraces && tok2->str() == "return") {
                             ret = true;
                             if (indentlevel == 1 && lev == 0)
                                 ret2 = true;
@@ -6998,7 +6999,7 @@ void Tokenizer::simplifyGoto()
                         token = token->next();
                         token->linenr(tok2->linenr());
                         token->varId(tok2->varId());
-                        if (ret2 && tok2->str() == ";") {
+                        if (ret2 && roundbraces == 0 && tok2->str() == ";") {
                             break;
                         }
                         if (token->str() == "(") {
