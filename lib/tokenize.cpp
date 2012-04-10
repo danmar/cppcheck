@@ -28,6 +28,7 @@
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
 #include "preprocessor.h"   // Preprocessor::macroChar
+#include "timer.h"
 
 #include <string>
 #include <cstring>
@@ -47,7 +48,8 @@ Tokenizer::Tokenizer() :
     _errorLogger(0),
     _symbolDatabase(0),
     _varId(0),
-    _codeWithTemplates(false) //is there any templates?
+    _codeWithTemplates(false), //is there any templates?
+    m_timerResults(NULL)
 {
 }
 
@@ -58,7 +60,8 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     _errorLogger(errorLogger),
     _symbolDatabase(0),
     _varId(0),
-    _codeWithTemplates(false) //is there any templates?
+    _codeWithTemplates(false), //is there any templates?
+    m_timerResults(NULL)
 {
     // make sure settings are specified
     assert(_settings);
@@ -2109,7 +2112,12 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyDebugNew();
 
     // typedef..
-    simplifyTypedef();
+    if (m_timerResults) {
+        Timer t("Tokenizer::tokenize::simplifyTypedef", _settings->_showtime, m_timerResults);
+        simplifyTypedef();
+    } else {
+        simplifyTypedef();
+    }
 
     // catch bad typedef canonicalization
     //
@@ -2298,7 +2306,12 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyVarDecl(false);
 
     if (!preprocessorCondition) {
-        setVarId();
+        if (m_timerResults) {
+            Timer t("Tokenizer::tokenize::setVarId", _settings->_showtime, m_timerResults);
+            setVarId();
+        } else {
+            setVarId();
+        }
 
         createLinks2();
 
@@ -3743,7 +3756,12 @@ bool Tokenizer::simplifyTokenList()
     simplifyIfAssign();    // could be affected by simplifyIfNot
 
     // In case variable declarations have been updated...
-    setVarId();
+    if (m_timerResults) {
+        Timer t("Tokenizer::simplifyTokenList::setVarId", _settings->_showtime, m_timerResults);
+        setVarId();
+    } else {
+        setVarId();
+    }
 
     bool modified = true;
     while (modified) {

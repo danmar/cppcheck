@@ -309,6 +309,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         return;
 
     Tokenizer _tokenizer(&_settings, this);
+    if (_settings._showtime != SHOWTIME_NONE)
+        _tokenizer.setTimerResults(&S_timerResults);
     try {
         bool result;
 

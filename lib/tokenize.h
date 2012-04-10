@@ -34,6 +34,7 @@ class Token;
 class ErrorLogger;
 class Settings;
 class SymbolDatabase;
+class TimerResults;
 
 /// @addtogroup Core
 /// @{
@@ -48,6 +49,10 @@ public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
     ~Tokenizer();
+
+    void setTimerResults(TimerResults *tr) {
+        m_timerResults = tr;
+    }
 
     /** Returns the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
@@ -781,6 +786,11 @@ private:
      * removed from the token list
      */
     bool _codeWithTemplates;
+
+    /**
+     * TimerResults
+     */
+    TimerResults *m_timerResults;
 };
 
 /// @}
