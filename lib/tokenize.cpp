@@ -7004,11 +7004,9 @@ void Tokenizer::simplifyGoto()
                             if (!lev)
                                 break;
                             --lev;
-                        }
-                        else if (!roundbraces && tok2->str() == "{") {
+                        } else if (!roundbraces && tok2->str() == "{") {
                             ++lev;
-                        }
-                        else if (!roundbraces && tok2->str() == "return") {
+                        } else if (!roundbraces && tok2->str() == "return") {
                             ret = true;
                             if (indentlevel == 1 && lev == 0)
                                 ret2 = true;
