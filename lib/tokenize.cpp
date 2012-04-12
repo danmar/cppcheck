@@ -2041,6 +2041,9 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // Remove "volatile", "inline", "register", and "restrict"
+    simplifyKeyword();
+
     // Convert K&R function declarations to modern C
     simplifyVarDecl(true);
     if (!simplifyFunctionParameters())
@@ -2096,9 +2099,6 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // remove Borland stuff..
     simplifyBorland();
-
-    // Remove "volatile", "inline", "register", and "restrict"
-    simplifyKeyword();
 
     // Remove __builtin_expect, likely and unlikely
     simplifyBuiltinExpect();

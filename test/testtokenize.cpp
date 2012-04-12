@@ -4787,6 +4787,15 @@ private:
                           "{\n"
                           "}", tokenizeAndStringify(code));
         }
+        {
+            const char code[] = "void f(a, b) register char *a, *b;\n"
+                                "{\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f ( char * a , char * b )\n"
+                          "{\n"
+                          "}", tokenizeAndStringify(code));
+        }
     }
 
     void vardecl20() {
