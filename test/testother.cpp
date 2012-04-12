@@ -108,6 +108,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
+        TEST_CASE(trac3693);
 
         TEST_CASE(assignmentInAssert);
 
@@ -2385,6 +2386,16 @@ private:
         checkOther.checkMisusedScopedObject();
 
         ASSERT_EQUALS("[trac1132.cpp:16]: (error) instance of \"Lock\" object destroyed immediately\n", errout.str());
+    }
+
+    void trac3693() {
+        check("struct A{\n"
+              "  enum {\n"
+              "    b = 300\n"
+              "  };\n"
+              "};\n"
+              "const int DFLT_TIMEOUT = A::b % 1000000 ;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickFunction1() {

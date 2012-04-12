@@ -225,6 +225,14 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
     return toString<double>(toDoubleNumber(first) * toDoubleNumber(second));
 }
 
+std::string MathLib::mod(const std::string &first, const std::string &second)
+{
+    if (MathLib::isInt(first) && MathLib::isInt(second)) {
+        return toString<MathLib::bigint>(toLongNumber(first) % toLongNumber(second));
+    }
+    return toString<double>(fmod(toDoubleNumber(first),toDoubleNumber(second)));
+}
+
 std::string MathLib::calculate(const std::string &first, const std::string &second, char action)
 {
     switch (action) {
@@ -239,6 +247,9 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
 
     case '/':
         return MathLib::divide(first, second);
+
+    case '%':
+        return MathLib::mod(first, second);
 
     default:
         throw InternalError(0, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");

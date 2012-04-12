@@ -30,6 +30,7 @@ private:
 
     void run() {
         TEST_CASE(calculate);
+        TEST_CASE(calculate1);
         TEST_CASE(convert);
         TEST_CASE(isint);
         TEST_CASE(isnegative);
@@ -121,6 +122,16 @@ private:
 
         // Unknown action should throw exception
         ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
+    }
+
+    void calculate1() { // mod
+        ASSERT_EQUALS("0"    , MathLib::calculate("2"	 , "1"    , '%'));
+        ASSERT_EQUALS("0"    , MathLib::calculate("2.0"  , "1.0"  , '%'));
+        ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
+        ASSERT_EQUALS("1"    , MathLib::calculate("100"  , "3"   , '%'));
+        ASSERT_EQUALS("12"   , MathLib::calculate("12.0" , "13.0" , '%'));
+        ASSERT_EQUALS("1.3"  , MathLib::calculate("5.3"  , "2.0" , '%'));
+        ASSERT_EQUALS("1.7"  , MathLib::calculate("18.5" , "4.2" , '%'));
     }
 
     void convert() {
