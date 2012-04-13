@@ -942,7 +942,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     continue;
 
                 // Integer operations
-                if (Token::Match(op, ">>|<<|&|%or%|^|%")) {
+                if (Token::Match(op, ">>|<<|&|^|%or%")) {
                     const char cop = op->str()[0];
                     const MathLib::bigint leftInt(MathLib::toLongNumber(tok->str()));
                     const MathLib::bigint rightInt(MathLib::toLongNumber(tok->strAt(2)));
@@ -954,8 +954,6 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                         result = MathLib::toString<MathLib::bigint>(leftInt | rightInt);
                     else if (cop == '^')
                         result = MathLib::toString<MathLib::bigint>(leftInt ^ rightInt);
-                    else if (cop == '%')
-                        result = MathLib::toString<MathLib::bigint>(leftInt % rightInt);
                     else if (cop == '<') {
                         if (tok->previous()->str() != "<<") // Ensure that its not a shift operator as used for streams
                             result = MathLib::toString<MathLib::bigint>(leftInt << rightInt);
