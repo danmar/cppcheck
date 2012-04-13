@@ -926,7 +926,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 const Token* after = tok->tokAt(4);
                 if (Token::Match(tok, "* %num% /") && tok->next()->str() == MathLib::multiply(tok->strAt(3), MathLib::divide(tok->next()->str(), tok->strAt(3)))) {
                     // Division where result is a whole number
-                } else if (!((op->str() == "*" && isLowerEqualThanMulDiv(tok) && isLowerEqualThanMulDiv(after)) || // associative
+                } else if (!((op->str() == "*" && (isLowerThanMulDiv(tok) || tok->str() == "*") && isLowerEqualThanMulDiv(after)) || // associative
                              (Token::Match(op, "[/%]") && isLowerThanMulDiv(tok) && isLowerEqualThanMulDiv(after)) || // NOT associative
                              (Token::Match(op, "[+-]") && isLowerThanMulDiv(tok) && isLowerThanMulDiv(after)) || // Only partially (+) associative, but handled later
                              (Token::Match(op, ">>|<<") && isLowerThanShift(tok) && isLowerThanPlusMinus(after)) || // NOT associative

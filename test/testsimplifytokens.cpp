@@ -2827,6 +2827,8 @@ private:
 
         ASSERT_EQUALS("( y / 2 - 2 )", tok("(y / 2 - 2)"));
         ASSERT_EQUALS("( y % 2 - 2 )", tok("(y % 2 - 2)"));
+
+        ASSERT_EQUALS("( 4 )", tok("(1 * 2 / 1 * 2)")); // #3722
     }
 
 
