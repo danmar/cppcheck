@@ -366,12 +366,12 @@ Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--rp</option></term>
-        <term><option>--rp=&lt;paths&gt;</option></term>
+        <term><option>-rp</option></term>
+        <term><option>-rp=&lt;paths&gt;</option></term>
         <term><option>--relative-paths;</option></term>
         <term><option>--relative-paths=&lt;paths&gt;</option></term>
         <listitem>
-          <para>Use relative paths in output. When given, &lt;paths&gt; are used as base. You can separate multiple paths by ';'. Otherwise path where source files are searched is used. E.g. if given value is test, when checking test/test.cpp, the path in output will be test.cpp instead of test/test.cpp. The feature uses string comparison to create relative paths, so using e.g. ~ for home folder does not work.</para>
+          <para>Use relative paths in output. When given, &lt;paths&gt; are used as base. You can separate multiple paths by ';'. Otherwise path where source files are searched is used. E.g. if given value is test, when checking test/test.cpp, the path in output will be test.cpp instead of test/test.cpp. The feature uses string comparison to create relative paths, so using e.g. ~ for home folder does not work. It is currently only possible to apply the base paths to files that are on a lower level in the directory tree.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
