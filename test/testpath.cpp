@@ -79,6 +79,7 @@ private:
 
     void getRelative() {
         std::vector<std::string> basePaths;
+        basePaths.push_back(""); // Don't crash with empty paths
         basePaths.push_back("C:/foo");
         basePaths.push_back("C:/bar/");
         basePaths.push_back("C:/test.cpp");

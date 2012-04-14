@@ -157,7 +157,7 @@ std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
 std::string Path::getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths)
 {
     for (std::vector<std::string>::const_iterator i = basePaths.begin(); i != basePaths.end(); ++i) {
-        if (absolutePath == *i) // Seems to be a file
+        if (absolutePath == *i || i->empty()) // Seems to be a file, or path is empty
             continue;
 
         bool endsWithSep = (*i)[i->length()-1] == '/';
