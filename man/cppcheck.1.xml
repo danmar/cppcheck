@@ -121,6 +121,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
       <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
+      <arg choice="opt"><option>--relative-paths=&lt;paths&gt;</option></arg>            
       <arg choice="opt"><option>--report-progress</option></arg>
       <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
       <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>            
@@ -362,6 +363,15 @@ Directory name is matched to all parts of the path.</para>
         <term><option>--quiet</option></term>
         <listitem>
           <para>Only print something when there is an error.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--rp</option></term>
+        <term><option>--rp=&lt;paths&gt;</option></term>
+        <term><option>--relative-paths;</option></term>
+        <term><option>--relative-paths=&lt;paths&gt;</option></term>
+        <listitem>
+          <para>Use relative paths in output. When given, &lt;paths&gt; are used as base. You can separate multiple paths by ';'. Otherwise path where source files are searched is used. E.g. if given value is test, when checking test/test.cpp, the path in output will be test.cpp instead of test/test.cpp. The feature uses string comparison to create relative paths, so using e.g. ~ for home folder does not work.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
