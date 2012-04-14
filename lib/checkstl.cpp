@@ -731,7 +731,7 @@ void CheckStl::if_find()
         if (tok->str() == "if")
             tok = tok->next();
 
-        for (const Token* const end = tok->link(); tok != end; tok = tok->next()) {
+        for (const Token* const end = tok->link(); tok != end; tok = (tok == end) ? end : tok->next()) {
             if (Token::Match(tok, "&&|(|%oror%"))
                 tok = tok->next();
             else

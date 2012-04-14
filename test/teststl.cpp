@@ -1234,6 +1234,11 @@ private:
               "    if (std::find(a,b,c) != c) { }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3714 - segmentation fault for syntax error
+        check("void f() {\n"
+              "    if (()) { }\n"
+              "}");
     }
 
     void if_str_find() {
