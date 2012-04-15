@@ -2903,8 +2903,8 @@ void Tokenizer::setVarIdNew()
             }
         }
 
-        if (tok == _tokens || Token::Match(tok, "[;{},]") ||
-            (tok->str()=="(" && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {")))) {
+        if (tok == _tokens || Token::Match(tok, "[;{}]") ||
+            (Token::Match(tok,"[(,]") && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {")))) {
             // locate the variable name..
             const Token *tok2 = (tok->isName()) ? tok : tok->next();
             if (!tok2)

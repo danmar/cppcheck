@@ -3289,7 +3289,7 @@ private:
                                     "2: x ( a * b");
         const std::string expected2(" , 10 ) ;\n"
                                     "3: }\n");
-        ASSERT_EQUALS(expected1+"@1"+expected2, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected1+"@1"+expected2, tokenizeDebugListing(code,false,"test.c"));
     }
 
     void varidFunctionCall3() {
@@ -3313,11 +3313,11 @@ private:
         const std::string code1("void f() { int x; fun(a,b*x); }");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: void f ( ) { int x@1 ; fun ( a , b * x@1 ) ; }\n",
-                      tokenizeDebugListing(code1));
+                      tokenizeDebugListing(code1,false,"test.c"));
         const std::string code2("void f(int a) { int x; fun(a,b*x); }");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: void f ( int a@1 ) { int x@2 ; fun ( a@1 , b * x@2 ) ; }\n",
-                      tokenizeDebugListing(code2));
+                      tokenizeDebugListing(code2,false,"test.c"));
     }
 
 
