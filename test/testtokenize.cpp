@@ -2508,14 +2508,14 @@ private:
 
 
 
-    std::string tokenizeDebugListing(const std::string &code, bool simplify = false) {
+    std::string tokenizeDebugListing(const std::string &code, bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
         Settings settings;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         if (simplify)
             tokenizer.simplifyTokenList();
@@ -2534,7 +2534,7 @@ private:
                                            "    for (int i = 0; i < 10; ++i)\n"
                                            "        i = 3;\n"
                                            "    i = 4;\n"
-                                           "}\n");
+                                           "}\n", false, "test.c");
 
             const std::string expected("\n\n##file 0\n"
                                        "1: static int i@1 = 1 ;\n"
@@ -2560,7 +2560,7 @@ private:
                                            "      i = 3;\n"
                                            "    }\n"
                                            "    i = 4;\n"
-                                           "}\n");
+                                           "}\n", false, "test.c");
 
             const std::string expected("\n\n##file 0\n"
                                        "1: static int i@1 = 1 ;\n"
@@ -2605,7 +2605,7 @@ private:
                                        "{\n"
                                        "    char str[10];\n"
                                        "    str[0] = 0;\n"
-                                       "}\n");
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: static char str@1 [ 4 ] ;\n"
@@ -2623,12 +2623,12 @@ private:
                                        "void f(const unsigned int a[])\n"
                                        "{\n"
                                        "    int i = *(a+10);\n"
-                                       "}\n", true);
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( const int a@1 [ ] )\n"
                                    "2: {\n"
-                                   "3: int i@2 ; i@2 = a@1 [ 10 ] ;\n"
+                                   "3: int i@2 ; i@2 = * ( a@1 + 10 ) ;\n"
                                    "4: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -2639,12 +2639,12 @@ private:
                                        "void f()\n"
                                        "{\n"
                                        "    int a,b;\n"
-                                       "}\n", true);
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
-                                   "3:\n"
+                                   "3: int a@1 ; int b@2 ;\n"
                                    "4: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -2656,7 +2656,7 @@ private:
                                        "int f(int a, int b)\n"
                                        "{\n"
                                        "    return a+b;\n"
-                                       "}\n", true);
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: int f ( int a@1 , int b@2 )\n"
@@ -2670,22 +2670,20 @@ private:
 
     void varid7() {
         const std::string actual = tokenizeDebugListing(
-                                       "void func()\n"
-                                       "{\n"
-                                       "char a[256] = \"test\";\n"
-                                       "{\n"
-                                       "char b[256] = \"test\";\n"
-                                       "}\n"
-                                       "}\n");
+                                       "void func() {\n"
+                                       "    char a[256] = \"test\";\n"
+                                       "    {\n"
+                                       "        char b[256] = \"test\";\n"
+                                       "    }\n"
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
-                                   "1: void func ( )\n"
-                                   "2: {\n"
-                                   "3: char a@1 [ 256 ] = \"test\" ;\n"
-                                   "4: {\n"
-                                   "5: char b@2 [ 256 ] = \"test\" ;\n"
-                                   "6: }\n"
-                                   "7: }\n");
+                                   "1: void func ( ) {\n"
+                                   "2: char a@1 [ 256 ] = \"test\" ;\n"
+                                   "3: {\n"
+                                   "4: char b@2 [ 256 ] = \"test\" ;\n"
+                                   "5: }\n"
+                                   "6: }\n");
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2696,7 +2694,7 @@ private:
                                        "{\n"
                                        "    int a;\n"
                                        "    return a;\n"
-                                       "}\n");
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: int f ( )\n"
@@ -2746,7 +2744,7 @@ private:
 
     void varid9() {
         const std::string actual = tokenizeDebugListing(
-                                       "typedef int INT32;\n");
+                                       "typedef int INT32;\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: ;\n");
@@ -2760,7 +2758,7 @@ private:
                                        "{\n"
                                        "    int abc;\n"
                                        "    struct abc abc1;\n"
-                                       "}");
+                                       "}", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: void foo ( )\n"
@@ -2804,12 +2802,12 @@ private:
                                        "{\n"
                                        "    int a; int b;\n"
                                        "    a = a;\n"
-                                       "}\n", true);
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
-                                   "3: int a@1 ;\n"
+                                   "3: int a@1 ; int b@2 ;\n"
                                    "4: a@1 = a@1 ;\n"
                                    "5: }\n");
 
@@ -2824,7 +2822,7 @@ private:
                                        "A a;\n"
                                        "B b;\n"
                                        "b * a;\n"
-                                       "}");
+                                       "}", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: void foo ( )\n"
@@ -2843,7 +2841,7 @@ private:
                                            "struct S {\n"
                                            "    struct T {\n"
                                            "    } t;\n"
-                                           "} s;");
+                                           "} s;", false, "test.c");
 
             const std::string expected("\n\n##file 0\n"
                                        "1: struct S {\n"
@@ -2859,7 +2857,7 @@ private:
                                            "struct S {\n"
                                            "    struct T {\n"
                                            "    } t;\n"
-                                           "};");
+                                           "};", false, "test.c");
 
             const std::string expected("\n\n##file 0\n"
                                        "1: struct S {\n"
@@ -2885,7 +2883,7 @@ private:
                                    "4: y = z * x@1 ;\n"
                                    "5: }\n");
 
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code, false, "test.c"));
     }
 
     void varid17() { // ticket #1810
@@ -2902,7 +2900,7 @@ private:
                                    "4: return c@1 ;\n"
                                    "5: }\n");
 
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code, false, "test.c"));
     }
 
     void varid18() {
@@ -3094,7 +3092,7 @@ private:
                                     "1: void f ( int b@1 , int c@2 ) {\n"
                                     "2: x ( a * b@1 * c@2 , 10 ) ;\n"
                                     "3: }\n");
-        ASSERT_EQUALS(expected2, tokenizeDebugListing(code2));
+        ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false, "test.c"));
 
         const std::string code3("class Nullpointer : public ExecutionPath\n"
                                 " {\n"
@@ -3372,7 +3370,7 @@ private:
         {
             const std::string actual = tokenizeDebugListing(
                                            "void f();\n"
-                                           "void f(){}\n");
+                                           "void f(){}\n", false, "test.c");
 
             const std::string expected("\n\n##file 0\n"
                                        "1: void f ( ) ;\n"
@@ -3386,7 +3384,7 @@ private:
                                            "A f(3);\n"
                                            "A f2(true);\n"
                                            "A g();\n"
-                                           "A e(int c);\n");
+                                           "A e(int c);\n", false, "test.c");
 
             const std::string expected("\n\n##file 0\n"
                                        "1: A f@1 ( 3 ) ;\n"
