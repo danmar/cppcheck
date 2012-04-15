@@ -2863,13 +2863,20 @@ void Tokenizer::setVarIdNew()
     std::map<std::string, unsigned int> variableId;
     std::map<unsigned int, std::map<std::string, unsigned int> > structMembers;
     std::stack< std::map<std::string, unsigned int> > scopeInfo;
+    std::stack<bool> executableScope;
+    executableScope.push(false);
     for (Token *tok = _tokens; tok; tok = tok->next()) {
 
         // scope info to handle shadow variables..
         if (tok->str() == "(" && Token::simpleMatch(tok->link(), ") {")) {
             scopeInfo.push(variableId);
-        } else if (tok->str() == "{" && !Token::simpleMatch(tok->previous(), ")")) {
-            scopeInfo.push(variableId);
+        } else if (tok->str() == "{") {
+            if (Token::simpleMatch(tok->previous(), ")")) {
+                executableScope.push(true);
+            } else {
+                executableScope.push(executableScope.top());
+                scopeInfo.push(variableId);
+            }
         } else if (tok->str() == "}") {
             if (scopeInfo.empty()) {
                 variableId.clear();
@@ -2877,9 +2884,15 @@ void Tokenizer::setVarIdNew()
                 variableId.swap(scopeInfo.top());
                 scopeInfo.pop();
             }
+
+            executableScope.pop();
+            if (executableScope.empty()) {   // should not possibly happen
+                executableScope.push(false);
+            }
         }
 
-        if (tok == _tokens || Token::Match(tok, "[;{}(,]")) {
+        if (tok == _tokens || Token::Match(tok, "[;{},]") ||
+            (tok->str()=="(" && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {")))) {
             // locate the variable name..
             const Token *tok2 = (tok == _tokens) ? tok : tok->next();
             if (!tok2)
@@ -2896,7 +2909,7 @@ void Tokenizer::setVarIdNew()
                 tok = tok2->previous();
             }
 
-            if (decl && Token::Match(tok2->previous(), "%type% ( !!)")) {
+            else if (decl && Token::Match(tok2->previous(), "%type% ( !!)")) {
                 const Token *tok3 = tok2->next();
                 if (!setVarIdParseDeclaration(&tok3,variableId)) {
                     variableId[tok2->previous()->str()] = ++_varId;

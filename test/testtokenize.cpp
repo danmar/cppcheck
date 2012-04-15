@@ -2712,7 +2712,7 @@ private:
                                        "{\n"
                                        "    unsigned long mask = (1UL << size_) - 1;\n"
                                        "    return (abits_val_ & mask);\n"
-                                       "}\n");
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: void foo ( )\n"
