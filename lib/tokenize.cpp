@@ -2804,9 +2804,11 @@ std::string Tokenizer::getNameForFunctionParams(const Token *start)
 }
 
 
-static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId)
+static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId, bool executableScope)
 {
     const Token *tok2 = *tok;
+
+    bool ref = false;
 
     if (!tok2->isName())
         return false;
@@ -2840,14 +2842,21 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             }
             if (bad || !tok2)
                 break;
-        } else if (tok2->str() != "*" && tok2->str() != "&" && tok2->str() != "::") {
+        } else if (tok2->str() == "&") {
+            ref = true;
+        } else if (tok2->str() != "*" && tok2->str() != "::") {
             break;
         }
         tok2 = tok2->next();
     }
 
-    if (tok2)
+    if (tok2) {
         *tok = tok2;
+
+        // In executable scopes, references must be assigned
+        if (executableScope && ref && tok2->str() != "=")
+            return false;
+    }
 
     return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
 }
@@ -2902,7 +2911,7 @@ void Tokenizer::setVarIdNew()
             if (tok2->str() == "return")
                 continue;
 
-            const bool decl = setVarIdParseDeclaration(&tok2, variableId);
+            const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top());
 
             if (decl && Token::Match(tok2->previous(), "%type% [;[=,)]")) {
                 variableId[tok2->previous()->str()] = ++_varId;
@@ -2911,7 +2920,7 @@ void Tokenizer::setVarIdNew()
 
             else if (decl && Token::Match(tok2->previous(), "%type% ( !!)")) {
                 const Token *tok3 = tok2->next();
-                if (!setVarIdParseDeclaration(&tok3,variableId)) {
+                if (!setVarIdParseDeclaration(&tok3,variableId,executableScope.top())) {
                     variableId[tok2->previous()->str()] = ++_varId;
                     tok = tok2->previous();
                 }

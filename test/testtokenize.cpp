@@ -3213,7 +3213,7 @@ private:
             const std::string code = "static int const SZ = 22;\n";
             ASSERT_EQUALS("\n\n##file 0\n"
                           "1: static int const SZ@1 = 22 ;\n",
-                          tokenizeDebugListing(code));
+                          tokenizeDebugListing(code, false, "test.c"));
         }
     }
 
@@ -3255,7 +3255,7 @@ private:
         const std::string code("int main(int flag) { if(a & flag) { return 1; } }");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: int main ( int flag@1 ) { if ( a & flag@1 ) { return 1 ; } }\n",
-                      tokenizeDebugListing(code));
+                      tokenizeDebugListing(code, false, "test.c"));
     }
 
     void varid44() {
@@ -3275,7 +3275,7 @@ private:
                                    "2: int x@1 ;\n"
                                    "3: x@1 = a ( y * x@1 , 10 ) ;\n"
                                    "4: }\n");
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code, false, "test.c"));
     }
 
     void varidFunctionCall2() {
