@@ -225,6 +225,7 @@ private:
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
         TEST_CASE(varid_using);  // ticket #3648
+        TEST_CASE(varid_catch);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -3642,6 +3643,19 @@ private:
         const char code[] = "using std::size_t;";
         const char expected[] = "\n\n##file 0\n"
                                 "1: using long ;\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid_catch() {
+        const char code[] = "void f() {\n"
+                            "    try { dostuff(); }\n"
+                            "    catch (exception &e) { }\n"
+                            "}";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( ) {\n"
+                                "2: try { dostuff ( ) ; }\n"
+                                "3: catch ( exception & e@1 ) { }\n"
+                                "4: }\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 

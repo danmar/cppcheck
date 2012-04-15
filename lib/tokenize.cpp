@@ -2854,8 +2854,11 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         *tok = tok2;
 
         // In executable scopes, references must be assigned
-        if (executableScope && ref && tok2->str() != "=")
+        // Catching by reference is an exception
+        if (executableScope && ref && tok2->str() != "=" &&
+            (tok2->str() != ")" || !Token::simpleMatch(tok2->link()->previous(), "catch"))) {
             return false;
+        }
     }
 
     return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
@@ -2903,7 +2906,7 @@ void Tokenizer::setVarIdNew()
         if (tok == _tokens || Token::Match(tok, "[;{},]") ||
             (tok->str()=="(" && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {")))) {
             // locate the variable name..
-            const Token *tok2 = (tok == _tokens) ? tok : tok->next();
+            const Token *tok2 = (tok->isName()) ? tok : tok->next();
             if (!tok2)
                 break;
 
