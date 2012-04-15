@@ -138,16 +138,6 @@ unsigned int CppCheck::processFile(const std::string& filename)
     if (!Path::acceptFile(filename))
         _settings.debugwarnings = false;
 
-    // TODO: Should this be moved out to its own function so all the files can be
-    // analysed before any files are checked?
-    if (_settings.test_2_pass && _settings._jobs == 1) {
-        const std::string printname = Path::toNativeSeparators(filename);
-        reportOut("Analysing " + printname + "...");
-
-        std::ifstream f(filename.c_str());
-        analyseFile(f, filename);
-    }
-
     if (_settings.terminated())
         return exitcode;
 

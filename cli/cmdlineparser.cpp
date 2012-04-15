@@ -121,27 +121,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--debug-fp") == 0)
             _settings->debugFalsePositive = true;
 
-        // Enable all checks - will be removed in future
-        else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0) {
-            PrintMessage("cppcheck: '-a/--all' option is deprecated and will be removed in 1.55 release.");
-            PrintMessage("cppcheck:   please use '--enable=all' instead.");
-        }
-
         // Inconclusive checking (still in testing phase)
         else if (strcmp(argv[i], "--inconclusive") == 0)
             _settings->inconclusive = true;
-
-        // Checking coding style - will be removed in the future
-        else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0) {
-            PrintMessage("cppcheck: '-s/--style' option is deprecated and will be removed in 1.55 release.");
-            PrintMessage("cppcheck:   please use '--enable=style' instead.");
-
-            const std::string errmsg = _settings->addEnabled("style");
-            if (!errmsg.empty()) {
-                PrintMessage(errmsg);
-                return false;
-            }
-        }
 
         // Filter errors
         else if (strncmp(argv[i], "--exitcode-suppressions", 23) == 0) {
@@ -518,12 +500,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
-        // deprecated: auto deallocated classes..
-        else if (strcmp(argv[i], "--auto-dealloc") == 0) {
-            ++i;
-            PrintMessage("cppcheck: '--auto-dealloc' option is deprecated and will be removed in 1.55 release.");
-        }
-
         // print all possible error messages..
         else if (strcmp(argv[i], "--errorlist") == 0) {
             _showErrorMessages = true;
@@ -549,12 +525,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             std::cout << doc2;
             _exitAfterPrint = true;
             return true;
-        }
-
-        // --test-2-pass Experimental 2-pass checking of files
-        // This command line flag will be removed
-        else if (strcmp(argv[i], "--test-2-pass") == 0) {
-            _settings->test_2_pass = true;
         }
 
         // show timing information..
@@ -682,11 +652,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
     if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option, so it's disabled.");
-    }
-
-    // FIXME: Make the _settings.test_2_pass thread safe
-    if (_settings->test_2_pass && _settings->_jobs > 1) {
-        PrintMessage("cppcheck: --test-2-pass doesn't work with -j option yet.");
     }
 
     if (argc <= 1)
@@ -818,7 +783,6 @@ void CmdLineParser::PrintHelp() const
               "    --rule-file=<file>   Use given rule file. For more information, see: \n"
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
-              "    -s, --style          Deprecated, please use '--enable=style' instead\n"
               "    --std=<id>           Enable some standard related checks.\n"
               "                         The available options are:\n"
               "                          * posix\n"
