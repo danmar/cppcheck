@@ -2308,9 +2308,15 @@ bool Tokenizer::tokenize(std::istream &code,
     if (!preprocessorCondition) {
         if (m_timerResults) {
             Timer t("Tokenizer::tokenize::setVarId", _settings->_showtime, m_timerResults);
-            setVarId();
+            if (isC())
+                setVarIdNew();
+            else
+                setVarIdOld();
         } else {
-            setVarId();
+            if (isC())
+                setVarIdNew();
+            else
+                setVarIdOld();
         }
 
         createLinks2();
@@ -2797,7 +2803,119 @@ std::string Tokenizer::getNameForFunctionParams(const Token *start)
     return result;
 }
 
-void Tokenizer::setVarId()
+
+static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId)
+{
+    const Token *tok2 = *tok;
+
+    if (!tok2->isName())
+        return false;
+
+    unsigned int typeCount = 0;
+    bool hasstruct = false;   // Is there a "struct" or "class"?
+    while (tok2) {
+        if (tok2->isName()) {
+            if (tok2->str() == "class" || tok2->str() == "struct") {
+                hasstruct = true;
+            } else if (!hasstruct && variableId.find(tok2->str()) != variableId.end()) {
+                ++typeCount;
+                tok2 = tok2->next();
+                break;
+            } else {
+                ++typeCount;
+            }
+        } else if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
+            unsigned int indentlevel = 1;
+            bool bad = false;
+            while ((indentlevel > 0) && (NULL != (tok2 = tok2->next()))) {
+                if (tok2->str() == "<")
+                    ++indentlevel;
+                else if (tok2->str() == ">")
+                    --indentlevel;
+                else if (tok2->str() == ">>") {
+                    if (indentlevel == 1)
+                        bad = true;
+                    indentlevel -= 2;
+                }
+            }
+            if (bad || !tok2)
+                break;
+        } else if (tok2->str() != "*" && tok2->str() != "&" && tok2->str() != "::") {
+            break;
+        }
+        tok2 = tok2->next();
+    }
+
+    if (tok2)
+        *tok = tok2;
+
+    return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
+}
+
+void Tokenizer::setVarIdNew()
+{
+    // Clear all variable ids
+    for (Token *tok = _tokens; tok; tok = tok->next())
+        tok->varId(0);
+
+    // variable id
+    _varId = 0;
+    std::map<std::string, unsigned int> variableId;
+    std::stack< std::map<std::string, unsigned int> > scopeInfo;
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+
+        // scope info to handle shadow variables..
+        if (tok->str() == "(" && Token::simpleMatch(tok->link(), ") {")) {
+            scopeInfo.push(variableId);
+        } else if (tok->str() == "{" && !Token::simpleMatch(tok->previous(), ")")) {
+            scopeInfo.push(variableId);
+        } else if (tok->str() == "}") {
+            if (scopeInfo.empty()) {
+                variableId.clear();
+            } else {
+                variableId.swap(scopeInfo.top());
+                scopeInfo.pop();
+            }
+        }
+
+        if (tok == _tokens || Token::Match(tok, "[;{}(,]")) {
+            // locate the variable name..
+            const Token *tok2 = (tok == _tokens) ? tok : tok->next();
+            if (!tok2)
+                break;
+
+            // Variable declaration can't start with "return", etc
+            if (tok2->str() == "return")
+                continue;
+
+            const bool decl = setVarIdParseDeclaration(&tok2, variableId);
+
+            if (decl && Token::Match(tok2->previous(), "%type% [;[=,)]")) {
+                variableId[tok2->previous()->str()] = ++_varId;
+                tok = tok2->previous();
+            }
+
+            if (decl && Token::Match(tok2->previous(), "%type% ( !!)")) {
+                const Token *tok3 = tok2->next();
+                if (!setVarIdParseDeclaration(&tok3,variableId)) {
+                    variableId[tok2->previous()->str()] = ++_varId;
+                    tok = tok2->previous();
+                }
+            }
+        }
+
+        if (tok->isName()) {
+            const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
+            if (it != variableId.end())
+                tok->varId(it->second);
+        } else if (Token::Match(tok, "::|. %var%")) {
+            // Don't set varid after a :: or . token
+            tok = tok->next();
+        }
+    }
+}
+
+void Tokenizer::setVarIdOld()
 {
     // Clear all variable ids
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -3758,9 +3876,15 @@ bool Tokenizer::simplifyTokenList()
     // In case variable declarations have been updated...
     if (m_timerResults) {
         Timer t("Tokenizer::simplifyTokenList::setVarId", _settings->_showtime, m_timerResults);
-        setVarId();
+        if (isC())
+            setVarIdNew();
+        else
+            setVarIdOld();
     } else {
-        setVarId();
+        if (isC())
+            setVarIdNew();
+        else
+            setVarIdOld();
     }
 
     bool modified = true;

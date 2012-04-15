@@ -118,7 +118,8 @@ public:
     void createTokens(std::istream &code);
 
     /** Set variable id */
-    void setVarId();
+    void setVarIdOld();
+    void setVarIdNew();
 
     /**
      * Simplify tokenlist

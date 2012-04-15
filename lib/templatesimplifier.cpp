@@ -204,6 +204,10 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (tok->str() == "*")
             tok = tok->next();
 
+        // Function pointer..
+        if (Token::simpleMatch(tok, "( * ) ("))
+            tok = tok->linkAt(3)->next();
+
         // inner template
         if (tok->str() == "<") {
             ++level;
@@ -217,6 +221,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 return numberOfParameters;
             --level;
             tok = tok->next();
+            if (!tok)
+                return 0;
         }
         if (tok->str() != ",")
             break;
