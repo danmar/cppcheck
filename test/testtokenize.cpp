@@ -2585,7 +2585,7 @@ private:
                                        "    struct ABC abc;\n"
                                        "    abc.a = 3;\n"
                                        "    i = abc.a;\n"
-                                       "}\n");
+                                       "}\n", false, "test.c");
 
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
@@ -3083,7 +3083,7 @@ private:
                                     "3: EventPtr event@3 ; event@3 = * eventP@1 ;\n"
                                     "4: * actionsP@2 = & event@3 . actions@4 ;\n"
                                     "5: }\n");
-        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
+        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false, "test.c"));
 
         const std::string code2("void f(int b, int c) {\n"
                                 "    x(a*b*c,10);\n"
@@ -3228,12 +3228,12 @@ private:
         const std::string code1("union evt; void f(const evt & event);");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: union evt ; void f ( const evt & event@1 ) ;\n",
-                      tokenizeDebugListing(code1));
+                      tokenizeDebugListing(code1, false, "test.c"));
 
         const std::string code2("struct evt; void f(const evt & event);");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: struct evt ; void f ( const evt & event@1 ) ;\n",
-                      tokenizeDebugListing(code2));
+                      tokenizeDebugListing(code2, false, "test.c"));
     }
 
     void varid42() {
