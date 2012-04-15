@@ -30,7 +30,7 @@
               <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name='$(var.ProductNameShort)'
                   WorkingDirectory='INSTALLDIR' Icon="cppcheckgui.exe" IconIndex="0" Advertise="yes" />
             </File>
-            <!-- <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' /> -->
+            <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' />
             <File Id='qtcore4dll' Name='qtcore4.dll' Source='$(var.QtDllDir)\qtcore4.dll' />
             <File Id='qtgui4dll' Name='qtgui4.dll' Source='$(var.QtDllDir)\qtgui4.dll' />
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
@@ -72,7 +72,7 @@
             <RemoveFile Id="qtsql4dll" On="install" Name="qtsql4.dll" />
           </Component>
         </Directory>
-        <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
+        <!-- <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" /> -->
       </Directory>
 
       <Directory Id='ProgramMenuFolder' Name='Programs' >
@@ -96,9 +96,11 @@
         <ComponentRef Id='ProgramMenuDir' />
         <ComponentRef Id='InnoSetupCleanup' />
       </Feature>
+      <!--
       <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2008 Runtime Components ">
         <MergeRef Id="CRT"/>
       </Feature>
+      -->
     </Feature>
 
     <Upgrade Id='$(var.ProductUpgradeCode)'>

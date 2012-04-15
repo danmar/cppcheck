@@ -1,11 +1,11 @@
 The Wix Installer for Windows
 =============================
 
-New cppcheck Windows installer is created with WiX:
+cppcheck Windows installer is created with WiX:
 http://wix.sourceforge.net/
 
 You'll need:
- - latest Wix (3.0 or later)
+ - latest Wix (3.6)
  - MSBuild (coming with Visual Studio, also with VS 2008 express)
  - VS 2008 CRT merge module
  
