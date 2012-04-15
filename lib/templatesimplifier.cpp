@@ -190,6 +190,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             ++numberOfParameters;
 
         // skip std::
+        if (tok->str() == "::")
+            tok = tok->next();
         while (Token::Match(tok, "%var% ::"))
             tok = tok->tokAt(2);
         if (!tok)
