@@ -2912,7 +2912,7 @@ void Tokenizer::setVarIdNew()
 
             // Variable declaration can't start with "return", etc
             if (tok2->str() == "return" || tok2->str() == "NOT" || tok2->str() == "goto" ||
-                tok2->str() == "delete" || tok2->str() == "throw")
+                (!isC() && (tok2->str() == "delete" || tok2->str() == "throw")))
                 continue;
 
             const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top());

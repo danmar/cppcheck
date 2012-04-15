@@ -208,6 +208,7 @@ private:
         TEST_CASE(varid42);   // ticket #3316 (varid for array)
         TEST_CASE(varid43);
         TEST_CASE(varid44);
+        TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -3264,6 +3265,21 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class A : public B , public C , public D { } ;\n",
                       tokenizeDebugListing(code));
+    }
+
+    void varid_cpp_keywords_in_c_code() {
+        const char code[] = "void f() {\n"
+                            "    delete d;\n"
+                            "    throw t;\n"
+                            "}";
+
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( ) {\n"
+                                "2: delete d@1 ;\n"
+                                "3: throw t@2 ;\n"
+                                "4: }\n";
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code,false,"test.c"));
     }
 
     void varidFunctionCall1() {
