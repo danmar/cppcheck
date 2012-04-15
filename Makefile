@@ -37,7 +37,7 @@ else # !COMSPEC
 endif # COMSPEC
 
 ifndef CXXFLAGS
-    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
+    CXXFLAGS=-O2 -DNDEBUG -Wall
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -298,25 +298,25 @@ lib/timer.o: lib/timer.cpp lib/timer.h
 lib/token.o: lib/token.cpp lib/token.h lib/errorlogger.h lib/suppressions.h lib/check.h lib/tokenize.h lib/path.h lib/settings.h lib/standards.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/token.o lib/token.cpp
 
-lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/path.h lib/token.h lib/mathlib.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/check.h lib/symboldatabase.h lib/templatesimplifier.h
+lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/path.h lib/token.h lib/mathlib.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/check.h lib/symboldatabase.h lib/templatesimplifier.h lib/preprocessor.h lib/timer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/tokenize.o lib/tokenize.cpp
 
 cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/path.h lib/timer.h cli/cmdlineparser.h cli/filelister.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/standards.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/path.h cli/threadexecutor.h lib/preprocessor.h cli/cmdlineparser.h cli/filelister.h cli/pathmatch.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/suppressions.h lib/cppcheck.h lib/settings.h lib/standards.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/path.h cli/threadexecutor.h lib/preprocessor.h cli/cmdlineparser.h cli/filelister.h cli/pathmatch.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
 cli/filelister.o: cli/filelister.cpp cli/filelister.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/filelister.o cli/filelister.cpp
 
-cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/standards.h
+cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/suppressions.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/main.o cli/main.cpp
 
 cli/pathmatch.o: cli/pathmatch.cpp cli/pathmatch.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/pathmatch.o cli/pathmatch.cpp
 
-cli/threadexecutor.o: cli/threadexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/standards.h cli/threadexecutor.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/path.h
+cli/threadexecutor.o: cli/threadexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/suppressions.h cli/threadexecutor.h lib/settings.h lib/standards.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_CLI} -c -o cli/threadexecutor.o cli/threadexecutor.cpp
 
 test/options.o: test/options.cpp test/options.h
