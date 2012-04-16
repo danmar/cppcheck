@@ -2976,6 +2976,95 @@ void Tokenizer::setVarIdNew()
             tok = tok->next();
         }
     }
+
+    // Member functions and variables in this source
+    std::list<Token *> allMemberFunctions;
+    std::list<Token *> allMemberVars;
+    {
+        for (Token *tok2 = _tokens; tok2; tok2 = tok2->next()) {
+            if (Token::Match(tok2, "%var% :: %var%")) {
+                if (tok2->strAt(3) == "(")
+                    allMemberFunctions.push_back(tok2);
+                else if (tok2->tokAt(2)->varId() != 0)
+                    allMemberVars.push_back(tok2);
+            }
+        }
+    }
+
+    // class members..
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (Token::Match(tok, "class|struct %var% {|:")) {
+            const std::string &classname(tok->next()->str());
+
+            // What member variables are there in this class?
+            std::map<std::string, unsigned int> varlist;
+            const Token* tokStart = Token::findsimplematch(tok, "{");
+            if (tokStart) {
+                for (const Token *tok2 = tokStart->next(); tok2 != tok->link(); tok2 = tok2->next()) {
+                    // skip parentheses..
+                    if (tok2->str() == "{")
+                        tok2 = tok2->link();
+                    else if (tok2->str() == "(")
+                        tok2 = tok2->link();
+
+                    // Found a member variable..
+                    else if (tok2->varId() > 0)
+                        varlist[tok2->str()] = tok2->varId();
+                }
+            }
+
+            // Are there any member variables in this class?
+            if (varlist.empty())
+                continue;
+
+            // Member variables
+            for (std::list<Token *>::iterator func = allMemberVars.begin(); func != allMemberVars.end(); ++func) {
+                if (!Token::simpleMatch(*func, classname.c_str()))
+                    continue;
+
+                Token *tok2 = *func;
+                tok2 = tok2->tokAt(2);
+                tok2->varId(varlist[tok2->str()]);
+            }
+
+            // Member functions for this class..
+            std::list<Token *> funclist;
+            {
+                const std::string funcpattern(classname + " :: %var% (");
+                for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
+                    Token *tok2 = *func;
+
+                    // Found a class function..
+                    if (Token::Match(tok2, funcpattern.c_str())) {
+                        // Goto the end parenthesis..
+                        tok2 = tok2->linkAt(3);
+                        if (!tok2)
+                            break;
+
+                        // If this is a function implementation.. add it to funclist
+                        if (Token::Match(tok2, ") const|volatile| {")) {
+                            if (tok2->next()->str() != "{")
+                                tok2 = tok2->next();
+                            funclist.push_back(tok2->next());
+                        }
+                    }
+                }
+            }
+
+            // Update the variable ids..
+            // Parse each function..
+            for (std::list<Token *>::iterator func = funclist.begin(); func != funclist.end(); ++func) {
+                for (Token *tok2 = (*func)->next(); tok2 != (*func)->link(); tok2 = tok2->next()) {
+                    if (tok2->varId() == 0 &&
+                        tok2->strAt(-1) != "." &&
+                        varlist.find(tok2->str()) != varlist.end()) {
+                        tok2->varId(varlist[tok2->str()]);
+                    }
+                }
+            }
+
+        }
+    }    
 }
 
 void Tokenizer::setVarIdOld()
