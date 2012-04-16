@@ -33,7 +33,7 @@ public:
 
 private:
 
-    void check(const char code[], bool experimental = true, const std::string &filename="test.cpp") {
+    void check(const char code[], bool experimental = true, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -47,7 +47,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename.c_str());
+        tokenizer.tokenize(istr, filename);
 
         // Assign variable ids
         tokenizer.simplifyTokenList();

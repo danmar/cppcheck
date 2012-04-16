@@ -635,11 +635,7 @@ private:
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
         checkMemoryLeak.simplifycode(tokens);
 
-        std::ostringstream ret;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ret << (tok->previous() ? " " : "") << tok->str();
-
-        return ret.str();
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
 
