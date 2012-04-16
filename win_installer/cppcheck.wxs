@@ -37,7 +37,6 @@
           </Component>
           <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
             <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.TranslationsDir)\cppcheck_de.qm' />
-            <File Id='cppcheck_en.qm' Name='cppcheck_en.qm' Source='$(var.TranslationsDir)\cppcheck_en.qm' />
             <File Id='cppcheck_es.qm' Name='cppcheck_es.qm' Source='$(var.TranslationsDir)\cppcheck_es.qm' />
             <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.TranslationsDir)\cppcheck_fi.qm' />
             <File Id='cppcheck_fr.qm' Name='cppcheck_fr.qm' Source='$(var.TranslationsDir)\cppcheck_fr.qm' />
@@ -56,6 +55,7 @@
           <!-- Cleanup runtime files installed by previous InnoSetup installer.
                Also remove old gui.exe which is now cppcheck-gui.exe.
                Remove old Swedish translation file which was renamed.
+               Remove old English translation that is not needed.
                Remove locally installed help file that didn't work.
                Remove Qt DLLs not needed anymore
           -->
@@ -65,6 +65,7 @@
             <RemoveFile Id="Microsoft.VC90.CRT.manifest" On="install" Name="Microsoft.VC90.CRT.manifest" />
             <RemoveFile Id="gui.exe" On="install" Name="gui.exe" />
             <RemoveFile Id="cppcheck_se.qm" On="install" Name="cppcheck_se.qm" />
+            <RemoveFile Id="cppcheck_en.qm" On="install" Name="cppcheck_en.qm" />
             <RemoveFile Id="onlinehelp.qhc" On="install" Name="onlinehelp.qhc" />
             <RemoveFile Id="qtclucene4dll" On="install" Name="qtclucene4.dll" />
             <RemoveFile Id="qthelp4dll" On="install" Name="qthelp4.dll" />
