@@ -32,6 +32,7 @@
             </File>
             <File Id='libgcc_s_dw2_1_dll' Name='libgcc_s_dw2-1.dll' Source='libgcc_s_dw2-1.dll' />
             <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' />
+            <File Id='libpcre0dll' Name='libpcre-0.dll' Source='libpcre-0.dll' />
             <File Id='qtcore4dll' Name='qtcore4.dll' Source='$(var.QtDllDir)\qtcore4.dll' />
             <File Id='qtgui4dll' Name='qtgui4.dll' Source='$(var.QtDllDir)\qtgui4.dll' />
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
