@@ -894,60 +894,44 @@ void Token::createMutualLinks(Token *begin, Token *end)
 
 void Token::printOut(const char *title) const
 {
-    const std::vector<std::string> fileNames;
-    std::cout << stringifyList(true, title, fileNames) << std::endl;
+    if (title)
+        std::cout << "\n### " << title << " ###\n";
+    std::cout << stringifyList(true, true, true, true, true, 0, 0) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
-    std::cout << stringifyList(true, title, fileNames) << std::endl;
+    if (title)
+        std::cout << "\n### " << title << " ###\n";
+    std::cout << stringifyList(true, true, true, true, true, &fileNames, 0) << std::endl;
 }
 
-std::string Token::stringify(const Token* end) const
+void Token::stringify(std::ostream& os, bool varid, bool attributes) const
+{
+    if (attributes) {
+        if (isUnsigned())
+            os << "unsigned ";
+        else if (isSigned())
+            os << "signed ";
+        if (isLong())
+            os << "long ";
+    }
+    os << _str;
+    if (varid && _varId != 0)
+        os << '@' << _varId;
+}
+
+std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, bool linebreaks, bool files, const std::vector<std::string>* fileNames, const Token* end) const
 {
     if (this == end)
         return "";
 
     std::ostringstream ret;
 
-    if (isUnsigned())
-        ret << "unsigned ";
-    else if (isSigned())
-        ret << "signed ";
-    if (isLong())
-        ret << "long ";
-    ret << str();
-
-    for (const Token *tok = this->next(); tok && tok != end; tok = tok->next()) {
-        if (tok->str().empty())
-            continue;
-        if (tok->isUnsigned())
-            ret << " unsigned";
-        else if (tok->isSigned())
-            ret << " signed";
-        if (tok->isLong())
-            ret << " long";
-        ret << ' ' << tok->str();
-    }
-    return ret.str();
-}
-
-std::string Token::stringifyList(bool varid, const char *title) const
-{
-    const std::vector<std::string> fileNames;
-    return stringifyList(varid, title, fileNames);
-}
-
-std::string Token::stringifyList(bool varid, const char *title, const std::vector<std::string> &fileNames) const
-{
-    std::ostringstream ret;
-    if (title)
-        ret << "\n### " << title << " ###\n";
-
-    unsigned int lineNumber = 0;
-    int fileInd = -1;
+    unsigned int lineNumber = _linenr;
+    int fileInd = files?-1:_fileIndex;
     std::map<int, unsigned int> lineNumbers;
-    for (const Token *tok = this; tok; tok = tok->next()) {
+    for (const Token *tok = this; tok != end; tok = tok->next()) {
         bool fileChange = false;
         if (static_cast<int>(tok->_fileIndex) != fileInd) {
             if (fileInd != -1) {
@@ -955,29 +939,46 @@ std::string Token::stringifyList(bool varid, const char *title, const std::vecto
             }
 
             fileInd = static_cast<int>(tok->_fileIndex);
-            ret << "\n\n##file ";
-            if (fileNames.size() > tok->_fileIndex)
-                ret << fileNames.at(tok->_fileIndex);
-            else
-                ret << fileInd;
+            if (files) {
+                ret << "\n\n##file ";
+                if (fileNames && fileNames->size() > tok->_fileIndex)
+                    ret << fileNames->at(tok->_fileIndex);
+                else
+                    ret << fileInd;
+            }
 
             lineNumber = lineNumbers[fileInd];
             fileChange = true;
         }
 
-        if (lineNumber != tok->linenr() || fileChange) {
+        if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
             while (lineNumber < tok->linenr()) {
                 ++lineNumber;
-                ret << '\n' << lineNumber << ':';
+                ret << '\n';
+                if (linenumbers) {
+                    ret << lineNumber << ':';
+                    if (lineNumber == tok->linenr())
+                        ret << ' ';
+                }
             }
             lineNumber = tok->linenr();
         }
 
-        ret << ' ' << tok->str();
-        if (varid && tok->varId() > 0)
-            ret << '@' << tok->varId();
+        tok->stringify(ret, varid, attributes); // print token
+        if (tok->next() != end && (!linebreaks || (tok->next()->linenr() <= tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
+            ret << ' ';
     }
-    ret << '\n';
+    if (linebreaks && files)
+        ret << '\n';
     return ret.str();
 }
 
+std::string Token::stringifyList(const Token* end, bool attributes) const
+{
+    return stringifyList(false, attributes, false, false, false, 0, end);
+}
+
+std::string Token::stringifyList(bool varid) const
+{
+    return stringifyList(varid, false, true, true, true, 0, 0);
+}

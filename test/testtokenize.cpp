@@ -412,18 +412,7 @@ private:
         TEST_CASE(platformUnix64);
     }
 
-
-    bool cmptok(const char *expected[], const Token *actual) {
-        unsigned int i = 0;
-        for (; expected[i] && actual; ++i, actual = actual->next()) {
-            if (strcmp(expected[i], actual->str().c_str()) != 0)
-                return false;
-        }
-        return (expected[i] == NULL && actual == NULL);
-    }
-
-
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const std::string &filename="test.cpp") {
+    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp") {
         errout.str("");
 
         Settings settings;
@@ -433,36 +422,11 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename.c_str());
+        tokenizer.tokenize(istr, filename);
         if (simplify)
             tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            if (expand) {
-                if (tok->isUnsigned())
-                    ostr << "unsigned ";
-                else if (tok->isSigned())
-                    ostr << "signed ";
-
-                if (tok->isLong())
-                    ostr << "long ";
-            }
-
-            ostr << tok->str();
-
-            // Append newlines
-            if (tok->next()) {
-                if (tok->linenr() != tok->next()->linenr()) {
-                    for (unsigned int i = tok->linenr(); i < tok->next()->linenr(); ++i)
-                        ostr << "\n";
-                } else {
-                    ostr << " ";
-                }
-            }
-        }
-
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
     }
 
 
@@ -729,10 +693,7 @@ private:
 
         tokenizer.simplifyCasts();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" int * f ( int * ) ;", ostr.str());
+        ASSERT_EQUALS("int * f ( int * ) ;", tokenizer.tokens()->stringifyList(0, false));
     }
 
     // remove static_cast..
@@ -750,10 +711,7 @@ private:
 
         tokenizer.simplifyCasts();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" t = & p ;", ostr.str());
+        ASSERT_EQUALS("t = & p ;", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void removeCast3() {
@@ -1150,14 +1108,7 @@ private:
 
         tokenizer.simplifyKnownVariables();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            if (tok->previous())
-                ostr << " ";
-            ostr << tok->str();
-        }
-
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
     void simplifyKnownVariables1() {
@@ -4124,12 +4075,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "");
 
-        // Stringify the tokens..
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << tok->str() << " ";
-
-        ASSERT_EQUALS("a_b TEST ( var , val ) var_val = val ", ostr.str());
+        ASSERT_EQUALS("a_b TEST ( var , val ) var_val = val", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void macrodoublesharp() {
@@ -4144,12 +4090,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "");
 
-        // Stringify the tokens..
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << tok->str() << " ";
-
-        ASSERT_EQUALS("DBG ( fmt , args . . . ) printf ( fmt , ## args ) ", ostr.str());
+        ASSERT_EQUALS("DBG ( fmt , args . . . ) printf ( fmt , ## args )", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void simplifyFunctionParameters() {
@@ -4353,10 +4294,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 4 + 2 ; }", ostr.str());
+        ASSERT_EQUALS("void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 4 + 2 ; }", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void tokenize_strings() {
@@ -4380,10 +4318,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { const char * a ; a = { \"hello more world\" } ; }", ostr.str());
+        ASSERT_EQUALS("void f ( ) { const char * a ; a = { \"hello more world\" } ; }", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void simplify_constants() {
@@ -4410,10 +4345,7 @@ private:
 
         tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { } void g ( ) { }", ostr.str());
+        ASSERT_EQUALS("void f ( ) { } void g ( ) { }", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void simplify_constants2() {
@@ -4436,13 +4368,7 @@ private:
 
         tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-
-        std::ostringstream oss;
-        oss << " void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }";
-        ASSERT_EQUALS(oss.str(), ostr.str());
+        ASSERT_EQUALS("void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void simplify_constants3() {
@@ -4751,9 +4677,9 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void func (\n"
-                          "int in,\n"
-                          "int r,\n"
-                          "int m)\n"
+                          "int in ,\n"
+                          "int r ,\n"
+                          "int m )\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
         }
@@ -4764,7 +4690,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f (\n"
-                          "char * r)\n"
+                          "char * r )\n"
                           "\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
@@ -4785,7 +4711,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f (\n"
-                          "char * r)\n"
+                          "char * r )\n"
                           "\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
@@ -4798,9 +4724,9 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f (\n"
-                          "char * r,\n"
+                          "char * r ,\n"
                           "\n"
-                          "char * s)\n"
+                          "char * s )\n"
                           "\n"
                           "\n"
                           "{\n"
@@ -4813,9 +4739,9 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f (\n"
-                          "char * r,\n"
-                          "char * s,\n"
-                          "char * t)\n"
+                          "char * r ,\n"
+                          "char * s ,\n"
+                          "char * t )\n"
                           "\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
@@ -5416,24 +5342,14 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyFunctionPointers();
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            if (tok->isUnsigned())
-                ostr << " unsigned";
-            else if (tok->isSigned())
-                ostr << " signed";
-            if (tok->isLong())
-                ostr << " long";
-            ostr << (tok->isName() ? " " : "") << tok->str();
-        }
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(0, true);
     }
 
     void functionpointer1() {
-        ASSERT_EQUALS(" void* f;", simplifyFunctionPointers("void (*f)();"));
-        ASSERT_EQUALS(" void** f;", simplifyFunctionPointers("void *(*f)();"));
-        ASSERT_EQUALS(" unsigned int* f;", simplifyFunctionPointers("unsigned int (*f)();"));
-        ASSERT_EQUALS(" unsigned int** f;", simplifyFunctionPointers("unsigned int * (*f)();"));
+        ASSERT_EQUALS("void * f ;", simplifyFunctionPointers("void (*f)();"));
+        ASSERT_EQUALS("void * * f ;", simplifyFunctionPointers("void *(*f)();"));
+        ASSERT_EQUALS("unsigned int * f ;", simplifyFunctionPointers("unsigned int (*f)();"));
+        ASSERT_EQUALS("unsigned int * * f ;", simplifyFunctionPointers("unsigned int * (*f)();"));
     }
 
     void functionpointer2() {
@@ -5441,9 +5357,9 @@ private:
                             "void f1 ( ) { }"
                             "PF pf = &f1;"
                             "PF pfs[] = { &f1, &f1 };";
-        const char expected[] = " void f1(){} "
-                                "void* pf; pf=& f1; "
-                                "void* pfs[2]={& f1,& f1};";
+        const char expected[] = "void f1 ( ) { } "
+                                "void * pf ; pf = & f1 ; "
+                                "void * pfs [ 2 ] = { & f1 , & f1 } ;";
         ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
     }
 
@@ -5452,8 +5368,8 @@ private:
         const char code[] = "void f() {\n"
                             "(void)(xy(*p)(0);)"
                             "\n}";
-        const char expected[] = " void f(){"
-                                "( void)( xy(* p)(0);)"
+        const char expected[] = "void f ( ) { "
+                                "( void ) ( xy ( * p ) ( 0 ) ; ) "
                                 "}";
         ASSERT_EQUALS(expected, simplifyFunctionPointers(code));
     }
@@ -5517,7 +5433,7 @@ private:
                            "{\n"
                            "  fn2<int>();\n"
                            "}\n";
-        ASSERT_EQUALS("int main ( )\n{\nfn2<int> ( ) ;\n}void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("int main ( )\n{\nfn2<int> ( ) ;\n} void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate2() {
@@ -5589,7 +5505,7 @@ private:
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            if (tok->isName())
+            if (tok->isName() && tok->previous())
                 ostr << " ";
             ostr << tok->str();
         }
@@ -5603,7 +5519,7 @@ private:
         ASSERT_EQUALS("; foo a[3]={{1,2},{3,4},{5,6}};", arraySize_(";foo a[]={{1,2},{3,4},{5,6}};"));
         TODO_ASSERT_EQUALS("; int a[1]={ foo< bar1, bar2>(123,4)};", "; int a[]={ foo< bar1, bar2>(123,4)};", arraySize_(";int a[]={foo<bar1,bar2>(123,4)};"));
         ASSERT_EQUALS("; int a[2]={ b> c?1:2,3};", arraySize_(";int a[]={ b>c?1:2,3};"));
-        TODO_ASSERT_EQUALS(" int main(){ int a[2]={ b< c?1:2,3}}", " int main(){ int a[]={ b< c?1:2,3}}", arraySize_("int main(){int a[]={b<c?1:2,3}}"));
+        TODO_ASSERT_EQUALS("int main(){ int a[2]={ b< c?1:2,3}}", "int main(){ int a[]={ b< c?1:2,3}}", arraySize_("int main(){int a[]={b<c?1:2,3}}"));
         ASSERT_EQUALS("; int a[3]={ ABC,2,3};", arraySize_(";int a[]={ABC,2,3};"));
     }
 
@@ -5613,29 +5529,29 @@ private:
     }
 
     void labels() {
-        ASSERT_EQUALS(" void f(){ ab:; a=0;}", labels_("void f() { ab: a=0; }"));
+        ASSERT_EQUALS("void f(){ ab:; a=0;}", labels_("void f() { ab: a=0; }"));
         //ticket #3176
-        ASSERT_EQUALS(" void f(){ ab:;(* func)();}", labels_("void f() { ab: (*func)(); }"));
+        ASSERT_EQUALS("void f(){ ab:;(* func)();}", labels_("void f() { ab: (*func)(); }"));
         //with '*' operator
-        ASSERT_EQUALS(" void f(){ ab:;* b=0;}", labels_("void f() { ab: *b=0; }"));
-        ASSERT_EQUALS(" void f(){ ab:;** b=0;}", labels_("void f() { ab: **b=0; }"));
+        ASSERT_EQUALS("void f(){ ab:;* b=0;}", labels_("void f() { ab: *b=0; }"));
+        ASSERT_EQUALS("void f(){ ab:;** b=0;}", labels_("void f() { ab: **b=0; }"));
         //with '&' operator
-        ASSERT_EQUALS(" void f(){ ab:;& b=0;}", labels_("void f() { ab: &b=0; }"));
-        ASSERT_EQUALS(" void f(){ ab:;&( b. x)=0;}", labels_("void f() { ab: &(b->x)=0; }"));
+        ASSERT_EQUALS("void f(){ ab:;& b=0;}", labels_("void f() { ab: &b=0; }"));
+        ASSERT_EQUALS("void f(){ ab:;&( b. x)=0;}", labels_("void f() { ab: &(b->x)=0; }"));
         //with '(' parenthesis
-        ASSERT_EQUALS(" void f(){ ab:;*(* b). x=0;}", labels_("void f() { ab: *(* b)->x=0; }"));
-        ASSERT_EQUALS(" void f(){ ab:;(** b). x=0;}", labels_("void f() { ab: (** b).x=0; }"));
-        ASSERT_EQUALS(" void f(){ ab:;&(* b. x)=0;}", labels_("void f() { ab: &(*b.x)=0; }"));
+        ASSERT_EQUALS("void f(){ ab:;*(* b). x=0;}", labels_("void f() { ab: *(* b)->x=0; }"));
+        ASSERT_EQUALS("void f(){ ab:;(** b). x=0;}", labels_("void f() { ab: (** b).x=0; }"));
+        ASSERT_EQUALS("void f(){ ab:;&(* b. x)=0;}", labels_("void f() { ab: &(*b.x)=0; }"));
         //with '{' parenthesis
-        ASSERT_EQUALS(" void f(){ ab:;{ b=0;}}", labels_("void f() { ab: {b=0;} }"));
-        ASSERT_EQUALS(" void f(){ ab:;{* b=0;}}", labels_("void f() { ab: { *b=0;} }"));
-        ASSERT_EQUALS(" void f(){ ab:;{& b=0;}}", labels_("void f() { ab: { &b=0;} }"));
-        ASSERT_EQUALS(" void f(){ ab:;{&(* b. x)=0;}}", labels_("void f() { ab: {&(*b.x)=0;} }"));
+        ASSERT_EQUALS("void f(){ ab:;{ b=0;}}", labels_("void f() { ab: {b=0;} }"));
+        ASSERT_EQUALS("void f(){ ab:;{* b=0;}}", labels_("void f() { ab: { *b=0;} }"));
+        ASSERT_EQUALS("void f(){ ab:;{& b=0;}}", labels_("void f() { ab: { &b=0;} }"));
+        ASSERT_EQUALS("void f(){ ab:;{&(* b. x)=0;}}", labels_("void f() { ab: {&(*b.x)=0;} }"));
         //with unhandled MACRO() code
-        ASSERT_EQUALS(" void f(){ MACRO( ab: b=0;, foo)}", labels_("void f() { MACRO(ab: b=0;, foo)}"));
-        ASSERT_EQUALS(" void f(){ MACRO( bar, ab:{&(* b. x)=0;})}", labels_("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
+        ASSERT_EQUALS("void f(){ MACRO( ab: b=0;, foo)}", labels_("void f() { MACRO(ab: b=0;, foo)}"));
+        ASSERT_EQUALS("void f(){ MACRO( bar, ab:{&(* b. x)=0;})}", labels_("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
         //don't crash with garbage code
-        ASSERT_EQUALS(" switch(){ case}", labels_("switch(){case}"));
+        ASSERT_EQUALS("switch(){ case}", labels_("switch(){case}"));
     }
 
     // Check simplifyInitVar
@@ -6386,7 +6302,7 @@ private:
         bool simplify = false;
         bool expand = true;
         Settings::PlatformType platform = Settings::Unspecified;
-        const std::string filename="test.cs";
+        const char filename[] = "test.cs";
         ASSERT_EQUALS("int * x ;", tokenizeAndStringify("int [] x;", simplify, expand, platform, filename));
         ASSERT_EQUALS("; int * x , int * y ;", tokenizeAndStringify("; int [] x, int [] y;", simplify, expand, platform, filename));
         ASSERT_EQUALS("; int * * x ;", tokenizeAndStringify("; int [][] x;", simplify, expand, platform, filename));
@@ -6406,14 +6322,7 @@ private:
         std::istringstream istr(javacode);
         tokenizer.tokenize(istr, "test.java");
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            ostr << tok->str();
-            if (tok->next())
-                ostr << " ";
-        }
-
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
 

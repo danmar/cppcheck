@@ -426,22 +426,8 @@ private:
             tokenizer.simplifyTokenList();
 
         tokenizer.validate();
-        std::string ret;
-        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
-            if (tok1 != tokenizer.tokens())
-                ret += " ";
-            if (!simplify) {
-                if (tok1->isUnsigned())
-                    ret += "unsigned ";
-                else if (tok1->isSigned())
-                    ret += "signed ";
-            }
-            if (tok1->isLong())
-                ret += "long ";
-            ret += tok1->str();
-        }
 
-        return ret;
+        return tokenizer.tokens()->stringifyList(0, !simplify);
     }
 
 
@@ -937,15 +923,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
-            if (tok1->previous()) {
-                ostr << " ";
-            }
-            ostr << tok1->str();
-        }
-
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
     unsigned int sizeofFromTokenizer(const char type[]) {
@@ -2297,18 +2275,8 @@ private:
                                 "    x(sizeof typename);\n"
                                 "    type = 0;\n"
                                 "}";
-            errout.str("");
-            Settings settings;
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.c", "", false);
-            std::ostringstream ostr;
-            for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
-                ostr << tok1->str();
-                if (Token::Match(tok1, "%var% %var%"))
-                    ostr << " ";
-            }
-            ASSERT_EQUALS("void f(){x(sizeof typename);type=0;}", ostr.str());
+
+            ASSERT_EQUALS("void f ( ) { x ( sizeof ( typename ) ) ; type = 0 ; }", sizeof_(code));
         }
     }
 
@@ -2372,11 +2340,7 @@ private:
 
         tokenizer.simplifyIfAssign();
 
-        std::ostringstream ostr;
-        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
-            ostr << (tok1->previous() ? " " : "") << tok1->str();
-
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
     void ifassign1() {
@@ -2449,11 +2413,7 @@ private:
 
         tokenizer.simplifyIfNot();
 
-        std::ostringstream ostr;
-        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
-            ostr << (tok1->previous() ? " " : "") << tok1->str();
-
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
     void ifnot() {
@@ -2480,11 +2440,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        std::ostringstream ostr;
-        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
-            ostr << (tok1->previous() ? " " : "") << tok1->str();
-
-        return ostr.str();
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
     void not1() {
@@ -3545,14 +3501,7 @@ private:
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
-        std::string ret;
-        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
-            if (tok1 != tokenizer.tokens())
-                ret += " ";
-            ret += tok1->str();
-        }
-
-        return ret;
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
 

@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include <ostream>
 
 /// @addtogroup Core
 /// @{
@@ -333,10 +334,29 @@ public:
      */
     static void replace(Token *replaceThis, Token *start, Token *end);
 
-    /** Stringify a token list (with or without varId) */
-    std::string stringify(const Token* end) const;
-    std::string stringifyList(bool varid = false, const char *title = 0) const;
-    std::string stringifyList(bool varid, const char *title, const std::vector<std::string> &fileNames) const;
+    /**
+     * Stringify a token
+     * @param os The result is shifted into that output stream
+     * @param varid Print varids. (Style: "varname@id")
+     * @param attributes Print attributes of tokens like "unsigned" in front of it.
+     */
+    void stringify(std::ostream& os, bool varid, bool attributes) const;
+
+    /**
+     * Stringify a list of token, from current instance on.
+     * @param varid Print varids. (Style: "varname@id")
+     * @param attributes Print attributes of tokens like "unsigned" in front of it.
+     * @param linenumbers Print line number in front of each line
+     * @param linebreaks Insert \n into string when line number changes
+     * @param files print Files as numbers or as names (if fileNames is given)
+     * @param fileNames Vector of filenames. Used (if given) to print filenames as strings instead of numbers.
+     * @param title Prints a title on top of output
+     * @param end Stringification ends before this token is reached. 0 to stringify until end of list.
+     * @return Stringified token list as a string
+     */
+    std::string stringifyList(bool varid, bool attributes, bool linenumbers, bool linebreaks, bool files, const std::vector<std::string>* fileNames = 0, const Token* end = 0) const;
+    std::string stringifyList(const Token* end, bool attributes = true) const;
+    std::string stringifyList(bool varid = false) const;
 
     /**
      * Remove the contents for this token from the token list.

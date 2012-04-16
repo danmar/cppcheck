@@ -2488,7 +2488,7 @@ void Tokenizer::simplifySQL()
             while (end && end->str() != ";")
                 end = end->next();
 
-            std::string instruction = tok->stringify(end);
+            std::string instruction = tok->stringifyList(end);
             // delete all tokens until ';'
             Token::eraseTokens(tok, end);
 
@@ -8977,7 +8977,7 @@ void Tokenizer::simplifyAsm()
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "__asm|_asm|asm {") &&
             tok->next()->link()->next()) {
-            instruction = tok->tokAt(2)->stringify(tok->next()->link());
+            instruction = tok->tokAt(2)->stringifyList(tok->next()->link());
             Token::eraseTokens(tok, tok->next()->link()->next());
         }
 
@@ -8986,7 +8986,7 @@ void Tokenizer::simplifyAsm()
             Token *partok = tok->next();
             if (partok->str() != "(")
                 partok = partok->next();
-            instruction = partok->next()->stringify(partok->link());
+            instruction = partok->next()->stringifyList(partok->link());
             Token::eraseTokens(tok, partok->link()->next());
         }
 
@@ -8995,7 +8995,7 @@ void Tokenizer::simplifyAsm()
             while (tok2 && tok2->linenr() == tok->linenr() && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
                 tok2 = tok2->next();
             if (!tok2 || tok2->str() == ";" || tok2->linenr() != tok->linenr()) {
-                instruction = tok->next()->stringify(tok2);
+                instruction = tok->next()->stringifyList(tok2);
                 Token::eraseTokens(tok, tok2);
                 if (!tok2 || tok2->str() != ";")
                     tok->insertToken(";");

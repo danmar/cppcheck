@@ -148,7 +148,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             std::ifstream f(filename.c_str());
             if (!f.is_open()) {
-                PrintMessage("cppcheck: Couldn't open the file: \"" + std::string(filename) + "\".");
+                PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
                 return false;
             }
             const std::string errmsg(_settings->nofail.parseFile(f));
@@ -164,7 +164,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             std::ifstream f(filename.c_str());
             if (!f.is_open()) {
                 std::string message("cppcheck: Couldn't open the file: \"");
-                message += std::string(filename);
+                message += filename;
                 message += "\".";
                 if (count(filename.begin(), filename.end(), ',') > 0 ||
                     count(filename.begin(), filename.end(), '.') > 1) {
@@ -604,7 +604,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->platform(Settings::Unix64);
             else {
                 std::string message("cppcheck: error: unrecognized platform: \"");
-                message += argv[i];
+                message += platform;
                 message +=  "\".";
                 PrintMessage(message);
                 return false;

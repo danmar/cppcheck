@@ -2558,7 +2558,7 @@ void CheckOther::checkDuplicateIf()
         std::map<std::string, const Token*> expressionMap;
 
         // get the expression from the token stream
-        std::string expression = tok->tokAt(2)->stringify(tok->next()->link());
+        std::string expression = tok->tokAt(2)->stringifyList(tok->next()->link());
 
         // save the expression and its location
         expressionMap.insert(std::make_pair(expression, tok));
@@ -2570,7 +2570,7 @@ void CheckOther::checkDuplicateIf()
         while (Token::simpleMatch(tok1, "} else if (") &&
                Token::simpleMatch(tok1->linkAt(3), ") {")) {
             // get the expression from the token stream
-            expression = tok1->tokAt(4)->stringify(tok1->linkAt(3));
+            expression = tok1->tokAt(4)->stringifyList(tok1->linkAt(3));
 
             // try to look up the expression to check for duplicates
             std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
@@ -2630,13 +2630,13 @@ void CheckOther::checkDuplicateBranch()
         if (tok && tok->next() && Token::simpleMatch(tok->next()->link(), ") {") &&
             Token::simpleMatch(tok->next()->link()->next()->link(), "} else {")) {
             // save if branch code
-            std::string branch1 = tok->next()->link()->tokAt(2)->stringify(tok->next()->link()->next()->link());
+            std::string branch1 = tok->next()->link()->tokAt(2)->stringifyList(tok->next()->link()->next()->link());
 
             // find else branch
             const Token *tok1 = tok->next()->link()->next()->link();
 
             // save else branch code
-            std::string branch2 = tok1->tokAt(3)->stringify(tok1->linkAt(2));
+            std::string branch2 = tok1->tokAt(3)->stringifyList(tok1->linkAt(2));
 
             // check for duplicates
             if (branch1 == branch2)
