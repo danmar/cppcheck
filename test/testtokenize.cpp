@@ -161,6 +161,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak); // ticket #2324
         TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
         TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
+        TEST_CASE(simplifyExternC);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -2508,6 +2509,10 @@ private:
         }
     }
 
+    void simplifyExternC() {
+        ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" int foo();"));
+        ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" { int foo(); }"));
+    }
 
 
     std::string tokenizeDebugListing(const std::string &code, bool simplify = false, const char filename[] = "test.cpp") {
@@ -3222,7 +3227,7 @@ private:
     void varid40() {
         const std::string code("extern \"C\" int (*a())();");
         ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: extern \"C\" int ( * a ( ) ) ( ) ;\n",
+                      "1: int ( * a ( ) ) ( ) ;\n",
                       tokenizeDebugListing(code));
     }
 

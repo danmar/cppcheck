@@ -489,6 +489,8 @@ public:
 
     void concatenateNegativeNumber();
 
+    void simplifyExternC();
+
     void simplifyRoundCurlyParenthesis();
 
     void simplifyDebugNew();

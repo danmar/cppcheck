@@ -225,7 +225,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
 
             ++checkCount;
         }
-    } catch (std::runtime_error &e) {
+    } catch (const std::runtime_error &e) {
         // Exception was thrown when checking this file..
         const std::string fixedpath = Path::toNativeSeparators(filename);
         _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());

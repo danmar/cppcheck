@@ -1977,6 +1977,10 @@ bool Tokenizer::tokenize(std::istream &code,
     // combine "- %num%"
     concatenateNegativeNumber();
 
+    // remove extern "C" and extern "C" {}
+    if (isCPP())
+        simplifyExternC();
+
     // simplify weird but legal code: "[;{}] ( { code; } ) ;"->"[;{}] code;"
     simplifyRoundCurlyParenthesis();
 
@@ -2447,6 +2451,20 @@ void Tokenizer::concatenateNegativeNumber()
         if (Token::Match(tok, "?|:|,|(|[|=|return|case|sizeof|%op% - %num%")) {
             tok->deleteNext();
             tok->next()->str("-" + tok->next()->str());
+        }
+    }
+}
+
+void Tokenizer::simplifyExternC()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
+        if (Token::Match(tok, "extern \"C\" {|")) {
+            if (tok->strAt(2) == "{") {
+                tok->linkAt(2)->deleteThis();
+                tok->deleteNext(2);
+            } else
+                tok->deleteNext();
+            tok->deleteThis();
         }
     }
 }
