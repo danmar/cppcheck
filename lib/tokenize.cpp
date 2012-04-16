@@ -699,20 +699,16 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
 Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 {
     Token *tok = NULL;
-    unsigned int level = 0;
 
     // remove typedef but leave ;
     while (typeDef->next()) {
-        if (level == 0 && typeDef->next()->str() == ";") {
+        if (typeDef->next()->str() == ";") {
             typeDef->deleteNext();
             break;
         } else if (typeDef->next()->str() == "{")
-            ++level;
-        else if (typeDef->next()->str() == "}") {
-            if (!level)
-                break;
-            --level;
-        }
+            Token::eraseTokens(typeDef, typeDef->linkAt(1));
+        else if (typeDef->next()->str() == "}")
+            break;
         typeDef->deleteNext();
     }
 
@@ -1457,12 +1453,11 @@ void Tokenizer::simplifyTypedef()
 
                             // skip to end of scope if not already there
                             if (tok2->str() != "}") {
-                                int level = 0;
-                                while (tok2->next() && (tok2->next()->str() != "}" || level)) {
+                                while (tok2->next()) {
                                     if (tok2->next()->str() == "{")
-                                        ++level;
+                                        tok2 = tok2->linkAt(1)->previous();
                                     else if (tok2->next()->str() == "}")
-                                        --level;
+                                        break;
 
                                     tok2 = tok2->next();
                                 }
@@ -2363,15 +2358,12 @@ void Tokenizer::simplifyDefaultAndDeleteInsideClass()
     // Todo: Remove it if it is used "externally" too.
     for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (Token::Match(tok, "struct|class %var% :|{")) {
-            unsigned int indentlevel = 0;
-            for (Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+            for (Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "{")
-                    ++indentlevel;
-                else if (tok2->str() == "}") {
-                    if (indentlevel <= 1)
-                        break;
-                    --indentlevel;
-                } else if (indentlevel == 1 && Token::Match(tok2, ") = delete|default ;")) {
+                    tok2 = tok2->link();
+                else if (tok2->str() == "}")
+                    break;
+                else if (Token::Match(tok2, ") = delete|default ;")) {
                     Token * const end = tok2->tokAt(4);
                     tok2 = tok2->link()->previous();
 
@@ -3691,10 +3683,6 @@ void Tokenizer::simplifySizeof()
                     if (tempToken->next()->str() == ".") {
                         // We are checking a class or struct, search next varname
                         tempToken = tempToken->next();
-                        continue;
-                    } else if (Token::simpleMatch(tempToken->next(), "- >")) {
-                        // We are checking a class or struct, search next varname
-                        tempToken = tempToken->tokAt(2);
                         continue;
                     } else if (Token::Match(tempToken->next(), "++|--")) {
                         // We have variable++ or variable--, there should be
@@ -5293,20 +5281,20 @@ void Tokenizer:: simplifyFunctionPointers()
 bool Tokenizer::simplifyFunctionReturn()
 {
     bool ret = false;
-    int indentlevel = 0;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
-            ++indentlevel;
+            tok = tok->link();
 
-        else if (tok->str() == "}")
-            --indentlevel;
+        else if (Token::Match(tok, "%var% ( ) { return %any% ; }")) {
+            const Token* const any = tok->tokAt(5);
+            if (!any->isNumber() && !any->isBoolean() && any->str()[0] != '"')
+                continue;
 
-        else if (indentlevel == 0 && Token::Match(tok, "%var% ( ) { return %num% ; }") && tok->str() != ")") {
             const std::string pattern("(|[|=|%op% " + tok->str() + " ( ) ;|]|)|%op%");
             for (Token *tok2 = _tokens; tok2; tok2 = tok2->next()) {
                 if (Token::Match(tok2, pattern.c_str())) {
                     tok2 = tok2->next();
-                    tok2->str(tok->strAt(5));
+                    tok2->str(any->str());
                     tok2->deleteNext(2);
                     ret = true;
                 }
@@ -6788,15 +6776,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         }
 
         if (Token::simpleMatch(tok3, "= {")) {
-            unsigned int indentlevel4 = 0;
-            for (const Token *tok4 = tok3; tok4; tok4 = tok4->next()) {
-                if (tok4->str() == "{")
-                    ++indentlevel4;
-                else if (tok4->str() == "}") {
-                    if (indentlevel4 <= 1)
-                        break;
-                    --indentlevel4;
-                }
+            const Token* const end4 = tok3->linkAt(1);
+            for (const Token *tok4 = tok3; tok4 != end4; tok4 = tok4->next()) {
                 if (Token::Match(tok4, "{|, %varid% ,|}", varid)) {
                     tok4->next()->str(value);
                     tok4->next()->varId(valueVarId);
@@ -8325,36 +8306,13 @@ void Tokenizer::simplifyComma()
 void Tokenizer::removeExceptionSpecifications(Token *tok) const
 {
     while (tok) {
-        if (tok->str() == "{")
-            tok = tok->link();
-
-        else if (tok->str() == "}")
-            break;
-
-        else if (Token::Match(tok, ") const| throw (")) {
+        if (Token::Match(tok, ") const| throw (")) {
             if (tok->next()->str() == "const") {
                 Token::eraseTokens(tok->next(), tok->linkAt(3));
                 tok = tok->next();
             } else
                 Token::eraseTokens(tok, tok->linkAt(2));
             tok->deleteNext();
-        }
-
-        else if (Token::Match(tok, "class|namespace|struct|union %type% :|{")) {
-            tok = tok->tokAt(2);
-            while (tok && !Token::Match(tok, "[;{=]"))
-                tok = tok->next();
-            if (tok && tok->str() == "{") {
-                removeExceptionSpecifications(tok->next());
-                tok = tok->link();
-            } else
-                continue;
-        }
-
-        else if (Token::Match(tok, "namespace|struct|union {")) {
-            tok = tok->next();
-            removeExceptionSpecifications(tok->next());
-            tok = tok->link();
         }
 
         tok = tok->next();
