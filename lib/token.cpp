@@ -68,10 +68,7 @@ void Token::update_property_info()
         else
             _isNumber = false;
 
-        if (_str == "true" || _str == "false")
-            _isBoolean = true;
-        else
-            _isBoolean = false;
+        _isBoolean = (_str == "true" || _str == "false");
     } else {
         _isName = false;
         _isNumber = false;
@@ -468,13 +465,11 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     return true;
 }
 
-int Token::firstWordEquals(const char *str, const char *word)
+bool Token::firstWordEquals(const char *str, const char *word)
 {
     for (;;) {
         if (*str != *word) {
-            if (*str == ' ' && *word == 0)
-                return 0;
-            return 1;
+            return !(*str == ' ' && *word == 0);
         } else if (*str == 0)
             break;
 
@@ -482,7 +477,7 @@ int Token::firstWordEquals(const char *str, const char *word)
         ++word;
     }
 
-    return 0;
+    return false;
 }
 
 const char *Token::chrInFirstWord(const char *str, char c)
@@ -738,11 +733,11 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Parse "not" options. Token can be anything except the given one
         else if (p[1] == '!' && p[0] == '!' && p[2] != '\0') {
-            if (firstWordEquals(&(p[2]), tok->str().c_str()) == 0)
+            if (!firstWordEquals(&(p[2]), tok->str().c_str()))
                 return false;
         }
 
-        else if (firstWordEquals(p, tok->_str.c_str()) != 0) {
+        else if (firstWordEquals(p, tok->_str.c_str())) {
             return false;
         }
 
@@ -780,11 +775,6 @@ std::size_t Token::getStrLength(const Token *tok)
     return len;
 }
 
-bool Token::isStandardType() const
-{
-    return _isStandardType;
-}
-
 void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
 {
     /**[newLocation] -> b -> c -> [srcStart] -> [srcEnd] -> f */
@@ -812,6 +802,8 @@ Token* Token::nextArgument() const
         if (tok->str() == ",")
             return tok->next();
         else if (tok->str() == "(" || tok->str() == "{" || tok->str() == "[")
+            tok = tok->link();
+        else if (tok->str() == "<" && tok->link())
             tok = tok->link();
         else if (tok->str() == ")" || tok->str() == ";")
             return 0;
@@ -860,7 +852,7 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], const Toke
 void Token::insertToken(const std::string &tokenStr)
 {
     Token *newToken;
-    if (_str == "")
+    if (_str.empty())
         newToken = this;
     else
         newToken = new Token(tokensBack);
@@ -927,7 +919,7 @@ std::string Token::stringify(const Token* end) const
     ret << str();
 
     for (const Token *tok = this->next(); tok && tok != end; tok = tok->next()) {
-        if (tok->str() == "")
+        if (tok->str().empty())
             continue;
         if (tok->isUnsigned())
             ret << " unsigned";
@@ -935,7 +927,7 @@ std::string Token::stringify(const Token* end) const
             ret << " signed";
         if (tok->isLong())
             ret << " long";
-        ret << " " << tok->str();
+        ret << ' ' << tok->str();
     }
     return ret.str();
 }
@@ -976,16 +968,16 @@ std::string Token::stringifyList(bool varid, const char *title, const std::vecto
         if (lineNumber != tok->linenr() || fileChange) {
             while (lineNumber < tok->linenr()) {
                 ++lineNumber;
-                ret << "\n" << lineNumber << ":";
+                ret << '\n' << lineNumber << ':';
             }
             lineNumber = tok->linenr();
         }
 
-        ret << " " << tok->str();
+        ret << ' ' << tok->str();
         if (varid && tok->varId() > 0)
-            ret << "@" << tok->varId();
+            ret << '@' << tok->varId();
     }
-    ret << "\n";
+    ret << '\n';
     return ret.str();
 }
 

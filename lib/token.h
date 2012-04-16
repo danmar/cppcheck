@@ -229,8 +229,9 @@ public:
     void isUnused(bool used) {
         _isUnused = used;
     }
-    bool isStandardType() const;
-
+    bool isStandardType() const {
+        return _isStandardType;
+    }
     bool isExpandedMacro() const {
         return _isExpandedMacro;
     }
@@ -421,11 +422,11 @@ private:
     }
 
     /**
-     * Works almost like strcmp() except returns only 0 or 1 and
+     * Works almost like strcmp() except returns only true or false and
      * if str has empty space &apos; &apos; character, that character is handled
      * as if it were &apos;\\0&apos;
      */
-    static int firstWordEquals(const char *str, const char *word);
+    static bool firstWordEquals(const char *str, const char *word);
 
     /**
      * Works almost like strchr() except
