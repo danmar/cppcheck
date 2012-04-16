@@ -3064,7 +3064,7 @@ void Tokenizer::setVarIdNew()
             }
 
         }
-    }    
+    }
 }
 
 void Tokenizer::setVarIdOld()

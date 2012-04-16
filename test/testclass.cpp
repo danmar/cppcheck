@@ -190,6 +190,7 @@ private:
         TEST_CASE(const54); // ticket #3052
         TEST_CASE(const55);
         TEST_CASE(const56); // ticket #3149
+        TEST_CASE(const57); // ticket #2669
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -5756,6 +5757,34 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+    }
+
+    void const57() { // ticket #2669
+
+        checkConst("namespace MyGUI\n"
+                   "{\n"
+                   "  namespace types\n"
+                   "  {\n"
+                   "    struct TSize {};\n"
+                   "    struct TCoord {\n"
+                   "      TSize size() const { }\n"
+                   "    };\n"
+                   "  }\n"
+                   "  typedef types::TSize IntSize;\n"
+                   "  typedef types::TCoord IntCoord;\n"
+                   "}\n"
+                   "class SelectorControl\n"
+                   "{\n"
+                   "  MyGUI::IntSize getSize()\n"
+                   "  {\n"
+                   "    return mCoordValue.size();\n"
+                   "  }\n"
+                   "private:\n"
+                   "  MyGUI::IntCoord mCoordValue;\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:15]: (style) Technically the member function 'MyGUI::SelectorControl::getSize' can be const.\n",
+                           "", errout.str());
+
     }
 
     void assigningPointerToPointerIsNotAConstOperation() {
