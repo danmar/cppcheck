@@ -1190,14 +1190,14 @@ void CheckStl::string_c_strError(const Token* tok)
 void CheckStl::string_c_strReturn(const Token* tok)
 {
     reportError(tok, Severity::performance, "stlcstrReturn", "Returning the result of c_str() in a function that returns std::string is slow and redundant.\n"
-                "The conversion from const char* as returned by c_str to std::string creates an unecessary string copy. Solve that by directly returning the string.");
+                "The conversion from const char* as returned by c_str to std::string creates an unnecessary string copy. Solve that by directly returning the string.");
 }
 
 void CheckStl::string_c_strParam(const Token* tok, unsigned int number)
 {
     std::ostringstream oss;
     oss << "Passing the result of c_str() to a function that takes std::string as argument " << number << " is slow and redundant.\n"
-        "The conversion from const char* as returned by c_str to std::string creates an unecessary string copy. Solve that by directly passing the string.";
+        "The conversion from const char* as returned by c_str to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrParam", oss.str());
 }
 
