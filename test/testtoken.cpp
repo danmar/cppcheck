@@ -207,13 +207,7 @@ private:
     void eraseTokens() {
         givenACodeSampleToTokenize code("begin ; { this code will be removed } end");
         Token::eraseTokens(code.tokens()->next(), code.tokens()->tokAt(9));
-        std::ostringstream ret;
-        for (const Token *tok = code.tokens(); tok; tok = tok->next()) {
-            if (tok != code.tokens())
-                ret << " ";
-            ret << tok->str();
-        }
-        ASSERT_EQUALS("begin ; end", ret.str());
+        ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(0, false));
     }
 
 

@@ -26,8 +26,6 @@
 
 class options;
 
-class Token;
-
 class TestFixture : public ErrorLogger {
 private:
     static std::ostringstream errmsg;
