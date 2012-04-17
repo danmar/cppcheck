@@ -2874,6 +2874,23 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
 }
 
+static void setVarIdClassDeclaration(Token * const startToken, const std::map<std::string, unsigned int> &variableId, const unsigned int scopeStartVarId)
+{
+    // end of scope
+    const Token * const endToken = startToken->link();
+
+    // replace varids..
+    for (Token *tok = startToken; tok != endToken; tok = tok->next()) {
+        if (tok->isName() && tok->varId() <= scopeStartVarId) {
+            const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
+            if (it != variableId.end()) {
+                tok->varId(it->second);
+            }
+        }
+    }
+}
+
+
 void Tokenizer::setVarIdNew()
 {
     // Clear all variable ids
@@ -2887,12 +2904,15 @@ void Tokenizer::setVarIdNew()
     std::stack< std::map<std::string, unsigned int> > scopeInfo;
     std::stack<bool> executableScope;
     executableScope.push(false);
+    std::stack<unsigned int> scopestartvarid;  // varid when scope starts
+    scopestartvarid.push(0);
     for (Token *tok = _tokens; tok; tok = tok->next()) {
 
         // scope info to handle shadow variables..
         if (tok->str() == "(" && Token::simpleMatch(tok->link(), ") {")) {
             scopeInfo.push(variableId);
         } else if (tok->str() == "{") {
+            scopestartvarid.push(_varId);
             if (Token::simpleMatch(tok->previous(), ")")) {
                 executableScope.push(true);
             } else {
@@ -2900,6 +2920,16 @@ void Tokenizer::setVarIdNew()
                 scopeInfo.push(variableId);
             }
         } else if (tok->str() == "}") {
+            // Set variable ids in class declaration..
+            if (!isC() && !executableScope.top()) {
+                setVarIdClassDeclaration(tok->link(), variableId, scopestartvarid.top());
+            }
+
+            scopestartvarid.pop();
+            if (scopestartvarid.empty()) {  // should be impossible
+                scopestartvarid.push(0);
+            }
+
             if (scopeInfo.empty()) {
                 variableId.clear();
             } else {
