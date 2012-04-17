@@ -184,7 +184,7 @@ void CheckStl::iterators()
 // Error message for bad iterator usage..
 void CheckStl::mismatchingContainersError(const Token *tok)
 {
-    reportError(tok, Severity::error, "mismatchingContainers", "mismatching containers");
+    reportError(tok, Severity::error, "mismatchingContainers", "Iterators of mismatching containers are used together.");
 }
 
 void CheckStl::mismatchingContainers()
@@ -193,7 +193,7 @@ void CheckStl::mismatchingContainers()
         "adjacent_find", "binary_search", "count", "count_if", "equal", "equal_range", "find", "find_if", "for_each", "generate", "lower_bound", "make_heap",
         "max_element", "min_element", "mismatch", "next_permutation", "partition", "pop_heap", "prev_permutation", "push_heap", "random_shuffle", "remove",
         "remove_copy", "remove_copy_if", "remove_if", "replace", "replace_copy", "replace_copy_if", "replace_if", "reverse", "reverse_copy", "search_n",
-        "sort", "sort_heap", "stable_partition", "stable_sort",    "swap_ranges", "transform", "unique", "unique_copy", "upper_bound"
+        "sort", "sort_heap", "stable_partition", "stable_sort", "swap_ranges", "transform", "unique", "unique_copy", "upper_bound"
     };
     static const char* const algorithm22_strings[] = { // func(begin1, end1, begin2, end2
         "find_end", "find_first_of", "includes", "lexicographical_compare", "merge", "partial_sort_copy",
@@ -210,47 +210,40 @@ void CheckStl::mismatchingContainers()
     static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
     static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
 
-    static const std::string pattern2 = "std :: %type% ( %var% . " + iteratorBeginFuncPattern + " ( ) , %var% . " + iteratorEndFuncPattern + " ( ) ,|)";
-    static const std::string pattern22 = "std :: %type% ( %var% . " + iteratorBeginFuncPattern + " ( ) , %var% . " + iteratorEndFuncPattern + " ( ) , %var% . " + iteratorBeginFuncPattern + " ( ) , %var% . " + iteratorEndFuncPattern + " ( ) ,|)";
-    static const std::string pattern1x1_1 = "std :: %type% ( %var% . " + iteratorBeginFuncPattern + " ( ) , ";
-    static const std::string pattern1x1_2 = ", %var% . " + iteratorEndFuncPattern + " ( ) ,|)";
+    static const std::string pattern1x1_1 = "%var% . " + iteratorBeginFuncPattern + " ( ) , ";
+    static const std::string pattern1x1_2 = "%var% . " + iteratorEndFuncPattern + " ( ) ,|)";
+    static const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
 
     // Check if different containers are used in various calls of standard functions
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->str() != "std")
+        if (!Token::Match(tok, "std :: %type% ( !!)"))
             continue;
+        const Token* arg1 = tok->tokAt(4);
 
         // TODO: If iterator variables are used instead then there are false negatives.
-        if (Token::Match(tok, pattern2.c_str()) && algorithm2.find(tok->strAt(2)) != algorithm2.end()) {
-            if (tok->strAt(4) != tok->strAt(10)) {
-                mismatchingContainersError(tok);
+        if (Token::Match(arg1, pattern2.c_str()) && algorithm2.find(tok->strAt(2)) != algorithm2.end()) {
+            if (arg1->str() != arg1->strAt(6)) {
+                mismatchingContainersError(arg1);
             }
-            tok = tok->tokAt(15);
-        } else if (Token::Match(tok, pattern22.c_str()) && algorithm22.find(tok->strAt(2)) != algorithm22.end()) {
-            if (tok->strAt(4) != tok->strAt(10) || tok->strAt(16) != tok->strAt(22)) {
-                mismatchingContainersError(tok);
-            }
-            tok = tok->tokAt(27);
-        } else if (Token::Match(tok, pattern1x1_1.c_str()) && algorithm1x1.find(tok->strAt(2)) != algorithm1x1.end()) {
+        } else if (algorithm22.find(tok->strAt(2)) != algorithm22.end()) {
+            if (Token::Match(arg1, pattern2.c_str()) && arg1->str() != arg1->strAt(6))
+                mismatchingContainersError(arg1);
             // Find third parameter
-            const Token *tok2 = tok->tokAt(10);
-            int bracket = 0;
-            for (; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    bracket++;
-                else if (tok2->str() == ")")
-                    bracket--;
-                else if (tok2->str() == "," && bracket == 0)
-                    break;
-            }
-            if (tok2 && Token::Match(tok2, pattern1x1_2.c_str())) {
-                if (tok->strAt(4) != tok2->strAt(1)) {
-                    mismatchingContainersError(tok);
+            const Token* arg3 = arg1;
+            for (unsigned int i = 0; i < 2 && arg3; i++)
+                arg3 = arg3->nextArgument();
+            if (Token::Match(arg3, pattern2.c_str()) && arg3->str() != arg3->strAt(6))
+                mismatchingContainersError(arg3);
+        } else if (Token::Match(arg1, pattern1x1_1.c_str()) && algorithm1x1.find(tok->strAt(2)) != algorithm1x1.end()) {
+            // Find third parameter
+            const Token *arg3 = arg1->tokAt(6)->nextArgument();
+            if (Token::Match(arg3, pattern1x1_2.c_str())) {
+                if (arg1->str() != arg3->str()) {
+                    mismatchingContainersError(arg1);
                 }
-                tok = tok2->tokAt(6);
-            } else
-                tok = tok->tokAt(9);
+            }
         }
+        tok = arg1->linkAt(-1);
     }
 }
 

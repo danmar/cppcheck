@@ -206,7 +206,7 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::find(ints1.begin(), ints2.end(), 22);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of mismatching containers are used together.\n", errout.str());
     }
 
     void iterator6() {
@@ -227,7 +227,7 @@ private:
               "    std::set<int>::iterator it2 = ints2.end();\n"
               "    ints2.insert(it1, it2);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of mismatching containers are used together.\n", "", errout.str());
     }
 
     void iterator7() {
@@ -235,9 +235,9 @@ private:
               "{\n"
               "    std::vector<int> ints1;\n"
               "    std::vector<int> ints2;\n"
-              "    std::vector<int>::iterator it = std::inplace_merge(ints1.begin(), std:.advance(ints1.rbegin(), 5), ints2.end());\n"
+              "    std::vector<int>::iterator it = std::inplace_merge(ints1.begin(), std::advance(ints1.rbegin(), 5), ints2.end());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of mismatching containers are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -255,7 +255,7 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints2.end(), ints1.begin(), ints1.end());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of mismatching containers are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -263,7 +263,15 @@ private:
               "    std::vector<int> ints2;\n"
               "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints1.end(), ints2.begin(), ints1.end());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of mismatching containers are used together.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> ints1;\n"
+              "    std::vector<int> ints2;\n"
+              "    std::vector<int>::iterator it = std::find_first_of(foo.bar.begin(), foo.bar.end()-6, ints2.begin(), ints1.end());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of mismatching containers are used together.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
