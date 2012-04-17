@@ -1105,6 +1105,12 @@ private:
 
             ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous container iterator compare using < operator for " + stlCont[i] + "\n", errout.str());
         }
+
+        check("void f() {\n"
+              "    std::forward_list<int>::iterator it;\n"
+              "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous container iterator compare using < operator for forward_list\n", errout.str());
     }
 
     void stlBoundries2() {

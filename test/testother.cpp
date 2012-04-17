@@ -2385,7 +2385,7 @@ private:
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkMisusedScopedObject();
 
-        ASSERT_EQUALS("[trac1132.cpp:16]: (error) instance of \"Lock\" object destroyed immediately\n", errout.str());
+        ASSERT_EQUALS("[trac1132.cpp:16]: (error) Instance of \"Lock\" object destroyed immediately.\n", errout.str());
     }
 
     void trac3693() {
@@ -2433,7 +2433,7 @@ private:
               "    return 0 ;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (error) instance of \"NotAFunction\" object destroyed immediately\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Instance of \"NotAFunction\" object destroyed immediately.\n", errout.str());
     }
 
     void testMisusedScopeObjectPicksStruct() {
@@ -2444,7 +2444,7 @@ private:
               "    return true ;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (error) instance of \"NotAClass\" object destroyed immediately\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Instance of \"NotAClass\" object destroyed immediately.\n", errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickIf() {
@@ -2501,7 +2501,7 @@ private:
               "    Foo();\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:7]: (error) instance of \"Foo\" object destroyed immediately\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Instance of \"Foo\" object destroyed immediately.\n", errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickUsedObject() {
@@ -2529,7 +2529,7 @@ private:
                             "}\n";
 
         check(code, "test.cpp");
-        ASSERT_EQUALS("[test.cpp:7]: (error) instance of \"cb_watch_bool\" object destroyed immediately\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Instance of \"cb_watch_bool\" object destroyed immediately.\n", errout.str());
 
         check(code, "test.c");
         ASSERT_EQUALS("", errout.str());

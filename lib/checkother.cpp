@@ -2470,7 +2470,7 @@ void CheckOther::checkMisusedScopedObject()
 void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "unusedScopedObject", "instance of \"" + varname + "\" object destroyed immediately");
+                "unusedScopedObject", "Instance of \"" + varname + "\" object destroyed immediately.");
 }
 
 //---------------------------------------------------------------------------

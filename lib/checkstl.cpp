@@ -190,10 +190,14 @@ void CheckStl::mismatchingContainersError(const Token *tok)
 void CheckStl::mismatchingContainers()
 {
     static const char* const algorithm2_strings[] = { // func(begin1, end1
-        "adjacent_find", "binary_search", "count", "count_if", "equal", "equal_range", "find", "find_if", "for_each", "generate", "lower_bound", "make_heap",
-        "max_element", "min_element", "mismatch", "next_permutation", "partition", "pop_heap", "prev_permutation", "push_heap", "random_shuffle", "remove",
-        "remove_copy", "remove_copy_if", "remove_if", "replace", "replace_copy", "replace_copy_if", "replace_if", "reverse", "reverse_copy", "search_n",
-        "sort", "sort_heap", "stable_partition", "stable_sort", "swap_ranges", "transform", "unique", "unique_copy", "upper_bound"
+        "adjacent_find", "all_of", "any_of", "binary_search", "copy", "copy_if", "count", "count_if", "equal", "equal_range",
+        "find", "find_if", "find_if_not", "for_each", "generate", "is_heap", "is_heap_until", "is_partitioned",
+        "is_permutation", "is_sorted", "is_sorted_until", "lower_bound", "make_heap", "max_element", "minmax_element",
+        "min_element", "mismatch", "move", "move_backward", "next_permutation", "none_of", "partition", "partition_copy",
+        "partition_point", "pop_heap", "prev_permutation", "push_heap", "random_shuffle", "remove", "remove_copy",
+        "remove_copy_if", "remove_if", "replace", "replace_copy", "replace_copy_if", "replace_if", "reverse", "reverse_copy",
+        "search_n", "shuffle", "sort", "sort_heap", "stable_partition", "stable_sort", "swap_ranges", "transform", "unique",
+        "unique_copy", "upper_bound"
     };
     static const char* const algorithm22_strings[] = { // func(begin1, end1, begin2, end2
         "find_end", "find_first_of", "includes", "lexicographical_compare", "merge", "partial_sort_copy",
@@ -664,7 +668,7 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &pointer_
 void CheckStl::stlBoundries()
 {
     // containers (not the vector)..
-    static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset";
+    static const char STL_CONTAINER_LIST[] = "bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset";
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Declaring iterator..
@@ -690,6 +694,8 @@ void CheckStl::stlBoundries()
                             break;
                         --indentlevel;
                     } else if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
+                        stlBoundriesError(tok2, container_name);
+                    } else if (Token::Match(tok2, "> %varid%", iteratorid)) {
                         stlBoundriesError(tok2, container_name);
                     }
                 }
@@ -861,7 +867,7 @@ bool CheckStl::isStlContainer(unsigned int varid)
             type = type->tokAt(2);
 
         // all possible stl containers as a token
-        static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
+        static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
 
         // check if it's an stl template
         if (Token::Match(type, STL_CONTAINER_LIST))
@@ -1216,7 +1222,7 @@ void CheckStl::checkAutoPointer()
         return;
 
     std::set<unsigned int> autoPtrVarId;
-    static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
+    static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "auto_ptr <")) {
