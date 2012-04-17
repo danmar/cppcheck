@@ -386,6 +386,8 @@ public:
     }
     unsigned int initializedArgCount() const;
     void addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope);
+    /** @brief check if this function is virtual in the base classes */
+    bool isImplicitlyVirtual(bool defaultVal = false) const;
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
@@ -406,6 +408,9 @@ public:
     Type type;             // constructor, destructor, ...
     Scope *functionScope;  // scope of function body
     std::list<Variable> argumentList; // argument list
+
+private:
+    bool isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const;
 };
 
 class Scope {
@@ -554,7 +559,7 @@ public:
 
     const Scope* findScopeByName(const std::string& name) const;
 
-    bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth) const;
+    static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
     bool isClassOrStruct(const std::string &type) const {
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());

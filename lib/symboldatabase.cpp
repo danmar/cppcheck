@@ -807,7 +807,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     return false;
 }
 
-bool SymbolDatabase::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth) const
+bool SymbolDatabase::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth)
 {
     bool match = false;
     while (first->str() == second->str()) {
@@ -1611,6 +1611,71 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
         }
     }
 }
+
+bool Function::isImplicitlyVirtual(bool defaultVal) const
+{
+    if (isVirtual)
+        return true;
+    else if (access == Private || access == Public || access == Protected) {
+        bool safe = true;
+        bool hasVirt = isImplicitlyVirtual_rec(functionScope->functionOf, safe);
+        if (hasVirt)
+            return true;
+        else if (safe)
+            return false;
+        else
+            return defaultVal;
+    } else
+        return false;
+}
+
+bool Function::isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const
+{
+    // check each base class
+    for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
+        // check if base class exists in database
+        if (scope->derivedFrom[i].scope) {
+            const Scope *parent = scope->derivedFrom[i].scope;
+
+            std::list<Function>::const_iterator func;
+
+            // check if function defined in base class
+            for (func = parent->functionList.begin(); func != parent->functionList.end(); ++func) {
+                if (func->isVirtual && func->tokenDef->str() == tokenDef->str()) { // Base is virtual and of same name
+                    const Token *temp1 = func->tokenDef->previous();
+                    const Token *temp2 = tokenDef->previous();
+                    bool returnMatch = true;
+
+                    // check for matching return parameters
+                    while (temp1->str() != "virtual") {
+                        if (temp1->str() != temp2->str()) {
+                            returnMatch = false;
+                            break;
+                        }
+
+                        temp1 = temp1->previous();
+                        temp2 = temp2->previous();
+                    }
+
+                    // check for matching function parameters
+                    if (returnMatch && SymbolDatabase::argsMatch(scope, func->argDef, argDef, "", 0)) {
+                        return true;
+                    }
+                }
+            }
+
+            if (!parent->derivedFrom.empty())
+                if (isImplicitlyVirtual_rec(parent, safe))
+                    return true;
+        } else {
+            // unable to find base class so assume it has no virtual function
+            safe = false;
+            return false;
+        }
+    }
+    return false;
+}
+
 
 //---------------------------------------------------------------------------
 

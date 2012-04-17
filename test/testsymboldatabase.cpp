@@ -158,6 +158,8 @@ private:
         TEST_CASE(symboldatabase25); // ticket #3561 (throw C++)
         TEST_CASE(symboldatabase26); // ticket #3561 (throw C)
         TEST_CASE(symboldatabase27); // ticket #3543 (segmentation fault)
+
+        TEST_CASE(isImplicitlyVirtual);
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -1187,6 +1189,86 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void isImplicitlyVirtual() {
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    virtual void foo() {}\n"
+                          "};\n"
+                          "class Deri : Base {\n"
+                          "    void foo() {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    virtual void foo() {}\n"
+                          "};\n"
+                          "class Deri1 : Base {\n"
+                          "    void foo() {}\n"
+                          "};\n"
+                          "class Deri2 : Deri1 {\n"
+                          "    void foo() {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri2") && db->findScopeByName("Deri2")->functionList.front().isImplicitlyVirtual());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    void foo() {}\n"
+                          "};\n"
+                          "class Deri : Base {\n"
+                          "    void foo() {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri") && !db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual(true));
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    virtual void foo() {}\n"
+                          "};\n"
+                          "class Deri : Base {\n"
+                          "    void foo(std::string& s) {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri") && !db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual(true));
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    virtual void foo() {}\n"
+                          "};\n"
+                          "class Deri1 : Base {\n"
+                          "    void foo(int i) {}\n"
+                          "};\n"
+                          "class Deri2 : Deri1 {\n"
+                          "    void foo() {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri2") && db->findScopeByName("Deri2")->functionList.front().isImplicitlyVirtual());
+        }
+        {
+            GET_SYMBOL_DB("class Base : Base2 {\n" // We don't know Base2
+                          "    void foo() {}\n"
+                          "};\n"
+                          "class Deri : Base {\n"
+                          "    void foo() {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual(true)); // Default true -> true
+        }
+        {
+            GET_SYMBOL_DB("class Base : Base2 {\n" // We don't know Base2
+                          "    void foo() {}\n"
+                          "};\n"
+                          "class Deri : Base {\n"
+                          "    void foo() {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri") && !db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual(false)); // Default false -> false
+        }
+        {
+            GET_SYMBOL_DB("class Base : Base2 {\n" // We don't know Base2
+                          "    virtual void foo() {}\n"
+                          "};\n"
+                          "class Deri : Base {\n"
+                          "    void foo() {}\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual(false)); // Default false, but we saw "virtual" -> true
+        }
+    }
 };
 
 REGISTER_TEST(TestSymbolDatabase)
