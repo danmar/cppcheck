@@ -46,7 +46,7 @@ public:
             return Preprocessor::replaceIfDefined(str);
         }
 
-        static std::string expandMacros(std::string code, ErrorLogger *errorLogger = 0) {
+        static std::string expandMacros(const std::string& code, ErrorLogger *errorLogger = 0) {
             return Preprocessor::expandMacros(code, "file.cpp", "", errorLogger);
         }
 

@@ -411,7 +411,7 @@ private:
         TEST_CASE(undefinedSizeArray);
     }
 
-    std::string tok(std::string code, bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
         errout.str("");
 
         Settings settings;
@@ -425,9 +425,10 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList();
 
-        tokenizer.validate();
-
         return tokenizer.tokens()->stringifyList(0, !simplify);
+    }
+    std::string tok(const std::string& code, bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+        return tok(code.c_str(), simplify, type);
     }
 
 
@@ -907,25 +908,6 @@ private:
 
 
 
-
-    // Simplify 'sizeof'..
-    std::string sizeof_(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
-        errout.str("");
-
-        Settings settings;
-        settings.platform(type);
-
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        if (simplify)
-            tokenizer.simplifyTokenList();
-
-        return tokenizer.tokens()->stringifyList(0, false);
-    }
-
     unsigned int sizeofFromTokenizer(const char type[]) {
         errout.str("");
 
@@ -934,7 +916,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr("");
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
         Token tok1(0);
         tok1.str(type);
         return tokenizer.sizeOfType(&tok1);
@@ -953,7 +934,7 @@ private:
                             "    sizeof(i);\n"
                             "    sizeof(*i);\n"
                             "}\n";
-        ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", sizeof_(code));
+        ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", tok(code));
     }
 
     void sizeof3() {
@@ -963,20 +944,20 @@ private:
                             "    int i[10];\n"
                             "    sizeof(i);\n"
                             "}\n";
-        ASSERT_EQUALS("static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }", sizeof_(code));
+        ASSERT_EQUALS("static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }", tok(code));
     }
 
     void sizeof4() {
         {
             const char code[] = "int i[10];\n"
                                 "sizeof(i[0]);\n";
-            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", sizeof_(code));
+            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
         }
 
         {
             const char code[] = "int i[10];\n"
                                 "sizeof i[0];\n";
-            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", sizeof_(code));
+            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
         }
     }
 
@@ -987,7 +968,7 @@ private:
             "{}";
         std::ostringstream expected;
         expected << "const char * names [ 2 ] ; for ( int i = 0 ; i != " << sizeofFromTokenizer("*") << " ; i ++ ) { }";
-        ASSERT_EQUALS(expected.str(), sizeof_(code));
+        ASSERT_EQUALS(expected.str(), tok(code));
     }
 
     void sizeof6() {
@@ -997,14 +978,14 @@ private:
         std::ostringstream expected;
         expected << "; int i ; " << sizeof(int) << " ;";
 
-        ASSERT_EQUALS(expected.str(), sizeof_(code));
+        ASSERT_EQUALS(expected.str(), tok(code));
     }
 
     void sizeof7() {
         const char code[] = ";INT32 i[10];\n"
                             "sizeof(i[0]);\n";
-        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", sizeof_(code, true, Settings::Unspecified));
-        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", sizeof_(code, true, Settings::Win32A));
+        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", tok(code, true, Settings::Unspecified));
+        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", tok(code, true, Settings::Win32A));
     }
 
     void sizeof8() {
@@ -1016,7 +997,7 @@ private:
                                 "}\n";
             std::ostringstream oss;
             oss << (sizeofFromTokenizer("*") * 2);
-            ASSERT_EQUALS("void f ( ) { char * ptrs [ 2 ] ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { char * ptrs [ 2 ] ; a = " + oss.str() + " ; }", tok(code));
         }
 
         {
@@ -1027,7 +1008,7 @@ private:
                                 "}\n";
             std::ostringstream oss;
             oss << (sizeofFromTokenizer("*") * 55);
-            ASSERT_EQUALS("void f ( ) { char * ptrs [ 55 ] ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { char * ptrs [ 55 ] ; a = " + oss.str() + " ; }", tok(code));
         }
 
 
@@ -1039,7 +1020,7 @@ private:
                                 "}\n";
             std::ostringstream oss;
             oss << sizeofFromTokenizer("*");
-            ASSERT_EQUALS("void f ( ) { a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { a = " + oss.str() + " ; }", tok(code));
         }
     }
 
@@ -1051,7 +1032,7 @@ private:
             std::ostringstream expected;
             expected << "; const char * str ; str = \"1\" ; " << sizeofFromTokenizer("*") << " ;";
 
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
@@ -1060,19 +1041,19 @@ private:
             std::ostringstream expected;
             expected << "; const char str [ 2 ] = \"1\" ; " << sizeofFromTokenizer("char")*2 << " ;";
 
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
             // Ticket #799
             const char code[] = "; const char str[] = {'1'}; sizeof(str);";
-            ASSERT_EQUALS("; const char str [ 1 ] = { '1' } ; 1 ;", sizeof_(code));
+            ASSERT_EQUALS("; const char str [ 1 ] = { '1' } ; 1 ;", tok(code));
         }
 
         {
             // Ticket #2087
             const char code[] = "; const char str[] = {\"abc\"}; sizeof(str);";
-            ASSERT_EQUALS("; const char str [ 4 ] = \"abc\" ; 4 ;", sizeof_(code));
+            ASSERT_EQUALS("; const char str [ 4 ] = \"abc\" ; 4 ;", tok(code));
         }
 
         // ticket #716 - sizeof string
@@ -1080,8 +1061,8 @@ private:
             std::ostringstream expected;
             expected << "; " << (sizeof "123");
 
-            ASSERT_EQUALS(expected.str(), sizeof_("; sizeof \"123\""));
-            ASSERT_EQUALS(expected.str(), sizeof_("; sizeof(\"123\")"));
+            ASSERT_EQUALS(expected.str(), tok("; sizeof \"123\""));
+            ASSERT_EQUALS(expected.str(), tok("; sizeof(\"123\")"));
         }
 
         {
@@ -1090,7 +1071,7 @@ private:
             std::ostringstream expected;
             expected << "void f ( char * a , char * b , char * c ) { g ( " <<
                      sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
@@ -1099,7 +1080,7 @@ private:
             std::ostringstream expected;
             expected << "void f ( char a , char b , char c ) { g ( " <<
                      sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
@@ -1108,7 +1089,7 @@ private:
             std::ostringstream expected;
             expected << "void f ( const char * a , const char * b , const char * c ) { g ( " <<
                      sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
@@ -1117,7 +1098,7 @@ private:
             std::ostringstream expected;
             expected << "void f ( char a [ 10 ] , char b [ 10 ] , char c [ 10 ] ) { g ( " <<
                      sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
@@ -1128,7 +1109,7 @@ private:
                      "const char b [ 10 ] , "
                      "const char c [ 10 ] ) { g ( " <<
                      sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
@@ -1139,7 +1120,7 @@ private:
                      "const char * b [ 10 ] , "
                      "const char * c [ 10 ] ) { g ( " <<
                      sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
@@ -1148,13 +1129,13 @@ private:
             std::ostringstream expected;
             expected << "void f ( char * a [ 10 ] , char * b [ 10 ] , char * c [ 10 ] ) { g ( " <<
                      sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), tok(code));
         }
 
         {
             std::ostringstream expected;
             expected << "; " << sizeof("\"quote\"");
-            ASSERT_EQUALS(expected.str(), sizeof_("; sizeof(\"\\\"quote\\\"\")"));
+            ASSERT_EQUALS(expected.str(), tok("; sizeof(\"\\\"quote\\\"\")"));
         }
 
         {
@@ -1536,7 +1517,7 @@ private:
 
             const std::string expected("void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -1547,7 +1528,7 @@ private:
 
             const std::string expected("void f ( ) { p = const_cast < char * > qtu ( ) ; }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -1558,7 +1539,7 @@ private:
                                 "}\n";
             const std::string expected("void f ( ) { return bar ( ) ; }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -1608,7 +1589,7 @@ private:
         const std::string expected("f<int> ( 10 ) ; "
                                    "void f<int> ( int val ) { }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template2() {
@@ -1618,7 +1599,7 @@ private:
         const std::string expected("Fred<int> fred ; "
                                    "class Fred<int> { int a ; }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template3() {
@@ -1628,7 +1609,7 @@ private:
         const std::string expected("Fred<float,4> fred ; "
                                    "class Fred<float,4> { float data [ 4 ] ; }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template4() {
@@ -1638,7 +1619,7 @@ private:
         const std::string expected("Fred<float> fred ; "
                                    "class Fred<float> { Fred<float> ( ) ; }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template5() {
@@ -1650,7 +1631,7 @@ private:
                                    "class Fred<float> { } "
                                    "Fred<float> :: Fred<float> ( ) { }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template6() {
@@ -1662,7 +1643,7 @@ private:
                                    "Fred<float> fred2 ; "
                                    "class Fred<float> { }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template7() {
@@ -1678,7 +1659,7 @@ private:
 
             const std::string expected(";");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -1705,7 +1686,7 @@ private:
                                       "}"
                                      );
 
-            TODO_ASSERT_EQUALS(wanted, current, sizeof_(code));
+            TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
 
         {
@@ -1721,7 +1702,7 @@ private:
 
             const std::string expected(";");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -1744,9 +1725,9 @@ private:
                             "\n"
                             "template<typename T> inline B<T> h() { return B<T>(); }\n";
 
-        ASSERT_EQUALS("", sizeof_(code));
+        ASSERT_EQUALS("", tok(code));
 
-        ASSERT_EQUALS("class A { } ;", sizeof_("class A{ template<typename T> int foo(T d);};"));
+        ASSERT_EQUALS("class A { } ;", tok("class A{ template<typename T> int foo(T d);};"));
     }
 
     void template9() {
@@ -1766,7 +1747,7 @@ private:
         // The expected result..
         std::string expected("void f ( ) { A<int> a ; } class A<int> { } class A<T> { }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template10() {
@@ -1784,7 +1765,7 @@ private:
                                    " foo<3,int> ( ) ; "
                                    "} "
                                    "int * foo<3,int> ( ) { return new int [ 3 ] ; }");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template11() {
@@ -1802,7 +1783,7 @@ private:
                                    " char * p ; p = foo<3,char> ( ) ; "
                                    "} "
                                    "char * foo<3,char> ( ) { return new char [ 3 ] ; }");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template12() {
@@ -1822,7 +1803,7 @@ private:
                                    "} "
                                    "class A<12,12,11> : public B < 12 , 12 , 0 > "
                                    "{ }");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template13() {
@@ -1848,7 +1829,7 @@ private:
                             "    {}\n";
 
         // Just run it and check that there are not assertions.
-        sizeof_(code);
+        tok(code);
     }
 
     void template14() {
@@ -1866,7 +1847,7 @@ private:
                                    "int main ( ) "
                                    "{ foo<int*> ( ) ; }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template15() {
@@ -1891,7 +1872,7 @@ private:
                                    "void a<2> ( ) { a<1> ( ) ; } "
                                    "void a<1> ( ) { a<0> ( ) ; }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template16() {
@@ -1912,7 +1893,7 @@ private:
                                    "void a<i> ( ) { } "
                                    "void a<2> ( ) { }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template17() {
@@ -1928,7 +1909,7 @@ private:
                             "shared_ptr<int> i;\n";
 
         // Assert that there is no segmentation fault..
-        sizeof_(code);
+        tok(code);
     }
 
     void template18() {
@@ -1938,7 +1919,7 @@ private:
         const std::string expected("foo<int> * f ; "
                                    "class foo<int> { int a ; }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template19() {
@@ -1956,7 +1937,7 @@ private:
                                    " char p ; p = foo<char> ( ) ; "
                                    "} "
                                    "char & foo<char> ( ) { static char temp ; return temp ; }");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template20() {
@@ -1977,7 +1958,7 @@ private:
         const std::string expected("A<int> a ; "
                                    "class A<int> { public: ~ A<int> ( ) ; } "
                                    "A<int> :: ~ A<int> ( ) { }");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template21() {
@@ -1988,7 +1969,7 @@ private:
             const std::string expected("Fred<int> fred ; "
                                        "struct Fred<int> { int a ; }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -1998,7 +1979,7 @@ private:
             const std::string expected("Fred<float,4> fred ; "
                                        "struct Fred<float,4> { float data [ 4 ] ; }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -2008,7 +1989,7 @@ private:
             const std::string expected("Fred<float> fred ; "
                                        "struct Fred<float> { Fred<float> ( ) ; }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -2020,7 +2001,7 @@ private:
                                        "struct Fred<float> { } "
                                        "Fred<float> :: Fred<float> ( ) { }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -2032,7 +2013,7 @@ private:
                                        "Fred<float> fred2 ; "
                                        "struct Fred<float> { }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -2043,7 +2024,7 @@ private:
         const std::string expected("Fred<std::string> fred ; "
                                    "struct Fred<std::string> { std :: string a ; }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template23() {
@@ -2057,7 +2038,7 @@ private:
                                    "} "
                                    "void foo<double> ( ) { }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template24() {
@@ -2074,7 +2055,7 @@ private:
         const char expected[] = "bitset<1> z ; "
                                 "class bitset<1> : B<4> { } "
                                 "struct B<4> { int a [ 4 ] ; }";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template25() {
@@ -2095,7 +2076,7 @@ private:
                                 "class bitset<1> : B<4> { } "
                                 "struct B<4> { int a [ 4 ] ; }";
 
-        TODO_ASSERT_EQUALS(expected, actual, sizeof_(code));
+        TODO_ASSERT_EQUALS(expected, actual, tok(code));
 
     }
 
@@ -2109,20 +2090,20 @@ private:
                             "\n"
                             "C<2> a;\n";
         // TODO: expand A also
-        ASSERT_EQUALS("C<2> a ; class C<2> : public A < char [ 2 ] > { }", sizeof_(code));
+        ASSERT_EQUALS("C<2> a ; class C<2> : public A < char [ 2 ] > { }", tok(code));
     }
 
     void template27() {
         // #3350 - template inside macro call
         const char code[] = "X(template<class T> class Fred);";
-        ASSERT_EQUALS("X ( class Fred ) ;", sizeof_(code));
+        ASSERT_EQUALS("X ( class Fred ) ;", tok(code));
     }
 
     void template28() {
         // #3226 - inner template
         const char code[] = "template<class A, class B> class Fred {};\n"
                             "Fred<int,Fred<int,int> > x;\n";
-        ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } class Fred<int,Fred<int,int>> { }", sizeof_(code));
+        ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } class Fred<int,Fred<int,int>> { }", tok(code));
     }
 
     void template29() {
@@ -2130,18 +2111,18 @@ private:
         const char code[] = "template<typename T> struct A;\n"
                             "struct B { template<typename T> struct C };\n"
                             "{};";
-        ASSERT_EQUALS("struct B { } ; { } ;", sizeof_(code));
+        ASSERT_EQUALS("struct B { } ; { } ;", tok(code));
     }
 
     void template30() {
         // #3529 - template < template < ..
         const char code[] = "template<template<class> class A, class B> void f(){}";
-        ASSERT_EQUALS("", sizeof_(code));
+        ASSERT_EQUALS("", tok(code));
     }
 
     void template_unhandled() {
         // An unhandled template usage should be simplified..
-        ASSERT_EQUALS("x<int> ( ) ;", sizeof_("x<int>();"));
+        ASSERT_EQUALS("x<int> ( ) ;", tok("x<int>();"));
     }
 
     void template_default_parameter() {
@@ -2166,7 +2147,7 @@ private:
                                        "{ int ar [ 2 ] ; } "
                                        "class A<int,3> "
                                        "{ int ar [ 3 ] ; }");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template <class T, int n1=3, int n2=2>\n"
@@ -2187,7 +2168,7 @@ private:
                                        "} "
                                        "class A<int,3,2> "
                                        "{ int ar [ 5 ] ; }");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template <class T, int n=3>\n"
@@ -2221,7 +2202,7 @@ private:
                                       "class A<int,3> "
                                       "{ int ar [ 3 ] ; }"
                                      );
-            TODO_ASSERT_EQUALS(wanted, current, sizeof_(code));
+            TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
     }
 
@@ -2248,12 +2229,7 @@ private:
                             "{\n"
                             "};\n";
 
-        errout.str("");
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "file1.cpp");
-        tokenizer.simplifyTokenList();
+        tok(code);
 
         //ASSERT_EQUALS("[file1.cpp:15]: (error) Internal error: failed to instantiate template. The checking continues anyway.\n", errout.str());
         ASSERT_EQUALS("", errout.str());
@@ -2267,7 +2243,7 @@ private:
 
             // The expected result..
             const std::string expected("");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -2276,7 +2252,7 @@ private:
                                 "    type = 0;\n"
                                 "}";
 
-            ASSERT_EQUALS("void f ( ) { x ( sizeof ( typename ) ) ; type = 0 ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { x ( sizeof ( typename ) ) ; type = 0 ; }", tok(code));
         }
     }
 
@@ -2301,7 +2277,7 @@ private:
 
             const std::string expected("using namespace std ; namespace a { namespace b { void f ( ) { } } }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -2309,7 +2285,7 @@ private:
 
             const std::string expected("namespace b { void f ( ) { } }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -2317,7 +2293,7 @@ private:
 
             const std::string expected("int a ; namespace b { }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -2325,7 +2301,7 @@ private:
 
             const std::string expected("void f ( int namespace ) { }");
 
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -2403,84 +2379,60 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    std::string simplifyIfNot(const char code[]) {
-        errout.str("");
-        Settings settings;
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyIfNot();
-
-        return tokenizer.tokens()->stringifyList(0, false);
-    }
 
     void ifnot() {
-        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if(0==x);"));
-        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if(x==0);"));
-        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", simplifyIfNot("if(0==(a=b));"));
-        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if(x==0);"));
-        ASSERT_EQUALS("if ( ! a && b ( ) ) { ; }", simplifyIfNot("if( 0 == a && b() );"));
-        ASSERT_EQUALS("if ( b ( ) && ! a ) { ; }", simplifyIfNot("if( b() && 0 == a );"));
-        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", simplifyIfNot("if((a=b)==0);"));
-        ASSERT_EQUALS("if ( ! x . y ) { ; }", simplifyIfNot("if(x.y==0);"));
-        ASSERT_EQUALS("if ( ! x ) { ; }", simplifyIfNot("if((x==0));"));
-        ASSERT_EQUALS("if ( ( ! x ) && ! y ) { ; }", simplifyIfNot("if((x==0) && y==0);"));
-        ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) ) { ; }", simplifyIfNot("if(!(fclose(fd) == 0));"));
+        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(0==x);", false));
+        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(x==0);", false));
+        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if(0==(a=b));", false));
+        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(x==0);", false));
+        ASSERT_EQUALS("if ( ! a && b ( ) ) { ; }", tok("if( 0 == a && b() );", false));
+        ASSERT_EQUALS("if ( b ( ) && ! a ) { ; }", tok("if( b() && 0 == a );", false));
+        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if((a=b)==0);", false));
+        ASSERT_EQUALS("if ( ! x . y ) { ; }", tok("if(x.y==0);", false));
+        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if((x==0));", false));
+        ASSERT_EQUALS("if ( ( ! x ) && ! y ) { ; }", tok("if((x==0) && y==0);", false));
+        ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) ) { ; }", tok("if(!(fclose(fd) == 0));", false));
     }
 
-
-
-    std::string simplifyLogicalOperators(const char code[]) {
-        errout.str("");
-        Settings settings;
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        return tokenizer.tokens()->stringifyList(0, false);
-    }
 
     void not1() {
-        ASSERT_EQUALS("if ( ! p ) { ; }", simplifyLogicalOperators("if (not p);"));
-        ASSERT_EQUALS("if ( p && ! q ) { ; }", simplifyLogicalOperators("if (p && not q);"));
-        ASSERT_EQUALS("void foo ( not i )", simplifyLogicalOperators("void foo ( not i )"));
+        ASSERT_EQUALS("if ( ! p ) { ; }", tok("if (not p);", false));
+        ASSERT_EQUALS("if ( p && ! q ) { ; }", tok("if (p && not q);", false));
+        ASSERT_EQUALS("void foo ( not i )", tok("void foo ( not i )", false));
     }
 
     void and1() {
         ASSERT_EQUALS("if ( p && q ) { ; }",
-                      simplifyLogicalOperators("if (p and q) ;"));
+                      tok("if (p and q) ;", false));
 
         ASSERT_EQUALS("if ( foo ( ) && q ) { ; }",
-                      simplifyLogicalOperators("if (foo() and q) ;"));
+                      tok("if (foo() and q) ;", false));
 
         ASSERT_EQUALS("if ( foo ( ) && bar ( ) ) { ; }",
-                      simplifyLogicalOperators("if (foo() and bar()) ;"));
+                      tok("if (foo() and bar()) ;", false));
 
         ASSERT_EQUALS("if ( p && bar ( ) ) { ; }",
-                      simplifyLogicalOperators("if (p and bar()) ;"));
+                      tok("if (p and bar()) ;", false));
 
         ASSERT_EQUALS("if ( p && ! q ) { ; }",
-                      simplifyLogicalOperators("if (p and not q) ;"));
+                      tok("if (p and not q) ;", false));
     }
 
     void or1() {
         ASSERT_EQUALS("if ( p || q ) { ; }",
-                      simplifyLogicalOperators("if (p or q) ;"));
+                      tok("if (p or q) ;", false));
 
         ASSERT_EQUALS("if ( foo ( ) || q ) { ; }",
-                      simplifyLogicalOperators("if (foo() or q) ;"));
+                      tok("if (foo() or q) ;", false));
 
         ASSERT_EQUALS("if ( foo ( ) || bar ( ) ) { ; }",
-                      simplifyLogicalOperators("if (foo() or bar()) ;"));
+                      tok("if (foo() or bar()) ;", false));
 
         ASSERT_EQUALS("if ( p || bar ( ) ) { ; }",
-                      simplifyLogicalOperators("if (p or bar()) ;"));
+                      tok("if (p or bar()) ;", false));
 
         ASSERT_EQUALS("if ( p || ! q ) { ; }",
-                      simplifyLogicalOperators("if (p or not q) ;"));
+                      tok("if (p or not q) ;", false));
     }
 
     void comma_keyword() {
@@ -2490,7 +2442,7 @@ private:
                                 "    char *a, *b;\n"
                                 "    delete a, delete b;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", sizeof_(code));
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", tok(code));
         }
 
         {
@@ -2498,7 +2450,7 @@ private:
                                 "{\n"
                                 "    struct A *a, *b;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { struct A * a ; struct A * b ; }", sizeof_(code));
+            ASSERT_EQUALS("void foo ( ) { struct A * a ; struct A * b ; }", tok(code));
         }
 
         {
@@ -2506,7 +2458,7 @@ private:
                                 "{\n"
                                 "    struct A **a, **b;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { struct A * * a ; struct A * * b ; }", sizeof_(code));
+            ASSERT_EQUALS("void foo ( ) { struct A * * a ; struct A * * b ; }", tok(code));
         }
 
         {
@@ -2515,7 +2467,7 @@ private:
                                 "    char *a, *b;\n"
                                 "    delete a, b;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", sizeof_(code));
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", tok(code));
         }
 
         {
@@ -2523,7 +2475,7 @@ private:
                                 "{\n"
                                 "    char **a, **b, **c;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { char * * a ; char * * b ; char * * c ; }", sizeof_(code));
+            ASSERT_EQUALS("void foo ( ) { char * * a ; char * * b ; char * * c ; }", tok(code));
         }
 
         {
@@ -2544,7 +2496,7 @@ private:
                           " a ( ) ;"
                           " b ( 0 , 0 , 0 ) ;"
                           " return 10 ; "
-                          "}", sizeof_(code));
+                          "}", tok(code));
         }
 
         {
@@ -2552,7 +2504,7 @@ private:
                                 "{\n"
                                 "    delete [] a, a = 0;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { delete [ ] a ; a = 0 ; }", sizeof_(code));
+            ASSERT_EQUALS("void foo ( ) { delete [ ] a ; a = 0 ; }", tok(code));
         }
 
         {
@@ -2560,7 +2512,7 @@ private:
                                 "{\n"
                                 "    delete a, a = 0;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { delete a ; a = 0 ; }", sizeof_(code));
+            ASSERT_EQUALS("void foo ( ) { delete a ; a = 0 ; }", tok(code));
         }
 
         {
@@ -2568,7 +2520,7 @@ private:
                                 "{\n"
                                 "    for(int a,b; a < 10; a = a + 1, b = b + 1);\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { for ( int a , b ; a < 10 ; a = a + 1 , b = b + 1 ) { ; } }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { for ( int a , b ; a < 10 ; a = a + 1 , b = b + 1 ) { ; } }", tok(code));
         }
 
         {
@@ -2577,7 +2529,7 @@ private:
                                 "    char buf[BUFSIZ], **p;\n"
                                 "    char *ptrs[BUFSIZ], **pp;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { char buf [ BUFSIZ ] ; char * * p ; char * ptrs [ BUFSIZ ] ; char * * pp ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { char buf [ BUFSIZ ] ; char * * p ; char * ptrs [ BUFSIZ ] ; char * * pp ; }", tok(code));
         }
     }
 
@@ -2590,7 +2542,7 @@ private:
                                 "  a=0,\n"
                                 "  b=0;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { int a ; int b ; if ( a ) { a = 0 ; b = 0 ; } }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { int a ; int b ; if ( a ) { a = 0 ; b = 0 ; } }", tok(code));
         }
 
         {
@@ -2601,7 +2553,7 @@ private:
                                 "  a.f=b.f,\n"
                                 "  a.g=b.g;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", tok(code));
         }
 
         // keep the comma in template specifiers..
@@ -2610,7 +2562,7 @@ private:
                                 "{\n"
                                 "  int a = b<T<char,3>, int>();\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { int a ; a = b < T < char , 3 > , int > ( ) ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { int a ; a = b < T < char , 3 > , int > ( ) ; }", tok(code));
         }
 
         {
@@ -2623,7 +2575,7 @@ private:
                                      "{"
                                      " return C < 1 , 2 , 3 > ( x , y ) ; "
                                      "}";
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -2807,7 +2759,6 @@ private:
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
             tokenizer.simplifyTokenList();
-            tokenizer.validate();
 
             const char expect[] = "\n\n##file 0\n"
                                   "1: void foo ( )\n"
@@ -2842,7 +2793,6 @@ private:
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
             tokenizer.simplifyTokenList();
-            tokenizer.validate();
 
             const char expect[] = "\n\n##file 0\n"
                                   "1: void foo ( )\n"
@@ -3769,16 +3719,8 @@ private:
                             "typedef std::vector<Func> CallQueue;"
                             "int main() {}";
 
-        // Clear the error buffer..
-        errout.str("");
-
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
+        // Tokenize and check output..
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3796,16 +3738,8 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        // Clear the error buffer..
-        errout.str("");
-
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
+        // Tokenize and check output..
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3837,16 +3771,8 @@ private:
                             "   CHFOO freem;\n"
                             "} STRFOO;";
 
-        // Clear the error buffer..
-        errout.str("");
-
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
+        // Tokenize and check output..
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4599,7 +4525,7 @@ private:
                                        "{ "
                                        "int alloclen ; "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' hides typedef with same name\n", errout.str());
@@ -4617,7 +4543,7 @@ private:
                                        "{ "
                                        "int alloclen ; "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Union 'A' hides typedef with same name\n", errout.str());
@@ -4635,7 +4561,7 @@ private:
                                        "{ "
                                        "int alloclen ; "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Class 'A' hides typedef with same name\n", errout.str());
@@ -4653,7 +4579,7 @@ private:
             const std::string expected("class MyMap : public std :: map < std :: string , int > "
                                        "{ "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -4669,7 +4595,7 @@ private:
             const std::string expected("class MyMap : protected std :: map < std :: string , int > "
                                        "{ "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -4685,7 +4611,7 @@ private:
             const std::string expected("class MyMap : private std :: map < std :: string , int > "
                                        "{ "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -4702,7 +4628,7 @@ private:
                                        "struct MyA : public foo "
                                        "{ "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -4719,7 +4645,7 @@ private:
                                        "class MyA : public foo "
                                        "{ "
                                        "} ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -4744,7 +4670,7 @@ private:
         // The expected result..
         const std::string expected("struct A { int a ; } ; "
                                    "const struct A * ap ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef47() {
@@ -4754,7 +4680,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: pair < int , int > const i ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -4763,7 +4689,7 @@ private:
 
             // The expected result..
             const std::string expected("void ( X :: * f ) ( ) ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -4780,7 +4706,7 @@ private:
                                    "{ "
                                    "bar ( module_name ? module_name . string : 0 ) ; "
                                    "}");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef49() { // ticket #1691
@@ -4796,7 +4722,7 @@ private:
                                    "void some_method ( const Class & x ) const { } "
                                    "void another_method ( const Class & x ) const { } "
                                    "}");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef50() {
@@ -4816,7 +4742,7 @@ private:
                                    "char ( & t2 ) [ 10 ] ; "
                                    "char ( & t3 ) [ x ] ; "
                                    "char ( & t4 ) [ x + 2 ] ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef51() {
@@ -4827,7 +4753,7 @@ private:
         // The expected result..
         const std::string expected("class A { public: int i ; } ; "
                                    "const char ( A :: * t1 ) = & A :: i ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef52() { // ticket #1782
@@ -4837,7 +4763,7 @@ private:
 
             // The expected result..
             const std::string expected("char ( * foo ( ) ) [ 10 ] { }");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -4908,7 +4834,7 @@ private:
         const std::string expected("long * v1 ; "
                                    "void * v2 [ 2 ] ; "
                                    "int * * v3 ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
 
         // Check for output..
         checkSimplifyTypedef(code);
@@ -4928,7 +4854,7 @@ private:
                                    "const void * pr ; " // this gets simplified to a regular pointer
                                    "operatorconstvoid(*)()& ( ) { return pr ; } "
                                    "} ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
 
         // Check for output..
         checkSimplifyTypedef(code);
@@ -4946,7 +4872,7 @@ private:
                                    ""
                                    "int a ; a = int ( 1 ) * int ( 2 ) ; "
                                    "} ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
 
         // Check for output..
         checkSimplifyTypedef(code);
@@ -4960,7 +4886,7 @@ private:
 
             // The expected result..
             const std::string expected("int coords [ 4 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -4973,7 +4899,7 @@ private:
 
             // The expected result..
             const std::string expected("int coords [ 4 ] [ 5 ] [ 7 ] [ 2 ] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 } ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -4987,7 +4913,7 @@ private:
                             "};\n";
         // The expected result..
         const std::string expected(";");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
 
         // Check for output..
         checkSimplifyTypedef(code);
@@ -5004,7 +4930,7 @@ private:
                             "}\n";
         // The expected result..
         const std::string expected("void f ( ) { int b ; int * f ; }");
-        ASSERT_EQUALS(expected, sizeof_(code, false));
+        ASSERT_EQUALS(expected, tok(code, false));
 
         // Check for output..
         checkSimplifyTypedef(code);
@@ -5036,7 +4962,7 @@ private:
 
         // The expected tokens..
         const std::string expected1("void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }");
-        ASSERT_EQUALS(expected1, sizeof_(code1, false));
+        ASSERT_EQUALS(expected1, tok(code1, false));
 
         // Check for output..
         checkSimplifyTypedef(code1);
@@ -5088,7 +5014,7 @@ private:
     void simplifyTypedef63() { // ticket #2175 'typedef float x[3];'
         const char code[] = "typedef float x[3];\n"
                             "x a,b,c;\n";
-        const std::string actual(sizeof_(code));
+        const std::string actual(tok(code));
         ASSERT_EQUALS("float a [ 3 ] ; float b [ 3 ] ; float c [ 3 ] ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
@@ -5096,7 +5022,7 @@ private:
     void simplifyTypedef64() {
         const char code[] = "typedef __typeof__(__type1() + __type2()) __type;"
                             "__type t;\n";
-        const std::string actual(sizeof_(code));
+        const std::string actual(tok(code));
         ASSERT_EQUALS("__typeof__ ( __type1 ( ) + __type2 ( ) ) t ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
@@ -5107,7 +5033,7 @@ private:
                             "    Foo b(0); \n"
                             "    return b > Foo(10); \n"
                             "}";
-        const std::string actual(sizeof_(code));
+        const std::string actual(tok(code));
         ASSERT_EQUALS("int main ( ) { BAR < int > b ( 0 ) ; return b > BAR < int > ( 10 ) ; }", actual);
         ASSERT_EQUALS("", errout.str());
     }
@@ -5115,7 +5041,7 @@ private:
     void simplifyTypedef66() { // ticket #2341
         const char code[] = "typedef long* GEN;\n"
                             "extern GEN (*foo)(long);";
-        const std::string actual(sizeof_(code));
+        const std::string actual(tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5127,14 +5053,14 @@ private:
         const std::string expected = "void f ( ) { "
                                      "( ( int ( * * ( * ) ( char * , char * , int , int ) ) ( ) ) global [ 6 ] ) ( \"assoc\" , \"eggdrop\" , 106 , 0 ) ; "
                                      "}";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef68() { // ticket #2355
         const char code[] = "typedef FMAC1 void (* a) ();\n"
                             "void *(*b) ();\n";
-        const std::string actual(sizeof_(code));
+        const std::string actual(tok(code));
         ASSERT_EQUALS("void * * b ;", actual);
         ASSERT_EQUALS("", errout.str());
     }
@@ -5149,7 +5075,7 @@ private:
                                      "{ "
                                      "int ( * * ( * compilerHookVector ) ( void ) ) ( ) ; "
                                      "} ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5157,7 +5083,7 @@ private:
         const char code[] = "typedef int pread_f ( int ) ;\n"
                             "pread_f *(*test_func)(char *filename);\n";
         const std::string expected = "int ( * ( * test_func ) ( char * filename ) ) ( int ) ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5166,14 +5092,14 @@ private:
             const char code[] = "typedef int RexxFunctionHandler();\n"
                                 "RexxFunctionHandler *(efuncs[1]);\n";
             const std::string expected = "int ( * ( efuncs [ 1 ] ) ) ( ) ;";
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
             const char code[] = "typedef int RexxFunctionHandler();\n"
                                 "RexxFunctionHandler *(efuncs[]) = { NULL, NULL };\n";
             const std::string expected = "int ( * ( efuncs [ ] ) ) ( ) = { 0 , 0 } ;";
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -5189,7 +5115,7 @@ private:
                                          ""
                                          "operatorint** ( ) const { } "
                                          "} ;";
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         // inline local variable
@@ -5202,7 +5128,7 @@ private:
                                          ""
                                          "void f1 ( ) const { int i ; } "
                                          "} ;";
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         // out of line member variable
@@ -5217,7 +5143,7 @@ private:
                                          "void f1 ( ) const ; "
                                          "} ; "
                                          "void Fred :: f1 ( ) const { int i ; f ( i ) ; }";
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         // out of line operator
@@ -5232,7 +5158,7 @@ private:
                                          "operatorint** ( ) const ; "
                                          "} ; "
                                          "Fred :: operatorint** ( ) const { }";
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -5246,7 +5172,7 @@ private:
                                      "struct A : public B { "
                                      "void f ( ) ; "
                                      "} ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5257,28 +5183,28 @@ private:
                             "static char get_runlevel(const state_t);\n";
         const std::string expected = "long ( * ( * current_state ) ( void ) ) ( void ) = death ; "
                                      "static char get_runlevel ( const long ( * ( * ) ( void ) ) ( void ) ) ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef75() { // ticket #2426
         const char code[] = "typedef _Packed struct S { long l; }; \n";
         const std::string expected = "";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef76() { // ticket #2453 segmentation fault
         const char code[] = "void f1(typedef int x) {}\n";
         const std::string expected = "void f1 ( typedef int x ) { }";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedef77() { // ticket #2554
         const char code[] = "typedef char Str[10]; int x = sizeof(Str);\n";
         const std::string expected = "int x ; x = 10 ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef78() { // ticket #2568
@@ -5287,7 +5213,7 @@ private:
                             "typedef struct A { } A_t;\n"
                             "A_t a1;\n";
         const std::string expected = "struct A a ; struct A { } ; struct A a1 ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef79() { // ticket #2348
@@ -5300,7 +5226,7 @@ private:
                                      "{ "
                                      "int ( * ( * V_LangOptionCommand ) ) ( int x ) ; "
                                      "} ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef80() { // ticket #2587
@@ -5312,7 +5238,7 @@ private:
                                      "void f ( ) { "
                                      "sizeof ( struct s ) ; "
                                      "} ;";
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
 
         // Check for output..
         checkSimplifyTypedef(code);
@@ -5351,7 +5277,7 @@ private:
         // The expected result..
         const std::string expected("void f ( char ( & cl ) [ 10 ] ) { }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef84() { // ticket #2630 (segmentation fault)
@@ -5372,7 +5298,7 @@ private:
         const char code[] = "typedef FOO ((BAR)(void, int, const int, int*));\n";
         const char expected[] = ";";
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5390,7 +5316,7 @@ private:
                                 "safe_bool operator! ( ) const ; "
                                 "} ;";
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5398,7 +5324,7 @@ private:
         const char code[] = "typedef FOO (*(*BAR)(void, int, const int, int*));\n";
         const char expected[] = ";";
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5406,7 +5332,7 @@ private:
         const char code[] = "typedef short int (*x)(...);\n";
         const char expected[] = ";";
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5417,7 +5343,7 @@ private:
                             "};\n";
         const char expected[] = "class Fred { void func ( int ) const ; } ;";
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5426,7 +5352,7 @@ private:
                             "void f(const IA&) {};\n";
         const char expected[] = "void f ( const int ( & ) [ 2 ] ) { } ;";
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5450,7 +5376,7 @@ private:
                                  "int ( * A :: f ( ) ) ( ) { } "
                                  "}";
         checkSimplifyTypedef(code1);
-        ASSERT_EQUALS(expected1, sizeof_(code1));
+        ASSERT_EQUALS(expected1, tok(code1));
         ASSERT_EQUALS("", errout.str());
 
         const char code2[] = "namespace NS {\n"
@@ -5468,7 +5394,7 @@ private:
                                  "} "
                                  "int ( * NS :: A :: f ( ) ) ( ) { }";
         checkSimplifyTypedef(code2);
-        ASSERT_EQUALS(expected2, sizeof_(code2));
+        ASSERT_EQUALS(expected2, tok(code2));
         ASSERT_EQUALS("", errout.str());
 
         const char code3[] = "namespace NS1 {\n"
@@ -5498,7 +5424,7 @@ private:
                                  "} "
                                  "}";
         checkSimplifyTypedef(code3);
-        ASSERT_EQUALS(expected3, sizeof_(code3));
+        ASSERT_EQUALS(expected3, tok(code3));
         ASSERT_EQUALS("", errout.str());
 
         const char code4[] = "namespace NS1 {\n"
@@ -5524,7 +5450,7 @@ private:
                                  "int ( * NS2 :: A :: f ( ) ) ( ) { } "
                                  "}";
         checkSimplifyTypedef(code4);
-        ASSERT_EQUALS(expected4, sizeof_(code4));
+        ASSERT_EQUALS(expected4, tok(code4));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5536,7 +5462,7 @@ private:
                                 "}";
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5546,7 +5472,7 @@ private:
         const char expected[] = "struct s { double x ; } ;";
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5567,7 +5493,7 @@ private:
                                  "struct A :: data d ;";
 
         checkSimplifyTypedef(code1);
-        ASSERT_EQUALS(expected1, sizeof_(code1));
+        ASSERT_EQUALS(expected1, tok(code1));
         TODO_ASSERT_EQUALS("[test.cpp:7]: (debug) Scope::checkVariable found variable 'd' with varid 0.\n", "", errout.str());
 
         const char code2[] = "class A {\n"
@@ -5586,7 +5512,7 @@ private:
                                  "struct :: A :: data d ;";
 
         checkSimplifyTypedef(code2);
-        ASSERT_EQUALS(expected2, sizeof_(code2));
+        ASSERT_EQUALS(expected2, tok(code2));
         TODO_ASSERT_EQUALS("[test.cpp:7]: (debug) Scope::checkVariable found variable 'd' with varid 0.\n", "", errout.str());
 
         const char code3[] = "class A {\n"
@@ -5605,7 +5531,7 @@ private:
                                  "class B : public :: A :: data { } ;";
 
         checkSimplifyTypedef(code3);
-        ASSERT_EQUALS(expected3, sizeof_(code3));
+        ASSERT_EQUALS(expected3, tok(code3));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5622,20 +5548,20 @@ private:
                                 "} ;";
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef96() { // ticket #2886 (segmentation fault)
         const char code[] = "typedef struct x { }\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedef97() { // ticket #2983 (segmentation fault)
         const char code[] = "typedef x y\n"
                             "(A); y\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5643,19 +5569,19 @@ private:
         const char code[] = "#define X type ## __LINE__\n"
                             "typedef int X;\n"
                             "typedef int X;\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef99() { // ticket #2999
         const char code[] = "typedef struct Fred Fred;\n"
                             "struct Fred { };\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
 
         const char code1[] = "struct Fred { };\n"
                              "typedef struct Fred Fred;\n";
-        sizeof_(code1);
+        tok(code1);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5666,14 +5592,14 @@ private:
                             "    fred = se_alloc(sizeof(struct Fred));\n"
                             "    return fred;\n"
                             "}\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef101() { // ticket #3003 (segmentation fault)
         const char code[] = "typedef a x[];\n"
                             "y = x\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
     }
 
@@ -5683,7 +5609,7 @@ private:
                             "{\n"
                             "    Fred * Fred;\n"
                             "}\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5693,25 +5619,25 @@ private:
                             "{\n"
                             "    Fred Fred;\n"
                             "}\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef104() { // ticket #3070
         const char code[] = "typedef int (*in_func) (void FAR *, unsigned char FAR * FAR *);\n";
-        ASSERT_EQUALS(";", sizeof_(code));
+        ASSERT_EQUALS(";", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef105() { // ticket #3616 (segmentation fault)
         const char code[] = "( int typedef char x; ){}\n";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef106() { // ticket #3619 (segmentation fault)
         const char code[] = "typedef void f ();\ntypedef { f }";
-        sizeof_(code);
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5722,7 +5648,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5735,7 +5661,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5748,7 +5674,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5761,7 +5687,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5775,7 +5701,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5789,7 +5715,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5802,7 +5728,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5815,7 +5741,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5828,7 +5754,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5841,7 +5767,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5855,7 +5781,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5868,7 +5794,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5881,7 +5807,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5894,7 +5820,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5907,7 +5833,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5921,7 +5847,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5934,7 +5860,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( void ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5947,7 +5873,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5960,7 +5886,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( int * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5973,7 +5899,7 @@ private:
 
             // The expected result..
             const std::string expected("std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             // Check for output..
             checkSimplifyTypedef(code);
@@ -5987,7 +5913,7 @@ private:
 
         // The expected result..
         const std::string expected("void xxx ( int ) ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedefFunction3() {
@@ -6015,7 +5941,7 @@ private:
                                        "C ( C :: * f5 ) ( ) const ; "
                                        "C ( C :: * f6 ) ( ) ; " // volatile is removed
                                        "C ( C :: * f7 ) ( ) const ;"); // volatile is removed
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -6046,7 +5972,7 @@ private:
                                        "const C ( C :: * f5 ) ( ) const ; "
                                        "const C ( C :: * f6 ) ( ) ; " // volatile is removed
                                        "const C ( C :: * f7 ) ( ) const ;"); // volatile is removed
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -6076,7 +6002,7 @@ private:
                                        "const C ( C :: * f5 ) ( ) const ; "
                                        "const C ( C :: * f6 ) ( ) ; " // volatile is removed
                                        "const C ( C :: * f7 ) ( ) const ;"); // volatile is removed
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -6106,7 +6032,7 @@ private:
                                        "C * ( C :: * f5 ) ( ) const ; "
                                        "C * ( C :: * f6 ) ( ) ; " // volatile is removed
                                        "C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -6136,7 +6062,7 @@ private:
                                        "const C * ( C :: * f5 ) ( ) const ; "
                                        "const C * ( C :: * f6 ) ( ) ; " // volatile is removed
                                        "const C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -6167,7 +6093,7 @@ private:
                                        "const C * ( C :: * f5 ) ( ) const ; "
                                        "const C * ( C :: * f6 ) ( ) ; " // volatile is removed
                                        "const C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
-            ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
@@ -6775,16 +6701,15 @@ private:
     }
 
     // Check simplifyEnum
-    void checkSimplifyEnum(const char code[]) {
+    std::string checkSimplifyEnum(const char code[]) {
         errout.str("");
         // Tokenize..
         Settings settings;
-        settings.inconclusive = true;
         settings.addEnabled("style");
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        return tokenizer.tokens()->stringifyList(0, true);
     }
 
     void enum8() {
@@ -6849,9 +6774,8 @@ private:
                             "SHELL_SIZE = sizeof(union { int i; char *cp; double d; }) - 1, \n"
                             "} e = SHELL_SIZE;";
         const char expected[] = "int e ; e = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 ;";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, checkSimplifyEnum(code));
 
-        checkSimplifyEnum(code);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -6866,9 +6790,8 @@ private:
                                 ""
                                 "A u ; u = 1 ; A v ; v = 2 ; "
                                 "}";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, checkSimplifyEnum(code));
 
-        checkSimplifyEnum(code);
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Variable 'u' hides enumerator with same name\n"
                       "[test.cpp:4] -> [test.cpp:3]: (style) Variable 'v' hides enumerator with same name\n", errout.str());
     }
@@ -6880,7 +6803,7 @@ private:
                             "    unsigned int fred = 0;\n"
                             "}";
         const char expected[] = "void foo ( ) { unsigned int fred ; fred = 0 ; }";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, checkSimplifyEnum(code));
     }
 
     void enum13() {
@@ -6890,14 +6813,14 @@ private:
                             "    unsigned int fred = a;\n"
                             "}";
         const char expected[] = "void foo ( ) { unsigned int fred ; fred = a ; }";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, checkSimplifyEnum(code));
     }
 
     void enum14() {
         const char code[] = "enum ab { a };\n"
                             "ab";
         const char expected[] = "ab";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, checkSimplifyEnum(code));
     }
 
     void enum15() { // C++0x features
@@ -6905,42 +6828,42 @@ private:
             const char code[] = "enum : char { a = 99 };\n"
                                 "char c1 = a;";
             const char expected[] = "char c1 ; c1 = 99 ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 { a };\n"
                                 "Enum1 e1 = a;";
             const char expected[] = "int e1 ; e1 = 0 ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum Enum1 : char { a };\n"
                                 "Enum1 e1 = a;";
             const char expected[] = "char e1 ; e1 = 0 ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned char { a };\n"
                                 "Enum1 e1 = a;";
             const char expected[] = "unsigned char e1 ; e1 = 0 ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned int { a };\n"
                                 "Enum1 e1 = a;";
             const char expected[] = "unsigned int e1 ; e1 = 0 ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned long long int { a };\n"
                                 "Enum1 e1 = a;";
             const char expected[] = "unsigned long long e1 ; e1 = 0 ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
     }
 
@@ -6954,30 +6877,30 @@ private:
         // if header is included twice its enums will be duplicated
         const char code[] = "enum ab { a=0, b };"
                             "enum ab { a=0, b };\n";
-        ASSERT_EQUALS(";", tok(code, false));
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void enum18() { // ticket #2466 - array with same name as enum constant
         const char code[] = "enum ab { a=0, b };\n"
                             "void f() { a[0]; }\n";
-        ASSERT_EQUALS("void f ( ) { a [ 0 ] ; }", tok(code, false));
+        ASSERT_EQUALS("void f ( ) { a [ 0 ] ; }", checkSimplifyEnum(code));
     }
 
     void enum19() { // ticket #2536
         const char code[] = "enum class E1;\n"
                             "enum class E2 : int;\n";
-        ASSERT_EQUALS(";", tok(code, false));
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
     }
 
     void enum20() { // ticket #2600 segmentation fault
         const char code[] = "enum { const }\n";
-        ASSERT_EQUALS("", tok(code, false));
+        ASSERT_EQUALS("", checkSimplifyEnum(code));
     }
 
     void enum21() { // ticket #2720 syntax error
         const char code[] = "enum E2 : signed const short { };\n";
-        ASSERT_EQUALS(";", tok(code, false));
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -6999,7 +6922,7 @@ private:
         const char code[] = "enum Enumerator : std::uint8_t { ITEM1, ITEM2, ITEM3 };\n"
                             "Enumerator e = ITEM3;\n";
         const char expected[] = "std :: uint8_t e ; e = 2 ;";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -7009,25 +6932,25 @@ private:
                             "    if (style & STYLE) { }\n"
                             "}\n";
         const char expected[] = "void f ( long style ) { if ( style & 1 ) { } }";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void enum25() { // ticket #2966 (segmentation fault)
         const char code[] = "enum x :\n";
-        tok(code, false);
+        checkSimplifyEnum(code);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void enum26() { // ticket #2975 (segmentation fault)
         const char code[] = "enum E {} e enum\n";
-        tok(code, false);
+        checkSimplifyEnum(code);
         ASSERT_EQUALS("", errout.str());
     }
 
     void enum27() { // ticket #3005 (segmentation fault)
         const char code[] = "enum : x\n";
-        tok(code, false);
+        checkSimplifyEnum(code);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
@@ -7036,7 +6959,7 @@ private:
                             "void f() { char x[4];  memset(x, 0, 4); \n"
                             "{ x } };\n"
                             "void g() { x; }";
-        ASSERT_EQUALS("void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", tok(code, true));
+        ASSERT_EQUALS("void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", checkSimplifyEnum(code));
     }
 
     void removestd() {
