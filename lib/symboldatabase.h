@@ -525,7 +525,6 @@ public:
      */
     const Variable *getVariable(const std::string &varname) const;
 
-    static bool findClosingBracket(const Token* tok, const Token*& close);
 private:
     /**
      * @brief helper function for getVariableList()

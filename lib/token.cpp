@@ -811,6 +811,32 @@ Token* Token::nextArgument() const
     return 0;
 }
 
+bool Token::findClosingBracket(const Token*& closing) const
+{
+    if (_str == "<") {
+        unsigned int depth = 0;
+        for (closing = this; closing != NULL; closing = closing->next()) {
+            if (closing->str() == "{" || closing->str() == "[" || closing->str() == "(")
+                closing = closing->link();
+            else if (closing->str() == "}" || closing->str() == "]" || closing->str() == ")" || closing->str() == ";" || closing->str() == "=")
+                return false;
+            else if (closing->str() == "<")
+                ++depth;
+            else if (closing->str() == ">") {
+                if (--depth == 0)
+                    return true;
+            } else if (closing->str() == ">>") {
+                if (--depth == 0)
+                    return true;
+                if (--depth == 0)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 //---------------------------------------------------------------------------
 
 const Token *Token::findsimplematch(const Token *tok, const char pattern[])

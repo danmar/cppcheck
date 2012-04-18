@@ -2000,7 +2000,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
 
     if (Token::Match(localTypeTok, "%type% <")) {
         const Token* closeTok = NULL;
-        bool found = findClosingBracket(localTypeTok->next(), closeTok);
+        bool found = localTypeTok->next()->findClosingBracket(closeTok);
         if (found) {
             localVarTok = skipPointers(closeTok->next());
 
@@ -2041,27 +2041,6 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     return NULL != vartok;
 }
 
-bool Scope::findClosingBracket(const Token* tok, const Token*& close)
-{
-    if (NULL != tok && tok->str() == "<") {
-        unsigned int depth = 0;
-        for (close = tok; close != NULL; close = close->next()) {
-            if (close->str() == "{" || close->str() == "[" || close->str() == "(")
-                close = close->link();
-            else if (close->str() == "}" || close->str() == "]" || close->str() == ")" || close->str() == ";" || close->str() == "=")
-                return false;
-            else if (close->str() == "<") {
-                ++depth;
-            } else if (close->str() == ">") {
-                if (--depth == 0) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
 
 
 //---------------------------------------------------------------------------

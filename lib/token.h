@@ -433,6 +433,20 @@ public:
      */
     Token* nextArgument() const;
 
+    /**
+     * Returns the closing bracket of opening '<'. Should only be used if link()
+     * is unavailable.
+     * @param closing The closing token is stored in that parameter
+     * @return success
+     */
+    bool findClosingBracket(const Token*& closing) const;
+    bool findClosingBracket(Token*& closing) const {
+        const Token* tok;
+        bool retVal = findClosingBracket(tok);
+        closing = const_cast<Token*>(tok);
+        return retVal;
+    }
+
 private:
     void next(Token *nextToken) {
         _next = nextToken;

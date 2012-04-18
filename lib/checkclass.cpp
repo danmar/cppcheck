@@ -1454,7 +1454,7 @@ bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) c
                         }
 
                         // check for matching function parameters
-                        if (returnMatch && symbolDatabase->argsMatch(scope, tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0)) {
+                        if (returnMatch && Function::argsMatch(scope, tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0)) {
                             return true;
                         }
                     }

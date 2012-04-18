@@ -1016,21 +1016,7 @@ void Tokenizer::simplifyTypedef()
 
         // check for template
         if (tokOffset->str() == "<") {
-            unsigned int level = 0;
-            typeEnd = tokOffset->next();
-            for (; typeEnd ; typeEnd = typeEnd->next()) {
-                if (typeEnd->str() == ">") {
-                    if (!level)
-                        break;
-                    --level;
-                } else if (typeEnd->str() == "<") {
-                    ++level;
-                } else if (typeEnd->str() == "(" || typeEnd->str() == "[")
-                    typeEnd = typeEnd->link();
-                else if (typeEnd->str() == ")" || typeEnd->str() == "]") {
-                    break;
-                }
-            }
+            tokOffset->findClosingBracket(typeEnd);
 
             while (typeEnd && Token::Match(typeEnd->next(), ":: %type%"))
                 typeEnd = typeEnd->tokAt(2);
@@ -2837,19 +2823,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 ++typeCount;
             }
         } else if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
-            unsigned int indentlevel = 1;
-            bool bad = false;
-            while ((indentlevel > 0) && (NULL != (tok2 = tok2->next()))) {
-                if (tok2->str() == "<")
-                    ++indentlevel;
-                else if (tok2->str() == ">")
-                    --indentlevel;
-                else if (tok2->str() == ">>") {
-                    if (indentlevel == 1)
-                        bad = true;
-                    indentlevel -= 2;
-                }
-            }
+            bool bad = tok2->findClosingBracket(tok2);
             if (bad || !tok2)
                 break;
         } else if (tok2->str() == "&") {
@@ -5155,17 +5129,7 @@ void Tokenizer::simplifyCasts()
 
         while (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <")) {
             Token *tok2 = tok->next();
-            unsigned int level = 0;
-            while (tok2) {
-                if (tok2->str() == "<")
-                    ++level;
-                else if (tok2->str() == ">") {
-                    --level;
-                    if (level == 0)
-                        break;
-                }
-                tok2 = tok2->next();
-            }
+            tok2->next()->findClosingBracket(tok2);
 
             if (Token::simpleMatch(tok2, "> (")) {
                 Token *closeBracket = tok2->next()->link();
@@ -5599,22 +5563,8 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                             while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                                 if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
                                     tok2 = tok2->link();
-                                if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
-                                    unsigned int level = 1;
-                                    while (NULL != (tok2 = tok2->next())) {
-                                        if (tok2->str() == "<")
-                                            level++;
-                                        else if (tok2->str() == ">") {
-                                            if (level <= 1)
-                                                break;
-                                            --level;
-                                        } else if (tok2->str() == ">>") {
-                                            if (level <= 2)
-                                                break;
-                                            level -= 2;
-                                        }
-                                    }
-                                }
+                                if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0)
+                                    tok2->findClosingBracket(tok2);
                                 tok2 = tok2->next();
                             }
                             if (tok2 && tok2->str() == ";")
@@ -5679,20 +5629,14 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
         else {
             Token *eq = tok2;
 
-            unsigned int level = 0;
             while (tok2) {
                 if (tok2->str() == "{" || tok2->str() == "(")
                     tok2 = tok2->link();
 
-                else if (tok2->str() == "<") {
-                    if (tok2->previous()->isName() && !tok2->previous()->varId())
-                        ++level;
-                }
+                else if (tok2->str() == "<" && tok2->previous()->isName() && !tok2->previous()->varId())
+                    tok2->findClosingBracket(tok2);
 
-                else if (level > 0 && tok2->str() == ">")
-                    --level;
-
-                else if (level == 0 && strchr(";,", tok2->str()[0])) {
+                else if (strchr(";,", tok2->str()[0])) {
                     // "type var ="   =>   "type var; var ="
                     Token *VarTok = type0->tokAt((int)typelen);
                     while (Token::Match(VarTok, "*|&|const"))
@@ -8315,20 +8259,7 @@ void Tokenizer::simplifyComma()
 
         // Skip unhandled template specifiers..
         if (Token::Match(tok, "%var% <")) {
-            // Todo.. use the link instead.
-            unsigned int comparelevel = 0;
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "<")
-                    ++comparelevel;
-                else if (tok2->str() == ">") {
-                    if (!comparelevel) {
-                        tok = tok2;
-                        break;
-                    }
-                    ++comparelevel;
-                } else if (Token::Match(tok2, "[;{}]"))
-                    break;
-            }
+            tok->next()->findClosingBracket(tok);
         }
 
         // If token after the comma is a constant number, simplification is not required.
@@ -9326,28 +9257,28 @@ void Tokenizer::simplifyBorland()
     // I think that these classes are always declared at the outer scope
     // I save some time by ignoring inner classes.
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (tok->str() == "{") {
+        if (tok->str() == "{" && !Token::Match(tok->tokAt(-2), "namespace %type%")) {
             tok = tok->link();
             if (!tok)
                 break;
         }
 
-        if (Token::Match(tok, "class %var% :|{")) {
-            // count { and } for tok2
-            unsigned int indentlevel = 0;
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "{") {
-                    if (indentlevel == 0)
-                        indentlevel = 1;
-                    else
-                        tok2 = tok2->link();
-                } else if (tok2->str() == "}") {
-                    break;
-                } else if (tok2->str() == "__property" &&
-                           Token::Match(tok2->previous(), ";|{|}|protected:|public:|__published:")) {
-                    while (tok2->next() && !Token::Match(tok2, "{|;"))
-                        tok2->deleteThis();
-                    if (tok2->str() == "{") {
+        else if (Token::Match(tok, "class %var% :|{")) {
+            while (tok && tok->str() != "{" && tok->str() != ";")
+                tok = tok->next();
+            if (!tok)
+                break;
+            if (tok->str() == ";")
+                continue;
+
+            const Token* end = tok->link()->next();
+            for (Token *tok2 = tok->next(); tok2 != end; tok2 = tok2->next()) {
+                if (tok2->str() == "__property" &&
+                    Token::Match(tok2->previous(), ";|{|}|protected:|public:|__published:")) {
+                    while (tok2->next() && !Token::Match(tok2->next(), "{|;"))
+                        tok2->deleteNext();
+                    tok2->deleteThis();
+                    if (tok2 && tok2->str() == "{") {
                         Token::eraseTokens(tok2, tok2->link());
                         tok2->deleteNext();
                         tok2->deleteThis();
@@ -9642,7 +9573,7 @@ void Tokenizer::printUnknownTypes()
                     if (Token::Match(tok, "struct|union"))
                         name += " ";
 
-                    // pointers and referennces are OK in template
+                    // pointers and references are OK in template
                     else if (tok->str() == "<")
                         ++level;
                     else if (tok->str() == ">")

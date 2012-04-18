@@ -44,7 +44,6 @@ public:
         ,vartok(NULL)
         ,typetok(NULL)
         ,t(NULL)
-        ,found(false)
         ,isArray(false)
         ,isPointer(false)
         ,isReference(false)
@@ -59,7 +58,6 @@ private:
     const Token* vartok;
     const Token* typetok;
     const Token* t;
-    bool found;
     bool isArray;
     bool isPointer;
     bool isReference;
@@ -68,7 +66,6 @@ private:
         vartok = NULL;
         typetok = NULL;
         t = NULL;
-        found = false;
         isArray = false;
         isPointer = false;
         isReference = false;
@@ -98,11 +95,6 @@ private:
         TEST_CASE(isVariableDeclarationIdentifiesReference);
         TEST_CASE(isVariableDeclarationDoesNotIdentifyTemplateClass);
         TEST_CASE(isVariableDeclarationPointerConst);
-        TEST_CASE(canFindMatchingBracketsNeedsOpen);
-        TEST_CASE(canFindMatchingBracketsInnerPair);
-        TEST_CASE(canFindMatchingBracketsOuterPair);
-        TEST_CASE(canFindMatchingBracketsWithTooManyClosing);
-        TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
 
         TEST_CASE(hasRegularFunction);
         TEST_CASE(hasInlineClassFunction);
@@ -445,57 +437,6 @@ private:
         ASSERT(false == isArray);
         ASSERT(true == isPointer);
         ASSERT(false == isReference);
-    }
-
-    void canFindMatchingBracketsNeedsOpen() {
-        reset();
-        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
-
-        found = si.findClosingBracket(var.tokens(), t);
-        ASSERT(! found);
-        ASSERT(! t);
-    }
-
-    void canFindMatchingBracketsInnerPair() {
-        reset();
-        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
-
-        found = si.findClosingBracket(var.tokens()->tokAt(7), t);
-        ASSERT(found);
-        ASSERT_EQUALS(">", t->str());
-        ASSERT_EQUALS(var.tokens()->strAt(9), t->str());
-    }
-
-    void canFindMatchingBracketsOuterPair() {
-        reset();
-        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
-
-        found = si.findClosingBracket(var.tokens()->tokAt(3), t);
-        ASSERT(found);
-        ASSERT_EQUALS(">", t->str());
-        ASSERT_EQUALS(var.tokens()->strAt(10), t->str());
-
-    }
-
-    void canFindMatchingBracketsWithTooManyClosing() {
-        reset();
-        givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
-
-        found = si.findClosingBracket(var.tokens()->next(), t);
-        ASSERT(found);
-        ASSERT_EQUALS(">", t->str());
-        ASSERT_EQUALS(var.tokens()->strAt(3), t->str());
-    }
-
-    void canFindMatchingBracketsWithTooManyOpening() {
-        reset();
-        givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
-
-        found = si.findClosingBracket(var.tokens()->next(), t);
-        ASSERT(found);
-
-        found = si.findClosingBracket(var.tokens()->tokAt(4), t);
-        ASSERT(!found);
     }
 
     void hasRegularFunction() {
