@@ -3629,14 +3629,22 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
 
-        // functions with a function call can't be const..
-        checkConst("class foo\n"
-                   "{\n"
+        // functions with a call to a member function can only be const, if that member function is const, too.. (#1305)
+        checkConst("class foo {\n"
                    "public:\n"
                    "    int x;\n"
+                   "    void a() { x = 1; }\n"
                    "    void b() { a(); }\n"
-                   "};\n");
+                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    int x;\n"
+                   "    int a() const { return x; }\n"
+                   "    void b() { a(); }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Technically the member function 'Fred::b' can be const.\n", errout.str());
 
         // static functions can't be const..
         checkConst("class foo\n"
@@ -3787,11 +3795,12 @@ private:
                    "int Fred::setA() { a |= true; }");
         ASSERT_EQUALS("", errout.str());
 
-        // functions with a function call can't be const..
+        // functions with a function call to a non-const member can't be const.. (#1305)
         checkConst("class Fred\n"
                    "{\n"
                    "public:\n"
                    "    int x;\n"
+                   "    void a() { x = 1; }\n"
                    "    void b();\n"
                    "};\n"
                    "void Fred::b() { a(); }");
@@ -4053,6 +4062,18 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct Foo {\n"
+                   "    void operator<<(int);\n"
+                   "};\n"
+                   "struct Fred {\n"
+                   "    Foo foo;\n"
+                   "    void x()\n"
+                   "    {\n"
+                   "        std::cout << foo << 123;\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Technically the member function 'Fred::x' can be const.\n", errout.str());
     }
 
     void constoperator3() {
@@ -4669,15 +4690,6 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
 
-        // functions with a function call can't be const..
-        checkConst("class foo\n"
-                   "{\n"
-                   "public:\n"
-                   "    unsigned long long int x;\n"
-                   "    void b() { a(); }\n"
-                   "};\n");
-        ASSERT_EQUALS("", errout.str());
-
         // static functions can't be const..
         checkConst("class foo\n"
                    "{\n"
@@ -4899,6 +4911,14 @@ private:
                    "};\n"
                   );
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct DelayBase {\n"
+                   "    float swapSpecificDelays(int index1) {\n"
+                   "        return static_cast<float>(delays_[index1]);\n"
+                   "    }\n"
+                   "    float delays_[4];\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Technically the member function 'DelayBase::swapSpecificDelays' can be const.\n", errout.str());
     }
 
     void const27() { // ticket #1882

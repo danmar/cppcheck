@@ -552,29 +552,21 @@ void CheckClass::privateFunctions()
         if (!whole)
             continue;
 
-        std::list<const Token *> FuncList;
+        std::list<const Function*> FuncList;
         /** @todo embedded class have access to private functions */
         if (!scope->getNestedNonFunctions()) {
             for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                 // Get private functions..
                 if (func->type == Function::eFunction && func->access == Private)
-                    FuncList.push_back(func->tokenDef);
+                    FuncList.push_back(&*func);
             }
         }
 
         // Bailout for overriden virtual functions of base classes
         if (!scope->derivedFrom.empty()) {
-            // All base classes seen?
-            for (unsigned int i = 0; i < scope->derivedFrom.size() && whole; ++i) {
-                if (!scope->derivedFrom[i].scope || !scope->derivedFrom[i].scope->classStart)
-                    whole = false;
-            }
-            if (!whole)
-                continue;
-
             // Check virtual functions
-            for (std::list<const Token*>::iterator i = FuncList.begin(); i != FuncList.end();) {
-                if (isVirtualFunc(&*scope, *i))
+            for (std::list<const Function*>::iterator i = FuncList.begin(); i != FuncList.end();) {
+                if ((*i)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
                     FuncList.erase(i++);
                 else
                     ++i;
@@ -582,27 +574,28 @@ void CheckClass::privateFunctions()
         }
 
         while (!FuncList.empty()) {
+            const std::string& funcName = FuncList.front()->tokenDef->str();
             // Check that all private functions are used
-            bool used = checkFunctionUsage(FuncList.front()->str(), &*scope); // Usage in this class
+            bool used = checkFunctionUsage(funcName, &*scope); // Usage in this class
             // Check in friend classes
             for (std::list<Scope::FriendInfo>::const_iterator i = scope->friendList.begin(); !used && i != scope->friendList.end(); ++i)
-                used = checkFunctionUsage(FuncList.front()->str(), i->scope);
+                used = checkFunctionUsage(funcName, i->scope);
 
             if (!used) {
                 // Final check; check if the function pointer is used somewhere..
-                const std::string _pattern("return|throw|(|)|,|= &|" + FuncList.front()->str());
+                const std::string _pattern("return|throw|(|)|,|= &|" + funcName);
 
                 // or if the function address is used somewhere...
                 // eg. sigc::mem_fun(this, &className::classFunction)
-                const std::string _pattern2("& " + scope->className + " :: " + FuncList.front()->str());
-                const std::string methodAsArgument("(|, " + scope->className + " :: " + FuncList.front()->str() + " ,|)");
-                const std::string methodAssigned("%var% = &| " + scope->className + " :: " + FuncList.front()->str());
+                const std::string _pattern2("& " + scope->className + " :: " + funcName);
+                const std::string methodAsArgument("(|, " + scope->className + " :: " + funcName + " ,|)");
+                const std::string methodAssigned("%var% = &| " + scope->className + " :: " + funcName);
 
                 if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()) &&
                     !Token::findmatch(_tokenizer->tokens(), _pattern2.c_str()) &&
                     !Token::findmatch(_tokenizer->tokens(), methodAsArgument.c_str()) &&
                     !Token::findmatch(_tokenizer->tokens(), methodAssigned.c_str())) {
-                    unusedPrivateFunctionError(FuncList.front(), scope->className, FuncList.front()->str());
+                    unusedPrivateFunctionError(FuncList.front()->tokenDef, scope->className, funcName);
                 }
             }
 
@@ -1182,7 +1175,7 @@ void CheckClass::checkConst()
 
                 // check if base class function is virtual
                 if (!scope->derivedFrom.empty()) {
-                    if (isVirtualFunc(&(*scope), func->tokenDef))
+                    if (func->isImplicitlyVirtual(true))
                         continue;
                 }
 
@@ -1333,7 +1326,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
         }
 
         // streaming: <<
-        else if (tok1->str() == "<<" && isMemberVar(scope, tok1->previous())) {
+        else if (tok1->str() == "<<" && isMemberVar(scope, tok1->previous()) && tok1->strAt(-2) != "<<") {
             return(false);
         } else if (Token::simpleMatch(tok1->previous(), ") <<") &&
                    isMemberVar(scope, tok1->tokAt(-2))) {
@@ -1382,7 +1375,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
 
         // function call..
         else if (Token::Match(tok1, "%var% (") && !tok1->isStandardType() &&
-                 !Token::Match(tok1, "return|c_str|if|string|switch|while|catch|for")) {
+                 !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
             if (!isConstMemberFunc(scope, tok1)) {
                 return(false);
             }
@@ -1393,9 +1386,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
                 else if (tok2->isName() && isMemberVar(scope, tok2))
                     return(false); // TODO: Only bailout if function takes argument as non-const reference
             }
-        } else if (Token::Match(tok1, "%var% < %any% > (")) {
+        } else if (Token::Match(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return(false);
-        } else if (Token::Match(tok1, "%var% . size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|rfind|get_allocator|copy ( )") && tok1->varId()) {
+        } else if (Token::Match(tok1, "%var% . size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|rfind|get_allocator|copy|c_str ( )") && tok1->varId()) {
             // assume all std::*::size() and std::*::empty() are const
             const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
 
@@ -1419,59 +1412,6 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
     }
 
     return(true);
-}
-
-// check if this function is defined virtual in the base classes
-bool CheckClass::isVirtualFunc(const Scope *scope, const Token *functionToken) const
-{
-    // check each base class
-    for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
-        // check if base class exists in database
-        if (scope->derivedFrom[i].scope) {
-            const Scope *derivedFrom = scope->derivedFrom[i].scope;
-
-            std::list<Function>::const_iterator func;
-
-            // check if function defined in base class
-            for (func = derivedFrom->functionList.begin(); func != derivedFrom->functionList.end(); ++func) {
-                if (func->isVirtual) {
-                    const Token *tok = func->tokenDef;
-
-                    if (tok->str() == functionToken->str()) {
-                        const Token *temp1 = tok->previous();
-                        const Token *temp2 = functionToken->previous();
-                        bool returnMatch = true;
-
-                        // check for matching return parameters
-                        while (temp1->str() != "virtual") {
-                            if (temp1->str() != temp2->str()) {
-                                returnMatch = false;
-                                break;
-                            }
-
-                            temp1 = temp1->previous();
-                            temp2 = temp2->previous();
-                        }
-
-                        // check for matching function parameters
-                        if (returnMatch && Function::argsMatch(scope, tok->tokAt(2), functionToken->tokAt(2), std::string(""), 0)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            if (!derivedFrom->derivedFrom.empty()) {
-                if (isVirtualFunc(derivedFrom, functionToken))
-                    return true;
-            }
-        } else {
-            // unable to find base class so assume it has a virtual function
-            return true;
-        }
-    }
-
-    return false;
 }
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
