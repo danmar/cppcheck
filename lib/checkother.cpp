@@ -576,13 +576,13 @@ void CheckOther::checkSizeofForPointerSize()
         // Also ensure the variables are pointers
         // Only keep variables which are pointers
         const Variable *var = symbolDatabase->getVariableFromVarId(variable->varId());
-        if (!var || !var->isPointer()) {
+        if (!var || !var->isPointer() || var->isArray()) {
             variable = 0;
         }
 
         if (variable2) {
             var = symbolDatabase->getVariableFromVarId(variable2->varId());
-            if (!var || !var->isPointer()) {
+            if (!var || !var->isPointer() || var->isArray()) {
                 variable2 = 0;
             }
         }

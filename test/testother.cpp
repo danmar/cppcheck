@@ -4315,6 +4315,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check(
+            "char* x[10];\n"
+            "memset(x, 0, sizeof(x));");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
             "char x[10];\n"
             "memset(x, 0, sizeof x);");
         ASSERT_EQUALS("", errout.str());

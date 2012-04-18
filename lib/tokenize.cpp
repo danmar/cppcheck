@@ -9278,7 +9278,7 @@ void Tokenizer::simplifyBorland()
                     while (tok2->next() && !Token::Match(tok2->next(), "{|;"))
                         tok2->deleteNext();
                     tok2->deleteThis();
-                    if (tok2 && tok2->str() == "{") {
+                    if (tok2->str() == "{") {
                         Token::eraseTokens(tok2, tok2->link());
                         tok2->deleteNext();
                         tok2->deleteThis();
