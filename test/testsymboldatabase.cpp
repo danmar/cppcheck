@@ -492,6 +492,9 @@ private:
         givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
 
         found = si.findClosingBracket(var.tokens()->next(), t);
+        ASSERT(found);
+
+        found = si.findClosingBracket(var.tokens()->tokAt(4), t);
         ASSERT(!found);
     }
 

@@ -409,6 +409,8 @@ public:
     Scope *functionScope;  // scope of function body
     std::list<Variable> argumentList; // argument list
 
+    static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
+
 private:
     bool isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const;
 };
@@ -448,7 +450,6 @@ public:
     std::list<FriendInfo> friendList;
     Scope *nestedIn;
     std::list<Scope *> nestedList;
-    AccessControl access;
     unsigned int numConstructors;
     NeedInitialization needInitialization;
     std::list<const Token *> usingList;
@@ -524,6 +525,7 @@ public:
      */
     const Variable *getVariable(const std::string &varname) const;
 
+    static bool findClosingBracket(const Token* tok, const Token*& close);
 private:
     /**
      * @brief helper function for getVariableList()
@@ -535,7 +537,6 @@ private:
      * @return true if tok points to a variable declaration, false otherwise
      */
     bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer, bool &isReference) const;
-    bool findClosingBracket(const Token* tok, const Token*& close) const;
 };
 
 class SymbolDatabase {
@@ -558,8 +559,6 @@ public:
     const Function *findFunctionByToken(const Token *tok) const;
 
     const Scope* findScopeByName(const std::string& name) const;
-
-    static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
     bool isClassOrStruct(const std::string &type) const {
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
