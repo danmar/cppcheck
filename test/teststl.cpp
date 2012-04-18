@@ -1137,6 +1137,12 @@ private:
               "}\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    static set<Foo>::const_iterator current;\n"
+              "    return 25 > current->bar;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
