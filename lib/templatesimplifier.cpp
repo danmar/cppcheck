@@ -405,38 +405,7 @@ std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateInstantiation
     for (Token *tok = tokens; tok; tok = tok->next()) {
         // template definition.. skip it
         if (Token::simpleMatch(tok, "template <")) {
-            unsigned int level = 0;
-
-            // Goto the end of the template definition
-            for (; tok; tok = tok->next()) {
-                // skip '<' .. '>'
-                if (tok->str() == "<")
-                    ++level;
-                else if (tok->str() == ">") {
-                    if (level <= 1)
-                        break;
-                    --level;
-                }
-
-                // skip inner '(' .. ')' and '{' .. '}'
-                else if (tok->str() == "{" || tok->str() == "(") {
-                    // skip inner tokens. goto ')' or '}'
-                    tok = tok->link();
-
-                    // this should be impossible. but break out anyway
-                    if (!tok)
-                        break;
-
-                    // the end '}' for the template definition => break
-                    if (tok->str() == "}")
-                        break;
-                }
-
-                // the end ';' for the template definition
-                else if (tok->str() == ";") {
-                    break;
-                }
-            }
+            tok->next()->findClosingBracket(tok);
             if (!tok)
                 break;
         } else if (Token::Match(tok->previous(), "[({};=] %var% <") ||
@@ -445,18 +414,7 @@ std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateInstantiation
             // Add inner template instantiations first => go to the ">"
             // and then parse backwards, adding all seen instantiations
             const Token *tok2;
-
-            // goto end ">" token
-            unsigned int level = 0;
-            for (tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "<") {
-                    ++level;
-                } else if (tok2->str() == ">") {
-                    if (level <= 1)
-                        break;
-                    --level;
-                }
-            }
+            tok->next()->findClosingBracket(tok2);
 
             // parse backwards and add template instantiations
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
