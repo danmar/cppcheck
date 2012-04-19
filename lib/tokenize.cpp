@@ -2921,12 +2921,17 @@ void Tokenizer::setVarIdNew()
             (Token::Match(tok,"[(,]") && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {")))) {
             // locate the variable name..
             const Token *tok2 = (tok->isName()) ? tok : tok->next();
+
+            // private: protected: public: etc
+            while (tok2 && tok2->str()[tok2->str().size() - 1U] == ':') {
+                tok2 = tok2->next();
+            }
             if (!tok2)
                 break;
 
             // Variable declaration can't start with "return", etc
             if (tok2->str() == "return" || tok2->str() == "NOT" || tok2->str() == "goto" ||
-                (!isC() && (tok2->str() == "delete" || tok2->str() == "throw" || tok2->str() == "using")))
+                (!isC() && (tok2->str() == "delete" || tok2->str() == "friend" || tok2->str() == "throw" || tok2->str() == "using" || tok2->str() == "virtual")))
                 continue;
 
             const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top());
@@ -2946,6 +2951,13 @@ void Tokenizer::setVarIdNew()
         }
 
         if (tok->isName()) {
+            if (!isC()) {
+                if (tok->previous() && tok->previous()->str() == "::")
+                    continue;
+                if (tok->next() && tok->next()->str() == "::")
+                    continue;
+            }
+
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
