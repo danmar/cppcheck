@@ -1433,7 +1433,6 @@ private:
                               "extern void SomeTestFunc(float);\n"
                               "void MyFuncNoError()\n"
                               "{\n"
-                              "    //flip around floatB and g_float and the message does not appear\n"
                               "    const float floatB = 2.2f;\n"
                               "    const float floatTot = floatB * g_float;\n"
                               "    SomeTestFunc(floatTot);\n"
@@ -1444,13 +1443,11 @@ private:
                               "extern void SomeTestFunc(float);\n"
                               "void MyFuncNoError2()\n"
                               "{\n"
-                              "    //change floatTot to non-const and the message does not appear\n"
                               "    const float floatC = 2.2f;  \n"
                               "    float floatTot = g_float * floatC;\n"
                               "    SomeTestFunc(floatTot);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     void localvaralias1() {
