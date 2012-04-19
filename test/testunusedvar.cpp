@@ -88,6 +88,7 @@ private:
         TEST_CASE(localvar40); // ticket #3473
         TEST_CASE(localvar41); // ticket #3481
         TEST_CASE(localvar42); // ticket #3603
+        TEST_CASE(localvar43); // ticket #3742
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1415,6 +1416,41 @@ private:
                               "    return y;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar43() { // #3742
+        functionVariableUsage("float g_float = 1;\n"
+                              "extern void SomeTestFunc(float);\n"
+                              "void MyFuncError()\n"
+                              "{\n"
+                              "    const float floatA = 2.2f;\n"
+                              "    const float floatTot = g_float * floatA;\n"
+                              "    SomeTestFunc(floatTot);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("float g_float = 1;\n"
+                              "extern void SomeTestFunc(float);\n"
+                              "void MyFuncNoError()\n"
+                              "{\n"
+                              "    //flip around floatB and g_float and the message does not appear\n"
+                              "    const float floatB = 2.2f;\n"
+                              "    const float floatTot = floatB * g_float;\n"
+                              "    SomeTestFunc(floatTot);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("float g_float = 1;\n"
+                              "extern void SomeTestFunc(float);\n"
+                              "void MyFuncNoError2()\n"
+                              "{\n"
+                              "    //change floatTot to non-const and the message does not appear\n"
+                              "    const float floatC = 2.2f;  \n"
+                              "    float floatTot = g_float * floatC;\n"
+                              "    SomeTestFunc(floatTot);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void localvaralias1() {
