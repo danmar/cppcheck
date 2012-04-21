@@ -2931,7 +2931,7 @@ void Tokenizer::setVarIdNew()
             }
         } else if (tok->str() == "}") {
             // Set variable ids in class declaration..
-            if (!isC() && !executableScope.top()) {
+            if (!isC() && !executableScope.top() && tok->link()) {
                 setVarIdClassDeclaration(tok->link(), variableId, scopestartvarid.top());
             }
 
