@@ -2854,8 +2854,13 @@ static void setVarIdClassDeclaration(Token * const startToken, const std::map<st
     const Token * const endToken = startToken->link();
 
     // replace varids..
-    for (Token *tok = startToken; tok != endToken; tok = tok->next()) {
-        if (tok->isName() && tok->varId() <= scopeStartVarId) {
+    unsigned int indentlevel = 0;
+    for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
+        if (tok->str() == "{")
+            ++indentlevel;
+        else if (tok->str() == "}")
+            --indentlevel;
+        else if (indentlevel > 0 && tok->isName() && tok->varId() <= scopeStartVarId) {
             if (tok->previous()->str() == "::" || tok->next()->str() == "::")
                 continue;
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
@@ -2945,7 +2950,7 @@ void Tokenizer::setVarIdNew()
 
             else if (decl && Token::Match(tok2->previous(), "%type% ( !!)")) {
                 const Token *tok3 = tok2->next();
-                if (!setVarIdParseDeclaration(&tok3,variableId,executableScope.top())) {
+                if (!tok3->isStandardType() && !setVarIdParseDeclaration(&tok3,variableId,executableScope.top())) {
                     variableId[tok2->previous()->str()] = ++_varId;
                     tok = tok2->previous();
                 }
