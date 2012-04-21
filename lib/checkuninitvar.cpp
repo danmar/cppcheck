@@ -735,18 +735,9 @@ private:
         if (Token::Match(&tok, "( * %var% ) (") ||
             (Token::Match(&tok, "( *| %var% .|::") && Token::Match(tok.link()->tokAt(-2), ".|:: %var% ) ("))) {
             // is the variable passed as a parameter to some function?
-            unsigned int parlevel = 0;
-            for (const Token *tok2 = tok.link()->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    ++parlevel;
-
-                else if (tok2->str() == ")") {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                }
-
-                else if (tok2->varId()) {
+            const Token *tok2 = tok.link()->next();
+            for (const Token* const end = tok2->link(); tok2 != end; tok2 = tok2->next()) {
+                if (tok2->varId()) {
                     // it is possible that the variable is initialized here
                     ExecutionPath::bailOutVar(checks, tok2->varId());
                 }
@@ -905,15 +896,9 @@ private:
                 return;
             if (Token::simpleMatch(tok, "if (")) {
                 // bail out all variables that are used in the condition
-                unsigned int parlevel = 0;
-                for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        ++parlevel;
-                    else if (tok2->str() == ")") {
-                        if (parlevel == 0)
-                            break;
-                        --parlevel;
-                    } else if (tok2->varId())
+                const Token* const end = tok->linkAt(1);
+                for (const Token *tok2 = tok->tokAt(2); tok2 != end; tok2 = tok2->next()) {
+                    if (tok2->varId())
                         ExecutionPath::bailOutVar(checks, tok2->varId());
                 }
             }

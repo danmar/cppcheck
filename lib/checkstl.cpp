@@ -307,8 +307,7 @@ public:
         const Token *tok = it;
 
         // Search for the start of the loop body..
-        int indentlevel = 1;
-        while (indentlevel > 0 && 0 != (tok = tok->next())) {
+        while (0 != (tok = tok->next())) {
             if (tok->str() == "(")
                 tok = tok->link();
             else if (tok->str() == ")")
