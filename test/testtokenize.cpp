@@ -185,9 +185,6 @@ private:
         TEST_CASE(varid18);
         TEST_CASE(varid19);
         TEST_CASE(varid20);
-        TEST_CASE(varid21);
-        TEST_CASE(varid22);
-        TEST_CASE(varid23);
         TEST_CASE(varid24);
         TEST_CASE(varid25);
         TEST_CASE(varid26);   // ticket #1967 (list of function pointers)
@@ -2902,55 +2899,6 @@ private:
                                    "2: {\n"
                                    "3: pair < vector < int > , vector < double > > x@1 ;\n"
                                    "4: }\n");
-
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
-    }
-
-    void varid21() {
-        const std::string code("void foo()\n"
-                               "{\n"
-                               "    vector<const std::string &> x;\n"
-                               "}\n");
-
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void foo ( )\n"
-                                   "2: {\n"
-                                   "3: vector < const std :: string & > x@1 ;\n"
-                                   "4: }\n");
-
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
-    }
-
-    void varid22() {
-        const std::string code("class foo()\n"
-                               "{\n"
-                               "public:\n"
-                               "    vector<const std::string &> x;\n"
-                               "};\n");
-
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class foo ( )\n"
-                                   "2: {\n"
-                                   "3: public:\n"
-                                   "4: vector < const std :: string & > x@1 ;\n"
-                                   "5: } ;\n");
-
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
-    }
-
-    void varid23() {
-        const std::string code("class foo()\n"
-                               "{\n"
-                               "public:\n"
-                               "    static vector<const std::string &> x;\n"
-                               "};\n");
-
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class foo ( )\n"
-                                   "2: {\n"
-                                   "3: public:\n"
-                                   "4: static vector < const std :: string & > x@1 ;\n"
-                                   "5: } ;\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
