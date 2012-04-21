@@ -2978,6 +2978,14 @@ void Tokenizer::setVarIdNew()
             }
 
             else if (decl && Token::Match(tok2->previous(), "%type% ( !!)")) {
+                // In C++ , a variable can't be called operator+ or something like that.
+                if (isCPP() &&
+                    tok2->previous()->str().size() >= 9 &&
+                    tok2->previous()->str().compare(0, 8, "operator") == 0 &&
+                    tok2->previous()->str()[8] != '_' &&
+                    !std::isalnum(tok2->previous()->str()[8]))
+                    continue;
+
                 const Token *tok3 = tok2->next();
                 if (!tok3->isStandardType() && !setVarIdParseDeclaration(&tok3,variableId,executableScope.top())) {
                     variableId[tok2->previous()->str()] = ++_varId;
