@@ -2856,6 +2856,8 @@ static void setVarIdClassDeclaration(Token * const startToken, const std::map<st
     // replace varids..
     for (Token *tok = startToken; tok != endToken; tok = tok->next()) {
         if (tok->isName() && tok->varId() <= scopeStartVarId) {
+            if (tok->previous()->str() == "::" || tok->next()->str() == "::")
+                continue;
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
@@ -2931,7 +2933,7 @@ void Tokenizer::setVarIdNew()
 
             // Variable declaration can't start with "return", etc
             if (tok2->str() == "return" || tok2->str() == "NOT" || tok2->str() == "goto" ||
-                (!isC() && (tok2->str() == "delete" || tok2->str() == "friend" || tok2->str() == "throw" || tok2->str() == "using" || tok2->str() == "virtual")))
+                (!isC() && (tok2->str() == "delete" || tok2->str() == "friend" || tok2->str() == "new" || tok2->str() == "throw" || tok2->str() == "using" || tok2->str() == "virtual")))
                 continue;
 
             const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top());
