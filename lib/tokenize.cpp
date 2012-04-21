@@ -2823,8 +2823,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 ++typeCount;
             }
         } else if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
-            bool bad = tok2->findClosingBracket(tok2);
-            if (bad || !tok2)
+            bool ok = tok2->findClosingBracket(tok2);
+            if (!ok || !tok2)
                 break;
         } else if (tok2->str() == "&") {
             ref = true;
