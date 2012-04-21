@@ -3607,7 +3607,7 @@ private:
                                 "3: AAA\n"
                                 "4: a@1 [ 0 ] = 0 ;\n"
                                 "5: }\n";
-        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code, false, "test.c"));
     }
 
     void varid_using() {

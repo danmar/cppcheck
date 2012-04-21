@@ -2845,6 +2845,17 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         }
     }
 
+    // Check if array declaration is valid (#2638)
+    // invalid declaration: AAA a[4] = 0;
+    if (typeCount >= 2 && tok2 && tok2->str() == "[") {
+        const Token *tok3 = tok2;
+        while (tok3 && tok3->str() == "[") {
+            tok3 = tok3->link()->next();
+        }
+        if (Token::Match(tok3, "= %num%"))
+            return false;
+    }
+
     return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
 }
 
