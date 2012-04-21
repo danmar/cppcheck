@@ -2853,6 +2853,17 @@ static void setVarIdClassDeclaration(Token * const startToken, const std::map<st
     // end of scope
     const Token * const endToken = startToken->link();
 
+    // determine class name
+    std::string className;
+    for (const Token *tok = startToken->previous(); tok; tok = tok->previous()) {
+        if (!tok->isName() && tok->str() != ":")
+            break;
+        if (Token::Match(tok, "class|struct %type% [:{]")) {
+            className = tok->next()->str();
+            break;
+        }
+    }
+
     // replace varids..
     unsigned int indentlevel = 0;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
@@ -2861,8 +2872,15 @@ static void setVarIdClassDeclaration(Token * const startToken, const std::map<st
         else if (tok->str() == "}")
             --indentlevel;
         else if (indentlevel > 0 && tok->isName() && tok->varId() <= scopeStartVarId) {
-            if (tok->previous()->str() == "::" || tok->next()->str() == "::")
+            if (tok->previous()->str() == "::")
                 continue;
+            if (tok->next()->str() == "::") {
+                if (tok->str() == className)
+                    tok = tok->tokAt(2);
+                else
+                    continue;
+            }
+
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
