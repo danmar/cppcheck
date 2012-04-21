@@ -5311,20 +5311,27 @@ bool Tokenizer::simplifyFunctionParameters()
                 tok1 = tok1->next();
             }
 
-            if (bailOut) {
+            if (bailOut || !tok1) {
                 tok = tok->link();
                 continue;
             }
 
-            //the two containers should hold the same size..
+            //the two containers may not hold the same size...
+            //in that case, the missing parameters are defined as 'int'
             if (argumentNames.size() != argumentNames2.size()) {
-                tok = tok->link();
-                //error if the second container is not empty
-                if (!argumentNames2.empty()) {
-                    syntaxError(tok);
-                    return false;
+                //move back 'tok1' to the last ';'
+                tok1 = tok1->previous();
+                std::map<std::string, Token *>::iterator it;
+                for (it = argumentNames.begin(); it != argumentNames.end(); ++it) {
+                    if (argumentNames2.find(it->first) == argumentNames2.end()) {
+                        //add the missing parameter argument declaration
+                        tok1->insertToken(";");
+                        tok1->insertToken(it->first);
+                        //register the change inside argumentNames2
+                        argumentNames2[it->first] = tok1->next();
+                        tok1->insertToken("int");
+                    }
                 }
-                continue;
             }
 
             while (tok->str() != ")") {

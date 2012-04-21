@@ -4088,13 +4088,6 @@ private:
         tokenizeAndStringify("void foo(int, int)\n"
                              "{}\n");
         ASSERT_EQUALS("", errout.str());
-
-        //non-matching arguments after round braces
-        tokenizeAndStringify("void foo(x, y, z)\n"
-                             " int x;\n"
-                             " int y;\n"
-                             "{}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     // Simplify "((..))" into "(..)"
