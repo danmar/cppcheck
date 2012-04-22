@@ -3418,8 +3418,8 @@ private:
                                        "8: void foo :: bar ( )\n"
                                        "9: {\n"
                                        "10: POINT pOutput@3 ; pOutput@3 = { 0 , 0 } ;\n"
-                                       "11: int x@4 ; x@4 = pOutput@3 . x@5 ;\n"
-                                       "12: int y@6 ; y@6 = pOutput@3 . y@7 ;\n"
+                                       "11: int x@4 ; x@4 = pOutput@3 . x@6 ;\n"
+                                       "12: int y@5 ; y@5 = pOutput@3 . y@7 ;\n"
                                        "13: }\n");
 
             ASSERT_EQUALS(expected, actual);
