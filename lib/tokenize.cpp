@@ -22,7 +22,6 @@
 #include "token.h"
 #include "mathlib.h"
 #include "settings.h"
-#include "errorlogger.h"
 #include "check.h"
 #include "path.h"
 #include "symboldatabase.h"
@@ -33,7 +32,6 @@
 #include <string>
 #include <cstring>
 #include <sstream>
-#include <list>
 #include <cassert>
 #include <cctype>
 #include <stack>
@@ -440,31 +438,13 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
     if (tok1 && !(_settings->isEnabled("style") && _settings->inconclusive))
         return;
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    std::string tok2_str;
-    if (tok1 && tok2) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok1->linenr();
-        loc.setfile(file(tok1));
-        locationList.push_back(loc);
-        loc.line = tok2->linenr();
-        loc.setfile(file(tok2));
-        locationList.push_back(loc);
-        tok2_str = tok2->str();
-    } else
-        tok2_str = "name";
+    std::list<const Token*> locationList;
+    locationList.push_back(tok1);
+    locationList.push_back(tok2);
+    const std::string tok2_str = tok2 ? tok2->str():std::string("name");
 
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::style,
-                                           std::string(type + " '" + tok2_str +
-                                                   "' hides typedef with same name"),
-                                           "variableHidingTypedef",
-                                           true);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(locationList, Severity::style, "variableHidingTypedef",
+                std::string(type + " '" + tok2_str + "' hides typedef with same name"), true);
 }
 
 void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type)
@@ -472,31 +452,13 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
     if (tok1 && !(_settings->isEnabled("style")))
         return;
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    std::string tok2_str;
-    if (tok1 && tok2) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok1->linenr();
-        loc.setfile(file(tok1));
-        locationList.push_back(loc);
-        loc.line = tok2->linenr();
-        loc.setfile(file(tok2));
-        locationList.push_back(loc);
-        tok2_str = tok2->str();
-    } else
-        tok2_str = "name";
+    std::list<const Token*> locationList;
+    locationList.push_back(tok1);
+    locationList.push_back(tok2);
+    const std::string tok2_str = tok2 ? tok2->str():std::string("name");
 
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::style,
-                                           std::string(type + " '" + tok2_str +
-                                                   "' forward declaration unnecessary, already declared"),
-                                           "unnecessaryForwardDeclaration",
-                                           false);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(locationList, Severity::style, "unnecessaryForwardDeclaration",
+                std::string(type + " '" + tok2_str + "' forward declaration unnecessary, already declared"));
 }
 
 // check if this statement is a duplicate definition
@@ -678,22 +640,9 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
     }
     if (tok)
         str << " ;";
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc;
-    loc.line = tok1->linenr();
-    loc.setfile(file(tok1));
-    locationList.push_back(loc);
 
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::debug,
-                                           "Failed to parse \'" + str.str() + "\'. The checking continues anyway.",
-                                           "debug",
-                                           false);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(tok1, Severity::debug, "debug",
+                "Failed to parse \'" + str.str() + "\'. The checking continues anyway.");
 }
 
 Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
@@ -6822,22 +6771,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                     Token::Match(tok3->tokAt(-2), ") { %var% ++|--"))
                     break;
 
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.line = tok3->linenr();
-                loc.setfile(file(tok3));
-                locationList.push_back(loc);
-
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       Severity::debug,
-                                                       "simplifyKnownVariables: bailing out (variable="+tok3->str()+", value="+value+")",
-                                                       "debug",
-                                                       false);
-
-                if (_errorLogger)
-                    _errorLogger->reportErr(errmsg);
-                else
-                    Check::reportError(errmsg);
+                reportError(tok3, Severity::debug, "debug",
+                            "simplifyKnownVariables: bailing out (variable="+tok3->str()+", value="+value+")");
             }
 
             break;
@@ -7457,31 +7392,13 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
     if (tok1 && !(_settings->isEnabled("style")))
         return;
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    std::string tok2_str;
-    if (tok1 && tok2) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok1->linenr();
-        loc.setfile(file(tok1));
-        locationList.push_back(loc);
-        loc.line = tok2->linenr();
-        loc.setfile(file(tok2));
-        locationList.push_back(loc);
-        tok2_str = tok2->str();
-    } else
-        tok2_str = "name";
+    std::list<const Token*> locationList;
+    locationList.push_back(tok1);
+    locationList.push_back(tok2);
+    const std::string tok2_str = tok2 ? tok2->str():std::string("name");
 
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::style,
-                                           std::string(type + " '" + tok2_str +
-                                                   "' hides enumerator with same name"),
-                                           "variableHidingEnum",
-                                           false);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(locationList, Severity::style, "variableHidingEnum",
+                std::string(type + " '" + tok2_str + "' hides enumerator with same name"));
 }
 
 // Check if this statement is a duplicate definition.  A duplicate
@@ -8244,73 +8161,20 @@ const std::string& Tokenizer::file(const Token *tok) const
 
 void Tokenizer::syntaxError(const Token *tok)
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    if (tok) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok->linenr();
-        loc.setfile(file(tok));
-        locationList.push_back(loc);
-    }
-
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::error,
-                                           "syntax error",
-                                           "syntaxError",
-                                           false);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(tok, Severity::error, "syntaxError", "syntax error");
 }
 
 void Tokenizer::syntaxError(const Token *tok, char c)
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    if (tok) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok->linenr();
-        loc.setfile(file(tok));
-        locationList.push_back(loc);
-    }
-
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::error,
-                                           std::string("Invalid number of character (") +
-                                           c +
-                                           ") " +
-                                           "when these macros are defined: '" +
-                                           _configuration +
-                                           "'.",
-                                           "syntaxError",
-                                           false);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(tok, Severity::error, "syntaxError",
+                std::string("Invalid number of character (") + c + ") " +
+                "when these macros are defined: '" + _configuration + "'.");
 }
 
 void Tokenizer::cppcheckError(const Token *tok) const
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    if (tok) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok->linenr();
-        loc.setfile(file(tok));
-        locationList.push_back(loc);
-    }
-
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::error,
-                                           "Analysis failed. If the code is valid then please report this failure.",
-                                           "cppcheckError",
-                                           false);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(tok, Severity::error, "cppcheckError",
+                "Analysis failed. If the code is valid then please report this failure.");
 }
 
 
@@ -9576,24 +9440,8 @@ void Tokenizer::removeUnnecessaryQualification()
 
 void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::string &qualification)
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    if (tok) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok->linenr();
-        loc.setfile(file(tok));
-        locationList.push_back(loc);
-    }
-
-    const ErrorLogger::ErrorMessage errmsg(locationList,
-                                           Severity::portability,
-                                           "Extra qualification \'" + qualification + "\' unnecessary and considered an error by many compilers.",
-                                           "unnecessaryQualification",
-                                           false);
-
-    if (_errorLogger)
-        _errorLogger->reportErr(errmsg);
-    else
-        Check::reportError(errmsg);
+    reportError(tok, Severity::portability, "unnecessaryQualification",
+                "Extra qualification \'" + qualification + "\' unnecessary and considered an error by many compilers.");
 }
 
 void Tokenizer::simplifyReturnStrncat()
@@ -9740,4 +9588,33 @@ bool Tokenizer::isC() const
 bool Tokenizer::isCPP() const
 {
     return Path::isCPP(getSourceFilePath());
+}
+
+void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
+{
+    const std::list<const Token*> callstack(1, tok);
+    reportError(callstack, severity, id, msg, inconclusive);
+}
+
+void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+        // --errorlist can provide null values here
+        if (!(*it))
+            continue;
+
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = (*it)->linenr();
+        loc.setfile(file(*it));
+        locationList.push_back(loc);
+    }
+
+    ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id, inconclusive);
+    if (!_files.empty())
+        errmsg.file0 = _files[0];
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
 }

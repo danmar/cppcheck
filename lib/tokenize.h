@@ -22,16 +22,14 @@
 #define tokenizeH
 //---------------------------------------------------------------------------
 
-#include "path.h"
+#include "errorlogger.h"
 
 #include <string>
 #include <map>
 #include <list>
 #include <vector>
-#include <set>
 
 class Token;
-class ErrorLogger;
 class Settings;
 class SymbolDatabase;
 class TimerResults;
@@ -704,6 +702,12 @@ public:
      * check for duplicate enum definition
      */
     bool duplicateDefinition(Token **tokPtr, const Token *name);
+
+    /**
+     * report error message
+     */
+    void reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
+    void reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
 
     /**
      * duplicate enum definition error
