@@ -251,6 +251,7 @@ private:
         TEST_CASE(macrodoublesharp);
 
         TEST_CASE(simplifyFunctionParameters);
+        TEST_CASE(simplifyFunctionParameters1); // #3721
         TEST_CASE(simplifyFunctionParametersErrors);
 
         TEST_CASE(removeParentheses1);       // Ticket #61
@@ -4080,6 +4081,18 @@ private:
                                 "}";
             ASSERT_EQUALS("void foo ( ) { if ( x ) { } { } }", tokenizeAndStringify(code, true));
         }
+    }
+
+    void simplifyFunctionParameters1() { // ticket #3721
+
+        const char code[] = "typedef float ufloat;\n"
+                            "typedef short ftnlen;\n"
+                            "int f(p,w,d,e,len) ufloat *p; ftnlen len;\n"
+                            "{\n"
+                            "}\n";
+        ASSERT_EQUALS("int f ( float * p , int w , int d , int e , short len )\n"
+                      "{\n"
+                      "}", tokenizeAndStringify(code,true));
     }
 
     void simplifyFunctionParametersErrors() {
