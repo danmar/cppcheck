@@ -890,10 +890,18 @@ static void simplifyVarMap(std::map<std::string, std::string> &variables)
         // TODO: 1. tokenize the value, replace each token like this.
         // TODO: 2. handle function-macros too.
 
+        std::set<std::string> seenVariables;
         std::map<std::string, std::string>::iterator it = variables.find(varValue);
-        while (it != variables.end() && it->first != it->second && it != i) {
-            varValue = it->second;
-            it = variables.find(varValue);
+        while (it != variables.end() && it->first != it->second) {
+            if (seenVariables.find(it->first) != seenVariables.end()) {
+                // We have already seen this variable. there is a cycle of #define that we can't process at
+                // this time. Stop trying to simplify the current variable and leave it as is.
+                break;
+            } else {
+                seenVariables.insert(it->first);
+                varValue = it->second;
+                it = variables.find(varValue);
+            }
         }
     }
 }

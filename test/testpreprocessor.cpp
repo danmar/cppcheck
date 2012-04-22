@@ -132,6 +132,7 @@ private:
 
         TEST_CASE(if_macro_eq_macro); // #3536
         TEST_CASE(ticket_3675);
+        TEST_CASE(ticket_3699);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -1548,6 +1549,24 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // There's nothing to assert. It just needs to not hang.
+    }
+
+    void ticket_3699() {
+        const std::string code("#define INLINE __forceinline\n"
+                               "#define inline __forceinline\n"
+                               "#define __forceinline inline\n"
+                               "#if !defined(_WIN32)\n"
+                               "#endif\n"
+                               "INLINE inline __forceinline\n"
+                              );
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // First, it must not hang. Second, inline must becomes inline, and __forceinline must become __forceinline.
+        ASSERT_EQUALS("\n\n\n\n\n$$$__forceinline $$inline $$__forceinline\n", actual[""]);
     }
 
     void multiline1() {
