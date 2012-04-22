@@ -2901,6 +2901,41 @@ static void setVarIdClassDeclaration(Token * const startToken, const std::map<st
 }
 
 
+static void setVarIdStructMembers(Token **tok1,
+                                  std::map<unsigned int, std::map<std::string,unsigned int> > *structMembers,
+                                  unsigned int *_varId)
+{
+    Token *tok = *tok1;
+    while (Token::Match(tok->next(), ". %var% !!(")) {
+        const unsigned int struct_varid = tok->varId();
+        tok = tok->tokAt(2);
+        if (struct_varid == 0)
+            continue;
+
+        std::map<unsigned int, std::map<std::string,unsigned int> >::iterator structIterator;
+        structIterator = structMembers->find(struct_varid);
+        if (structIterator == structMembers->end()) {
+            std::map<std::string,unsigned int> members;
+            members[tok->str()] = ++ (*_varId);
+            (*structMembers)[struct_varid] = members;
+            tok->varId(*_varId);
+        } else {
+            std::map<std::string,unsigned int> &members = structIterator->second;
+            std::map<std::string,unsigned int>::const_iterator memberIterator;
+            memberIterator = members.find(tok->str());
+            if (memberIterator == members.end()) {
+                members[tok->str()] = ++(*_varId);
+                tok->varId(*_varId);
+            } else {
+                tok->varId(memberIterator->second);
+            }
+        }
+    }
+    if (tok)
+        *tok1 = tok;
+}
+
+
 void Tokenizer::setVarIdNew()
 {
     // Clear all variable ids
@@ -3005,37 +3040,17 @@ void Tokenizer::setVarIdNew()
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
-                while (Token::Match(tok->next(), ". %var% !!(")) {
-                    const unsigned int struct_varid = it->second;
-                    tok = tok->tokAt(2);
-                    if (struct_varid == 0)
-                        continue;
-
-                    std::map<unsigned int, std::map<std::string,unsigned int> >::iterator structIterator;
-                    structIterator = structMembers.find(struct_varid);
-                    if (structIterator == structMembers.end()) {
-                        std::map<std::string,unsigned int> members;
-                        members[tok->str()] = ++_varId;
-                        structMembers[struct_varid] = members;
-                        tok->varId(_varId);
-                    } else {
-                        std::map<std::string,unsigned int> &members = structIterator->second;
-                        std::map<std::string,unsigned int>::const_iterator memberIterator;
-                        memberIterator = members.find(tok->str());
-                        if (memberIterator == members.end()) {
-                            members[tok->str()] = ++_varId;
-                            tok->varId(_varId);
-                        } else {
-                            tok->varId(memberIterator->second);
-                        }
-                    }
-                }
+                setVarIdStructMembers(&tok, &structMembers, &_varId);
             }
         } else if (Token::Match(tok, "::|. %var%")) {
             // Don't set varid after a :: or . token
             tok = tok->next();
         }
     }
+
+    // Clear the structMembers because it will be used when member functions
+    // are parsed. The old info is not bad, it is just redundant.
+    structMembers.clear();
 
     // Member functions and variables in this source
     std::list<Token *> allMemberFunctions;
@@ -3119,6 +3134,7 @@ void Tokenizer::setVarIdNew()
                         tok2->strAt(-1) != "." &&
                         varlist.find(tok2->str()) != varlist.end()) {
                         tok2->varId(varlist[tok2->str()]);
+                        setVarIdStructMembers(&tok2, &structMembers, &_varId);
                     }
                 }
             }
