@@ -3062,6 +3062,7 @@ void Tokenizer::setVarIdNew()
             } while (tok && (tok->isName() || tok->str() == ","));
             if (!tok)
                 break;
+            tok = tok->previous();
         }
     }
 
