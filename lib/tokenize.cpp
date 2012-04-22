@@ -2816,6 +2816,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             if (tok2->str() == "class" || tok2->str() == "struct" || tok2->str() == "union") {
                 hasstruct = true;
                 typeCount = 0;
+            } else if (tok2->str() == "const") {
+                ;  // just skip "const"
             } else if (!hasstruct && variableId.find(tok2->str()) != variableId.end()) {
                 ++typeCount;
                 tok2 = tok2->next();
@@ -2841,9 +2843,11 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
-        if (executableScope && ref && tok2->str() != "=" &&
-            (tok2->str() != ")" || !Token::simpleMatch(tok2->link()->previous(), "catch"))) {
-            return false;
+        if (executableScope && ref) {
+            if (tok2->str() == "(" || tok2->str() == "=")
+                ;   // reference is assigned => ok
+            else if (tok2->str() != ")" || !Token::simpleMatch(tok2->link()->previous(), "catch"))
+                return false;   // not catching by reference => not declaration
         }
     }
 
