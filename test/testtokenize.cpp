@@ -3066,12 +3066,7 @@ private:
                                    "2: int f@1 ( x ) ;\n"
                                    "3: return f@1 ;\n"
                                    "4: }\n");
-        const std::string actual("\n\n##file 0\n"
-                                 "1: int foo ( ) {\n"
-                                 "2: int f ( x ) ;\n"
-                                 "3: return f ;\n"
-                                 "4: }\n");
-        TODO_ASSERT_EQUALS(expected, actual, tokenizeDebugListing(code));
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
     void varid36() { // ticket #2980 (segmentation fault)
@@ -3418,8 +3413,8 @@ private:
                                        "8: void foo :: bar ( )\n"
                                        "9: {\n"
                                        "10: POINT pOutput@3 ; pOutput@3 = { 0 , 0 } ;\n"
-                                       "11: int x@4 ; x@4 = pOutput@3 . x@6 ;\n"
-                                       "12: int y@5 ; y@5 = pOutput@3 . y@7 ;\n"
+                                       "11: int x@4 ; x@4 = pOutput@3 . x@5 ;\n"
+                                       "12: int y@6 ; y@6 = pOutput@3 . y@7 ;\n"
                                        "13: }\n");
 
             ASSERT_EQUALS(expected, actual);

@@ -401,7 +401,7 @@ private:
                               "{\n"
                               "    int i(a);\n"
                               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
