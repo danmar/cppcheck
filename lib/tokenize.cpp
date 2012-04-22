@@ -6053,7 +6053,7 @@ bool Tokenizer::simplifyKnownVariables()
                 const bool valueIsPointer = false;
 
                 Token *scopeStart = tok2->tokAt(6);
-                ret |= simplifyKnownVariablesSimplify(&scopeStart, scopeStart, varid, structname, value, valueIsPointer, valueVarId, valueToken, 0);
+                ret |= simplifyKnownVariablesSimplify(&scopeStart, scopeStart, varid, structname, value, valueIsPointer, valueVarId, valueToken, -1);
             }
 
             else if (Token::Match(tok2, "strcpy ( %var% , %str% ) ;")) {
@@ -6146,6 +6146,9 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
     const bool pointeralias(valueToken->isName() || Token::Match(valueToken, "& %var% ["));
 
     bool ret = false;
+
+    // skip increments and decrements if the given indentlevel is -1
+    const bool skipincdec = (indentlevel == -1);
 
     Token* bailOutFromLoop = 0;
     int indentlevel3 = indentlevel;
@@ -6473,7 +6476,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             }
         }
 
-        if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value)) {
+        if (!skipincdec && indentlevel == indentlevel3 && Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value)) {
             const std::string op(tok3->strAt(2));
             if (Token::Match(tok3, "[{};] %any% %any% ;")) {
                 tok3->deleteNext(3);

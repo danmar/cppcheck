@@ -150,7 +150,8 @@ private:
         TEST_CASE(simplifyKnownVariables45);    // ticket #3281 - static constant variable not simplified
         TEST_CASE(simplifyKnownVariables46);    // ticket #3587 - >>
         TEST_CASE(simplifyKnownVariables47);    // ticket #3627 - >>
-        TEST_CASE(simplifyKnownVariablesIfEq);  // if (a==5) => a is 5 in the block
+        TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
+        TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
@@ -2277,7 +2278,7 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.cpp"));
     }
 
-    void simplifyKnownVariablesIfEq() {
+    void simplifyKnownVariablesIfEq1() {
         const char code[] = "void f(int x) {\n"
                             "    if (x==5) {\n"
                             "        return x;\n"
@@ -2286,6 +2287,20 @@ private:
         const char expected[] = "void f ( int x ) {\n"
                                 "if ( x == 5 ) {\n"
                                 "return 5 ;\n"
+                                "}\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+    }
+
+    void simplifyKnownVariablesIfEq2() {
+        const char code[] = "void f(int x) {\n"
+                            "    if (x==5) {\n"
+                            "        buf[x++] = 0;\n"
+                            "    }\n"
+                            "}";
+        const char expected[] = "void f ( int x ) {\n"
+                                "if ( x == 5 ) {\n"
+                                "buf [ x ++ ] = 0 ;\n"
                                 "}\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
