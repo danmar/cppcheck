@@ -3016,7 +3016,7 @@ void Tokenizer::setVarIdNew()
 
             const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top());
 
-            if (decl && Token::Match(tok2->previous(), "%type% [;[=,)]")) {
+            if (decl && Token::Match(tok2->previous(), "%type% [;[=,)]") && tok2->previous()->str() != "const") {
                 variableId[tok2->previous()->str()] = ++_varId;
                 tok = tok2->previous();
             }
