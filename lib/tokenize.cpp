@@ -2942,6 +2942,16 @@ void Tokenizer::setVarIdNew()
     for (Token *tok = _tokens; tok; tok = tok->next())
         tok->varId(0);
 
+    // Variable declarations can't start with "return" etc.
+    std::set<std::string> notstart;
+    notstart.insert("goto");
+    notstart.insert("NOT");
+    notstart.insert("return");
+    if (!isC()) {
+        const char *str[] = {"delete","friend","new","throw","using","virtual"};
+        notstart.insert(str, str+(sizeof(str)/sizeof(*str)));
+    }
+
     // variable id
     _varId = 0;
     std::map<std::string, unsigned int> variableId;
@@ -3001,8 +3011,7 @@ void Tokenizer::setVarIdNew()
                 break;
 
             // Variable declaration can't start with "return", etc
-            if (tok2->str() == "return" || tok2->str() == "NOT" || tok2->str() == "goto" ||
-                (!isC() && (tok2->str() == "delete" || tok2->str() == "friend" || tok2->str() == "new" || tok2->str() == "throw" || tok2->str() == "using" || tok2->str() == "virtual")))
+            if (notstart.find(tok2->str()) != notstart.end())
                 continue;
 
             const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top());
@@ -3045,6 +3054,12 @@ void Tokenizer::setVarIdNew()
         } else if (Token::Match(tok, "::|. %var%")) {
             // Don't set varid after a :: or . token
             tok = tok->next();
+        } else if (tok->str() == ":" && Token::Match(tok->tokAt(-2), "class %type%")) {
+            do {
+                tok = tok->next();
+            } while (tok && (tok->isName() || tok->str() == ","));
+            if (!tok)
+                break;
         }
     }
 
