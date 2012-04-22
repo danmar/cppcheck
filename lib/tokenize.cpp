@@ -2953,6 +2953,7 @@ void Tokenizer::setVarIdNew()
     notstart.insert("goto");
     notstart.insert("NOT");
     notstart.insert("return");
+    notstart.insert("sizeof");
     if (!isC()) {
         const char *str[] = {"delete","friend","new","throw","using","virtual"};
         notstart.insert(str, str+(sizeof(str)/sizeof(*str)));
