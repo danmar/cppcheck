@@ -33,9 +33,7 @@ Token::Token(Token **t) :
     _next(0),
     _previous(0),
     _link(0),
-    _isName(false),
-    _isNumber(false),
-    _isBoolean(false),
+    _type(eNone),
     _isUnsigned(false),
     _isSigned(false),
     _isPointerCompare(false),
@@ -59,20 +57,56 @@ Token::~Token()
 void Token::update_property_info()
 {
     if (!_str.empty()) {
-        _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
-
-        if (std::isdigit(_str[0]))
-            _isNumber = true;
-        else if (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1]))
-            _isNumber = true;
+        if (_str == "true" || _str == "false")
+            _type = eBoolean;
+        else if (_str[0] == '_' || std::isalpha(_str[0])) { // Name
+            if (_varId)
+                _type = eVariable;
+            _type = eName;
+        } else if (std::isdigit(_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1])))
+            _type = eNumber;
+        else if (_str.length() > 1 && _str[0] == '"' && _str[_str.length()-1] == '"')
+            _type = eString;
+        else if (_str.length() > 1 && _str[0] == '\'' && _str[_str.length()-1] == '\'')
+            _type = eChar;
+        else if (_str == "="   ||
+                 _str == "+="  ||
+                 _str == "-="  ||
+                 _str == "*="  ||
+                 _str == "/="  ||
+                 _str == "%="  ||
+                 _str == "&="  ||
+                 _str == "^="  ||
+                 _str == "|="  ||
+                 _str == "<<=" ||
+                 _str == ">>=")
+            _type = eAssignmentOp;
+        else if (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos)
+            _type = eExtendedOp;
+        else if (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos))
+            _type = eArithmeticalOp;
+        else if (_str.size() == 1 && _str.find_first_of("&|^~") != std::string::npos)
+            _type = eBitOp;
+        else if (_str == "&&" ||
+                 _str == "||" ||
+                 _str == "!")
+            _type = eLogicalOp;
+        else if (_str == "==" ||
+                 _str == "!=" ||
+                 _str == "<"  ||
+                 _str == "<=" ||
+                 _str == ">"  ||
+                 _str == ">=")
+            _type = eComparisionOp;
+        else if (_str == "++" ||
+                 _str == "--")
+            _type = eIncDecOp;
+        else if (_str.size() == 1 && (_str.find_first_of("{}") != std::string::npos || (_link && _str.find_first_of("<>") != std::string::npos)))
+            _type = eBracket;
         else
-            _isNumber = false;
-
-        _isBoolean = (_str == "true" || _str == "false");
+            _type = eOther;
     } else {
-        _isName = false;
-        _isNumber = false;
-        _isBoolean = false;
+        _type = eNone;
     }
 
     update_property_isStandardType();
@@ -89,6 +123,7 @@ void Token::update_property_isStandardType()
     for (int i = 0; type[i]; i++) {
         if (_str == type[i]) {
             _isStandardType = true;
+            _type = eType;
             break;
         }
     }
@@ -137,9 +172,7 @@ void Token::deleteThis()
 {
     if (_next) { // Copy next to this and delete next
         _str = _next->_str;
-        _isName = _next->_isName;
-        _isNumber = _next->_isNumber;
-        _isBoolean = _next->_isBoolean;
+        _type = _next->_type;
         _isUnsigned = _next->_isUnsigned;
         _isSigned = _next->_isSigned;
         _isPointerCompare = _next->_isPointerCompare;
@@ -157,9 +190,7 @@ void Token::deleteThis()
         deleteNext();
     } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
         _str = _previous->_str;
-        _isName = _previous->_isName;
-        _isNumber = _previous->_isNumber;
-        _isBoolean = _previous->_isBoolean;
+        _type = _previous->_type;
         _isUnsigned = _previous->_isUnsigned;
         _isSigned = _previous->_isSigned;
         _isPointerCompare = _previous->_isPointerCompare;

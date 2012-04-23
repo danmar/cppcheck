@@ -44,6 +44,15 @@ private:
     Token();
 
 public:
+    enum Type {
+        eVariable, eType, eFunction, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Name (unknown identifier)
+        eNumber, eString, eChar, eBoolean, eLiteral, // Literals: Number, String, Character, User defined literal (C++11)
+        eArithmeticalOp, eComparisionOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparision, Assignment, Logical, Bitwise, ++/--, Extended
+        eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparision operators.
+        eOther,
+        eNone
+    };
+
     explicit Token(Token **tokensBack);
     ~Token();
 
@@ -150,56 +159,39 @@ public:
      **/
     static std::size_t getStrLength(const Token *tok);
 
-    bool isName() const {
-        return _isName;
+    Type type() const {
+        return _type;
     }
-    void isName(bool name) {
-        _isName = name;
+    void type(Type t) {
+        _type = t;
+    }
+    bool isName() const {
+        return _type == eName || _type == eType || _type == eVariable || _type == eFunction ||
+               _type == eBoolean; // TODO: "true"/"false" aren't really a name...
     }
     bool isNumber() const {
-        return _isNumber;
-    }
-    void isNumber(bool number) {
-        _isNumber = number;
+        return _type == eNumber;
     }
     bool isArithmeticalOp() const {
-        return (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos));
+        return _type == eArithmeticalOp;
     }
     bool isOp() const {
         return (isArithmeticalOp() ||
-                _str == "&&" ||
-                _str == "||" ||
-                _str == "==" ||
-                _str == "!=" ||
-                _str == "<"  ||
-                _str == "<=" ||
-                _str == ">"  ||
-                _str == ">=" ||
-                (_str.size() == 1 && _str.find_first_of("&|^~!") != std::string::npos));
+                _type == eLogicalOp ||
+                _type == eComparisionOp ||
+                _type == eBitOp);
     }
     bool isExtendedOp() const {
         return isOp() ||
-               (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos);
+               _type == eExtendedOp;
     }
     bool isAssignmentOp() const {
-        return (_str == "="   ||
-                _str == "+="  ||
-                _str == "-="  ||
-                _str == "*="  ||
-                _str == "/="  ||
-                _str == "%="  ||
-                _str == "&="  ||
-                _str == "^="  ||
-                _str == "|="  ||
-                _str == "<<=" ||
-                _str == ">>=");
+        return _type == eAssignmentOp;
     }
     bool isBoolean() const {
-        return _isBoolean;
+        return _type == eBoolean;
     }
-    void isBoolean(bool boolean) {
-        _isBoolean = boolean;
-    }
+
     bool isUnsigned() const {
         return _isUnsigned;
     }
@@ -481,9 +473,7 @@ private:
     Token *_previous;
     Token *_link;
 
-    bool _isName;
-    bool _isNumber;
-    bool _isBoolean;
+    Type _type;
     bool _isUnsigned;
     bool _isSigned;
     bool _isPointerCompare;
