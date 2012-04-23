@@ -241,6 +241,7 @@ private:
         TEST_CASE(varidclass12);
         TEST_CASE(varidclass13);
         TEST_CASE(varidclass14);
+        TEST_CASE(varidclass15);  // initializer list
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -3940,6 +3941,23 @@ private:
 
             ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
+    }
+
+    void varidclass15() {
+        const char code[] = "class A {\n"
+                            "    int a;\n"
+                            "    int b;\n"
+                            "    A();\n"
+                            "};\n"
+                            "A::A() : a(0) { b = 1; }";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class A {\n"
+                                "2: int a@1 ;\n"
+                                "3: int b@2 ;\n"
+                                "4: A ( ) ;\n"
+                                "5: } ;\n"
+                                "6: A :: A ( ) : a@1 ( 0 ) { b@2 = 1 ; }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
     void file1() {

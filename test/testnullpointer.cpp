@@ -1916,9 +1916,8 @@ private:
               "    Foo();\n"
               "};\n"
               "Foo::Foo() : s(0) {}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n"
-                           "[test.cpp:9]: (error) Null pointer dereference\n",
-                           "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n"
+                      "[test.cpp:9]: (error) Null pointer dereference\n", errout.str());
 
         check("void f() {\n"
               "    std::string s = 0 == x ? \"a\" : \"b\";\n"

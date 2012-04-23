@@ -2885,6 +2885,26 @@ static void setVarIdStructMembers(Token **tok1,
 }
 
 
+// Update the variable ids..
+// Parse each function..
+static void setVarIdClassFunction(Token * const startToken,
+                                  const Token * const endToken,
+                                  const std::map<std::string, unsigned int> &varlist,
+                                  std::map<unsigned int, std::map<std::string,unsigned int> > *structMembers,
+                                  unsigned int *_varId)
+{
+    for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
+        if (tok2->varId() == 0 && tok2->previous()->str() != ".") {
+            const std::map<std::string,unsigned int>::const_iterator it = varlist.find(tok2->str());
+            if (it != varlist.end()) {
+                tok2->varId(it->second);
+                setVarIdStructMembers(&tok2, structMembers, _varId);
+            }
+        }
+    }
+}
+
+
 void Tokenizer::setVarId()
 {
     // Clear all variable ids
@@ -3084,27 +3104,24 @@ void Tokenizer::setVarId()
 
                         // If this is a function implementation.. add it to funclist
                         if (Token::Match(tok2, ") const|volatile| {")) {
-                            if (tok2->next()->str() != "{")
+                            while (tok2->str() != "{")
                                 tok2 = tok2->next();
-                            funclist.push_back(tok2->next());
+                            setVarIdClassFunction(tok2, tok2->link(), varlist, &structMembers, &_varId);
+                        }
+
+                        // constructor with initializer list
+                        if (Token::Match(tok2, ") : %var% (")) {
+                            const Token *tok3 = tok2;
+                            while (Token::Match(tok3, ") [:,] %var% (")) {
+                                tok3 = tok3->linkAt(3);
+                            }
+                            if (Token::simpleMatch(tok3, ") {")) {
+                                setVarIdClassFunction(tok2, tok3->next()->link(), varlist, &structMembers, &_varId);
+                            }
                         }
                     }
                 }
             }
-
-            // Update the variable ids..
-            // Parse each function..
-            for (std::list<Token *>::iterator func = funclist.begin(); func != funclist.end(); ++func) {
-                for (Token *tok2 = (*func)->next(); tok2 != (*func)->link(); tok2 = tok2->next()) {
-                    if (tok2->varId() == 0 &&
-                        tok2->strAt(-1) != "." &&
-                        varlist.find(tok2->str()) != varlist.end()) {
-                        tok2->varId(varlist[tok2->str()]);
-                        setVarIdStructMembers(&tok2, &structMembers, &_varId);
-                    }
-                }
-            }
-
         }
     }
 }
