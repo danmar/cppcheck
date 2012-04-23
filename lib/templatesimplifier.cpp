@@ -18,10 +18,9 @@
 
 #include "templatesimplifier.h"
 #include "mathlib.h"
-#include "errorlogger.h"
 #include "token.h"
+#include "tokenize.h"
 #include "settings.h"
-#include "check.h"
 #include <sstream>
 #include <list>
 #include <set>
@@ -31,14 +30,6 @@
 #include <cassert>
 
 //---------------------------------------------------------------------------
-
-TemplateSimplifier::TemplateSimplifier()
-{
-}
-
-TemplateSimplifier::~TemplateSimplifier()
-{
-}
 
 void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
 {
@@ -568,27 +559,8 @@ int TemplateSimplifier::simplifyTemplatesGetTemplateNamePosition(const Token *to
 }
 
 
-void TemplateSimplifier::addtoken2(Token ** token, const char str[], const unsigned int lineno, const unsigned int fileno)
-{
-    (*token)->insertToken(str);
-    (*token)->linenr(lineno);
-    (*token)->fileIndex(fileno);
-}
-
-void TemplateSimplifier::addtoken2(Token ** token, const Token * tok, const unsigned int lineno, const unsigned int fileno)
-{
-    (*token)->insertToken(tok->str());
-    (*token)->linenr(lineno);
-    (*token)->fileIndex(fileno);
-    (*token)->isUnsigned(tok->isUnsigned());
-    (*token)->isSigned(tok->isSigned());
-    (*token)->isLong(tok->isLong());
-    (*token)->isUnused(tok->isUnused());
-}
-
 void TemplateSimplifier::simplifyTemplatesExpandTemplate(
-    Token *_tokens,
-    Token **_tokensBack,
+    Tokenizer& tokenizer,
     const Token *tok,
     const std::string &name,
     std::vector<const Token *> &typeParametersInDeclaration,
@@ -596,7 +568,7 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
     std::vector<const Token *> &typesUsedInTemplateInstantion,
     std::list<Token *> &templateInstantiations)
 {
-    for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next()) {
+    for (const Token *tok3 = tokenizer.tokens(); tok3; tok3 = tok3->next()) {
         if (tok3->str() == "{" || tok3->str() == "(")
             tok3 = tok3->link();
 
@@ -607,7 +579,7 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
 
         // member function implemented outside class definition
         else if (TemplateSimplifier::simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
-            addtoken2(_tokensBack, newName.c_str(), tok3->linenr(), tok3->fileIndex());
+            tokenizer.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
             while (tok3->str() != "::")
                 tok3 = tok3->next();
         }
@@ -631,8 +603,8 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
                     // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
                     // if indentlevel ever becomes 0, cppcheck will write:
                     // ### Error: Invalid number of character {
-                    addtoken2(_tokensBack, "}", tok3->linenr(), tok3->fileIndex());
-                    Token::createMutualLinks(braces.top(), *_tokensBack);
+                    tokenizer.addtoken("}", tok3->linenr(), tok3->fileIndex());
+                    Token::createMutualLinks(braces.top(), tokenizer._tokensBack);
                     braces.pop();
                     break;
                 }
@@ -651,7 +623,7 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
                     for (const Token *typetok = typesUsedInTemplateInstantion[itype];
                          typetok && !Token::Match(typetok, "[,>]");
                          typetok = typetok->next()) {
-                        addtoken2(_tokensBack, typetok, tok3->linenr(), tok3->fileIndex());
+                        tokenizer.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
                     }
                     continue;
                 }
@@ -659,36 +631,36 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
 
             // replace name..
             if (Token::Match(tok3, (name + " !!<").c_str())) {
-                addtoken2(_tokensBack, newName.c_str(), tok3->linenr(), tok3->fileIndex());
+                tokenizer.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
                 continue;
             }
 
             // copy
-            addtoken2(_tokensBack, tok3, tok3->linenr(), tok3->fileIndex());
+            tokenizer.addtoken(tok3, tok3->linenr(), tok3->fileIndex());
             if (Token::Match(tok3, "%type% <")) {
                 //if (!Token::simpleMatch(tok3, (name + " <").c_str()))
                 //done = false;
-                templateInstantiations.push_back(*_tokensBack);
+                templateInstantiations.push_back(tokenizer._tokensBack);
             }
 
             // link() newly tokens manually
             if (tok3->str() == "{") {
-                braces.push(*_tokensBack);
+                braces.push(tokenizer._tokensBack);
             } else if (tok3->str() == "}") {
                 assert(braces.empty() == false);
-                Token::createMutualLinks(braces.top(), *_tokensBack);
+                Token::createMutualLinks(braces.top(), tokenizer._tokensBack);
                 braces.pop();
             } else if (tok3->str() == "(") {
-                brackets.push(*_tokensBack);
+                brackets.push(tokenizer._tokensBack);
             } else if (tok3->str() == "[") {
-                brackets2.push(*_tokensBack);
+                brackets2.push(tokenizer._tokensBack);
             } else if (tok3->str() == ")") {
                 assert(brackets.empty() == false);
-                Token::createMutualLinks(brackets.top(), *_tokensBack);
+                Token::createMutualLinks(brackets.top(), tokenizer._tokensBack);
                 brackets.pop();
             } else if (tok3->str() == "]") {
                 assert(brackets2.empty() == false);
-                Token::createMutualLinks(brackets2.top(), *_tokensBack);
+                Token::createMutualLinks(brackets2.top(), tokenizer._tokensBack);
                 brackets2.pop();
             }
 
@@ -958,11 +930,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
 
 
 void TemplateSimplifier::simplifyTemplateInstantions(
-    Token *_tokens,
-    Token **_tokensBack,
-    ErrorLogger *_errorLogger,
+    Tokenizer& tokenizer,
     const Settings *_settings,
-    const std::vector<std::string> &files,
     const Token *tok,
     std::list<Token *> &templateInstantiations,
     std::set<std::string> &expandedtemplates)
@@ -987,22 +956,7 @@ void TemplateSimplifier::simplifyTemplateInstantions(
     if (namepos == -1) {
         // debug message that we bail out..
         if (_settings->debugwarnings) {
-            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-            ErrorLogger::ErrorMessage::FileLocation loc;
-            loc.line = tok->linenr();
-            loc.setfile(files[tok->fileIndex()]);
-            locationList.push_back(loc);
-
-            const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                   Severity::debug,
-                                                   "simplifyTemplates: bailing out",
-                                                   "debug",
-                                                   false);
-
-            if (_errorLogger)
-                _errorLogger->reportErr(errmsg);
-            else
-                Check::reportError(errmsg);
+            tokenizer.reportError(tok, Severity::debug, "debug", "simplifyTemplates: bailing out");
         }
         return;
     }
@@ -1019,7 +973,7 @@ void TemplateSimplifier::simplifyTemplateInstantions(
     for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
         if (amountOftemplateInstantiations != templateInstantiations.size()) {
             amountOftemplateInstantiations = templateInstantiations.size();
-            simplifyCalculations(_tokens);
+            simplifyCalculations(tokenizer._tokens);
             ++recursiveCount;
             if (recursiveCount > 100) {
                 // bail out..
@@ -1068,19 +1022,8 @@ void TemplateSimplifier::simplifyTemplateInstantions(
 
         if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantion.size()) {
             if (_settings->debugwarnings) {
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.line = tok2->linenr();
-                loc.setfile(files[tok2->fileIndex()]);
-                locationList.push_back(loc);
-
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       Severity::debug,
-                                                       "Failed to instantiate template. The checking continues anyway.",
-                                                       "debug",
-                                                       false);
-
-                _errorLogger->reportErr(errmsg);
+                tokenizer.reportError(tok, Severity::debug, "debug",
+                                      "Failed to instantiate template. The checking continues anyway.");
             }
             if (typeForNewName.empty())
                 continue;
@@ -1092,7 +1035,7 @@ void TemplateSimplifier::simplifyTemplateInstantions(
 
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
-            TemplateSimplifier::simplifyTemplatesExpandTemplate(_tokens,_tokensBack, tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantion,templateInstantiations);
+            TemplateSimplifier::simplifyTemplatesExpandTemplate(tokenizer, tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantion,templateInstantiations);
         }
 
         // Replace all these template usages..
@@ -1144,29 +1087,26 @@ void TemplateSimplifier::simplifyTemplateInstantions(
 
 
 void TemplateSimplifier::simplifyTemplates(
-    Token *_tokens,
-    Token **_tokensBack,
-    ErrorLogger *_errorLogger,
+    Tokenizer& tokenizer,
     const Settings *_settings,
-    const std::vector<std::string> &_files,
     bool &_codeWithTemplates
 )
 {
 
-    std::set<std::string> expandedtemplates(TemplateSimplifier::simplifyTemplatesExpandSpecialized(_tokens));
+    std::set<std::string> expandedtemplates(TemplateSimplifier::simplifyTemplatesExpandSpecialized(tokenizer._tokens));
 
     // Locate templates and set member variable _codeWithTemplates if the code has templates.
     // this info is used by checks
-    std::list<Token *> templates(TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(_tokens,_codeWithTemplates));
+    std::list<Token *> templates(TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(tokenizer._tokens, _codeWithTemplates));
 
     if (templates.empty()) {
-        TemplateSimplifier::removeTemplates(_tokens);
+        TemplateSimplifier::removeTemplates(tokenizer._tokens);
         return;
     }
 
     // There are templates..
     // Remove "typename" unless used in template arguments..
-    for (Token *tok = _tokens; tok; tok = tok->next()) {
+    for (Token *tok = tokenizer._tokens; tok; tok = tok->next()) {
         if (tok->str() == "typename")
             tok->deleteThis();
 
@@ -1179,11 +1119,11 @@ void TemplateSimplifier::simplifyTemplates(
     }
 
     // Locate possible instantiations of templates..
-    std::list<Token *> templateInstantiations(TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(_tokens));
+    std::list<Token *> templateInstantiations(TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(tokenizer._tokens));
 
     // No template instantiations? Then remove all templates.
     if (templateInstantiations.empty()) {
-        TemplateSimplifier::removeTemplates(_tokens);
+        TemplateSimplifier::removeTemplates(tokenizer._tokens);
         return;
     }
 
@@ -1197,15 +1137,11 @@ void TemplateSimplifier::simplifyTemplates(
         //done = true;
         for (std::list<Token *>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1) {
             TemplateSimplifier::simplifyTemplateInstantions(
-                _tokens,
-                _tokensBack,
-                _errorLogger,
+                tokenizer,
                 _settings,
-                _files,
-
                 *iter1, templateInstantiations, expandedtemplates);
         }
     }
 
-    TemplateSimplifier::removeTemplates(_tokens);
+    TemplateSimplifier::removeTemplates(tokenizer._tokens);
 }

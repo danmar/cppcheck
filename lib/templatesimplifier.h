@@ -28,7 +28,7 @@
 #include <vector>
 
 class Token;
-class ErrorLogger;
+class Tokenizer;
 class Settings;
 
 
@@ -37,9 +37,9 @@ class Settings;
 
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class TemplateSimplifier {
-public:
     TemplateSimplifier();
     ~TemplateSimplifier();
+public:
 
     /**
      * Used after simplifyTemplates to perform a little cleanup.
@@ -111,11 +111,8 @@ public:
      */
     static int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
 
-    static void addtoken2(Token ** token, const char str[], const unsigned int lineno, const unsigned int fileno);
-    static void addtoken2(Token ** token, const Token * tok, const unsigned int lineno, const unsigned int fileno);
     static void simplifyTemplatesExpandTemplate(
-        Token *_tokens,
-        Token **_tokensBack,
+        Tokenizer& tokenizer,
         const Token *tok,
         const std::string &name,
         std::vector<const Token *> &typeParametersInDeclaration,
@@ -131,11 +128,8 @@ public:
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      */
     static void simplifyTemplateInstantions(
-        Token *_tokens,
-        Token **_tokensBack,
-        ErrorLogger *_errorLogger,
+        Tokenizer& tokenizer,
         const Settings *_settings,
-        const std::vector<std::string> &files,
         const Token *tok,
         std::list<Token *> &templateInstantiations,
         std::set<std::string> &expandedtemplates);
@@ -144,11 +138,8 @@ public:
      * Simplify templates
      */
     static void simplifyTemplates(
-        Token *_tokens,
-        Token **_tokensBack,
-        ErrorLogger *_errorLogger,
+        Tokenizer& tokenizer,
         const Settings *_settings,
-        const std::vector<std::string> &_files,
         bool &_codeWithTemplates);
 
     /**

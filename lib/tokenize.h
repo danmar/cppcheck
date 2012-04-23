@@ -39,6 +39,7 @@ class TimerResults;
 
 /** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
 class Tokenizer {
+    friend class TemplateSimplifier; // TODO: Remove this. Cleanup interface between Tokenizer and TemplateSimplifier.
 private:
     /** Deallocate lists */
     void deallocateTokens();
