@@ -521,14 +521,26 @@ private:
                     }
                 } else {
                     const Token *tok2 = tok.next();
-                    if (tok2->str() == "[" && Token::simpleMatch(tok2->link(), "] =")) {
-                        if (use_dead_pointer(checks, &tok)) {
-                            return &tok;
-                        }
 
-                        parserhs(tok2, checks);
-                        tok2 = tok2->link()->next();
+                    if (tok2->str() == "[") {
+                        const Token *tok3 = tok2->link();
+                        while (Token::simpleMatch(tok3, "] ["))
+                            tok3 = tok3->next()->link();
+
+                        // Possible initialization
+                        if (Token::simpleMatch(tok3, "] >>"))
+                            return &tok;
+
+                        if (Token::simpleMatch(tok3, "] =")) {
+                            if (use_dead_pointer(checks, &tok)) {
+                                return &tok;
+                            }
+
+                            parserhs(tok2, checks);
+                            tok2 = tok3->next();
+                        }
                     }
+
                     parserhs(tok2, checks);
                 }
 
