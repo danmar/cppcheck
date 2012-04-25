@@ -915,11 +915,10 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     function->token = funcStart;
     function->hasBody = true;
 
-    Scope* old_scope = scope;
     addNewFunction(&scope, &tok);
 
     if (scope) {
-        scope->function = &old_scope->functionList.back();
+        scope->function = function;
         return function;
     }
     return 0;
