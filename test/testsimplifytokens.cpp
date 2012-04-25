@@ -4362,10 +4362,10 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n"
-                      "[test.cpp:20] -> [test.cpp:1]: (style) Function parameter 'A' hides typedef with same name\n"
-                      "[test.cpp:21] -> [test.cpp:1]: (style) Variable 'A' hides typedef with same name\n"
-                      "[test.cpp:24] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style) The typedef 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:20] -> [test.cpp:1]: (style) The function parameter 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:21] -> [test.cpp:1]: (style) The variable 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:24] -> [test.cpp:1]: (style) The typedef 'A' hides a typedef with the same name.\n", errout.str());
     }
 
     void simplifyTypedef36() {
@@ -4392,8 +4392,8 @@ private:
                                 "typedef int B;";
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Typedef 'A' hides typedef with same name\n"
-                          "[test.cpp:5] -> [test.cpp:3]: (style) Typedef 'B' hides typedef with same name\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) The typedef 'A' hides a typedef with the same name.\n"
+                          "[test.cpp:5] -> [test.cpp:3]: (style) The typedef 'B' hides a typedef with the same name.\n", errout.str());
         }
 
         {
@@ -4438,8 +4438,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Template parameter 'A' hides typedef with same name\n"
-                      "[test.cpp:3] -> [test.cpp:2]: (style) Template parameter 'B' hides typedef with same name\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) The template parameter 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:3] -> [test.cpp:2]: (style) The template parameter 'B' hides a typedef with the same name.\n", errout.str());
 
         checkSimplifyTypedef("typedef tuple<double&, const double&, const double, double*, const double*> t2;\n"
                              "void ordering_test()\n"
@@ -4447,7 +4447,7 @@ private:
                              "  tuple<short, float> t2(5, 3.3f);\n"
                              "  BOOST_CHECK(t3 > t2);\n"
                              "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (style) Template instantiation 't2' hides typedef with same name\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (style) The template instantiation 't2' hides a typedef with the same name.\n", errout.str());
 
         checkSimplifyTypedef("class MyOverflowingUnsigned\n"
                              "{\n"
@@ -4500,15 +4500,15 @@ private:
         // ticket #1506
         checkSimplifyTypedef("typedef struct A { } A;\n"
                              "struct A;");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' forward declaration unnecessary, already declared\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The struct 'A' forward declaration is unnecessary. Type struct is already declared earlier.\n", errout.str());
 
         checkSimplifyTypedef("typedef union A { int i; float f; } A;\n"
                              "union A;");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Union 'A' forward declaration unnecessary, already declared\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The union 'A' forward declaration is unnecessary. Type union is already declared earlier.\n", errout.str());
 
         checkSimplifyTypedef("typedef std::map<std::string, int> A;\n"
                              "class A;");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Class 'A' forward declaration unnecessary, already declared\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The class 'A' forward declaration is unnecessary. Type class is already declared earlier.\n", errout.str());
     }
 
     void simplifyTypedef43() {
@@ -4528,7 +4528,7 @@ private:
             ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' hides typedef with same name\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The struct 'A' hides a typedef with the same name.\n", errout.str());
         }
 
         {
@@ -4546,7 +4546,7 @@ private:
             ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Union 'A' hides typedef with same name\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The union 'A' hides a typedef with the same name.\n", errout.str());
         }
 
         {
@@ -4564,7 +4564,7 @@ private:
             ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Class 'A' hides typedef with same name\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The class 'A' hides a typedef with the same name.\n", errout.str());
         }
     }
 
@@ -4793,14 +4793,14 @@ private:
                                 "typedef int (*PPDMarkOption)(ppd_file_t *ppd, const char *keyword, const char *option);\n";
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Typedef 'PPDMarkOption' hides typedef with same name\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The typedef 'PPDMarkOption' hides a typedef with the same name.\n", errout.str());
         }
 
         {
             const char code[] = "typedef int * A;\n"
                                 "typedef int * A;\n";
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The typedef 'A' hides a typedef with the same name.\n", errout.str());
         }
     }
 
@@ -7437,7 +7437,7 @@ private:
         const char code[] = "class Fred { Fred::Fred() {} };";
         const char expected[] = "class Fred { Fred ( ) { } } ;";
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("[test.cpp:1]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
     }
 
     void removeUnnecessaryQualification2() {
@@ -7501,7 +7501,7 @@ private:
                             "   };\n"
                             "}\n";
         tok(code, false);
-        ASSERT_EQUALS("[test.cpp:11]: (portability) Extra qualification 'two::c::' unnecessary and considered an error by many compilers.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (portability) The extra qualification 'two::c::' is unnecessary and is considered an error by many compilers.\n", errout.str());
     }
 
     void removeUnnecessaryQualification6() {
@@ -7527,7 +7527,7 @@ private:
                             "    long m_lEndAddr;\n"
                             "};\n";
         tok(code, false);
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'TProcedure::' unnecessary and considered an error by many compilers.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'TProcedure::' is unnecessary and is considered an error by many compilers.\n", errout.str());
     }
 
     void removeUnnecessaryQualification8() {
@@ -7538,9 +7538,9 @@ private:
                             "    void Fred::operator delete[](void* x);\n"
                             "};\n";
         tok(code, false);
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n"
-                      "[test.cpp:4]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n"
-                      "[test.cpp:5]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n"
+                      "[test.cpp:4]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n"
+                      "[test.cpp:5]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
     }
 
     void removeUnnecessaryQualification9() {
@@ -7549,7 +7549,7 @@ private:
                             "    Fred::~Fred();\n"
                             "};\n";
         tok(code, false);
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Extra qualification 'Fred::' unnecessary and considered an error by many compilers.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
     }
 
     void removeUnnecessaryQualification10() {

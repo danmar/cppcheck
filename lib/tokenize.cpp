@@ -440,7 +440,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
     const std::string tok2_str = tok2 ? tok2->str():std::string("name");
 
     reportError(locationList, Severity::style, "variableHidingTypedef",
-                std::string(type + " '" + tok2_str + "' hides typedef with same name"), true);
+                std::string("The " + type + " '" + tok2_str + "' hides a typedef with the same name."), true);
 }
 
 void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type)
@@ -454,7 +454,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
     const std::string tok2_str = tok2 ? tok2->str():std::string("name");
 
     reportError(locationList, Severity::style, "unnecessaryForwardDeclaration",
-                std::string(type + " '" + tok2_str + "' forward declaration unnecessary, already declared"));
+                std::string("The " + type + " '" + tok2_str + "' forward declaration is unnecessary. Type " + type + " is already declared earlier."));
 }
 
 // check if this statement is a duplicate definition
@@ -501,12 +501,12 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 if (!Token::Match(tok->tokAt(-3), ",|<"))
                     return false;
 
-                duplicateTypedefError(*tokPtr, name, "Template instantiation");
+                duplicateTypedefError(*tokPtr, name, "template instantiation");
                 *tokPtr = end->link();
                 return true;
             } else if (Token::Match(tok->previous(), "%type%")) {
                 if (end->link()->next()->str() == "{") {
-                    duplicateTypedefError(*tokPtr, name, "Function");
+                    duplicateTypedefError(*tokPtr, name, "function");
                     *tokPtr = end->link()->next()->link();
                     return true;
                 }
@@ -518,7 +518,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 // look backwards
                 if (Token::Match(tok->previous(), "%type%") &&
                     !Token::Match(tok->previous(), "return|new|const")) {
-                    duplicateTypedefError(*tokPtr, name, "Function parameter");
+                    duplicateTypedefError(*tokPtr, name, "function parameter");
                     // duplicate definition so skip entire function
                     *tokPtr = end->next()->link();
                     return true;
@@ -531,7 +531,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                     while (end && end->str() != "{")
                         end = end->next();
                     if (end) {
-                        duplicateTypedefError(*tokPtr, name, "Template parameter");
+                        duplicateTypedefError(*tokPtr, name, "template parameter");
                         *tokPtr = end->link();
                         return true;
                     }
@@ -549,10 +549,10 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                         if (tok->previous()->str() == "}") {
                             tok = tok->previous()->link();
                         } else if (tok->previous()->str() == "typedef") {
-                            duplicateTypedefError(*tokPtr, name, "Typedef");
+                            duplicateTypedefError(*tokPtr, name, "typedef");
                             return true;
                         } else if (tok->previous()->str() == "enum") {
-                            duplicateTypedefError(*tokPtr, name, "Enum");
+                            duplicateTypedefError(*tokPtr, name, "enum");
                             return true;
                         } else if (tok->previous()->str() == "struct") {
                             if (tok->strAt(-2) == "typedef" &&
@@ -562,36 +562,36 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 return true;
                             } else if (tok->next()->str() == "{") {
                                 if (!undefinedStruct)
-                                    duplicateTypedefError(*tokPtr, name, "Struct");
+                                    duplicateTypedefError(*tokPtr, name, "struct");
                                 return true;
                             } else if (Token::Match(tok->next(), ")|*")) {
                                 return true;
                             } else if (tok->next()->str() == name->str()) {
                                 return true;
                             } else if (tok->next()->str() != ";") {
-                                duplicateTypedefError(*tokPtr, name, "Struct");
+                                duplicateTypedefError(*tokPtr, name, "struct");
                                 return true;
                             } else {
                                 // forward declaration after declaration
-                                duplicateDeclarationError(*tokPtr, name, "Struct");
+                                duplicateDeclarationError(*tokPtr, name, "struct");
                                 return false;
                             }
                         } else if (tok->previous()->str() == "union") {
                             if (tok->next()->str() != ";") {
-                                duplicateTypedefError(*tokPtr, name, "Union");
+                                duplicateTypedefError(*tokPtr, name, "union");
                                 return true;
                             } else {
                                 // forward declaration after declaration
-                                duplicateDeclarationError(*tokPtr, name, "Union");
+                                duplicateDeclarationError(*tokPtr, name, "union");
                                 return false;
                             }
                         } else if (tok->previous()->str() == "class") {
                             if (tok->next()->str() != ";") {
-                                duplicateTypedefError(*tokPtr, name, "Class");
+                                duplicateTypedefError(*tokPtr, name, "class");
                                 return true;
                             } else {
                                 // forward declaration after declaration
-                                duplicateDeclarationError(*tokPtr, name, "Class");
+                                duplicateDeclarationError(*tokPtr, name, "class");
                                 return false;
                             }
                         } else if (tok->previous()->str() == "{")
@@ -600,7 +600,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                         tok = tok->previous();
                     }
 
-                    duplicateTypedefError(*tokPtr, name, "Variable");
+                    duplicateTypedefError(*tokPtr, name, "variable");
                     return true;
                 }
             }
@@ -8113,9 +8113,9 @@ void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *setti
     Tokenizer t(settings, errorLogger);
     t.syntaxError(0, ' ');
     t.cppcheckError(0);
-    t.duplicateTypedefError(0, 0, "Variable");
-    t.duplicateDeclarationError(0, 0, "Variable");
-    t.duplicateEnumError(0, 0, "Variable");
+    t.duplicateTypedefError(0, 0, "variable");
+    t.duplicateDeclarationError(0, 0, "variable");
+    t.duplicateEnumError(0, 0, "variable");
     t.unnecessaryQualificationError(0, "type");
 }
 
@@ -8995,7 +8995,7 @@ void Tokenizer::removeUnnecessaryQualification()
 void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::string &qualification)
 {
     reportError(tok, Severity::portability, "unnecessaryQualification",
-                "Extra qualification \'" + qualification + "\' unnecessary and considered an error by many compilers.");
+                "The extra qualification \'" + qualification + "\' is unnecessary and is considered an error by many compilers.");
 }
 
 void Tokenizer::simplifyReturnStrncat()
