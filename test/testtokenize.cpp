@@ -208,6 +208,7 @@ private:
         TEST_CASE(varid42);   // ticket #3316 (varid for array)
         TEST_CASE(varid43);
         TEST_CASE(varid44);
+        TEST_CASE(varid45); // #3466
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3194,6 +3195,13 @@ private:
         const std::string code("class A:public B,public C,public D {};");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class A : public B , public C , public D { } ;\n",
+                      tokenizeDebugListing(code));
+    }
+
+    void varid45() { // #3466
+        const std::string code("void foo() { B b(this); A a(this, b); }");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void foo ( ) { B b@1 ( this ) ; A a@2 ( this , b@1 ) ; }\n",
                       tokenizeDebugListing(code));
     }
 
