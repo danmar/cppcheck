@@ -150,6 +150,7 @@ private:
         TEST_CASE(simplifyKnownVariables45);    // ticket #3281 - static constant variable not simplified
         TEST_CASE(simplifyKnownVariables46);    // ticket #3587 - >>
         TEST_CASE(simplifyKnownVariables47);    // ticket #3627 - >>
+        TEST_CASE(simplifyKnownVariables48);    // ticket #3754 - wrong simplification in for loop header
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
@@ -2278,6 +2279,19 @@ private:
                                 "cin >> std :: hex >> x ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.cpp"));
+    }
+
+    void simplifyKnownVariables48() {
+        // #3754
+        const char code[] = "void f(int sz) {\n"
+                            "    int i;\n"
+                            "    for (i = 0; ((i<sz) && (sz>3)); ++i) { }\n"
+                            "}";
+        const char expected[] = "void f ( int sz ) {\n"
+                                "int i ;\n"
+                                "for ( i = 0 ; ( i < sz ) && ( 3 < sz ) ; ++ i ) { }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
     }
 
     void simplifyKnownVariablesIfEq1() {

@@ -6094,7 +6094,11 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
     Token *tok2 = *_tok2;
     Token *tok3 = *_tok3;
 
-    if (Token::Match(tok2->tokAt(-2), "for ( %varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid)) {
+    if (Token::Match(tok2->tokAt(-2), "for (")) {
+        // only specific for loops is handled
+        if (!Token::Match(tok2, "%varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid))
+            return false;
+
         // is there a "break" in the for loop?
         bool hasbreak = false;
         const Token* end4 = tok2->linkAt(-1)->linkAt(1);
