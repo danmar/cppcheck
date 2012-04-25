@@ -265,7 +265,7 @@ Example: '-UDEBUG'</para>
         <term><option>--force</option></term>
         <listitem>
           <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by
-default. If used together with --max-ifdefs=, the last option is the one that is effective.</para>
+default. If used together with --max-configs=, the last option is the one that is effective.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

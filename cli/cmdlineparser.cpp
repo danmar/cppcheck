@@ -729,7 +729,7 @@ void CmdLineParser::PrintHelp() const
               "                         filename per line. When file is '-,' the file list will\n"
               "                         be read from standard input.\n"
               "    -f, --force          Force checking of all configurations in files. If used\n"
-              "                         together with '--max-ifdefs=', the last option is the\n"
+              "                         together with '--max-configs=', the last option is the\n"
               "                         one that is effective.\n"
               "    -h, --help           Print this help.\n"
               "    -I <dir>             Give path to search for include files. Give several -I\n"
