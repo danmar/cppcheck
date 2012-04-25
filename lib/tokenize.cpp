@@ -172,7 +172,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     if (!type || type->str().empty())
         return 0;
 
-    if (type->str()[0] == '"')
+    if (type->type() == Token::eString)
         return static_cast<unsigned int>(Token::getStrLength(type) + 1);
 
     std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
@@ -3315,7 +3315,7 @@ void Tokenizer::simplifySizeof()
         }
 
         // sizeof 'x'
-        if (tok->next() && tok->next()->str()[0] == '\'') {
+        if (tok->next()->type() == Token::eChar) {
             tok->deleteThis();
             std::ostringstream sz;
             sz << sizeof 'x';
@@ -3335,7 +3335,7 @@ void Tokenizer::simplifySizeof()
         }
 
         // sizeof "text"
-        if (Token::Match(tok->next(), "%str%")) {
+        if (tok->next()->type() == Token::eString) {
             tok->deleteThis();
             std::ostringstream ostr;
             ostr << (Token::getStrLength(tok) + 1);
@@ -3396,7 +3396,7 @@ void Tokenizer::simplifySizeof()
                         // We are checking a class or struct, search next varname
                         tempToken = tempToken->next();
                         continue;
-                    } else if (Token::Match(tempToken->next(), "++|--")) {
+                    } else if (tempToken->next()->type() == Token::eIncDecOp) {
                         // We have variable++ or variable--, there should be
                         // nothing after this
                         tempToken = tempToken->tokAt(2);
@@ -3497,7 +3497,7 @@ bool Tokenizer::simplifyTokenList()
 
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        while (tok->str() == "L" && tok->next() && tok->next()->str()[0] == '"') {
+        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
             // Combine 'L "string"'
             tok->str(tok->next()->str());
             tok->deleteNext();
@@ -3510,7 +3510,7 @@ bool Tokenizer::simplifyTokenList()
             continue;
 
         tok->str(simplifyString(tok->str()));
-        while (tok->next() && tok->next()->str()[0] == '"') {
+        while (tok->next() && tok->next()->type() == Token::eString) {
             tok->next()->str(simplifyString(tok->next()->str()));
 
             // Two strings after each other, combine them
@@ -4301,7 +4301,7 @@ void Tokenizer::simplifyCompoundAssignment()
                 for (Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous()) {
                     // Don't duplicate ++ and --. Put preincrement in lhs. Put
                     // postincrement in rhs.
-                    if (tok2->str() == "++" || tok2->str() == "--") {
+                    if (tok2->type() == Token::eIncDecOp) {
                         // pre increment/decrement => don't copy
                         if (tok2->next()->isName()) {
                             continue;

@@ -738,12 +738,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (tok->str() == "(")
                 tok = tok->next();
 
-            if (Token::Match(tok, "++|--")) {
+            if (tok->type() == Token::eIncDecOp) {
                 pre = true;
                 tok = tok->next();
             }
 
-            if (Token::Match(tok->next(), "++|--"))
+            if (tok->next()->type() == Token::eIncDecOp)
                 post = true;
 
             const unsigned int varid1 = tok->varId();

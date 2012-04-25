@@ -509,7 +509,7 @@ private:
                 return &tok;
             }
 
-            if (Token::Match(tok.previous(), "++|--") || Token::Match(tok.next(), "++|--")) {
+            if ((tok.previous() && tok.previous()->type() == Token::eIncDecOp) || (tok.next() && tok.next()->type() == Token::eIncDecOp)) {
                 use(checks, &tok);
                 return &tok;
             }
@@ -961,8 +961,8 @@ public:
                             } else if (indentlevel == 0 && tok3->str() == ";")
                                 break;
                             else if (indentlevel >= 1 && tok3->varId() == varid) {
-                                if (Token::Match(tok3->previous(), "++|--") ||
-                                    Token::Match(tok3->next(), "++|--")) {
+                                if (tok3->previous()->type() == Token::eIncDecOp ||
+                                    tok3->next()->type() == Token::eIncDecOp) {
                                     r = true;
                                 }
 

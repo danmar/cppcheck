@@ -152,7 +152,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             argListTok = secondParam;
         } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf")) {
             const Token* formatStringTok = secondParam; // Find second parameter (format string)
-            if (formatStringTok && formatStringTok->str()[0] == '"') {
+            if (formatStringTok && formatStringTok->type() == Token::eString) {
                 argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
                 formatString = formatStringTok->strValue();
             }
@@ -161,7 +161,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             for (int i = 0; i < 1 && formatStringTok; i++) {
                 formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
             }
-            if (formatStringTok && formatStringTok->str()[0] == '"') {
+            if (formatStringTok && formatStringTok->type() == Token::eString) {
                 argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
                 formatString = formatStringTok->strValue();
             }
@@ -616,7 +616,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             continue;
 
         // name of struct pointer
-        const std::string varname(tok1->str());
+        const std::string& varname(tok1->str());
 
         // is pointer local?
         bool isLocal = false;

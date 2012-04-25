@@ -921,9 +921,8 @@ void CheckStl::size()
                 }
 
                 // check for using as boolean expression
-                else if (tok->strAt(-1) == "!" ||
-                         (Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
-                         (Token::Match(tok->previous(), "&&|%oror%") && Token::Match(end, "&&|)|%oror%"))) {
+                else if ((Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
+                         (tok->previous()->type() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {
                     if (isStlContainer(varid))
                         sizeError(tok1);
                 }

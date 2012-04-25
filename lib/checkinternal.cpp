@@ -39,7 +39,7 @@ void CheckInternal::checkTokenMatchPatterns()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || !Token::Match(pattern_tok, "%str%"))
+        if (!pattern_tok || pattern_tok->type() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();
@@ -68,7 +68,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || !Token::Match(pattern_tok, "%str%"))
+        if (!pattern_tok || pattern_tok->type() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();
@@ -140,7 +140,7 @@ void CheckInternal::checkMissingPercentCharacter()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || !Token::Match(pattern_tok, "%str%"))
+        if (!pattern_tok || pattern_tok->type() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();

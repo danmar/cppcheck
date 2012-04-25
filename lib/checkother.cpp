@@ -153,7 +153,7 @@ void CheckOther::clarifyCondition()
             for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "[")
                     tok2 = tok2->link();
-                else if (Token::Match(tok2, "<|<=|==|!=|>|>=")) {
+                else if (tok2->type() == Token::eComparisionOp) {
                     // This might be a template
                     if (!_tokenizer->isC() && Token::Match(tok2->previous(), "%var% <"))
                         break;
@@ -964,7 +964,7 @@ void CheckOther::checkAssignmentInAssert()
 
     while (tok && endTok) {
         for (tok = tok->tokAt(2); tok != endTok; tok = tok->next()) {
-            if (tok->isName() && (tok->next()->isAssignmentOp() || tok->next()->str() == "++" || tok->next()->str() == "--"))
+            if (tok->isName() && (tok->next()->isAssignmentOp() || tok->next()->type() == Token::eIncDecOp))
                 assignmentInAssertError(tok, tok->str());
             else if (Token::Match(tok, "--|++ %var%"))
                 assignmentInAssertError(tok, tok->strAt(1));
@@ -1350,7 +1350,7 @@ void CheckOther::invalidScanf()
             formatToken = tok->tokAt(2);
         else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
             const Token* nextArg = tok->tokAt(2)->nextArgument();
-            if (nextArg && Token::Match(nextArg, "%str%"))
+            if (nextArg && nextArg->type() == Token::eString)
                 formatToken = nextArg;
             else
                 continue;
@@ -1460,7 +1460,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
             } else {
                 continue;
             }
-        } else if (Token::Match(tok, "snprintf|fnprintf ( %any%")) {
+        } else if (Token::Match(tok, "snprintf|fnprintf (")) {
             const Token* formatStringTok = tok->tokAt(2);
             for (int i = 0; i < 2 && formatStringTok; i++) {
                 formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
@@ -1536,11 +1536,11 @@ void CheckOther::checkWrongPrintfScanfArguments()
                         } else if (!scan) {
                             switch (*i) {
                             case 's':
-                                if (variableInfo && !Token::Match(argListTok, "%str%") && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
+                                if (variableInfo && argListTok->type() != Token::eString && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
                                     invalidPrintfArgTypeError_s(tok, numFormat);
                                 break;
                             case 'n':
-                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->str() == "const")) || Token::Match(argListTok, "%str%"))
+                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->str() == "const")) || argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_n(tok, numFormat);
                                 break;
                             case 'c':
@@ -1554,7 +1554,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
                                     varTypeTok = varTypeTok->next();
                                 if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "unsigned|signed| bool|short|long|int|char|size_t|unsigned|signed") && !variableInfo->isPointer() && !variableInfo->isArray()))
                                     invalidPrintfArgTypeError_int(tok, numFormat, *i);
-                                else if (Token::Match(argListTok, "%str%"))
+                                else if (argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_int(tok, numFormat, *i);
                                 break;
                             case 'p':
@@ -1562,7 +1562,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
                                     varTypeTok = varTypeTok->next();
                                 if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "unsigned|signed| short|long|int|size_t|unsigned|signed") && !variableInfo->isPointer() && !variableInfo->isArray())
                                     invalidPrintfArgTypeError_p(tok, numFormat);
-                                else if (Token::Match(argListTok, "%str%"))
+                                else if (argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_p(tok, numFormat);
                                 break;
                             case 'e':
@@ -1574,7 +1574,7 @@ void CheckOther::checkWrongPrintfScanfArguments()
                                     varTypeTok = varTypeTok->next();
                                 if (varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray()))
                                     invalidPrintfArgTypeError_float(tok, numFormat, *i);
-                                else if (Token::Match(argListTok, "%str%"))
+                                else if (argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_float(tok, numFormat, *i);
                                 break;
                             default:
@@ -1680,7 +1680,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok->next(), ">|>=|==|!=|<=|<") && (!tok->previous() || !tok->previous()->isArithmeticalOp()) && (!tok->tokAt(3) || !tok->tokAt(3)->isArithmeticalOp())) {
+        if (tok->next() && tok->next()->type() == Token::eComparisionOp && (!tok->previous() || !tok->previous()->isArithmeticalOp()) && (!tok->tokAt(3) || !tok->tokAt(3)->isArithmeticalOp())) {
             const Token* const right = tok->tokAt(2);
             if ((tok->varId() && right->isNumber()) || (tok->isNumber() && right->varId())) { // Comparing variable with number
                 const Token* varTok = tok;
@@ -2167,7 +2167,7 @@ void CheckOther::checkCharVariable()
                 charArrayIndexError(tok->next());
         }
 
-        else if (Token::Match(tok, "[;{}] %var% = %any% [&|] %any% ;")) {
+        else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] %any% ;")) {
             // is a char variable used in the calculation?
             if (!isSignedChar(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId())) &&
                 !isSignedChar(symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId())))
@@ -2187,7 +2187,7 @@ void CheckOther::checkCharVariable()
                 charBitOpError(tok->tokAt(4)); // This is an error..
         }
 
-        else if (Token::Match(tok, "[;{}] %var% = %any% [&|] ( * %var% ) ;")) {
+        else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] ( * %var% ) ;")) {
             const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(7)->varId());
             if (!var || !var->isPointer())
                 continue;
@@ -2530,7 +2530,7 @@ static bool expressionHasSideEffects(const Token *first, const Token *last)
             return true;
 
         // check for inc/dec
-        else if (Token::Match(tok, "++|--"))
+        else if (tok->type() == Token::eIncDecOp)
             return true;
 
         // check for function call
@@ -2960,7 +2960,7 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
                     break;
                 }
                 --brackets;
-            } else if (tok->str() == "++" || tok->str() == "--") {
+            } else if (tok->type() == Token::eIncDecOp) {
                 valid = false;
                 break;
             }

@@ -396,7 +396,7 @@ static bool for_bailout(const Token * const tok1, unsigned int varid)
         if (loopTok->varId() == varid) {
             // Counter variable used inside loop
             if (Token::Match(loopTok->next(), "+=|-=|++|--|=") ||
-                Token::Match(loopTok->previous(), "++|--")) {
+                (loopTok->previous()->type() == Token::eIncDecOp)) {
                 return true;
             }
         }
@@ -558,7 +558,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                 }
             }
 
-            else if (Token::Match(tok2->next(), ",|)") && tok2->str()[0] == '\'') {
+            else if (Token::Match(tok2->next(), ",|)") && tok2->type() == Token::eChar) {
                 sizeArgumentAsCharError(tok2);
             }
         } else if (arg == 1001) { // special code. This parameter multiplied with the next must not exceed total_size
@@ -1574,13 +1574,13 @@ MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_
                 break;
             case 'd':
                 i_d_x_f_found = true;
-                if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] != '"')
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->type() != Token::eString)
                     parameterLength = (*paramIter)->str().length();
 
                 handleNextParameter = true;
                 break;
             case 's':
-                if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] == '"')
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->type() == Token::eString)
                     parameterLength = Token::getStrLength(*paramIter);
 
                 handleNextParameter = true;
@@ -1646,7 +1646,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
     const Token* vaArg = tok->tokAt(2)->nextArgument()->nextArgument();
     while (vaArg) {
         if (Token::Match(vaArg->next(), "[,)]")) {
-            if (vaArg->str()[0] == '"') // %str%
+            if (vaArg->type() == Token::eString)
                 parameters.push_back(vaArg);
 
             else if (vaArg->isNumber())
@@ -2064,7 +2064,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                 return;
 
             // skip comparison
-            if (Token::Match(tok, "==|!=|<|<=|>|>= %any% &&"))
+            if (tok->type() == Token::eComparisionOp && tok->strAt(2) == "&&")
                 tok = tok->tokAt(2);
 
             // check if array index is ok

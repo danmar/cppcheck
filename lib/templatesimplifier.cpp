@@ -731,7 +731,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             ret = true;
         }
 
-        if (tok->str()[0] == '\'' && tok->str().size() == 3 &&
+        if (tok->type() == Token::eChar &&
             Token::Match(tok->previous(), "(|&&|%oror% %any% ==|!=|<=|<|>=|> %num% &&|%oror%|)")) {
             tok->str(MathLib::toString(tok->str()[1] & 0xff));
         }
