@@ -865,6 +865,15 @@ void CheckClass::operatorEqToSelf()
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody) {
+                // make sure that the operator takes an object of the same type as *this, otherwise we can't detect self-assignment checks
+                if (func->argumentList.empty())
+                    continue;
+                const Token* typeTok = func->argumentList.front().typeEndToken();
+                while (typeTok->str() == "const" || typeTok->str() == "&" || typeTok->str() == "*")
+                    typeTok = typeTok->previous();
+                if (typeTok->str() != scope->className)
+                    continue;
+
                 // make sure return signature is correct
                 if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
                     func->tokenDef->strAt(-2) == scope->className) {
@@ -1339,7 +1348,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
         }
 
         // increment/decrement (member variable?)..
-        else if (Token::Match(tok1, "++|--")) {
+        else if (tok1->type() == Token::eIncDecOp) {
             // var++ and var--
             if (Token::Match(tok1->previous(), "%var%") &&
                 tok1->previous()->str() != "return") {

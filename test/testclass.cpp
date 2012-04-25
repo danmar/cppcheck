@@ -1260,6 +1260,18 @@ private:
             "    return *this;\n"
             "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "struct A {\n"
+            "    char *s;\n"
+            "    A& operator=(const B &b);\n"
+            "};\n"
+            "A& A::operator=(const B &b) {\n"
+            "    free(s);\n"
+            "    s = strdup(a.s);\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEqToSelf6() {
