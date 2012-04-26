@@ -3153,6 +3153,24 @@ void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const st
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+void CheckOther::checkModuloAlwaysTrueFalse()
+{
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "% %num% ==|!=|<=|<|>|>= %num%") && (!tok->tokAt(4) || !tok->tokAt(4)->isArithmeticalOp())) {
+            if (MathLib::isLessEqual(tok->strAt(1), tok->strAt(3)))
+                moduloAlwaysTrueFalseError(tok, tok->strAt(1));
+        }
+    }
+}
+
+void CheckOther::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
+{
+    reportError(tok, Severity::warning, "moduloAlwaysTrueFalse",
+                "Comparision of modulo result is predetermined, because it is always less than " + maxVal + ".");
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void CheckOther::sizeofsizeof()
 {
     if (!_settings->isEnabled("style"))

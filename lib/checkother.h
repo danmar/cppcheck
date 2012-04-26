@@ -100,6 +100,7 @@ public:
         checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
+        checkOther.checkModuloAlwaysTrueFalse();
 
         checkOther.checkAssignBoolToPointer();
         checkOther.checkBitwiseOnBoolean();
@@ -225,6 +226,9 @@ public:
     /** @brief %Check for suspicious code that compares string literals for equality */
     void checkAlwaysTrueOrFalseStringCompare();
 
+    /** @brief %Check for suspicious usage of modulo (e.g. "if(var % 4 == 4)") */
+    void checkModuloAlwaysTrueFalse();
+
     /** @brief %Check for code that gets never executed, such as duplicate break statements */
     void checkUnreachableCode();
 
@@ -310,6 +314,7 @@ private:
     void SuspiciousSemicolonError(const Token *tok);
     void doubleFreeError(const Token *tok, const std::string &varname);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
+    void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -374,6 +379,7 @@ private:
         c.invalidPrintfArgTypeError_int(0, 1, 'u');
         c.invalidPrintfArgTypeError_float(0, 1, 'f');
         c.cctypefunctionCallError(0, "funname", "value");
+        c.moduloAlwaysTrueFalseError(0, "1");
     }
 
     std::string myName() const {
@@ -431,6 +437,7 @@ private:
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "* incorrect usage of functions from ctype library.\n"
+               "* Comparisions of modulo results that are always true/false.\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

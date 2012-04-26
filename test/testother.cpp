@@ -112,6 +112,8 @@ private:
 
         TEST_CASE(assignmentInAssert);
 
+        TEST_CASE(modulo);
+
         TEST_CASE(incorrectLogicOperator1);
         TEST_CASE(incorrectLogicOperator2);
         TEST_CASE(incorrectLogicOperator3);
@@ -2647,6 +2649,40 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+    }
+
+    void modulo() {
+        check("bool f(bool& b1, bool& b2, bool& b3) {\n"
+              "    b1 = a % 5 == 4;\n"
+              "    b2 = a % c == 100000;\n"
+              "    b3 = a % 5 == c;\n"
+              "    return a % 5 == 5-p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool& b1, bool& b2, bool& b3, bool& b4, bool& b5) {\n"
+              "    b1 = a % 5 < 5;\n"
+              "    b2 = a % 5 <= 5;\n"
+              "    b3 = a % 5 == 5;\n"
+              "    b4 = a % 5 != 5;\n"
+              "    b5 = a % 5 >= 5;\n"
+              "    return a % 5 > 5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:3]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:4]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:5]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:6]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:7]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n", errout.str());
+
+        check("void f(bool& b1, bool& b2) {\n"
+              "    b1 = bar() % 5 < 889;\n"
+              "    if(x[593] % 5 <= 5)\n"
+              "        b2 = x.a % 5 == 5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:3]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:4]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n", errout.str());
     }
 
     void incorrectLogicOperator1() {
