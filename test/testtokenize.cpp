@@ -3103,7 +3103,7 @@ private:
 
     void varid36() { // ticket #2980 (segmentation fault)
         const std::string code("#elif A\n"
-                               "A,a<b<x0;\n");
+                               "A,a<b<x0\n");
         tokenizeDebugListing(code);
         ASSERT_EQUALS("", errout.str());
     }

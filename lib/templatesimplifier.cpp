@@ -192,6 +192,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (!tok->isNumber() && !tok->isName())
             return 0;
         tok = tok->next();
+        if (!tok)
+            return 0;
 
         // optional "*"
         if (tok->str() == "*")
