@@ -865,17 +865,9 @@ void CheckOther::switchCaseFallThrough(const Token *tok)
 void CheckOther::checkCoutCerrMisusage()
 {
     bool firstCout = false;
-    unsigned int roundbraces = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() == "(")
-            ++roundbraces;
-        else if (tok->str() == ")") {
-            if (!roundbraces)
-                break;
-            --roundbraces;
-        }
-        if (roundbraces)
-            continue;
+            tok = tok->link();
 
         if (Token::Match(tok, "std :: cout|cerr")) {
             if (firstCout && tok->strAt(-1) == "<<" && tok->strAt(3) != ".") {

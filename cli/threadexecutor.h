@@ -22,12 +22,13 @@
 #include <map>
 #include <string>
 #include <list>
-#include "settings.h"
 #include "errorlogger.h"
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 #define THREADING_MODEL_FORK
 #endif
+
+class Settings;
 
 /// @addtogroup CLI
 /// @{

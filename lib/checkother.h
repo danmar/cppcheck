@@ -443,24 +443,6 @@ private:
                "* optimisation: detect post increment/decrement\n";
     }
 
-    /**
-     * @brief Used in warningRedundantCode()
-     * Iterates through the %var% tokens in a fully qualified name and concatenates them.
-     */
-    std::string concatNames(const Token **tok) const {
-        std::string varname;
-        while (Token::Match(*tok, "%var% ::|.")) {
-            varname.append((*tok)->str());
-            varname.append((*tok)->next()->str());
-            *tok = (*tok)->tokAt(2);
-        }
-
-        if ((*tok)->isName())
-            varname.append((*tok)->str());
-
-        return varname;
-    }
-
     void checkExpressionRange(const std::list<Function> &constFunctions,
                               const Token *start,
                               const Token *end,
