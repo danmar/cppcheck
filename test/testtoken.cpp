@@ -563,7 +563,7 @@ private:
         for (test_op = comparisionOps.begin(); test_op != comparisionOps.end(); ++test_op) {
             Token tok(NULL);
             tok.str(*test_op);
-            ASSERT_EQUALS(Token::eComparisionOp, tok.type());
+            ASSERT_EQUALS(Token::eComparisonOp, tok.type());
         }
         Token tok(NULL);
         tok.str("++");

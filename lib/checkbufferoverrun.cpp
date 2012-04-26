@@ -2064,7 +2064,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                 return;
 
             // skip comparison
-            if (tok->type() == Token::eComparisionOp && tok->strAt(2) == "&&")
+            if (tok->type() == Token::eComparisonOp && tok->strAt(2) == "&&")
                 tok = tok->tokAt(2);
 
             // check if array index is ok

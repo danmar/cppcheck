@@ -153,7 +153,7 @@ void CheckOther::clarifyCondition()
             for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "[")
                     tok2 = tok2->link();
-                else if (tok2->type() == Token::eComparisionOp) {
+                else if (tok2->type() == Token::eComparisonOp) {
                     // This might be a template
                     if (!_tokenizer->isC() && Token::Match(tok2->previous(), "%var% <"))
                         break;
@@ -1672,7 +1672,7 @@ void CheckOther::checkComparisonOfBoolWithInt()
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->next() && tok->next()->type() == Token::eComparisionOp && (!tok->previous() || !tok->previous()->isArithmeticalOp()) && (!tok->tokAt(3) || !tok->tokAt(3)->isArithmeticalOp())) {
+        if (tok->next() && tok->next()->type() == Token::eComparisonOp && (!tok->previous() || !tok->previous()->isArithmeticalOp()) && (!tok->tokAt(3) || !tok->tokAt(3)->isArithmeticalOp())) {
             const Token* const right = tok->tokAt(2);
             if ((tok->varId() && right->isNumber()) || (tok->isNumber() && right->varId())) { // Comparing variable with number
                 const Token* varTok = tok;
@@ -3130,9 +3130,9 @@ void CheckOther::alwaysTrueFalseStringCompareError(const Token *tok, const std::
     const std::string string2 = (str2.size() < stringLen) ? str2 : (str2.substr(0, stringLen-2) + "..");
 
     reportError(tok, Severity::warning, "staticStringCompare",
-                "Unnecessary comparision of static strings.\n"
+                "Unnecessary comparison of static strings.\n"
                 "The compared strings, '" + string1 + "' and '" + string2 + "', are always " + (str1==str2?"identical":"unequal") + ". "
-                "Therefore the comparision is unnecessary and looks suspicious.");
+                "Therefore the comparison is unnecessary and looks suspicious.");
 }
 
 void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2)
@@ -3158,7 +3158,7 @@ void CheckOther::checkModuloAlwaysTrueFalse()
 void CheckOther::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
 {
     reportError(tok, Severity::warning, "moduloAlwaysTrueFalse",
-                "Comparision of modulo result is predetermined, because it is always less than " + maxVal + ".");
+                "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".");
 }
 
 //-----------------------------------------------------------------------------

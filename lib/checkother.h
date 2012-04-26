@@ -437,7 +437,7 @@ private:
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "* incorrect usage of functions from ctype library.\n"
-               "* Comparisions of modulo results that are always true/false.\n"
+               "* Comparisons of modulo results that are always true/false.\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n";

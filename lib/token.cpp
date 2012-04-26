@@ -97,7 +97,7 @@ void Token::update_property_info()
                  _str == "<=" ||
                  _str == ">"  ||
                  _str == ">=")
-            _type = eComparisionOp;
+            _type = eComparisonOp;
         else if (_str == "++" ||
                  _str == "--")
             _type = eIncDecOp;

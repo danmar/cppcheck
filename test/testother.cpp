@@ -2668,21 +2668,21 @@ private:
               "    b5 = a % 5 >= 5;\n"
               "    return a % 5 > 5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:3]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:4]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:5]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:6]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:7]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:5]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:6]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:7]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n", errout.str());
 
         check("void f(bool& b1, bool& b2) {\n"
               "    b1 = bar() % 5 < 889;\n"
               "    if(x[593] % 5 <= 5)\n"
               "        b2 = x.a % 5 == 5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:3]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:4]: (warning) Comparision of modulo result is predetermined, because it is always less than 5.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n", errout.str());
     }
 
     void incorrectLogicOperator1() {
@@ -4196,7 +4196,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparision of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main()\n"
@@ -4206,7 +4206,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparision of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "#define MACRO \"Hotdog\"\n"
@@ -4217,7 +4217,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparision of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main()\n"
@@ -4237,7 +4237,7 @@ private:
             "    std::cout << \"Equal\n\""
             "  }"
             "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparision of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check(
             "int foo(const char *buf)\n"
@@ -4255,7 +4255,7 @@ private:
             "    std::cout << \"Equal\n\"\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparision of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main() {\n"
@@ -4263,7 +4263,7 @@ private:
             "    std::cout << \"Equal\n\"\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparision of static strings.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check_preprocess_suppress(
             "int main() {\n"

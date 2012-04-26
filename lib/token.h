@@ -47,8 +47,8 @@ public:
     enum Type {
         eVariable, eType, eFunction, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Name (unknown identifier)
         eNumber, eString, eChar, eBoolean, eLiteral, // Literals: Number, String, Character, User defined literal (C++11)
-        eArithmeticalOp, eComparisionOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparision, Assignment, Logical, Bitwise, ++/--, Extended
-        eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparision operators.
+        eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
+        eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparison operators.
         eOther,
         eNone
     };
@@ -178,7 +178,7 @@ public:
     bool isOp() const {
         return (isArithmeticalOp() ||
                 _type == eLogicalOp ||
-                _type == eComparisionOp ||
+                _type == eComparisonOp ||
                 _type == eBitOp);
     }
     bool isExtendedOp() const {
