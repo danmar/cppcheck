@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="All" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <DefineSolutionProperties>false</DefineSolutionProperties>
     
@@ -18,6 +18,16 @@
     <WixExtension Include="$(WixToolPath)WixUIExtension.dll" />
     <Compile Include="cppcheck.wxs"/>
   </ItemGroup>
-  
+
   <Import Project="$(WixTargetsPath)"/>
+
+  <Target Name="All" DependsOnTargets="Clean;Validate;Build"/>
+
+  <Target Name="Clean">
+    <RemoveDir Directories="..\buildtmp\wix" />
+  </Target>
+
+  <Target Name="Validate">
+    <Exec Command="..\cli\release\cppcheck --rule=. --version"/>
+  </Target>
 </Project>
