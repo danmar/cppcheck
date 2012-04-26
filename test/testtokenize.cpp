@@ -3064,7 +3064,7 @@ private:
 
     void varid33() { // ticket #2875 (segmentation fault)
         const std::string code("0; (a) < (a)");
-        tokenizeDebugListing(code);
+        tokenizeDebugListing(code, true);
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -7783,7 +7783,10 @@ void Tokenizer::simplifyComma()
 
         // Skip unhandled template specifiers..
         if (Token::Match(tok, "%var% <")) {
-            tok->next()->findClosingBracket(tok);
+            Token* tok2;
+            tok->next()->findClosingBracket(tok2);
+            if (tok2)
+                tok = tok2;
         }
 
         // If token after the comma is a constant number, simplification is not required.
