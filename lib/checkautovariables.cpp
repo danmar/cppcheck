@@ -147,8 +147,10 @@ void CheckAutoVariables::autoVariables()
                     errorReturnAddressOfFunctionParameter(tok, tok->strAt(2));
             }
             // Invalid pointer deallocation
-            else if (Token::Match(tok, "free ( %var% ) ;") && isAutoVarArray(tok->tokAt(2)->varId())) {
-                errorInvalidDeallocation(tok);
+            else if (Token::Match(tok, "free ( %var% ) ;") || Token::Match(tok, "delete [| ]| (| %var% !![")) {
+                tok = Token::findmatch(tok->next(), "%var%");
+                if (isAutoVarArray(tok->varId()))
+                    errorInvalidDeallocation(tok);
             }
         }
     }

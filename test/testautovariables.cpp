@@ -315,13 +315,30 @@ private:
     }
 
     void testinvaliddealloc() {
-        check("int* func1()\n"
-              "{\n"
-              "int a;\n"
-              "char tmp[256];\n"
-              "free (tmp);\n"
-              "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Deallocating auto-variable is invalid\n"), errout.str());
+        check("void func1() {\n"
+              "    char tmp1[256];\n"
+              "    free(tmp1);\n"
+              "    char tmp2[256];\n"
+              "    delete tmp2;\n"
+              "    char tmp3[256];\n"
+              "    delete (tmp3);\n"
+              "    char tmp4[256];\n"
+              "    delete[] (tmp4);\n"
+              "    char tmp5[256];\n"
+              "    delete[] tmp5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocating auto-variable is invalid\n"
+                      "[test.cpp:5]: (error) Deallocating auto-variable is invalid\n"
+                      "[test.cpp:7]: (error) Deallocating auto-variable is invalid\n"
+                      "[test.cpp:9]: (error) Deallocating auto-variable is invalid\n"
+                      "[test.cpp:11]: (error) Deallocating auto-variable is invalid\n", errout.str());
+
+        check("void func1() {\n"
+              "    char* tmp1[256];\n"
+              "    init(tmp1);\n"
+              "    delete tmp1[34];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
