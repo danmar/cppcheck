@@ -56,31 +56,68 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     static std::set<std::string> functionNames1_all;
     static std::set<std::string> functionNames1_nullptr;
     if (functionNames1_all.empty()) {
+        // cstdlib
+        functionNames1_all.insert("atoi");
+        functionNames1_all.insert("atof");
+        functionNames1_all.insert("atol");
+        functionNames1_all.insert("qsort");
+        functionNames1_all.insert("strtod");
+        functionNames1_all.insert("strtol");
+        functionNames1_all.insert("strtoul");
+        // cstring
         functionNames1_all.insert("memchr");
         functionNames1_all.insert("memcmp");
         functionNames1_all.insert("strcat");
         functionNames1_all.insert("strncat");
+        functionNames1_all.insert("strcoll");
         functionNames1_all.insert("strchr");
         functionNames1_all.insert("strrchr");
         functionNames1_all.insert("strcmp");
         functionNames1_all.insert("strncmp");
+        functionNames1_all.insert("strcspn");
         functionNames1_all.insert("strdup");
         functionNames1_all.insert("strndup");
+        functionNames1_all.insert("strpbrk");
         functionNames1_all.insert("strlen");
+        functionNames1_all.insert("strspn");
         functionNames1_all.insert("strstr");
+        // cstdio
         functionNames1_all.insert("fclose");
         functionNames1_all.insert("feof");
         functionNames1_all.insert("fwrite");
         functionNames1_all.insert("fseek");
         functionNames1_all.insert("ftell");
+        functionNames1_all.insert("fputs");
+        functionNames1_all.insert("ferror");
+        functionNames1_all.insert("fgetc");
         functionNames1_all.insert("fgetpos");
         functionNames1_all.insert("fsetpos");
+        functionNames1_all.insert("freopen");
+        functionNames1_all.insert("fscanf");
+        functionNames1_all.insert("fprintf");
+        functionNames1_all.insert("fopen");
         functionNames1_all.insert("rewind");
         functionNames1_all.insert("printf");
         functionNames1_all.insert("scanf");
         functionNames1_all.insert("fscanf");
         functionNames1_all.insert("sscanf");
+        functionNames1_all.insert("setbuf");
+        functionNames1_all.insert("setvbuf");
+        functionNames1_all.insert("rename");
+        functionNames1_all.insert("remove");
+        functionNames1_all.insert("puts");
+        functionNames1_all.insert("perror");
+        functionNames1_all.insert("getc");
+        functionNames1_all.insert("clearerr");
+        // ctime
+        functionNames1_all.insert("asctime");
+        functionNames1_all.insert("ctime");
+        functionNames1_all.insert("mktime");
+        functionNames1_all.insert("strftime");
 
+        functionNames1_nullptr.insert("itoa");
+        functionNames1_nullptr.insert("mbstowcs");
+        functionNames1_nullptr.insert("wcstombs");
         functionNames1_nullptr.insert("memcpy");
         functionNames1_nullptr.insert("memmove");
         functionNames1_nullptr.insert("memset");
@@ -90,12 +127,19 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_nullptr.insert("vprintf");
         functionNames1_nullptr.insert("fprintf");
         functionNames1_nullptr.insert("vfprintf");
+        functionNames1_nullptr.insert("tmpnam");
+        functionNames1_nullptr.insert("fread");
+        functionNames1_nullptr.insert("gets");
+        functionNames1_nullptr.insert("gmtime");
+        functionNames1_nullptr.insert("localtime");
     }
 
     // standard functions that dereference second parameter..
     static std::set<std::string> functionNames2_all;
     static std::set<std::string> functionNames2_nullptr;
     if (functionNames2_all.empty()) {
+        functionNames2_all.insert("mbstowcs");
+        functionNames2_all.insert("wcstombs");
         functionNames2_all.insert("memcmp");
         functionNames2_all.insert("memcpy");
         functionNames2_all.insert("memmove");
@@ -103,16 +147,28 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames2_all.insert("strncat");
         functionNames2_all.insert("strcmp");
         functionNames2_all.insert("strncmp");
+        functionNames2_all.insert("strcoll");
         functionNames2_all.insert("strcpy");
+        functionNames2_all.insert("strcspn");
         functionNames2_all.insert("strncpy");
+        functionNames2_all.insert("strpbrk");
+        functionNames2_all.insert("strspn");
         functionNames2_all.insert("strstr");
+        functionNames2_all.insert("strxfrm");
         functionNames2_all.insert("sprintf");
         functionNames2_all.insert("fprintf");
         functionNames2_all.insert("fscanf");
         functionNames2_all.insert("sscanf");
+        functionNames2_all.insert("fputs");
+        functionNames2_all.insert("fputc");
+        functionNames2_all.insert("ungetc");
+        functionNames2_all.insert("rename");
+        functionNames2_all.insert("putc");
+        functionNames2_all.insert("freopen");
 
         functionNames2_nullptr.insert("frexp");
         functionNames2_nullptr.insert("modf");
+        functionNames2_nullptr.insert("fgetpos");
     }
 
     if (Token::Match(&tok, "%var% ( )") || !tok.tokAt(2))
@@ -1344,8 +1400,5 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive)
 {
     const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<unsigned int>(line));
-    if (inconclusive)
-        reportInconclusiveError(tok, Severity::error, "nullPointer", errmsg);
-    else
-        reportError(tok, Severity::error, "nullPointer", errmsg);
+    reportError(tok, Severity::error, "nullPointer", errmsg, inconclusive);
 }
