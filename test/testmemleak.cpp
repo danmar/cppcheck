@@ -340,6 +340,7 @@ private:
         TEST_CASE(jmp);
 
         TEST_CASE(trac1949);
+        TEST_CASE(trac2540);
 
         // #2662: segfault because of endless recursion (call_func -> getAllocationType -> functionReturnType -> call_func ..)
         TEST_CASE(trac2662);
@@ -3703,6 +3704,22 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: buff\n", errout.str());
+    }
+
+    void trac2540() {
+        check("void f()\n"
+              "{\n"
+              "    char* str = strdup(\"abc def\");\n"
+              "    char *name = strtok(str, \" \");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
+
+        check("void f(char *cBuf)\n"
+              "{\n"
+              "    char* str = strdup(*cBuf);\n"
+              "    char *name = strtok(str, \" \");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
     }
 
     void trac2662() {
