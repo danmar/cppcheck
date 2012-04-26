@@ -500,7 +500,7 @@ bool Token::firstWordEquals(const char *str, const char *word)
 {
     for (;;) {
         if (*str != *word) {
-            return !(*str == ' ' && *word == 0);
+            return (*str == ' ' && *word == 0);
         } else if (*str == 0)
             break;
 
@@ -508,7 +508,7 @@ bool Token::firstWordEquals(const char *str, const char *word)
         ++word;
     }
 
-    return false;
+    return true;
 }
 
 const char *Token::chrInFirstWord(const char *str, char c)
@@ -764,11 +764,11 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Parse "not" options. Token can be anything except the given one
         else if (p[1] == '!' && p[0] == '!' && p[2] != '\0') {
-            if (!firstWordEquals(&(p[2]), tok->str().c_str()))
+            if (firstWordEquals(&(p[2]), tok->str().c_str()))
                 return false;
         }
 
-        else if (firstWordEquals(p, tok->_str.c_str())) {
+        else if (!firstWordEquals(p, tok->_str.c_str())) {
             return false;
         }
 
