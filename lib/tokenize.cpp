@@ -2801,47 +2801,6 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
 }
 
-static void setVarIdClassDeclaration(Token * const startToken, const std::map<std::string, unsigned int> &variableId, const unsigned int scopeStartVarId)
-{
-    // end of scope
-    const Token * const endToken = startToken->link();
-
-    // determine class name
-    std::string className;
-    for (const Token *tok = startToken->previous(); tok; tok = tok->previous()) {
-        if (!tok->isName() && tok->str() != ":")
-            break;
-        if (Token::Match(tok, "class|struct %type% [:{]")) {
-            className = tok->next()->str();
-            break;
-        }
-    }
-
-    // replace varids..
-    unsigned int indentlevel = 0;
-    for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
-        if (tok->str() == "{")
-            ++indentlevel;
-        else if (tok->str() == "}")
-            --indentlevel;
-        else if (indentlevel > 0 && tok->isName() && tok->varId() <= scopeStartVarId) {
-            if (tok->previous()->str() == "::")
-                continue;
-            if (tok->next()->str() == "::") {
-                if (tok->str() == className)
-                    tok = tok->tokAt(2);
-                else
-                    continue;
-            }
-
-            const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
-            if (it != variableId.end()) {
-                tok->varId(it->second);
-            }
-        }
-    }
-}
-
 
 static void setVarIdStructMembers(Token **tok1,
                                   std::map<unsigned int, std::map<std::string,unsigned int> > *structMembers,
@@ -2876,6 +2835,54 @@ static void setVarIdStructMembers(Token **tok1,
     if (tok)
         *tok1 = tok;
 }
+
+
+static void setVarIdClassDeclaration(Token * const startToken,
+                                     const std::map<std::string, unsigned int> &variableId,
+                                     const unsigned int scopeStartVarId,
+                                     std::map<unsigned int, std::map<std::string,unsigned int> > *structMembers,
+                                     unsigned int *_varId)
+{
+    // end of scope
+    const Token * const endToken = startToken->link();
+
+    // determine class name
+    std::string className;
+    for (const Token *tok = startToken->previous(); tok; tok = tok->previous()) {
+        if (!tok->isName() && tok->str() != ":")
+            break;
+        if (Token::Match(tok, "class|struct %type% [:{]")) {
+            className = tok->next()->str();
+            break;
+        }
+    }
+
+    // replace varids..
+    unsigned int indentlevel = 0;
+    for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
+        if (tok->str() == "{")
+            ++indentlevel;
+        else if (tok->str() == "}")
+            --indentlevel;
+        else if (indentlevel > 0 && tok->isName() && tok->varId() <= scopeStartVarId) {
+            if (Token::Match(tok->previous(), "::|."))
+                continue;
+            if (tok->next()->str() == "::") {
+                if (tok->str() == className)
+                    tok = tok->tokAt(2);
+                else
+                    continue;
+            }
+
+            const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
+            if (it != variableId.end()) {
+                tok->varId(it->second);
+                setVarIdStructMembers(&tok, structMembers, _varId);
+            }
+        }
+    }
+}
+
 
 
 // Update the variable ids..
@@ -2940,7 +2947,11 @@ void Tokenizer::setVarId()
         } else if (tok->str() == "}") {
             // Set variable ids in class declaration..
             if (!isC() && !executableScope.top() && tok->link()) {
-                setVarIdClassDeclaration(tok->link(), variableId, scopestartvarid.top());
+                setVarIdClassDeclaration(tok->link(),
+                                         variableId,
+                                         scopestartvarid.top(),
+                                         &structMembers,
+                                         &_varId);
             }
 
             scopestartvarid.pop();

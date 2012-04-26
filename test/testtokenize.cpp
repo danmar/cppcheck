@@ -223,6 +223,8 @@ private:
         TEST_CASE(varid_in_class3);     // #3092 - shadow variable in member function
         TEST_CASE(varid_in_class4);     // #3271 - public: class C;
         TEST_CASE(varid_in_class5);     // #3584 - std::vector<::FOO::B> b;
+        TEST_CASE(varid_in_class6);     // #3755
+        TEST_CASE(varid_in_class7);     // set variable id for struct members
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
@@ -3529,6 +3531,40 @@ private:
                       "1: struct Foo {\n"
                       "2: std :: vector < :: X > v@1 ;\n"
                       "3: }\n",
+                      tokenizeDebugListing(code));
+    }
+
+    void varid_in_class6() {
+        const char code[] = "class A {\n"
+                            "    void f(const char *str) const {\n"
+                            "        std::stringstream sst;\n"
+                            "        sst.str();\n"
+                            "    }\n"
+                            "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: void f ( const char * str@1 ) const {\n"
+                      "3: std :: stringstream sst@2 ;\n"
+                      "4: sst@2 . str ( ) ;\n"
+                      "5: }\n"
+                      "6: } ;\n",
+                      tokenizeDebugListing(code));
+    }
+
+    void varid_in_class7() {
+        const char code[] = "class A {\n"
+                            "    void f() {\n"
+                            "        abc.a = 0;\n"
+                            "    }\n"
+                            "    struct ABC abc;\n"
+                            "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: void f ( ) {\n"
+                      "3: abc@1 . a@2 = 0 ;\n"
+                      "4: }\n"
+                      "5: struct ABC abc@1 ;\n"
+                      "6: } ;\n",
                       tokenizeDebugListing(code));
     }
 
