@@ -1163,6 +1163,15 @@ private:
                        "    return a[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #3344
+        checkUninitVar("void f(){\n"
+                       "   char *strMsg = \"This is a message\";\n"
+                       "   char *buffer=(char*)malloc(128*sizeof(char));\n"
+                       "   strcpy(strMsg,buffer);\n"
+                       "   free(buffer);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: buffer\n", errout.str());
     }
 
     // alloc..
