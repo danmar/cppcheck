@@ -38,6 +38,7 @@ private:
         TEST_CASE(structmember);
         TEST_CASE(ptrcompare);
         TEST_CASE(ptrarithmetic);
+        TEST_CASE(returnIssues);
     }
 
     void check(const char code[]) {
@@ -86,7 +87,7 @@ private:
               "    int *a = p;\n"
               "    return a;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
@@ -135,6 +136,33 @@ private:
         check("void foo(int *start, int *end) {\n"
               "    int len;\n"
               "    int len = end + 10 - start;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnIssues() {
+        check("void* foo(int i) {\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an integer in a function that returns a pointer is not portable.\n", errout.str());
+
+        check("void* foo(int* i) {\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int i) {\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(char* c) {\n"
+              "    return c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
+
+        check("std::string foo(char* c) {\n"
+              "    return c;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

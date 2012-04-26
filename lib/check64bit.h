@@ -63,11 +63,15 @@ private:
 
     void assignmentAddressToIntegerError(const Token *tok);
     void assignmentIntegerToAddressError(const Token *tok);
+    void returnIntegerError(const Token *tok);
+    void returnPointerError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         Check64BitPortability c(0, settings, errorLogger);
         c.assignmentAddressToIntegerError(0);
         c.assignmentIntegerToAddressError(0);
+        c.returnIntegerError(0);
+        c.returnPointerError(0);
     }
 
     std::string myName() const {
@@ -76,7 +80,8 @@ private:
 
     std::string classInfo() const {
         return "Check if there is 64-bit portability issues:\n"
-               "* assign address to/from int/long";
+               "* assign address to/from int/long\n"
+               "* casting address from/to integer when returning from function";
     }
 };
 /// @}

@@ -47,9 +47,35 @@ void Check64BitPortability::pointerassignment()
     if (!_settings->isEnabled("portability"))
         return;
 
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    // Check return values
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (scope->type != Scope::eFunction || scope->function == 0 || !scope->function->hasBody) // We only look for functions with a body
+            continue;
+
+        bool retPointer = false;
+        if (scope->function->token->strAt(-1) == "*") // Function returns a pointer
+            retPointer = true;
+        else if (Token::Match(scope->function->token->previous(), "int|long|DWORD")) // Function returns an integer
+            ;
+        else
+            continue;
+
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "return %var% [;+]")) {
+                const Variable *var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                if (retPointer && isint(var))
+                    returnIntegerError(tok);
+                else if (!retPointer && isaddr(var))
+                    returnPointerError(tok);
+            }
+        }
+    }
+
+    // Check assignements
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[;{}] %var% = %var% [;+]")) {
-            const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
             const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
             const Variable *var2(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()));
@@ -89,4 +115,26 @@ void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
                 "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
                 "they are of different width. In worst case you end up assigning 32-bit integer to 64-bit pointer. The safe "
                 "way is to always assign address to pointer.");
+}
+
+void Check64BitPortability::returnPointerError(const Token *tok)
+{
+    reportError(tok, Severity::portability,
+                "CastAddressToIntegerAtReturn",
+                "Returning an address value in a function with integer return type is not portable.\n"
+                "Returning an address value in a function with integer (int/long/etc) return type is not portable across "
+                "different platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in "
+                "64-bit Windows and Linux they are of different width. In worst case you end up casting 64-bit address down "
+                "to 32-bit integer. The safe way is to always return an integer.");
+}
+
+void Check64BitPortability::returnIntegerError(const Token *tok)
+{
+    reportError(tok, Severity::portability,
+                "CastIntegerToAddressAtReturn",
+                "Returning an integer in a function that returns a pointer is not portable.\n"
+                "Returning an integer (int/long/etc) in a function that returns a pointer is not portable across different "
+                "platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in 64-bit Windows "
+                "and Linux they are of different width. In worst case you end up casting 32-bit integer down to 64-bit pointer. "
+                "The safe way is to always return a pointer.");
 }
