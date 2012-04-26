@@ -908,10 +908,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             }
 
             if (Token::Match(tok->previous(), "[(;{}] %varid% =", varid) ||
-                Token::Match(tok, "asprintf ( & %varid% ,", varid)) {
+                Token::Match(tok, "asprintf|vasprintf ( & %varid% ,", varid)) {
                 CheckMemoryLeak::AllocType alloc;
 
-                if (Token::simpleMatch(tok, "asprintf (")) {
+                if (Token::Match(tok, "asprintf|vasprintf (")) {
                     // todo: check how the return value is used.
                     if (!Token::Match(tok->previous(), "[;{}]")) {
                         Tokenizer::deleteTokens(rethead);
@@ -2401,6 +2401,7 @@ void CheckMemoryLeakInClass::check()
 void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarname)
 {
     const std::string& varname = tokVarname->str();
+    const unsigned int varid = tokVarname->varId();
     const std::string& classname = scope->className;
 
     // Check if member variable has been allocated and deallocated..
@@ -2424,12 +2425,12 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                 body = true;
             else {
                 if (!body) {
-                    if (!Token::Match(tok, (":|, " + varname + " (").c_str()))
+                    if (!Token::Match(tok, ":|, %varid% (", varid))
                         continue;
                 }
 
                 // Allocate..
-                if (!body || Token::simpleMatch(tok, (varname + " =").c_str())) {
+                if (!body || Token::Match(tok, "%varid% =", varid)) {
                     // var1 = var2 = ...
                     // bail out
                     if (tok->strAt(-1) == "=")
