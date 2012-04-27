@@ -89,6 +89,7 @@ private:
         TEST_CASE(localvar41); // ticket #3481
         TEST_CASE(localvar42); // ticket #3603
         TEST_CASE(localvar43); // ticket #3742
+        TEST_CASE(localvar44); // ticket #3602
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1446,6 +1447,33 @@ private:
                               "    const float floatC = 2.2f;  \n"
                               "    float floatTot = g_float * floatC;\n"
                               "    SomeTestFunc(floatTot);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar44() { // ticket #3602 (false positive)
+        functionVariableUsage("void bar()\n"
+                              "{		\n"
+                              "    int * piArray = NULL;\n"
+                              "    unsigned int uiArrayLength = 2048;\n"
+                              "    unsigned int uiIndex;\n"
+                              "    // Allocate memory\n"
+                              "    try\n"
+                              "    {\n"
+                              " 	   piArray = new int[uiArrayLength];\n"
+                              "    }\n"
+                              "    catch (...)\n"
+                              "    {\n"
+                              " 	   SOME_MACRO\n"
+                              " 	   delete [] piArray;\n"
+                              " 	   return;\n"
+                              "    }\n"
+                              "    for (uiIndex = 0; uiIndex < uiArrayLength; uiIndex++)\n"
+                              "    {\n"
+                              " 	   piArray[uiIndex] = -1234;\n"
+                              "    }\n"
+                              "    delete [] piArray;\n"
+                              "    piArray = NULL;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
