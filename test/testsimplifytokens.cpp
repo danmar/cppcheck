@@ -22,6 +22,7 @@
 #include "tokenize.h"
 #include "token.h"
 #include "settings.h"
+#include "templatesimplifier.h"
 
 #include <sstream>
 #include <list>
@@ -127,6 +128,9 @@ private:
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
         TEST_CASE(template_constructor);    // #3152 - template constructor is removed
+
+        // Test TemplateSimplifier::templateParameters
+        TEST_CASE(templateParameters);
 
         TEST_CASE(namespaces);
 
@@ -2270,6 +2274,25 @@ private:
                              "}";
         ASSERT_EQUALS("class Fred { Fred ( T t ) { } }", tok(code2));
     }
+
+    unsigned int templateParameters(const char code[]) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        return TemplateSimplifier::templateParameters(tokenizer.tokens());
+    }
+
+    void templateParameters() {
+        // Test that the function TemplateSimplifier::templateParameters works
+        ASSERT_EQUALS(1U, templateParameters("<struct C> x;"));
+        ASSERT_EQUALS(1U, templateParameters("<union C> x;"));
+        ASSERT_EQUALS(1U, templateParameters("<const int> x;"));
+        ASSERT_EQUALS(1U, templateParameters("<int const *> x;"));
+    }
+
 
     void namespaces() {
         {

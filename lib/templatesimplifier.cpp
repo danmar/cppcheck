@@ -180,6 +180,10 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (level == 0)
             ++numberOfParameters;
 
+        // skip struct/union
+        if (Token::Match(tok, "struct|union|const %any%"))
+            tok = tok->next();
+
         // skip std::
         if (tok->str() == "::")
             tok = tok->next();
@@ -195,8 +199,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (!tok)
             return 0;
 
-        // optional "*"
-        if (tok->str() == "*")
+        // * / const
+        while (Token::Match(tok, "*|const"))
             tok = tok->next();
 
         // Function pointer..
