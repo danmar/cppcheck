@@ -385,7 +385,7 @@ public:
         return argumentList.size();
     }
     unsigned int initializedArgCount() const;
-    void addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope);
+    void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
 

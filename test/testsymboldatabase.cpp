@@ -150,6 +150,7 @@ private:
         TEST_CASE(symboldatabase25); // ticket #3561 (throw C++)
         TEST_CASE(symboldatabase26); // ticket #3561 (throw C)
         TEST_CASE(symboldatabase27); // ticket #3543 (segmentation fault)
+        TEST_CASE(symboldatabase28);
 
         TEST_CASE(isImplicitlyVirtual);
     }
@@ -1131,6 +1132,12 @@ private:
               "    {} C(int) : B1() class\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase28() {
+        GET_SYMBOL_DB("struct S {};\n"
+                      "void foo(struct S s) {}");
+        ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->className == "S");
     }
 
     void isImplicitlyVirtual() {

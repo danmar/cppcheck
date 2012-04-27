@@ -603,7 +603,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
         for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // add arguments
-            func->addArguments(this, &*func, scope);
+            func->addArguments(this, scope);
         }
     }
 
@@ -919,6 +919,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 
     if (scope) {
         scope->function = function;
+        function->functionScope = scope;
         return function;
     }
     return 0;
@@ -956,7 +957,6 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token*& tok
 void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const Token *argStart)
 {
     int count = 0;
-    bool added = false;
     std::string path;
     unsigned int path_length = 0;
     const Token *tok1;
@@ -1081,19 +1081,16 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             (*scope)->functionOf = scope1;
                             (*scope)->function = &*func;
                             (*scope)->function->functionScope = *scope;
-
-                            added = true;
                         }
-                        break;
+                        return;
                     }
                 }
             }
         }
     }
 
-    // check for class function for unknown class
-    if (!added)
-        addNewFunction(scope, tok);
+    // class function of unknown class
+    addNewFunction(scope, tok);
 }
 
 void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
@@ -1134,16 +1131,13 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
 {
     // goto initial '{'
     const Token *tok2 = tok->tokAt(2);
-    int level = 0;
     while (tok2 && tok2->str() != "{") {
         // skip unsupported templates
         if (tok2->str() == "<")
-            level++;
-        else if (tok2->str() == ">")
-            level--;
+            tok2->findClosingBracket(tok2);
 
         // check for base classes
-        else if (level == 0 && Token::Match(tok2, ":|,")) {
+        else if (Token::Match(tok2, ":|,")) {
             Scope::BaseInfo base;
 
             base.isVirtual = false;
@@ -1527,7 +1521,7 @@ unsigned int Function::initializedArgCount() const
     return count;
 }
 
-void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function *func, const Scope *scope)
+void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
     if (arg && arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )")) {
@@ -1554,17 +1548,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                     while (tok->next()->str() == "[")
                         tok = tok->next()->link();
                 } else if (tok->str() == "<") {
-                    int level = 1;
-                    while (tok && tok->next()) {
-                        tok = tok->next();
-                        if (tok->str() == ">") {
-                            --level;
-                            if (level == 0)
-                                break;
-                        } else if (tok->str() == "<")
-                            level++;
-                    }
-                    if (!tok) // something is wrong so just bail
+                    bool success = tok->findClosingBracket(tok);
+                    if (!tok || !success) // something is wrong so just bail out
                         return;
                 }
 
@@ -1575,6 +1560,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
             }
 
             const Token *typeTok = startTok->tokAt(isConstVar ? 1 : 0);
+            if (typeTok->str() == "struct")
+                typeTok = typeTok->next();
 
             // check for argument with no name or missing varid
             if (!endTok) {
@@ -1583,7 +1570,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Function
                         nameTok = tok->previous();
                         endTok = nameTok->previous();
 
-                        if (func->hasBody)
+                        if (hasBody)
                             symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
                     } else
                         endTok = startTok;
@@ -1767,7 +1754,7 @@ void Scope::getVariableList()
 {
     AccessControl varaccess = defaultAccess();
     const Token *start;
-    int level = 1;
+    unsigned int level = 1;
 
     if (classStart)
         start = classStart->next();
@@ -2056,7 +2043,7 @@ const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *t
         // do the names match?
         if (scope->className == type->str()) {
             // check if type does not have a namespace
-            if (type->previous() != NULL && type->previous()->str() != "::") {
+            if (type->previous() == NULL || type->previous()->str() != "::") {
                 const Scope *parent = start;
 
                 // check if in same namespace
