@@ -113,7 +113,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("asctime");
         functionNames1_all.insert("ctime");
         functionNames1_all.insert("mktime");
-        functionNames1_all.insert("strftime");
 
         functionNames1_nullptr.insert("itoa");
         functionNames1_nullptr.insert("mbstowcs");
@@ -132,6 +131,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_nullptr.insert("gets");
         functionNames1_nullptr.insert("gmtime");
         functionNames1_nullptr.insert("localtime");
+        functionNames1_nullptr.insert("strftime");
     }
 
     // standard functions that dereference second parameter..
