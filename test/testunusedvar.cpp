@@ -138,6 +138,7 @@ private:
         TEST_CASE(localvarFunction); // ticket #1799
         TEST_CASE(localvarIfNOT);    // #3104 - if ( NOT var )
         TEST_CASE(localvarAnd);      // #3672
+        TEST_CASE(localvarSwitch);   // #3744 - false positive when localvar is used in switch
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -3076,6 +3077,22 @@ private:
                               "        return 1;\n"
                               "    }\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarSwitch() { // #3744 - false positive when used in switch
+        functionVariableUsage("const char *f(int x) {\n"
+                              "    const char a[] = \"abc\";\n"
+                              "    const char def[] = \"def\";\n"
+                              "    const char *ptr;\n"
+                              "    switch(x) {\n"
+                              "        case 1:  ptr=a; break;\n"
+                              "        default: ptr=def; break;\n"
+                              "    }\n"
+                              "    return ptr;\n"
+                              "}");
+
+        // Don't write an error that "a" is not used
         ASSERT_EQUALS("", errout.str());
     }
 };

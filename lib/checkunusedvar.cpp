@@ -445,7 +445,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                             // not in same scope as declaration
                             else {
                                 // no other assignment in this scope
-                                if (var1->_assignments.find(scope) == var1->_assignments.end()) {
+                                if (var1->_assignments.find(scope) == var1->_assignments.end() ||
+                                    scope->type == Scope::eSwitch) {
                                     // nothing to replace
                                     if (var1->_assignments.empty())
                                         replace = false;
