@@ -4157,6 +4157,19 @@ private:
                                 "}";
             ASSERT_EQUALS("void foo ( ) { if ( x ) { } { } }", tokenizeAndStringify(code, true));
         }
+
+        // #3770 - Don't segfault and don't change macro argument as if it's a K&R function argument
+        {
+            const char code[] = "MACRO(a)"
+                                ""
+                                "void f()"
+                                "{"
+                                "    SetLanguage();"
+                                "    {"
+                                "    }"
+                                "}";
+            ASSERT_EQUALS("MACRO ( a ) void f ( ) { SetLanguage ( ) ; { } }", tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyFunctionParameters1() { // ticket #3721

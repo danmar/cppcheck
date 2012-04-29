@@ -4830,6 +4830,10 @@ bool Tokenizer::simplifyFunctionParameters()
             std::map<std::string, Token *> argumentNames2;
 
             while (tok1 && tok1->str() != "{") {
+                if (tok1->str() == "(" || tok1->str() == ")") {
+                    bailOut = true;
+                    break;
+                }
                 if (tok1->str() == ";") {
                     if (tokparam) {
                         syntaxError(tokparam);
