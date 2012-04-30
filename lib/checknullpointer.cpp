@@ -372,6 +372,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
         if (Token::Match(tok->previous(), "return|= %var% ;"))
             return false;
 
+        // (void)var
+        if (Token::Match(tok->previous(), "[{;}] %var% ;"))
+            return false;
+
         // unknown if it's a dereference
         unknown = true;
     }

@@ -52,6 +52,7 @@ private:
         TEST_CASE(nullpointer16); // #3591
         TEST_CASE(nullpointer17); // #3567
         TEST_CASE(nullpointer18); // #1927
+        TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
         TEST_CASE(gcc_statement_expression); // Don't crash
@@ -226,7 +227,7 @@ private:
               "    sizeof(*list);\n"
               "    if (!list)\n"
               "        ;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // ticket #2245 - sizeof doesn't dereference
@@ -234,7 +235,7 @@ private:
               "    if (!p) {\n"
               "        int sz = sizeof(p->x);\n"
               "    }\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
     }
@@ -246,7 +247,7 @@ private:
               "    Fred fred;\n"
               "    while (fred);\n"
               "    fred.hello();\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -322,13 +323,13 @@ private:
               "    abc = abc->next;\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(struct ABC *abc) {\n"
               "    abc = (ABC *)(abc->_next);\n"
               "    if (abc) { }"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // reassign struct..
@@ -338,7 +339,7 @@ private:
               "    abc = abc->next;\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(struct ABC *abc)\n"
@@ -347,7 +348,7 @@ private:
               "    f(&abc);\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // goto..
@@ -535,7 +536,7 @@ private:
               "    int **p = f();\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int *p)\n"
@@ -554,7 +555,7 @@ private:
               "    int a = 2 * x;"
               "    if (x == 0)\n"
               "        ;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int *p)\n"
@@ -711,7 +712,7 @@ private:
               "    int c = sizeof(test[0]);\n"
               "    if (!test)\n"
               "        ;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // #3023 - checked deref
@@ -966,14 +967,14 @@ private:
               "    for (int i = 0; i < 3; i++) {\n"
               "        if (a && (p[i] == '1'));\n"
               "    }\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // ticket #2251: taking the address of member
         check("void f() {\n"
               "    Fred *fred = 0;\n"
               "    int x = &fred->x;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // ticket #3220: calling member function
@@ -990,14 +991,14 @@ private:
                   "    if (x)\n"
                   "        p = q;\n"
                   "    if (p && *p) { }\n"
-                  "}");
+                  "}", true);
             ASSERT_EQUALS("", errout.str());
             check("void f() {\n"
                   "    int *p = NULL;\n"
                   "    if (x)\n"
                   "        p = q;\n"
                   "    if (!p || *p) { }\n"
-                  "}");
+                  "}", true);
             ASSERT_EQUALS("", errout.str());
             check("void f() {\n"
                   "    int *p = NULL;\n"
@@ -1063,7 +1064,7 @@ private:
               "{\n"
               "  wxLongLong x = 0;\n"
               "  int y = x.GetValue();\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1152,7 +1153,7 @@ private:
               "{\n"
               "  int* i = nullptr;\n"
               "  return *i;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1209,7 +1210,7 @@ private:
               "    int *p = 0;\n"
               "    bar(&p);\n"
               "    *p = 0;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1217,13 +1218,13 @@ private:
         check("int foo() {\n"
               "    int *p = 0;\n"
               "    return (!p || *p);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("int foo() {\n"
               "    int *p = 0;\n"
               "    return p && *p;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1239,6 +1240,14 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n", errout.str());
+    }
+
+    void nullpointer_castToVoid() {  // #3771
+        check("void f () {\n"
+              "    int *buf = NULL;\n"
+              "    (void)buf;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Check if pointer is null and the dereference it
@@ -1351,14 +1360,14 @@ private:
               "    if (!p) {\n"
               "        switch (x) { }\n"
               "    }\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
               "    }\n"
               "    return *x;\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("int foo(int *p) {\n"
@@ -1445,7 +1454,7 @@ private:
               "\n"
               "void Fred::b() {\n"
               "    wilma->Reload();\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void test(int *i) {\n"
@@ -1454,7 +1463,7 @@ private:
               "  } else {\n"
               "    int b = *i;\n"
               "  }\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // #2696 - false positives nr 1
@@ -1467,7 +1476,7 @@ private:
               "\n"
               "   if (pFoo)\n"
               "      bar();\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // #2696 - false positives nr 2
@@ -1480,7 +1489,7 @@ private:
               "      pFoo = pFoo->next;\n"
               "\n"
               "   len = sizeof(pFoo->data);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // #2696 - false positives nr 3
@@ -1493,7 +1502,7 @@ private:
               "      pFoo = pFoo->next;\n"
               "\n"
               "   len = decltype(*pFoo);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("int foo(struct Fred *fred) {\n"
@@ -1595,7 +1604,7 @@ private:
         check("void f(struct fred_t *fred) {\n"
               "    if (!fred)\n"
               "        int sz = sizeof fred->x;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // check in macro
@@ -1625,13 +1634,13 @@ private:
         // Ticket #2413 - it's ok to pass NULL to fflush
         check("void foo() {\n"
               "  fflush(NULL);\n"
-              "}\n");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #3126 - don't confuse member function with standard function
         check("void f() {\n"
               "    image1.fseek(0, SEEK_SET);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
@@ -1653,7 +1662,7 @@ private:
         // Ticket #2840
         check("void f() {\n"
               "    int bytes = snprintf(0, 0, \"%u\", 1);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1804,7 +1813,7 @@ private:
 
         check("int foo(int* iVal) {\n"
               "    return iVal[0];\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1814,20 +1823,20 @@ private:
               "bool foo() {\n"
               "     PolymorphicA* a = 0;\n"
               "     return typeid(*a) == typeid(*a);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct NonPolymorphicA { ~A() {} };\n"
               "bool foo() {\n"
               "     NonPolymorphicA* a = 0;\n"
               "     return typeid(*a) == typeid(*a);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("bool foo() {\n"
               "     char* c = 0;\n"
               "     return typeid(*c) == typeid(*c);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
     }
@@ -1963,7 +1972,7 @@ private:
               "    char* p2 = 0;\n"
               "    std::cin >> (int)p;\n" // result casted
               "    std::cout << (int)p;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const std::string& str) {\n"
@@ -1971,7 +1980,7 @@ private:
               "    std::istringstream istr(str);\n"
               "    istr >> std::hex >> ret;\n" // Read integer
               "    return ret;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
