@@ -14,6 +14,7 @@ OBJECTS_DIR = temp
 UI_DIR = temp
 
 win32 {
+   CONFIG += windows
    DESTDIR = ../Build/gui
    RCC_DIR = ../BuildTmp/gui
    MOC_DIR = ../BuildTmp/gui
