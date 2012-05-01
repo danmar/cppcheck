@@ -36,7 +36,8 @@ private:
         TEST_CASE(complexPatternInTokenSimpleMatch)
         TEST_CASE(simplePatternSquareBrackets)
         TEST_CASE(simplePatternAlternatives)
-        TEST_CASE(missingPercentCharacter);
+        TEST_CASE(missingPercentCharacter)
+        TEST_CASE(internalError)
     }
 
     void check(const std::string &code) {
@@ -225,6 +226,22 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo|%oror%|bar\");\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void internalError() {
+        // Make sure cppcheck does not raise an internal error of Token::Match ( Ticket #3727 )
+        check("class DELPHICLASS X;\n"
+              "class Y {\n"
+              "private:\n"
+              "   X* x;\n"
+              "};\n"
+              "class Z {\n"
+              "   char z[1];\n"
+              "   Z(){\n"
+              " 	  z[0] = 0;\n"
+              "   }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
