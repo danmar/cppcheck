@@ -863,7 +863,24 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     //           uncertain
                     bool unknown = _settings->inconclusive;
 
-                    if (Token::Match(tok1->tokAt(-2), "%varid% = %varid% .", varid)) {
+                    // reassign : is the pointer reassigned like this:
+                    //            tok = tok->next();
+                    bool reassign = false;
+                    if (Token::Match(tok1->previous(), "= %varid% .", varid)) {
+                        const Token *back = tok1->tokAt(-2);
+                        while (back) {
+                            if (back->varId() == varid) {
+                                reassign = true;
+                                break;
+                            }
+                            if (Token::Match(back, "[{};,(]")) {
+                                break;
+                            }
+                            back = back->previous();
+                        }
+                    }
+
+                    if (reassign) {
                         break;
                     } else if (Token::simpleMatch(tok1->tokAt(-2), "* )") &&
                                Token::Match(tok1->linkAt(-1)->tokAt(-2), "%varid% = (", tok1->varId())) {
