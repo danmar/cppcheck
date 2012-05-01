@@ -72,6 +72,16 @@ private:
     }
 
     void uninitvar1() {
+
+        // Ticket #3597
+        checkUninitVar("int f() {\n"
+                       "	int a;\n"
+                       "	int b = 1;\n"
+                       "	(b += a) = 1;\n"
+                       "	return b*a;\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n","", errout.str());
+
         // Ticket #2207 - False negative
         checkUninitVar("void foo() {\n"
                        "    int a;\n"
