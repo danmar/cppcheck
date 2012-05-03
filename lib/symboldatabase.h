@@ -384,6 +384,8 @@ public:
     std::size_t argCount() const {
         return argumentList.size();
     }
+    /** @brief get a pointer to the variable instance associated with the given argument number */
+    const Variable* getArgumentVar(unsigned int num) const;
     unsigned int initializedArgCount() const;
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
     /** @brief check if this function is virtual in the base classes */

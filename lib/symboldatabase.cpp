@@ -1666,6 +1666,17 @@ bool Function::isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const
     return false;
 }
 
+const Variable* Function::getArgumentVar(unsigned int num) const
+{
+    for (std::list<Variable>::const_iterator i = argumentList.begin(); i != argumentList.end(); ++i) {
+        if (i->index() == num)
+            return(&*i);
+        else if (i->index() > num)
+            return 0;
+    }
+    return 0;
+}
+
 
 //---------------------------------------------------------------------------
 
