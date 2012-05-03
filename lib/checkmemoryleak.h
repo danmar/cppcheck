@@ -41,6 +41,8 @@
 
 class Token;
 class Scope;
+class Function;
+class Variable;
 
 /// @addtogroup Core
 /// @{
@@ -158,7 +160,7 @@ public:
     AllocType functionReturnType(const Token *tok, std::list<const Token *> *callstack = NULL) const;
 
     /** Function allocates pointed-to argument (a la asprintf)? */
-    const char *functionArgAlloc(const Token *tok, unsigned int targetpar, AllocType &allocType) const;
+    const char *functionArgAlloc(const Function *func, unsigned int targetpar, AllocType &allocType) const;
 };
 
 /// @}
@@ -216,14 +218,6 @@ public:
      * Checking for a memory leak caused by improper realloc usage.
      */
     void checkReallocUsage();
-
-    /**
-     * @brief %Check all variables in function scope
-     * @param tok The first '{' token of the function body
-     * @param tok1 The '(' token in the function declaration
-     * @param classmember Is this function a class member?
-     */
-    void parseFunctionScope(const Token *tok, const Token *tok1, const bool classmember);
 
     /**
      * @brief %Check if there is a "!var" match inside a condition
@@ -419,9 +413,9 @@ public:
 private:
 
     /** Is local variable allocated with malloc? */
-    static bool isMalloc(const Token *vartok);
+    static bool isMalloc(const Variable *variable);
 
-    void checkStructVariable(const Token * const vartok);
+    void checkStructVariable(const Variable * const variable);
 
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
     { }

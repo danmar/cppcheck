@@ -2751,7 +2751,8 @@ private:
               "        return false;\n"
               "    return true;\n"
               "}\n", false);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Common realloc mistake: \'m_options\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Common realloc mistake: \'m_options\' nulled but not freed upon failure\n"
+                      "[test.cpp:6]: (error) Memory leak: m_options\n", errout.str());
     }
 
     void assign1() {
