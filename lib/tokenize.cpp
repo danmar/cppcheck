@@ -3013,6 +3013,10 @@ void Tokenizer::setVarId()
         }
 
         if (tok->isName()) {
+            // don't set variable id after a struct|enum|union
+            if (Token::Match(tok->previous(), "struct|enum|union"))
+                continue;
+
             if (!isC()) {
                 if (tok->previous() && tok->previous()->str() == "::")
                     continue;

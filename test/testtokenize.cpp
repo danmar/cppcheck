@@ -209,6 +209,7 @@ private:
         TEST_CASE(varid43);
         TEST_CASE(varid44);
         TEST_CASE(varid45); // #3466
+        TEST_CASE(varid46); // struct varname
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3205,6 +3206,13 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: void foo ( ) { B b@1 ( this ) ; A a@2 ( this , b@1 ) ; }\n",
                       tokenizeDebugListing(code));
+    }
+
+    void varid46() { // #3756
+        const std::string code("void foo() { int t; x = (struct t *)malloc(); f(t); }");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void foo ( ) { int t@1 ; x = ( struct t * ) malloc ( ) ; f ( t@1 ) ; }\n",
+                      tokenizeDebugListing(code, false, "test.c"));
     }
 
     void varid_cpp_keywords_in_c_code() {
