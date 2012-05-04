@@ -925,7 +925,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     unsigned int linenr = 0;
     std::istringstream istr(filedata);
     std::string line;
-    while (getline(istr, line)) {
+    while (std::getline(istr, line)) {
         ++linenr;
 
         if (_errorLogger)
@@ -949,10 +949,12 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (line.compare(0, 8, "#define ") == 0) {
             bool valid = true;
-            for (std::string::size_type pos = 8; pos < line.size() && line[pos] != ' '; ++pos) {
+            for (std::string::size_type pos = 8; pos < line.size(); ++pos) {
                 char ch = line[pos];
                 if (ch=='_' || (ch>='a' && ch<='z') || (ch>='A' && ch<='Z') || (pos>8 && ch>='0' && ch<='9'))
                     continue;
+                if (ch==' ' || ch=='(')
+                    break;
                 valid = false;
                 break;
             }
@@ -1018,8 +1020,10 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             {
                 std::map<std::string, std::string> varmap;
                 for (std::set<std::string>::const_iterator it = defines.begin(); it != defines.end(); ++it) {
-                    std::string::size_type pos = it->find("=");
+                    std::string::size_type pos = it->find_first_of("=(");
                     if (pos == std::string::npos)
+                        continue;
+                    if ((*it)[pos] == '(')
                         continue;
                     const std::string varname(it->substr(0, pos));
                     const std::string value(it->substr(pos + 1));
@@ -1142,16 +1146,16 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
             // Get name of define
             std::string defineName(*it2);
-            if (defineName.find("=") != std::string::npos)
-                defineName.erase(defineName.find("="));
+            if (defineName.find_first_of("=(") != std::string::npos)
+                defineName.erase(defineName.find_first_of("=("));
 
             // Remove ifdef configurations that match the defineName
             while ((pos = cfg.find(defineName, pos)) != std::string::npos) {
-                std::string::size_type pos1 = pos;
+                const std::string::size_type pos1 = pos;
                 ++pos;
                 if (pos1 > 0 && cfg[pos1-1] != ';')
                     continue;
-                std::string::size_type pos2 = pos1 + defineName.length();
+                const std::string::size_type pos2 = pos1 + defineName.length();
                 if (pos2 < cfg.length() && cfg[pos2] != ';')
                     continue;
                 --pos;

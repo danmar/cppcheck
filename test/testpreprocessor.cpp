@@ -212,6 +212,7 @@ private:
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
+        TEST_CASE(ifndef_define);
         TEST_CASE(undef_ifdef);
         TEST_CASE(endfile);
 
@@ -2706,8 +2707,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
-        TODO_ASSERT_EQUALS(1,
-                           2, actual.size());
+        ASSERT_EQUALS(1U, actual.size());
     }
 
     void define_ifndef2() {
@@ -2723,6 +2723,23 @@ private:
         Preprocessor preprocessor(NULL, this);
         ASSERT_EQUALS("\n\n\n\n\n\n$int me;\n", preprocessor.getcode(filedata, "", "a.cpp"));
         ASSERT_EQUALS("\n\n\n\n\n\n$char me;\n", preprocessor.getcode(filedata, "A", "a.cpp"));
+    }
+
+    void ifndef_define() {
+        const char filedata[] = "#ifndef A\n"
+                                "#define A(x) x\n"
+                                "#endif\n"
+                                "A(123);";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS("\n\n\n$123;\n", actual[""]);
     }
 
     void undef_ifdef() {
