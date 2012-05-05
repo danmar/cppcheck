@@ -104,11 +104,11 @@ private:
         if (token->previous())
             ASSERT_EQUALS("Null was expected", "");
 
-        Tokenizer::deleteTokens(token);
+        TokenList::deleteTokens(token);
     }
 
     bool Match(const std::string &code, const std::string &pattern, unsigned int varid=0) {
-        const Settings settings;
+        static const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");

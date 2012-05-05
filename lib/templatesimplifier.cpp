@@ -589,7 +589,7 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
 
         // member function implemented outside class definition
         else if (TemplateSimplifier::simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
-            tokenizer.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
+            tokenizer.list.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
             while (tok3->str() != "::")
                 tok3 = tok3->next();
         }
@@ -613,8 +613,8 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
                     // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
                     // if indentlevel ever becomes 0, cppcheck will write:
                     // ### Error: Invalid number of character {
-                    tokenizer.addtoken("}", tok3->linenr(), tok3->fileIndex());
-                    Token::createMutualLinks(braces.top(), tokenizer._tokensBack);
+                    tokenizer.list.addtoken("}", tok3->linenr(), tok3->fileIndex());
+                    Token::createMutualLinks(braces.top(), tokenizer.list.back());
                     braces.pop();
                     break;
                 }
@@ -633,7 +633,7 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
                     for (const Token *typetok = typesUsedInTemplateInstantion[itype];
                          typetok && !Token::Match(typetok, "[,>]");
                          typetok = typetok->next()) {
-                        tokenizer.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
+                        tokenizer.list.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
                     }
                     continue;
                 }
@@ -641,36 +641,36 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
 
             // replace name..
             if (Token::Match(tok3, (name + " !!<").c_str())) {
-                tokenizer.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
+                tokenizer.list.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
                 continue;
             }
 
             // copy
-            tokenizer.addtoken(tok3, tok3->linenr(), tok3->fileIndex());
+            tokenizer.list.addtoken(tok3, tok3->linenr(), tok3->fileIndex());
             if (Token::Match(tok3, "%type% <")) {
                 //if (!Token::simpleMatch(tok3, (name + " <").c_str()))
                 //done = false;
-                templateInstantiations.push_back(tokenizer._tokensBack);
+                templateInstantiations.push_back(tokenizer.list.back());
             }
 
             // link() newly tokens manually
             if (tok3->str() == "{") {
-                braces.push(tokenizer._tokensBack);
+                braces.push(tokenizer.list.back());
             } else if (tok3->str() == "}") {
                 assert(braces.empty() == false);
-                Token::createMutualLinks(braces.top(), tokenizer._tokensBack);
+                Token::createMutualLinks(braces.top(), tokenizer.list.back());
                 braces.pop();
             } else if (tok3->str() == "(") {
-                brackets.push(tokenizer._tokensBack);
+                brackets.push(tokenizer.list.back());
             } else if (tok3->str() == "[") {
-                brackets2.push(tokenizer._tokensBack);
+                brackets2.push(tokenizer.list.back());
             } else if (tok3->str() == ")") {
                 assert(brackets.empty() == false);
-                Token::createMutualLinks(brackets.top(), tokenizer._tokensBack);
+                Token::createMutualLinks(brackets.top(), tokenizer.list.back());
                 brackets.pop();
             } else if (tok3->str() == "]") {
                 assert(brackets2.empty() == false);
-                Token::createMutualLinks(brackets2.top(), tokenizer._tokensBack);
+                Token::createMutualLinks(brackets2.top(), tokenizer.list.back());
                 brackets2.pop();
             }
 
@@ -983,7 +983,7 @@ void TemplateSimplifier::simplifyTemplateInstantions(
     for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
         if (amountOftemplateInstantiations != templateInstantiations.size()) {
             amountOftemplateInstantiations = templateInstantiations.size();
-            simplifyCalculations(tokenizer._tokens);
+            simplifyCalculations(tokenizer.list.front());
             ++recursiveCount;
             if (recursiveCount > 100) {
                 // bail out..
@@ -1103,20 +1103,20 @@ void TemplateSimplifier::simplifyTemplates(
 )
 {
 
-    std::set<std::string> expandedtemplates(TemplateSimplifier::simplifyTemplatesExpandSpecialized(tokenizer._tokens));
+    std::set<std::string> expandedtemplates(TemplateSimplifier::simplifyTemplatesExpandSpecialized(tokenizer.list.front()));
 
     // Locate templates and set member variable _codeWithTemplates if the code has templates.
     // this info is used by checks
-    std::list<Token *> templates(TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(tokenizer._tokens, _codeWithTemplates));
+    std::list<Token *> templates(TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(tokenizer.list.front(), _codeWithTemplates));
 
     if (templates.empty()) {
-        TemplateSimplifier::removeTemplates(tokenizer._tokens);
+        TemplateSimplifier::removeTemplates(tokenizer.list.front());
         return;
     }
 
     // There are templates..
     // Remove "typename" unless used in template arguments..
-    for (Token *tok = tokenizer._tokens; tok; tok = tok->next()) {
+    for (Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
         if (tok->str() == "typename")
             tok->deleteThis();
 
@@ -1129,11 +1129,11 @@ void TemplateSimplifier::simplifyTemplates(
     }
 
     // Locate possible instantiations of templates..
-    std::list<Token *> templateInstantiations(TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(tokenizer._tokens));
+    std::list<Token *> templateInstantiations(TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(tokenizer.list.front()));
 
     // No template instantiations? Then remove all templates.
     if (templateInstantiations.empty()) {
-        TemplateSimplifier::removeTemplates(tokenizer._tokens);
+        TemplateSimplifier::removeTemplates(tokenizer.list.front());
         return;
     }
 
@@ -1153,5 +1153,5 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    TemplateSimplifier::removeTemplates(tokenizer._tokens);
+    TemplateSimplifier::removeTemplates(tokenizer.list.front());
 }

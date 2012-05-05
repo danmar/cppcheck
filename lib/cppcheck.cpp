@@ -316,8 +316,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
 
         // Update the _dependencies..
-        if (_tokenizer.getFiles().size() >= 2)
-            _dependencies.insert(_tokenizer.getFiles().begin()+1, _tokenizer.getFiles().end());
+        if (_tokenizer.list.getFiles().size() >= 2)
+            _dependencies.insert(_tokenizer.list.getFiles().begin()+1, _tokenizer.list.getFiles().end());
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
@@ -423,7 +423,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         ErrorLogger::ErrorMessage::FileLocation loc;
         if (e.token) {
             loc.line = e.token->linenr();
-            const std::string fixedpath = Path::toNativeSeparators(_tokenizer.file(e.token));
+            const std::string fixedpath = Path::toNativeSeparators(_tokenizer.list.file(e.token));
             loc.setfile(fixedpath);
         } else {
             loc.setfile(_tokenizer.getSourceFilePath());

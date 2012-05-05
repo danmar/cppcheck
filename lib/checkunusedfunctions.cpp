@@ -86,10 +86,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
             // No filename set yet..
             if (func.filename.empty()) {
-                func.filename = tokenizer.getFiles().at(0);
+                func.filename = tokenizer.getSourceFilePath();
             }
             // Multiple files => filename = "+"
-            else if (func.filename != tokenizer.getFiles().at(0)) {
+            else if (func.filename != tokenizer.getSourceFilePath()) {
                 //func.filename = "+";
                 func.usedOtherFile |= func.usedSameFile;
             }

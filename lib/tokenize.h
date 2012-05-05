@@ -23,13 +23,12 @@
 //---------------------------------------------------------------------------
 
 #include "errorlogger.h"
+#include "tokenlist.h"
 
 #include <string>
 #include <map>
 #include <list>
-#include <vector>
 
-class Token;
 class Settings;
 class SymbolDatabase;
 class TimerResults;
@@ -39,11 +38,6 @@ class TimerResults;
 
 /** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
 class Tokenizer {
-    friend class TemplateSimplifier; // TODO: Remove this. Cleanup interface between Tokenizer and TemplateSimplifier.
-private:
-    /** Deallocate lists */
-    void deallocateTokens();
-
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
@@ -106,16 +100,6 @@ public:
                   const std::string &configuration = "",
                   const bool preprocessorCondition = false);
 
-    /**
-     * Create tokens from code.
-     * The code must be preprocessed first:
-     * - multiline strings are not handled.
-     * - UTF in the code are not handled.
-     * - comments are not handled.
-     * @param code input stream for code
-     */
-    void createTokens(std::istream &code);
-
     /** Set variable id */
     void setVarId();
 
@@ -126,12 +110,6 @@ public:
      * the checking of this file.
      */
     bool simplifyTokenList();
-
-    /**
-     * Delete all tokens in given token list
-     * @param tok token list to delete
-     */
-    static void deleteTokens(Token *tok);
 
     /**
      * Deletes dead code between 'begin' and 'end'.
@@ -167,25 +145,11 @@ public:
     static const char *getParameterName(const Token *ftok, unsigned int par);
 
     /**
-     * Get file:line for a given token
-     * @param tok given token
-     * @return location for given token
-     */
-    std::string fileLine(const Token *tok) const;
-
-    /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
      */
     unsigned int sizeOfType(const Token *type) const;
-
-    /**
-     * Get filenames (the sourcefile + the files it include).
-     * The first filename is the filename for the sourcefile
-     * @return vector with filenames
-     */
-    const std::vector<std::string>& getFiles() const;
 
     /**
      * Get function token by function name
@@ -194,16 +158,6 @@ public:
      * @param funcname function name
      */
     const Token *getFunctionTokenByName(const char funcname[]) const;
-
-    /** get tokens */
-    const Token *tokens() const;
-
-    /**
-     * get filename for given token
-     * @param tok The given token
-     * @return filename for the given token
-     */
-    const std::string& file(const Token *tok) const;
 
     /**
      * get error messages that the tokenizer generate
@@ -397,9 +351,6 @@ public:
     /** Simplify "if else" */
     void elseif();
 
-    void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split = false);
-    void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
-
     /**
      * Simplify the operator "?:"
      */
@@ -564,16 +515,6 @@ public:
      */
     void removeExceptionSpecifications(Token *tok) const;
 
-    void insertTokens(Token *dest, const Token *src, unsigned int n);
-
-    /**
-     * Copy tokens.
-     * @param dest destination token where copied tokens will be inserted after
-     * @param first first token to copy
-     * @param last last token to copy
-     * @return new location of last token copied
-     */
-    Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
     /**
      * Send error message to error logger about internal bug.
@@ -731,6 +672,7 @@ public:
 
     void setSettings(const Settings *settings) {
         _settings = settings;
+        list.setSettings(settings);
     }
 
     const SymbolDatabase *getSymbolDatabase() const;
@@ -756,6 +698,16 @@ public:
      */
     void printUnknownTypes();
 
+
+    /**
+     * Token list: stores all tokens.
+     */
+    TokenList list;
+    // Implement tokens() as a wrapper for convinience when using the TokenList
+    const Token* tokens() const {
+        return list.front();
+    }
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
@@ -763,8 +715,14 @@ private:
     /** Disable assignment operator, no implementation */
     Tokenizer &operator=(const Tokenizer &);
 
-    /** Token list */
-    Token *_tokens, *_tokensBack;
+    /**
+     * Copy tokens.
+     * @param dest destination token where copied tokens will be inserted after
+     * @param first first token to copy
+     * @param last last token to copy
+     * @return new location of last token copied
+     */
+    static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
     /** settings */
     const Settings * _settings;
@@ -781,9 +739,6 @@ private:
 
     /** sizeof information for known types */
     std::map<std::string, unsigned int> _typeSize;
-
-    /** filenames for the tokenized source code (source + included) */
-    std::vector<std::string> _files;
 
     /** variable count */
     unsigned int _varId;

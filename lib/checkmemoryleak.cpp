@@ -366,7 +366,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
 
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.line = tok->linenr();
-        loc.setfile(tokenizer->file(tok));
+        loc.setfile(tokenizer->list.file(tok));
 
         locations.push_back(loc);
     }
@@ -669,7 +669,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             ret = "alloc";
         else if (Token::simpleMatch(func, "; dealloc ; }"))
             ret = "dealloc";
-        Tokenizer::deleteTokens(func);
+        TokenList::deleteTokens(func);
         return ret;
     }
 
@@ -734,7 +734,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             else if (Token::findsimplematch(func_, "&use"))
                 ret = "&use";
 
-            Tokenizer::deleteTokens(func);
+            TokenList::deleteTokens(func);
             return ret;
         }
         if (varid > 0 && Token::Match(tok, "& %varid% [,()]", varid)) {
@@ -889,7 +889,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 if (Token::Match(tok, "asprintf|vasprintf (")) {
                     // todo: check how the return value is used.
                     if (!Token::Match(tok->previous(), "[;{}]")) {
-                        Tokenizer::deleteTokens(rethead);
+                        TokenList::deleteTokens(rethead);
                         return 0;
                     }
                     alloc = Malloc;
@@ -2071,7 +2071,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 
     // If the variable is not allocated at all => no memory leak
     if (Token::findsimplematch(tok, "alloc") == 0) {
-        Tokenizer::deleteTokens(tok);
+        TokenList::deleteTokens(tok);
         return;
     }
 
@@ -2083,13 +2083,13 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 
     // If the variable is not allocated at all => no memory leak
     if (Token::findsimplematch(tok, "alloc") == 0) {
-        Tokenizer::deleteTokens(tok);
+        TokenList::deleteTokens(tok);
         return;
     }
 
     /** @todo handle "goto" */
     if (Token::findsimplematch(tok, "goto")) {
-        Tokenizer::deleteTokens(tok);
+        TokenList::deleteTokens(tok);
         return;
     }
 
@@ -2129,7 +2129,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         }
     }
 
-    Tokenizer::deleteTokens(tok);
+    TokenList::deleteTokens(tok);
 }
 //---------------------------------------------------------------------------
 

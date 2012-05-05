@@ -261,7 +261,7 @@ public:
      * @param classmember should be set if the inspected function is a class member
      * @param sz size of type, used to check for mismatching size of allocation. for example "int *a;" => the sz is "sizeof(int)"
      * @return Newly allocated token array. Caller needs to release reserved
-     * memory by calling Tokenizer::deleteTokens(returnValue);
+     * memory by calling TokenList::deleteTokens(returnValue);
      * Returned tokens:
      * - "alloc" : the variable is allocated
      * - "assign" : the variable is assigned a new value

@@ -380,7 +380,7 @@ private:
         for (const Token *tok = tokens; tok; tok = tok->next())
             ret << tok->str();
 
-        Tokenizer::deleteTokens(tokens);
+        TokenList::deleteTokens(tokens);
 
         return ret.str();
     }

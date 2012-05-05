@@ -27,7 +27,7 @@
 /// @{
 
 /**
- * @brief The token list that the Tokenizer generates is a linked-list of this class.
+ * @brief The token list that the TokenList generates is a linked-list of this class.
  *
  * Tokens are stored as strings. The "if", "while", etc are stored in plain text.
  * The reason the Token class is needed (instead of using the string class) is that some extra functionality is also needed for tokens:

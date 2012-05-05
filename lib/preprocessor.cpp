@@ -2275,7 +2275,7 @@ public:
 
         // Tokenize the macro to make it easier to handle
         std::istringstream istr(macro);
-        tokenizer.createTokens(istr);
+        tokenizer.list.createTokens(istr);
 
         // macro name..
         if (tokens() && tokens()->isName())

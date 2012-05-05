@@ -4108,7 +4108,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "a.cpp");
 
-        ASSERT_EQUALS("[c:\\a.h:1]", tokenizer.fileLine(tokenizer.tokens()));
+        ASSERT_EQUALS("[c:\\a.h:1]", tokenizer.list.fileLine(tokenizer.tokens()));
     }
 
 

@@ -859,7 +859,6 @@ private:
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.createTokens(istr);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.elseif();
         return tokenizer.tokens()->stringifyList(false);
@@ -3471,7 +3470,7 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.createTokens(istr);
+        tokenizer.list.createTokens(istr);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 

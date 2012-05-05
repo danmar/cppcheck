@@ -1225,7 +1225,7 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.line = tok->linenr();
-        loc.setfile(_tokenizer->file(tok));
+        loc.setfile(_tokenizer->list.file(tok));
         locationList.push_back(loc);
 
         const ErrorLogger::ErrorMessage errmsg(locationList,
@@ -1288,14 +1288,14 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
 {
     std::cout << indent << "_name: " << var->nameToken();
     if (var->nameToken()) {
-        std::cout << " " << var->name() << " " << _tokenizer->fileLine(var->nameToken()) << std::endl;
+        std::cout << " " << var->name() << " " << _tokenizer->list.fileLine(var->nameToken()) << std::endl;
         std::cout << indent << "    varId: " << var->varId() << std::endl;
     } else
         std::cout << std::endl;
     std::cout << indent << "_start: " << var->typeStartToken() << " " << var->typeStartToken()->str()
-              << " " << _tokenizer->fileLine(var->typeStartToken()) << std::endl;;
+              << " " << _tokenizer->list.fileLine(var->typeStartToken()) << std::endl;;
     std::cout << indent << "_end: " << var->typeEndToken() << " " << var->typeEndToken()->str()
-              << " " << _tokenizer->fileLine(var->typeEndToken()) << std::endl;;
+              << " " << _tokenizer->list.fileLine(var->typeEndToken()) << std::endl;;
     std::cout << indent << "_index: " << var->index() << std::endl;
     std::cout << indent << "_access: " <<
               (var->isPublic() ? "Public" :
@@ -1319,7 +1319,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "_type: ";
     if (var->type()) {
         std::cout << var->type()->className << " " << var->type()->type << " "
-                  << _tokenizer->fileLine(var->type()->classDef) << std::endl;
+                  << _tokenizer->list.fileLine(var->type()->classDef) << std::endl;
     } else
         std::cout << "none" << std::endl;
 
@@ -1327,7 +1327,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     if (var->scope()) {
         std::cout << var->scope()->className << " " << var->scope()->type;
         if (var->scope()->classDef)
-            std::cout << " " << _tokenizer->fileLine(var->scope()->classDef) << std::endl;
+            std::cout << " " << _tokenizer->list.fileLine(var->scope()->classDef) << std::endl;
         else
             std::cout << std::endl;
     } else
@@ -1353,19 +1353,19 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << "    className: " << scope->className << std::endl;
         std::cout << "    classDef: " << scope->classDef;
         if (scope->classDef)
-            std::cout << " " << scope->classDef->str() << " " << _tokenizer->fileLine(scope->classDef) << std::endl;
+            std::cout << " " << scope->classDef->str() << " " << _tokenizer->list.fileLine(scope->classDef) << std::endl;
         else
             std::cout << std::endl;
 
         std::cout << "    classStart: " << scope->classStart;
         if (scope->classStart)
-            std::cout << " " << scope->classStart->str() << " " << _tokenizer->fileLine(scope->classStart) << std::endl;
+            std::cout << " " << scope->classStart->str() << " " << _tokenizer->list.fileLine(scope->classStart) << std::endl;
         else
             std::cout << std::endl;
 
         std::cout << "    classEnd: " << scope->classEnd;
         if (scope->classEnd)
-            std::cout << " " << scope->classEnd->str() << " " <<  _tokenizer->fileLine(scope->classEnd) << std::endl;
+            std::cout << " " << scope->classEnd->str() << " " <<  _tokenizer->list.fileLine(scope->classEnd) << std::endl;
         else
             std::cout << std::endl;
 
@@ -1375,7 +1375,7 @@ void SymbolDatabase::printOut(const char *title) const
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             std::cout << "    Function: " << &*func << std::endl;
             std::cout << "        name: " << func->tokenDef->str() << " "
-                      << _tokenizer->fileLine(func->tokenDef) << std::endl;
+                      << _tokenizer->list.fileLine(func->tokenDef) << std::endl;
             std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
                                               func->type == Function::eCopyConstructor ? "CopyConstructor" :
                                               func->type == Function::eOperatorEqual ? "OperatorEqual" :
@@ -1396,16 +1396,16 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isExplicit: " << (func->isExplicit ? "true" : "false") << std::endl;
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
             std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
-            std::cout << "        tokenDef: " << _tokenizer->fileLine(func->tokenDef) << std::endl;
-            std::cout << "        argDef: " << _tokenizer->fileLine(func->argDef) << std::endl;
+            std::cout << "        tokenDef: " << _tokenizer->list.fileLine(func->tokenDef) << std::endl;
+            std::cout << "        argDef: " << _tokenizer->list.fileLine(func->argDef) << std::endl;
             if (func->hasBody) {
-                std::cout << "        token: " << _tokenizer->fileLine(func->token) << std::endl;
-                std::cout << "        arg: " << _tokenizer->fileLine(func->arg) << std::endl;
+                std::cout << "        token: " << _tokenizer->list.fileLine(func->token) << std::endl;
+                std::cout << "        arg: " << _tokenizer->list.fileLine(func->arg) << std::endl;
             }
             std::cout << "        functionScope: ";
             if (func->functionScope) {
                 std::cout << func->functionScope->className << " "
-                          <<  _tokenizer->fileLine(func->functionScope->classDef) << std::endl;
+                          <<  _tokenizer->list.fileLine(func->functionScope->classDef) << std::endl;
             } else
                 std::cout << "Unknown" << std::endl;
 
@@ -1482,21 +1482,21 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "::" << tok1->strAt(1);
                 tok1 = tok1->tokAt(2);
             }
-            std::cout << " " << _tokenizer->fileLine(*use) << std::endl;
+            std::cout << " " << _tokenizer->list.fileLine(*use) << std::endl;
         }
 
         std::cout << "    functionOf: " << scope->functionOf;
         if (scope->functionOf) {
             std::cout << " " << scope->functionOf->type << " " << scope->functionOf->className;
             if (scope->functionOf->classDef)
-                std::cout << " " << _tokenizer->fileLine(scope->functionOf->classDef);
+                std::cout << " " << _tokenizer->list.fileLine(scope->functionOf->classDef);
         }
         std::cout << std::endl;
 
         std::cout << "    function: " << scope->function;
         if (scope->function) {
             std::cout << " " << scope->function->tokenDef->str() << " "
-                      << _tokenizer->fileLine(scope->function->tokenDef);
+                      << _tokenizer->list.fileLine(scope->function->tokenDef);
         }
         std::cout << std::endl;
     }

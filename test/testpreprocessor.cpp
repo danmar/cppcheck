@@ -869,12 +869,6 @@ private:
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
-        Tokenizer tok(&settings, this);
-        std::istringstream codeStream(actual[""]);
-        tok.tokenize(codeStream, "main.cpp");
-
-        ASSERT_EQUALS("\n\n##file 0\n1:\n2:\n3:\n4: int main ( ) { }\n", tok.tokens()->stringifyList());
-
         // Expected configurations: "" and "ABC"
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n#file \"abc.h\"\n\n\n\n\n\n\n\n\n#endfile\n\nint main() {}\n", actual[""]);
