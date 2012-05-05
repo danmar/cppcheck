@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{35CBDF51-2456-3EC3-99ED-113C30858883}</ProjectGuid>
+    <ProjectGuid>{00EC0553-4107-361D-9BF6-E01D402EDE8A}</ProjectGuid>
     <RootNamespace>cppcheck</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -19,12 +19,14 @@
   <PropertyGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;" Label="Configuration">
     <OutputDirectory>debug\</OutputDirectory>
     <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
     <ConfigurationType>Application</ConfigurationType>
     <IntermediateDirectory>temp\</IntermediateDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;" Label="Configuration">
     <OutputDirectory>release\</OutputDirectory>
     <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
     <ConfigurationType>Application</ConfigurationType>
     <IntermediateDirectory>temp\</IntermediateDirectory>
   </PropertyGroup>
@@ -40,17 +42,15 @@
   <PropertyGroup>
     <OutDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">debug\</OutDir>
     <IntDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">temp\</IntDir>
-    <TargetName Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">cppcheck</TargetName>
     <IgnoreImportLibrary Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">true</IgnoreImportLibrary>
     <OutDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">release\</OutDir>
     <IntDir Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">temp\</IntDir>
-    <TargetName Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">cppcheck</TargetName>
     <IgnoreImportLibrary Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">true</IgnoreImportLibrary>
     <LinkIncremental Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\QtSDK\Desktop\Qt\4.7.4\mingw\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\..\..\Qt\4.8.1\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -58,8 +58,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>temp\</ObjectFileName>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>.\</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -70,20 +69,27 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
-      <OutputFile>debug\cppcheck.exe</OutputFile>
+      <OutputFile>$(OutDir)\cppcheck.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
-    <Midl />
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
     <ResourceCompile>
-      <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">
     <ClCompile>
-      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\QtSDK\Desktop\Qt\4.7.4\mingw\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>".";"..\lib";"..\externals\tinyxml";..\..\..\..\Qt\4.8.1\mkspecs\win32-msvc2010;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zm200 -w34100 -w34189 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -91,7 +97,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>temp\</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>QT_NO_DEBUG;NDEBUG;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;NDEBUG;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;NDEBUG;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>.\</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -102,16 +108,23 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <LinkIncremental>false</LinkIncremental>
-      <OutputFile>release\cppcheck.exe</OutputFile>
+      <OutputFile>$(OutDir)\cppcheck.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
-    <Midl />
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
     <ResourceCompile>
-      <PreprocessorDefinitions>QT_NO_DEBUG;NDEBUG;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -156,6 +169,7 @@
     <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp" />
     <ClCompile Include="..\lib\token.cpp" />
     <ClCompile Include="..\lib\tokenize.cpp" />
+    <ClCompile Include="..\lib\tokenlist.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\check.h" />
@@ -198,6 +212,7 @@
     <ClInclude Include="..\externals\tinyxml\tinyxml.h" />
     <ClInclude Include="..\lib\token.h" />
     <ClInclude Include="..\lib\tokenize.h" />
+    <ClInclude Include="..\lib\tokenlist.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="temp\cppcheck.res" />
