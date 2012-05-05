@@ -171,7 +171,7 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
 
 bool Path::isC(const std::string &path)
 {
-    // In unix, ".C" is concidered C++ file
+    // In unix, ".C" is considered C++ file
     const std::string extension = getFilenameExtension(path);
     return(extension == ".c");
 }
@@ -188,7 +188,7 @@ bool Path::isCPP(const std::string &path)
         return true;
     }
 
-    // In unix, ".C" is concidered C++ file
+    // In unix, ".C" is considered C++ file
     return(getFilenameExtension(path) == ".C");
 }
 

@@ -703,7 +703,7 @@ void CheckStl::stlBoundries()
     }
 }
 
-// Error message for bad boundry usage..
+// Error message for bad boundary usage..
 void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_name)
 {
     reportError(tok, Severity::error, "stlBoundries",
