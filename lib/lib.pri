@@ -33,7 +33,8 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}templatesimplifier.h \
            $${BASEPATH}timer.h \
            $${BASEPATH}token.h \
-           $${BASEPATH}tokenize.h
+           $${BASEPATH}tokenize.h \
+           $${BASEPATH}tokenlist.h
 
 SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}checkassignif.cpp \
@@ -65,4 +66,5 @@ SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}templatesimplifier.cpp \
            $${BASEPATH}timer.cpp \
            $${BASEPATH}token.cpp \
-           $${BASEPATH}tokenize.cpp
+           $${BASEPATH}tokenize.cpp \
+           $${BASEPATH}tokenlist.cpp
