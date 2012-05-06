@@ -359,19 +359,7 @@ void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severit
 
 void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) const
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
-
-    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
-        const Token * const tok = *it;
-
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok->linenr();
-        loc.setfile(tokenizer->list.file(tok));
-
-        locations.push_back(loc);
-    }
-
-    const ErrorLogger::ErrorMessage errmsg(locations, severity, msg, id, false);
+    const ErrorLogger::ErrorMessage errmsg(callstack, tokenizer?&tokenizer->list:0, severity, id, msg, false);
 
     if (errorLogger)
         errorLogger->reportErr(errmsg);

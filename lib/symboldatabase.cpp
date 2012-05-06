@@ -1222,21 +1222,14 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
 void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) const
 {
     if (tok && _settings->debugwarnings) {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok->linenr();
-        loc.setfile(_tokenizer->list.file(tok));
-        locationList.push_back(loc);
-
-        const ErrorLogger::ErrorMessage errmsg(locationList,
+        const std::list<const Token*> locationList(1, tok);
+        const ErrorLogger::ErrorMessage errmsg(locationList, &_tokenizer->list,
                                                Severity::debug,
                                                msg,
                                                "debug",
                                                false);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
-        else
-            Check::reportError(errmsg);
     }
 }
 

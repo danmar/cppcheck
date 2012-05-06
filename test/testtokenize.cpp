@@ -21,6 +21,7 @@
 #include "tokenize.h"
 #include "token.h"
 #include "settings.h"
+#include "path.h"
 #include <cstring>
 
 extern std::ostringstream errout;
@@ -4108,7 +4109,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "a.cpp");
 
-        ASSERT_EQUALS("[c:\\a.h:1]", tokenizer.list.fileLine(tokenizer.tokens()));
+        ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:1]"), tokenizer.list.fileLine(tokenizer.tokens()));
     }
 
 
