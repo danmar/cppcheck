@@ -2409,7 +2409,8 @@ void Tokenizer::simplifyTemplates()
     }
 
     TemplateSimplifier::simplifyTemplates(
-        *this,
+        list,
+        *_errorLogger,
         _settings,
         _codeWithTemplates);
 }

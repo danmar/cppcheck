@@ -28,7 +28,8 @@
 #include <vector>
 
 class Token;
-class Tokenizer;
+class TokenList;
+class ErrorLogger;
 class Settings;
 
 
@@ -112,7 +113,7 @@ public:
     static int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
 
     static void simplifyTemplatesExpandTemplate(
-        Tokenizer& tokenizer,
+        TokenList& tokenlist,
         const Token *tok,
         const std::string &name,
         std::vector<const Token *> &typeParametersInDeclaration,
@@ -128,7 +129,8 @@ public:
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      */
     static void simplifyTemplateInstantions(
-        Tokenizer& tokenizer,
+        TokenList& tokenlist,
+        ErrorLogger& errorlogger,
         const Settings *_settings,
         const Token *tok,
         std::list<Token *> &templateInstantiations,
@@ -138,7 +140,8 @@ public:
      * Simplify templates
      */
     static void simplifyTemplates(
-        Tokenizer& tokenizer,
+        TokenList& tokenlist,
+        ErrorLogger& errorlogger,
         const Settings *_settings,
         bool &_codeWithTemplates);
 
