@@ -4385,10 +4385,10 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style) The typedef 'A' hides a typedef with the same name.\n"
-                      "[test.cpp:20] -> [test.cpp:1]: (style) The function parameter 'A' hides a typedef with the same name.\n"
-                      "[test.cpp:21] -> [test.cpp:1]: (style) The variable 'A' hides a typedef with the same name.\n"
-                      "[test.cpp:24] -> [test.cpp:1]: (style) The typedef 'A' hides a typedef with the same name.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:20] -> [test.cpp:1]: (style, inconclusive) The function parameter 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:21] -> [test.cpp:1]: (style, inconclusive) The variable 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:24] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n", errout.str());
     }
 
     void simplifyTypedef36() {
@@ -4415,8 +4415,8 @@ private:
                                 "typedef int B;";
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) The typedef 'A' hides a typedef with the same name.\n"
-                          "[test.cpp:5] -> [test.cpp:3]: (style) The typedef 'B' hides a typedef with the same name.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n"
+                          "[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) The typedef 'B' hides a typedef with the same name.\n", errout.str());
         }
 
         {
@@ -4461,8 +4461,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) The template parameter 'A' hides a typedef with the same name.\n"
-                      "[test.cpp:3] -> [test.cpp:2]: (style) The template parameter 'B' hides a typedef with the same name.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) The template parameter 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:3] -> [test.cpp:2]: (style, inconclusive) The template parameter 'B' hides a typedef with the same name.\n", errout.str());
 
         checkSimplifyTypedef("typedef tuple<double&, const double&, const double, double*, const double*> t2;\n"
                              "void ordering_test()\n"
@@ -4470,7 +4470,7 @@ private:
                              "  tuple<short, float> t2(5, 3.3f);\n"
                              "  BOOST_CHECK(t3 > t2);\n"
                              "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (style) The template instantiation 't2' hides a typedef with the same name.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (style, inconclusive) The template instantiation 't2' hides a typedef with the same name.\n", errout.str());
 
         checkSimplifyTypedef("class MyOverflowingUnsigned\n"
                              "{\n"
@@ -4551,7 +4551,7 @@ private:
             ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The struct 'A' hides a typedef with the same name.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style, inconclusive) The struct 'A' hides a typedef with the same name.\n", errout.str());
         }
 
         {
@@ -4569,7 +4569,7 @@ private:
             ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The union 'A' hides a typedef with the same name.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style, inconclusive) The union 'A' hides a typedef with the same name.\n", errout.str());
         }
 
         {
@@ -4587,7 +4587,7 @@ private:
             ASSERT_EQUALS(expected, tok(code));
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The class 'A' hides a typedef with the same name.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style, inconclusive) The class 'A' hides a typedef with the same name.\n", errout.str());
         }
     }
 
@@ -4816,14 +4816,14 @@ private:
                                 "typedef int (*PPDMarkOption)(ppd_file_t *ppd, const char *keyword, const char *option);\n";
 
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The typedef 'PPDMarkOption' hides a typedef with the same name.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style, inconclusive) The typedef 'PPDMarkOption' hides a typedef with the same name.\n", errout.str());
         }
 
         {
             const char code[] = "typedef int * A;\n"
                                 "typedef int * A;\n";
             checkSimplifyTypedef(code);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The typedef 'A' hides a typedef with the same name.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n", errout.str());
         }
     }
 

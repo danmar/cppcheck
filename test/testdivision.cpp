@@ -79,7 +79,7 @@ private:
               "    unsigned int uvar = 2;\n"
               "    return ivar / uvar;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
     }
 
     void division2() {
@@ -89,7 +89,7 @@ private:
               "    unsigned int uvar = 2;\n"
               "    return uvar / ivar;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
     }
 
     void division4() {
@@ -182,7 +182,7 @@ private:
               "    unsigned long uvar = 2;\n"
               "    return ivar / uvar;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -190,7 +190,7 @@ private:
               "    unsigned long long uvar = 2;\n"
               "    return ivar / uvar;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Division with signed and unsigned operators. The result might be wrong.\n", errout.str());
     }
 
     void division10() {

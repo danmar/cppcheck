@@ -285,8 +285,12 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         std::ostringstream text;
         if (!_callStack.empty())
             text << callStackToString(_callStack) << ": ";
-        if (_severity != Severity::none)
-            text << '(' << Severity::toString(_severity) << ") ";
+        if (_severity != Severity::none) {
+            text << '(' << Severity::toString(_severity);
+            if (_inconclusive)
+                text << ", inconclusive";
+            text << ") ";
+        }
         text << (verbose ? _verboseMessage : _shortMessage);
         return text.str();
     }

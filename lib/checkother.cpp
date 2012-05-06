@@ -259,8 +259,8 @@ void CheckOther::checkBitwiseOnBoolean()
 
 void CheckOther::bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op)
 {
-    reportInconclusiveError(tok, Severity::style, "bitwiseOnBoolean",
-                            "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean " + op + " ?");
+    reportError(tok, Severity::style, "bitwiseOnBoolean",
+                "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean " + op + " ?", true);
 }
 
 void CheckOther::checkSuspiciousSemicolon()
@@ -291,8 +291,8 @@ void CheckOther::checkSuspiciousSemicolon()
 
 void CheckOther::SuspiciousSemicolonError(const Token* tok)
 {
-    reportInconclusiveError(tok, Severity::warning, "suspiciousSemicolon",
-                            "Suspicious use of ; at the end of 'if/for/while' statement.");
+    reportError(tok, Severity::warning, "suspiciousSemicolon",
+                "Suspicious use of ; at the end of 'if/for/while' statement.", true);
 }
 
 
@@ -418,7 +418,7 @@ void CheckOther::invalidPointerCastError(const Token* tok, const std::string& fr
         if (!inconclusive)
             reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms");
         else
-            reportInconclusiveError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* might be not portable due to different binary data representations on different platforms");
+            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* might be not portable due to different binary data representations on different platforms", true);
     } else
         reportError(tok, Severity::warning, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation");
 }
@@ -613,11 +613,11 @@ void CheckOther::checkSizeofForPointerSize()
 
 void CheckOther::sizeofForPointerError(const Token *tok, const std::string &varname)
 {
-    reportInconclusiveError(tok, Severity::warning, "pointerSize",
-                            "Using size of pointer " + varname + " instead of size of its data.\n"
-                            "Using size of pointer " + varname + " instead of size of its data. "
-                            "This is likely to lead to a buffer overflow. You probably intend to "
-                            "write sizeof(*" + varname + ")");
+    reportError(tok, Severity::warning, "pointerSize",
+                "Using size of pointer " + varname + " instead of size of its data.\n"
+                "Using size of pointer " + varname + " instead of size of its data. "
+                "This is likely to lead to a buffer overflow. You probably intend to "
+                "write sizeof(*" + varname + ")", true);
 }
 
 //---------------------------------------------------------------------------
@@ -1810,24 +1810,15 @@ void CheckOther::checkUnreachableCode()
 
 void CheckOther::duplicateBreakError(const Token *tok, bool inconclusive)
 {
-    if (inconclusive)
-        reportInconclusiveError(tok, Severity::style, "duplicateBreak",
-                                "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
-                                "The second of the two statements can never be executed, and so should be removed.");
-    else
-        reportError(tok, Severity::style, "duplicateBreak",
-                    "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
-                    "The second of the two statements can never be executed, and so should be removed.");
+    reportError(tok, Severity::style, "duplicateBreak",
+                "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
+                "The second of the two statements can never be executed, and so should be removed.", inconclusive);
 }
 
 void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 {
-    if (inconclusive)
-        reportInconclusiveError(tok, Severity::style, "unreachableCode",
-                                "Statements following return, break, continue, goto or throw will never be executed.");
-    else
-        reportError(tok, Severity::style, "unreachableCode",
-                    "Statements following return, break, continue, goto or throw will never be executed.");
+    reportError(tok, Severity::style, "unreachableCode",
+                "Statements following return, break, continue, goto or throw will never be executed.", inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -1877,7 +1868,7 @@ void CheckOther::checkUnsignedDivision()
 void CheckOther::udivError(const Token *tok, bool inconclusive)
 {
     if (inconclusive)
-        reportInconclusiveError(tok, Severity::warning, "udivError", "Division with signed and unsigned operators. The result might be wrong.");
+        reportError(tok, Severity::warning, "udivError", "Division with signed and unsigned operators. The result might be wrong.", true);
     else
         reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
 }
@@ -3206,12 +3197,8 @@ void CheckOther::sizeofCalculation()
 
 void CheckOther::sizeofCalculationError(const Token *tok, bool inconclusive)
 {
-    if (inconclusive)
-        reportInconclusiveError(tok, Severity::warning,
-                                "sizeofCalculation", "Found calculation inside sizeof()");
-    else
-        reportError(tok, Severity::warning,
-                    "sizeofCalculation", "Found calculation inside sizeof()");
+    reportError(tok, Severity::warning,
+                "sizeofCalculation", "Found calculation inside sizeof()", inconclusive);
 }
 
 //-----------------------------------------------------------------------------
@@ -3342,12 +3329,12 @@ void CheckOther::checkSignOfUnsignedVariable()
 void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive)
 {
     if (inconclusive) {
-        reportInconclusiveError(tok, Severity::style, "unsignedLessThanZero",
-                                "Checking if unsigned variable '" + varname + "' is less than zero. This might be a false warning.\n"
-                                "Checking if unsigned variable '" + varname + "' is less than zero. An unsigned "
-                                "variable will never be negative so it is either pointless or an error to check if it is. "
-                                "It's not known if the used constant is a template parameter or not and therefore "
-                                "this message might be a false warning");
+        reportError(tok, Severity::style, "unsignedLessThanZero",
+                    "Checking if unsigned variable '" + varname + "' is less than zero. This might be a false warning.\n"
+                    "Checking if unsigned variable '" + varname + "' is less than zero. An unsigned "
+                    "variable will never be negative so it is either pointless or an error to check if it is. "
+                    "It's not known if the used constant is a template parameter or not and therefore "
+                    "this message might be a false warning", true);
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "Checking if unsigned variable '" + varname + "' is less than zero.\n"
@@ -3359,11 +3346,11 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
 void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive)
 {
     if (inconclusive) {
-        reportInconclusiveError(tok, Severity::style, "unsignedPositive",
-                                "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. This might be a false warning.\n"
-                                "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. "
-                                "It's not known if the used constant is a "
-                                "template parameter or not and therefore this message might be a false warning");
+        reportError(tok, Severity::style, "unsignedPositive",
+                    "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. This might be a false warning.\n"
+                    "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. "
+                    "It's not known if the used constant is a "
+                    "template parameter or not and therefore this message might be a false warning", true);
     } else {
         reportError(tok, Severity::style, "unsignedPositive",
                     "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.");

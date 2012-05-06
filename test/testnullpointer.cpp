@@ -118,7 +118,7 @@ private:
             ASSERT_EQUALS("", errout.str());
 
             check(code, true);    // inconclusive=true => error
-            ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error, inconclusive) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
         }
 
         check("void foo()\n"
@@ -190,7 +190,7 @@ private:
             ASSERT_EQUALS("", errout.str());
 
             check(code, true);
-            ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:5]: (error, inconclusive) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 3\n", errout.str());
         }
 
         check("int foo(const Token *tok)\n"
@@ -462,7 +462,7 @@ private:
             check(code);
             ASSERT_EQUALS("", errout.str());
             check(code, true);
-            ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 3\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2]: (error, inconclusive) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 3\n", errout.str());
         }
 
         // false positives when there are macros
@@ -1338,7 +1338,7 @@ private:
               "    }\n"
               "    *p = 0;\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error, inconclusive) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 2\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
@@ -1599,7 +1599,7 @@ private:
             ASSERT_EQUALS("", errout.str());
 
             check(code, true);  // inconclusive
-            ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 2\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error, inconclusive) Possible null pointer dereference: fred - otherwise it is redundant to check if fred is null at line 2\n", errout.str());
         }
 
         check("void f(char *s) {\n"   // #3358
@@ -2029,7 +2029,7 @@ private:
                   "    foo(p);\n"
                   "    if (p) { }\n"
                   "}", true);
-            ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2]: (error, inconclusive) Possible null pointer dereference: p - otherwise it is redundant to check if p is null at line 4\n", errout.str());
         }
 
         // dereference struct pointer and then check if it's null
@@ -2068,7 +2068,7 @@ private:
                   "    foo(abc);\n"
                   "    if (abc) { }\n"
                   "}", true);
-            ASSERT_EQUALS("[test.cpp:2]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2]: (error, inconclusive) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
         }
     }
 

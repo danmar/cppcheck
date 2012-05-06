@@ -3165,7 +3165,7 @@ private:
               " char c[6];\n"
               " strncpy(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3565,21 +3565,21 @@ private:
               "    char c[6];\n"
               "    strncpy(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char c[6];\n"
               "    memcpy(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to memcpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to memcpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char c[6];\n"
               "    memmove(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'c' is not zero-terminated after the call to memmove().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to memmove().\n", errout.str());
     }
 
     void readlink() {
@@ -3589,7 +3589,7 @@ private:
               "    ssize_t len = readlink(path, buf, sizeof(buf)-1);\n"
               "    printf(\"%s\n\", buf);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
 
         // C only: Primitive pointer simplification
         check("void f()\n"
@@ -3598,7 +3598,7 @@ private:
               "    ssize_t len = readlink(path, &buf[0], sizeof(buf)-1);\n"
               "    printf(\"%s\n\", buf);\n"
               "}\n", true, "test.c");
-        ASSERT_EQUALS("[test.c:4]: (warning) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (warning, inconclusive) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3622,7 +3622,7 @@ private:
               "    ssize_t len = readlink(path, buf, sizeof(buf));\n"
               "    buf[len] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) readlink() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) readlink() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3644,7 +3644,7 @@ private:
               "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
               "    printf(\"%s\n\", buf);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) The buffer 'buf' is not zero-terminated after the call to readlinkat().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) The buffer 'buf' is not zero-terminated after the call to readlinkat().\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3671,7 +3671,7 @@ private:
               "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf));\n"
               "    buf[len] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) readlinkat() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) readlinkat() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
 
         check("void f()\n"
               "{\n"

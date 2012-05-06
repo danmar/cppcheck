@@ -854,15 +854,15 @@ private:
                                 "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and float* which have an incompatible binary data representation\n", errout.str());
 
-        checkInvalidPointerCast("void test(float* data) {\n" // #3639
+        checkInvalidPointerCast("void test(float* data) {\n"
                                 "    f.write((char*)data,sizeof(float));\n"
                                 "}", true, false);
         ASSERT_EQUALS("", errout.str());
 
         checkInvalidPointerCast("void test(float* data) {\n"
                                 "    f.write((char*)data,sizeof(float));\n"
-                                "}", true, true);
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to char* might be not portable due to different binary data representations on different platforms\n", errout.str());
+                                "}", true, true); // #3639
+        ASSERT_EQUALS("[test.cpp:2]: (portability, inconclusive) Casting from float* to char* might be not portable due to different binary data representations on different platforms\n", errout.str());
 
 
         checkInvalidPointerCast("long long* test(float* f) {\n"
@@ -2062,7 +2062,7 @@ private:
               "\n" // #endif
               "    return 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
     }
 
 
@@ -3598,71 +3598,71 @@ private:
         check("void f(_Bool a, _Bool b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("void f(_Bool a, _Bool b) {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a & !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a | !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a & !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a | !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
 
         check("void f(bool a, int b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("void f(int a, bool b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'b' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'b' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("void f(int a, int b) {\n"
               "    if(a & b) {}\n"
@@ -4293,17 +4293,17 @@ private:
         check(
             "int *x = malloc(sizeof(x));\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(100 * sizeof(x));\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(sizeof(x) * 100);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(sizeof *x);\n"
@@ -4313,12 +4313,12 @@ private:
         check(
             "int *x = malloc(sizeof x);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(100 * sizeof x);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = calloc(1, sizeof(*x));\n"
@@ -4333,12 +4333,12 @@ private:
         check(
             "int *x = calloc(1, sizeof(x));\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = calloc(1, sizeof x);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = calloc(1, sizeof(int));\n"
@@ -4382,25 +4382,25 @@ private:
             "int *x = malloc(sizeof(int));\n"
             "memset(x, 0, sizeof x);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(sizeof(int));\n"
             "memset(x, 0, sizeof(x));\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(sizeof(int) * 10);\n"
             "memset(x, 0, sizeof(x) * 10);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(sizeof(int) * 10);\n"
             "memset(x, 0, sizeof x * 10);\n"
             "free(x);");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer x instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
             "int *x = malloc(sizeof(int) * 10);\n"
@@ -4426,13 +4426,13 @@ private:
             "  const char *buf1_ex = \"foobarbaz\";\n"
             "  return strncmp(buf1, buf1_ex, sizeof(buf1_ex)) == 0;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Using size of pointer buf1_ex instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Using size of pointer buf1_ex instead of size of its data.\n", errout.str());
 
         check(
             "int fun(const char *buf1) {\n"
             "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Using size of pointer buf1 instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Using size of pointer buf1 instead of size of its data.\n", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
@@ -4673,7 +4673,7 @@ private:
             check_signOfUnsignedVariable(code, false);
             ASSERT_EQUALS("", errout.str());
             check_signOfUnsignedVariable(code, true);
-            ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero. This might be a false warning.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Checking if unsigned variable 'x' is less than zero. This might be a false warning.\n", errout.str());
         }
     }
 
@@ -4690,7 +4690,7 @@ private:
             "  for(int i = 0; i < 10; ++i); {\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
 
         // Block with some tokens to make sure the tokenizer output
         // stays the same for "for(); {}"
@@ -4700,7 +4700,7 @@ private:
             "  int j = 123;\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
 
         check(
             "void foo() {\n"
@@ -4708,7 +4708,7 @@ private:
             "    do_something();\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
     }
 
     void checkForSuspiciousSemicolon2() {
@@ -4718,7 +4718,7 @@ private:
             "    do_something();\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
 
         // Seen this in the wild
         check(

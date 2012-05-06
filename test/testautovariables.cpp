@@ -186,7 +186,7 @@ private:
               "    char a;\n"
               "    ab->a = &a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar6() { // ticket #2931
@@ -202,7 +202,7 @@ private:
               "    char a[10];\n"
               "    x->str = a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Inconclusive: Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Assigning address of local auto-variable to a function parameter.\n", errout.str());
     }
 
     void testautovar7() { // ticket #3066

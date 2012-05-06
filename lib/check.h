@@ -114,40 +114,13 @@ protected:
     ErrorLogger * const _errorLogger;
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
-        std::list<const Token *> callstack;
-        if (tok)
-            callstack.push_back(tok);
-        reportError(callstack, severity, id, msg);
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, bool inconclusive = false) {
+        std::list<const Token *> callstack(1, tok);
+        reportError(callstack, severity, id, msg, inconclusive);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg) {
-        reportError(callstack, severity, id, msg, false);
-    }
-
-    /** report an inconclusive error */
-    void reportInconclusiveError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
-        std::list<const Token *> callstack;
-        if (tok)
-            callstack.push_back(tok);
-        reportInconclusiveError(callstack, severity, id, msg);
-    }
-
-    /** report an inconclusive error */
-    void reportInconclusiveError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg) {
-        reportError(callstack, severity, id, msg, true);
-    }
-
-
-private:
-    const std::string _name;
-
-    /** disabled assignment operator */
-    void operator=(const Check &);
-
-    /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg, bool inconclusive) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg, bool inconclusive = false) {
         ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, inconclusive);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
@@ -155,6 +128,11 @@ private:
             reportError(errmsg);
     }
 
+private:
+    const std::string _name;
+
+    /** disabled assignment operator */
+    void operator=(const Check &);
 };
 
 namespace std {

@@ -208,12 +208,12 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     "stack is freed when the function ends. So the pointer to a local variable "
                     "is invalid after the function ends.");
     } else {
-        reportInconclusiveError(tok, Severity::error, "autoVariables",
-                                "Inconclusive: Assigning address of local auto-variable to a function parameter.\n"
-                                "Inconclusive: function parameter takes the address of a local auto-variable. "
-                                "Local auto-variables are reserved from the stack. And the stack is freed when "
-                                "the function ends. The address is invalid after the function ends and it "
-                                "might 'leak' from the function through the parameter.");
+        reportError(tok, Severity::error, "autoVariables",
+                    "Assigning address of local auto-variable to a function parameter.\n"
+                    "Function parameter takes the address of a local auto-variable. "
+                    "Local auto-variables are reserved from the stack. And the stack is freed when "
+                    "the function ends. The address is invalid after the function ends and it "
+                    "might 'leak' from the function through the parameter.", true);
     }
 }
 

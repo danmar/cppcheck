@@ -112,7 +112,7 @@ void CheckBufferOverrun::possibleReadlinkBufferOverrunError(const Token* tok, co
                                funcname + "() might return the full size of '" + varname + "'. Lower the supplied size by one. "
                                "If a " + varname + "[len] = '\\0'; statement follows, it will overrun the buffer.";
 
-    reportInconclusiveError(tok, Severity::warning, "possibleReadlinkBufferOverrun", errmsg);
+    reportError(tok, Severity::warning, "possibleReadlinkBufferOverrun", errmsg, true);
 }
 
 void CheckBufferOverrun::strncatUsageError(const Token *tok)
@@ -172,7 +172,7 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
                                "The buffer '" + varname + "' is not zero-terminated after the call to " + function + "(). "
                                "This will cause bugs later in the code if the code assumes the buffer is zero-terminated.";
 
-    reportInconclusiveError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg);
+    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, true);
 }
 
 //---------------------------------------------------------------------------

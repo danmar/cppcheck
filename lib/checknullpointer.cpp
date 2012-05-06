@@ -1421,8 +1421,5 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive)
 {
     const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<unsigned int>(line));
-    if (inconclusive)
-        reportInconclusiveError(tok, Severity::error, "nullPointer", errmsg);
-    else
-        reportError(tok, Severity::error, "nullPointer", errmsg);
+    reportError(tok, Severity::error, "nullPointer", errmsg, inconclusive);
 }
