@@ -148,21 +148,7 @@ private:
 
     /** report an error */
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg, bool inconclusive) {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
-            // --errorlist can provide null values here
-            if (!(*it))
-                continue;
-
-            ErrorLogger::ErrorMessage::FileLocation loc;
-            loc.line = (*it)->linenr();
-            loc.setfile(_tokenizer->list.file(*it));
-            locationList.push_back(loc);
-        }
-
-        ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id, inconclusive);
-        if (_tokenizer && !_tokenizer->list.getFiles().empty())
-            errmsg.file0 = _tokenizer->list.getFiles()[0];
+        ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, inconclusive);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

@@ -23,6 +23,7 @@
 #include "path.h"
 #include "preprocessor.h"
 #include "settings.h"
+#include "errorlogger.h"
 
 #include <cstring>
 #include <sstream>
@@ -345,7 +346,5 @@ const std::string& TokenList::file(const Token *tok) const
 
 std::string TokenList::fileLine(const Token *tok) const
 {
-    std::ostringstream ostr;
-    ostr << "[" << _files.at(tok->fileIndex()) << ":" << tok->linenr() << "]";
-    return ostr.str();
+    return ErrorLogger::ErrorMessage::FileLocation(tok, this).stringify();
 }

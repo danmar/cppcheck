@@ -8847,21 +8847,7 @@ void Tokenizer::reportError(const Token* tok, const Severity::SeverityType sever
 
 void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
-        // --errorlist can provide null values here
-        if (!(*it))
-            continue;
-
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = (*it)->linenr();
-        loc.setfile(list.file(*it));
-        locationList.push_back(loc);
-    }
-
-    ErrorLogger::ErrorMessage errmsg(locationList, severity, msg, id, inconclusive);
-    if (!list.getFiles().empty())
-        errmsg.file0 = list.getFiles()[0];
+    ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
     else

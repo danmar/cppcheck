@@ -26,7 +26,7 @@
 #include "suppressions.h"
 
 class Token;
-class Tokenizer;
+class TokenList;
 
 /// @addtogroup Core
 /// @{
@@ -160,6 +160,8 @@ public:
                 : line(aline), _file(file) {
             }
 
+            FileLocation(const Token* tok, const TokenList* list);
+
             /**
              * Return the filename.
              * @param convert If true convert path to native separators.
@@ -172,6 +174,13 @@ public:
              * @param file Filename to set.
              */
             void setfile(const std::string &file);
+
+            /**
+             * Set the filename.
+             * @param file Filename to set.
+             */
+            std::string stringify() const;
+
             unsigned int line;
         private:
             std::string _file;
@@ -179,6 +188,7 @@ public:
         };
 
         ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
+        ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive);
         ErrorMessage();
 
         /**

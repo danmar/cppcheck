@@ -19,6 +19,7 @@
 #include "errorlogger.h"
 #include "path.h"
 #include "cppcheck.h"
+#include "tokenlist.h"
 
 #include <cassert>
 #include <sstream>
@@ -41,6 +42,24 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     _inconclusive(inconclusive)
 {
     // set the summary and verbose messages
+    setmsg(msg);
+}
+
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
+    : _severity(severity), _id(id), _inconclusive(inconclusive)
+{
+    // Format callstack
+    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+        // --errorlist can provide null values here
+        if (!(*it))
+            continue;
+
+        _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(*it, list));
+    }
+
+    if (list && !list->getFiles().empty())
+        file0 = list->getFiles()[0];
+
     setmsg(msg);
 }
 
@@ -306,14 +325,16 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 {
     std::ostringstream ostr;
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
-        ostr << (tok == callStack.begin() ? "" : " -> ") << '[' << (*tok).getfile();
-        if ((*tok).line != 0)
-            ostr << ':' << (*tok).line;
-        ostr << ']';
+        ostr << (tok == callStack.begin() ? "" : " -> ") << tok->stringify();
     }
     return ostr.str();
 }
 
+
+ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* list)
+    : line(tok->linenr()), _file(list->file(tok))
+{
+}
 
 std::string ErrorLogger::ErrorMessage::FileLocation::getfile(bool convert) const
 {
@@ -327,4 +348,14 @@ void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
     _file = file;
     _file = Path::fromNativeSeparators(_file);
     _file = Path::simplifyPath(_file.c_str());
+}
+
+std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const
+{
+    std::ostringstream oss;
+    oss << '[' << Path::toNativeSeparators(_file);
+    if (line != 0)
+        oss << ':' << line;
+    oss << ']';
+    return oss.str();
 }
