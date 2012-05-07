@@ -507,7 +507,7 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 
     // Check if pointer is allocated.
     int realloc = 0;
-    for (const Token* tok = func->start; tok && tok != func->start->link(); tok = tok->next()) {
+    for (tok = func->start; tok && tok != func->start->link(); tok = tok->next()) {
         if (tok->varId() == arg->varId()) {
             if (Token::Match(tok->tokAt(-3), "free ( * %var% )")) {
                 realloc = 1;

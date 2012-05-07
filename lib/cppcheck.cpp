@@ -384,14 +384,14 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
                     // determine location..
                     ErrorLogger::ErrorMessage::FileLocation loc;
-                    loc.setfile(_tokenizer.getFiles().front());
+                    loc.setfile(_tokenizer.getSourceFilePath());
                     loc.line = 0;
 
                     unsigned int len = 0;
                     for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next()) {
                         len = len + 1 + tok->str().size();
                         if (len > pos1) {
-                            loc.setfile(_tokenizer.getFiles().at(tok->fileIndex()));
+                            loc.setfile(_tokenizer.list.getFiles().at(tok->fileIndex()));
                             loc.line = tok->linenr();
                             break;
                         }
