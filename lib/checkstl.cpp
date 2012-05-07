@@ -272,6 +272,13 @@ void CheckStl::stlOutOfBounds()
                 // variable id for the container variable
                 unsigned int varId = tok2->tokAt(3)->varId();
 
+                // Is it a vector?
+                const Variable *container = symbolDatabase->getVariableFromVarId(varId);
+                if (!container)
+                    continue;
+                if (!Token::simpleMatch(container->typeStartToken(), "std :: vector <"))
+                    continue;
+
                 for (const Token *tok3 = tok2->tokAt(8); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
                     if (tok3->varId() == varId) {
                         if (Token::simpleMatch(tok3->next(), ". size ( )"))

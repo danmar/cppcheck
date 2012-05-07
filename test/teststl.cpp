@@ -505,6 +505,15 @@ private:
                   "}\n");
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            check("void f(const std::map<int,int> &data) {\n"
+                  "    int i = x;"
+                  "    for (int i = 5; i <= data.size(); i++)\n"
+                  "        data[i] = 0;\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
 
