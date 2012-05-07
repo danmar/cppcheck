@@ -5939,8 +5939,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (Token::Match(tok3, "; %type% : ;"))
             break;
 
-        // Stop if return or break is found ..
-        if (tok3->str() == "break")
+        // Stop if break/continue is found ..
+        if (tok3->str() == "break" || tok3->str() == "continue")
             break;
         if ((indentlevel3 > 1 || !Token::simpleMatch(Token::findsimplematch(tok3,";"), "; }")) && tok3->str() == "return")
             ret3 = true;
