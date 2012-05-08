@@ -1498,6 +1498,8 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
     // Create a map for the cfg for faster access to defines
     std::map<std::string, std::string> cfgmap(getcfgmap(cfg));
+    if (Path::isCPP(filename) && cfgmap.find("__cplusplus") == cfgmap.end())
+        cfgmap["__cplusplus"] = "1";
 
     std::stack<std::string> filenames;
     filenames.push(filename);

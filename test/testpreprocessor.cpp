@@ -236,6 +236,7 @@ private:
         TEST_CASE(predefine2);
         TEST_CASE(predefine3);
         TEST_CASE(predefine4);
+        TEST_CASE(predefine5);  // automatically define __cplusplus
 
         // Test Preprocessor::simplifyCondition
         TEST_CASE(simplifyCondition);
@@ -2975,6 +2976,13 @@ private:
         Preprocessor preprocessor(NULL,this);
         const std::string actual = preprocessor.getcode(code, "X=123", "test.c");
         ASSERT_EQUALS("char buf[$123];\n", actual);
+    }
+
+    void predefine5() {  // #3737 - automatically define __cplusplus
+        const char code[] = "#ifdef __cplusplus\n123\n#endif";
+        Preprocessor preprocessor(NULL,this);
+        ASSERT_EQUALS("\n\n\n",    preprocessor.getcode(code, "X=123", "test.c"));
+        ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(code, "X=123", "test.cpp"));
     }
 
     void simplifyCondition() {
