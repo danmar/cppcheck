@@ -2637,11 +2637,12 @@ void Tokenizer::setVarId()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
         // scope info to handle shadow variables..
-        if (tok->str() == "(" && Token::simpleMatch(tok->link(), ") {")) {
+        if (tok->str() == "(" &&
+            (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {"))) {
             scopeInfo.push(variableId);
         } else if (tok->str() == "{") {
             scopestartvarid.push(_varId);
-            if (Token::simpleMatch(tok->previous(), ")")) {
+            if (Token::simpleMatch(tok->previous(), ")") || Token::Match(tok->tokAt(-2), ") %type%")) {
                 executableScope.push(true);
             } else {
                 executableScope.push(executableScope.top());
