@@ -172,6 +172,26 @@ unsigned int CppCheck::processFile(const std::string& filename)
             configurations.push_back(_settings.userDefines);
         }
 
+        if (!_settings._force && configurations.size() >= _settings._maxConfigs) {
+            const std::string fixedpath = Path::toNativeSeparators(filename);
+            ErrorLogger::ErrorMessage::FileLocation location;
+            location.setfile(fixedpath);
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> loclist(1, location);
+            std::ostringstream msg;
+            msg << "Too many #ifdef configurations - cppcheck will only check " << _settings._maxConfigs << " of " << configurations.size() << ".\n"
+                "The checking of the file will be interrupted because there are too many "
+                "#ifdef configurations. Checking of all #ifdef configurations can be forced "
+                "by --force command line option or from GUI preferences. However that may "
+                "increase the checking time.";
+            ErrorLogger::ErrorMessage errmsg(loclist,
+                                             Severity::information,
+                                             msg.str(),
+                                             "toomanyconfigs",
+                                             false);
+
+            reportErr(errmsg);
+        }
+
         int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // Check only a few configurations (default 12), after that bail out, unless --force
@@ -183,20 +203,13 @@ unsigned int CppCheck::processFile(const std::string& filename)
                 location.setfile(fixedpath);
                 std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
                 loclist.push_back(location);
-                const std::string msg("Interrupted checking because of too many #ifdef configurations.\n"
-                                      "The checking of the file was interrupted because there were too many "
-                                      "#ifdef configurations. Checking of all #ifdef configurations can be forced "
-                                      "by --force command line option or from GUI preferences. However that may "
-                                      "increase the checking time.");
                 ErrorLogger::ErrorMessage errmsg(loclist,
                                                  Severity::information,
-                                                 msg,
+                                                 "Interrupted checking because of too many #ifdef configurations.",
                                                  "toomanyconfigs",
                                                  false);
 
-                if (!_settings.nomsg.isSuppressedLocal(errmsg._id, fixedpath, location.line)) {
-                    reportErr(errmsg);
-                }
+                reportErr(errmsg);
 
                 break;
             }
