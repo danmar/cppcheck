@@ -84,12 +84,18 @@ class Variable {
         _flags = state_ ? _flags | flag_ : _flags & ~flag_;
     }
 
+    /**
+     * @brief parse and save array dimension information
+     * @param dimensions array dimensions vector
+     * @param tok the first '[' token of array declaration
+     * @return true if array, false if not
+     */
+    static bool arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok);
+
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
-             std::size_t index_, AccessControl access_, bool mutable_,
-             bool static_, bool const_, bool class_, const Scope *type_,
-             const Scope *scope_, bool array_, bool pointer_, bool reference_,
-             bool default_, const std::vector<Dimension> &dimensions_)
+             std::size_t index_, AccessControl access_, const Scope *type_,
+             const Scope *scope_)
         : _name(name_),
           _start(start_),
           _end(end_),
@@ -98,15 +104,7 @@ public:
           _flags(0),
           _type(type_),
           _scope(scope_) {
-        setFlag(fIsMutable, mutable_);
-        setFlag(fIsStatic, static_);
-        setFlag(fIsConst, const_);
-        setFlag(fIsClass, class_);
-        setFlag(fIsArray, array_);
-        setFlag(fIsPointer, pointer_);
-        setFlag(fIsReference, reference_);
-        setFlag(fHasDefault, default_);
-        _dimensions = dimensions_;
+        evaluate();
     }
 
     /**
@@ -354,6 +352,9 @@ private:
 
     /** @brief array dimensions */
     std::vector<Dimension> _dimensions;
+
+    /** @brief fill in information, depending on Tokens given at instanciation */
+    void evaluate();
 };
 
 class Function {
@@ -384,7 +385,6 @@ public:
     std::size_t argCount() const {
         return argumentList.size();
     }
-    /** @brief get a pointer to the variable instance associated with the given argument number */
     const Variable* getArgumentVar(unsigned int num) const;
     unsigned int initializedArgCount() const;
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
@@ -486,13 +486,11 @@ public:
     const Scope * findQualifiedScope(const std::string & name) const;
 
     void addVariable(const Token *token_, const Token *start_,
-                     const Token *end_, AccessControl access_, bool mutable_,
-                     bool static_, bool const_, bool class_, const Scope *type_,
-                     const Scope *scope_, bool array_, bool pointer_, bool reference_,
-                     const std::vector<Dimension> &dimensions_) {
+                     const Token *end_, AccessControl access_, const Scope *type_,
+                     const Scope *scope_) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
-                                   access_, mutable_, static_, const_, class_,
-                                   type_, scope_, array_, pointer_, reference_, false, dimensions_));
+                                   access_,
+                                   type_, scope_));
     }
 
     /** @brief initialize varlist */
@@ -537,7 +535,7 @@ private:
      * @param isPointer reference to variable to set if pointer is found
      * @return true if tok points to a variable declaration, false otherwise
      */
-    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer, bool &isReference) const;
+    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
 };
 
 class SymbolDatabase {
@@ -577,14 +575,6 @@ public:
      * @brief output a debug message
      */
     void debugMessage(const Token *tok, const std::string &msg) const;
-
-    /**
-     * @brief parse and save array dimension information
-     * @param dimensions array dimensions vector
-     * @param tok the first '[' token of array declaration
-     * @return true if array, false if not
-     */
-    bool arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok) const;
 
     void printOut(const char * title = NULL) const;
     void printVariable(const Variable *var, const char *indent) const;

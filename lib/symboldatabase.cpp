@@ -121,25 +121,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             Scope *new_scope = &scopeList.back();
             access[new_scope] = Public;
 
-            std::vector<Dimension> dimensions;
-
-            bool isPointer = false;
-            bool isReference = false;
-            bool isArray = false;
-
             const Token* varNameTok = tok->next()->link()->next();
             if (varNameTok->str() == "*") {
-                isPointer = true;
                 varNameTok = varNameTok->next();
             } else if (varNameTok->str() == "&") {
-                isReference = true;
                 varNameTok = varNameTok->next();
             }
 
-            if (varNameTok->next()->str() == "[")
-                isArray = arrayDimensions(dimensions, varNameTok->next());
-
-            scope->addVariable(varNameTok, tok, tok, access[scope], false, false, false, true, new_scope, scope, isArray, isPointer, isReference, dimensions);
+            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope, scope);
 
             const Token *tok2 = tok->next();
 
@@ -817,6 +806,39 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     return false;
 }
 
+void Variable::evaluate()
+{
+    const Token* tok = _start;
+    if (tok && tok->previous() && tok->previous()->isName())
+        tok = tok->previous();
+    for (; tok != _name; tok = tok->next()) {
+        if (tok->str() == "<")
+            tok->findClosingBracket(tok);
+        if (tok->str() == "static")
+            setFlag(fIsStatic, true);
+        else if (tok->str() == "mutable")
+            setFlag(fIsMutable, true);
+        else if (tok->str() == "const")
+            setFlag(fIsConst, true);
+        else if (tok->str() == "*") {
+            setFlag(fIsPointer, true);
+            setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
+        } else if (tok->str() == "&")
+            setFlag(fIsReference, true);
+    }
+
+    if (_name)
+        setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
+    if (_start)
+        setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
+    if (_access == Argument && _name) {
+        const Token* tok = _name->next();
+        while (tok->str() == "[")
+            tok = tok->link();
+        setFlag(fHasDefault, tok->str() == "=");
+    }
+}
+
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth)
 {
     while (first->str() == second->str()) {
@@ -1233,7 +1255,7 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
     }
 }
 
-bool SymbolDatabase::arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok) const
+bool Variable::arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok)
 {
     bool isArray = false;
 
@@ -1524,18 +1546,12 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             const Token* startTok = tok;
             const Token* endTok   = NULL;
             const Token* nameTok  = NULL;
-            bool isConstVar   = bool(tok->str() == "const");
-            bool isArrayVar   = false;
-            bool hasDefault   = false;
-            std::vector<Dimension> dimensions;
 
             while (tok->str() != "," && tok->str() != ")" && tok->str() != "=") {
                 if (tok->varId() != 0) {
                     nameTok = tok;
                     endTok = tok->previous();
                 } else if (tok->str() == "[") {
-                    isArrayVar = symbolDatabase->arrayDimensions(dimensions, tok);
-
                     // skip array dimension(s)
                     tok = tok->link();
                     while (tok->next()->str() == "[")
@@ -1552,7 +1568,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                     return;
             }
 
-            const Token *typeTok = startTok->tokAt(isConstVar ? 1 : 0);
+            const Token *typeTok = startTok->tokAt(startTok->str() == "const" ? 1 : 0);
             if (typeTok->str() == "struct")
                 typeTok = typeTok->next();
 
@@ -1575,19 +1591,13 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             if (!typeTok->isStandardType())
                 argType = symbolDatabase->findVariableType(scope, typeTok);
 
-            bool isClassVar = startTok == endTok && !startTok->isStandardType();
-            bool isPointerVar = nameTok->strAt(-1) == "*" || nameTok->strAt(-2) == "*";
-            bool isReferenceVar = nameTok->strAt(-1) == "&";
-
             // skip default values
             if (tok->str() == "=") {
-                hasDefault = true;
-
                 while (tok->str() != "," && tok->str() != ")")
                     tok = tok->next();
             }
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, false, false, isConstVar, isClassVar, argType, functionScope, isArrayVar, isPointerVar, isReferenceVar, hasDefault, dimensions));
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope));
 
             if (tok->str() == ")")
                 break;
@@ -1883,56 +1893,38 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     }
 
     // Is it const..?
-    bool isConst(tok->str() == "const");
-    if (isConst) {
+    if (tok->str() == "const") {
         tok = tok->next();
     }
 
     // Is it a static variable?
-    const bool isStatic(tok->str() == "static");
-    if (isStatic) {
+    if (tok->str() == "static") {
         tok = tok->next();
     }
 
     // Is it a mutable variable?
-    const bool isMutable(tok->str() == "mutable");
-    if (isMutable) {
+    if (tok->str() == "mutable") {
         tok = tok->next();
     }
 
     // Is it const..?
     if (tok->str() == "const") {
         tok = tok->next();
-        isConst = true;
     }
 
     // the start of the type tokens does not include the above modifiers
     const Token *typestart = tok;
 
-    bool isClass = false;
-
     if (Token::Match(tok, "struct|union")) {
         tok = tok->next();
     }
 
-    bool isArray = false;
-    bool isPointer = false;
-    bool isReference = false;
-    std::vector<Dimension> dimensions;
+    if (tok && isVariableDeclaration(tok, vartok, typetok)) {
+        // If the vartok was set in the if-blocks above, create a entry for this variable..
+        tok = vartok->next();
+        while (tok && tok->str() == "[")
+            tok = tok->link()->next();
 
-    if (tok && isVariableDeclaration(tok, vartok, typetok, isArray, isPointer, isReference)) {
-        isClass = (!typetok->isStandardType() && !isPointer && vartok->previous()->str() != "&");
-        if (isArray) {
-            isArray = check->arrayDimensions(dimensions, vartok->next());
-            tok = vartok->next();
-            while (tok && tok->str() == "[")
-                tok = tok->link()->next();
-        } else
-            tok = vartok->next();
-    }
-
-    // If the vartok was set in the if-blocks above, create a entry for this variable..
-    if (vartok && vartok->str() != "operator") {
         if (vartok->varId() == 0 && !vartok->isBoolean())
             check->debugMessage(vartok, "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
 
@@ -1941,7 +1933,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         if (typetok)
             scope = check->findVariableType(this, typetok);
 
-        addVariable(vartok, typestart, vartok->previous(), varaccess, isMutable, isStatic, isConst, isClass, scope, this, isArray, isPointer, isReference, dimensions);
+        addVariable(vartok, typestart, vartok->previous(), varaccess, scope, this);
     }
 
     return tok;
@@ -1980,7 +1972,7 @@ static const Token* skipPointers(const Token* tok)
     return tok;
 }
 
-bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok, bool &isArray, bool &isPointer, bool &isReference) const
+bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
 {
     if (tok && tok->str() == "throw" && check->_tokenizer->isCPP())
         return false;
@@ -2006,27 +1998,20 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     if (Token::Match(localVarTok, "%var% ;|=")) {
         vartok = localVarTok;
         typetok = localTypeTok;
-        isArray = false;
     } else if (Token::Match(localVarTok, "%var% [") && localVarTok->str() != "operator") {
         vartok = localVarTok;
         typetok = localTypeTok;
-        isArray = true;
     } else if ((isLocal() || type == Scope::eFunction) &&
                Token::Match(localVarTok, "%var% (") &&
                Token::simpleMatch(localVarTok->next()->link(), ") ;")) {
         vartok = localVarTok;
         typetok = localTypeTok;
-        isArray = false;
     } else if (type == eCatch &&
                (Token::Match(localTypeTok, "%var% )") ||
                 Token::Match(localTypeTok, "%var% &| %var% )"))) {
         vartok = localVarTok;
         typetok = localTypeTok;
-        isArray = false;
     }
-
-    isPointer = vartok && (vartok->strAt(-1) == "*" || Token::simpleMatch(vartok->tokAt(-2), "* const"));
-    isReference = vartok && vartok->strAt(-1) == "&";
 
     return NULL != vartok;
 }
