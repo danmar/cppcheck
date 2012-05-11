@@ -212,11 +212,8 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                 argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
                 formatString = formatStringTok->strValue();
             }
-        } else if (Token::Match(&tok, "snprintf|fnprintf")) {
-            const Token* formatStringTok = secondParam;
-            for (int i = 0; i < 1 && formatStringTok; i++) {
-                formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
-            }
+        } else if (Token::Match(&tok, "snprintf|fnprintf") && secondParam) {
+            const Token* formatStringTok = secondParam->nextArgument(); // Find third parameter (format string)
             if (formatStringTok && formatStringTok->type() == Token::eString) {
                 argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
                 formatString = formatStringTok->strValue();

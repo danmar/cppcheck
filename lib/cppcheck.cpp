@@ -192,7 +192,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
             reportErr(errmsg);
         }
 
-        int checkCount = 0;
+        unsigned int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.

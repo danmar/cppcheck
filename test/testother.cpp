@@ -2102,6 +2102,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo() {\n"
+              "    BAR *x = getx();\n"
+              "    x = x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"x\" to itself\n", errout.str());
+
         // non-primitive type -> there might be some side effects
         check("void foo()\n"
               "{\n"

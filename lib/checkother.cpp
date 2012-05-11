@@ -894,7 +894,7 @@ void CheckOther::coutCerrMisusageError(const Token* tok, const std::string& stre
 static bool isPOD(const Variable* var)
 {
     // TODO: Implement real support for POD definition
-    return(var && var->nameToken()->previous()->isStandardType());
+    return(var && (var->isPointer() || var->nameToken()->previous()->isStandardType()));
 }
 
 void CheckOther::checkSelfAssignment()
