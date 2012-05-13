@@ -214,6 +214,7 @@ private:
         TEST_CASE(varid46); // struct varname
         TEST_CASE(varid47); // function parameters
         TEST_CASE(varid48); // #3785 - return (a*b)
+        TEST_CASE(varid49); // #3799 - void f(std::vector<int>)
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3247,6 +3248,13 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: int X :: f ( int b@1 ) const { return ( a * b@1 ) ; }\n",
                       tokenizeDebugListing(code, false, "test.c"));
+    }
+
+    void varid49() {  // #3799 - void f(std::vector<int>)
+        const std::string code("void f(std::vector<int>)");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void f ( std :: vector < int > )\n",
+                      tokenizeDebugListing(code, false, "test.cpp"));
     }
 
     void varid_cpp_keywords_in_c_code() {

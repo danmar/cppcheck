@@ -724,8 +724,8 @@ private:
     void functionArgs1() {
         {
             GET_SYMBOL_DB("void f(std::vector<std::string>, const std::vector<int> & v) { }");
-            TODO_ASSERT_EQUALS(1+1, 1+2, db->getVariableListSize());
-            const Variable* v = db->getVariableFromVarId(2); // TODO: varId 1
+            ASSERT_EQUALS(1+1, db->getVariableListSize());
+            const Variable* v = db->getVariableFromVarId(1);
             ASSERT(v && v->isReference() && v->isConst() && v->isArgument());
             const Scope* f = db->findScopeByName("f");
             ASSERT(f && f->type == Scope::eFunction && f->function);

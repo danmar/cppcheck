@@ -2699,7 +2699,7 @@ void Tokenizer::setVarId()
                 tok = tok2->previous();
             }
 
-            else if (decl && Token::Match(tok2->previous(), "%type% ( !!)")) {
+            else if (decl && Token::Match(tok2->previous(), "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
                 // In C++ , a variable can't be called operator+ or something like that.
                 if (isCPP() &&
                     tok2->previous()->str().size() >= 9 &&
