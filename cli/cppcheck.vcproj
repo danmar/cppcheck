@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="9,00"
 	Name="cppcheck"
-	ProjectGUID="{C8E50D8E-572F-3383-A059-3448E0CA7CE3}"
+	ProjectGUID="{61648B81-B5CA-3A4F-9D59-9F42C3B60405}"
 	Keyword="Qt4VSv1.0">
 	<Platforms>
 		<Platform
@@ -24,7 +24,7 @@
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
 				DebugInformationFormat="3"
-				ExceptionHandling="true"
+				ExceptionHandling="1"
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="4"
@@ -77,7 +77,7 @@
 				AssemblerListingLocation="temp\"
 				BufferSecurityCheck="false"
 				DebugInformationFormat="0"
-				ExceptionHandling="true"
+				ExceptionHandling="1"
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="2"
