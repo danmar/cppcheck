@@ -2200,11 +2200,11 @@ private:
     /** macro definition in plain text */
     const std::string _macro;
 
-    /** does this macro take a variable number of parameters? */
-    bool _variadic;
-
     /** prefix that is used by cppcheck to separate macro parameters. Always "__cppcheck__" */
     const std::string _prefix;
+
+    /** does this macro take a variable number of parameters? */
+    bool _variadic;
 
     /** The macro has parentheses but no parameters.. "AAA()" */
     bool _nopar;

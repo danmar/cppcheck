@@ -60,10 +60,10 @@ void TimerResults::AddResults(const std::string& str, std::clock_t clocks)
 
 Timer::Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults)
     : _str(str)
-    , _showtimeMode(showtimeMode)
-    , _start(0)
-    , _stopped(false)
     , _timerResults(timerResults)
+    , _start(0)
+    , _showtimeMode(showtimeMode)
+    , _stopped(false)
 {
     if (showtimeMode != SHOWTIME_NONE)
         _start = std::clock();

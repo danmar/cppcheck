@@ -37,8 +37,8 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
     _callStack(callStack), // locations for this error message
-    _severity(severity),   // severity for this error message
     _id(id),               // set the message id
+    _severity(severity),   // severity for this error message
     _inconclusive(inconclusive)
 {
     // set the summary and verbose messages
@@ -46,7 +46,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : _severity(severity), _id(id), _inconclusive(inconclusive)
+    : _id(id), _severity(severity), _inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {

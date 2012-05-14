@@ -213,12 +213,13 @@ public:
         bool deserialize(const std::string &data);
 
         std::list<FileLocation> _callStack;
-        Severity::SeverityType _severity;
         std::string _id;
-        bool _inconclusive;
 
         /** source file (not header) */
         std::string file0;
+
+        Severity::SeverityType _severity;
+        bool _inconclusive;
 
         /** set short and verbose messages */
         void setmsg(const std::string &msg);

@@ -106,13 +106,13 @@ protected:
     void PrintMessage(const std::string &message) const;
 
 private:
+    std::vector<std::string> _pathnames;
+    std::vector<std::string> _ignoredPaths;
     Settings *_settings;
     bool _showHelp;
     bool _showVersion;
     bool _showErrorMessages;
     bool _exitAfterPrint;
-    std::vector<std::string> _pathnames;
-    std::vector<std::string> _ignoredPaths;
 };
 
 /// @}

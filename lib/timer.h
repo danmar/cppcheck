@@ -69,10 +69,10 @@ private:
     Timer& operator=(const Timer&); // disallow assignments
 
     const std::string _str;
-    const unsigned int _showtimeMode;
-    std::clock_t _start;
-    bool _stopped;
     TimerResultsIntf* _timerResults;
+    std::clock_t _start;
+    const unsigned int _showtimeMode;
+    bool _stopped;
 };
 
 

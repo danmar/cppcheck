@@ -114,14 +114,14 @@ public:
         /** number of elements of array */
         std::vector<MathLib::bigint> _num;
 
+        /** full name of variable as pattern */
+        std::string _varname;
+
         /** size of each element in array */
         MathLib::bigint _element_size;
 
         /** variable id */
         unsigned int _varid;
-
-        /** full name of variable as pattern */
-        std::string _varname;
 
     public:
         ArrayInfo();

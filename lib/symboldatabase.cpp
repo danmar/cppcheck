@@ -1685,13 +1685,13 @@ const Variable* Function::getArgumentVar(unsigned int num) const
 
 Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_) :
     check(check_),
-    type(type_),
     classDef(classDef_),
     classStart(start_),
     classEnd(start_->link()),
     nestedIn(nestedIn_),
     numConstructors(0),
     needInitialization(Scope::Unknown),
+    type(type_),
     functionOf(NULL),
     function(NULL)
 {

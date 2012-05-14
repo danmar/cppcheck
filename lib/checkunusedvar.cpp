@@ -46,8 +46,8 @@ public:
                       bool modified = false,
                       bool allocateMemory = false) :
             _name(name),
-            _type(type),
             _scope(scope),
+            _type(type),
             _read(read),
             _write(write),
             _modified(modified),
@@ -65,15 +65,16 @@ public:
             return (_read == false && _write == false);
         }
 
+        std::set<unsigned int> _aliases;
+        std::set<const Scope*> _assignments;
+
         const Token *_name;
-        VariableType _type;
         const Scope *_scope;
+        VariableType _type;
         bool _read;
         bool _write;
         bool _modified; // read/modify/write
         bool _allocateMemory;
-        std::set<unsigned int> _aliases;
-        std::set<const Scope*> _assignments;
     };
 
     typedef std::map<unsigned int, VariableUsage> VariableMap;

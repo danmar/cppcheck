@@ -367,6 +367,8 @@ public:
           token(NULL),
           arg(NULL),
           start(NULL),
+          functionScope(NULL),
+          type(eFunction),
           access(Public),
           hasBody(false),
           isInline(false),
@@ -377,9 +379,7 @@ public:
           isFriend(false),
           isExplicit(false),
           isOperator(false),
-          retFuncPtr(false),
-          type(eFunction),
-          functionScope(NULL) {
+          retFuncPtr(false) {
     }
 
     std::size_t argCount() const {
@@ -396,6 +396,9 @@ public:
     const Token *token;    // function name token in implementation
     const Token *arg;      // function argument start '('
     const Token *start;    // function start '{'
+    Scope *functionScope;  // scope of function body
+    std::list<Variable> argumentList; // argument list
+    Type type;             // constructor, destructor, ...
     AccessControl access;  // public/protected/private
     bool hasBody;          // has implementation
     bool isInline;         // implementation in class definition
@@ -407,9 +410,6 @@ public:
     bool isExplicit;       // is explicit
     bool isOperator;       // is operator
     bool retFuncPtr;       // returns function pointer
-    Type type;             // constructor, destructor, ...
-    Scope *functionScope;  // scope of function body
-    std::list<Variable> argumentList; // argument list
 
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
@@ -423,10 +423,10 @@ class Scope {
 
 public:
     struct BaseInfo {
-        AccessControl access;  // public/protected/private
-        bool isVirtual;
         std::string name;
         Scope *scope;
+        AccessControl access;  // public/protected/private
+        bool isVirtual;
     };
 
     struct FriendInfo {
@@ -441,7 +441,6 @@ public:
     Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_);
 
     SymbolDatabase *check;
-    ScopeType type;
     std::string className;
     const Token *classDef;   // class/struct/union/namespace token
     const Token *classStart; // '{' token
@@ -453,8 +452,9 @@ public:
     Scope *nestedIn;
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
-    NeedInitialization needInitialization;
     std::list<const Token *> usingList;
+    NeedInitialization needInitialization;
+    ScopeType type;
 
     // function specific fields
     Scope *functionOf; // scope this function belongs to

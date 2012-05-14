@@ -33,6 +33,11 @@ Token::Token(Token **t) :
     _next(0),
     _previous(0),
     _link(0),
+    _str(""),
+    _varId(0),
+    _fileIndex(0),
+    _linenr(0),
+    _progressValue(0),
     _type(eNone),
     _isUnsigned(false),
     _isSigned(false),
@@ -40,12 +45,7 @@ Token::Token(Token **t) :
     _isLong(false),
     _isUnused(false),
     _isStandardType(false),
-    _isExpandedMacro(false),
-    _varId(0),
-    _fileIndex(0),
-    _linenr(0),
-    _progressValue(0),
-    _str("")
+    _isExpandedMacro(false)
 {
 }
 

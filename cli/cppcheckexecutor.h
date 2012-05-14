@@ -113,6 +113,11 @@ private:
     std::set<std::string> _errorList;
 
     /**
+     * Filename associated with size of file
+     */
+    std::map<std::string, size_t> _files;
+
+    /**
      * Report progress time
      */
     std::time_t time1;
@@ -121,11 +126,6 @@ private:
      * Has --errorlist been given?
      */
     bool errorlist;
-
-    /**
-     * Filename associated with size of file
-     */
-    std::map<std::string, size_t> _files;
 };
 
 #endif // CPPCHECKEXECUTOR_H

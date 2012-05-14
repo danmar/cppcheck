@@ -79,8 +79,8 @@ private:
      * Write end of status pipe, different for each child.
      * Not used in master process.
      */
-    int _wpipe;
     std::list<std::string> _errorList;
+    int _wpipe;
 
 public:
     /**

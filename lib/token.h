@@ -472,6 +472,16 @@ private:
     Token *_next;
     Token *_previous;
     Token *_link;
+    std::string _str;
+    unsigned int _varId;
+    unsigned int _fileIndex;
+    unsigned int _linenr;
+
+    /**
+     * A value from 0-100 that provides a rough idea about where in the token
+     * list this token is located.
+     */
+    unsigned int _progressValue;
 
     Type _type;
     bool _isUnsigned;
@@ -481,9 +491,6 @@ private:
     bool _isUnused;
     bool _isStandardType;
     bool _isExpandedMacro;
-    unsigned int _varId;
-    unsigned int _fileIndex;
-    unsigned int _linenr;
 
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */
@@ -491,14 +498,6 @@ private:
 
     /** Update internal property cache about isStandardType() */
     void update_property_isStandardType();
-
-    /**
-     * A value from 0-100 that provides a rough idea about where in the token
-     * list this token is located.
-     */
-    unsigned int _progressValue;
-
-    std::string _str;
 };
 
 /// @}

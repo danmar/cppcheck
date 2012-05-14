@@ -167,10 +167,8 @@ private:
      */
     static void replaceAll(std::string& code, const std::string &from, const std::string &to);
 
-    unsigned int exitcode;
     std::list<std::string> _errorList;
     Settings _settings;
-    bool _useGlobalSuppressions;
     std::string _fileContent;
     std::set<std::string> _dependencies;
 
@@ -181,6 +179,10 @@ private:
 
     /** @brief Current preprocessor configuration */
     std::string cfg;
+
+    unsigned int exitcode;
+
+    bool _useGlobalSuppressions;
 };
 
 /// @}
