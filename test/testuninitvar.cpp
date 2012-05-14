@@ -1300,6 +1300,13 @@ private:
                        "    char c = *s;\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Data is allocated but not initialized: s\n", errout.str());
+
+        // #3708 - false positive when using ptr typedef
+        checkUninitVar("void f() {\n"
+                       "    uintptr_t x = malloc(100);\n"
+                       "    uintptr_t y = x + 10;\n"  // <- not bad usage
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // class / struct..

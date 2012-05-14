@@ -91,8 +91,13 @@ private:
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it) {
             UninitVar *c = dynamic_cast<UninitVar *>(*it);
-            if (c && c->varId == varid)
-                c->alloc = true;
+            if (c && c->varId == varid) {
+                if (c->pointer)
+                    c->alloc = true;
+                else
+                    bailOutVar(checks, varid);
+                break;
+            }
         }
     }
 
