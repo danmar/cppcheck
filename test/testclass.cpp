@@ -100,6 +100,8 @@ private:
         TEST_CASE(uninitFunctionOverload); 	// No FP when there are overloaded functions
         TEST_CASE(uninitJava);              // Java: no FP when variable is initialized in declaration
         TEST_CASE(uninitVarOperatorEqual);  // ticket #2415
+        TEST_CASE(uninitVarPointer);        // ticket #3801
+        TEST_CASE(uninitConstVar);
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -3140,6 +3142,70 @@ private:
                        "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
                       "[test.cpp:5]: (warning) Member variable 'A::a' is not assigned a value in 'A::operator='\n", errout.str());
+    }
+
+    void uninitVarPointer() { // #3801
+        checkUninitVar("struct A {\n"
+                       "    int a;\n"
+                       "};\n"
+                       "struct B {\n"
+                       "    A* a;\n"
+                       "    B() { }\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+
+        checkUninitVar("struct A;\n"
+                       "struct B {\n"
+                       "    A* a;\n"
+                       "    B() { }\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+
+        checkUninitVar("struct A;\n"
+                       "struct B {\n"
+                       "    const A* a;\n"
+                       "    B() { }\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+
+        checkUninitVar("struct A;\n"
+                       "struct B {\n"
+                       "    A* const a;\n"
+                       "    B() { }\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitConstVar() {
+        checkUninitVar("struct A;\n"
+                       "struct B {\n"
+                       "    A* const a;\n"
+                       "    B() { }\n"
+                       "    B(B& b) { }\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+
+        checkUninitVar("struct A;\n"
+                       "struct B {\n"
+                       "    A* const a;\n"
+                       "    B& operator=(const B& r) { }\n"
+                       "};");
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning) Member variable 'B::a' is not assigned a value in 'B::operator='\n", errout.str()); // #3804
+
+        checkUninitVar("struct B {\n"
+                       "    const int a;\n"
+                       "    B() { }\n"
+                       "    B(B& b) { }\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'B::a' is not initialized in the constructor.\n"
+                      "[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+
+        checkUninitVar("struct B {\n"
+                       "    const int a;\n"
+                       "    B& operator=(const B& r) { }\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNoConstructor(const char code[]) {

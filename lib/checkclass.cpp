@@ -110,11 +110,11 @@ void CheckClass::constructors()
                 if (usage[count].assign || usage[count].init || var->isStatic())
                     continue;
 
-                if (var->isConst() && var->nameToken()->previous()->str() != "*")
+                if (var->isConst() && func->isOperator) // We can't set const members in assignment operator
                     continue;
 
                 // Check if this is a class constructor
-                if (var->isClass() && func->type == Function::eConstructor) {
+                if (!var->isPointer() && var->isClass() && func->type == Function::eConstructor) {
                     // Unknown type so assume it is initialized
                     if (!var->type())
                         continue;
@@ -126,7 +126,7 @@ void CheckClass::constructors()
                 }
 
                 // Check if type can't be copied
-                if (var->type() && canNotCopy(var->type()))
+                if (!var->isPointer() && var->type() && canNotCopy(var->type()))
                     continue;
 
                 // It's non-static and it's not initialized => error
