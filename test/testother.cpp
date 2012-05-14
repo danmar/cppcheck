@@ -147,6 +147,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt5);
 
         TEST_CASE(duplicateIf);
+        TEST_CASE(duplicateIf1); // ticket 3689
         TEST_CASE(duplicateBranch);
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
@@ -4094,6 +4095,31 @@ private:
               "     if (((f=='R') && (o == 1) && ((v < 2) || (v > 99))) ||\n"
               "         ((f=='R') && (o == 2) && ((v < 2) || (v > 99))) ||\n"
               "         ((f=='T') && (o == 2) && ((v < 200) || (v > 9999)))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateIf1() { // ticket 3689 ( avoid false positive )
+
+        check("#define INT32_MAX 0x7fffffffLL\n"
+              "#define INT48_MAX 0x7fffffffffffLL\n"
+              "#define INT64_MAX 0x7fffffffffffffffLL\n"
+              "int fitInt(long long int nValue){\n"
+              "    if( nValue < INT32_MAX )\n"
+              "    {\n"
+              " 	   return 32;\n"
+              "    }\n"
+              "    if( nValue < INT48_MAX )\n"
+              "    {\n"
+              " 	   return 48;\n"
+              "    }\n"
+              "    else if( nValue < INT64_MAX )\n"
+              "    {\n"
+              " 	   return 64;\n"
+              "    } else\n"
+              "    {\n"
+              " 	   return -1;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
