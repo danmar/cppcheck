@@ -222,14 +222,34 @@ private:
     void test_isVariableDeclarationIdentifiesPointers() {
         reset();
         givenACodeSampleToTokenize pointer("int* p;");
-        bool result = si.isVariableDeclaration(pointer.tokens(), vartok, typetok);
-        ASSERT_EQUALS(true, result);
+        bool result1 = si.isVariableDeclaration(pointer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result1);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0);
-        ASSERT(false == v.isArray());
-        ASSERT(true == v.isPointer());
-        ASSERT(false == v.isReference());
+        Variable v1(vartok, typetok, vartok->previous(), 0, Public, 0, 0);
+        ASSERT(false == v1.isArray());
+        ASSERT(true == v1.isPointer());
+        ASSERT(false == v1.isReference());
+
+        reset();
+        givenACodeSampleToTokenize constpointer("const int* p;");
+        Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, Public, 0, 0);
+        ASSERT(false == v2.isArray());
+        ASSERT(true == v2.isPointer());
+        ASSERT(false == v2.isConst());
+        ASSERT(false == v2.isReference());
+
+        reset();
+        givenACodeSampleToTokenize pointerconst("int* const p;");
+        bool result2 = si.isVariableDeclaration(pointerconst.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result2);
+        ASSERT_EQUALS("p", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
+        Variable v3(vartok, typetok, vartok->previous(), 0, Public, 0, 0);
+        ASSERT(false == v3.isArray());
+        ASSERT(true == v3.isPointer());
+        ASSERT(true == v3.isConst());
+        ASSERT(false == v3.isReference());
     }
 
     void test_isVariableDeclarationDoesNotIdentifyConstness() {

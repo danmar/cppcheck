@@ -811,9 +811,7 @@ void Variable::evaluate()
     const Token* tok = _start;
     if (tok && tok->previous() && tok->previous()->isName())
         tok = tok->previous();
-    for (; tok != _name; tok = tok->next()) {
-        if (tok->str() == "<")
-            tok->findClosingBracket(tok);
+    for (const Token* const end = _name?_name:_end; tok != end;) {
         if (tok->str() == "static")
             setFlag(fIsStatic, true);
         else if (tok->str() == "mutable")
@@ -825,6 +823,11 @@ void Variable::evaluate()
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
         } else if (tok->str() == "&")
             setFlag(fIsReference, true);
+
+        if (tok->str() == "<")
+            tok->findClosingBracket(tok);
+        else
+            tok = tok->next();
     }
 
     if (_name)
@@ -1994,6 +1997,9 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     } else if (Token::Match(localTypeTok, "%type%")) {
         localVarTok = skipPointers(localTypeTok->strAt(1)=="const"?localTypeTok->tokAt(2):localTypeTok->next());
     }
+
+    if (localVarTok && localVarTok->str() == "const")
+        localVarTok = localVarTok->next();
 
     if (Token::Match(localVarTok, "%var% ;|=")) {
         vartok = localVarTok;
