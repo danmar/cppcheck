@@ -86,6 +86,8 @@ private:
         TEST_CASE(isVariableDeclarationDoesNotIdentifyTemplateClass);
         TEST_CASE(isVariableDeclarationPointerConst);
 
+        TEST_CASE(staticMemberVar);
+
         TEST_CASE(hasRegularFunction);
         TEST_CASE(hasInlineClassFunction);
         TEST_CASE(hasMissingInlineClassFunction);
@@ -462,6 +464,17 @@ private:
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
+    }
+
+    void staticMemberVar() {
+        GET_SYMBOL_DB("class Foo {\n"
+                      "    static const double d;\n"
+                      "};\n"
+                      "const double Foo::d = 5.0;");
+
+        const Variable* v = db->getVariableFromVarId(1);
+        ASSERT(v && db->getVariableListSize() == 2);
+        ASSERT(v && v->isStatic() && v->isConst() && v->isPrivate());
     }
 
     void hasRegularFunction() {

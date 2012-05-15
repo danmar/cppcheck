@@ -809,7 +809,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
 void Variable::evaluate()
 {
     const Token* tok = _start;
-    if (tok && tok->previous() && tok->previous()->isName())
+    while (tok && tok->previous() && tok->previous()->isName())
         tok = tok->previous();
     for (const Token* const end = _name?_name:_end; tok != end;) {
         if (tok->str() == "static")
