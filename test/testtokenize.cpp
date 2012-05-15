@@ -231,6 +231,7 @@ private:
         TEST_CASE(varid_in_class5);     // #3584 - std::vector<::FOO::B> b;
         TEST_CASE(varid_in_class6);     // #3755
         TEST_CASE(varid_in_class7);     // set variable id for struct members
+        TEST_CASE(varid_in_class8);     // unknown macro in class
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
@@ -3615,6 +3616,21 @@ private:
                       "4: }\n"
                       "5: struct ABC abc@1 ;\n"
                       "6: } ;\n",
+                      tokenizeDebugListing(code));
+    }
+
+    void varid_in_class8() {  // #3776 - unknown macro
+        const char code[] = "class A {\n"
+                            "  UNKNOWN_MACRO(A)\n"
+                            "private:\n"
+                            "  int x;\n"
+                            "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: UNKNOWN_MACRO ( A )\n"
+                      "3: private:\n"
+                      "4: int x@1 ;\n"
+                      "5: } ;\n",
                       tokenizeDebugListing(code));
     }
 
