@@ -223,6 +223,7 @@ private:
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
+        TEST_CASE(varid_sizeof);
         TEST_CASE(varid_reference_to_containers);
         TEST_CASE(varid_in_class1);
         TEST_CASE(varid_in_class2);
@@ -3435,6 +3436,13 @@ private:
             ASSERT_EQUALS(expected, actual);
         }
 
+    }
+
+    void varid_sizeof() {
+        const char code[] = "x = sizeof(a*b);";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: x = sizeof ( a * b ) ;\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code,false,"test.c"));
     }
 
     void varid_reference_to_containers() {

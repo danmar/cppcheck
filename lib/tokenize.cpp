@@ -2679,6 +2679,12 @@ void Tokenizer::setVarId()
         if (tok == list.front() || Token::Match(tok, "[;{}]") ||
             (Token::Match(tok,"[(,]") && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {"))) ||
             (tok->isName() && tok->str().at(tok->str().length()-1U) == ':')) {
+
+            // No variable declarations in sizeof
+            if (Token::Match(tok->previous(), "sizeof (")) {
+                continue;
+            }
+
             // locate the variable name..
             const Token *tok2 = (tok->isName()) ? tok : tok->next();
 
