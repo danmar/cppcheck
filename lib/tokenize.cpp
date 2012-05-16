@@ -7028,7 +7028,7 @@ void Tokenizer::simplifyEnum()
                                     const std::string result = MathLib::calculate(val1, val2, op[0]);
                                     enumValueStart->str(result);
                                     enumValueStart->deleteNext(2);
-                                    enumValue = enumValueStart;
+                                    enumValue = tok1 = enumValueStart;
                                     enumValueStart = enumValueEnd = 0;
                                 }
                             }
