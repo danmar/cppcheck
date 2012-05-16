@@ -215,6 +215,7 @@ private:
         TEST_CASE(varid47); // function parameters
         TEST_CASE(varid48); // #3785 - return (a*b)
         TEST_CASE(varid49); // #3799 - void f(std::vector<int>)
+        TEST_CASE(varid50); // #3760 - explicit
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3256,6 +3257,13 @@ private:
         const std::string code("void f(std::vector<int>)");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: void f ( std :: vector < int > )\n",
+                      tokenizeDebugListing(code, false, "test.cpp"));
+    }
+
+    void varid50() {  // #3760 - explicit
+        const std::string code("class A { explicit A(const A&); };");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A { explicit A ( const A & ) ; } ;\n",
                       tokenizeDebugListing(code, false, "test.cpp"));
     }
 

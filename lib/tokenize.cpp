@@ -2621,7 +2621,7 @@ void Tokenizer::setVarId()
     notstart.insert("return");
     notstart.insert("sizeof");
     if (!isC()) {
-        const char *str[] = {"delete","friend","new","throw","using","virtual"};
+        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit"};
         notstart.insert(str, str+(sizeof(str)/sizeof(*str)));
     }
 
@@ -6101,7 +6101,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         // Variable is used in function call..
         if (Token::Match(tok3, ("%var% ( " + structname + " %varid% ,").c_str(), varid)) {
-            const char * const functionName[] = {
+            static const char * const functionName[] = {
                 "memcmp","memcpy","memmove","memset",
                 "strcmp","strcpy","strncmp","strncpy","strdup"
             };
@@ -6121,7 +6121,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         // Variable is used as 2nd parameter in function call..
         if (Token::Match(tok3, ("%var% ( %any% , " + structname + " %varid% ,|)").c_str(), varid)) {
-            const char * const functionName[] = {
+            static const char * const functionName[] = {
                 "memcmp","memcpy","memmove",
                 "strcmp","strcpy","strncmp","strncpy"
             };
