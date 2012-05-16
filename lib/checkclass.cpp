@@ -1280,6 +1280,36 @@ static unsigned int countParameters(const Token *tok)
     return numpar;
 }
 
+bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
+{
+    unsigned int args = countParameters(tok);
+
+    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        /** @todo we need to look at the argument types when there are overloaded functions
+          * with the same number of arguments */
+        if (func->tokenDef->str() == tok->str() && func->argCount() == args) {
+            return true;
+        }
+    }
+
+    // not found in this class
+    if (!scope->derivedFrom.empty()) {
+        // check each base class
+        for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
+            // find the base class
+            const Scope *derivedFrom = scope->derivedFrom[i].scope;
+
+            // find the function in the base class
+            if (derivedFrom) {
+                if (isMemberFunc(derivedFrom, tok))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 {
     unsigned int args = countParameters(tok);
@@ -1385,7 +1415,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
         // function call..
         else if (Token::Match(tok1, "%var% (") && !tok1->isStandardType() &&
                  !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
-            if (!isConstMemberFunc(scope, tok1)) {
+            if (isMemberFunc(scope, tok1) && !isConstMemberFunc(scope, tok1)) {
                 return(false);
             }
             // Member variable given as parameter
@@ -1397,13 +1427,18 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
             }
         } else if (Token::Match(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return(false);
-        } else if (Token::Match(tok1, "%var% . size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|rfind|get_allocator|copy|c_str ( )") && tok1->varId()) {
-            // assume all std::*::size() and std::*::empty() are const
-            const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
+        } else if (Token::Match(tok1, "%var% . %var% (")) {
+            if (tok1->varId() && (Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy"))) {
+                const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
 
-            if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
-                tok1 = tok1->tokAt(4);
-            else
+                // assume all std::*::size() and std::*::empty() are const
+                if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
+                    tok1 = tok1->next();
+                else // TODO: Check if the function is const (#2477)
+                    return(false);
+            } else if (!isMemberVar(scope, tok1)) {
+                tok1 = tok1->tokAt(2);
+            } else
                 return(false);
         }
 

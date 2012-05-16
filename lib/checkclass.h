@@ -164,6 +164,7 @@ private:
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok);
+    bool isMemberFunc(const Scope *scope, const Token *tok);
     bool isConstMemberFunc(const Scope *scope, const Token *tok);
     bool checkConstFunc(const Scope *scope, const Function *func);
 

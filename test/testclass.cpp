@@ -2117,6 +2117,13 @@ private:
                    "};");
         ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'Fred::b' can be const.\n", errout.str());
 
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    int x;\n"
+                   "    void b() { a(); }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::b' can be const.\n", errout.str());
+
         // static functions can't be const..
         checkConst("class foo\n"
                    "{\n"
