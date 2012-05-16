@@ -254,8 +254,6 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
     default:
         throw InternalError(0, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");
     }
-
-    return "0";
 }
 
 std::string MathLib::sin(const std::string &tok)
