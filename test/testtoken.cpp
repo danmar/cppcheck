@@ -143,7 +143,7 @@ private:
 
     void multiCompare2() { // #3294
         // Original pattern that failed: [[,(=<>+-*|&^] %num% [+-*/] %num% ]|,|)|;|=|%op%
-        givenACodeSampleToTokenize toks("a == 1");
+        givenACodeSampleToTokenize toks("a == 1", true);
         ASSERT_EQUALS(true, Token::Match(toks.tokens(), "a =|%op%"));
     }
 
@@ -152,15 +152,15 @@ private:
         // Code snippet that failed: "return lv@86 |= rv@87 ;"
 
         // Note: Also test "reverse" alternative pattern, two different code paths to handle it
-        givenACodeSampleToTokenize toks("return a |= b ;");
+        givenACodeSampleToTokenize toks("return a |= b ;", true);
         ASSERT_EQUALS(false, Token::Match(toks.tokens(), "return %var% xyz|%or% %var% ;"));
         ASSERT_EQUALS(false, Token::Match(toks.tokens(), "return %var% %or%|xyz %var% ;"));
 
-        givenACodeSampleToTokenize toks2("return a | b ;");
+        givenACodeSampleToTokenize toks2("return a | b ;", true);
         ASSERT_EQUALS(true, Token::Match(toks2.tokens(), "return %var% xyz|%or% %var% ;"));
         ASSERT_EQUALS(true, Token::Match(toks2.tokens(), "return %var% %or%|xyz %var% ;"));
 
-        givenACodeSampleToTokenize toks3("return a || b ;");
+        givenACodeSampleToTokenize toks3("return a || b ;", true);
         ASSERT_EQUALS(false, Token::Match(toks3.tokens(), "return %var% xyz|%or% %var% ;"));
         ASSERT_EQUALS(false, Token::Match(toks3.tokens(), "return %var% %or%|xyz %var% ;"));
 
@@ -215,22 +215,22 @@ private:
     }
 
     void eraseTokens() {
-        givenACodeSampleToTokenize code("begin ; { this code will be removed } end");
+        givenACodeSampleToTokenize code("begin ; { this code will be removed } end", true);
         Token::eraseTokens(code.tokens()->next(), code.tokens()->tokAt(9));
         ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(0, false));
     }
 
 
     void matchAny() {
-        givenACodeSampleToTokenize varBitOrVar("abc|def");
+        givenACodeSampleToTokenize varBitOrVar("abc|def", true);
         ASSERT_EQUALS(true, Token::Match(varBitOrVar.tokens(), "%var% | %var%"));
 
-        givenACodeSampleToTokenize varLogOrVar("abc||def");
+        givenACodeSampleToTokenize varLogOrVar("abc||def", true);
         ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% || %var%"));
     }
 
     void matchSingleChar() {
-        givenACodeSampleToTokenize singleChar("a");
+        givenACodeSampleToTokenize singleChar("a", true);
         ASSERT_EQUALS(true, Token::Match(singleChar.tokens(), "[a|bc]"));
         ASSERT_EQUALS(false, Token::Match(singleChar.tokens(), "[d|ef]"));
 
@@ -240,26 +240,26 @@ private:
     }
 
     void matchNothingOrAnyNotElse() {
-        givenACodeSampleToTokenize emptyString("");
+        givenACodeSampleToTokenize emptyString("", true);
         ASSERT_EQUALS(true, Token::Match(emptyString.tokens(), "!!else"));
         ASSERT_EQUALS(false, Token::Match(emptyString.tokens(), "!!else something"));
 
-        givenACodeSampleToTokenize ifSemicolon("if ;");
+        givenACodeSampleToTokenize ifSemicolon("if ;", true);
         ASSERT_EQUALS(true, Token::Match(ifSemicolon.tokens(), "!!return if"));
         ASSERT_EQUALS(true, Token::Match(ifSemicolon.tokens(), "if ; !!else"));
 
-        givenACodeSampleToTokenize ifSemicolonSomething("if ; something");
+        givenACodeSampleToTokenize ifSemicolonSomething("if ; something", true);
         ASSERT_EQUALS(true, Token::Match(ifSemicolonSomething.tokens(), "if ; !!else"));
 
-        givenACodeSampleToTokenize justElse("else");
+        givenACodeSampleToTokenize justElse("else", true);
         ASSERT_EQUALS(false, Token::Match(justElse.tokens(), "!!else"));
 
-        givenACodeSampleToTokenize ifSemicolonElse("if ; else");
+        givenACodeSampleToTokenize ifSemicolonElse("if ; else", true);
         ASSERT_EQUALS(false, Token::Match(ifSemicolonElse.tokens(), "if ; !!else"));
     }
 
     void matchType() {
-        givenACodeSampleToTokenize type("abc");
+        givenACodeSampleToTokenize type("abc", true);
         ASSERT_EQUALS(true, Token::Match(type.tokens(), "%type%"));
 
         givenACodeSampleToTokenize isVar("int a = 3 ;");
@@ -267,22 +267,22 @@ private:
         ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type% %var%"));
         ASSERT_EQUALS(false, Token::Match(isVar.tokens(), "%type% %type%"));
 
-        givenACodeSampleToTokenize noType("delete");
+        givenACodeSampleToTokenize noType("delete", true);
         ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
     }
 
     void matchStr() {
-        givenACodeSampleToTokenize noStr1("abc");
+        givenACodeSampleToTokenize noStr1("abc", true);
         ASSERT_EQUALS(false, Token::Match(noStr1.tokens(), "%str%"));
 
-        givenACodeSampleToTokenize noStr2("'a'");
+        givenACodeSampleToTokenize noStr2("'a'", true);
         ASSERT_EQUALS(false, Token::Match(noStr2.tokens(), "%str%"));
 
-        givenACodeSampleToTokenize str("\"abc\"");
+        givenACodeSampleToTokenize str("\"abc\"", true);
         ASSERT_EQUALS(true, Token::Match(str.tokens(), "%str%"));
 
         // Empty string
-        givenACodeSampleToTokenize emptyStr("\"\"");
+        givenACodeSampleToTokenize emptyStr("\"\"", true);
         ASSERT_EQUALS(true, Token::Match(emptyStr.tokens(), "%str%"));
     }
 
@@ -300,57 +300,57 @@ private:
     }
 
     void matchNumeric() {
-        givenACodeSampleToTokenize nonNumeric("abc");
+        givenACodeSampleToTokenize nonNumeric("abc", true);
         ASSERT_EQUALS(false, Token::Match(nonNumeric.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize binary("101010b");
+        givenACodeSampleToTokenize binary("101010b", true);
         ASSERT_EQUALS(true, Token::Match(binary.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize octal("0123");
+        givenACodeSampleToTokenize octal("0123", true);
         ASSERT_EQUALS(true, Token::Match(octal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize decimal("4567");
+        givenACodeSampleToTokenize decimal("4567", true);
         ASSERT_EQUALS(true, Token::Match(decimal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize hexadecimal("0xDEADBEEF");
+        givenACodeSampleToTokenize hexadecimal("0xDEADBEEF", true);
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize floatingPoint("0.0f");
+        givenACodeSampleToTokenize floatingPoint("0.0f", true);
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize doublePrecision("0.0d");
+        givenACodeSampleToTokenize doublePrecision("0.0d", true);
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize unsignedInt("0U");
+        givenACodeSampleToTokenize unsignedInt("0U", true);
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize unsignedLong("0UL");
+        givenACodeSampleToTokenize unsignedLong("0UL", true);
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize unsignedLongLong("0ULL");
+        givenACodeSampleToTokenize unsignedLongLong("0ULL", true);
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize positive("+666");
+        givenACodeSampleToTokenize positive("+666", true);
         ASSERT_EQUALS(true, Token::Match(positive.tokens(), "+ %num%"));
 
-        givenACodeSampleToTokenize negative("-42");
+        givenACodeSampleToTokenize negative("-42", true);
         ASSERT_EQUALS(true, Token::Match(negative.tokens(), "- %num%"));
     }
 
 
     void matchBoolean() {
-        givenACodeSampleToTokenize yes("YES");
+        givenACodeSampleToTokenize yes("YES", true);
         ASSERT_EQUALS(false, Token::Match(yes.tokens(), "%bool%"));
 
-        givenACodeSampleToTokenize positive("true");
+        givenACodeSampleToTokenize positive("true", true);
         ASSERT_EQUALS(true, Token::Match(positive.tokens(), "%bool%"));
 
-        givenACodeSampleToTokenize negative("false");
+        givenACodeSampleToTokenize negative("false", true);
         ASSERT_EQUALS(true, Token::Match(negative.tokens(), "%bool%"));
     }
 
     void matchOr() {
-        givenACodeSampleToTokenize bitwiseOr("|");
+        givenACodeSampleToTokenize bitwiseOr("|", true);
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%or%"));
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%op%"));
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
@@ -360,14 +360,14 @@ private:
         ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "%op%"));
         ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.tokens(), "%oror%"));
 
-        givenACodeSampleToTokenize logicalOr("||");
+        givenACodeSampleToTokenize logicalOr("||", true);
         ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%op%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "&&|%oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%|&&"));
 
-        givenACodeSampleToTokenize logicalAnd("&&");
+        givenACodeSampleToTokenize logicalAnd("&&", true);
         ASSERT_EQUALS(true, Token::simpleMatch(logicalAnd.tokens(), "&&"));
         ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "&&|%oror%"));
         ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "%oror%|&&"));

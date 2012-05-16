@@ -26,15 +26,17 @@ class Token;
 
 class givenACodeSampleToTokenize {
 private:
-    std::istringstream _sample;
     Settings _settings;
     Tokenizer _tokenizer;
 
 public:
-    givenACodeSampleToTokenize(const std::string& sample)
-        : _sample(sample)
-        , _tokenizer(&_settings, 0) {
-        _tokenizer.tokenize(_sample, "test.cpp");
+    givenACodeSampleToTokenize(const char sample[], bool createOnly = false)
+        : _tokenizer(&_settings, 0) {
+        std::istringstream iss(sample);
+        if (createOnly)
+            _tokenizer.list.createTokens(iss);
+        else
+            _tokenizer.tokenize(iss, "test.cpp");
     }
 
     const Token* tokens() const {
