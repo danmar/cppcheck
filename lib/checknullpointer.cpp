@@ -55,6 +55,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     // standard functions that dereference first parameter..
     static std::set<std::string> functionNames1_all;
     static std::set<std::string> functionNames1_nullptr;
+    static std::set<std::string> functionNames1_uninit;
     if (functionNames1_all.empty()) {
         // cstdlib
         functionNames1_all.insert("atoi");
@@ -106,7 +107,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("rename");
         functionNames1_all.insert("remove");
         functionNames1_all.insert("puts");
-        functionNames1_all.insert("perror");
         functionNames1_all.insert("getc");
         functionNames1_all.insert("clearerr");
         // ctime
@@ -132,6 +132,9 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_nullptr.insert("gmtime");
         functionNames1_nullptr.insert("localtime");
         functionNames1_nullptr.insert("strftime");
+
+        functionNames1_uninit.insert("perror");
+        functionNames1_uninit.insert("fflush");
     }
 
     // standard functions that dereference second parameter..
@@ -184,7 +187,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(firstParam);
         else if (value == 0 && functionNames1_nullptr.find(tok.str()) != functionNames1_nullptr.end())
             var.push_back(firstParam);
-        else if (value != 0 && tok.str() == "fflush")
+        else if (value != 0 && functionNames1_uninit.find(tok.str()) != functionNames1_uninit.end())
             var.push_back(firstParam);
         else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
             var.push_back(firstParam);

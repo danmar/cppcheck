@@ -52,6 +52,7 @@ private:
         TEST_CASE(nullpointer16); // #3591
         TEST_CASE(nullpointer17); // #3567
         TEST_CASE(nullpointer18); // #1927
+        TEST_CASE(nullpointer19); // #3811
         TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
@@ -1248,6 +1249,13 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n", errout.str());
+    }
+
+    void nullpointer19() { // #3811
+        check("int foo() {\n"
+              "    perror(0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_castToVoid() {  // #3771
