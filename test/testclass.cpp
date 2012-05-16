@@ -133,6 +133,7 @@ private:
         TEST_CASE(const55);
         TEST_CASE(const56); // ticket #3149
         TEST_CASE(const57); // ticket #2669
+        TEST_CASE(const58); // ticket #2698
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -4283,6 +4284,38 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:15]: (style, inconclusive) Technically the member function 'MyGUI::SelectorControl::getSize' can be const.\n",
                            "", errout.str());
 
+    }
+
+    void const58() {
+        checkConst("struct MyObject {\n"
+                   "    void foo(Foo f) {\n"
+                   "        f.clear();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+
+        checkConst("struct MyObject {\n"
+                   "    int foo(Foo f) {\n"
+                   "        return f.length();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+
+        checkConst("struct MyObject {\n"
+                   "    Foo f;\n"
+                   "    int foo() {\n"
+                   "        return f.length();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct MyObject {\n"
+                   "    std::string f;\n"
+                   "    int foo() {\n"
+                   "        return f.length();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation() {

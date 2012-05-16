@@ -1415,7 +1415,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
         // function call..
         else if (Token::Match(tok1, "%var% (") && !tok1->isStandardType() &&
                  !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
-            if (isMemberFunc(scope, tok1) && !isConstMemberFunc(scope, tok1)) {
+            if (isMemberFunc(scope, tok1) && !isConstMemberFunc(scope, tok1) && tok1->strAt(-1) != ".") {
                 return(false);
             }
             // Member variable given as parameter
@@ -1428,7 +1428,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
         } else if (Token::Match(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return(false);
         } else if (Token::Match(tok1, "%var% . %var% (")) {
-            if (tok1->varId() && (Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy"))) {
+            if (!isMemberVar(scope, tok1))
+                tok1 = tok1->tokAt(2);
+            else if (tok1->varId() && (Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy"))) {
                 const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
 
                 // assume all std::*::size() and std::*::empty() are const
@@ -1436,8 +1438,6 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
                     tok1 = tok1->next();
                 else // TODO: Check if the function is const (#2477)
                     return(false);
-            } else if (!isMemberVar(scope, tok1)) {
-                tok1 = tok1->tokAt(2);
             } else
                 return(false);
         }
