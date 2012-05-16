@@ -1915,7 +1915,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 if (!openHeader(filename, includePaths, filepath, fin)) {
 
                     if (_settings && (headerType == UserHeader || _settings->debugwarnings)) {
-                        if (!_settings->nomsg.isSuppressed("missingInclude", "", 0)) {
+                        if (!_settings->nomsg.isSuppressed("missingInclude", filename, linenr)) {
                             missingIncludeFlag = true;
 
                             missingInclude(Path::toNativeSeparators(filePath),
@@ -2023,33 +2023,31 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             path.erase(1 + path.find_last_of("\\/"));
             paths.push_back(path);
         } else if (!fileOpened && _settings && (headerType == UserHeader || _settings->debugwarnings)) {
-            if (!_settings->nomsg.isSuppressed("missingInclude", "", 0))
-                missingIncludeFlag = true;
+            std::string f = filePath;
 
-            if (_errorLogger && _settings->checkConfiguration) {
-                std::string f = filePath;
-
-                // Determine line number of include
-                unsigned int linenr = 1;
-                unsigned int level = 0;
-                for (std::string::size_type p = 1; p <= pos; ++p) {
-                    if (level == 0 && code[pos-p] == '\n')
-                        ++linenr;
-                    else if (code.compare(pos-p, 9, "#endfile\n") == 0) {
-                        ++level;
-                    } else if (code.compare(pos-p, 6, "#file ") == 0) {
-                        if (level == 0) {
-                            linenr--;
-                            const std::string::size_type pos1 = pos - p + 7;
-                            const std::string::size_type pos2 = code.find_first_of("\"\n", pos1);
-                            f = code.substr(pos1, (pos2 == std::string::npos) ? pos2 : (pos2 - pos1));
-                            break;
-                        }
-                        --level;
+            // Determine line number of include
+            unsigned int linenr = 1;
+            unsigned int level = 0;
+            for (std::string::size_type p = 1; p <= pos; ++p) {
+                if (level == 0 && code[pos-p] == '\n')
+                    ++linenr;
+                else if (code.compare(pos-p, 9, "#endfile\n") == 0) {
+                    ++level;
+                } else if (code.compare(pos-p, 6, "#file ") == 0) {
+                    if (level == 0) {
+                        linenr--;
+                        const std::string::size_type pos1 = pos - p + 7;
+                        const std::string::size_type pos2 = code.find_first_of("\"\n", pos1);
+                        f = code.substr(pos1, (pos2 == std::string::npos) ? pos2 : (pos2 - pos1));
+                        break;
                     }
+                    --level;
                 }
+            }
 
-                if (!_settings->nomsg.isSuppressed("missingInclude", f, linenr)) {
+            if (!_settings->nomsg.isSuppressed("missingInclude", f, linenr)) {
+                missingIncludeFlag = true;
+                if (_errorLogger && _settings->checkConfiguration) {
                     missingInclude(Path::toNativeSeparators(f),
                                    linenr,
                                    filename,

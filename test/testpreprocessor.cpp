@@ -2912,6 +2912,7 @@ private:
     }
 
     void inline_suppression_for_missing_include() {
+        Preprocessor::missingIncludeFlag = false;
         Settings settings;
         settings._inlineSuppressions = true;
         settings.addEnabled("all");
@@ -2928,6 +2929,7 @@ private:
         errout.str("");
         preprocessor.preprocess(src, processedFile, cfg, "test.c", paths);
         ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
     }
 
     void predefine1() {
