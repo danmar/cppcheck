@@ -7008,6 +7008,32 @@ void Tokenizer::simplifyEnum()
                         }
 
                         if (simplify) {
+                            // Simplify calculations..
+                            while (Token::Match(enumValueStart, "%num% %op% %num% %op%") &&
+                                   enumValueStart->strAt(1) == enumValueStart->strAt(3)) {
+                                const std::string &op = enumValueStart->strAt(1);
+                                if (op.size() != 1U)
+                                    break;
+                                const std::string &val1 = enumValueStart->str();
+                                const std::string &val2 = enumValueStart->strAt(2);
+                                const std::string result = MathLib::calculate(val1, val2, op[0]);
+                                enumValueStart->str(result);
+                                enumValueStart->deleteNext(2);
+                            }
+                            if (Token::Match(enumValueStart, "%num% %op% %num% [,}]")) {
+                                const std::string &op   = enumValueStart->strAt(1);
+                                if (op.size() == 1U) {
+                                    const std::string &val1 = enumValueStart->str();
+                                    const std::string &val2 = enumValueStart->strAt(2);
+                                    const std::string result = MathLib::calculate(val1, val2, op[0]);
+                                    enumValueStart->str(result);
+                                    enumValueStart->deleteNext(2);
+                                    enumValue = enumValueStart;
+                                    enumValueStart = enumValueEnd = 0;
+                                }
+                            }
+
+
                             if (enumValue)
                                 tok2->str(enumValue->str());
                             else {

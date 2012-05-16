@@ -344,6 +344,7 @@ private:
         TEST_CASE(enum26); // ticket #2975 (segmentation fault)
         TEST_CASE(enum27); // ticket #3005 (segmentation fault)
         TEST_CASE(enum28);
+        TEST_CASE(enum29); // ticket #3747 (bitwise or value)
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6983,6 +6984,11 @@ private:
                             "{ x } };\n"
                             "void g() { x; }";
         ASSERT_EQUALS("void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", checkSimplifyEnum(code));
+    }
+
+    void enum29() {  // #3747 - bitwise or value
+        const char code[] = "enum { x=1, y=x|2 }; i = (3==y);";
+        ASSERT_EQUALS("i = 3 == 3 ;", checkSimplifyEnum(code));
     }
 
     void removestd() {

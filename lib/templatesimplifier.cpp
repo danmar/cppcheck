@@ -897,12 +897,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     const MathLib::bigint rightInt(MathLib::toLongNumber(tok->strAt(2)));
                     std::string result;
 
-                    if (cop == '&')
-                        result = MathLib::toString<MathLib::bigint>(leftInt & rightInt);
-                    else if (cop == '|')
-                        result = MathLib::toString<MathLib::bigint>(leftInt | rightInt);
-                    else if (cop == '^')
-                        result = MathLib::toString<MathLib::bigint>(leftInt ^ rightInt);
+                    if (cop == '&' || cop == '|' || cop == '^')
+                        result = MathLib::calculate(tok->str(), tok->strAt(2), cop);
                     else if (cop == '<') {
                         if (tok->previous()->str() != "<<") // Ensure that its not a shift operator as used for streams
                             result = MathLib::toString<MathLib::bigint>(leftInt << rightInt);
