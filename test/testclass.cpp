@@ -132,7 +132,7 @@ private:
         TEST_CASE(const54); // ticket #3052
         TEST_CASE(const55);
         TEST_CASE(const56); // ticket #3149
-        TEST_CASE(const57); // ticket #2669
+        TEST_CASE(const57); // tickets #2669 and #2477
         TEST_CASE(const58); // ticket #2698
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -4260,8 +4260,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
     }
 
-    void const57() { // ticket #2669
-
+    void const57() { // tickets #2669 and #2477
         checkConst("namespace MyGUI\n"
                    "{\n"
                    "  namespace types\n"
@@ -4283,9 +4282,38 @@ private:
                    "private:\n"
                    "  MyGUI::IntCoord mCoordValue;\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:15]: (style, inconclusive) Technically the member function 'MyGUI::SelectorControl::getSize' can be const.\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (style, inconclusive) Technically the member function 'SelectorControl::getSize' can be const.\n", errout.str());
 
+        checkConst("struct Foo {\n"
+                   "    Bar b;\n"
+                   "    void foo(Foo f) {\n"
+                   "        b.run();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct Bar {\n"
+                   "    int i = 0;\n"
+                   "    void run() { i++; }\n"
+                   "};\n"
+                   "struct Foo {\n"
+                   "    Bar b;\n"
+                   "    void foo(Foo f) {\n"
+                   "        b.run();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct Bar {\n"
+                   "    void run() const { }\n"
+                   "};\n"
+                   "struct Foo {\n"
+                   "    Bar b;\n"
+                   "    void foo(Foo f) {\n"
+                   "        b.run();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'Foo::foo' can be const.\n", errout.str());
     }
 
     void const58() {

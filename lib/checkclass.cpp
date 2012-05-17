@@ -1453,13 +1453,19 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
         } else if (Token::Match(tok1, "%var% . %var% (")) {
             if (!isMemberVar(scope, tok1))
                 tok1 = tok1->next();
-            else if (tok1->varId() && (Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy"))) {
+            else if (tok1->varId()) {
                 const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
 
-                // assume all std::*::size() and std::*::empty() are const
-                if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
+                if (var && Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
+                    && Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy"))
                     tok1 = tok1->next();
-                else // TODO: Check if the function is const (#2477)
+                else if (var) { // Check if the function is const
+                    const Scope* type = var->type();
+                    if (!type || !isConstMemberFunc(type, tok1->tokAt(2)))
+                        return(false);
+                    else
+                        tok1 = tok1->next();
+                } else
                     return(false);
             } else
                 return(false);
