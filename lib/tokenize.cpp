@@ -131,7 +131,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
 
 //---------------------------------------------------------------------------
 
-void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
+void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type) const
 {
     if (tok1 && !(_settings->isEnabled("style") && _settings->inconclusive))
         return;
@@ -145,7 +145,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
                 std::string("The " + type + " '" + tok2_str + "' hides a typedef with the same name."), true);
 }
 
-void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type)
+void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type) const
 {
     if (tok1 && !(_settings->isEnabled("style")))
         return;
@@ -160,7 +160,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
 }
 
 // check if this statement is a duplicate definition
-bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct)
+bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct) const
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
@@ -6675,7 +6675,7 @@ void Tokenizer::simplifyNestedStrcat()
 
 }
 
-void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type)
+void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type) const
 {
     if (tok1 && !(_settings->isEnabled("style")))
         return;
@@ -6692,7 +6692,7 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
 // Check if this statement is a duplicate definition.  A duplicate
 // definition will hide the enumerator within it's scope so just
 // skip the entire scope of the duplicate.
-bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
+bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
 {
     // check for an end of definition
     const Token * tok = *tokPtr;

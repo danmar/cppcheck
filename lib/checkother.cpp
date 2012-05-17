@@ -2752,7 +2752,7 @@ namespace {
     struct FuncFilter {
         FuncFilter(const Scope *scope, const Token *tok): _scope(scope), _tok(tok) {}
 
-        bool operator()(const Function &func) {
+        bool operator()(const Function &func) const {
             bool matchingFunc = func.type == Function::eFunction &&
                                 _tok->str() == func.token->str();
             // either a class function, or a global function with the same name

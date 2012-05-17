@@ -642,7 +642,7 @@ public:
     /**
      * check for duplicate enum definition
      */
-    bool duplicateDefinition(Token **tokPtr, const Token *name);
+    bool duplicateDefinition(Token **tokPtr, const Token *name) const;
 
     /**
      * report error message
@@ -653,15 +653,15 @@ public:
     /**
      * duplicate enum definition error
      */
-    void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type);
+    void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type) const;
 
-    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct);
-    void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type);
+    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct) const;
+    void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type) const;
 
     /**
      * Report error - duplicate declarations
      */
-    void duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type);
+    void duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type) const;
 
     void unsupportedTypedef(const Token *tok) const;
 
