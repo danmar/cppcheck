@@ -1457,7 +1457,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
                 const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
 
                 if (var && Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
-                    && Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy"))
+                    && (Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy")))
                     tok1 = tok1->next();
                 else if (var) { // Check if the function is const
                     const Scope* type = var->type();

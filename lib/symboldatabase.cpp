@@ -835,7 +835,7 @@ void Variable::evaluate()
     if (_start)
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
     if (_access == Argument && _name) {
-        const Token* tok = _name->next();
+        tok = _name->next();
         while (tok->str() == "[")
             tok = tok->link();
         setFlag(fHasDefault, tok->str() == "=");
