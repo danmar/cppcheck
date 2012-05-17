@@ -5885,7 +5885,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
     return true;
 }
 
-bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel)
+bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const
 {
     const bool pointeralias(valueToken->isName() || Token::Match(valueToken, "& %var% ["));
 
@@ -7440,12 +7440,12 @@ const char *Tokenizer::getParameterName(const Token *ftok, unsigned int par)
 
 //---------------------------------------------------------------------------
 
-void Tokenizer::syntaxError(const Token *tok)
+void Tokenizer::syntaxError(const Token *tok) const
 {
     reportError(tok, Severity::error, "syntaxError", "syntax error");
 }
 
-void Tokenizer::syntaxError(const Token *tok, char c)
+void Tokenizer::syntaxError(const Token *tok, char c) const
 {
     reportError(tok, Severity::error, "syntaxError",
                 std::string("Invalid number of character (") + c + ") " +
@@ -8722,7 +8722,7 @@ void Tokenizer::removeUnnecessaryQualification()
     }
 }
 
-void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::string &qualification)
+void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::string &qualification) const
 {
     reportError(tok, Severity::portability, "unnecessaryQualification",
                 "The extra qualification \'" + qualification + "\' is unnecessary and is considered an error by many compilers.");

@@ -66,7 +66,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             // only create base list for classes and structures
             if (new_scope->isClassOrStruct()) {
                 // goto initial '{'
-                tok2 = initBaseInfo(new_scope, tok);
+                tok2 = new_scope->initBaseInfo(tok);
 
                 // make sure we have valid code
                 if (!tok2) {
@@ -1152,7 +1152,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
 }
 
-const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
+const Token *Scope::initBaseInfo(const Token *tok)
 {
     // goto initial '{'
     const Token *tok2 = tok->tokAt(2);
@@ -1236,7 +1236,7 @@ const Token *SymbolDatabase::initBaseInfo(Scope *scope, const Token *tok)
             }
 
             // save pattern for base class name
-            scope->derivedFrom.push_back(base);
+            derivedFrom.push_back(base);
         }
         tok2 = tok2->next();
     }

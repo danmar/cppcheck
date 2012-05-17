@@ -143,7 +143,7 @@ public:
      * @param tok token where resource is leaked
      * @param varname name of variable
      */
-    void resourceLeakError(const Token *tok, const std::string &varname);
+    void resourceLeakError(const Token *tok, const std::string &varname) const;
 
     /**
      * @brief Report error: deallocating a deallocated pointer
@@ -287,7 +287,7 @@ public:
      * Simplify code e.g. by replacing empty "{ }" with ";"
      * @param tok first token. The tokens list can be modified.
      */
-    void simplifycode(Token *tok);
+    void simplifycode(Token *tok) const;
 
     static const Token *findleak(const Token *tokens);
 

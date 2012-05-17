@@ -373,7 +373,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "%oror%|&&"));
     }
 
-    void append_vector(std::vector<std::string> &dest, const std::vector<std::string> &src) {
+    void append_vector(std::vector<std::string> &dest, const std::vector<std::string> &src) const {
         dest.insert(dest.end(), src.begin(), src.end());
     }
 

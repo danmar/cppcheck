@@ -377,7 +377,7 @@ void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std
     reportErr(tok, Severity::error, "memleakOnRealloc", "Common realloc mistake: \'" + varname + "\' nulled but not freed upon failure");
 }
 
-void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname) const
 {
     std::string errmsg("Resource leak");
     if (!varname.empty())
@@ -1387,7 +1387,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
 
 
-void CheckMemoryLeakInFunction::simplifycode(Token *tok)
+void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
 {
     {
         // Replace "throw" that is not in a try block with "return"

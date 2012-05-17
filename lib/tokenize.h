@@ -329,13 +329,13 @@ public:
      * Utility function for simplifyKnownVariables. Get data about an
      * assigned variable.
      */
-    bool simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2, Token **_tok3, std::string &value, unsigned int &valueVarId, bool &valueIsPointer, bool floatvar);
+    static bool simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2, Token **_tok3, std::string &value, unsigned int &valueVarId, bool &valueIsPointer, bool floatvar);
 
     /**
      * utility function for simplifyKnownVariables. Perform simplification
      * of a given variable
      */
-    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel);
+    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
 
     /** Replace a "goto" with the statements */
     void simplifyGoto();
@@ -465,7 +465,7 @@ public:
      * @param source The string to be modified, e.g. "\x61"
      * @return Modified string, e.g. "a"
      */
-    std::string simplifyString(const std::string &source);
+    static std::string simplifyString(const std::string &source);
 
     /**
      * Use "<" comparison instead of ">"
@@ -536,10 +536,10 @@ public:
     void createLinks2();
 
     /** Syntax error */
-    void syntaxError(const Token *tok);
+    void syntaxError(const Token *tok) const;
 
     /** Syntax error. Example: invalid number of ')' */
-    void syntaxError(const Token *tok, char c);
+    void syntaxError(const Token *tok, char c) const;
 
     /**
      * assert that tokens are ok - used during debugging for example
@@ -591,7 +591,7 @@ public:
     /**
      * unnecessary member qualification error
      */
-    void unnecessaryQualificationError(const Token *tok, const std::string &qualification);
+    void unnecessaryQualificationError(const Token *tok, const std::string &qualification) const;
 
     /**
      * Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'

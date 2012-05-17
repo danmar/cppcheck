@@ -160,7 +160,7 @@ private:
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope);
-    bool hasAssignSelf(const Function *func, const Token *rhs);
+    static bool hasAssignSelf(const Function *func, const Token *rhs);
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok);
@@ -180,7 +180,7 @@ private:
         bool init;
     };
 
-    bool isBaseClassFunc(const Token *tok, const Scope *scope);
+    static bool isBaseClassFunc(const Token *tok, const Scope *scope);
 
     /**
      * @brief assign a variable in the varlist
@@ -188,7 +188,7 @@ private:
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    void assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
+    static void assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief initialize a variable in the varlist
@@ -196,7 +196,7 @@ private:
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    void initVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
+    static void initVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief set all variables in list assigned

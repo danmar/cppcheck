@@ -493,6 +493,8 @@ public:
                                    type_, scope_));
     }
 
+    const Token *initBaseInfo(const Token *tok);
+
     /** @brief initialize varlist */
     void getVariableList();
 
@@ -588,7 +590,6 @@ private:
     Function* addGlobalFunctionDecl(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     Function* addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
-    const Token *initBaseInfo(Scope *info, const Token *tok);
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart) const;
 
     /** class/struct types */
