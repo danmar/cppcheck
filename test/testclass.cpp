@@ -135,6 +135,7 @@ private:
         TEST_CASE(const57); // ticket #2669
         TEST_CASE(const58); // ticket #2698
         TEST_CASE(const_handleDefaultParameters);
+        TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -4351,6 +4352,24 @@ private:
                    "};");
         ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'Foo::bar3' can be const.\n"
                       "[test.cpp:14]: (style, inconclusive) Technically the member function 'Foo::bar4' can be const.\n", errout.str());
+    }
+
+    void const_passThisToMemberOfOtherClass() {
+        checkConst("struct Foo {\n"
+                   "    void foo() {\n"
+                   "        Bar b;\n"
+                   "        b.takeFoo(this);\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct Foo {\n"
+                   "    void foo() {\n"
+                   "        Foo f;\n"
+                   "        f.foo();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'Foo::foo' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation() {

@@ -1452,7 +1452,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
             return(false);
         } else if (Token::Match(tok1, "%var% . %var% (")) {
             if (!isMemberVar(scope, tok1))
-                tok1 = tok1->tokAt(2);
+                tok1 = tok1->next();
             else if (tok1->varId() && (Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy"))) {
                 const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
 
