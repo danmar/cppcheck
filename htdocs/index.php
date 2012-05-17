@@ -30,6 +30,7 @@ uninitialized variables, unused functions" />
       <li><a href="http://sourceforge.net/apps/phpbb/cppcheck/">Forum</a></li>
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a></li>
       <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
+      <li><a href="/demo/">Online Demo</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->

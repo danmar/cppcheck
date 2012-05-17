@@ -117,6 +117,16 @@ a.downloadnow em {
   font-style: normal;
 }
 
+/* Source Code */
+pre.code {
+  padding: .5em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
+pre.code em {
+  color: green;
+}
+
 /* Printing */
 @media print {
   #header { color: black; border-bottom: 1px solid black; }
