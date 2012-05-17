@@ -134,6 +134,7 @@ private:
         TEST_CASE(const56); // ticket #3149
         TEST_CASE(const57); // ticket #2669
         TEST_CASE(const58); // ticket #2698
+        TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
         TEST_CASE(constoperator1);  // operator< can often be const
@@ -4316,6 +4317,40 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+    }
+
+    void const_handleDefaultParameters() {
+        checkConst("struct Foo {\n"
+                   "    void foo1(int i, int j = 0) {\n"
+                   "        return func(this);\n"
+                   "    }\n"
+                   "    int bar1() {\n"
+                   "        return foo1(1);\n"
+                   "    }\n"
+                   "    int bar2() {\n"
+                   "        return foo1(1, 2);\n"
+                   "    }\n"
+                   "    int bar3() {\n"
+                   "        return foo1(1, 2, 3);\n"
+                   "    }\n"
+                   "    int bar4() {\n"
+                   "        return foo1();\n"
+                   "    }\n"
+                   "    void foo2(int i = 0) {\n"
+                   "        return func(this);\n"
+                   "    }\n"
+                   "    int bar5() {\n"
+                   "        return foo2();\n"
+                   "    }\n"
+                   "    void foo3() {\n"
+                   "        return func(this);\n"
+                   "    }\n"
+                   "    int bar6() {\n"
+                   "        return foo3();\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'Foo::bar3' can be const.\n"
+                      "[test.cpp:14]: (style, inconclusive) Technically the member function 'Foo::bar4' can be const.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation() {

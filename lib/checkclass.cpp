@@ -1280,6 +1280,29 @@ static unsigned int countParameters(const Token *tok)
     return numpar;
 }
 
+static unsigned int countMinArgs(const Token* argList)
+{
+    if (!argList)
+        return 0;
+
+    argList = argList->next();
+    if (argList->str() == ")")
+        return 0;
+
+    unsigned int count = 1;
+    for (; argList; argList = argList->next()) {
+        if (argList->link() && Token::Match(argList, "(|[|{|<"))
+            argList = argList->link();
+        else if (argList->str() == ",")
+            count++;
+        else if (argList->str() == "=")
+            return count-1;
+        else if (argList->str() == ")")
+            break;
+    }
+    return count;
+}
+
 bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
 {
     unsigned int args = countParameters(tok);
@@ -1287,7 +1310,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
     for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         /** @todo we need to look at the argument types when there are overloaded functions
           * with the same number of arguments */
-        if (func->tokenDef->str() == tok->str() && func->argCount() == args) {
+        if (func->tokenDef->str() == tok->str() && (func->argCount() == args || (func->argCount() > args && countMinArgs(func->argDef) <= args))) {
             return true;
         }
     }
@@ -1321,7 +1344,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         /** @todo we need to look at the argument types when there are overloaded functions
           * with the same number of arguments */
-        if (func->tokenDef->str() == tok->str() && func->argCount() == args) {
+        if (func->tokenDef->str() == tok->str() && (func->argCount() == args || (func->argCount() > args && countMinArgs(func->argDef) <= args))) {
             matches++;
             if (func->isConst)
                 consts++;
