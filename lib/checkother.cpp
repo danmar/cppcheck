@@ -3046,9 +3046,20 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
 
+                // If either variable token is an expanded macro then
+                // don't write the warning
+                if (tok->next()->isExpandedMacro() || tok->tokAt(3)->isExpandedMacro())
+                    continue;
+
                 duplicateExpressionError(tok->next(), tok->tokAt(3), tok->strAt(2));
             } else if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% . %var% ==|!=|<=|>=|<|>|- %var% . %var% )|&&|%oror%|;|,") &&
                        tok->strAt(1) == tok->strAt(5) && tok->strAt(3) == tok->strAt(7)) {
+
+                // If either variable token is an expanded macro then
+                // don't write the warning
+                if (tok->next()->isExpandedMacro() || tok->tokAt(6)->isExpandedMacro())
+                    continue;
+
                 duplicateExpressionError(tok->next(), tok->tokAt(6), tok->strAt(4));
             }
         }

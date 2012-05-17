@@ -153,6 +153,7 @@ private:
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
         TEST_CASE(duplicateExpression4); // ticket #3354 (++)
+        TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(checkPointerSizeof);
@@ -4214,6 +4215,14 @@ private:
 
         check("void foo() {\n"
               "    if (*a-- != b || *a-- != b) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression5() {  // #3749 - macros with same values
+        Preprocessor::macroChar = '$';
+        check("void f() {\n"
+              "    if ($a == $a) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
