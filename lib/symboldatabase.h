@@ -533,8 +533,6 @@ private:
      * @param tok pointer to token to check
      * @param vartok populated with pointer to the variable token, if found
      * @param typetok populated with pointer to the type token, if found
-     * @param isArray reference to variable to set if array is found
-     * @param isPointer reference to variable to set if pointer is found
      * @return true if tok points to a variable declaration, false otherwise
      */
     bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;

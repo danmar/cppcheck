@@ -342,7 +342,6 @@ public:
      * @param linebreaks Insert \n into string when line number changes
      * @param files print Files as numbers or as names (if fileNames is given)
      * @param fileNames Vector of filenames. Used (if given) to print filenames as strings instead of numbers.
-     * @param title Prints a title on top of output
      * @param end Stringification ends before this token is reached. 0 to stringify until end of list.
      * @return Stringified token list as a string
      */

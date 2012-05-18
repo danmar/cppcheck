@@ -1832,9 +1832,8 @@ void CheckBufferOverrun::negativeIndex()
 
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
+    : _element_size(0), _varid(0)
 {
-    _element_size = 0;
-    _varid = 0;
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai)
@@ -1843,9 +1842,8 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer)
+    : _varname(var->name()), _varid(var->varId())
 {
-    _varid = var->varId();
-    _varname = var->name();
     for (size_t i = 0; i < var->dimensions().size(); i++)
         _num.push_back(var->dimension(i));
     if (var->typeEndToken()->str() == "*")
@@ -1874,11 +1872,9 @@ CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(const C
  * this will not be needed as the declare can be used instead.
  */
 CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &name, MathLib::bigint size1, MathLib::bigint n)
+    : _element_size(size1), _varid(id), _varname(name)
 {
-    _element_size = size1;
     _num.push_back(n);
-    _varid = id;
-    _varname = name;
 }
 
 CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigint value) const
@@ -1925,10 +1921,8 @@ private:
     /** internal constructor for creating extra checks */
     ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, CheckBufferOverrun::ArrayInfo> &arrayinfo, unsigned int varid_)
         : ExecutionPath(c, varid_),
-          arrayInfo(arrayinfo) {
-        // Pretend that variables are initialized to 0
-        // This checking is not about uninitialized variables
-        value = 0;
+          arrayInfo(arrayinfo),
+          value(0) { // Pretend that variables are initialized to 0. This checking is not about uninitialized variables.
     }
 
     /** @brief Variable value. */

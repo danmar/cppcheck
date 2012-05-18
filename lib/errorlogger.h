@@ -152,8 +152,8 @@ public:
          */
         class FileLocation {
         public:
-            FileLocation() {
-                line = 0;
+            FileLocation()
+                : line(0) {
             }
 
             FileLocation(const std::string &file, unsigned int aline)
@@ -176,8 +176,7 @@ public:
             void setfile(const std::string &file);
 
             /**
-             * Set the filename.
-             * @param file Filename to set.
+             * Returns the location as a string. Format: [file:line]
              */
             std::string stringify() const;
 
