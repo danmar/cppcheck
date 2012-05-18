@@ -1872,7 +1872,7 @@ CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(const C
  * this will not be needed as the declare can be used instead.
  */
 CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &name, MathLib::bigint size1, MathLib::bigint n)
-    : _element_size(size1), _varid(id), _varname(name)
+    : _varname(name), _element_size(size1), _varid(id)
 {
     _num.push_back(n);
 }
