@@ -595,7 +595,7 @@ void CheckOther::checkSizeofForPointerSize()
 
         // Jump to the next sizeof token in the function and in the parameter
         // This is to allow generic operations with sizeof
-        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next());
+        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()) {}
 
         // Now check for the sizeof usage. Once here, everything using sizeof(varid)
         // looks suspicious
