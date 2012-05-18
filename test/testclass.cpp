@@ -157,7 +157,8 @@ private:
         TEST_CASE(constFriend); // ticket #1921 - fp for friend function
         TEST_CASE(constUnion);  // ticket #2111 - fp when there is a union
 
-        TEST_CASE(initializerList);
+        TEST_CASE(initializerListOrder);
+        TEST_CASE(initializerListUsage);
     }
 
     // Check the operator Equal
@@ -5075,7 +5076,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkInitializerList(const char code[]) {
+    void checkInitializerListOrder(const char code[]) {
         // Clear the error log
         errout.str("");
 
@@ -5091,17 +5092,73 @@ private:
         tokenizer.simplifyTokenList();
 
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.initializerList();
+        checkClass.initializerListOrder();
     }
 
-    void initializerList() {
-        checkInitializerList("class Fred {\n"
-                             "    int a, b, c;\n"
-                             "public:\n"
-                             "    Fred() : c(0), b(0), a(0) { }\n"
-                             "};");
+    void initializerListOrder() {
+        checkInitializerListOrder("class Fred {\n"
+                                  "    int a, b, c;\n"
+                                  "public:\n"
+                                  "    Fred() : c(0), b(0), a(0) { }\n"
+                                  "};");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong order in the initializer list.\n"
                       "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong order in the initializer list.\n", errout.str());
+    }
+
+    void checkInitializationListUsage(const char code[]) {
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings.addEnabled("performance");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.initializationListUsage();
+    }
+
+    void initializerListUsage() {
+        checkInitializationListUsage("class Fred {\n"
+                                     "    int a;\n"
+                                     "    Fred() { a = 0; }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    std::string s;\n"
+                                     "    Fred() { a = 0; s = \"foo\"; }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 's' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    int a;\n"
+                                     "    Fred() { initB(); a = b; }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    int a;\n"
+                                     "    Fred() : a(0) { if(b) a = 0; }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    int a[5];\n"
+                                     "    Fred() { for(int i = 0; i < 5; i++) a[i] = 0; }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    int a; int b;\n"
+                                     "    Fred() : b(5) { a = b; }\n" // Don't issue a message here: You actually could move it to the initalization list, but it would cause problems if you change the order of the variable declarations.
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

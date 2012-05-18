@@ -496,6 +496,54 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
 }
 
 //---------------------------------------------------------------------------
+// ClassCheck: Use initialization list instead of assignment
+//---------------------------------------------------------------------------
+
+void CheckClass::initializationListUsage()
+{
+    if (!_settings->isEnabled("performance"))
+        return;
+
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        // Check every constructor
+        if (scope->type != Scope::eFunction || !scope->function || (scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor))
+            continue;
+
+        Scope* owner = scope->functionOf;
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%var% (")) // Assignments might depend on this function call or if/for/while/switch statment from now on.
+                break;
+            if (tok->varId() && Token::Match(tok, "%var% = %any%")) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                if (var && var->scope() == owner) {
+                    bool allowed = true;
+                    for (const Token* tok2 = tok->tokAt(2); tok2->str() != ";"; tok2 = tok2->next()) {
+                        if (tok2->varId()) {
+                            const Variable* var2 = symbolDatabase->getVariableFromVarId(tok2->varId());
+                            if (var2 && var2->scope() == owner) { // Is there a dependency between two member variables?
+                                allowed = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (!allowed)
+                        continue;
+                    suggestInitializationList(tok, tok->str());
+                }
+            }
+        }
+    }
+}
+
+void CheckClass::suggestInitializationList(const Token* tok, const std::string& name)
+{
+    reportError(tok, Severity::performance, "useInitializationList", "Variable '" + name + "' is assigned in constructor body. Consider to perform initalization in initialization list.\n"
+                "When an object of a class is created, the constructors of all member variables are called consecutivly "
+                "in the order the variables are declared, even if you don't explicitly write them to the initialization list. You "
+                "could avoid assigning '" + name + "' a value by passing the value to the constructor in the initialization list.");
+}
+
+//---------------------------------------------------------------------------
 // ClassCheck: Unused private functions
 //---------------------------------------------------------------------------
 
@@ -1524,7 +1572,7 @@ struct VarInfo {
     const Token *tok;
 };
 
-void CheckClass::initializerList()
+void CheckClass::initializerListOrder()
 {
     if (!_settings->isEnabled("style"))
         return;

@@ -60,7 +60,8 @@ public:
         checkClass.operatorEqRetRefThis();
         checkClass.thisSubtraction();
         checkClass.operatorEqToSelf();
-        checkClass.initializerList();
+        checkClass.initializerListOrder();
+        checkClass.initializationListUsage();
 
         checkClass.virtualDestructor();
         checkClass.checkConst();
@@ -103,7 +104,9 @@ public:
     void checkConst();
 
     /** @brief Check initializer list order */
-    void initializerList();
+    void initializerListOrder();
+
+    void initializationListUsage();
 
 private:
     const SymbolDatabase *symbolDatabase;
@@ -122,6 +125,7 @@ private:
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
+    void suggestInitializationList(const Token *tok, const std::string& name);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
@@ -137,6 +141,7 @@ private:
         c.operatorEqToSelfError(0);
         c.checkConstError(0, "class", "function");
         c.initializerListError(0, 0, "class", "variable");
+        c.suggestInitializationList(0, "variable");
     }
 
     std::string myName() const {
