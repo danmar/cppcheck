@@ -535,12 +535,12 @@ void CheckClass::initializationListUsage()
     }
 }
 
-void CheckClass::suggestInitializationList(const Token* tok, const std::string& name)
+void CheckClass::suggestInitializationList(const Token* tok, const std::string& varname)
 {
-    reportError(tok, Severity::performance, "useInitializationList", "Variable '" + name + "' is assigned in constructor body. Consider to perform initalization in initialization list.\n"
+    reportError(tok, Severity::performance, "useInitializationList", "Variable '" + varname + "' is assigned in constructor body. Consider to perform initalization in initialization list.\n"
                 "When an object of a class is created, the constructors of all member variables are called consecutivly "
                 "in the order the variables are declared, even if you don't explicitly write them to the initialization list. You "
-                "could avoid assigning '" + name + "' a value by passing the value to the constructor in the initialization list.");
+                "could avoid assigning '" + varname + "' a value by passing the value to the constructor in the initialization list.");
 }
 
 //---------------------------------------------------------------------------

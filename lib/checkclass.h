@@ -125,7 +125,7 @@ private:
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
-    void suggestInitializationList(const Token *tok, const std::string& name);
+    void suggestInitializationList(const Token *tok, const std::string& varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
