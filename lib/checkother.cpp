@@ -1750,7 +1750,7 @@ void CheckOther::checkUnreachableCode()
                 }
         } else if (Token::Match(tok, "goto %any% ;")) {
             secondBreak = tok->tokAt(3);
-            labelName = tok->tokAt(1);
+            labelName = tok->next();
         }
 
         // Statements follow directly, no line between them. (#3383)

@@ -152,12 +152,16 @@ private:
         return "Check the code for each class.\n"
                "* Missing constructors\n"
                "* Are all variables initialized by the constructors?\n"
+               "* Are all variables assigned by 'operator='?\n"
                "* Warn if memset, memcpy etc are used on a class\n"
                "* If it's a base class, check that the destructor is virtual\n"
-               "* Are there unused private functions\n"
+               "* Are there unused private functions?\n"
                "* 'operator=' should return reference to self\n"
                "* 'operator=' should check for assignment to self\n"
-               "* Constness for member functions\n";
+               "* Constness for member functions\n"
+               "* Order of initalizations\n"
+               "* Suggest usage of initalization list\n"
+               "* Suspicious subtraction from 'this'\n";
     }
 
     // operatorEqRetRefThis helper function
