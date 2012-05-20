@@ -68,7 +68,6 @@ public:
         checkOther.checkDuplicateExpression();
         checkOther.checkUnreachableCode();
         checkOther.checkSuspiciousSemicolon();
-        checkOther.checkWrongPrintfScanfArguments();
         checkOther.checkVariableScope();
         checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkComparisonOfBoolExpressionWithInt();
@@ -88,10 +87,7 @@ public:
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
         checkOther.checkCCTypeFunctions();
-        checkOther.checkFflushOnInputStream();
-        checkOther.invalidScanf();
 
-        checkOther.checkCoutCerrMisusage();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
@@ -157,29 +153,17 @@ public:
 
     void lookupVar(const Token *tok1, const std::string &varname);
 
-    /** @brief %Check for using fflush() on an input stream*/
-    void checkFflushOnInputStream();
-
     /** @brief %Check for 'sizeof sizeof ..' */
     void sizeofsizeof();
 
     /** @brief %Check for calculations inside sizeof */
     void sizeofCalculation();
 
-    /** @brief scanf can crash if width specifiers are not used */
-    void invalidScanf();
-
-    /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
-    void checkWrongPrintfScanfArguments();
-
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
 
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
-
-    /** @brief %Check for missusage of std::cout */
-    void checkCoutCerrMisusage();
 
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
@@ -256,17 +240,6 @@ private:
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void sizeofsizeofError(const Token *tok);
     void sizeofCalculationError(const Token *tok, bool inconclusive);
-    void invalidScanfError(const Token *tok);
-    void wrongPrintfScanfArgumentsError(const Token* tok,
-                                        const std::string &function,
-                                        unsigned int numFormat,
-                                        unsigned int numFunction);
-    void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
-    void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void dangerousUsageStrtolError(const Token *tok);
@@ -279,10 +252,8 @@ private:
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok);
-    void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
-    void fflushOnInputStreamError(const Token *tok, const std::string &varname);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
     void redundantStrcpyInSwitchError(const Token *tok, const std::string &varname);
     void switchCaseFallThrough(const Token *tok);
@@ -325,12 +296,10 @@ private:
         c.udivError(0, false);
         c.zerodivError(0);
         c.mathfunctionCallError(0);
-        c.fflushOnInputStreamError(0, "stdin");
         c.misusedScopeObjectError(NULL, "varname");
         c.sizeofForArrayParameterError(0);
         c.sizeofForPointerError(0, "varname");
         c.sizeofForNumericParameterError(0);
-        c.coutCerrMisusageError(0, "cout");
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
 
@@ -349,7 +318,6 @@ private:
         c.switchCaseFallThrough(0);
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
-        c.invalidScanfError(0);
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
         c.redundantConditionError(0, "If x > 10 the condition x > 11 is always true.");
         c.memsetZeroBytesError(0, "varname");
@@ -371,13 +339,6 @@ private:
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0, true);
         c.SuspiciousSemicolonError(0);
-        c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
-        c.invalidScanfArgTypeError(0, "scanf", 1);
-        c.invalidPrintfArgTypeError_s(0, 1);
-        c.invalidPrintfArgTypeError_n(0, 1);
-        c.invalidPrintfArgTypeError_p(0, 1);
-        c.invalidPrintfArgTypeError_int(0, 1, 'u');
-        c.invalidPrintfArgTypeError_float(0, 1, 'f');
         c.cctypefunctionCallError(0, "funname", "value");
         c.moduloAlwaysTrueFalseError(0, "1");
     }
@@ -391,17 +352,13 @@ private:
 
                // error
                "* Assigning bool value to pointer (converting bool value to address)\n"
-               "* [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
                "* division with zero\n"
-               "* using fflush() on an input stream\n"
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
                "* sizeof for array given as function argument\n"
                "* sizeof for numeric given as function argument\n"
                "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
-               "* invalid usage of output stream. For example: std::cout << std::cout;'\n"
-               "* wrong number of arguments given to 'printf' or 'scanf;'\n"
                "* double free() or double closedir()\n"
 
                // style
@@ -437,10 +394,7 @@ private:
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "* incorrect usage of functions from ctype library.\n"
-               "* Comparisons of modulo results that are always true/false.\n"
-
-               // optimisations
-               "* optimisation: detect post increment/decrement\n";
+               "* Comparisons of modulo results that are always true/false.\n";
     }
 
     void checkExpressionRange(const std::list<Function> &constFunctions,
