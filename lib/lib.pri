@@ -11,6 +11,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkclass.h \
            $${BASEPATH}checkexceptionsafety.h \
            $${BASEPATH}checkinternal.h \
+           $${BASEPATH}checkio.h \
            $${BASEPATH}checkmemoryleak.h \
            $${BASEPATH}checknonreentrantfunctions.h \
            $${BASEPATH}checknullpointer.h \
@@ -44,6 +45,7 @@ SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}checkclass.cpp \
            $${BASEPATH}checkexceptionsafety.cpp \
            $${BASEPATH}checkinternal.cpp \
+           $${BASEPATH}checkio.cpp \
            $${BASEPATH}checkmemoryleak.cpp \
            $${BASEPATH}checknonreentrantfunctions.cpp \
            $${BASEPATH}checknullpointer.cpp \
