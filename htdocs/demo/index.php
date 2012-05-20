@@ -2,16 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <title>Developer Information - Cppcheck</title>
+  <title>Online Demo - Cppcheck</title>
   <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Orbitron&amp;text=Cppcheck" />
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="alternate" type="application/atom+xml" title="Recent Commits to cppcheck:master"
-        href="https://github.com/danmar/cppcheck/commits/master.atom" />
-  <link rel="alternate" type="application/atom+xml" title="Trac Timeline"
-        href="http://sourceforge.net/apps/trac/cppcheck/timeline?changeset=on&amp;ticket=on&amp;milestone=on&amp;wiki=on&amp;max=50&amp;daysback=90&amp;format=rss" />
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
-  <script src="/site/js/github.js" type="text/javascript"></script>
   <script type="text/javascript">
     function checkCodeLength() {
       if (document.f.code.value.length > 1024) {
@@ -45,7 +39,7 @@
 <div id="content">
   <div class="wrap">
 <h2>Online Demo</h2>
-<form action="http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi" name="f" onsubmit="return checkCodeLength();" method="post" target="_blank">
+<form action="/demo/report/" name="f" onsubmit="return checkCodeLength();" method="post" target="_blank">
 <p><label for="code">Enter code:</label><br />
 <textarea id="code" name="code" rows="20" cols="80">
 void f()
