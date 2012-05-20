@@ -103,7 +103,7 @@ private:
     }
 
     std::string classInfo() const {
-        return "Check input/output operations.\n";
+        return "Check input/output operations.\n"
         "* Bad usage of the function 'sprintf' (overlapping data)\n"
         "* Using fflush() on an input stream\n"
         "* Invalid usage of output stream. For example: std::cout << std::cout;'\n"
