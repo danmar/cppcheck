@@ -137,6 +137,7 @@ TESTOBJ =     test/options.o \
               test/testfilelister.o \
               test/testincompletestatement.o \
               test/testinternal.o \
+              test/testio.o \
               test/testmathlib.o \
               test/testmemleak.o \
               test/testnonreentrantfunctions.o \
@@ -377,6 +378,9 @@ test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.
 
 test/testinternal.o: test/testinternal.cpp lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/checkinternal.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testinternal.o test/testinternal.cpp
+
+test/testio.o: test/testio.cpp lib/checkio.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testio.o test/testio.cpp
 
 test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testmathlib.o test/testmathlib.cpp
