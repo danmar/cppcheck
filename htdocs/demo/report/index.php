@@ -66,8 +66,15 @@
   }
   
   if ($isCodePosted) { //if code posted...
+    include_once '../../site/geshi/geshi.php';
+    
+    $geshi = new GeSHi($_POST['code'], 'cpp');
+    $geshi->set_header_type(GESHI_HEADER_PRE_TABLE);
+    $geshi->enable_line_numbers(GESHI_NORMAL_LINE_NUMBERS);
+    $geshi->set_overall_class('geshicode');
+    
     echo "<h3>Input</h3>\n";
-    echo "<pre class=\"code\">" . htmlspecialchars($_POST['code']) . "</pre>\n";
+    echo $geshi->parse_code();
     
     echo "<h3>Output</h3>\n";
     

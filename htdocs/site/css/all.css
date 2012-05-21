@@ -126,6 +126,11 @@ pre.code {
 pre.code em {
   color: green;
 }
+.geshicode {
+  padding: .5em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
 
 /* Printing */
 @media print {
