@@ -2516,6 +2516,10 @@ static void setVarIdStructMembers(Token **tok1,
         if (struct_varid == 0)
             continue;
 
+        // Don't set varid for template function
+        if (TemplateSimplifier::templateParameters(tok->next()) > 0)
+            break;
+
         std::map<unsigned int, std::map<std::string,unsigned int> >::iterator structIterator;
         structIterator = structMembers->find(struct_varid);
         if (structIterator == structMembers->end()) {

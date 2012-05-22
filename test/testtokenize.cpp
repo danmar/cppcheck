@@ -216,6 +216,7 @@ private:
         TEST_CASE(varid48); // #3785 - return (a*b)
         TEST_CASE(varid49); // #3799 - void f(std::vector<int>)
         TEST_CASE(varid50); // #3760 - explicit
+        TEST_CASE(varid51); // don't set varid for template function
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3264,6 +3265,13 @@ private:
         const std::string code("class A { explicit A(const A&); };");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class A { explicit A ( const A & ) ; } ;\n",
+                      tokenizeDebugListing(code, false, "test.cpp"));
+    }
+
+    void varid51() {  // don't set varid on template function
+        const std::string code("T t; t.x<0>();");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: T t@1 ; t@1 . x < 0 > ( ) ;\n",
                       tokenizeDebugListing(code, false, "test.cpp"));
     }
 
