@@ -429,7 +429,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         }
                         // save function prototype in database
                         if (newFunc)
-                            addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+                            addGlobalFunctionDecl(scope, argStart, funcStart);
 
                         tok = argStart->link()->next();
                         continue;
@@ -445,7 +445,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         }
                         // save function prototype in database
                         if (newFunc) {
-                            Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+                            Function* func = addGlobalFunctionDecl(scope, argStart, funcStart);
                             func->retFuncPtr = true;
                         }
 
@@ -934,11 +934,18 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
             function = &*i;
     }
     if (!function)
-        function = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+        function = addGlobalFunctionDecl(scope, argStart, funcStart);
 
     function->arg = argStart;
     function->token = funcStart;
     function->hasBody = true;
+
+    // find start of function '{'
+    const Token *start = tok;
+    while (start && start->str() != "{")
+        start = start->next();
+    // save start of function
+    function->start = start;
 
     addNewFunction(&scope, &tok);
 
@@ -950,7 +957,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     return 0;
 }
 
-Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
+Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *argStart, const Token* funcStart)
 {
     Function function;
 
@@ -966,14 +973,6 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token*& tok
     function.isInline = false;
     function.hasBody = false;
     function.type = Function::eFunction;
-
-    // find start of function '{'
-    const Token *start = tok;
-    while (start && start->str() != "{")
-        start = start->next();
-
-    // save start of function
-    function.start = start;
 
     scope->functionList.push_back(function);
     return &scope->functionList.back();

@@ -102,6 +102,7 @@ private:
         TEST_CASE(classWithFriend);
 
         TEST_CASE(parseFunctionCorrect);
+        TEST_CASE(parseFunctionDeclarationCorrect);
 
         TEST_CASE(hasGlobalVariables1);
         TEST_CASE(hasGlobalVariables2);
@@ -690,6 +691,13 @@ private:
 
         ASSERT(tokenizer.getFunctionTokenByName("func") != NULL);
         ASSERT(tokenizer.getFunctionTokenByName("if") == NULL);
+    }
+
+    void parseFunctionDeclarationCorrect() {
+        GET_SYMBOL_DB("void func();\n"
+                      "int bar() {}\n"
+                      "void func() {}")
+        ASSERT_EQUALS(3, db->findScopeByName("func")->function->start->linenr());
     }
 
     void hasGlobalVariables1() {
