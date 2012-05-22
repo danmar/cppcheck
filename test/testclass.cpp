@@ -5159,6 +5159,12 @@ private:
                                      "    Fred() : b(5) { a = b; }\n" // Don't issue a message here: You actually could move it to the initalization list, but it would cause problems if you change the order of the variable declarations.
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    int a;\n"
+                                     "    Fred() { try { a = new int; } catch(...) {} }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
