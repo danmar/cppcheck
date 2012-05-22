@@ -124,6 +124,7 @@ private:
 
         TEST_CASE(comparisonOfBoolExpressionWithInt1);
         TEST_CASE(comparisonOfBoolExpressionWithInt2);
+        TEST_CASE(comparisonOfBoolExpressionWithInt3);
 
         TEST_CASE(incorrectStringCompare);
 
@@ -3041,6 +3042,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void comparisonOfBoolExpressionWithInt3() {
+        check("int f(int x) {\n"
+              "    return t<0>() && x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void memsetZeroBytes() {
         check("void f() {\n"

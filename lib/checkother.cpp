@@ -2878,6 +2878,12 @@ void CheckOther::checkComparisonOfBoolExpressionWithInt()
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        // Skip template parameters
+        if (tok->str() == "<" && tok->link()) {
+            tok = tok->link();
+            continue;
+        }
+
         const Token* numTok = 0;
         const Token* opTok = 0;
         char op = 0;
