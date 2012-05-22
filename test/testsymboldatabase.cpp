@@ -109,6 +109,7 @@ private:
 
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
+        TEST_CASE(functionArgs3);
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -784,6 +785,12 @@ private:
         ASSERT_EQUALS(2UL, a->dimensions().size());
         ASSERT_EQUALS(0UL, a->dimension(0));
         ASSERT_EQUALS(4UL, a->dimension(1));
+    }
+
+    void functionArgs3() {
+        GET_SYMBOL_DB("void f(int i,) { }"); // Don't crash
+        const Variable *a = db->getVariableFromVarId(1);
+        ASSERT_EQUALS("i", a->nameToken()->str());
     }
 
     void namespaces1() {

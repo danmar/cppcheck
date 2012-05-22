@@ -1550,7 +1550,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             const Token* endTok   = NULL;
             const Token* nameTok  = NULL;
 
-            while (tok->str() != "," && tok->str() != ")" && tok->str() != "=") {
+            if (tok->str() == "," || tok->str() == ")")
+                return; // Syntax error
+
+            do {
                 if (tok->varId() != 0) {
                     nameTok = tok;
                     endTok = tok->previous();
@@ -1569,7 +1572,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
                 if (!tok) // something is wrong so just bail
                     return;
-            }
+            } while (tok->str() != "," && tok->str() != ")" && tok->str() != "=");
 
             const Token *typeTok = startTok->tokAt(startTok->str() == "const" ? 1 : 0);
             if (typeTok->str() == "struct")
