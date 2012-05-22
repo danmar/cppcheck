@@ -33,7 +33,11 @@ private:
     void run() {
         TEST_CASE(coutCerrMisusage);
 
-        TEST_CASE(fflushOnInputStreamTest);
+        TEST_CASE(wrongMode_simple);
+        TEST_CASE(wrongMode_complex);
+        TEST_CASE(useClosedFile);
+        TEST_CASE(fileIOwithoutPositioning);
+        TEST_CASE(fflushOnInputStream);
 
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
@@ -63,7 +67,7 @@ private:
         // Simplify token list..
         tokenizer.simplifyTokenList();
         checkIO.checkCoutCerrMisusage();
-        checkIO.checkFflushOnInputStream();
+        checkIO.checkFileUsage();
         checkIO.invalidScanf();
     }
 
@@ -111,18 +115,224 @@ private:
 
 
 
+    void wrongMode_simple() {
+        // Read mode
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"r\");\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was only opened for reading.\n", errout.str());
 
-    void fflushOnInputStreamTest() {
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"r+\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Write mode
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"w\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Read operation on a file that was only opened for writing.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"w+\");\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Append mode
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"a\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Read operation on a file that was only opened for writing.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"a+\");\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Variable declared locally
+        check("void foo() {\n"
+              "    FILE* f = fopen(name, \"r\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    fclose(f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was only opened for reading.\n", errout.str());
+
+        // Call unknown function
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"a\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    bar(f);\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"a\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    clearerr(f);\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Read operation on a file that was only opened for writing.\n", errout.str());
+
+        // freopen and tmpfile
+        check("void foo(FILE*& f) {\n"
+              "    f = freopen(name, \"r\", f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was only opened for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = tmpfile();\n" // tmpfile opens as wb+
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void wrongMode_complex() {
+        check("void foo(FILE* f) {\n"
+              "    if(a) f = fopen(name, \"w\");\n"
+              "    else  f = fopen(name, \"r\");\n"
+              "    if(a) fwrite(buffer, 5, 6, f);\n"
+              "    else  fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    FILE* f;\n"
+              "    if(a) f = fopen(name, \"w\");\n"
+              "    else  f = fopen(name, \"r\");\n"
+              "    if(a) fwrite(buffer, 5, 6, f);\n"
+              "    else  fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    FILE* f = fopen(name, \"w\");\n"
+              "    if(a) fwrite(buffer, 5, 6, f);\n"
+              "    else  fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Read operation on a file that was only opened for writing.\n", errout.str());
+    }
+
+    void useClosedFile() {
+        check("void foo(FILE*& f) {\n"
+              "    fclose(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    clearerr(f);\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    ungetc('a', f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n"
+                      "[test.cpp:4]: (error) Used file that is not opened.\n"
+                      "[test.cpp:5]: (error) Used file that is not opened.\n"
+                      "[test.cpp:6]: (error) Used file that is not opened.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    if(!ferror(f)) {\n"
+              "        fclose(f);\n"
+              "        return;"
+              "    }\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    fclose(f);\n"
+              "    f = fopen(name, \"r\");\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(name, \"r\");\n"
+              "    f = g;\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void fileIOwithoutPositioning() {
+        check("void foo(FILE* f) {\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+
+        check("void foo(FILE* f) {\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+
+        check("void foo(FILE* f, bool read) {\n"
+              "    if(read)\n"
+              "        fread(buffer, 5, 6, f);\n"
+              "    else\n"
+              "        fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE* f) {\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    fflush(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE* f) {\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE* f) {\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    fsetpos(f, pos);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE* f) {\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    fseek(f, 0, SEEK_SET);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE* f) {\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    long pos = ftell(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+    }
+
+    void fflushOnInputStream() {
         check("void foo()\n"
               "{\n"
               "    fflush(stdin);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) fflush() called on input stream \"stdin\" may result in undefined behaviour\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) fflush() called on input stream \"stdin\" may result in undefined behaviour.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    fflush(stdout);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -51,15 +51,15 @@ public:
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkCoutCerrMisusage();
-        checkIO.checkFflushOnInputStream();
+        checkIO.checkFileUsage();
         checkIO.invalidScanf();
     }
 
     /** @brief %Check for missusage of std::cout */
     void checkCoutCerrMisusage();
 
-    /** @brief %Check for using fflush() on an input stream*/
-    void checkFflushOnInputStream();
+    /** @brief %Check usage of files*/
+    void checkFileUsage();
 
     /** @brief scanf can crash if width specifiers are not used */
     void invalidScanf();
@@ -71,6 +71,10 @@ private:
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
+    void ioWithoutPositioningError(const Token *tok);
+    void readWriteOnlyFileError(const Token *tok);
+    void writeReadOnlyFileError(const Token *tok);
+    void useClosedFileError(const Token *tok);
     void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &function,
@@ -88,6 +92,10 @@ private:
 
         c.coutCerrMisusageError(0, "cout");
         c.fflushOnInputStreamError(0, "stdin");
+        c.ioWithoutPositioningError(0);
+        c.readWriteOnlyFileError(0);
+        c.writeReadOnlyFileError(0);
+        c.useClosedFileError(0);
         c.invalidScanfError(0);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
         c.invalidScanfArgTypeError(0, "scanf", 1);
@@ -104,10 +112,13 @@ private:
 
     std::string classInfo() const {
         return "Check input/output operations.\n"
-        "* Bad usage of the function 'sprintf' (overlapping data)\n"
-        "* Using fflush() on an input stream\n"
-        "* Invalid usage of output stream. For example: std::cout << std::cout;'\n"
-        "* Wrong number of arguments given to 'printf' or 'scanf;'\n";
+               "* Bad usage of the function 'sprintf' (overlapping data)\n"
+               "* Use a file that has been closed\n"
+               "* File input/output without positioning results in undefined behaviour\n"
+               "* Read to a file that has only been opened for writing (or vice versa)\n"
+               "* Using fflush() on an input stream\n"
+               "* Invalid usage of output stream. For example: std::cout << std::cout;'\n"
+               "* Wrong number of arguments given to 'printf' or 'scanf;'\n";
     }
 };
 /// @}

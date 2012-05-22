@@ -62,21 +62,218 @@ void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamN
 
 //---------------------------------------------------------------------------
 // fflush(stdin) <- fflush only applies to output streams in ANSI C
+// fread(); fwrite(); <- consecutive read/write statements require repositioning inbetween
+// fopen("","r"); fwrite(); <- write to read-only file (or vice versa)
+// fclose(); fread(); <- Use closed file
 //---------------------------------------------------------------------------
-void CheckIO::checkFflushOnInputStream()
+enum OpenMode {CLOSED, READ_MODE, WRITE_MODE, RW_MODE, UNKNOWN};
+static OpenMode getMode(const std::string& str)
 {
-    const Token *tok = _tokenizer->tokens();
-    while (tok && ((tok = Token::findsimplematch(tok, "fflush ( stdin )")) != NULL)) {
-        fflushOnInputStreamError(tok, tok->strAt(2));
-        tok = tok->tokAt(4);
+    if (str.find('+', 1) != std::string::npos)
+        return RW_MODE;
+    else if (str.find('w') != std::string::npos || str.find('a') != std::string::npos)
+        return WRITE_MODE;
+    else if (str.find('r') != std::string::npos)
+        return READ_MODE;
+    return UNKNOWN;
+}
+void CheckIO::checkFileUsage()
+{
+    static const char* _whitelist[] = {
+        "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc"
+    };
+    static const std::set<std::string> whitelist(_whitelist, _whitelist + sizeof(_whitelist)/sizeof(*_whitelist));
+
+    struct Filepointer {
+        OpenMode mode;
+        unsigned int mode_indent;
+        enum Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation;
+        unsigned int op_indent;
+        Filepointer(OpenMode mode_ = UNKNOWN)
+            : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0) {
+        }
+    };
+    std::map<unsigned int, Filepointer> filepointers;
+
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    unsigned int varListSize = symbolDatabase->getVariableListSize();
+    for (unsigned int i = 1; i < varListSize; i++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+        if (!var || !var->varId() || !Token::Match(var->typeStartToken(), "FILE *"))
+            continue;
+
+        if (var->isLocal())
+            filepointers.insert(std::make_pair(var->varId(), Filepointer(CLOSED)));
+        else {
+            filepointers.insert(std::make_pair(var->varId(), Filepointer(UNKNOWN)));
+            // TODO: If all fopen calls we find open the file in the same type, we can set Filepointer::mode
+        }
+    }
+
+    unsigned int indent = 0;
+    for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
+        if (tok->str() == "{")
+            indent++;
+        else if (tok->str() == "}") {
+            indent--;
+            for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); i++) {
+                if (indent < i->second.mode_indent) {
+                    i->second.mode_indent = 0;
+                    i->second.mode = UNKNOWN;
+                }
+                if (indent < i->second.op_indent) {
+                    i->second.op_indent = 0;
+                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                }
+            }
+        } else if (tok->varId() && Token::Match(tok, "%var% =") && (tok->strAt(2) != "fopen" && tok->strAt(2) != "tmpfile")) {
+            std::map<unsigned int, Filepointer>::iterator i = filepointers.find(tok->varId());
+            if (i != filepointers.end()) {
+                i->second.mode = UNKNOWN;
+                i->second.lastOperation = Filepointer::UNKNOWN_OP;
+            }
+        } else if (Token::Match(tok, "%var% (")) {
+            std::string mode;
+            const Token* fileTok = 0;
+            Filepointer::Operation operation = Filepointer::NONE;
+
+            if (tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile") {
+                if (tok->str() != "tmpfile") {
+                    const Token* modeTok = tok->tokAt(2)->nextArgument();
+                    if (modeTok)
+                        mode = modeTok->strValue();
+                } else
+                    mode = "wb+";
+                fileTok = tok->tokAt(-2);
+                operation = Filepointer::OPEN;
+            } else if (tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") {
+                if (Token::Match(tok, "fflush ( stdin )"))
+                    fflushOnInputStreamError(tok, tok->strAt(2));
+                else {
+                    fileTok = tok->tokAt(2);
+                    operation = Filepointer::POSITIONING;
+                }
+            } else if (tok->str() == "fgetc" || tok->str() == "fgets" || tok->str() == "fread" || tok->str() == "fscanf" || tok->str() == "getc") {
+                if (tok->str() == "fscanf")
+                    fileTok = tok->tokAt(2);
+                else
+                    fileTok = tok->linkAt(1)->previous();
+                operation = Filepointer::READ;
+            } else if (tok->str() == "fputc" || tok->str() == "fputs" || tok->str() == "fwrite" || tok->str() == "fprintf" || tok->str() == "putcc") {
+                if (tok->str() == "fprintf")
+                    fileTok = tok->tokAt(2);
+                else
+                    fileTok = tok->linkAt(1)->previous();
+                operation = Filepointer::WRITE;
+            } else if (tok->str() == "fclose") {
+                fileTok = tok->tokAt(2);
+                operation = Filepointer::CLOSE;
+            } else if (whitelist.find(tok->str()) != whitelist.end()) {
+                fileTok = tok->tokAt(2);
+                if (tok->str() == "ungetc" && fileTok)
+                    fileTok = fileTok->nextArgument();
+                operation = Filepointer::UNIMPORTANT;
+            } else if (!Token::Match(tok, "if|for|while|catch|return")) {
+                const Token* const end2 = tok->linkAt(1);
+                for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
+                    if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {
+                        fileTok = tok2;
+                        operation = Filepointer::UNKNOWN_OP; // Assume that repositioning was last operation and that the file is opened now
+                        break;
+                    }
+                }
+            }
+
+            if (!fileTok || !fileTok->varId())
+                continue;
+
+            if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
+                filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(UNKNOWN)));
+            }
+            Filepointer& f = filepointers[fileTok->varId()];
+
+            switch (operation) {
+            case Filepointer::OPEN:
+                f.mode = getMode(mode);
+                f.mode_indent = indent;
+                break;
+            case Filepointer::POSITIONING:
+                if (f.mode == CLOSED)
+                    useClosedFileError(tok);
+                break;
+            case Filepointer::READ:
+                if (f.mode == CLOSED)
+                    useClosedFileError(tok);
+                else if (f.mode == WRITE_MODE)
+                    readWriteOnlyFileError(tok);
+                else if (f.lastOperation == Filepointer::WRITE)
+                    ioWithoutPositioningError(tok);
+                break;
+            case Filepointer::WRITE:
+                if (f.mode == CLOSED)
+                    useClosedFileError(tok);
+                else if (f.mode == READ_MODE)
+                    writeReadOnlyFileError(tok);
+                else if (f.lastOperation == Filepointer::READ)
+                    ioWithoutPositioningError(tok);
+                break;
+            case Filepointer::CLOSE:
+                if (f.mode == CLOSED)
+                    useClosedFileError(tok);
+                else
+                    f.mode = CLOSED;
+                f.mode_indent = indent;
+                break;
+            case Filepointer::UNIMPORTANT:
+                if (f.mode == CLOSED)
+                    useClosedFileError(tok);
+                break;
+            case Filepointer::UNKNOWN_OP:
+                f.mode = UNKNOWN;
+                f.mode_indent = 0;
+                break;
+            default:
+                break;
+            }
+            if (operation != Filepointer::NONE && operation != Filepointer::UNIMPORTANT) {
+                f.op_indent = indent;
+                f.lastOperation = operation;
+            }
+        }
     }
 }
 
 void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error,
-                "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
+                "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour.");
 }
+
+void CheckIO::ioWithoutPositioningError(const Token *tok)
+{
+    reportError(tok, Severity::error,
+                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.");
+}
+
+void CheckIO::readWriteOnlyFileError(const Token *tok)
+{
+
+    reportError(tok, Severity::error,
+                "readWriteOnlyFile", "Read operation on a file that was only opened for writing.");
+}
+
+void CheckIO::writeReadOnlyFileError(const Token *tok)
+{
+    reportError(tok, Severity::error,
+                "writeReadOnlyFile", "Write operation on a file that was only opened for reading.");
+}
+
+void CheckIO::useClosedFileError(const Token *tok)
+{
+    reportError(tok, Severity::error,
+                "useClosedFile", "Used file that is not opened.");
+}
+
 
 //---------------------------------------------------------------------------
 // scanf without field width limits can crash with huge input data
