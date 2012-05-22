@@ -291,7 +291,7 @@ private:
     }
 
     void initvar_operator_eq1() {
-        // Bug 2190376 - False positive, Uninitialized member variable with operator=
+        // Bug 2190376 and #3820 - False positive, Uninitialized member variable with operator=
 
         check("struct Fred\n"
               "{\n"
@@ -305,8 +305,18 @@ private:
               "\n"
               "    const Fred & operator=(const Fred &fred)\n"
               "    { i = fred.i; return *this; }\n"
-              "};\n");
+              "};");
+        ASSERT_EQUALS("", errout.str());
 
+        check("struct Fred {\n"
+              "    int i;\n"
+              "\n"
+              "    Fred(const Fred &fred)\n"
+              "    { (*this) = fred; }\n"
+              "\n"
+              "    const Fred & operator=(const Fred &fred)\n"
+              "    { i = fred.i; return *this; }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
 
         check("struct A\n"
@@ -322,7 +332,6 @@ private:
               "  int i;\n"
               "  int j;\n"
               "};");
-
         ASSERT_EQUALS("", errout.str());
     }
 
