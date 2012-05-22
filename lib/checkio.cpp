@@ -77,6 +77,17 @@ static OpenMode getMode(const std::string& str)
         return READ_MODE;
     return UNKNOWN;
 }
+
+struct Filepointer {
+    OpenMode mode;
+    unsigned int mode_indent;
+    enum Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation;
+    unsigned int op_indent;
+    Filepointer(OpenMode mode_ = UNKNOWN)
+        : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0) {
+    }
+};
+
 void CheckIO::checkFileUsage()
 {
     static const char* _whitelist[] = {
@@ -84,15 +95,6 @@ void CheckIO::checkFileUsage()
     };
     static const std::set<std::string> whitelist(_whitelist, _whitelist + sizeof(_whitelist)/sizeof(*_whitelist));
 
-    struct Filepointer {
-        OpenMode mode;
-        unsigned int mode_indent;
-        enum Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation;
-        unsigned int op_indent;
-        Filepointer(OpenMode mode_ = UNKNOWN)
-            : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0) {
-        }
-    };
     std::map<unsigned int, Filepointer> filepointers;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
