@@ -1101,7 +1101,7 @@ void CheckStl::string_c_str()
         else if (Token::Match(scope->function->tokenDef->tokAt(-3), "std :: string !!&"))
             returnType = stdString;
 
-        for (const Token *tok = scope->function->start; tok && tok != scope->function->start->link(); tok = tok->next()) {
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Invalid usage..
             if (Token::Match(tok, "throw %var% . c_str ( ) ;") && isLocal(symbolDatabase, tok->next()->varId())) {
                 string_c_strThrowError(tok);

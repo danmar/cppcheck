@@ -131,7 +131,7 @@ void CheckClass::constructors()
 
                 // It's non-static and it's not initialized => error
                 if (func->type == Function::eOperatorEqual) {
-                    const Token *operStart = func->token->next();
+                    const Token *operStart = func->arg;
 
                     bool classNameUsed = false;
                     for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next()) {
@@ -236,9 +236,9 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 void CheckClass::initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
     bool initList = true;
-    const Token *ftok = func.token->linkAt(1);
+    const Token *ftok = func.arg->link();
 
-    for (; ftok != func.start->link(); ftok = ftok->next()) {
+    for (; ftok != func.functionScope->classEnd; ftok = ftok->next()) {
         if (!ftok->next())
             break;
 
@@ -555,8 +555,8 @@ static bool checkFunctionUsage(const std::string& name, const Scope* scope)
         return true; // Assume its used, if scope is not seen
 
     for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        if (func->start) {
-            for (const Token *ftok = func->start; ftok != func->start->link(); ftok = ftok->next()) {
+        if (func->functionScope) {
+            for (const Token *ftok = func->functionScope->classStart; ftok != func->functionScope->classEnd; ftok = ftok->next()) {
                 if (ftok->str() == name && ftok->next()->str() == "(") // Function called. TODO: Handle overloads
                     return true;
             }
@@ -815,7 +815,7 @@ void CheckClass::operatorEqRetRefThis()
                     if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private:|virtual %type% &") &&
                         func->tokenDef->strAt(-2) == scope->className) {
 
-                        checkReturnPtrThis(&(*scope), &(*func), func->start->next(), func->start->link());
+                        checkReturnPtrThis(&(*scope), &(*func), func->functionScope->classStart, func->functionScope->classEnd);
                     }
                 }
             }
@@ -948,8 +948,8 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope)
     //    - alloc member
     // That is not ideal because it can cause false negatives but its currently
     // necessary to prevent false positives.
-    const Token *last = func->start->link();
-    for (const Token *tok = func->start; tok && (tok != last); tok = tok->next()) {
+    const Token *last = func->functionScope->classEnd;
+    for (const Token *tok = func->functionScope->classStart; tok && (tok != last); tok = tok->next()) {
         if (Token::Match(tok, "%var% = malloc|realloc|calloc|new") && isMemberVar(scope, tok))
             return true;
 
@@ -977,8 +977,8 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope)
 
 bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
 {
-    const Token *last = func->start->link();
-    for (const Token *tok = func->start; tok && tok != last; tok = tok->next()) {
+    const Token *last = func->functionScope->classEnd;
+    for (const Token *tok = func->functionScope->classStart; tok && tok != last; tok = tok->next()) {
         if (Token::simpleMatch(tok, "if (")) {
             const Token *tok1 = tok->tokAt(2);
             const Token *tok2 = tok->next()->link();
@@ -1427,7 +1427,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
-    for (const Token *tok1 = func->start; tok1 && tok1 != func->start->link(); tok1 = tok1->next()) {
+    for (const Token *tok1 = func->functionScope->classStart; tok1 && tok1 != func->functionScope->classEnd; tok1 = tok1->next()) {
         // assignment.. = += |= ..
         if (tok1->isAssignmentOp()) {
             if (tok1->next()->str() == "this") {

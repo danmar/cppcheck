@@ -1401,9 +1401,9 @@ void CheckBufferOverrun::checkStructVariable()
                     // check for member variables
                     if (func_scope->functionOf == &*scope) {
                         // only check non-empty function
-                        if (func_scope->function->start->next() != func_scope->function->start->link()) {
+                        if (func_scope->classStart->next() != func_scope->classEnd) {
                             // start checking after the {
-                            const Token *tok = func_scope->function->start->next();
+                            const Token *tok = func_scope->classStart->next();
                             checkScope(tok, arrayInfo);
                         }
                     }

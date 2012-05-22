@@ -39,9 +39,9 @@ void CheckExceptionSafety::destructors()
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         for (std::list<Function>::const_iterator j = i->functionList.begin(); j != i->functionList.end(); ++j) {
             // only looking for destructors
-            if (j->type == Function::eDestructor && j->start) {
+            if (j->type == Function::eDestructor && j->functionScope) {
                 // Inspect this destructor..
-                for (const Token *tok = j->start->next(); tok != j->start->link(); tok = tok->next()) {
+                for (const Token *tok = j->functionScope->classStart->next(); tok != j->functionScope->classEnd; tok = tok->next()) {
                     // throw found within a destructor
                     if (tok->str() == "throw") {
                         destructorsError(tok);

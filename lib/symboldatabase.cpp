@@ -326,9 +326,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         if (!end)
                             continue;
 
-                        // save start of function
-                        function.start = end;
-
                         scope->functionList.push_back(function);
 
                         const Token *tok2 = funcStart;
@@ -940,13 +937,6 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     function->token = funcStart;
     function->hasBody = true;
 
-    // find start of function '{'
-    const Token *start = tok;
-    while (start && start->str() != "{")
-        start = start->next();
-    // save start of function
-    function->start = start;
-
     addNewFunction(&scope, &tok);
 
     if (scope) {
@@ -1059,29 +1049,15 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
 
             for (func = scope1->functionList.begin(); func != scope1->functionList.end(); ++func) {
                 if (!func->hasBody && func->tokenDef->str() == (*tok)->str()) {
-                    if (func->type == Function::eDestructor && destructor) {
-                        if (Function::argsMatch(scope1, func->tokenDef->next(), (*tok)->next(), path, path_length)) {
+                    if (Function::argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
+                        if (func->type == Function::eDestructor && destructor) {
                             func->hasBody = true;
-                            func->token = *tok;
-                            func->arg = argStart;
-                            const Token *start = argStart->link()->next();
-                            while (start && start->str() != "{")
-                                start = start->next();
-                            func->start = start;
-                        }
-                    } else if (func->type != Function::eDestructor && !destructor) {
-                        if (Function::argsMatch(scope1, func->tokenDef->next(), (*tok)->next(), path, path_length)) {
+                        } else if (func->type != Function::eDestructor && !destructor) {
                             // normal function?
                             if (!func->retFuncPtr && (*tok)->next()->link()) {
                                 if ((func->isConst && (*tok)->next()->link()->next()->str() == "const") ||
                                     (!func->isConst && (*tok)->next()->link()->next()->str() != "const")) {
                                     func->hasBody = true;
-                                    func->token = *tok;
-                                    func->arg = argStart;
-                                    const Token *start = argStart->link()->next();
-                                    while (start && start->str() != "{")
-                                        start = start->next();
-                                    func->start = start;
                                 }
                             }
 
@@ -1089,24 +1065,20 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             else if (func->retFuncPtr) {
                                 // todo check for const
                                 func->hasBody = true;
-                                func->token = *tok;
-                                func->arg = argStart;
-                                const Token *start = argStart->link()->linkAt(2)->next();
-                                while (start && start->str() != "{")
-                                    start = start->next();
-                                func->start = start;
                             }
                         }
-                    }
 
-                    if (func->hasBody) {
-                        addNewFunction(scope, tok);
-                        if (*scope) {
-                            (*scope)->functionOf = scope1;
-                            (*scope)->function = &*func;
-                            (*scope)->function->functionScope = *scope;
+                        if (func->hasBody) {
+                            func->token = *tok;
+                            func->arg = argStart;
+                            addNewFunction(scope, tok);
+                            if (*scope) {
+                                (*scope)->functionOf = scope1;
+                                (*scope)->function = &*func;
+                                (*scope)->function->functionScope = *scope;
+                            }
+                            return;
                         }
-                        return;
                     }
                 }
             }

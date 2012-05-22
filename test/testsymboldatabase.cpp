@@ -697,7 +697,7 @@ private:
         GET_SYMBOL_DB("void func();\n"
                       "int bar() {}\n"
                       "void func() {}")
-        ASSERT_EQUALS(3, db->findScopeByName("func")->function->start->linenr());
+        ASSERT_EQUALS(3, db->findScopeByName("func")->classStart->linenr());
     }
 
     void hasGlobalVariables1() {

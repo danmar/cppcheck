@@ -484,7 +484,7 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 {
     allocType = No;
 
-    if (!func || !func->start)
+    if (!func || !func->functionScope)
         return "";
 
     std::list<Variable>::const_iterator arg = func->argumentList.begin();
@@ -507,7 +507,7 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 
     // Check if pointer is allocated.
     int realloc = 0;
-    for (tok = func->start; tok && tok != func->start->link(); tok = tok->next()) {
+    for (tok = func->functionScope->classStart; tok && tok != func->functionScope->classEnd; tok = tok->next()) {
         if (tok->varId() == arg->varId()) {
             if (Token::Match(tok->tokAt(-3), "free ( * %var% )")) {
                 realloc = 1;
@@ -705,9 +705,9 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             const Variable* param = function->getArgumentVar(par-1);
             if (!param || !param->nameToken())
                 return "use";
-            if (!function->start)
+            if (!function->functionScope)
                 return "use";
-            Token *func = getcode(function->start->next(), callstack, param->varId(), alloctype, dealloctype, false, sz);
+            Token *func = getcode(function->functionScope->classStart->next(), callstack, param->varId(), alloctype, dealloctype, false, sz);
             //simplifycode(func);
             const Token *func_ = func;
             while (func_ && func_->str() == ";")
@@ -2338,9 +2338,9 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
         const bool constructor = func->type == Function::eConstructor;
         const bool destructor = func->type == Function::eDestructor;
         bool body = false;
-        const Token *end = func->start->link();
-        for (const Token *tok = func->token->linkAt(1); tok != end; tok = tok->next()) {
-            if (tok == func->start)
+        const Token *end = func->functionScope->classEnd;
+        for (const Token *tok = func->arg->link(); tok != end; tok = tok->next()) {
+            if (tok == func->functionScope->classStart)
                 body = true;
             else {
                 if (!body) {

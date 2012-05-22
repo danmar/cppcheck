@@ -366,7 +366,6 @@ public:
           argDef(NULL),
           token(NULL),
           arg(NULL),
-          start(NULL),
           functionScope(NULL),
           type(eFunction),
           access(Public),
@@ -395,7 +394,6 @@ public:
     const Token *argDef;   // function argument start '(' in class definition
     const Token *token;    // function name token in implementation
     const Token *arg;      // function argument start '('
-    const Token *start;    // function start '{'
     Scope *functionScope;  // scope of function body
     std::list<Variable> argumentList; // argument list
     Type type;             // constructor, destructor, ...
