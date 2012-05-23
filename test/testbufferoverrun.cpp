@@ -302,9 +302,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-
-
     void sizeof1() {
         check("static void f()\n"
               "{\n"
@@ -342,8 +339,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-
     void array_index_1() {
         check("void f()\n"
               "{\n"
@@ -359,6 +354,25 @@ private:
               "    return str[16];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[16]' index 16 out of bounds\n", errout.str());
+
+        // test stack array
+        check("int f()\n"
+              "{\n"
+              "   int x[ 3 ] = { 0, 1, 2 };\n"
+              "   int y;\n"
+              "   y = x[ 4 ];\n"
+              "   return y;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'x[3]' index 4 out of bounds\n", errout.str());
+
+        check("int f()\n"
+              "{\n"
+              "   int x[ 3 ] = { 0, 1, 2 };\n"
+              "   int y;\n"
+              "   y = x[ 2 ];\n"
+              "   return y;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
