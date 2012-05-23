@@ -5,6 +5,7 @@
   <title>Online Demo Report - Cppcheck</title>
   <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Orbitron&amp;text=Cppcheck" />
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
+  <link rel="stylesheet" type="text/css" href="/site/css/geshi.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
 </head>
 <body>
@@ -69,6 +70,7 @@
     include_once '../../site/geshi/geshi.php';
     
     $geshi = new GeSHi($_POST['code'], 'cpp');
+    $geshi->enable_classes();
     $geshi->set_header_type(GESHI_HEADER_PRE_TABLE);
     $geshi->enable_line_numbers(GESHI_NORMAL_LINE_NUMBERS);
     $geshi->set_overall_class('geshicode');
