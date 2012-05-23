@@ -193,13 +193,14 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was only opened for reading.\n", errout.str());
 
+        // Crash tests
         check("void foo(FILE*& f) {\n"
-              "    f = tmpfile();\n" // tmpfile opens as wb+
+              "    f = fopen(name, mode);\n" // No assertion failure (#3830)
               "    fwrite(buffer, 5, 6, f);\n"
-              "    rewind(f);\n"
-              "    fread(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void fopen(std::string const &filepath, std::string const &mode);"); // #3832
     }
 
     void wrongMode_complex() {

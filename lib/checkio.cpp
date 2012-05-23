@@ -128,21 +128,21 @@ void CheckIO::checkFileUsage()
                     i->second.lastOperation = Filepointer::UNKNOWN_OP;
                 }
             }
-        } else if (tok->varId() && Token::Match(tok, "%var% =") && (tok->strAt(2) != "fopen" && tok->strAt(2) != "tmpfile")) {
+        } else if (tok->varId() && Token::Match(tok, "%var% =") && (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile")) {
             std::map<unsigned int, Filepointer>::iterator i = filepointers.find(tok->varId());
             if (i != filepointers.end()) {
                 i->second.mode = UNKNOWN;
                 i->second.lastOperation = Filepointer::UNKNOWN_OP;
             }
-        } else if (Token::Match(tok, "%var% (")) {
+        } else if (Token::Match(tok, "%var% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
             std::string mode;
             const Token* fileTok = 0;
             Filepointer::Operation operation = Filepointer::NONE;
 
-            if (tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile") {
+            if ((tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile") && tok->strAt(-1) == "=") {
                 if (tok->str() != "tmpfile") {
                     const Token* modeTok = tok->tokAt(2)->nextArgument();
-                    if (modeTok)
+                    if (modeTok && modeTok->type() == Token::eString)
                         mode = modeTok->strValue();
                 } else
                     mode = "wb+";
