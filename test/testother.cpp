@@ -62,7 +62,8 @@ private:
         TEST_CASE(varScope9);       // classes may have extra side-effects
         TEST_CASE(varScope10);      // Undefined macro FOR
         TEST_CASE(varScope11);      // #2475 - struct initialization is not inner scope
-        TEST_CASE(varScope12);      // variable usage in inner loop
+        TEST_CASE(varScope12);
+        TEST_CASE(varScope13);      // variable usage in inner loop
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -570,6 +571,14 @@ private:
                  "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'i' can be reduced\n", errout.str());
 
+        varScope("void f(int x) {\n"
+                 "    const unsigned char i = 0;\n"
+                 "    if (x) {\n"
+                 "        for ( ; i < 10; ++i) ;\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'i' can be reduced\n", errout.str());
+
         varScope("void f(int x)\n"
                  "{\n"
                  "    int i = 0;\n"
@@ -694,6 +703,42 @@ private:
     }
 
     void varScope12() {
+        varScope("void f(int x) {\n"
+                 "    int i[5];\n"
+                 "    int* j = y;\n"
+                 "    if (x)\n"
+                 "        foo(i);\n"
+                 "    foo(j);\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'i' can be reduced\n", errout.str());
+
+        varScope("void f(int x) {\n"
+                 "    int i[5];\n"
+                 "    int* j;\n"
+                 "    if (x)\n"
+                 "        j = i;\n"
+                 "    foo(j);\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("void f(int x) {\n"
+                 "    const bool b = true;\n"
+                 "    x++;\n"
+                 "    if (x == 5)\n"
+                 "        foo(b);\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'b' can be reduced\n", errout.str());
+
+        varScope("void f(int x) {\n"
+                 "    const bool b = x;\n"
+                 "    x++;\n"
+                 "    if (x == 5)\n"
+                 "        foo(b);\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope13() {
         // #2770
         varScope("void f() {\n"
                  "    int i = 0;\n"

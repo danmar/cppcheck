@@ -27,6 +27,7 @@
 
 class Token;
 class Function;
+class Variable;
 
 /// @addtogroup Checks
 /// @{
@@ -129,6 +130,7 @@ public:
 
     /** @brief %Check scope of variables */
     void checkVariableScope();
+    void lookupVar(const Token *tok, const Variable* var);
 
     /** @brief %Check for constant function parameter */
     void checkConstantFunctionParameter();
@@ -150,8 +152,6 @@ public:
 
     /** @brief %Check for parameters given to cctype function that do make error*/
     void checkCCTypeFunctions();
-
-    void lookupVar(const Token *tok1, const std::string &varname);
 
     /** @brief %Check for 'sizeof sizeof ..' */
     void sizeofsizeof();

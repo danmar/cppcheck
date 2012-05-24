@@ -112,7 +112,7 @@ void CheckOther::clarifyCalculation()
             if (cond->str() == ")") {
                 clarifyCalculationError(cond, op);
             } else if (cond->isName() || cond->isNumber()) {
-                if (Token::Match(cond->previous(),("return|=|+|-|,|(|"+op).c_str()))
+                if (Token::Match(cond->previous(),"return|=|+|-|,|(") || cond->strAt(-1) == op)
                     clarifyCalculationError(cond, op);
             }
         }
@@ -272,17 +272,12 @@ void CheckOther::checkSuspiciousSemicolon()
     // Look for "if(); {}", "for(); {}" or "while(); {}"
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if (i->type == Scope::eIf || i->type == Scope::eElse || i->type == Scope::eElseIf || i->type == Scope::eWhile || i->type == Scope::eFor) {
-            const Token *tok = Token::findsimplematch(i->classDef, "(", i->classEnd);
-            if (!tok)
-                continue;
-            const Token *end = tok->link();
-
             // Ensure the semicolon is at the same line number as the if/for/while statement
             // and the {..} block follows it without an extra empty line.
-            if (Token::simpleMatch(end, ") { ; } {") &&
-                end->linenr() == end->tokAt(2)->linenr()
-                && end->linenr()+1 >= end->tokAt(4)->linenr()) {
-                SuspiciousSemicolonError(tok);
+            if (Token::simpleMatch(i->classStart, "{ ; } {") &&
+                i->classStart->previous()->linenr() == i->classStart->tokAt(2)->linenr()
+                && i->classStart->linenr()+1 >= i->classStart->tokAt(3)->linenr()) {
+                SuspiciousSemicolonError(i->classStart);
             }
         }
     }
@@ -317,7 +312,7 @@ void CheckOther::warningOldStylePointerCast()
 
         // Is "type" a class?
         const std::string pattern("class|struct " + tok->strAt(1));
-        if (Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
+        if (Token::findmatch(_tokenizer->tokens(), pattern.c_str(), tok))
             cstyleCastError(tok);
     }
 }
@@ -1516,65 +1511,36 @@ void CheckOther::checkVariableScope()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
+    for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+        if (!var || !var->isLocal() || (!var->typeStartToken()->isStandardType() && !var->typeStartToken()->next()->isStandardType()))
             continue;
 
-        // Walk through all tokens..
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            // Skip function local class and struct declarations..
-            if ((tok->str() == "class") || (tok->str() == "struct") || (tok->str() == "union")) {
-                for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "{") {
-                        tok = tok2->link();
-                        break;
-                    }
-                    if (Token::Match(tok2, "[,);]")) {
-                        break;
-                    }
-                }
-                if (! tok)
-                    break;
-            }
-
-            if (Token::Match(tok, "[{};]")) {
-                // First token of statement..
-                const Token *tok1 = tok->next();
-                if (! tok1)
-                    continue;
-
-                if ((tok1->str() == "return") ||
-                    (tok1->str() == "throw") ||
-                    (tok1->str() == "delete") ||
-                    (tok1->str() == "goto") ||
-                    (tok1->str() == "else"))
-                    continue;
-
-                // Variable declaration?
-                if (Token::Match(tok1, "%type% %var% ; %var% = %num% ;")) {
-                    // Tokenizer modify "int i = 0;" to "int i; i = 0;",
-                    // so to handle this situation we just skip
-                    // initialization (see ticket #272).
-                    const unsigned int firstVarId = tok1->next()->varId();
-                    const unsigned int secondVarId = tok1->tokAt(3)->varId();
-                    if (firstVarId > 0 && firstVarId == secondVarId) {
-                        lookupVar(tok1->tokAt(6), tok1->strAt(1));
-                    }
-                } else if (tok1->isStandardType() && Token::Match(tok1, "%type% %var% [;=]")) {
-                    lookupVar(tok1, tok1->strAt(1));
-                }
-            }
+        bool forHead = false; // Don't check variables declared in header of a for loop
+        for (const Token* tok = var->typeStartToken(); tok; tok = tok->previous()) {
+            if (tok->str() == "(") {
+                forHead = true;
+                break;
+            } else if (tok->str() == "{" || tok->str() == ";" || tok->str() == "}")
+                break;
         }
+        if (forHead)
+            continue;
+
+        const Token* tok = var->nameToken()->next();
+        if (Token::Match(tok, "; %varid% = %any% ;", var->varId())) {
+            tok = tok->tokAt(3);
+            if (!tok->isNumber() && tok->type() != Token::eString && tok->type() != Token::eChar && !tok->isBoolean())
+                continue;
+        } else if (tok->str() == "=" &&
+                   ((!tok->next()->isNumber() && tok->next()->type() != Token::eString && tok->next()->type() != Token::eChar && !tok->next()->isBoolean()) || tok->strAt(2) != ";"))
+            continue;
+        lookupVar(tok, var);
     }
 }
 
-void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
+void CheckOther::lookupVar(const Token *tok, const Variable* var)
 {
-    const Token *tok = tok1;
-
     // Skip the variable declaration..
     while (tok && tok->str() != ";")
         tok = tok->next();
@@ -1588,7 +1554,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
     while (tok) {
         if (tok->str() == "{") {
             if (tok->strAt(-1) == "=") {
-                if (Token::findmatch(tok, varname.c_str(), tok->link())) {
+                if (Token::findmatch(tok, "%varid%", tok->link(), var->varId())) {
                     return;
                 }
 
@@ -1618,12 +1584,14 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
         }
 
         // Bail out if references are used
-        else if (Token::simpleMatch(tok, (std::string("& ") + varname).c_str())) {
+        else if (Token::Match(tok, "& %varid%", var->varId())) {
             return;
         }
 
-        else if (tok->str() == varname) {
+        else if (tok->varId() == var->varId()) {
             if (indentlevel == 0)
+                return;
+            if (tok->strAt(-1) == "=" && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
                 return;
             used1 = true;
             if (for_or_while && tok->strAt(1) != "=")
@@ -1661,7 +1629,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
     // * not used in this indentlevel
     // * used in lower indentlevel
     if (used1 || used2)
-        variableScopeError(tok1, varname);
+        variableScopeError(var->nameToken(), var->name());
 }
 
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
