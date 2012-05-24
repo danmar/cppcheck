@@ -455,39 +455,15 @@ void CheckOther::checkSizeofForArrayParameter()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var%")) {
+        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var% !![")) {
             const Token* varTok = tok->next();
             if (varTok->str() == "(") {
                 varTok = varTok->next();
             }
             if (varTok->varId() > 0) {
                 const Variable *var = symbolDatabase->getVariableFromVarId(varTok->varId());
-                if (var) {
-                    const Token *declTok = var->nameToken();
-                    if (declTok && declTok->next()->str() == "[") {
-                        declTok = declTok->next()->link()->next();
-                        // multidimensional array
-                        while (declTok->str() == "[") {
-                            declTok = declTok->link()->next();
-                        }
-                        if (!(Token::Match(declTok, "= %str%")) && !(Token::simpleMatch(declTok, "= {")) && declTok->str() != ";") {
-                            if (declTok->str() == ",") {
-                                while (declTok->str() != ";") {
-                                    if (declTok->str() == ")") {
-                                        sizeofForArrayParameterError(tok);
-                                        break;
-                                    }
-                                    if (Token::Match(declTok, "(|[|{")) {
-                                        declTok = declTok->link();
-                                    }
-                                    declTok = declTok->next();
-                                }
-                            }
-                        }
-                        if (declTok->str() == ")") {
-                            sizeofForArrayParameterError(tok);
-                        }
-                    }
+                if (var && var->isArray() && var->isArgument()) {
+                    sizeofForArrayParameterError(tok);
                 }
             }
         }
