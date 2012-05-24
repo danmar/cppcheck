@@ -217,6 +217,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // save the function name location
                     function.tokenDef = funcStart;
 
+                    // save the function parent scope
+                    function.nestedIn = scope;
+
                     // operator function
                     if (function.tokenDef->str().find("operator") == 0) {
                         function.isOperator = true;
@@ -329,12 +332,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scope->functionList.push_back(function);
 
                         const Token *tok2 = funcStart;
-                        Scope *functionOf = scope;
 
                         addNewFunction(&scope, &tok2);
                         if (scope) {
-                            scope->functionOf = functionOf;
-                            scope->function = &functionOf->functionList.back();
+                            scope->functionOf = function.nestedIn;
+                            scope->function = &function.nestedIn->functionList.back();
                             scope->function->functionScope = scope;
                         }
 
@@ -963,6 +965,7 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *argS
     function.isInline = false;
     function.hasBody = false;
     function.type = Function::eFunction;
+    function.nestedIn = scope;
 
     scope->functionList.push_back(function);
     return &scope->functionList.back();
@@ -1391,6 +1394,15 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "        token: " << _tokenizer->list.fileLine(func->token) << std::endl;
                 std::cout << "        arg: " << _tokenizer->list.fileLine(func->arg) << std::endl;
             }
+            std::cout << "        nestedIn: ";
+            if (func->nestedIn) {
+                std::cout << func->nestedIn->className << " " << func->nestedIn->type;
+                if (func->nestedIn->classDef)
+                    std::cout << " " << _tokenizer->list.fileLine(func->nestedIn->classDef) << std::endl;
+                else
+                    std::cout << std::endl;
+            } else
+                std::cout << "Unknown" << std::endl;
             std::cout << "        functionScope: ";
             if (func->functionScope) {
                 std::cout << func->functionScope->className << " "

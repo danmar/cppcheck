@@ -496,7 +496,7 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->next());
             ASSERT(function && function->hasBody);
-            ASSERT(function && function->functionScope == scope && scope->function == function);
+            ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn != scope);
         }
     }
 
@@ -517,7 +517,7 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
             ASSERT(function && function->hasBody && function->isInline);
-            ASSERT(function && function->functionScope == scope && scope->function == function);
+            ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
         }
     }
 
@@ -557,7 +557,7 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(12));
             ASSERT(function && function->hasBody && !function->isInline);
-            ASSERT(function && function->functionScope == scope && scope->function == function);
+            ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
         }
     }
 

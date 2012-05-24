@@ -2158,39 +2158,27 @@ private:
     }
 
     void trac1132() {
-        std::istringstream code("#include <iostream>\n"
-                                "class Lock\n"
-                                "{\n"
-                                "public:\n"
-                                "    Lock(int i)\n"
-                                "    {\n"
-                                "        std::cout << \"Lock \" << i << std::endl;\n"
-                                "    }\n"
-                                "    ~Lock()\n"
-                                "    {\n"
-                                "        std::cout << \"~Lock\" << std::endl;\n"
-                                "    }\n"
-                                "};\n"
-                                "int main()\n"
-                                "{\n"
-                                "    Lock(123);\n"
-                                "    std::cout << \"hello\" << std::endl;\n"
-                                "    return 0;\n"
-                                "}\n"
-                               );
-
-        errout.str("");
-
-        Settings settings;
-
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.tokenize(code, "trac1132.cpp");
-        tokenizer.simplifyTokenList();
-
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.checkMisusedScopedObject();
-
-        ASSERT_EQUALS("[trac1132.cpp:16]: (error) Instance of \"Lock\" object destroyed immediately.\n", errout.str());
+        check("#include <iostream>\n"
+              "class Lock\n"
+              "{\n"
+              "public:\n"
+              "    Lock(int i)\n"
+              "    {\n"
+              "        std::cout << \"Lock \" << i << std::endl;\n"
+              "    }\n"
+              "    ~Lock()\n"
+              "    {\n"
+              "        std::cout << \"~Lock\" << std::endl;\n"
+              "    }\n"
+              "};\n"
+              "int main()\n"
+              "{\n"
+              "    Lock(123);\n"
+              "    std::cout << \"hello\" << std::endl;\n"
+              "    return 0;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:16]: (error) Instance of \"Lock\" object destroyed immediately.\n", errout.str());
     }
 
     void trac3693() {

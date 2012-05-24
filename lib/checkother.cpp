@@ -1665,27 +1665,23 @@ void CheckOther::checkConstantFunctionParameter()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type == Scope::eFunction && i->function && i->function->arg) {
-            for (const Token* tok = i->function->arg->next(); tok; tok = tok->nextArgument()) {
-                // TODO: False negatives. This pattern only checks for string.
-                //       Investigate if there are other classes in the std
-                //       namespace and add them to the pattern. There are
-                //       streams for example (however it seems strange with
-                //       const stream parameter).
-                if (Token::Match(tok, "const std :: string %var% [,)]")) {
-                    passedByValueError(tok, tok->strAt(4));
-                } else if (Token::Match(tok, "const std :: %type% < std| ::| %type% > %var% [,)]")) {
-                    passedByValueError(tok, Token::findsimplematch(tok->tokAt(5), ">")->strAt(1));
-                } else if (Token::Match(tok, "const std :: %type% < std| ::| %type% , std| ::| %type% > %var% [,)]")) {
-                    passedByValueError(tok, Token::findsimplematch(tok->tokAt(7), ">")->strAt(1));
-                } else if (Token::Match(tok, "const %type% %var% [,)]")) {
-                    // Check if type is a struct or class.
-                    if (symbolDatabase->isClassOrStruct(tok->strAt(1))) {
-                        passedByValueError(tok, tok->strAt(2));
-                    }
-                }
-            }
+    for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+        if (!var || !var->isArgument() || !var->isClass() || !var->isConst() || var->isPointer() || var->isArray() || var->isReference())
+            continue;
+
+        const Token* tok = var->typeStartToken()->next();
+        // TODO: False negatives. This pattern only checks for string.
+        //       Investigate if there are other classes in the std
+        //       namespace and add them to the pattern. There are
+        //       streams for example (however it seems strange with
+        //       const stream parameter).
+        if (Token::Match(tok, "std :: string|wstring")) {
+            passedByValueError(tok, var->name());
+        } else if (Token::Match(tok, "std :: %type% <")) {
+            passedByValueError(tok, var->name());
+        } else if (var->type() || symbolDatabase->isClassOrStruct(tok->str())) {  // Check if type is a struct or class.
+            passedByValueError(tok, var->name());
         }
     }
 }
@@ -1851,7 +1847,7 @@ void CheckOther::strPlusChar()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[=(] %str% + %any%")) {
             // char constant..
-            if (tok->strAt(3)[0] == '\'')
+            if (tok->tokAt(3)->type() == Token::eChar)
                 strPlusCharError(tok->next());
 
             // char variable..
@@ -1960,6 +1956,7 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
     } else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
 }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckOther::checkCCTypeFunctions()
@@ -1976,6 +1973,7 @@ void CheckOther::cctypefunctionCallError(const Token *tok, const std::string &fu
 {
     reportError(tok, Severity::error, "wrongcctypecall", "Passing value " + value + " to " + functionName + "() cause undefined behavior, which may lead to a crash");
 }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 /** Is there a function with given name? */
@@ -2178,29 +2176,20 @@ void CheckOther::checkDuplicateBranch()
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        const Token* tok = scope->classDef;
-
-        if ((scope->type != Scope::eIf && scope->type != Scope::eElseIf) || !tok)
+        if (scope->type != Scope::eIf && scope->type != Scope::eElseIf)
             continue;
 
-        if (tok->str() == "else")
-            tok = tok->next();
-
         // check all the code in the function for if (..) else
-        if (tok && tok->next() && Token::simpleMatch(tok->next()->link(), ") {") &&
-            Token::simpleMatch(tok->next()->link()->next()->link(), "} else {")) {
+        if (Token::simpleMatch(scope->classEnd, "} else {")) {
             // save if branch code
-            std::string branch1 = tok->next()->link()->tokAt(2)->stringifyList(tok->next()->link()->next()->link());
-
-            // find else branch
-            const Token *tok1 = tok->next()->link()->next()->link();
+            std::string branch1 = scope->classStart->next()->stringifyList(scope->classEnd);
 
             // save else branch code
-            std::string branch2 = tok1->tokAt(3)->stringifyList(tok1->linkAt(2));
+            std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
 
             // check for duplicates
             if (branch1 == branch2)
-                duplicateBranchError(tok, tok1->tokAt(2));
+                duplicateBranchError(scope->classDef, scope->classEnd->tokAt(1));
         }
     }
 }
@@ -2329,11 +2318,11 @@ namespace {
     struct FuncFilter {
         FuncFilter(const Scope *scope, const Token *tok): _scope(scope), _tok(tok) {}
 
-        bool operator()(const Function &func) const {
-            bool matchingFunc = func.type == Function::eFunction &&
-                                _tok->str() == func.token->str();
+        bool operator()(const Function* func) const {
+            bool matchingFunc = func->type == Function::eFunction &&
+                                _tok->str() == func->token->str();
             // either a class function, or a global function with the same name
-            return (_scope && _scope == func.functionScope && matchingFunc) ||
+            return (_scope && _scope == func->nestedIn && matchingFunc) ||
                    (!_scope && matchingFunc);
         }
         const Scope *_scope;
@@ -2341,7 +2330,7 @@ namespace {
     };
 
     bool inconclusiveFunctionCall(const SymbolDatabase *symbolDatabase,
-                                  const std::list<Function> &constFunctions,
+                                  const std::list<const Function*> &constFunctions,
                                   const ExpressionTokens &tokens)
     {
         const Token *start = tokens.start;
@@ -2366,7 +2355,7 @@ namespace {
                     // hard coded list of safe, no-side-effect functions
                     if (v == 0 && Token::Match(prev, "strcmp|strncmp|strlen|memcmp|strcasecmp|strncasecmp"))
                         return false;
-                    std::list<Function>::const_iterator it = std::find_if(constFunctions.begin(),
+                    std::list<const Function*>::const_iterator it = std::find_if(constFunctions.begin(),
                             constFunctions.end(),
                             FuncFilter(v ? v->type(): 0, prev));
                     if (it == constFunctions.end())
@@ -2380,7 +2369,7 @@ namespace {
     class Expressions {
     public:
         Expressions(const SymbolDatabase *symbolDatabase, const
-                    std::list<Function> &constFunctions)
+                    std::list<const Function*> &constFunctions)
             : _start(0),
               _lastTokens(0),
               _symbolDatabase(symbolDatabase),
@@ -2424,39 +2413,29 @@ namespace {
         const Token *_start;
         ExpressionTokens *_lastTokens;
         const SymbolDatabase *_symbolDatabase;
-        const std::list<Function> &_constFunctions;
+        const std::list<const Function*> &_constFunctions;
     };
 
-    bool notconst(const Function &func)
+    bool notconst(const Function* func)
     {
-        return !func.isConst;
+        return !func->isConst;
     }
 
-    void getConstFunctions(const SymbolDatabase *symbolDatabase, std::list<Function> &constFunctions)
+    void getConstFunctions(const SymbolDatabase *symbolDatabase, std::list<const Function*> &constFunctions)
     {
         std::list<Scope>::const_iterator scope;
         for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
             std::list<Function>::const_iterator func;
             // only add const functions that do not have a non-const overloaded version
             // since it is pretty much impossible to tell which is being called.
-            typedef std::map<std::string, std::list<Function> > StringFunctionMap;
+            typedef std::map<std::string, std::list<const Function*> > StringFunctionMap;
             StringFunctionMap functionsByName;
             for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-                StringFunctionMap::iterator it = functionsByName.find(func->tokenDef->str());
-                Scope *currScope = const_cast<Scope*>(&*scope);
-                if (it == functionsByName.end()) {
-                    std::list<Function> tmp;
-                    tmp.push_back(*func);
-                    tmp.back().functionScope = currScope;
-                    functionsByName[func->tokenDef->str()] = tmp;
-                } else {
-                    it->second.push_back(*func);
-                    it->second.back().functionScope = currScope;
-                }
+                functionsByName[func->tokenDef->str()].push_back(&*func);
             }
             for (StringFunctionMap::iterator it = functionsByName.begin();
                  it != functionsByName.end(); ++it) {
-                std::list<Function>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
+                std::list<const Function*>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
                 if (nc == it->second.end()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it->second);
@@ -2467,7 +2446,7 @@ namespace {
 
 }
 
-void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
+void CheckOther::checkExpressionRange(const std::list<const Function*> &constFunctions,
                                       const Token *start,
                                       const Token *end,
                                       const std::string &toCheck)
@@ -2536,7 +2515,7 @@ void CheckOther::checkExpressionRange(const std::list<Function> &constFunctions,
     }
 }
 
-void CheckOther::complexDuplicateExpressionCheck(const std::list<Function> &constFunctions,
+void CheckOther::complexDuplicateExpressionCheck(const std::list<const Function*> &constFunctions,
         const Token *classStart,
         const std::string &toCheck,
         const std::string &alt)
@@ -2598,7 +2577,7 @@ void CheckOther::checkDuplicateExpression()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     std::list<Scope>::const_iterator scope;
-    std::list<Function> constFunctions;
+    std::list<const Function*> constFunctions;
     getConstFunctions(symbolDatabase, constFunctions);
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {

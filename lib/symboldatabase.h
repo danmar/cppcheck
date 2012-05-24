@@ -367,6 +367,7 @@ public:
           token(NULL),
           arg(NULL),
           functionScope(NULL),
+          nestedIn(NULL),
           type(eFunction),
           access(Public),
           hasBody(false),
@@ -395,6 +396,7 @@ public:
     const Token *token;    // function name token in implementation
     const Token *arg;      // function argument start '('
     Scope *functionScope;  // scope of function body
+    Scope* nestedIn;       // Scope the function is declared in
     std::list<Variable> argumentList; // argument list
     Type type;             // constructor, destructor, ...
     AccessControl access;  // public/protected/private
