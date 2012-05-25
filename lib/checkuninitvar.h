@@ -26,6 +26,8 @@
 #include "settings.h"
 
 class Token;
+class Scope;
+class Variable;
 
 /// @addtogroup Checks
 /// @{
@@ -60,8 +62,9 @@ public:
 
     /** Check for uninitialized variables */
     void check();
-    bool checkScopeForVariable(const Token *tok, const unsigned int varid, bool ispointer, bool * const possibleInit);
-    bool checkIfForWhileHead(const Token *startparanthesis, unsigned int varid, bool ispointer, bool suppressErrors, bool isuninit);
+    void checkScope(const Scope* scope);
+    bool checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit);
+    bool checkIfForWhileHead(const Token *startparanthesis, const Variable& var, bool suppressErrors, bool isuninit);
     bool isVariableUsage(const Token *vartok, bool ispointer) const;
 
 
