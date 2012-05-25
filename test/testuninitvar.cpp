@@ -1182,6 +1182,31 @@ private:
                        "   free(buffer);\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: buffer\n", errout.str());
+
+        // #3845
+        checkUninitVar("int foo() {\n"
+                       "    int a[1] = {5};\n"
+                       "    return a[0];\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int foo() {\n"
+                       "    int a[2][2] = {{3,4}, {5,6}};\n"
+                       "    return a[0][1];\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int foo() {\n"
+                       "    int a[1];\n"
+                       "    return a[0];\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("int foo() {\n"
+                       "    int a[2][2];\n"
+                       "    return a[0][1];\n"
+                       "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", "", errout.str());
     }
 
     // alloc..

@@ -389,6 +389,13 @@ private:
         if (tok.varId() && Token::Match(&tok, "%var% [[;]")) {
             const Variable* var2 = symbolDatabase->getVariableFromVarId(tok.varId());
             if (var2 && var2->nameToken() == &tok && !var2->isStatic() && !var2->isConst()) {
+                if (tok.linkAt(1)) { // array
+                    const Token* end = tok.next();
+                    while (end->link())
+                        end = end->link()->next();
+                    if (end->str() != ";")
+                        return &tok;
+                }
                 const Scope* parent = var2->scope()->nestedIn;
                 while (parent) {
                     for (std::list<Variable>::const_iterator j = parent->varlist.begin(); j != parent->varlist.end(); ++j) {
