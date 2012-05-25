@@ -35,7 +35,7 @@ void CheckInternal::checkTokenMatchPatterns()
         if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
             continue;
 
-        const std::string funcname = tok->strAt(2);
+        const std::string& funcname = tok->strAt(2);
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
@@ -64,7 +64,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
         if (!Token::simpleMatch(tok, "Token :: simpleMatch (") && !Token::simpleMatch(tok, "Token :: findsimplematch ("))
             continue;
 
-        const std::string funcname = tok->strAt(2);
+        const std::string& funcname = tok->strAt(2);
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
@@ -136,7 +136,7 @@ void CheckInternal::checkMissingPercentCharacter()
         if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
             continue;
 
-        const std::string funcname = tok->strAt(2);
+        const std::string& funcname = tok->strAt(2);
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();

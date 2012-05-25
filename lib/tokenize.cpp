@@ -3262,7 +3262,7 @@ bool Tokenizer::simplifyTokenList()
                 continue;
             }
 
-            const std::string num = tok->strAt(4);
+            const std::string& num = tok->strAt(4);
             int indent = 1;
             for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "{") {
@@ -4226,8 +4226,8 @@ bool Tokenizer::simplifyConditions()
                 // Compare numbers
 
                 if (cmp == "==" || cmp == "!=") {
-                    const std::string op1(tok->next()->str());
-                    const std::string op2(tok->strAt(3));
+                    const std::string& op1(tok->next()->str());
+                    const std::string& op2(tok->strAt(3));
 
                     bool eq = false;
                     if (MathLib::isInt(op1) && MathLib::isInt(op2))
@@ -5846,7 +5846,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
             return false;
 
         // no break => the value of the counter value is known after the for loop..
-        const std::string compareop = tok2->strAt(5);
+        const std::string& compareop = tok2->strAt(5);
         if (compareop == "<") {
             value = tok2->strAt(6);
             valueVarId = tok2->tokAt(6)->varId();

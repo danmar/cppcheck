@@ -2046,7 +2046,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
         return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%var% [ %var% ]")) {
-            const std::string indexName(tok->strAt(2));
+            const std::string& indexName(tok->strAt(2));
 
             // skip array index..
             tok = tok->tokAt(4);

@@ -118,7 +118,7 @@ void CheckIO::checkFileUsage()
             indent++;
         else if (tok->str() == "}") {
             indent--;
-            for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); i++) {
+            for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
                 if (indent < i->second.mode_indent) {
                     i->second.mode_indent = 0;
                     i->second.mode = UNKNOWN;

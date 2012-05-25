@@ -55,7 +55,7 @@ void CheckAssignIf::assignIf()
                 if (tok2->str() == "(" || tok2->str() == "}" || tok2->str() == "=")
                     break;
                 if (Token::Match(tok2,"if ( %varid% %any% %num% &&|%oror%|)", varid)) {
-                    const std::string op(tok2->strAt(3));
+                    const std::string& op(tok2->strAt(3));
                     const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
                     if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
                         assignIfError(tok2, false);
@@ -105,7 +105,7 @@ void CheckAssignIf::comparison()
                 continue;
 
             if ((num1 & num2) != num2) {
-                const std::string op(compareToken->str());
+                const std::string& op(compareToken->str());
                 comparisonError(tok, num1, op, num2, op=="==" ? false : true);
             }
         }

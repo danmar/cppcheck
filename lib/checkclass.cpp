@@ -1044,7 +1044,7 @@ void CheckClass::virtualDestructor()
                 const Scope *derivedFrom = scope->derivedFrom[j].scope;
 
                 // Name of base class..
-                const std::string baseName = derivedFrom->className;
+                const std::string& baseName = derivedFrom->className;
 
                 // Check for this pattern:
                 // 1. Base class pointer is given the address of derived class instance

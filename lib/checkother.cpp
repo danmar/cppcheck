@@ -2773,13 +2773,13 @@ void CheckOther::sizeofCalculationError(const Token *tok, bool inconclusive)
 void CheckOther::checkAssignBoolToPointer()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] %var% = %bool% ;")) {
+        if (Token::Match(tok, "!!* %var% = %bool% ;")) {
             const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
             const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
 
             // Is variable a pointer?
-            if (var1 && var1->nameToken()->strAt(-1) == "*")
+            if (var1 && var1->isPointer())
                 assignBoolToPointerError(tok->next());
         }
     }

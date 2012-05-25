@@ -679,7 +679,7 @@ void CheckStl::stlBoundries()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Declaring iterator..
         if (tok->str() == "<" && Token::Match(tok->previous(), STL_CONTAINER_LIST)) {
-            const std::string container_name(tok->strAt(-1));
+            const std::string& container_name(tok->strAt(-1));
             while (tok && tok->str() != ">")
                 tok = tok->next();
             if (!tok)

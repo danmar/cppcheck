@@ -443,7 +443,7 @@ void CheckNullPointer::nullPointerAfterLoop()
             continue;
 
         // Get variable name for the loop variable
-        const std::string varname(tok->strAt(2));
+        const std::string& varname(tok->strAt(2));
 
         // Locate the end of the while loop body..
         const Token *tok2 = tok->next()->link()->next()->link();
@@ -782,7 +782,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 continue;
 
             // Name of pointer
-            const std::string varname(vartok->str());
+            const std::string& varname(vartok->str());
 
             const Variable* var = symbolDatabase->getVariableFromVarId(varid);
             // Check that variable is a pointer..
