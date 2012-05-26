@@ -42,6 +42,7 @@ private:
         TEST_CASE(assign7);
         TEST_CASE(assign8);
         TEST_CASE(assign9);
+        TEST_CASE(assign10);
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -175,6 +176,16 @@ private:
               "    char *p = x();\n"
               "    free(p);\n"
               "    p = NULL;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign10() {
+        check("void foo() {\n"
+              "    char *p;\n"
+              "    if (x) { p = malloc(10); }\n"
+              "    if (!x) { p = NULL; }\n"
+              "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

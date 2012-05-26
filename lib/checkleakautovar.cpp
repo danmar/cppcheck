@@ -235,7 +235,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 continue;
 
             // Variable has already been allocated => error
-            leakIfAllocated(tok, *varInfo);
+            if (conditionalAlloc.find(tok->varId()) == conditionalAlloc.end())
+                leakIfAllocated(tok, *varInfo);
             varInfo->erase(tok->varId());
 
             // not a local variable nor argument?
