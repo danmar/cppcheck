@@ -77,10 +77,16 @@ public:
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
+        checkLeakAutoVar.parseConfigurationFile("cppcheck.cfg");
         checkLeakAutoVar.check();
     }
 
 private:
+
+    std::map<std::string,std::string> cfgalloc;
+    std::map<std::string,std::string> cfgdealloc;
+
+    void parseConfigurationFile(const std::string &filename);
 
     /** check for leaks in all scopes */
     void check();

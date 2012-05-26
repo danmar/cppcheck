@@ -28,7 +28,7 @@
 
 #include "checknullpointer.h"  // <- isUpper
 
-#include <iostream>
+#include <fstream>
 
 //---------------------------------------------------------------------------
 
@@ -85,12 +85,44 @@ void CheckLeakAutoVar::doubleDeallocationError(const Token *tok, const std::stri
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-	if (_settings->experimental)
-	{
+    if (_settings->experimental) {
         reportError(tok,
                     Severity::information,
                     "leakconfiguration",
                     functionName + " configuration is needed to establish if there is a leak or not");
+    }
+}
+
+void CheckLeakAutoVar::parseConfigurationFile(const std::string &filename)
+{
+    std::ifstream fin(filename.c_str());
+    if (!fin.is_open())
+        return;
+
+    std::string line;
+    while (std::getline(fin,line)) {
+        if (line.compare(0,4,"MEM ",0,4) == 0) {
+            std::string f1;
+            unsigned int type = 1;
+            std::string::size_type pos1 = line.find_first_not_of(" ", 4U);
+            while (pos1 < line.size()) {
+                const std::string::size_type pos2 = line.find(" ", pos1);
+                std::string f;
+                if (pos2 == std::string::npos)
+                    f = line.substr(pos1);
+                else
+                    f = line.substr(pos1, pos2-pos1);
+                if (f1.empty())
+                    f1 = f;
+                if (f == ":")
+                    type = 2;
+                else if (type == 1)
+                    cfgalloc[f] = f1;
+                else if (type == 1)
+                    cfgdealloc[f] = f1;
+                pos1 = line.find_first_not_of(" ", pos2);
+            }
+        }
     }
 }
 
@@ -125,13 +157,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
     const std::set<unsigned int> conditionalAlloc(varInfo->conditionalAlloc);
 
     // Allocation functions. key = function name, value = allocation type
-    std::map<std::string, std::string> allocFunctions;
+    std::map<std::string, std::string> allocFunctions(cfgalloc);
     allocFunctions["malloc"] = "malloc";
     allocFunctions["strdup"] = "malloc";
     allocFunctions["fopen"] = "fopen";
 
     // Deallocation functions. key = function name, value = allocation type
-    std::map<std::string, std::string> deallocFunctions;
+    std::map<std::string, std::string> deallocFunctions(cfgdealloc);
     deallocFunctions["free"] = "malloc";
     deallocFunctions["fclose"] = "fopen";
 
