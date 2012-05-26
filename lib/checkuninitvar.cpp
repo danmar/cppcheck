@@ -593,9 +593,9 @@ private:
 
             // parse usage..
             {
-                std::list<const Token *> var;
-                CheckNullPointer::parseFunctionCall(tok, var, 1);
-                for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
+                std::list<const Token *> var1;
+                CheckNullPointer::parseFunctionCall(tok, var1, 1);
+                for (std::list<const Token *>::const_iterator it = var1.begin(); it != var1.end(); ++it) {
                     // does iterator point at first function parameter?
                     const bool firstPar(*it == tok.tokAt(2));
 
@@ -617,7 +617,7 @@ private:
                 std::list<const Token *> var2;
                 CheckNullPointer::parseFunctionCall(tok, var2, 0);
                 for (std::list<const Token *>::const_iterator it = var2.begin(); it != var2.end(); ++it) {
-                    if (std::find(var.begin(), var.end(), *it) == var.end())
+                    if (std::find(var1.begin(), var1.end(), *it) == var1.end())
                         use_dead_pointer(checks, *it);
                 }
             }
@@ -857,9 +857,9 @@ private:
 
         else if (Token::Match(&tok, "!| %var% (")) {
             const Token * const ftok = (tok.str() == "!") ? tok.next() : &tok;
-            std::list<const Token *> var;
-            CheckNullPointer::parseFunctionCall(*ftok, var, 1);
-            for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
+            std::list<const Token *> var1;
+            CheckNullPointer::parseFunctionCall(*ftok, var1, 1);
+            for (std::list<const Token *>::const_iterator it = var1.begin(); it != var1.end(); ++it) {
                 // is function memset/memcpy/etc?
                 if (ftok->str().compare(0,3,"mem") == 0)
                     use_array_mem(checks, *it);
