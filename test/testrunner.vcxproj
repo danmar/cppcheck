@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BFEBDA59-5448-3CF9-A3ED-7AAB0402CDE8}</ProjectGuid>
+    <ProjectGuid>{2008CD60-EE28-3AB7-B069-21CB292ED3B3}</ProjectGuid>
     <RootNamespace>testrunner</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -136,6 +136,8 @@
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
     <ClCompile Include="..\lib\checkinternal.cpp" />
+    <ClCompile Include="..\lib\checkio.cpp" />
+    <ClCompile Include="..\lib\checkleakautovar.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
     <ClCompile Include="..\lib\checknonreentrantfunctions.cpp" />
     <ClCompile Include="..\lib\checknullpointer.cpp" />
@@ -220,6 +222,8 @@
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
     <ClInclude Include="..\lib\checkinternal.h" />
+    <ClInclude Include="..\lib\checkio.h" />
+    <ClInclude Include="..\lib\checkleakautovar.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
     <ClInclude Include="..\lib\checknonreentrantfunctions.h" />
     <ClInclude Include="..\lib\checknullpointer.h" />

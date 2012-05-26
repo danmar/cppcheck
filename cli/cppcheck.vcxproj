@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{00EC0553-4107-361D-9BF6-E01D402EDE8A}</ProjectGuid>
+    <ProjectGuid>{331ECF0E-B735-3591-8117-F947568F31EE}</ProjectGuid>
     <RootNamespace>cppcheck</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
   </PropertyGroup>
@@ -136,6 +136,8 @@
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
     <ClCompile Include="..\lib\checkinternal.cpp" />
+    <ClCompile Include="..\lib\checkio.cpp" />
+    <ClCompile Include="..\lib\checkleakautovar.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
     <ClCompile Include="..\lib\checknonreentrantfunctions.cpp" />
     <ClCompile Include="..\lib\checknullpointer.cpp" />
@@ -181,6 +183,8 @@
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
     <ClInclude Include="..\lib\checkinternal.h" />
+    <ClInclude Include="..\lib\checkio.h" />
+    <ClInclude Include="..\lib\checkleakautovar.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
     <ClInclude Include="..\lib\checknonreentrantfunctions.h" />
     <ClInclude Include="..\lib\checknullpointer.h" />

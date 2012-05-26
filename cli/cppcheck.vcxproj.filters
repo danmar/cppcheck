@@ -51,6 +51,12 @@
     <ClCompile Include="..\lib\checkinternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\checkio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\checkleakautovar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\checkmemoryleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -180,6 +186,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkinternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\checkio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\checkleakautovar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkmemoryleak.h">

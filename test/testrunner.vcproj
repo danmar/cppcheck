@@ -140,6 +140,10 @@
 			<File
 				RelativePath="..\lib\checkinternal.cpp" />
 			<File
+				RelativePath="..\lib\checkio.cpp" />
+			<File
+				RelativePath="..\lib\checkleakautovar.cpp" />
+			<File
 				RelativePath="..\lib\checkmemoryleak.cpp" />
 			<File
 				RelativePath="..\lib\checknonreentrantfunctions.cpp" />
@@ -308,6 +312,10 @@
 				RelativePath="..\lib\checkexceptionsafety.h" />
 			<File
 				RelativePath="..\lib\checkinternal.h" />
+			<File
+				RelativePath="..\lib\checkio.h" />
+			<File
+				RelativePath="..\lib\checkleakautovar.h" />
 			<File
 				RelativePath="..\lib\checkmemoryleak.h" />
 			<File
