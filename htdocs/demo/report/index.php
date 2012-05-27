@@ -39,7 +39,7 @@
    * @param string $code Source code
    * @return string Output lines
    */
-  function get_democlient_outout($code) {
+  function get_democlient_output($code) {
     $postdata = http_build_query(
       array(
         'code' => $code
@@ -57,6 +57,28 @@
     $context = stream_context_create($opts);
     
     return file('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
+  }
+  
+  /**
+   * ...
+   * @param array $output Output lines
+   * @return array Parsed output
+   */
+  function parse_democlient_output($output) {
+    $parsed = array();
+    foreach ($output as $line) { //for each output line...
+      $line = trim($line);
+      if (empty($line)) { //if empty line...
+        continue;
+      }
+      preg_match('/\[test.c:(\d+)\]: (.*)/', $line, $matches);
+      $lineNumber = $matches[1];
+      $result = $matches[2];
+      if (!empty($lineNumber) && !empty($result)) { //if complete result...
+        $parsed[$lineNumber][] = $result;
+      }
+    }
+    return $parsed;
   }
   
   function cut_string($string, $length = 1024) {
@@ -82,14 +104,17 @@
     
     echo "<h3>Output</h3>\n";
     
-    $lines = get_democlient_outout($code);
-    foreach ($lines as $line) { //for each output line...
-      $line = trim($line);
-      if (empty($line)) { //if empty line...
-        continue;
+    $output = get_democlient_output($code);
+    $report = parse_democlient_output($output);
+    
+    echo "<dl>\n";
+    foreach ($report as $lineNumber => $results) { //for each line results...
+      echo "  <dt>Line $lineNumber:</dt>\n";
+      foreach ($results as $result) { //for each results...
+        echo "  <dd>" . htmlspecialchars($result) . "</dd>\n";
       }
-      echo "<p>" . htmlspecialchars($line) . "</p>\n";
     }
+    echo "</dl>\n";
   }
   else {
     echo "<p>Use the <a href=\"/demo/\">online demo</a> page to create the report.</p>\n";

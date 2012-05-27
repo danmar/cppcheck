@@ -6,6 +6,10 @@ body {
   background: #eee;
 }
 
+dt {
+  font-weight:bold;
+}
+
 /* Default link style */
 a:link { color:#036; text-decoration:underline; }
 a:visited { color:#036; text-decoration:underline; }
