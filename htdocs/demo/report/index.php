@@ -69,7 +69,9 @@
   if ($isCodePosted) { //if code posted...
     include_once '../../site/geshi/geshi.php';
     
-    $geshi = new GeSHi($_POST['code'], 'cpp');
+    $code = cut_string($_POST['code']);
+    
+    $geshi = new GeSHi($code, 'cpp');
     $geshi->enable_classes();
     $geshi->set_header_type(GESHI_HEADER_PRE_TABLE);
     $geshi->enable_line_numbers(GESHI_NORMAL_LINE_NUMBERS);
@@ -80,7 +82,6 @@
     
     echo "<h3>Output</h3>\n";
     
-    $code = cut_string($_POST['code']);
     $lines = get_democlient_outout($code);
     foreach ($lines as $line) { //for each output line...
       $line = trim($line);
