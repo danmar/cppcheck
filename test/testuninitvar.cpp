@@ -52,6 +52,7 @@ private:
         // checking for uninitialized variables without using the
         // ExecutionPath functionality
         TEST_CASE(uninitvar2);
+        TEST_CASE(uninitvar3);          // #3844
     }
 
     void checkUninitVar(const char code[]) {
@@ -553,6 +554,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitvar3() { // #3844
+        // avoid false positive
+        checkUninitVar("namespace std _GLIBCXX_VISIBILITY(default)\n"
+                       "{\n"
+                       "_GLIBCXX_BEGIN_NAMESPACE_CONTAINER\n"
+                       "  typedef unsigned long _Bit_type;\n"
+                       "  struct _Bit_reference\n"
+                       "  {\n"
+                       "	 _Bit_type * _M_p;\n"
+                       "	 _Bit_type _M_mask;\n"
+                       "	 _Bit_reference(_Bit_type * __x, _Bit_type __y)\n"
+                       "	 : _M_p(__x), _M_mask(__y) { }\n"
+                       "  };\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void uninitvar_bitop() {
         checkUninitVar("void foo() {\n"
