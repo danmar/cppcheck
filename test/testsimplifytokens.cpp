@@ -345,6 +345,7 @@ private:
         TEST_CASE(enum27); // ticket #3005 (segmentation fault)
         TEST_CASE(enum28);
         TEST_CASE(enum29); // ticket #3747 (bitwise or value)
+        TEST_CASE(enum30); // ticket #3852 (false positive)
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6990,6 +6991,27 @@ private:
         const char code[] = "enum { x=1, y=x|2 }; i = (3==y);";
         ASSERT_EQUALS("i = 3 == 3 ;", checkSimplifyEnum(code));
     }
+
+    void enum30() { // #3852 - false positive
+
+        const char code[] = "class TestIf\n"
+                            "{\n"
+                            "public:\n"
+                            "    enum class Foo\n"
+                            "    {\n"
+                            "      one = 0,\n"
+                            "      two = 1\n"
+                            "    };\n"
+                            "    enum class Bar\n"
+                            "    {\n"
+                            "      one = 0,\n"
+                            "      two = 1\n"
+                            "    };\n"
+                            "};\n";
+        checkSimplifyEnum(code);
+        TODO_ASSERT_EQUALS("","[test.cpp:12] -> [test.cpp:7]: (style) Variable 'two' hides enumerator with same name\n", errout.str());
+    }
+
 
     void removestd() {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
