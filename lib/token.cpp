@@ -621,7 +621,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             }
             break;
             case 'n':
-                // Number (%num)
+                // Number (%num%)
             {
                 if (!tok->isNumber())
                     return false;
