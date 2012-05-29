@@ -236,6 +236,7 @@ private:
         TEST_CASE(allocfunc8);
         TEST_CASE(allocfunc9);
         TEST_CASE(allocfunc10);
+        TEST_CASE(allocfunc11);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -2511,6 +2512,19 @@ private:
               "    char *s = getstr();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void allocfunc11() { // ticket #3809 - false positive
+        check("class A \n"
+              "{\n"
+              "    public:\n"
+              " 	   virtual void f (double * & data_val) ;\n"
+              "};\n"
+              "void A::f (double  * & data_val) \n"
+              "{\n"
+              "  data_val = new double [10];\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("","[test.cpp:9]: (error) Memory leak: data_val\n", errout.str());
     }
 
     void throw1() {
