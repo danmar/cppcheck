@@ -140,6 +140,7 @@ private:
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateIf1); // ticket 3689
         TEST_CASE(duplicateBranch);
+        TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparision between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
@@ -1342,6 +1343,7 @@ private:
     }
 
     void switchRedundantAssignmentTest() {
+
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -3992,6 +3994,38 @@ private:
               "        __asm__(\"mov ax, bx\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for if and else.\n", errout.str());
+    }
+
+    void duplicateBranch1() {
+
+        // tests inspired by http://www.viva64.com/en/b/0149/ ( Comparision between PVS-Studio and cppcheck )
+        // Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
+        check("void f()\n"
+              "{\n"
+              "  if (front < 0) \n"
+              "    frac = (front)/(front-back);\n"
+              "  else \n"
+              "    frac = (front)/(front-back);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for if and else.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  if (front < 0) \n"
+              "  { frac = (front)/(front-back);}\n"
+              "  else \n"
+              "    frac = (front)/(front-back);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for if and else.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  if (front < 0) \n"
+              "  { frac = (front)/(front-back);}\n"
+              "  else \n"
+              "    frac = (front)/((front-back));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for if and else.\n", errout.str());
     }
 
     void duplicateExpression1() {
