@@ -3918,6 +3918,23 @@ private:
               "       foo(i);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string &token)\n"
+              "{\n"
+              "   if( token == \"C\")\n"
+              "   {\n"
+              " 	   std::cout << \"C\";\n"
+              "   }\n"
+              "   else if ( token == \"A\" )\n"
+              "   {\n"
+              "       std::cout << \"A\";\n"
+              "   }\n"
+              "   else if ( token == \"A\" )\n"
+              "   {\n"
+              "       std::cout << \"A\";\n"
+              "   }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:7]: (style) Found duplicate if expressions.\n", errout.str());
     }
 
     void duplicateBranch() {
