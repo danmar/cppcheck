@@ -62,6 +62,7 @@ private:
         TEST_CASE(ifelse2);
         TEST_CASE(ifelse3);
         TEST_CASE(ifelse4);
+        TEST_CASE(ifelse5);
 
         // switch
         TEST_CASE(switch1);
@@ -308,6 +309,15 @@ private:
               "    char *p;\n"
               "    if (x) { p = malloc(10); }\n"
               "    if (!x) { return; }\n"
+              "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse5() {
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    if (!p && x) { p = malloc(10); }\n"
               "    free(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());

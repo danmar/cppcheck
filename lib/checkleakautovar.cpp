@@ -292,7 +292,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     varInfo2.erase(tok->tokAt(2)->varId());
                     if (notzero.find(tok->tokAt(2)->varId()) != notzero.end())
                         varInfo2.clear();
-                } else if (Token::Match(tok->next(), "( ! %var% )"))
+                } else if (Token::Match(tok->next(), "( ! %var% )|&&"))
                     varInfo1.erase(tok->tokAt(3)->varId());
 
                 checkScope(tok2->next(), &varInfo1, notzero);
