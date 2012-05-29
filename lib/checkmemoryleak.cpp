@@ -2450,7 +2450,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     std::list<Function>::const_iterator func;
 
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        if (func->type != Function::eConstructor &&
+        if ((func->type == Function::eFunction || func->type == Function::eOperatorEqual) &&
             func->access == Public && func->hasBody) {
             const Token *tok2 = func->token;
             while (tok2->str() != "{")

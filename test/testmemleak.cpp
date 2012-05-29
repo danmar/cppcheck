@@ -3840,6 +3840,7 @@ private:
         TEST_CASE(class21); // ticket #2517
         TEST_CASE(class22); // ticket #3012
         TEST_CASE(class23); // ticket #3303
+        TEST_CASE(class24); // ticket #3806 - false positive in copy constructor
 
         TEST_CASE(staticvar);
 
@@ -4738,6 +4739,17 @@ private:
               "    ~CData() { if (m_impl) m_impl->Release(); }\n"
               "private:\n"
               "    CDataImpl *m_impl;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class24() { // ticket #3806 - false positive in copy constructor
+        check("class Fred {\n"
+              "private:\n"
+              "    int * a;\n"
+              "public:\n"
+              "    Fred(const Fred &fred) { a = new int; }\n"
+              "    ~Fred() { delete a; }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
