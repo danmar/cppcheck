@@ -85,7 +85,7 @@ void CheckLeakAutoVar::doubleDeallocationError(const Token *tok, const std::stri
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if ((!cfgalloc.empty() || !cfgdealloc.empty()) && _settings->isEnabled("style")) {
+    if (((!cfgalloc.empty() || !cfgdealloc.empty()) && _settings->isEnabled("style")) || _settings->experimental) {
         reportError(tok,
                     Severity::information,
                     "leakconfiguration",
