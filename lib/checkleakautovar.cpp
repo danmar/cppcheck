@@ -85,7 +85,7 @@ void CheckLeakAutoVar::doubleDeallocationError(const Token *tok, const std::stri
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (_settings->experimental) {
+    if ((!cfgalloc.empty() || !cfgdealloc.empty()) && _settings->isEnabled("style")) {
         reportError(tok,
                     Severity::information,
                     "leakconfiguration",
@@ -103,7 +103,7 @@ void CheckLeakAutoVar::parseConfigurationFile(const std::string &filename)
     while (std::getline(fin,line)) {
         if (line.compare(0,4,"MEM ",0,4) == 0) {
             std::string f1;
-            unsigned int type = 1;
+            enum {ALLOC, DEALLOC} type = ALLOC;
             std::string::size_type pos1 = line.find_first_not_of(" ", 4U);
             while (pos1 < line.size()) {
                 const std::string::size_type pos2 = line.find(" ", pos1);
@@ -115,10 +115,10 @@ void CheckLeakAutoVar::parseConfigurationFile(const std::string &filename)
                 if (f1.empty())
                     f1 = f;
                 if (f == ":")
-                    type = 2;
-                else if (type == 1)
+                    type = DEALLOC;
+                else if (type == ALLOC)
                     cfgalloc[f] = f1;
-                else if (type == 1)
+                else if (type == DEALLOC)
                     cfgdealloc[f] = f1;
                 pos1 = line.find_first_not_of(" ", pos2);
             }
