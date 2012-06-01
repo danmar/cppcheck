@@ -143,6 +143,16 @@ void CheckLeakAutoVar::check()
 
             varInfo.conditionalAlloc.clear();
 
+            // Clear reference arguments from varInfo..
+            std::map<unsigned int, std::string>::iterator it = varInfo.alloctype.begin();
+            while (it != varInfo.alloctype.end()) {
+                const Variable *var = symbolDatabase->getVariableFromVarId(it->first);
+                if (var && var->isArgument() && var->isReference())
+                    varInfo.alloctype.erase(it++);
+                else
+                    ++it;
+            }
+
             ret(i->classEnd, varInfo);
         }
     }

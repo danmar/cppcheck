@@ -2228,6 +2228,9 @@ void CheckMemoryLeakInFunction::check()
         if (!var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || !var->scope())
             continue;
 
+        if (var->isArgument() && var->isReference())
+            continue;
+
         if (!var->isPointer() && var->typeStartToken()->str() != "int")
             continue;
 

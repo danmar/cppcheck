@@ -2515,16 +2515,10 @@ private:
     }
 
     void allocfunc11() { // ticket #3809 - false positive
-        check("class A \n"
-              "{\n"
-              "    public:\n"
-              " 	   virtual void f (double * & data_val) ;\n"
-              "};\n"
-              "void A::f (double  * & data_val) \n"
-              "{\n"
-              "  data_val = new double [10];\n"
+        check("void f (double  * & data_val)  {\n"
+              "  data_val = malloc(0x100);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("","[test.cpp:9]: (error) Memory leak: data_val\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void throw1() {
