@@ -77,6 +77,7 @@ private:
         TEST_CASE(return1);
         TEST_CASE(return2);
         TEST_CASE(return3);
+        TEST_CASE(return4);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -377,6 +378,17 @@ private:
         check("struct dev * f() {\n"
               "    struct ABC *abc = malloc(100);\n"
               "    return &abc->dev;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return4() {
+        check("void f(char *p, int x) {\n"
+              "    if (x==12) {n"
+              "        free(p);\n"
+              "        throw 1;\n"
+              "    }\n"
+              "    free(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

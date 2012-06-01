@@ -393,7 +393,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // return
-        else if (tok->str() == "return") {
+        else if (tok->str() == "return" || tok->str() == "throw") {
             ret(tok, *varInfo);
             varInfo->clear();
         }
