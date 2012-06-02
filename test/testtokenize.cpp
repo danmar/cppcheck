@@ -60,6 +60,7 @@ private:
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
         TEST_CASE(wrong_syntax2);
+        TEST_CASE(wrong_syntax3); // #3544
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
 
         TEST_CASE(minus);
@@ -655,6 +656,18 @@ private:
                             "void G( template <typename T> class (j) ) {}";
 
         // don't segfault..
+        tokenizeAndStringify(code);
+    }
+
+    void wrong_syntax3() {   // #3544
+        const char code[] = "X #define\n"
+                            "{\n"
+                            " (\n"
+                            "  for(  #endif typedef typedef cb[N] )\n"
+                            "        ca[N]; =  cb[i]\n"
+                            " )\n"
+                            "}";
+
         tokenizeAndStringify(code);
     }
 

@@ -116,6 +116,9 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
         if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
             links.push(tok2);
         else if (tok2->str() == ")" || tok2->str() == "]" || tok2->str() == "}") {
+            if (links.empty())
+                return tok2;
+
             Token * link = links.top();
 
             tok2->link(link);
