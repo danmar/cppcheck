@@ -69,10 +69,11 @@
       $parsed = array();
       $xml = simplexml_load_string($output);
       foreach ($xml->errors->error as $error) { //for all errors...
+        $severity = (string)$error->attributes()->severity;
         $msg = (string)$error->attributes()->msg;
         $line = (string)$error->location->attributes()->line;
-        if (!empty($msg) && !empty($line)) { //if complete error...
-          $parsed[$line][] = $msg;
+        if (!empty($severity) && !empty($msg) && !empty($line)) { //if complete error...
+          $parsed[] = array('severity' => $severity, 'msg' => $msg, 'line' => $line);
         }
       }
       return $parsed;
@@ -106,16 +107,23 @@
     echo "<h3>Output</h3>\n";
     
     $output = get_democlient_output($code);
-    $report = parse_democlient_output($output);
+    $results = parse_democlient_output($output);
     
-    echo "<dl>\n";
-    foreach ($report as $lineNumber => $results) { //for each line results...
-      echo "  <dt>Line $lineNumber:</dt>\n";
-      foreach ($results as $result) { //for each results...
-        echo "  <dd>" . htmlspecialchars($result) . "</dd>\n";
+    if (!empty($results)) {
+      echo "<table class=\"results\">\n";
+      echo "<thead>\n";
+      echo "  <tr><th class=\"center\">Line</th><th class=\"center\">Severity</th><th>Message</th></tr>\n";
+      echo "</thead>\n";
+      echo "<tbody>\n";
+      foreach ($results as $result) { //for each result...
+        echo "  <tr><td class=\"center\">" . htmlspecialchars($result['line']) . "</td><td class=\"center\">" . htmlspecialchars($result['severity']) . "</td><td>" . htmlspecialchars($result['msg']) . "</td></tr>\n";
       }
+      echo "</tbody>\n";
+      echo "</table>\n";
     }
-    echo "</dl>\n";
+    else {
+      echo "<p>No errors found.</p>\n";
+    }
   }
   else {
     echo "<p>Use the <a href=\"/demo/\">online demo</a> page to create the report.</p>\n";
