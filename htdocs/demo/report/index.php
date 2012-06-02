@@ -7,6 +7,13 @@
   <link rel="stylesheet" type="text/css" href="/site/css/all.css" />
   <link rel="stylesheet" type="text/css" href="/site/css/geshi.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
+  <script src="/site/js/picnet.table.filter.min.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('#resultsTable').tableFilter();
+    });
+  </script>
 </head>
 <body>
 <div id="header">
@@ -110,9 +117,9 @@
     $results = parse_democlient_output($output);
     
     if (!empty($results)) {
-      echo "<table class=\"results\">\n";
+      echo "<table id=\"resultsTable\">\n";
       echo "<thead>\n";
-      echo "  <tr><th class=\"center\">Line</th><th class=\"center\">Severity</th><th>Message</th></tr>\n";
+      echo "  <tr><th class=\"center\" filter-type=\"ddl\">Line</th><th class=\"center\" filter-type=\"ddl\">Severity</th><th>Message</th></tr>\n";
       echo "</thead>\n";
       echo "<tbody>\n";
       foreach ($results as $result) { //for each result...

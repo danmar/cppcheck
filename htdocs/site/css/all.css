@@ -137,21 +137,21 @@ pre.code em {
 }
 
 /* Results table */
-table.results {
+#resultsTable {
   border-collapse: collapse;
 }
-table.results th {
+#resultsTable th {
   padding: .25em;
   text-align: left;
   background: #e2e2e2;
   border: 1px solid #e2e2e2;
 }
-table.results td {
+#resultsTable td {
   padding: .25em;
   background: #f7f7f7;
   border: 1px solid #e2e2e2;
 }
-table.results .center {
+#resultsTable .center {
   text-align: center;
 }
 
@@ -159,6 +159,6 @@ table.results .center {
 @media print {
   #header { color: black; border-bottom: 1px solid black; }
   #tabs { display: none; }
-  table.results th { background: white; border: 1px solid black; }
-  table.results td { background: white; border: 1px solid black; }
+  #resultsTable th { background: white; border: 1px solid black; }
+  #resultsTable td { background: white; border: 1px solid black; }
 }
