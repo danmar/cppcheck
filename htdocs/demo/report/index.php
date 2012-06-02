@@ -56,29 +56,30 @@
     
     $context = stream_context_create($opts);
     
-    return file('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
+    return file_get_contents('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
   }
   
   /**
    * ...
-   * @param array $output Output lines
+   * @param string $output Output lines
    * @return array Parsed output
    */
   function parse_democlient_output($output) {
-    $parsed = array();
-    foreach ($output as $line) { //for each output line...
-      $line = trim($line);
-      if (empty($line)) { //if empty line...
-        continue;
+    try {
+      $parsed = array();
+      $xml = simplexml_load_string($output);
+      foreach ($xml->errors->error as $error) { //for all errors...
+        $msg = (string)$error->attributes()->msg;
+        $line = (string)$error->location->attributes()->line;
+        if (!empty($msg) && !empty($line)) { //if complete error...
+          $parsed[$line][] = $msg;
+        }
       }
-      preg_match('/\[test.c:(\d+)\]: (.*)/', $line, $matches);
-      $lineNumber = $matches[1];
-      $result = $matches[2];
-      if (!empty($lineNumber) && !empty($result)) { //if complete result...
-        $parsed[$lineNumber][] = $result;
-      }
+      return $parsed;
     }
-    return $parsed;
+    catch (Exception $ex) {
+      return array();
+    }
   }
   
   function cut_string($string, $length = 1024) {
