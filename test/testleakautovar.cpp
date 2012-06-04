@@ -63,6 +63,7 @@ private:
         TEST_CASE(ifelse3);
         TEST_CASE(ifelse4);
         TEST_CASE(ifelse5);
+        TEST_CASE(ifelse6); // #3370
 
         // switch
         TEST_CASE(switch1);
@@ -325,6 +326,17 @@ private:
               "    free(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse6() { // #3370
+        check("void f(int x) {\n"
+              "    int *a = malloc(20);\n"
+              "    if (x)\n"
+              " 	   free(a);\n"
+              "    else\n"
+              " 	   a = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:7]: (information) free configuration is needed to establish if there is a leak or not\n", errout.str());
     }
 
     void switch1() {
