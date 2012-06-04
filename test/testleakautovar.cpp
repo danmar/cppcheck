@@ -394,13 +394,32 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void return4() {
+    void return4() { // ticket #3862
+        // avoid false positives
         check("void f(char *p, int x) {\n"
               "    if (x==12) {n"
               "        free(p);\n"
               "        throw 1;\n"
               "    }\n"
               "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char *p, int x) {\n"
+              "    if (x==12) {n"
+              "        delete p;\n"
+              "        throw 1;\n"
+              "    }\n"
+              "    delete p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char *p, int x) {\n"
+              "    if (x==12) {n"
+              "        delete [] p;\n"
+              "        throw 1;\n"
+              "    }\n"
+              "    delete [] p;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
