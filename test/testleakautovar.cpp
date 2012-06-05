@@ -336,7 +336,7 @@ private:
               "    else\n"
               " 	   a = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.c:7]: (information) free configuration is needed to establish if there is a leak or not\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.c:7]: (error) New memory leak: a","[test.c:7]: (information) free configuration is needed to establish if there is a leak or not\n", errout.str());
     }
 
     void switch1() {
