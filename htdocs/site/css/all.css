@@ -6,6 +6,10 @@ body {
   background: #eee;
 }
 
+dt {
+  font-weight:bold;
+}
+
 /* Default link style */
 a:link { color:#036; text-decoration:underline; }
 a:visited { color:#036; text-decoration:underline; }
@@ -117,8 +121,44 @@ a.downloadnow em {
   font-style: normal;
 }
 
+/* Source Code */
+pre.code {
+  padding: .5em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
+pre.code em {
+  color: green;
+}
+.geshicode {
+  padding: .5em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
+
+/* Results table */
+#resultsTable {
+  border-collapse: collapse;
+}
+#resultsTable th {
+  padding: .25em;
+  text-align: left;
+  background: #e2e2e2;
+  border: 1px solid #e2e2e2;
+}
+#resultsTable td {
+  padding: .25em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
+#resultsTable .center {
+  text-align: center;
+}
+
 /* Printing */
 @media print {
   #header { color: black; border-bottom: 1px solid black; }
   #tabs { display: none; }
+  #resultsTable th { background: white; border: 1px solid black; }
+  #resultsTable td { background: white; border: 1px solid black; }
 }
