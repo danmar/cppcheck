@@ -114,6 +114,7 @@ private:
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
+        TEST_CASE(namespaces3);  // #3854 - unknown macro
 
         TEST_CASE(tryCatch1);
 
@@ -865,6 +866,13 @@ private:
         ASSERT_EQUALS(true, function->hasBody);
     }
 
+    void namespaces3() {	// #3854 - namespace with unknown macro
+        GET_SYMBOL_DB("namespace fred UNKNOWN_MACRO(default) {\n"
+                      "}\n");
+        ASSERT_EQUALS(2U, db->scopeList.size());
+        ASSERT_EQUALS(Scope::eGlobal, db->scopeList.front().type);
+        ASSERT_EQUALS(Scope::eNamespace, db->scopeList.back().type);
+    }
 
     void tryCatch1() {
         const std::string str("void foo() {\n"

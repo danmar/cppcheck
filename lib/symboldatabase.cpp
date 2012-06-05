@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "check.h"
+#include "checknullpointer.h"  // isUpper
 
 #include <string>
 #include <sstream>
@@ -87,6 +88,34 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             // fill the classAndStructTypes set..
             if (new_scope->isClassOrStruct())
                 classAndStructTypes.insert(new_scope->className);
+
+            // make the new scope the current scope
+            scope = &scopeList.back();
+            scope->nestedIn->nestedList.push_back(scope);
+
+            tok = tok2;
+        }
+
+        // Namespace and unknown macro (#3854)
+        else if (Token::Match(tok, "namespace %var% %type% (") &&
+                 _tokenizer->isCPP() &&
+                 CheckNullPointer::isUpper(tok->strAt(2)) &&
+                 Token::simpleMatch(tok->linkAt(3), ") {")) {
+            scopeList.push_back(Scope(this, tok, scope));
+
+            Scope *new_scope = &scopeList.back();
+            access[new_scope] = Public;
+
+            const Token *tok2 = tok->linkAt(3)->next();
+
+            new_scope->classStart = tok2;
+            new_scope->classEnd = tok2->link();
+
+            // make sure we have valid code
+            if (!new_scope->classEnd) {
+                scopeList.pop_back();
+                break;
+            }
 
             // make the new scope the current scope
             scope = &scopeList.back();
