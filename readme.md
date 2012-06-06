@@ -61,17 +61,21 @@ http://software-download.name/pcre-library-windows/
 ### gnu make ###
 
 To build Cppcheck with rules (pcre dependency):
+
     make HAVE_RULES=yes
 
 To build Cppcheck without rules (no dependencies):
+
     make
 
 ### g++ (for experts) ###
 
 If you just want to build Cppcheck without dependencies then you can use this command:
+
     g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
 
 If you want to use --rule and --rule-file then dependencies are needed:
+
     g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 
 ### mingw ###
@@ -86,5 +90,5 @@ If you want to use --rule and --rule-file then dependencies are needed:
 
 ## Webpage ##
 
-    http://cppcheck.sourceforge.net/
+http://cppcheck.sourceforge.net/
 
