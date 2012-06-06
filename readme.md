@@ -38,6 +38,7 @@ There are multiple compilation choices:
 ### qmake ###
 
 You can use the gui/gui.pro file to build the GUI.
+
     cd gui
     qmake
     make
