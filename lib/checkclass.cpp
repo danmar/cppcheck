@@ -530,7 +530,8 @@ void CheckClass::initializationListUsage()
                     }
                     if (!allowed)
                         continue;
-                    suggestInitializationList(tok, tok->str());
+                    if (!var->isPointer() && (var->type() || Token::Match(var->typeStartToken(), "std :: string|wstring") || Token::Match(var->typeStartToken(), "std :: %type% <") || symbolDatabase->isClassOrStruct(var->typeStartToken()->str())))
+                        suggestInitializationList(tok, tok->str());
                 }
             }
         }

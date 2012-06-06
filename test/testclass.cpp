@@ -5125,10 +5125,11 @@ private:
 
     void initializerListUsage() {
         checkInitializationListUsage("class Fred {\n"
-                                     "    int a;\n"
-                                     "    Fred() { a = 0; }\n"
+                                     "    int a;\n"  // No message for builtin types: No performance gain
+                                     "    int* b;\n" // No message for pointers: No performance gain
+                                     "    Fred() { a = 0; b = 0; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkInitializationListUsage("class Fred {\n"
                                      "    std::string s;\n"
@@ -5137,31 +5138,56 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 's' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
 
         checkInitializationListUsage("class Fred {\n"
-                                     "    int a;\n"
+                                     "    std::vector<int> v;\n"
+                                     "    Fred() { v = unknown; }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'v' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class C { std::string s; };\n"
+                                     "class Fred {\n"
+                                     "    C c;\n"
+                                     "    Fred() { c = unknown; }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
+                                     "    C c;\n"
+                                     "    Fred() { c = unknown; }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
+                                     "    C a;\n"
                                      "    Fred() { initB(); a = b; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkInitializationListUsage("class Fred {\n"
-                                     "    int a;\n"
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
+                                     "    C a;\n"
                                      "    Fred() : a(0) { if(b) a = 0; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkInitializationListUsage("class Fred {\n"
-                                     "    int a[5];\n"
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
+                                     "    C a[5];\n"
                                      "    Fred() { for(int i = 0; i < 5; i++) a[i] = 0; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkInitializationListUsage("class Fred {\n"
-                                     "    int a; int b;\n"
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
+                                     "    C a; int b;\n"
                                      "    Fred() : b(5) { a = b; }\n" // Don't issue a message here: You actually could move it to the initalization list, but it would cause problems if you change the order of the variable declarations.
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkInitializationListUsage("class Fred {\n"
-                                     "    int a;\n"
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
+                                     "    C a;\n"
                                      "    Fred() { try { a = new int; } catch(...) {} }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
