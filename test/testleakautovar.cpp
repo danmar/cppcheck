@@ -332,11 +332,11 @@ private:
         check("void f(int x) {\n"
               "    int *a = malloc(20);\n"
               "    if (x)\n"
-              " 	   free(a);\n"
+              "        free(a);\n"
               "    else\n"
-              " 	   a = 0;\n"
+              "        a = 0;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.c:7]: (error) New memory leak: a","[test.c:7]: (information) free configuration is needed to establish if there is a leak or not\n", errout.str());
+        ASSERT_EQUALS("[test.c:6]: (error) New memory leak: a\n", errout.str());
     }
 
     void switch1() {
