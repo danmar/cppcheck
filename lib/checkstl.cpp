@@ -721,6 +721,22 @@ void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_
                 "iterators in the container.");
 }
 
+static bool if_findCompare(const Token * const tokBack)
+{
+    const Token *tok = tokBack;
+    while (tok && tok->str() == ")") {
+        tok = tok->next();
+        if (Token::Match(tok,",|==|!="))
+            return true;
+        if (Token::Match(tok, ") !!{") &&
+            tok->link()->previous() &&
+            (Token::Match(tok->link()->previous(),",|==|!=") ||
+             tok->link()->previous()->isName()))
+            return true;
+    }
+    return false;
+}
+
 void CheckStl::if_find()
 {
     if (!_settings->isEnabled("style"))
@@ -749,7 +765,7 @@ void CheckStl::if_find()
                 tok = tok->next();
 
             if (Token::Match(tok, "%var% . find (")) {
-                if (!Token::Match(tok->linkAt(3), ") &&|)|%oror%"))
+                if (if_findCompare(tok->linkAt(3)))
                     continue;
 
                 const unsigned int varid = tok->varId();
@@ -780,7 +796,7 @@ void CheckStl::if_find()
 
                 if (!Token::simpleMatch(tok2, ". find ("))
                     continue;
-                if (!Token::Match(tok2->linkAt(2), ") &&|)|%oror%"))
+                if (if_findCompare(tok2->linkAt(2)))
                     continue;
 
                 const unsigned int varid = tok->varId();
@@ -827,7 +843,7 @@ void CheckStl::if_find()
 
             else if (Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
-                if (Token::Match(tok->linkAt(3), ") &&|)|%oror%")) {
+                if (!if_findCompare(tok->linkAt(3))) {
                     if_findError(tok, false);
                 }
             }

@@ -1268,6 +1268,12 @@ private:
         check("void f() {\n"
               "    if (()) { }\n"
               "}");
+
+        // #3865
+        check("void f() {\n"
+              "    if ((std::find(a,b,c)) != b) { }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if_str_find() {
