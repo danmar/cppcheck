@@ -2238,7 +2238,7 @@ void CheckOther::checkDuplicateBranch()
 
             // check for duplicates
             if (branch1 == branch2)
-                duplicateBranchError(scope->classDef, scope->classEnd->tokAt(1));
+                duplicateBranchError(scope->classDef, scope->classEnd->next());
         }
     }
 }

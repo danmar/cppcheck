@@ -471,7 +471,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                             varTypeTok = varTypeTok->next();
 
                         if (scan && varTypeTok) {
-                            if ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->str() == "const")
+                            if ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")
                                 invalidScanfArgTypeError(tok, tok->str(), numFormat);
                         } else if (!scan) {
                             switch (*i) {
@@ -480,7 +480,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     invalidPrintfArgTypeError_s(tok, numFormat);
                                 break;
                             case 'n':
-                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->str() == "const")) || argListTok->type() == Token::eString)
+                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")) || argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_n(tok, numFormat);
                                 break;
                             case 'c':
