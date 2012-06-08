@@ -53,6 +53,7 @@ private:
         // ExecutionPath functionality
         TEST_CASE(uninitvar2);
         TEST_CASE(uninitvar3);          // #3844
+        TEST_CASE(uninitvar4);          // #3869 (reference)
     }
 
     void checkUninitVar(const char code[]) {
@@ -2148,6 +2149,17 @@ private:
                         "    int a, a2, a2*x; if () ;\n"
                         "  )\n"
                         "}\n");
+    }
+
+    // #3869 - reference variable
+    void uninitvar4() {
+        checkUninitVar2("void f() {\n"
+                        "    int buf[10];\n"
+                        "    int &x = buf[0];\n"
+                        "    buf[0] = 0;\n"
+                        "    x++;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

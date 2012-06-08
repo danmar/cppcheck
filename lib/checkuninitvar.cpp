@@ -390,10 +390,10 @@ private:
             const Variable* var2 = symbolDatabase->getVariableFromVarId(tok.varId());
             if (var2 && var2->nameToken() == &tok && !var2->isStatic() && !var2->isConst()) {
                 if (tok.linkAt(1)) { // array
-                    const Token* end = tok.next();
-                    while (end->link())
-                        end = end->link()->next();
-                    if (end->str() != ";")
+                    const Token* endtok = tok.next();
+                    while (endtok->link())
+                        endtok = endtok->link()->next();
+                    if (endtok->str() != ";")
                         return &tok;
                 }
                 const Scope* parent = var2->scope()->nestedIn;
@@ -1036,7 +1036,7 @@ void CheckUninitVar::check()
 void CheckUninitVar::checkScope(const Scope* scope)
 {
     for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
-        if ((i->type() && !i->isPointer()) || i->isStatic() || i->isConst() || i->isArray())
+        if ((i->type() && !i->isPointer()) || i->isStatic() || i->isConst() || i->isArray() || i->isReference())
             continue;
         if (i->nameToken()->strAt(1) == "(")
             continue;
