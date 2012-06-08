@@ -1719,7 +1719,7 @@ void CheckOther::checkConstantFunctionParameter()
         if (!var || !var->isArgument() || !var->isClass() || !var->isConst() || var->isPointer() || var->isArray() || var->isReference())
             continue;
 
-        const Token* tok = var->typeStartToken()->next();
+        const Token* const tok = var->typeStartToken();
         // TODO: False negatives. This pattern only checks for string.
         //       Investigate if there are other classes in the std
         //       namespace and add them to the pattern. There are
@@ -1748,7 +1748,7 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 //---------------------------------------------------------------------------
 static bool isChar(const Variable* var)
 {
-    return(var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "static| const| char"));
+    return(var && !var->isPointer() && !var->isArray() && var->typeStartToken()->str() == "char");
 }
 
 static bool isSignedChar(const Variable* var)
@@ -1788,13 +1788,13 @@ void CheckOther::checkCharVariable()
 
             // is the result stored in a short|int|long?
             const Variable *var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            if (var && Token::Match(var->typeStartToken(), "static| const| short|int|long") && !var->isPointer() && !var->isArray())
+            if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
                 charBitOpError(tok->tokAt(4)); // This is an error..
         }
 
         else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] ( * %var% ) ;")) {
             const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(7)->varId());
-            if (!var || !var->isPointer() || !Token::Match(var->typeStartToken(), "static| const| char"))
+            if (!var || !var->isPointer() || var->typeStartToken()->str() != "char")
                 continue;
             // it's ok with a bitwise and where the other operand is 0xff or less..
             if (tok->strAt(4) == "&" && tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))
@@ -1802,7 +1802,7 @@ void CheckOther::checkCharVariable()
 
             // is the result stored in a short|int|long?
             var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            if (var && Token::Match(var->typeStartToken(), "static| const| short|int|long") && !var->isPointer() && !var->isArray())
+            if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
                 charBitOpError(tok->tokAt(4)); // This is an error..
         }
     }

@@ -108,6 +108,8 @@ private:
         TEST_CASE(hasGlobalVariables2);
         TEST_CASE(hasGlobalVariables3);
 
+        TEST_CASE(checkTypeStartEndToken);
+
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
         TEST_CASE(functionArgs3);
@@ -743,6 +745,29 @@ private:
                 ASSERT(var->name() == "array");
                 ASSERT(var->typeStartToken()->str() == "int");
             }
+        }
+    }
+
+    void checkTypeStartEndToken() {
+        GET_SYMBOL_DB("static std::string i;\n"
+                      "static const std::string j;\n"
+                      "const std::string* k;\n"
+                      "const char m[];\n"
+                      "void f(const char* const l;) {}");
+
+        ASSERT(db && db->getVariableListSize() == 6 && db->getVariableFromVarId(1) && db->getVariableFromVarId(2) && db->getVariableFromVarId(3) && db->getVariableFromVarId(4) && db->getVariableFromVarId(5));
+        if (db && db->getVariableFromVarId(1) && db->getVariableFromVarId(2) && db->getVariableFromVarId(3) && db->getVariableFromVarId(4) && db->getVariableFromVarId(5)) {
+            ASSERT_EQUALS("std", db->getVariableFromVarId(1)->typeStartToken()->str());
+            ASSERT_EQUALS("std", db->getVariableFromVarId(2)->typeStartToken()->str());
+            ASSERT_EQUALS("std", db->getVariableFromVarId(3)->typeStartToken()->str());
+            ASSERT_EQUALS("char", db->getVariableFromVarId(4)->typeStartToken()->str());
+            ASSERT_EQUALS("char", db->getVariableFromVarId(5)->typeStartToken()->str());
+
+            ASSERT_EQUALS("string", db->getVariableFromVarId(1)->typeEndToken()->str());
+            ASSERT_EQUALS("string", db->getVariableFromVarId(2)->typeEndToken()->str());
+            ASSERT_EQUALS("*", db->getVariableFromVarId(3)->typeEndToken()->str());
+            ASSERT_EQUALS("char", db->getVariableFromVarId(4)->typeEndToken()->str());
+            ASSERT_EQUALS("*", db->getVariableFromVarId(5)->typeEndToken()->str());
         }
     }
 

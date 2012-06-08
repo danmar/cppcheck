@@ -306,14 +306,14 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
         return true;
     if (Token::Match(tok->tokAt(-2), "%var% ( %var% )")) {
         const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(-2)->varId());
-        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
             return true;
     }
 
     // streams dereference nullpointers
     if (Token::Match(tok->previous(), "<<|>> %var%")) {
         const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-        if (var && Token::Match(var->typeStartToken(), "const| char const| *")) { // Only outputing or reading to char* can cause problems
+        if (var && var->isPointer() && var->typeStartToken()->str() == "char") { // Only outputing or reading to char* can cause problems
             const Token* tok2 = tok->previous(); // Find start of statement
             for (; tok2; tok2 = tok2->previous()) {
                 if (Token::Match(tok2->previous(), ";|{|}|:"))
@@ -323,7 +323,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
                 return true;
             if (tok2 && tok2->varId() != 0) {
                 const Variable* var2 = symbolDatabase->getVariableFromVarId(tok2->varId());
-                if (var2 && Token::Match(var2->typeStartToken(), "const| std :: istream|ifstream|istringstream|ostream|ofstream|ostringstream|stringstream|fstream|iostream"))
+                if (var2 && Token::Match(var2->typeStartToken(), "std :: istream|ifstream|istringstream|ostream|ofstream|ostringstream|stringstream|fstream|iostream"))
                     return true;
             }
         }
@@ -338,7 +338,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
         ovarid = tok->tokAt(-2)->varId();
     if (ovarid) {
         const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
-        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
             return true;
     }
 
@@ -1152,7 +1152,7 @@ void CheckNullPointer::nullConstantDereference()
             else if (Token::Match(tok->previous(), "!!. %var% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
                 if (Token::simpleMatch(tok->tokAt(2), "0 )") && tok->varId()) { // constructor call
                     const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-                    if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+                    if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
                         nullPointerError(tok);
                 } else { // function call
                     std::list<const Token *> var;
@@ -1178,7 +1178,7 @@ void CheckNullPointer::nullConstantDereference()
                     nullPointerError(tok);
                 if (tok2 && tok2->varId() != 0) {
                     const Variable* var = symbolDatabase->getVariableFromVarId(tok2->varId());
-                    if (var && Token::Match(var->typeStartToken(), "const| std :: istream|ifstream|istringstream|stringstream|fstream|iostream"))
+                    if (var && Token::Match(var->typeStartToken(), "std :: istream|ifstream|istringstream|stringstream|fstream|iostream"))
                         nullPointerError(tok);
                 }
             }
@@ -1192,7 +1192,7 @@ void CheckNullPointer::nullConstantDereference()
                 ovarid = tok->varId();
             if (ovarid) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
-                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "const| std :: string !!::"))
+                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
                     nullPointerError(tok);
             }
         }

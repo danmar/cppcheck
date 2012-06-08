@@ -65,7 +65,7 @@ void CheckPostfixOperator::postfixOperator()
 
         if (result && tok->previous()->varId()) {
             const Variable *var = symbolDatabase->getVariableFromVarId(tok->previous()->varId());
-            if (!var || !Token::Match(var->typeEndToken(), "%type%"))
+            if (!var || var->isPointer() || var->isArray() || var->isReference())
                 continue;
 
             const Token *decltok = var->nameToken();

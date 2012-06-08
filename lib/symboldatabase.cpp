@@ -858,6 +858,11 @@ void Variable::evaluate()
             tok = tok->next();
     }
 
+    while (_start && _start->next() && (_start->str() == "static" || _start->str() == "const"))
+        _start = _start->next();
+    while (_end && _end->previous() && _end->str() == "const")
+        _end = _end->previous();
+
     if (_name)
         setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
     if (_start)
