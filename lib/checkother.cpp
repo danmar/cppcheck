@@ -1794,7 +1794,7 @@ void CheckOther::checkCharVariable()
 
         else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] ( * %var% ) ;")) {
             const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(7)->varId());
-            if (!var || !var->isPointer())
+            if (!var || !var->isPointer() || !Token::Match(var->typeStartToken(), "static| const| char"))
                 continue;
             // it's ok with a bitwise and where the other operand is 0xff or less..
             if (tok->strAt(4) == "&" && tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))

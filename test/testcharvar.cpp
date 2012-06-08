@@ -204,6 +204,14 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3872 - false positive
+        check("int f(int *p) {\n"
+              "    int ret = a();\n"
+              "    ret |= *p;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
