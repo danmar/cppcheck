@@ -297,7 +297,7 @@ lib/settings.o: lib/settings.cpp lib/settings.h lib/suppressions.h lib/standards
 lib/suppressions.o: lib/suppressions.cpp lib/suppressions.h lib/settings.h lib/standards.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/suppressions.o lib/suppressions.cpp
 
-lib/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/token.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/check.h
+lib/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/token.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/check.h lib/checknullpointer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/symboldatabase.o lib/symboldatabase.cpp
 
 lib/templatesimplifier.o: lib/templatesimplifier.cpp lib/templatesimplifier.h lib/mathlib.h lib/token.h lib/tokenlist.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/standards.h
