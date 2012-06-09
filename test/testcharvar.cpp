@@ -212,6 +212,14 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3878 - false positive
+        check("int f(unsigned char *p) {\n"
+              "    int ret = a();\n"
+              "    ret |= *p;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
