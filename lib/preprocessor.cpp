@@ -59,15 +59,32 @@ void Preprocessor::writeError(const std::string &fileName, const unsigned int li
                            false));
 }
 
-static unsigned char readChar(std::istream &istr)
+static unsigned char readChar(std::istream &istr, unsigned int bom)
 {
     unsigned char ch = (unsigned char)istr.get();
+
+    // For UTF-16 encoded files the BOM is 0xfeff/0xfffe. If the
+    // character is non-ASCII character then replace it with 0xff
+    if (bom == 0xfeff || bom == 0xfffe) {
+        unsigned char ch2 = (unsigned char)istr.get();
+        int ch16 = (bom == 0xfeff) ? (ch<<8 | ch2) : (ch2<<8 | ch);
+        ch = (unsigned char)((ch16 >= 0x80) ? 0xff : ch16);
+    }
 
     // Handling of newlines..
     if (ch == '\r') {
         ch = '\n';
-        if ((char)istr.peek() == '\n')
+        if (bom == 0 && (char)istr.peek() == '\n')
             (void)istr.get();
+        else if (bom == 0xfeff || bom == 0xfffe) {
+            int c1 = istr.get();
+            int c2 = istr.get();
+            int ch16 = (bom == 0xfeff) ? (c1<<8 | c2) : (c2<<8 | c1);
+            if (ch16 != '\n') {
+                istr.unget();
+                istr.unget();
+            }
+        }
     }
 
     return ch;
@@ -108,6 +125,14 @@ static std::string unify(const std::string &s, char separator)
 /** Just read the code into a string. Perform simple cleanup of the code */
 std::string Preprocessor::read(std::istream &istr, const std::string &filename)
 {
+    // The UTF-16 BOM is 0xfffe or 0xfeff.
+    unsigned int bom = 0;
+    if (istr.peek() >= 0xfe) {
+        bom = (istr.get() << 8);
+        if (istr.peek() >= 0xfe)
+            bom |= istr.get();
+    }
+
     // ------------------------------------------------------------------------------------------
     //
     // handling <backslash><newline>
@@ -115,7 +140,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     // on the next <newline>, extra newlines will be added
     std::ostringstream code;
     unsigned int newlines = 0;
-    for (unsigned char ch = readChar(istr); istr.good(); ch = readChar(istr)) {
+    for (unsigned char ch = readChar(istr,bom); istr.good(); ch = readChar(istr,bom)) {
         // Replace assorted special chars with spaces..
         if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
@@ -135,7 +160,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
                 if (chNext != '\n' && chNext != '\r' &&
                     (std::isspace(chNext) || std::iscntrl(chNext))) {
                     // Skip whitespace between <backslash> and <newline>
-                    (void)readChar(istr);
+                    (void)readChar(istr,bom);
                     continue;
                 }
 
@@ -147,7 +172,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
 #endif
             if (chNext == '\n' || chNext == '\r') {
                 ++newlines;
-                (void)readChar(istr);   // Skip the "<backslash><newline>"
+                (void)readChar(istr,bom);   // Skip the "<backslash><newline>"
             } else
                 code << "\\";
         } else {

@@ -62,6 +62,9 @@ private:
         TEST_CASE(readCode1);
         TEST_CASE(readCode2);
 
+        // reading utf-16 file
+        TEST_CASE(utf16);
+
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);
 
@@ -281,6 +284,59 @@ private:
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n", codestr);
+    }
+
+
+    void utf16() {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        // a => a
+        {
+            const char code[] = { (char)0xff, (char)0xfe, 'a', '\0' };
+            std::string s(code, sizeof(code));
+            std::istringstream istr(s);
+            ASSERT_EQUALS("a", preprocessor.read(istr, "test.c"));
+        }
+
+        {
+            const char code[] = { (char)0xfe, (char)0xff, '\0', 'a' };
+            std::string s(code, sizeof(code));
+            std::istringstream istr(s);
+            ASSERT_EQUALS("a", preprocessor.read(istr, "test.c"));
+        }
+
+        // extended char => 0xff
+        {
+            const char code[] = { (char)0xff, (char)0xfe, 'a', 'a' };
+            std::string s(code, sizeof(code));
+            std::istringstream istr(s);
+            const char expected[] = { (char)0xff, 0 };
+            ASSERT_EQUALS(expected, preprocessor.read(istr, "test.c"));
+        }
+
+        {
+            const char code[] = { (char)0xfe, (char)0xff, 'a', 'a' };
+            std::string s(code, sizeof(code));
+            std::istringstream istr(s);
+            const char expected[] = { (char)0xff, 0 };
+            ASSERT_EQUALS(expected, preprocessor.read(istr, "test.c"));
+        }
+
+        // \r\n => \n
+        {
+            const char code[] = { (char)0xff, (char)0xfe, '\r', '\0', '\n', '\0' };
+            std::string s(code, sizeof(code));
+            std::istringstream istr(s);
+            ASSERT_EQUALS("\n", preprocessor.read(istr, "test.c"));
+        }
+
+        {
+            const char code[] = { (char)0xfe, (char)0xff, '\0', '\r', '\0', '\n' };
+            std::string s(code, sizeof(code));
+            std::istringstream istr(s);
+            ASSERT_EQUALS("\n", preprocessor.read(istr, "test.c"));
+        }
     }
 
 
