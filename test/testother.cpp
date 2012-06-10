@@ -4491,6 +4491,14 @@ private:
             "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Using size of pointer buf1 instead of size of its data.\n", errout.str());
+
+        // #ticket 3874
+        check("void f()\n"
+              "{\n"
+              " int * pIntArray[10];\n"
+              " memset(pIntArray, 0, sizeof(pIntArray));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
