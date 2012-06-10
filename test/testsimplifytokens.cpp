@@ -23,6 +23,7 @@
 #include "token.h"
 #include "settings.h"
 #include "templatesimplifier.h"
+#include "path.h"
 
 #include <sstream>
 #include <list>
@@ -435,6 +436,20 @@ private:
     }
     std::string tok(const std::string& code, bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
         return tok(code.c_str(), simplify, type);
+    }
+    std::string tok(const char code[], const char filename[]) {
+        errout.str("");
+
+        Settings settings;
+        if (Path::isC(filename))
+            settings.standards.c99 = true;
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+        tokenizer.simplifyTokenList();
+
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
 
@@ -7421,13 +7436,13 @@ private:
         ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
-        ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", true));
-        ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", true));
-        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", true));
-        ASSERT_EQUALS("int * p ;", tok("int * restrict p;", true));
-        ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", true));
-        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", true));
-        ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", true));
+        ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", "test.c"));
+        ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", "test.c"));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", "test.c"));
+        ASSERT_EQUALS("int * p ;", tok("int * restrict p;", "test.c"));
+        ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", "test.c"));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", "test.c"));
+        ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", "test.c"));
     }
 
     void simplifyCallingConvention() {
