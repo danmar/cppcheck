@@ -34,6 +34,10 @@
 extern std::ostringstream errout;
 extern std::ostringstream output;
 
+// Visual Studio complains about truncated values for '(char)0xff' and '(char)0xfe'
+// TODO: Is there any nice way to fix these warnings?
+#pragma warning( disable : 4310 )
+
 class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor() : TestFixture("TestPreprocessor") {
