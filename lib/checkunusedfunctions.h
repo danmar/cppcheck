@@ -22,6 +22,7 @@
 #define checkunusedfunctionsH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "tokenize.h"
 #include "errorlogger.h"
@@ -29,7 +30,7 @@
 /// @addtogroup Checks
 /// @{
 
-class CheckUnusedFunctions: public Check {
+class CPPCHECKLIB CheckUnusedFunctions: public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
     CheckUnusedFunctions() : Check(myName()), templates(false)
@@ -76,7 +77,7 @@ private:
         return "Check for functions that are never called\n";
     }
 
-    class FunctionUsage {
+    class CPPCHECKLIB FunctionUsage {
     public:
         FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false)
         { }

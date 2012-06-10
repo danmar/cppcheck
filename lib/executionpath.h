@@ -20,6 +20,7 @@
 #define executionpathH
 
 #include <list>
+#include "config.h"
 
 class Token;
 class Check;
@@ -29,7 +30,7 @@ class SymbolDatabase;
  * Base class for Execution Paths checking
  * An execution path is a linear list of statements. There are no "if"/.. to worry about.
  **/
-class ExecutionPath {
+class CPPCHECKLIB ExecutionPath {
 private:
     /** No implementation */
     void operator=(const ExecutionPath &);

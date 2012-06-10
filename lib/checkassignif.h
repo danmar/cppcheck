@@ -22,6 +22,7 @@
 #define checkassignifH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "mathlib.h"
 
@@ -32,7 +33,7 @@
  * @brief Check for assignment / condition mismatches
  */
 
-class CheckAssignIf : public Check {
+class CPPCHECKLIB CheckAssignIf : public Check {
 public:
     /** This constructor is used when registering the CheckAssignIf */
     CheckAssignIf() : Check(myName()) {

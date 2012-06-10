@@ -22,6 +22,7 @@
 #define CheckAutoVariablesH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "token.h"
 
@@ -29,7 +30,7 @@
 /// @{
 
 
-class CheckAutoVariables : public Check {
+class CPPCHECKLIB CheckAutoVariables : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
     CheckAutoVariables() : Check(myName())

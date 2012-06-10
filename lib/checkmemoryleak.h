@@ -34,6 +34,7 @@
  * - CheckMemoryLeakStructMember checks allocation/deallocation of structs and struct members
  */
 
+#include "config.h"
 #include "check.h"
 
 #include <list>
@@ -48,7 +49,7 @@ class Variable;
 /// @{
 
 /** @brief Base class for memory leaks checking */
-class CheckMemoryLeak {
+class CPPCHECKLIB CheckMemoryLeak {
 private:
     /** For access to the tokens */
     const Tokenizer * const tokenizer;
@@ -181,7 +182,7 @@ public:
  * -# finally, check if the simplified token list contain any leaks.
  */
 
-class CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak {
+class CPPCHECKLIB CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak {
 public:
     /** @brief This constructor is used when registering this class */
     CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, Standards()), symbolDatabase(NULL)
@@ -351,7 +352,7 @@ private:
  * @brief %Check class variables, variables that are allocated in the constructor should be deallocated in the destructor
  */
 
-class CheckMemoryLeakInClass : private Check, private CheckMemoryLeak {
+class CPPCHECKLIB CheckMemoryLeakInClass : private Check, private CheckMemoryLeak {
 public:
     CheckMemoryLeakInClass() : Check(myName()), CheckMemoryLeak(0, 0, Standards())
     { }
@@ -394,7 +395,7 @@ private:
 
 /** @brief detect simple memory leaks for struct members */
 
-class CheckMemoryLeakStructMember : private Check, private CheckMemoryLeak {
+class CPPCHECKLIB CheckMemoryLeakStructMember : private Check, private CheckMemoryLeak {
 public:
     CheckMemoryLeakStructMember() : Check(myName()), CheckMemoryLeak(0, 0, Standards())
     { }
@@ -433,7 +434,7 @@ private:
 
 /** @brief detect simple memory leaks (address not taken) */
 
-class CheckMemoryLeakNoVar : private Check, private CheckMemoryLeak {
+class CPPCHECKLIB CheckMemoryLeakNoVar : private Check, private CheckMemoryLeak {
 public:
     CheckMemoryLeakNoVar() : Check(myName()), CheckMemoryLeak(0, 0, Standards())
     { }

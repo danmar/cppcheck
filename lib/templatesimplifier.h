@@ -26,6 +26,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include "config.h"
 
 class Token;
 class TokenList;
@@ -37,7 +38,7 @@ class Settings;
 /// @{
 
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
-class TemplateSimplifier {
+class CPPCHECKLIB TemplateSimplifier {
     TemplateSimplifier();
     ~TemplateSimplifier();
 public:

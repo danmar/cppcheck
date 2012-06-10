@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include "config.h"
 
 /// @addtogroup Core
 /// @{
@@ -32,7 +33,7 @@
  * native separator for Unix-derived systems. When giving path to user
  * or for other functions we convert path separators back to native type.
  */
-class Path {
+class CPPCHECKLIB Path {
 public:
     /**
      * Convert path to use native separators.

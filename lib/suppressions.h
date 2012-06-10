@@ -23,14 +23,15 @@
 #include <string>
 #include <istream>
 #include <map>
+#include "config.h"
 
 /// @addtogroup Core
 /// @{
 
 /** @brief class for handling suppressions */
-class Suppressions {
+class CPPCHECKLIB Suppressions {
 private:
-    class FileMatcher {
+    class CPPCHECKLIB FileMatcher {
         friend class Suppressions;
     private:
         /** @brief List of filenames suppressed, bool flag indicates whether suppression matched. */

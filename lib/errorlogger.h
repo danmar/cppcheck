@@ -23,6 +23,7 @@
 #include <list>
 #include <string>
 
+#include "config.h"
 #include "suppressions.h"
 
 class Token;
@@ -32,7 +33,7 @@ class TokenList;
 /// @{
 
 /** @brief enum class for severity. Used when reporting errors. */
-class Severity {
+class CPPCHECKLIB Severity {
 public:
     /**
      * Message severities.
@@ -137,20 +138,20 @@ public:
  * @brief This is an interface, which the class responsible of error logging
  * should implement.
  */
-class ErrorLogger {
+class CPPCHECKLIB ErrorLogger {
 public:
 
     /**
      * Wrapper for error messages, provided by reportErr()
      */
-    class ErrorMessage {
+    class CPPCHECKLIB ErrorMessage {
     public:
         /**
          * File name and line number.
          * Internally paths are stored with / separator. When getting the filename
          * it is by default converted to native separators.
          */
-        class FileLocation {
+        class CPPCHECKLIB FileLocation {
         public:
             FileLocation()
                 : line(0) {

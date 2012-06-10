@@ -19,6 +19,7 @@
 #ifndef checkH
 #define checkH
 
+#include "config.h"
 #include "token.h"
 #include "tokenize.h"
 #include "settings.h"
@@ -35,7 +36,7 @@
  * @brief Interface class that cppcheck uses to communicate with the checks.
  * All checking classes must inherit from this class
  */
-class Check {
+class CPPCHECKLIB Check {
 public:
     /** This constructor is used when registering the CheckClass */
     explicit Check(const std::string &aname);

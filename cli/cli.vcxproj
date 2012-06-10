@@ -18,82 +18,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\lib\cppcheck.vcxproj">
-      <Project>{c183db5b-ad6c-423d-80ca-1f9549555a1a}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\cli\cmdlineparser.cpp" />
-    <ClCompile Include="..\cli\filelister.cpp" />
-    <ClCompile Include="..\cli\pathmatch.cpp" />
-    <ClCompile Include="..\cli\threadexecutor.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinystr.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp" />
-    <ClCompile Include="options.cpp" />
-    <ClCompile Include="test64bit.cpp" />
-    <ClCompile Include="testassignif.cpp" />
-    <ClCompile Include="testautovariables.cpp" />
-    <ClCompile Include="testbufferoverrun.cpp" />
-    <ClCompile Include="testcharvar.cpp" />
-    <ClCompile Include="testclass.cpp" />
-    <ClCompile Include="testcmdlineparser.cpp" />
-    <ClCompile Include="testconstructors.cpp" />
-    <ClCompile Include="testcppcheck.cpp" />
-    <ClCompile Include="testdivision.cpp" />
-    <ClCompile Include="testerrorlogger.cpp" />
-    <ClCompile Include="testexceptionsafety.cpp" />
-    <ClCompile Include="testfilelister.cpp" />
-    <ClCompile Include="testincompletestatement.cpp" />
-    <ClCompile Include="testio.cpp" />
-    <ClCompile Include="testmathlib.cpp" />
-    <ClCompile Include="testmemleak.cpp" />
-    <ClCompile Include="testnonreentrantfunctions.cpp" />
-    <ClCompile Include="testnullpointer.cpp" />
-    <ClCompile Include="testobsoletefunctions.cpp" />
-    <ClCompile Include="testoptions.cpp" />
-    <ClCompile Include="testother.cpp" />
-    <ClCompile Include="testpath.cpp" />
-    <ClCompile Include="testpathmatch.cpp" />
-    <ClCompile Include="testpostfixoperator.cpp" />
-    <ClCompile Include="testpreprocessor.cpp" />
-    <ClCompile Include="testrunner.cpp" />
-    <ClCompile Include="testsimplifytokens.cpp" />
-    <ClCompile Include="teststl.cpp" />
-    <ClCompile Include="testsuite.cpp" />
-    <ClCompile Include="testsuppressions.cpp" />
-    <ClCompile Include="testsymboldatabase.cpp" />
-    <ClCompile Include="testthreadexecutor.cpp" />
-    <ClCompile Include="testtoken.cpp" />
-    <ClCompile Include="testtokenize.cpp" />
-    <ClCompile Include="testuninitvar.cpp" />
-    <ClCompile Include="testunusedfunctions.cpp" />
-    <ClCompile Include="testunusedprivfunc.cpp" />
-    <ClCompile Include="testunusedvar.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\cli\cmdlineparser.h" />
-    <ClInclude Include="..\cli\filelister.h" />
-    <ClInclude Include="..\cli\pathmatch.h" />
-    <ClInclude Include="..\cli\threadexecutor.h" />
-    <ClInclude Include="..\externals\tinyxml\tinystr.h" />
-    <ClInclude Include="..\externals\tinyxml\tinyxml.h" />
-    <ClInclude Include="..\lib\config.h" />
-    <ClInclude Include="options.h" />
-    <ClInclude Include="redirect.h" />
-    <ClInclude Include="testsuite.h" />
-    <ClInclude Include="testutils.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4F7DCE5E-6CDE-38C4-9EA7-27AF3B25CEB4}</ProjectGuid>
-    <RootNamespace>testrunner</RootNamespace>
+    <ProjectGuid>{35CBDF51-2456-3EC3-99ED-113C30858883}</ProjectGuid>
+    <RootNamespace>cli</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -136,16 +63,16 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\bin\debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">temp\debug\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">temp\debug\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">testrunner</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">testrunner</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cppcheck</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cppcheck</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\bin\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">temp\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">temp\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">testrunner</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">testrunner</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cppcheck</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cppcheck</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
@@ -153,13 +80,16 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\cli;..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>temp\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ObjectFileName>temp\</ObjectFileName>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;UNICODE;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
+      <ProgramDataBaseFileName>.\</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level4</WarningLevel>
@@ -168,17 +98,17 @@
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>$(TargetDir)cli.pdb</ProgramDatabaseFile>
     </Link>
     <Midl />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\cli;..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -194,17 +124,17 @@
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>$(TargetDir)cli.pdb</ProgramDatabaseFile>
     </Link>
     <Midl />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\cli;..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <Optimization>MaxSpeed</Optimization>
@@ -217,15 +147,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <DisableSpecificWarnings>4251</DisableSpecificWarnings>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <DisableSpecificWarnings>4251</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <SubSystem>Console</SubSystem>
@@ -233,13 +162,15 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <ProgramDatabaseFile>$(TargetDir)cli.pdb</ProgramDatabaseFile>
     </Link>
     <Midl />
+    <ProjectReference />
     <ProjectReference />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\cli;..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <Optimization>MaxSpeed</Optimization>
@@ -252,8 +183,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <DisableSpecificWarnings>4251</DisableSpecificWarnings>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <DisableSpecificWarnings>4251</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <StringPooling>true</StringPooling>
@@ -261,7 +192,6 @@
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <SubSystem>Console</SubSystem>
@@ -269,9 +199,49 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <ProgramDatabaseFile>$(TargetDir)cli.pdb</ProgramDatabaseFile>
     </Link>
     <Midl />
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="temp\cppcheck.res" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="cppcheck.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\externals\tinyxml\tinystr.h" />
+    <ClInclude Include="..\externals\tinyxml\tinyxml.h" />
+    <ClInclude Include="..\lib\config.h" />
+    <ClInclude Include="cmdlineparser.h" />
+    <ClInclude Include="cppcheckexecutor.h" />
+    <ClInclude Include="filelister.h" />
+    <ClInclude Include="pathmatch.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="threadexecutor.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\cppcheck.vcxproj">
+      <Project>{c183db5b-ad6c-423d-80ca-1f9549555a1a}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\externals\tinyxml\tinystr.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp" />
+    <ClCompile Include="cmdlineparser.cpp" />
+    <ClCompile Include="cppcheckexecutor.cpp" />
+    <ClCompile Include="filelister.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pathmatch.cpp" />
+    <ClCompile Include="threadexecutor.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

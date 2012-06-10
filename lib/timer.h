@@ -22,6 +22,7 @@
 #include <string>
 #include <map>
 #include <ctime>
+#include "config.h"
 
 enum {
     SHOWTIME_NONE = 0,
@@ -30,7 +31,7 @@ enum {
     SHOWTIME_TOP5
 };
 
-class TimerResultsIntf {
+class CPPCHECKLIB TimerResultsIntf {
 public:
     virtual ~TimerResultsIntf() { }
 
@@ -47,7 +48,7 @@ struct TimerResultsData {
     }
 };
 
-class TimerResults : public TimerResultsIntf {
+class CPPCHECKLIB TimerResults : public TimerResultsIntf {
 public:
     TimerResults() {
     }
@@ -59,7 +60,7 @@ private:
     std::map<std::string, struct TimerResultsData> _results;
 };
 
-class Timer {
+class CPPCHECKLIB Timer {
 public:
     Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = NULL);
     ~Timer();

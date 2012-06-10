@@ -22,13 +22,14 @@
 
 #include <string>
 #include <sstream>
+#include "config.h"
 
 /// @addtogroup Core
 /// @{
 
 /** @brief simple math functions that uses operands stored in std::string. useful when performing math on tokens. */
 
-class MathLib {
+class CPPCHECKLIB MathLib {
 public:
     typedef long long bigint;
 

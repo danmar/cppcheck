@@ -22,6 +22,7 @@
 #define CheckPostfixOperatorH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 
 /// @addtogroup Checks
@@ -31,7 +32,7 @@
  * @brief Using postfix operators ++ or -- rather than postfix operator.
  */
 
-class CheckPostfixOperator : public Check {
+class CPPCHECKLIB CheckPostfixOperator : public Check {
 public:
     /** This constructor is used when registering the CheckPostfixOperator */
     CheckPostfixOperator() : Check(myName())

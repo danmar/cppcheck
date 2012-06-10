@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="tokenize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="check64bit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkautovariables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkbufferoverrun.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkexceptionsafety.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkmemoryleak.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checknonreentrantfunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checknullpointer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkobsoletefunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkother.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkpostfixoperator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkstl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkuninitvar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkunusedfunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkunusedvar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cppcheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errorlogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="executionpath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mathlib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="preprocessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="suppressions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="symboldatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkboost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkassignif.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkinternal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tokenlist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="templatesimplifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkleakautovar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="checkbufferoverrun.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkexceptionsafety.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkmemoryleak.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checknonreentrantfunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checknullpointer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkobsoletefunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkother.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkpostfixoperator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkstl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkuninitvar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkunusedfunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkunusedvar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cppcheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errorlogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="executionpath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mathlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="suppressions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symboldatabase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="token.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tokenize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="check.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="check64bit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkassignif.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkautovariables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkboost.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkinternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tokenlist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="templatesimplifier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkleakautovar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

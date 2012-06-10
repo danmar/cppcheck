@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include "config.h"
 
 /// @addtogroup Core
 /// @{
@@ -36,7 +37,7 @@
  *
  * The Token class also has other functions for management of token list, matching tokens, etc.
  */
-class Token {
+class CPPCHECKLIB Token {
 private:
     Token **tokensBack;
 

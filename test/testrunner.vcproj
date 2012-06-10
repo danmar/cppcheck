@@ -224,6 +224,8 @@
 			<File
 				RelativePath="testincompletestatement.cpp" />
 			<File
+				RelativePath="testio.cpp" />
+			<File
 				RelativePath="testmathlib.cpp" />
 			<File
 				RelativePath="testmemleak.cpp" />

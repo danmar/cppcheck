@@ -22,13 +22,14 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
+#include "config.h"
 
 /// @addtogroup Checks
 /// @{
 
 
 /** @brief %Check input output operations. */
-class CheckIO : public Check {
+class CPPCHECKLIB CheckIO : public Check {
 public:
     /** @brief This constructor is used when registering CheckIO */
     CheckIO() : Check(myName())

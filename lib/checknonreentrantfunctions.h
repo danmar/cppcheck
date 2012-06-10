@@ -22,6 +22,7 @@
 #define CheckNonReentrantFunctionsH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include <string>
 #include <map>
@@ -34,7 +35,7 @@
  * @brief Using non reentrant functions that can be replaced by their reentrant versions
  */
 
-class CheckNonReentrantFunctions : public Check {
+class CPPCHECKLIB CheckNonReentrantFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckNonReentrantFunctions */
     CheckNonReentrantFunctions() : Check(myName()) {

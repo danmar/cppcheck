@@ -21,6 +21,7 @@
 #define checkexceptionsafetyH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "settings.h"
 
@@ -39,7 +40,7 @@ class Token;
  * that certain variable values are corrupt.
  */
 
-class CheckExceptionSafety : public Check {
+class CPPCHECKLIB CheckExceptionSafety : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
     CheckExceptionSafety() : Check(myName())

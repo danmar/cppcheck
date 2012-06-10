@@ -22,6 +22,7 @@
 #define checknullpointerH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "settings.h"
 
@@ -34,7 +35,7 @@ class SymbolDatabase;
 
 /** @brief check for null pointer dereferencing */
 
-class CheckNullPointer : public Check {
+class CPPCHECKLIB CheckNullPointer : public Check {
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
     CheckNullPointer() : Check(myName())

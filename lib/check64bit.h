@@ -22,6 +22,7 @@
 #define check64bitH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 
 
@@ -32,7 +33,7 @@
  * @brief Check for 64-bit portability issues
  */
 
-class Check64BitPortability : public Check {
+class CPPCHECKLIB Check64BitPortability : public Check {
 public:
     /** This constructor is used when registering the Check64BitPortability */
     Check64BitPortability() : Check(myName()) {

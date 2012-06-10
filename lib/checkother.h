@@ -22,6 +22,7 @@
 #define CheckOtherH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "settings.h"
 
@@ -35,7 +36,7 @@ class Variable;
 
 /** @brief Various small checks */
 
-class CheckOther : public Check {
+class CPPCHECKLIB CheckOther : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckOther() : Check(myName())

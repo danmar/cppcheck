@@ -22,6 +22,7 @@
 #define checkuninitvarH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "settings.h"
 
@@ -35,7 +36,7 @@ class Variable;
 
 /** @brief Checking for uninitialized variables */
 
-class CheckUninitVar : public Check {
+class CPPCHECKLIB CheckUninitVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUninitVar */
     CheckUninitVar() : Check(myName())

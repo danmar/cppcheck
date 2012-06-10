@@ -21,6 +21,7 @@
 #define CheckClassH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 
 class Token;
@@ -32,7 +33,7 @@ class Function;
 
 
 /** @brief %Check classes. Uninitialized member variables, non-conforming operators, missing virtual destructor, etc */
-class CheckClass : public Check {
+class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckClass() : Check(myName()), symbolDatabase(NULL)

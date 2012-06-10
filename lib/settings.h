@@ -23,6 +23,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include "config.h"
 #include "suppressions.h"
 #include "standards.h"
 
@@ -35,7 +36,7 @@
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
-class Settings {
+class CPPCHECKLIB Settings {
 private:
     /** @brief Code to append in the checks */
     std::string _append;
@@ -165,7 +166,7 @@ public:
 
 #ifdef HAVE_RULES
     /** Rule */
-    class Rule {
+    class CPPCHECKLIB Rule {
     public:
         Rule()
             : id("rule") // default id

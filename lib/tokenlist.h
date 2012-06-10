@@ -24,6 +24,7 @@
 
 #include <string>
 #include <vector>
+#include "config.h"
 
 class Token;
 class Settings;
@@ -31,7 +32,7 @@ class Settings;
 /// @addtogroup Core
 /// @{
 
-class TokenList {
+class CPPCHECKLIB TokenList {
 public:
     TokenList(const Settings* settings);
     ~TokenList();

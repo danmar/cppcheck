@@ -22,6 +22,7 @@
 #define CHECKBOOST_H
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 
 class Token;
@@ -31,7 +32,7 @@ class Token;
 
 
 /** @brief %Check Boost usage */
-class CheckBoost : public Check {
+class CPPCHECKLIB CheckBoost : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
     CheckBoost() : Check(myName())

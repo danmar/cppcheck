@@ -25,6 +25,7 @@
 #include <istream>
 #include <string>
 #include <list>
+#include "config.h"
 
 class ErrorLogger;
 class Settings;
@@ -37,7 +38,7 @@ class Settings;
  * The preprocessor has special functionality for extracting the various ifdef
  * configurations that exist in a source file.
  */
-class Preprocessor {
+class CPPCHECKLIB Preprocessor {
 public:
 
     /**

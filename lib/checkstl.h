@@ -22,6 +22,7 @@
 #define checkstlH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 
 class Token;
@@ -31,7 +32,7 @@ class Token;
 
 
 /** @brief %Check STL usage (invalidation of iterators, mismatching containers, etc) */
-class CheckStl : public Check {
+class CPPCHECKLIB CheckStl : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
     CheckStl() : Check(myName())

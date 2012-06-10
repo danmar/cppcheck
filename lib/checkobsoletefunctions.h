@@ -22,6 +22,7 @@
 #define CheckObsoleteFunctionsH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include <string>
 #include <map>
@@ -34,7 +35,7 @@
  * @brief Using obsolete functions that are always insecure to use.
  */
 
-class CheckObsoleteFunctions : public Check {
+class CPPCHECKLIB CheckObsoleteFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckObsoleteFunctions */
     CheckObsoleteFunctions() : Check(myName()) {

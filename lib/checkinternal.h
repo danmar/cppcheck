@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
+#include "config.h"
 
 class Token;
 
@@ -31,7 +32,7 @@ class Token;
 
 
 /** @brief %Check Internal cppcheck API usage */
-class CheckInternal : public Check {
+class CPPCHECKLIB CheckInternal : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
     CheckInternal() : Check(myName())

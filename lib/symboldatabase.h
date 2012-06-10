@@ -26,6 +26,7 @@
 #include <vector>
 #include <set>
 
+#include "config.h"
 #include "token.h"
 #include "mathlib.h"
 
@@ -53,7 +54,7 @@ struct Dimension {
 };
 
 /** @brief Information about a member variable. */
-class Variable {
+class CPPCHECKLIB Variable {
     /** @brief flags mask used to access specific bit. */
     enum {
         fIsMutable   = (1 << 0), /** @brief mutable variable */
@@ -357,7 +358,7 @@ private:
     void evaluate();
 };
 
-class Function {
+class CPPCHECKLIB Function {
 public:
     enum Type { eConstructor, eCopyConstructor, eOperatorEqual, eDestructor, eFunction };
 
@@ -417,7 +418,7 @@ private:
     bool isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const;
 };
 
-class Scope {
+class CPPCHECKLIB Scope {
     // let tests access private function for testing
     friend class TestSymbolDatabase;
 
@@ -538,7 +539,7 @@ private:
     bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
 };
 
-class SymbolDatabase {
+class CPPCHECKLIB SymbolDatabase {
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 

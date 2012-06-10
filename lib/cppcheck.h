@@ -19,6 +19,7 @@
 #ifndef CPPCHECK_H
 #define CPPCHECK_H
 
+#include "config.h"
 #include "settings.h"
 #include "errorlogger.h"
 #include "checkunusedfunctions.h"
@@ -36,7 +37,7 @@
  * errors or places that could be improved.
  * Usage: See check() for more info.
  */
-class CppCheck : ErrorLogger {
+class CPPCHECKLIB CppCheck : ErrorLogger {
 public:
     /**
      * @brief Constructor.

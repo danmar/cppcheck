@@ -24,6 +24,7 @@
 
 #include "errorlogger.h"
 #include "tokenlist.h"
+#include "config.h"
 
 #include <string>
 #include <map>
@@ -37,7 +38,7 @@ class TimerResults;
 /// @{
 
 /** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
-class Tokenizer {
+class CPPCHECKLIB Tokenizer {
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);

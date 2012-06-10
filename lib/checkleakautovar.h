@@ -22,10 +22,11 @@
 #define checkleakautovarH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 
 
-class VarInfo {
+class CPPCHECKLIB VarInfo {
 public:
     std::map<unsigned int, std::string> alloctype;
     std::map<unsigned int, std::string> possibleUsage;
@@ -63,7 +64,7 @@ public:
  * @brief Check for leaks
  */
 
-class CheckLeakAutoVar : public Check {
+class CPPCHECKLIB CheckLeakAutoVar : public Check {
 public:
     /** This constructor is used when registering the CheckLeakAutoVar */
     CheckLeakAutoVar() : Check(myName()) {

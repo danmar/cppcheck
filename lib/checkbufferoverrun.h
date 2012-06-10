@@ -22,6 +22,7 @@
 #define CheckBufferOverrunH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "settings.h"
 #include "mathlib.h"
@@ -46,7 +47,7 @@ class Variable;
  * I generally use 'buffer overrun' if you for example call a strcpy or
  * other function and pass a buffer and reads or writes too much data.
  */
-class CheckBufferOverrun : public Check {
+class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
 
     /** This constructor is used when registering the CheckClass */
@@ -109,7 +110,7 @@ public:
     void negativeIndex();
 
     /** Information about N-dimensional array */
-    class ArrayInfo {
+    class CPPCHECKLIB ArrayInfo {
     private:
         /** number of elements of array */
         std::vector<MathLib::bigint> _num;

@@ -22,6 +22,7 @@
 #define CheckUnusedVarH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "settings.h"
 
@@ -35,7 +36,7 @@ class Variables;
 
 /** @brief Various small checks */
 
-class CheckUnusedVar : public Check {
+class CPPCHECKLIB CheckUnusedVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckUnusedVar() : Check(myName())
