@@ -109,6 +109,7 @@ private:
     void leakError(const Token* tok, const std::string &varname);
     void mismatchError(const Token* tok, const std::string &varname);
     void deallocUseError(const Token *tok, const std::string &varname);
+    void deallocReturnError(const Token *tok, const std::string &varname);
     void doubleDeallocationError(const Token *tok, const std::string &varname);
 
     /** message: user configuration is needed to complete analysis */

@@ -78,6 +78,11 @@ void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varn
     reportError(tok, Severity::error, "newdeallocuse", "Using deallocated pointer " + varname);
 }
 
+void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "newdeallocret", "Returning/using deallocated pointer " + varname);
+}
+
 void CheckLeakAutoVar::doubleDeallocationError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "doubledeallocation", "Double deallocation: " + varname);
@@ -461,12 +466,8 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (std::map<unsigned int, std::string>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
-        // has pointer been deallocated?
-        if (it->second == "dealloc")
-            continue;
-
         // don't warn if variable is conditionally allocated
-        if (varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
+        if (it->second != "dealloc" && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
             continue;
 
         const unsigned int varid = it->first;
@@ -485,14 +486,19 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
                     break;
                 }
             }
-            if (used)
-                continue;
 
-            const std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(varid);
-            if (use == possibleUsage.end()) {
-                leakError(tok, var->name());
-            } else {
-                configurationInfo(tok, use->second);
+            // return deallocated pointer
+            if (used && it->second == "dealloc")
+                deallocReturnError(tok, var->name());
+
+            else if (!used && it->second != "dealloc") {
+
+                const std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(varid);
+                if (use == possibleUsage.end()) {
+                    leakError(tok, var->name());
+                } else {
+                    configurationInfo(tok, use->second);
+                }
             }
         }
     }
