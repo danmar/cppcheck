@@ -775,8 +775,8 @@ void CmdLineParser::PrintHelp() const
               "                         Otherwise path where source files are searched is used.\n"
               "                         We use string comparison to create relative paths, so\n"
               "                         using e.g. ~ for home folder does not work. It is\n"
-              "                         currently only possible to apply the base paths to files\n"
-              "                         that are on a lower level in the directory tree.\n"
+              "                         currently only possible to apply the base paths to\n"
+              "                         files that are on a lower level in the directory tree.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"
