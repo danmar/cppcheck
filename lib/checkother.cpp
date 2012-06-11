@@ -2292,6 +2292,13 @@ void CheckOther::checkDoubleFree()
             closeDirVariables.clear();
         }
 
+        // If this scope is a "for" or "while" loop, give up on trying to figure
+        // out the flow of execution and just clear the set of previously freed variables
+        else if (tok->str() == "}" && tok->link() && tok->link()->previous() && tok->link()->previous()->link() &&
+                 Token::Match(tok->link()->previous()->link()->previous(), "while|for")) {
+            freedVariables.clear();
+            closeDirVariables.clear();
+        }
 
         // If a variable is passed to a function, remove it from the set of previously freed variables
         else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf")) {

@@ -5087,6 +5087,51 @@ private:
             "}"
         );
         ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    while(1) {\n"
+            "        x = new char[100];\n"
+            "        if (y++ > 100)\n"
+            "            break;\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    for (;;) {\n"
+            "        x = new char[100];\n"
+            "        if (y++ > 100)\n"
+            "            break;\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    do {\n"
+            "        x = new char[100];\n"
+            "        if (y++ > 100)\n"
+            "            break;\n"
+            "        delete[] x;\n"
+            "    } while (1);\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
