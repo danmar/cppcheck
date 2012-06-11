@@ -41,6 +41,7 @@
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testassignif.cpp" />
     <ClCompile Include="testautovariables.cpp" />
+    <ClCompile Include="testboost.cpp" />
     <ClCompile Include="testbufferoverrun.cpp" />
     <ClCompile Include="testcharvar.cpp" />
     <ClCompile Include="testclass.cpp" />
@@ -52,7 +53,9 @@
     <ClCompile Include="testexceptionsafety.cpp" />
     <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testincompletestatement.cpp" />
+    <ClCompile Include="testinternal.cpp" />
     <ClCompile Include="testio.cpp" />
+    <ClCompile Include="testleakautovar.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
     <ClCompile Include="testnonreentrantfunctions.cpp" />

@@ -163,6 +163,15 @@
     <ClCompile Include="testio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testboost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testinternal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testleakautovar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="options.h">
