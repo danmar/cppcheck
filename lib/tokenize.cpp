@@ -487,6 +487,9 @@ static Token *processFunc(Token *tok2, bool inOperator)
                 while (Token::Match(tok2, "%var% ::"))
                     tok2 = tok2->tokAt(2);
 
+                if (!tok2)
+                    return NULL;
+
                 if (tok2->str() == "(" &&
                     tok2->link()->next()->str() == "(") {
                     tok2 = tok2->link();
@@ -1197,6 +1200,9 @@ void Tokenizer::simplifyTypedef()
 
                         if (!inCast)
                             tok2 = processFunc(tok2, inOperator);
+
+                        if (!tok2)
+                            break;
 
                         tok2->insertToken(")");
                         tok2 = tok2->next();

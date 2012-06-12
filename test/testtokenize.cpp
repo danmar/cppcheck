@@ -61,6 +61,7 @@ private:
         TEST_CASE(wrong_syntax1);
         TEST_CASE(wrong_syntax2);
         TEST_CASE(wrong_syntax3); // #3544
+        TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
 
         TEST_CASE(minus);
@@ -667,6 +668,12 @@ private:
                             "        ca[N]; =  cb[i]\n"
                             " )\n"
                             "}";
+
+        tokenizeAndStringify(code);
+    }
+
+    void wrong_syntax4() {   // #3618
+        const char code[] = "typedef void (x) (int);    return x&";
 
         tokenizeAndStringify(code);
     }
