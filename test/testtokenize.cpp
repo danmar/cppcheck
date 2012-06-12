@@ -6514,6 +6514,10 @@ private:
         ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() NOTHROW { }"));
         ASSERT_EQUALS("struct Foo { } ;", tokenizeAndStringify("struct __declspec(dllexport) Foo {};"));
         ASSERT_EQUALS("ABA ( ) namespace { }", tokenizeAndStringify("ABA() namespace { }"));
+
+        // #3750
+        ASSERT_EQUALS("; foo :: foo ( ) { }",
+                      tokenizeAndStringify("; AB(foo*) foo::foo() { }"));
     }
 
     void multipleAssignment() {

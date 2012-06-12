@@ -26,6 +26,7 @@
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
 #include "timer.h"
+#include "checknullpointer.h"   // isUpper
 
 #include <cstring>
 #include <sstream>
@@ -3445,6 +3446,36 @@ void Tokenizer::removeMacrosInGlobalScope()
             if (Token::Match(tok, ") %type% {") &&
                 !Token::Match(tok->next(), "const|namespace|class|struct|union"))
                 tok->deleteNext();
+        }
+
+        if (Token::Match(tok, "[;{}] %type% (") && CheckNullPointer::isUpper(tok->next()->str())) {
+            unsigned int par = 0;
+            const Token *tok2;
+            for (tok2 = tok; tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    ++par;
+                else if (tok2->str() == ")") {
+                    if (par <= 1)
+                        break;
+                    --par;
+                }
+            }
+
+            // remove unknown macros before namespace|class|struct|union
+            if (Token::Match(tok2, ") namespace|class|struct|union")) {
+                Token::eraseTokens(tok, tok2->next());
+                continue;
+            }
+
+            // remove unknown macros before foo::foo(
+            if (Token::Match(tok2, ") %type% :: %type%")) {
+                const Token *tok3 = tok2->next();
+                while (Token::Match(tok3, "%type% :: %type% ::"))
+                    tok3 = tok3->tokAt(2);
+                if (Token::Match(tok3, "%type% :: %type% (") && tok3->str() == tok3->strAt(2))
+                    Token::eraseTokens(tok, tok2->next());
+                continue;
+            }
         }
 
         if (tok->str() == "{")
