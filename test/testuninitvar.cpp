@@ -54,6 +54,7 @@ private:
         TEST_CASE(uninitvar2);
         TEST_CASE(uninitvar3);          // #3844
         TEST_CASE(uninitvar4);          // #3869 (reference)
+        TEST_CASE(uninitvar5);          // #3861
     }
 
     void checkUninitVar(const char code[]) {
@@ -2160,6 +2161,23 @@ private:
                         "    x++;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // #3861
+    void uninitvar5() {
+        // ensure there is no false positive
+        checkUninitVar2("void f() {\n"
+                        "    x<char> c;\n"
+                        "    c << 2345;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // ensure there is no false negative
+        checkUninitVar2("void f() {\n"
+                        "    char c;\n"
+                        "    char a = c << 2;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", errout.str());
     }
 };
 

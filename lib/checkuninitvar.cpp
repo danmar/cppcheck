@@ -1275,6 +1275,15 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
             return true;
     }
 
+    if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
+        // Is variable a known POD type then this is a variable usage,
+        // otherwise we assume it's not.
+        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(vartok->varId());
+        if (var && var->typeStartToken()->isStandardType())
+            return true;
+        return false;
+    }
+
     if (Token::Match(vartok->next(), "++|--|%op%"))
         return true;
 
