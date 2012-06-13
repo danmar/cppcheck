@@ -6525,6 +6525,12 @@ private:
         // #3750
         ASSERT_EQUALS("; foo :: foo ( ) { }",
                       tokenizeAndStringify("; AB(foo*) foo::foo() { }"));
+
+        // #3855
+        ASSERT_EQUALS("; class foo { }",
+                      tokenizeAndStringify("; AB class foo { }"));
+        ASSERT_EQUALS("; CONST struct ABC abc ;",
+                      tokenizeAndStringify("; CONST struct ABC abc ;"));
     }
 
     void multipleAssignment() {

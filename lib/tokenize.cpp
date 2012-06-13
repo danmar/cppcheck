@@ -3454,32 +3454,41 @@ void Tokenizer::removeMacrosInGlobalScope()
                 tok->deleteNext();
         }
 
-        if (Token::Match(tok, "[;{}] %type% (") && CheckNullPointer::isUpper(tok->next()->str())) {
-            unsigned int par = 0;
-            const Token *tok2;
-            for (tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    ++par;
-                else if (tok2->str() == ")") {
-                    if (par <= 1)
-                        break;
-                    --par;
+        if (Token::Match(tok, "[;{}] %type%") && CheckNullPointer::isUpper(tok->next()->str())) {
+            const Token *tok2 = tok->tokAt(2);
+            if (tok2 && tok2->str() == "(") {
+                unsigned int par = 0;
+                for (; tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(")
+                        ++par;
+                    else if (tok2->str() == ")") {
+                        if (par <= 1)
+                            break;
+                        --par;
+                    }
                 }
+                if (tok2 && tok2->str() == ")")
+                    tok2 = tok2->next();
             }
 
             // remove unknown macros before namespace|class|struct|union
-            if (Token::Match(tok2, ") namespace|class|struct|union")) {
-                Token::eraseTokens(tok, tok2->next());
+            if (Token::Match(tok2, "namespace|class|struct|union")) {
+                // is there a "{" for?
+                const Token *tok3 = tok2;
+                while (tok3 && !Token::Match(tok3,"[;{}()]"))
+                    tok3 = tok3->next();
+                if (tok3 && tok3->str() == "{")
+                    Token::eraseTokens(tok, tok2);
                 continue;
             }
 
             // remove unknown macros before foo::foo(
-            if (Token::Match(tok2, ") %type% :: %type%")) {
-                const Token *tok3 = tok2->next();
+            if (Token::Match(tok2, "%type% :: %type%")) {
+                const Token *tok3 = tok2;
                 while (Token::Match(tok3, "%type% :: %type% ::"))
                     tok3 = tok3->tokAt(2);
                 if (Token::Match(tok3, "%type% :: %type% (") && tok3->str() == tok3->strAt(2))
-                    Token::eraseTokens(tok, tok2->next());
+                    Token::eraseTokens(tok, tok2);
                 continue;
             }
         }
