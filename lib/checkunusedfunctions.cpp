@@ -107,8 +107,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         else if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
             funcname = tok->next();
 
-        else if (Token::Match(tok, "[=(,] & %var% :: %var% [,);]"))
-            funcname = tok->tokAt(4);
+        else if (Token::Match(tok, "[=(,] &| %var% :: %var%")) {
+            funcname = tok->next();
+            if (funcname->str() == "&")
+                funcname = funcname->next();
+            while (Token::Match(funcname,"%var% :: %var%"))
+                funcname = funcname->tokAt(2);
+            if (!Token::Match(funcname, "%var% [,);]"))
+                continue;
+        }
 
         else
             continue;

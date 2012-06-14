@@ -135,6 +135,17 @@ private:
               "    return 0\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace abc {\n"  // #3875
+              "void foo() { }\n"
+              "};\n"
+              "\n"
+              "int main()\n"
+              "{\n"
+              "    f(abc::foo);\n"
+              "    return 0\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void template1() {
