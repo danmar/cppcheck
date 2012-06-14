@@ -4,14 +4,14 @@ jQuery.fn.listCommits = function(username, repository, branch) {
   this.html('<span>Querying GitHub for recent commits&hellip;</span>');
 
   var target = this;
-  $.getJSON('http://github.com/api/v2/json/commits/list/' + username + '/' + repository + '/' + branch + '?callback=?', function(data) {
-    var repos = data.commits;
+  $.getJSON('https://api.github.com/repos/' + username + '/' + repository + '/commits?sha=' + branch + '&callback=?', function(response) {
+    var commits = response.data;
 
     var list = $('<ul/>');
     target.empty().append(list);
-    $(repos).each(function(i) {
-      var githubUrl = 'https://github.com' + this.url;
-      var shortMessage = cutLines(this.message);
+    $(commits).each(function(i) {
+      var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha;
+      var shortMessage = cutLines(this.commit.message);
       var author = this.author.login;
       if (author == '') {
         author = this.author.name;
