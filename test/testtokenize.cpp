@@ -393,7 +393,7 @@ private:
 
         TEST_CASE(simplifyLogicalOperators);
 
-        TEST_CASE(simplifyCalculations); // ticket #2870
+        TEST_CASE(simplifyCalculations);
 
         // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
         TEST_CASE(simplifyAssignmentInFunctionCall);
@@ -6348,7 +6348,11 @@ private:
                       tokenizeAndStringify("int foo ( ) { int i; int j; i = 1 || j; return i; }", true));
 
         ASSERT_EQUALS("int foo ( ) { return 0 ; }",
-                      tokenizeAndStringify("int foo ( ) { int i; int j; i = 0 && j; return i; }", true));
+                      tokenizeAndStringify("int foo ( ) { int i; int j; i = 0 && j; return i; }", true));        // ticket #3576 - False positives in boolean expressions
+
+        // ticket #3723 - Simplify condition (0 && a < 123)
+        ASSERT_EQUALS("( 0 )",
+                      tokenizeAndStringify("( 0 && a < 123 )", true));
     }
 
     void simplifyCompoundAssignment() {

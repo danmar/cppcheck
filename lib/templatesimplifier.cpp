@@ -748,6 +748,26 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         }
 
         if (tok->isNumber()) {
+            // Remove redundant conditions (0&&x) (1||x)
+            if (Token::Match(tok->previous(), "[(=,] 0 &&") ||
+                Token::Match(tok->previous(), "[(=,] 1 ||")) {
+                unsigned int par = 0;
+                const Token *tok2 = tok;
+                for (tok2 = tok; tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(")
+                        ++par;
+                    else if (tok2->str() == ")") {
+                        if (par == 0)
+                            break;
+                        --par;
+                    } else if (par == 0 && (Token::Match(tok2, "[,;]")))
+                        break;
+                }
+                if (Token::Match(tok2, "[);,]"))
+                    Token::eraseTokens(tok, tok2);
+                continue;
+            }
+
             if (tok->str() == "0") {
                 if (Token::Match(tok->previous(), "[+-|] 0")) {
                     tok = tok->previous();
@@ -766,7 +786,6 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok->deleteThis();
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "[=[(,] 0 && %any% ,|]|)|;|=|%op%") ||
                            Token::Match(tok->previous(), "return|case 0 * %any% ,|:|;|=|%op%") ||
                            Token::Match(tok->previous(), "return|case 0 && %any% ,|:|;|=|%op%")) {
                     tok->deleteNext();
