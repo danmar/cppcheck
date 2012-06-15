@@ -3001,7 +3001,7 @@ private:
               "    b = x < 6 && x < 5;\n"
               "    b = x < 5 || x < 6;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 5, the comparison x > 6 is always true.\n"
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 6, the comparison x > 5 is always true.\n"
                       "[test.cpp:3]: (style) Redundant condition: If x > 5, the comparison x > 6 is always true.\n"
                       "[test.cpp:4]: (style) Redundant condition: If x < 6, the comparison x < 5 is always true.\n"
                       "[test.cpp:5]: (style) Redundant condition: If x < 6, the comparison x < 5 is always true.\n", errout.str());

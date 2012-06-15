@@ -1126,7 +1126,7 @@ void CheckOther::checkIncorrectLogicOperator()
                 { 0,      { First, "<="   }, "&&",     { NA,    "!="   }, 0,      Less,      SecondTrue  }, // (x <= 1) && (x != 3)  <- second expression always true
                 { "!!&&", { First, ">|>=" }, "%oror%", { First, ">|>=" }, "!!&&", LessEqual, SecondTrue  }, // (x > 4)  || (x > 5)   <- second expression always true
                 { "!!&&", { First, "<|<=" }, "%oror%", { First, "<|<=" }, "!!&&", MoreEqual, SecondTrue  }, // (x < 5)  || (x < 4)   <- second expression always true
-                { 0,      { First, ">|>=" }, "&&",     { First, ">|>=" }, 0,      LessEqual, SecondTrue  }, // (x > 4)  && (x > 5)   <- second expression always true
+                { 0,      { First, ">|>=" }, "&&",     { First, ">|>=" }, 0,      MoreEqual, SecondTrue  }, // (x > 4)  && (x > 5)   <- second expression always true
                 { 0,      { First, "<|<=" }, "&&",     { First, "<|<=" }, 0,      MoreEqual, SecondTrue  }, // (x < 5)  && (x < 4)   <- second expression always true
             };
 
