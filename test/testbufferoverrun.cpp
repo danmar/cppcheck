@@ -1724,6 +1724,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #3893 - start value out of bounds
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    for (int i = 10; somecondition; dosomething) {\n"
+              "        a[i] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
     }
 
     void array_index_for_neq() {

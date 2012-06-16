@@ -245,10 +245,11 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
  * Parse for loop initialization statement. Look for a counter variable
  * \param tok [in] first token inside the parentheses
  * \param varid [out] varid of counter variable
+ * \param varname [out] name of counter variable
  * \param init_value [out] init value of counter variable
  * \return success => pointer to the for loop condition. fail => 0
  */
-static const Token *for_init(const Token *tok, unsigned int &varid, std::string &init_value)
+static const Token *for_init(const Token *tok, unsigned int &varid, std::string &varname, std::string &init_value)
 {
     if (Token::Match(tok, "%var% = %any% ;")) {
         if (tok->tokAt(2)->isNumber()) {
@@ -256,6 +257,7 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
         }
 
         varid = tok->varId();
+        varname = tok->str();
         tok = tok->tokAt(4);
     } else if (Token::Match(tok, "%type% %var% = %any% ;")) {
         if (tok->tokAt(3)->isNumber()) {
@@ -263,6 +265,7 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
         }
 
         varid = tok->next()->varId();
+        varname = tok->next()->str();
         tok = tok->tokAt(5);
     } else if (Token::Match(tok, "%type% %type% %var% = %any% ;")) {
         if (tok->tokAt(4)->isNumber()) {
@@ -270,6 +273,7 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
         }
 
         varid = tok->tokAt(2)->varId();
+        varname = tok->tokAt(2)->str();
         tok = tok->tokAt(6);
     } else
         return 0;
@@ -279,7 +283,7 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
 
 
 /** Parse for condition */
-static bool for_condition(const Token * const tok2, unsigned int varid, std::string &min_value, std::string &max_value, std::string &strindex, bool &maxMinFlipped)
+static bool for_condition(const Token * const tok2, unsigned int varid, std::string &min_value, std::string &max_value, bool &maxMinFlipped)
 {
     if (Token::Match(tok2, "%varid% < %num% ;", varid) ||
         Token::Match(tok2, "%varid% != %num% ; ++ %varid%", varid) ||
@@ -304,8 +308,6 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
     } else {
         return false;
     }
-
-    strindex = tok2->isName() ? tok2->str() : tok2->strAt(2);
 
     return true;
 }
@@ -713,18 +715,31 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
             return;
     }
 
+    std::string counter_name;
     unsigned int counter_varid = 0;
-    std::string min_counter_value;
-    std::string max_counter_value;
+    std::string counter_init_value;
 
-    tok2 = for_init(tok2, counter_varid, min_counter_value);
+    tok2 = for_init(tok2, counter_varid, counter_name, counter_init_value);
     if (tok2 == 0 || counter_varid == 0)
         return;
 
     bool maxMinFlipped = false;
-    std::string strindex;
-    if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, strindex, maxMinFlipped))
+    std::string min_counter_value = counter_init_value;
+    std::string max_counter_value;
+    if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, maxMinFlipped)) {
+        // Can't understand the condition. Check that the start value
+        // is used correctly
+        const Token *startForScope = tok->next()->link()->next();
+        if (!for_bailout(startForScope, counter_varid)) {
+            // Get index variable and stopsize.
+            bool condition_out_of_bounds = bool(size > 0);
+            if (MathLib::toLongNumber(counter_init_value) < size)
+                condition_out_of_bounds = false;
+
+            parse_for_body(startForScope, arrayInfo, counter_name, condition_out_of_bounds, counter_varid, counter_init_value, counter_init_value);
+        }
         return;
+    }
 
     // Get index variable and stopsize.
     bool condition_out_of_bounds = bool(size > 0);
@@ -751,7 +766,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
         return;
     }
 
-    parse_for_body(tok2->next(), arrayInfo, strindex, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
+    parse_for_body(tok2->next(), arrayInfo, counter_name, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
 }
 
 
