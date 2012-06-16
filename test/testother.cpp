@@ -4925,7 +4925,7 @@ private:
             "    char *p = malloc(100);\n"
             "    if (x) {\n"
             "        free(p);\n"
-            "        bailout();\n"
+            "        exit();\n"
             "    }\n"
             "    free(p);\n"
             "}");
@@ -5107,6 +5107,45 @@ private:
             "void foo(int y)\n"
             "{\n"
             "    char * x = NULL;\n"
+            "    for (int i = 0; i < 10000; i++) {\n"
+            "        x = new char[100];\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    while (isRunning()) {\n"
+            "        x = new char[100];\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    while (isRunning()) {\n"
+            "        x = malloc(100);\n"
+            "        free(x);\n"
+            "    }\n"
+            "    free(x);\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
             "    for (;;) {\n"
             "        x = new char[100];\n"
             "        if (y++ > 100)\n"
@@ -5132,6 +5171,19 @@ private:
             "}"
         );
         ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void f()\n"
+            "{\n"
+            "    char *p = 0;\n"
+            "    if (x < 100) {\n"
+            "        p = malloc(10);\n"
+            "        free(p);\n"
+            "    }\n"
+            "    free(p);\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
     }
 };
 

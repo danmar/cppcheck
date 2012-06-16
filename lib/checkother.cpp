@@ -2253,6 +2253,7 @@ void CheckOther::checkDoubleFree()
     std::set<unsigned int> closeDirVariables;
 
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        bool isUnknown = true;
 
         // Keep track of any variables passed to "free()", "g_free()" or "closedir()",
         // and report an error if the same variable is passed twice.
@@ -2287,15 +2288,19 @@ void CheckOther::checkDoubleFree()
         }
 
         // If this scope doesn't return, clear the set of previously freed variables
-        else if (tok->str() == "}" && _tokenizer->IsScopeNoReturn(tok)) {
+        else if (tok->str() == "}" && _tokenizer->IsScopeNoReturn(tok, &isUnknown) && !isUnknown) {
             freedVariables.clear();
             closeDirVariables.clear();
         }
 
-        // If this scope is a "for" or "while" loop, give up on trying to figure
-        // out the flow of execution and just clear the set of previously freed variables
-        else if (tok->str() == "}" && tok->link() && tok->link()->previous() && tok->link()->previous()->link() &&
-                 Token::Match(tok->link()->previous()->link()->previous(), "while|for")) {
+        // If this scope is a "for" or "while" loop that contains "break" or "continue",
+        // give up on trying to figure out the flow of execution and just clear the set
+        // of previously freed variables.
+        // TODO: There are false negatives. This bailout is only needed when the
+        // loop will exit without free()'ing the memory on the last iteration.
+        else if (tok->str() == "}" && tok->link() && tok->link()->linkAt(-1) &&
+                 Token::Match(tok->link()->linkAt(-1)->previous(), "while|for") &&
+                 Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != NULL) {
             freedVariables.clear();
             closeDirVariables.clear();
         }
