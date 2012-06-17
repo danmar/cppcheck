@@ -82,6 +82,17 @@ private:
               "    throw e;\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", "", errout.str());
+
+        // #3858 - throwing exception in try block in destructor
+        check("class x {\n"
+              "    ~x() {\n"
+              "        try {\n"
+              "            throw e;\n"
+              "        } catch (...) {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deallocThrow1() {

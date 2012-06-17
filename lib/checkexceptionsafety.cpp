@@ -42,6 +42,11 @@ void CheckExceptionSafety::destructors()
             if (j->type == Function::eDestructor && j->functionScope) {
                 // Inspect this destructor..
                 for (const Token *tok = j->functionScope->classStart->next(); tok != j->functionScope->classEnd; tok = tok->next()) {
+                    // Skip try blocks
+                    if (Token::simpleMatch(tok, "try {")) {
+                        tok = tok->next()->link();
+                    }
+
                     // throw found within a destructor
                     if (tok->str() == "throw") {
                         destructorsError(tok);
