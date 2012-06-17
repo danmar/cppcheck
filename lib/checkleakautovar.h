@@ -110,7 +110,6 @@ private:
     void mismatchError(const Token* tok, const std::string &varname);
     void deallocUseError(const Token *tok, const std::string &varname);
     void deallocReturnError(const Token *tok, const std::string &varname);
-    void doubleDeallocationError(const Token *tok, const std::string &varname);
 
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::string &functionName);
@@ -120,7 +119,6 @@ private:
         c.leakError(NULL, "p");
         c.mismatchError(NULL, "p");
         c.deallocUseError(NULL, "p");
-        c.doubleDeallocationError(NULL, "p");
         c.configurationInfo(0, "f");  // user configuration is needed to complete analysis
     }
 

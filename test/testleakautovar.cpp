@@ -49,8 +49,6 @@ private:
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
 
-        TEST_CASE(doublefree);
-
         // exit
         TEST_CASE(exit1);
         TEST_CASE(exit2);
@@ -239,14 +237,6 @@ private:
               "    return p;\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Returning/using deallocated pointer p\n", errout.str());
-    }
-
-    void doublefree() {
-        check("void f(char *p) {\n"
-              "    free(p);\n"
-              "    free(p);\n"
-              "}");
-        ASSERT_EQUALS("[test.c:3]: (error) Double deallocation: p\n", errout.str());
     }
 
     void exit1() {

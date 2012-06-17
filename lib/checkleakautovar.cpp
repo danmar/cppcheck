@@ -83,11 +83,6 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &v
     reportError(tok, Severity::error, "newdeallocret", "Returning/using deallocated pointer " + varname);
 }
 
-void CheckLeakAutoVar::doubleDeallocationError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::error, "doubledeallocation", "Double deallocation: " + varname);
-}
-
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
     if (((!cfgalloc.empty() || !cfgdealloc.empty()) && _settings->isEnabled("style")) || _settings->experimental) {
@@ -425,7 +420,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
                     // possible usage
                     possibleUsage[arg->varId()] = tok->str();
                 } else if (var->second == "dealloc") {
-                    doubleDeallocationError(tok, arg->str());
+                    // double deallocation is reported by CheckOther::checkDoubleFree
                 } else if (var->second != dealloc) {
                     // mismatching allocation and deallocation
                     mismatchError(tok, arg->str());
