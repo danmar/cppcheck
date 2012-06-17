@@ -299,6 +299,14 @@ private:
               "    free(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3866 - UNLIKELY
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    if (UNLIKELY(!p)) { return; }\n"
+              "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ifelse4() {
