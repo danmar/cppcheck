@@ -309,7 +309,7 @@ lib/timer.o: lib/timer.cpp lib/timer.h lib/config.h
 lib/token.o: lib/token.cpp lib/token.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/token.o lib/token.cpp
 
-lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/mathlib.h lib/settings.h lib/standards.h lib/check.h lib/token.h lib/path.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h
+lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/mathlib.h lib/settings.h lib/standards.h lib/check.h lib/token.h lib/path.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/checknullpointer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/tokenize.o lib/tokenize.cpp
 
 lib/tokenlist.o: lib/tokenlist.cpp lib/tokenlist.h lib/config.h lib/token.h lib/mathlib.h lib/path.h lib/preprocessor.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h
