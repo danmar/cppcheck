@@ -14,6 +14,8 @@ BASEPATH = ../externals/tinyxml/
 include(../externals/tinyxml/tinyxml.pri)
 BASEPATH = ../lib/
 include(../lib/lib.pri)
+BASEPATH = .
+include($$PWD/testfiles.pri)
 
 # cli/*
 SOURCES += ../cli/cmdlineparser.cpp \
@@ -31,46 +33,7 @@ HEADERS += ../cli/cmdlineparser.h \
 # test/*
 
 HEADERS += options.h redirect.h testsuite.h
-SOURCES += options.cpp \
-           test64bit.cpp \
-           testassignif.cpp \
-           testautovariables.cpp \
-           testboost.cpp \
-           testbufferoverrun.cpp \
-           testcharvar.cpp \
-           testclass.cpp \
-           testcmdlineparser.cpp \
-           testconstructors.cpp \
-           testcppcheck.cpp \
-           testdivision.cpp \
-           testerrorlogger.cpp \
-           testexceptionsafety.cpp \
-           testfilelister.cpp \
-           testincompletestatement.cpp \
-           testmathlib.cpp \
-           testmemleak.cpp \
-           testnonreentrantfunctions.cpp \
-           testnullpointer.cpp \
-           testobsoletefunctions.cpp \
-           testoptions.cpp \
-           testother.cpp \
-           testpath.cpp \
-           testpathmatch.cpp \
-           testpostfixoperator.cpp \
-           testpreprocessor.cpp \
-           testrunner.cpp \
-           testsimplifytokens.cpp \
-           teststl.cpp \
-           testsuite.cpp \
-           testsuppressions.cpp \
-           testsymboldatabase.cpp \
-           testthreadexecutor.cpp \
-           testtoken.cpp \
-           testtokenize.cpp \
-           testuninitvar.cpp \
-           testunusedfunctions.cpp \
-           testunusedprivfunc.cpp \
-           testunusedvar.cpp
+SOURCES += options.cpp
 
 # Change Visual Studio compiler (CL) warning level to W4
 contains(QMAKE_CXX, cl) {
