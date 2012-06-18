@@ -207,7 +207,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
                                           "--check-config.",
                                           "missingInclude",
                                           false);
-            reportErr(msg);
+            reportInfo(msg);
         }
     }
 
@@ -263,6 +263,11 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
         // Report progress message
         reportOut(ostr.str());
     }
+}
+
+void CppCheckExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+{
+    reportOut(msg.toXML(false, _settings._xml_version));
 }
 
 void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, size_t sizedone, size_t sizetotal)

@@ -73,6 +73,11 @@ public:
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
 
     /**
+     * Output information messages.
+     */
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+
+    /**
      * Information about how many files have been checked
      *
      * @param fileindex This many files have been checked.
