@@ -13,6 +13,10 @@ Software needed:
 Cppcheck.exe
 ------------
 
+Visual Studio 2010:
+Just open cppcheck_vs2010.sln, choose "x64" as platform and compile.
+
+Visual Studio 2008:
 Make sure you have the Windows SDK installed! VS Express doesn't have 64-bit
 tools, libraries or headers so you cannot compile 64-bit binaries without
 Windows SDK.
@@ -28,11 +32,9 @@ Then start VS Express:
 VS Express starts otherwise normally but now all environment variables point to
 64-bit folders for libraries.
 
-Now you can open the cppcheck.sln (or cppcheck_vs2010.sln) solution file and
-compile 64-bit targets. With VS 2008 there are configurations Debug-x64 and
-Release-x64 for 64-bit targets. This is because VS 2008 express does not allow
-adding new platform. For VS 2010 there is platform x64 and Debug/Release
-configurations.
+Now you can open the cppcheck.sln solution file and compile 64-bit targets.
+With VS 2008 there are configurations Debug-x64 and Release-x64 for 64-bit targets.
+This is because VS 2008 express does not allow adding new platform.
 
 You can use e.g. Dependency Walker -program (http://www.dependencywalker.com/)
 to check that build binaries are really 64-bit binaries.
