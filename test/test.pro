@@ -6,9 +6,8 @@ INCLUDEPATH += . ../cli ../lib
 OBJECTS_DIR = temp
 CONFIG += warn_on console
 CONFIG -= qt app_bundle
-win32 {
-    LIBS += -lshlwapi
-}
+
+include(../console_common.pri)
 
 BASEPATH = ../externals/tinyxml/
 include(../externals/tinyxml/tinyxml.pri)
@@ -30,14 +29,5 @@ HEADERS += ../cli/cmdlineparser.h \
            ../cli/pathmatch.h \
            ../cli/threadexecutor.h
 
-# test/*
-
 HEADERS += options.h redirect.h testsuite.h
 SOURCES += options.cpp
-
-# Change Visual Studio compiler (CL) warning level to W4
-contains(QMAKE_CXX, cl) {
-    QMAKE_CXXFLAGS_WARN_ON -= -W3
-    QMAKE_CXXFLAGS_WARN_ON += -W4
-    DEFINES += _CRT_SECURE_NO_WARNINGS
-}
