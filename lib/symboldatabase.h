@@ -564,7 +564,7 @@ public:
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
     }
 
-    const Variable *getVariableFromVarId(unsigned int varId) const {
+    const Variable *getVariableFromVarId(size_t varId) const {
         return _variableList[varId];
     }
 

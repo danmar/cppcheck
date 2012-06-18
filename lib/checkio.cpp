@@ -98,8 +98,8 @@ void CheckIO::checkFileUsage()
     std::map<unsigned int, Filepointer> filepointers;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    unsigned int varListSize = symbolDatabase->getVariableListSize();
-    for (unsigned int i = 1; i < varListSize; i++) {
+    size_t varListSize = symbolDatabase->getVariableListSize();
+    for (size_t i = 1; i < varListSize; ++i) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
         if (!var || !var->varId() || !Token::Match(var->typeStartToken(), "FILE *"))
             continue;
