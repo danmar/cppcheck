@@ -266,8 +266,7 @@ public:
      * Information about found errors and warnings is directed
      * here. Override this to receive the errormessages.
      *
-     * @param msg Location and other information about the found.
-     * error
+     * @param msg Location and other information about the found error.
      */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
 
@@ -282,6 +281,12 @@ public:
         (void)stage;
         (void)value;
     }
+
+    /**
+     * Output information messages.
+     * @param msg Location and other information about the found error.
+     */
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) = 0;
 
     /**
      * Report list of unmatched suppressions
