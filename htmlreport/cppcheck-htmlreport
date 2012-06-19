@@ -176,9 +176,16 @@ class AnnotateCodeFormatter(HtmlFormatter):
 class CppCheckHandler(XmlContentHandler):
     """Parses the cppcheck xml file and produces a list of all its errors."""
     errors = []
+    lastItem = {}
 
     def startElement(self, name, attributes):
-        if name != "error":
+        if name == "location":
+            if attributes["file"] == "":
+                sys.stderr.write("ERROR: cppcheck error reported without a file name.\n")
+            self.errors[len(self.errors)-1]["file"] = attributes["file"]
+            self.errors[len(self.errors)-1]["line"] = int(attributes["line"])
+            return
+        elif name != "error":
             return
 
         if attributes["id"] == "missingInclude":
@@ -188,18 +195,16 @@ class CppCheckHandler(XmlContentHandler):
                     "line" : 0,
                     "id" : attributes["id"],
                     "severity" : attributes["severity"],
-                    "msg" : attributes["msg"]
+                    "msg" : attributes["verbose"]
                 })
         else:
-            if attributes["file"] == "":
-                sys.stderr.write("ERROR: cppcheck error reported without a file name.\n")
             self.errors.append(
                 {
-                    "file" : attributes["file"],
-                    "line" : int(attributes["line"]),
+                    "file" : "",
+                    "line" : 0,
                     "id" : attributes["id"],
                     "severity" : attributes["severity"],
-                    "msg" : attributes["msg"]
+                    "msg" : attributes["verbose"]
                 })
 
 if __name__ == '__main__':
