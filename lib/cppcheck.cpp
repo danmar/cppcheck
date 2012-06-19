@@ -209,8 +209,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
                                                  "toomanyconfigs",
                                                  false);
 
-                reportErr(errmsg);
-
+                reportInfo(errmsg);
                 break;
             }
 
@@ -510,6 +509,11 @@ void CppCheck::reportOut(const std::string &outmsg)
 void CppCheck::reportProgress(const std::string &filename, const char stage[], const unsigned int value)
 {
     _errorLogger.reportProgress(filename, stage, value);
+}
+
+void CppCheck::reportInfo(const ErrorLogger::ErrorMessage &msg)
+{
+    _errorLogger.reportInfo(msg);
 }
 
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, size_t /*sizedone*/, size_t /*sizetotal*/)

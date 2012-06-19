@@ -290,6 +290,11 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     writeToPipe(REPORT_ERROR, msg.serialize());
 }
 
+void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+{
+    writeToPipe(REPORT_OUT, msg.serialize());
+}
+
 #else
 
 void ThreadExecutor::addFileContent(const std::string &/*path*/, const std::string &/*content*/)
@@ -307,6 +312,11 @@ void ThreadExecutor::reportOut(const std::string &/*outmsg*/)
 
 }
 void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
+{
+
+}
+
+void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 {
 
 }
