@@ -2150,6 +2150,14 @@ private:
                         "    int a, a2, a2*x; if () ;\n"
                         "  )\n"
                         "}\n");
+
+        // Ticket #3890 - False positive for std::map
+        checkUninitVar2("void f() {\n"
+                        "    std::map<int,bool> x;\n"
+                        "    return x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     // #3869 - reference variable

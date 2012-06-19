@@ -1054,9 +1054,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
 
         bool stdtype = false;
         const Token* tok = i->typeStartToken();
-        for (; tok->str() != ";"; tok = tok->next())
+        for (; tok->str() != ";" && tok->str() != "<"; tok = tok->next()) {
             if (tok->isStandardType())
                 stdtype = true;
+        }
 
         if (stdtype || i->isPointer())
             checkScopeForVariable(tok, *i, NULL);
