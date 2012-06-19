@@ -4466,7 +4466,10 @@ void Tokenizer::simplifyCasts()
         // *((char *)a + 1) = 0;
         // #3596 : remove cast when casting a function pointer:
         // (*(void (*)(char *))fp)(x);
-        if (!tok->isName() && Token::simpleMatch(tok->next(), "* (") && !Token::Match(tok->linkAt(2), ") %var%")) {
+        if (!tok->isName() &&
+            Token::simpleMatch(tok->next(), "* (") &&
+            !Token::Match(tok->linkAt(2), ") %var%") &&
+            !Token::simpleMatch(tok->linkAt(2), ") &")) {
             tok = tok->linkAt(2);
             continue;
         }
@@ -4482,6 +4485,12 @@ void Tokenizer::simplifyCasts()
 
             // Remove cast..
             Token::eraseTokens(tok, tok->next()->link()->next());
+
+            // Remove '* &'
+            if (Token::simpleMatch(tok, "* &")) {
+                tok->deleteNext();
+                tok->deleteThis();
+            }
 
             if (tok->str() == ")" && tok->link()->previous()) {
                 // If there was another cast before this, go back
