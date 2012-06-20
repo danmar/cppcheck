@@ -147,7 +147,9 @@ void CheckLeakAutoVar::check()
             std::map<unsigned int, std::string>::iterator it = varInfo.alloctype.begin();
             while (it != varInfo.alloctype.end()) {
                 const Variable *var = symbolDatabase->getVariableFromVarId(it->first);
-                if (var && var->isArgument() && var->isReference())
+                if (!var ||
+                    (var->isArgument() && var->isReference()) ||
+                    (!var->isArgument() && !var->isLocal()))
                     varInfo.alloctype.erase(it++);
                 else
                     ++it;

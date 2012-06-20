@@ -81,6 +81,7 @@ private:
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
+        TEST_CASE(test2);
 
         // Possible leak => Further configuration is needed for complete analysis
         TEST_CASE(configuration1);
@@ -435,6 +436,14 @@ private:
         check("void f(double*&p) {\n"
               "    p = malloc(0x100);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void test2() {	// 3899
+        check("struct Fred {\n"
+              "    char *p;\n"
+              "    void f1() { free(p); }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
