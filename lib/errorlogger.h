@@ -286,7 +286,9 @@ public:
      * Output information messages.
      * @param msg Location and other information about the found error.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) = 0;
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) {
+		reportErr(msg);
+	}
 
     /**
      * Report list of unmatched suppressions

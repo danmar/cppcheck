@@ -2100,7 +2100,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     const std::string id = userheader ? "missingInclude" : "debug";
     ErrorLogger::ErrorMessage errmsg(locationList, severity, "Include file: \"" + header + "\" not found.", id, false);
     errmsg.file0 = file0;
-    errorLogger->reportInfo(errmsg);
+    _errorLogger->reportInfo(errmsg);
 }
 
 /**
