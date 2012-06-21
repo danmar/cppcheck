@@ -20,6 +20,7 @@ tools/errmsg
 cli/temp/
 lib/temp/
 test/temp/
+bin/
 Build/
 BuildTmp/
 # XCode build folders and files
