@@ -170,6 +170,7 @@ public:
         return _type == eName || _type == eType || _type == eVariable || _type == eFunction ||
                _type == eBoolean; // TODO: "true"/"false" aren't really a name...
     }
+    bool isUpperCaseName() const;
     bool isNumber() const {
         return _type == eNumber;
     }

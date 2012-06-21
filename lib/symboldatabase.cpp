@@ -24,7 +24,6 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "check.h"
-#include "checknullpointer.h"  // isUpper
 
 #include <string>
 #include <sstream>
@@ -99,7 +98,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         // Namespace and unknown macro (#3854)
         else if (Token::Match(tok, "namespace %var% %type% (") &&
                  _tokenizer->isCPP() &&
-                 CheckNullPointer::isUpper(tok->strAt(2)) &&
+                 tok->tokAt(2)->isUpperCaseName() &&
                  Token::simpleMatch(tok->linkAt(3), ") {")) {
             scopeList.push_back(Scope(this, tok, scope));
 

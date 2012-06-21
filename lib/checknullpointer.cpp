@@ -32,17 +32,6 @@ namespace {
 
 //---------------------------------------------------------------------------
 
-
-/** Is string uppercase? */
-bool CheckNullPointer::isUpper(const std::string &str)
-{
-    for (unsigned int i = 0; i < str.length(); ++i) {
-        if (std::islower(str[i]))
-            return false;
-    }
-    return true;
-}
-
 /**
  * @brief parse a function call and extract information about variable usage
  * @param tok first token
@@ -932,7 +921,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
         // - if (x) { } else { ... }
 
         // If the if-body ends with a unknown macro then bailout
-        if (Token::Match(i->classEnd->tokAt(-3), "[;{}] %var% ;") && isUpper(i->classEnd->strAt(-2)))
+        if (Token::Match(i->classEnd->tokAt(-3), "[;{}] %var% ;") && i->classEnd->tokAt(-2)->isUpperCaseName())
             continue;
 
         // vartok : token for the variable

@@ -3454,7 +3454,7 @@ void Tokenizer::removeMacrosInGlobalScope()
                 tok->deleteNext();
         }
 
-        if (Token::Match(tok, "[;{}] %type%") && CheckNullPointer::isUpper(tok->next()->str())) {
+        if (Token::Match(tok, "[;{}] %type%") && tok->next()->isUpperCaseName()) {
             const Token *tok2 = tok->tokAt(2);
             if (tok2 && tok2->str() == "(") {
                 unsigned int par = 0;

@@ -130,6 +130,17 @@ void Token::update_property_isStandardType()
 }
 
 
+bool Token::isUpperCaseName() const
+{
+    if (!isName())
+        return false;
+    for (unsigned int i = 0; i < _str.length(); ++i) {
+        if (std::islower(_str[i]))
+            return false;
+    }
+    return true;
+}
+
 void Token::str(const std::string &s)
 {
     _str = s;

@@ -670,7 +670,7 @@ private:
                 }
 
                 // ticket #2367 : unexpanded macro that uses sizeof|typeof?
-                else if (Token::Match(tok2, "%type% (") && CheckNullPointer::isUpper(tok2->str())) {
+                else if (Token::Match(tok2, "%type% (") && tok2->isUpperCaseName()) {
                     tok2 = tok2->next()->link();
                     if (!tok2)
                         break;
@@ -689,7 +689,7 @@ private:
 
                         functionCall = functionCall ? functionCall->previous() : 0;
                         if (functionCall) {
-                            if (functionCall->isName() && !CheckNullPointer::isUpper(functionCall->str()) && use_dead_pointer(checks, tok2))
+                            if (functionCall->isName() && !functionCall->isUpperCaseName() && use_dead_pointer(checks, tok2))
                                 ExecutionPath::bailOutVar(checks, tok2->varId());
                         }
                     }

@@ -26,8 +26,6 @@
 #include "errorlogger.h"
 #include "symboldatabase.h"
 
-#include "checknullpointer.h"  // <- isUpper
-
 #include <fstream>
 
 //---------------------------------------------------------------------------
@@ -269,7 +267,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             // track the execution for a later if condition.
             if (Token::Match(tok->tokAt(2), "%num% ;") && MathLib::toLongNumber(tok->strAt(2)) != 0)
                 notzero.insert(tok->varId());
-            else if (Token::Match(tok->tokAt(2), "- %type% ;") && CheckNullPointer::isUpper(tok->strAt(3)))
+            else if (Token::Match(tok->tokAt(2), "- %type% ;") && tok->tokAt(3)->isUpperCaseName())
                 notzero.insert(tok->varId());
             else
                 notzero.erase(tok->varId());
