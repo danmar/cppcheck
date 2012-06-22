@@ -58,7 +58,7 @@ private:
         TEST_CASE(uninitvar6);          // handling unknown types in C and C++ files
     }
 
-    void checkUninitVar(const char code[]) {
+    void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -67,7 +67,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList();
 
         // Check code..
@@ -92,6 +92,13 @@ private:
                        "    b = c - a;\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("void foo() {\n"
+                       "    dfs a;\n"
+                       "    b = c - a;\n"
+                       "}\n",
+                       "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: a\n", errout.str());
 
         checkUninitVar("void foo() {\n"
                        "    int a;\n"

@@ -42,8 +42,8 @@ namespace {
 class UninitVar : public ExecutionPath {
 public:
     /** Startup constructor */
-    explicit UninitVar(Check *c, const SymbolDatabase* db)
-        : ExecutionPath(c, 0), symbolDatabase(db), var(0), alloc(false), strncpy_(false), memset_nonzero(false) {
+    explicit UninitVar(Check *c, const SymbolDatabase* db, bool isc)
+        : ExecutionPath(c, 0), symbolDatabase(db), isC(isc), var(0), alloc(false), strncpy_(false), memset_nonzero(false) {
     }
 
 private:
@@ -56,8 +56,8 @@ private:
     void operator=(const UninitVar &);
 
     /** internal constructor for creating extra checks */
-    UninitVar(Check *c, const Variable* v, const SymbolDatabase* db)
-        : ExecutionPath(c, v->varId()), symbolDatabase(db), var(v), alloc(false), strncpy_(false), memset_nonzero(false) {
+    UninitVar(Check *c, const Variable* v, const SymbolDatabase* db, bool isc)
+        : ExecutionPath(c, v->varId()), symbolDatabase(db), isC(isc), var(v), alloc(false), strncpy_(false), memset_nonzero(false) {
     }
 
     /** is other execution path equal? */
@@ -68,6 +68,8 @@ private:
 
     /** pointer to symbol database */
     const SymbolDatabase* symbolDatabase;
+
+    const bool isC;
 
     /** variable for this check */
     const Variable* var;
@@ -408,17 +410,17 @@ private:
                 }
 
                 if (var2->isPointer())
-                    checks.push_back(new UninitVar(owner, var2, symbolDatabase));
+                    checks.push_back(new UninitVar(owner, var2, symbolDatabase, isC));
                 else if (var2->typeEndToken()->str() != ">") {
-                    bool b = false;
+                    bool stdtype = isC;
                     for (const Token* tok2 = var2->typeStartToken(); tok2 != var2->nameToken(); tok2 = tok2->next()) {
                         if (tok2->isStandardType()) {
-                            b = true;
+                            stdtype = true;
                             break;
                         }
                     }
-                    if (b && (!var2->isArray() || var2->nameToken()->linkAt(1)->strAt(1) == ";"))
-                        checks.push_back(new UninitVar(owner, var2, symbolDatabase));
+                    if (stdtype && (!var2->isArray() || var2->nameToken()->linkAt(1)->strAt(1) == ";"))
+                        checks.push_back(new UninitVar(owner, var2, symbolDatabase, isC));
                 }
                 return &tok;
             }
@@ -1013,7 +1015,7 @@ void CheckUninitVar::executionPaths()
         if (_settings->_jobs == 1)
             UninitVar::analyseFunctions(_tokenizer->tokens(), UninitVar::uvarFunctions);
 
-        UninitVar c(this, _tokenizer->getSymbolDatabase());
+        UninitVar c(this, _tokenizer->getSymbolDatabase(), _tokenizer->isC());
         checkExecutionPaths(_tokenizer->getSymbolDatabase(), &c);
     }
 }
