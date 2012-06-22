@@ -55,6 +55,7 @@ private:
         TEST_CASE(uninitvar3);          // #3844
         TEST_CASE(uninitvar4);          // #3869 (reference)
         TEST_CASE(uninitvar5);          // #3861
+        TEST_CASE(uninitvar6);          // handling unknown types in C and C++ files
     }
 
     void checkUninitVar(const char code[]) {
@@ -2192,6 +2193,22 @@ private:
                         "    char a = c << 2;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", errout.str());
+    }
+
+    // Handling of unknown types. Assume they are POD in C.
+    void uninitvar6() {
+        const char code[] = "void f() {\n"
+                            "    dfs a;\n"
+                            "    return a;\n"
+                            "}";
+
+        // Assume dfs is a non POD type if file is C++
+        checkUninitVar2(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        // Assume dfs is a POD type if file is C
+        checkUninitVar2(code, "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: a\n", errout.str());
     }
 };
 
