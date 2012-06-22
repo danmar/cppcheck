@@ -177,9 +177,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
                 // Return pointer to local array variable..
                 if (Token::Match(tok2, "return %var% ;")) {
                     const unsigned int varid = tok2->next()->varId();
-                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-
-                    if (var && var->isLocal() && !var->isStatic() && var->isArray()) {
+                    if (isAutoVarArray(varid)) {
                         errorReturnPointerToLocalArray(tok2);
                     }
                 }
@@ -260,7 +258,7 @@ void CheckAutoVariables::returnReference()
                     const unsigned int varid1 = tok2->next()->varId();
                     const Variable *var1 = symbolDatabase->getVariableFromVarId(varid1);
 
-                    if (var1 && var1->isLocal() && !var1->isStatic()) {
+                    if (isAutoVar(varid1)) {
                         // If reference variable is used, check what it references
                         if (Token::Match(var1->nameToken(), "%var% [=(]")) {
                             const Token *tok3 = var1->nameToken()->tokAt(2);
@@ -269,8 +267,7 @@ void CheckAutoVariables::returnReference()
 
                             // Only report error if variable that is referenced is
                             // a auto variable
-                            const Variable *var2 = symbolDatabase->getVariableFromVarId(tok3->varId());
-                            if (!var2 || !var2->isLocal() || var2->isStatic() || (var2->isPointer() && tok3->strAt(1) == "."))
+                            if (!isAutoVar(tok3->varId()))
                                 continue;
                         }
 
