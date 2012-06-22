@@ -234,6 +234,7 @@ public:
 
     /** @brief %Check for double free or double close operations */
     void checkDoubleFree();
+    void doubleFreeError(const Token *tok, const std::string &varname);
 
 private:
     // Error messages..
@@ -285,7 +286,6 @@ private:
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void SuspiciousSemicolonError(const Token *tok);
-    void doubleFreeError(const Token *tok, const std::string &varname);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
 

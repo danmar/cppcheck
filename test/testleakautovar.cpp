@@ -49,6 +49,8 @@ private:
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
 
+        TEST_CASE(doublefree);
+
         // exit
         TEST_CASE(exit1);
         TEST_CASE(exit2);
@@ -238,6 +240,17 @@ private:
               "    return p;\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Returning/using deallocated pointer p\n", errout.str());
+    }
+
+    void doublefree() {  // #3895
+        check("void f(char *p) {\n"
+              "    if (x)\n"
+              "        free(p);\n"
+              "    else\n"
+              "        p = 0;\n"
+              "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:6]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
     }
 
     void exit1() {
