@@ -2158,6 +2158,12 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Ticket #3906 - False positive for std::vector pointer
+        checkUninitVar2("void f() {\n"
+                        "    std::vector<int> *x = NULL;\n"
+                        "    return x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #3869 - reference variable

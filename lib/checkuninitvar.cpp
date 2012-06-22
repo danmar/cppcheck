@@ -1058,7 +1058,8 @@ void CheckUninitVar::checkScope(const Scope* scope)
             if (tok->isStandardType())
                 stdtype = true;
         }
-
+        while (tok && tok->str() != ";")
+            tok = tok->next();
         if (stdtype || i->isPointer())
             checkScopeForVariable(tok, *i, NULL);
     }
