@@ -841,6 +841,8 @@ void Variable::evaluate()
     for (const Token* const end = _name?_name:_end; tok != end;) {
         if (tok->str() == "static")
             setFlag(fIsStatic, true);
+        else if (tok->str() == "extern")
+            setFlag(fIsExtern, true);
         else if (tok->str() == "mutable")
             setFlag(fIsMutable, true);
         else if (tok->str() == "const")
@@ -1335,6 +1337,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "_flags: " << std::endl;
     std::cout << indent << "    isMutable: " << (var->isMutable() ? "true" : "false") << std::endl;
     std::cout << indent << "    isStatic: " << (var->isStatic() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isExtern: " << (var->isExtern() ? "true" : "false") << std::endl;
     std::cout << indent << "    isConst: " << (var->isConst() ? "true" : "false") << std::endl;
     std::cout << indent << "    isClass: " << (var->isClass() ? "true" : "false") << std::endl;
     std::cout << indent << "    isArray: " << (var->isArray() ? "true" : "false") << std::endl;
@@ -1914,23 +1917,8 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         return tok->linkAt(4);
     }
 
-    // Is it const..?
-    if (tok->str() == "const") {
-        tok = tok->next();
-    }
-
-    // Is it a static variable?
-    if (tok->str() == "static") {
-        tok = tok->next();
-    }
-
-    // Is it a mutable variable?
-    if (tok->str() == "mutable") {
-        tok = tok->next();
-    }
-
-    // Is it const..?
-    if (tok->str() == "const") {
+    // skip const|static|mutable|extern
+    while (Token::Match(tok, "const|static|mutable|extern")) {
         tok = tok->next();
     }
 

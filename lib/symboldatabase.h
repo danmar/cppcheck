@@ -60,11 +60,12 @@ class CPPCHECKLIB Variable {
         fIsMutable   = (1 << 0), /** @brief mutable variable */
         fIsStatic    = (1 << 1), /** @brief static variable */
         fIsConst     = (1 << 2), /** @brief const variable */
-        fIsClass     = (1 << 3), /** @brief user defined type */
-        fIsArray     = (1 << 4), /** @brief array variable */
-        fIsPointer   = (1 << 5), /** @brief pointer variable */
-        fIsReference = (1 << 6), /** @brief reference variable */
-        fHasDefault  = (1 << 7)  /** @brief function argument with default value */
+        fIsExtern    = (1 << 3), /** @brief extern variable */
+        fIsClass     = (1 << 4), /** @brief user defined type */
+        fIsArray     = (1 << 5), /** @brief array variable */
+        fIsPointer   = (1 << 6), /** @brief pointer variable */
+        fIsReference = (1 << 7), /** @brief reference variable */
+        fHasDefault  = (1 << 8)  /** @brief function argument with default value */
     };
 
     /**
@@ -219,7 +220,7 @@ public:
      * @return true if local, false if not
      */
     bool isLocal() const {
-        return _access == Local;
+        return (_access == Local) && !isExtern();
     }
 
     /**
@@ -236,6 +237,14 @@ public:
      */
     bool isStatic() const {
         return getFlag(fIsStatic);
+    }
+
+    /**
+     * Is variable extern.
+     * @return true if extern, false if not
+     */
+    bool isExtern() const {
+        return getFlag(fIsExtern);
     }
 
     /**

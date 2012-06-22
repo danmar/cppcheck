@@ -2310,7 +2310,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"x\" to itself\n", errout.str());
 
-        // non-primitive type -> there might be some side effects
+        // #2502 - non-primitive type -> there might be some side effects
         check("void foo()\n"
               "{\n"
               "        Fred fred; fred = fred;\n"
@@ -2334,6 +2334,13 @@ private:
               "    x = x ? x : 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #3800 - false negative when variable is extern
+        check("extern int i;\n"
+              "void f() {\n"
+              "    i = i;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"i\" to itself\n", errout.str());
     }
 
     void trac1132() {

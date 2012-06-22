@@ -866,10 +866,9 @@ void CheckOther::switchCaseFallThrough(const Token *tok)
 //
 //    int y = y;        // <- redundant initialization to self
 //---------------------------------------------------------------------------
-static bool isPOD(const Variable* var)
+static bool isPOD(const Tokenizer *tokenizer, const Variable* var)
 {
-    // TODO: Implement real support for POD definition
-    return(var && (var->isPointer() || var->nameToken()->previous()->isStandardType()));
+    return ((var && (!var->isClass() || var->isPointer())) || !tokenizer->isCPP());
 }
 
 void CheckOther::checkSelfAssignment()
@@ -884,7 +883,7 @@ void CheckOther::checkSelfAssignment()
     while (tok) {
         if (Token::Match(tok->previous(), "[;{}]") &&
             tok->varId() && tok->varId() == tok->tokAt(2)->varId() &&
-            isPOD(symbolDatabase->getVariableFromVarId(tok->varId()))) {
+            isPOD(_tokenizer, symbolDatabase->getVariableFromVarId(tok->varId()))) {
             bool err = true;
 
             // no false positive for 'x = x ? x : 1;'
