@@ -366,7 +366,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) struct or union member 'AB::a' is never used\n", errout.str());
     }
 
-    void functionVariableUsage(const char code[]) {
+    void functionVariableUsage(const char code[], const char filename[]="test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -376,7 +376,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
@@ -483,6 +483,13 @@ private:
                               "    undefined i = 0;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("undefined foo()\n"
+                              "{\n"
+                              "    undefined i = 0;\n"
+                              "}\n",
+                              "test.c");
+        ASSERT_EQUALS("[test.c:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -592,6 +599,14 @@ private:
                               "    return i;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("undefined foo()\n"
+                              "{\n"
+                              "    undefined i;\n"
+                              "    return i;\n"
+                              "}\n",
+                              "test.c");
+        ASSERT_EQUALS("[test.c:3]: (style) Variable 'i' is not assigned a value\n", errout.str());
 
         functionVariableUsage("undefined *foo()\n"
                               "{\n"
@@ -2357,6 +2372,15 @@ private:
                               "    ref[0] = 123;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    Foo foo;\n"
+                              "    Foo &ref = foo;\n"
+                              "    ref[0] = 123;\n"
+                              "}",
+                              "test.c");
+        ASSERT_EQUALS("[test.c:3]: (style) Variable 'foo' is assigned a value that is never used\n", errout.str());
     }
 
     void localvaralias10() { // ticket 2004
@@ -2366,6 +2390,15 @@ private:
                               "    int *x = &ref.x();\n"
                               "    *x = 0;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo(Foo &foo)\n"
+                              "{\n"
+                              "    Foo &ref = foo;\n"
+                              "    int *x = &ref.x;\n"
+                              "    *x = 0;\n"
+                              "}",
+                              "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2429,6 +2462,13 @@ private:
                               "    return 0;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n",
+                              "test.c");
+        ASSERT_EQUALS("[test.c:2]: (style) Unused variable: a\n", errout.str());
 
         functionVariableUsage("struct A { int i; };\n"
                               "int foo() {\n"
