@@ -147,6 +147,8 @@ void CheckOther::clarifyCondition()
     if (!_settings->isEnabled("style"))
         return;
 
+    const bool isC = _tokenizer->isC();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "( %var% [=&|^]")) {
             for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
@@ -154,7 +156,7 @@ void CheckOther::clarifyCondition()
                     tok2 = tok2->link();
                 else if (tok2->type() == Token::eComparisonOp) {
                     // This might be a template
-                    if (!_tokenizer->isC() && Token::Match(tok2->previous(), "%var% <"))
+                    if (!isC && Token::Match(tok2->previous(), "%var% <"))
                         break;
 
                     clarifyConditionError(tok, tok->strAt(2) == "=", false);
@@ -189,7 +191,7 @@ void CheckOther::clarifyCondition()
                     continue;
 
                 // #3609 - CWinTraits<WS_CHILD|WS_VISIBLE>::..
-                if (Token::Match(tok->previous(), "%var% <")) {
+                if (!isC && Token::Match(tok->previous(), "%var% <")) {
                     const Token *tok3 = tok2;
                     while (Token::Match(tok3, "[&|^] %var%"))
                         tok3 = tok3->tokAt(2);
