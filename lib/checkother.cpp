@@ -2582,10 +2582,10 @@ void CheckOther::complexDuplicateExpressionCheck(const std::list<const Function*
         const std::string &toCheck,
         const std::string &alt)
 {
-    std::string statementStart(",|=|return");
+    std::string statementStart(",|=|?|:|return");
     if (!alt.empty())
         statementStart += "|" + alt;
-    std::string statementEnd(";|,");
+    std::string statementEnd(";|,|?|:");
     if (!alt.empty())
         statementEnd += "|" + alt;
 

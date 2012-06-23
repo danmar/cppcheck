@@ -109,6 +109,7 @@ private:
         TEST_CASE(incorrectLogicOperator3);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
+        TEST_CASE(sameExpression);
 
         TEST_CASE(memsetZeroBytes);
 
@@ -3062,6 +3063,15 @@ private:
               "        a++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+    }
+
+    void sameExpression() {
+        // #3868 - false positive (same expression on both sides of |)
+        check("void f(int x) {\n"
+              "    a = x ? A | B | C\n"
+              "          : A | B;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
