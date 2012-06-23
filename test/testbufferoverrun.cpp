@@ -223,6 +223,7 @@ private:
         TEST_CASE(executionPaths3);   // no FP for function parameter
         TEST_CASE(executionPaths4);   // Ticket #2386 - Segmentation fault in the ExecutionPath handling
         TEST_CASE(executionPaths5);   // Ticket #2920 - False positive when size is unknown
+        TEST_CASE(executionPaths6);   // unknown types
 
         TEST_CASE(cmdLineArgs1);
 
@@ -3363,7 +3364,7 @@ private:
     }
 
 
-    void epcheck(const char code[]) {
+    void epcheck(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -3372,7 +3373,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList();
 
         // Check for buffer overruns..
@@ -3448,6 +3449,17 @@ private:
                 "    int arr[2*BSize + 2];\n"
                 "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void executionPaths6() {  // handling unknown type
+        const char code[] = "void f() {\n"
+                            "    u32 a[10];"
+                            "    u32 i = 0;\n"
+                            "    if (x) { i = 1000; }\n"
+                            "    a[i] = 0;\n"
+                            "}";
+        epcheck(code);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' index 1000 out of bounds\n", errout.str());
     }
 
     void cmdLineArgs1() {

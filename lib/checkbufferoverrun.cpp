@@ -2000,7 +2000,7 @@ private:
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const {
         if (Token::Match(tok.previous(), "[;{}]")) {
             // Declaring variable..
-            if (Token::Match(&tok, "%type% %var% ;") && tok.isStandardType()) {
+            if (Token::Match(&tok, "%type% %var% ;") /*&& (tok.isStandardType() || isC)*/) {
                 checks.push_back(new ExecutionPathBufferOverrun(owner, arrayInfo, tok.next()->varId()));
                 return tok.tokAt(2);
             }
