@@ -48,12 +48,13 @@ private:
         TEST_CASE(testPrintfArgument);
     }
 
-    void check(const char code[]) {
+    void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -443,6 +444,31 @@ private:
                       "[test.cpp:3]: (error) scanf format string has 2 parameters but only 1 are given\n"
                       "[test.cpp:4]: (error) sscanf format string has 2 parameters but only 1 are given\n"
                       "[test.cpp:5]: (error) scanf format string has 2 parameters but only 1 are given\n", errout.str());
+
+        check("void foo() {\n"
+              "    char input[10];\n"
+              "    char output[5];\n"
+              "    sscanf(input, \"%s\", output);\n"
+              "    sscanf(input, \"%3s\", output);\n"
+              "    sscanf(input, \"%4s\", output);\n"
+              "    sscanf(input, \"%5s\", output);\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) sscanf %s in format string (no. 1) does not specify a width, use %4s to prevent overflowing destination: output[5]\n"
+                      "[test.cpp:7]: (error) sscanf width 5 in format string (no. 1) is larger than destination, use %4s to prevent overflowing destination: output[5]\n"
+                      "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
+
+        check("void foo() {\n"
+              "    char input[10];\n"
+              "    char output[5];\n"
+              "    sscanf(input, \"%s\", output);\n"
+              "    sscanf(input, \"%3s\", output);\n"
+              "    sscanf(input, \"%4s\", output);\n"
+              "    sscanf(input, \"%5s\", output);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) sscanf %s in format string (no. 1) does not specify a width, use %4s to prevent overflowing destination: output[5]\n"
+                      "[test.cpp:5]: (warning, inconclusive) sscanf width 3 in format string (no. 1) is smaller than destination: output[5]\n"
+                      "[test.cpp:7]: (error) sscanf width 5 in format string (no. 1) is larger than destination, use %4s to prevent overflowing destination: output[5]\n"
+                      "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
     }
 
     void testPrintfArgument() {

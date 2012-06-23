@@ -24,9 +24,10 @@
 #include "check.h"
 #include "config.h"
 
+class Variable;
+
 /// @addtogroup Checks
 /// @{
-
 
 /** @brief %Check input output operations. */
 class CPPCHECKLIB CheckIO : public Check {
@@ -87,6 +88,8 @@ private:
     void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
+    void missingScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, const Variable *var);
+    void invalidScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, int width, const Variable *var);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckIO c(0, settings, errorLogger);
@@ -105,6 +108,8 @@ private:
         c.invalidPrintfArgTypeError_p(0, 1);
         c.invalidPrintfArgTypeError_int(0, 1, 'u');
         c.invalidPrintfArgTypeError_float(0, 1, 'f');
+        c.missingScanfFormatWidthError(0, "scanf", 1, NULL);
+        c.invalidScanfFormatWidthError(0, "scanf", 10, 5, NULL);
     }
 
     std::string myName() const {

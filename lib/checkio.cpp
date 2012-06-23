@@ -25,6 +25,7 @@
 #include "symboldatabase.h"
 
 #include <cctype>
+#include <cstdlib>
 
 //---------------------------------------------------------------------------
 
@@ -443,6 +444,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 percent = false;
 
                 bool _continue = false;
+                std::string width;
                 while (i != formatString.end() && *i != ']' && !std::isalpha(*i)) {
                     if (*i == '*') {
                         if (scan)
@@ -452,7 +454,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                             if (argListTok)
                                 argListTok = argListTok->nextArgument();
                         }
-                    }
+                    } else if (std::isdigit(*i))
+                        width += *i;
                     ++i;
                 }
                 if (i == formatString.end())
@@ -473,6 +476,16 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         if (scan && varTypeTok) {
                             if ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")
                                 invalidScanfArgTypeError(tok, tok->str(), numFormat);
+
+                            if (*i == 's' && variableInfo && isKnownType(variableInfo, varTypeTok) && variableInfo->isArray() && (variableInfo->dimensions().size() == 1)) {
+                                if (width.empty())
+                                    missingScanfFormatWidthError(tok, tok->str(), numFormat, variableInfo);
+                                else {
+                                    int numWidth = std::atoi(width.c_str());
+                                    if (numWidth  != (variableInfo->dimension(0) - 1))
+                                        invalidScanfFormatWidthError(tok, tok->str(), numFormat, numWidth, variableInfo);
+                                }
+                            }
                         } else if (!scan) {
                             switch (*i) {
                             case 's':
@@ -598,4 +611,36 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int num
     std::ostringstream errmsg;
     errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list";
     reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
+}
+void CheckIO::missingScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, const Variable *var)
+{
+    std::ostringstream errmsg;
+    errmsg << functionName << " %s in format string (no. " << numFormat << ") does not specify a width";
+    if (var)
+        errmsg << ", use %" << (var->dimension(0) - 1) << "s to prevent overflowing destination: " << var->name() << "[" << var->dimension(0) << "]";
+    reportError(tok, Severity::warning, "missingScanfFormatWidth", errmsg.str());
+}
+void CheckIO::invalidScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, int width, const Variable *var)
+{
+    std::ostringstream errmsg;
+    Severity::SeverityType severity = Severity::warning;
+    bool inconclusive = false;
+
+    if (var) {
+        if (var->dimension(0) > width) {
+            if (!_settings->inconclusive)
+                return;
+            inconclusive = true;
+            errmsg << functionName << " width " << width << " in format string (no. " << numFormat << ") is smaller than destination"
+                   << ": " << var->name() << "[" << var->dimension(0) << "]";
+        } else {
+            errmsg << functionName << " width " << width << " in format string (no. " << numFormat << ") is larger than destination"
+                   << ", use %" << (var->dimension(0) - 1) << "s to prevent overflowing destination: " << var->name() << "[" << var->dimension(0) << "]";
+            severity = Severity::error;
+        }
+
+    } else
+        errmsg << functionName << " width " << width << " in format string (no. " << numFormat << ") doesn't match destination";
+
+    reportError(tok, severity, "invalidScanfFormatWidth", errmsg.str(), inconclusive);
 }
