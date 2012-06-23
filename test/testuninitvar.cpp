@@ -541,6 +541,15 @@ private:
                        "    return if\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #3873 (false positive)
+        checkUninitVar("MachineLoopRange *MachineLoopRanges::getLoopRange(const MachineLoop *Loop) {\n"
+                       "  MachineLoopRange *&Range = Cache[Loop];\n"
+                       "  if (!Range)\n"
+                       "	Range = new MachineLoopRange(Loop, Allocator, *Indexes);\n"
+                       "  return Range;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar3() { // #3844
