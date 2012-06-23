@@ -2973,7 +2973,7 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "Checking if unsigned variable '" + varname + "' is less than zero.\n"
-                    "The unsigned variable '" + varname + "' will never be negative so it"
+                    "The unsigned variable '" + varname + "' will never be negative so it "
                     "is either pointless or an error to check if it is.");
     }
 }
