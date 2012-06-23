@@ -4960,6 +4960,9 @@ private:
         // Handle if-else
         TEST_CASE(ifelse);
 
+        // Linked list
+        TEST_CASE(linkedlist);
+
         // struct variable is a global variable
         TEST_CASE(globalvar);
 
@@ -5177,6 +5180,21 @@ private:
               "    free(abc->a);\n"
               "    free(abc);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void linkedlist() {
+        check("static void foo() {\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->next = malloc(sizeof(struct ABC));\n"
+              "    abc->next->next = NULL;\n"
+              "\n"
+              "    while (abc) {\n"
+              "        struct ABC *next = abc->next;\n"
+              "        free(abc);\n"
+              "        abc = next;\n"
+              "    }\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
