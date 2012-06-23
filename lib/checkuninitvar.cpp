@@ -558,7 +558,7 @@ private:
                     return tok.tokAt(3);
             }
 
-            else if (Token::Match(tok.previous(), "<<|>>") || Token::simpleMatch(tok.next(), "=")) {
+            else if ((!isC && Token::Match(tok.previous(), "<<|>>")) || Token::simpleMatch(tok.next(), "=")) {
                 // TODO: Don't bail out for "<<" and ">>" if these are
                 // just computations
                 ExecutionPath::bailOutVar(checks, tok.varId());

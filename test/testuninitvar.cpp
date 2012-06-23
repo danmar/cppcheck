@@ -348,13 +348,20 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("int a()\n"
-                       "{\n"
+        checkUninitVar("int a() {\n"
                        "    int ret;\n"
                        "    std::cin >> ret;\n"
                        "    return ret;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int a() {\n"
+                       "    int ret;\n"
+                       "    int a = value >> ret;\n"
+                       "    return ret;\n"
+                       "}\n",
+                       "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: ret\n", errout.str());
 
         checkUninitVar("void foo() {\n"   // #3707
                        "    Node node;\n"
@@ -369,6 +376,14 @@ private:
                        "    return *p;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int a() {\n"
+                       "    int ret;\n"
+                       "    int a = value << ret;\n"
+                       "    return ret;\n"
+                       "}\n",
+                       "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: ret\n", errout.str());
 
         checkUninitVar("int a()\n"
                        "{\n"
