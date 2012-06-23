@@ -77,15 +77,6 @@ private:
     }
 
     void uninitvar1() {
-
-        // Ticket #3597
-        checkUninitVar("int f() {\n"
-                       "	int a;\n"
-                       "	int b = 1;\n"
-                       "	(b += a) = 1;\n"
-                       "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n","", errout.str());
-
         // Ticket #2207 - False negative
         checkUninitVar("void foo() {\n"
                        "    int a;\n"
@@ -268,6 +259,20 @@ private:
                        "    int z = y * 2;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #3597
+        checkUninitVar("int f() {\n"
+                       "	int a;\n"
+                       "	int b = 1;\n"
+                       "	(b += a) = 1;\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n","", errout.str());
+
+        checkUninitVar("int f() {\n"
+                       "	int a,b,c;\n"
+                       "	a = b = c;\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", "", errout.str());
 
         checkUninitVar("static void foo()\n"
                        "{\n"
