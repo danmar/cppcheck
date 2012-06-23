@@ -123,6 +123,7 @@ private:
         TEST_CASE(array_index_for);        // FN: for,if
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
         TEST_CASE(array_index_for_question);	// #2561: for, ?:
+        TEST_CASE(array_index_for_andand_oror);  // FN: using && or || in the for loop condition
         TEST_CASE(array_index_vla_for);    // #3221: access VLA inside for
         TEST_CASE(array_index_extern);      // FP when using 'extern'. #1684
         TEST_CASE(array_index_cast);       // FP after cast. #2841
@@ -1688,6 +1689,43 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_for_andand_oror() {  // #3907 - using && or ||
+        check("void f() {\n"
+              "    char data[2];\n"
+              "    int x;\n"
+              "    for (x = 0; x < 10 && y; x++) {\n"
+              "        data[x] = 0;\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+
+        check("void f() {\n"
+              "    char data[2];\n"
+              "    int x;\n"
+              "    for (x = 0; x < 10 || y; x++) {\n"
+              "        data[x] = 0;\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+
+        check("void f() {\n"
+              "    char data[2];\n"
+              "    int x;\n"
+              "    for (x = 0; x <= 10 && y; x++) {\n"
+              "        data[x] = 0;\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+
+        check("void f() {\n"
+              "    char data[2];\n"
+              "    int x;\n"
+              "    for (x = 0; y && x <= 10; x++) {\n"
+              "        data[x] = 0;\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+    }
 
     void array_index_for_break() {
         check("void f() {\n"

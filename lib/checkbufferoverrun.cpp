@@ -283,29 +283,41 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
 
 
 /** Parse for condition */
-static bool for_condition(const Token * const tok2, unsigned int varid, std::string &min_value, std::string &max_value, bool &maxMinFlipped)
+static bool for_condition(const Token *tok2, unsigned int varid, std::string &min_value, std::string &max_value, bool &maxMinFlipped)
 {
-    if (Token::Match(tok2, "%varid% < %num% ;", varid) ||
+    if (Token::Match(tok2, "%varid% < %num% ;|&&|%oror%", varid) ||
         Token::Match(tok2, "%varid% != %num% ; ++ %varid%", varid) ||
         Token::Match(tok2, "%varid% != %num% ; %varid% ++", varid)) {
         maxMinFlipped = false;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->strAt(2));
         max_value = MathLib::toString<MathLib::bigint>(value - 1);
-    } else if (Token::Match(tok2, "%varid% <= %num% ;", varid)) {
+    } else if (Token::Match(tok2, "%varid% <= %num% ;|&&|%oror%", varid)) {
         maxMinFlipped = false;
         max_value = tok2->strAt(2);
-    } else if (Token::Match(tok2, "%num% < %varid% ;", varid) ||
+    } else if (Token::Match(tok2, "%num% < %varid% ;|&&|%oror%", varid) ||
                Token::Match(tok2, "%num% != %varid% ; ++ %varid%", varid) ||
                Token::Match(tok2, "%num% != %varid% ; %varid% ++", varid)) {
         maxMinFlipped = true;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->str());
         max_value = min_value;
         min_value = MathLib::toString<MathLib::bigint>(value + 1);
-    } else if (Token::Match(tok2, "%num% <= %varid% ;", varid)) {
+    } else if (Token::Match(tok2, "%num% <= %varid% ;|&&|%oror%", varid)) {
         maxMinFlipped = true;
         max_value = min_value;
         min_value = tok2->str();
     } else {
+        // parse condition
+        while (tok2 && tok2->str() != ";") {
+            if (tok2->str() == "(")
+                tok2 = tok2->link();
+            else if (tok2->str() == ")")	// unexpected ")" => break
+                break;
+            if (tok2->str() == "&&" || tok2->str() == "||") {
+                if (for_condition(tok2->next(), varid, min_value, max_value, maxMinFlipped))
+                    return true;
+            }
+            tok2 = tok2->next();
+        }
         return false;
     }
 
@@ -746,10 +758,20 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     if (MathLib::toLongNumber(max_counter_value) < size)
         condition_out_of_bounds = false;
 
-    if (!for3(tok2->tokAt(4), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
+    // Goto the end of the condition
+    while (tok2 && tok2->str() != ";") {
+        if (tok2->str() == "(")
+            tok2 = tok2->link();
+        else if (tok2->str() == ")")  // unexpected ")" => break
+            break;
+        tok2 = tok2->next();
+    }
+    if (!tok2 || tok2->str() != ";")
+        return;
+    if (!for3(tok2->next(), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
         return;
 
-    if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= size)
+    if (Token::Match(tok2->next(), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= size)
         condition_out_of_bounds = false;
 
     // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
