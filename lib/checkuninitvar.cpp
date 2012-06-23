@@ -348,7 +348,7 @@ private:
     void parserhs(const Token *tok2, std::list<ExecutionPath *> &checks) const {
         // check variable usages in rhs/index
         while (NULL != (tok2 = tok2->next())) {
-            if (Token::Match(tok2, "[;)=?]"))
+            if (Token::Match(tok2, "[;)=]"))
                 break;
             if (Token::Match(tok2, "%var% ("))
                 break;

@@ -778,11 +778,9 @@ private:
         checkUninitVar("static void foo(int v)\n"
                        "{\n"
                        "    int x;\n"
-                       "    if (v > 0)\n"
-                       "        v = func(&x);\n"
                        "    x = v <= 0 ? -1 : x;\n"
                        "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVar("void foo()\n"
                        "{\n"
