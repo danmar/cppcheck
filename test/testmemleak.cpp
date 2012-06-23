@@ -5184,6 +5184,7 @@ private:
     }
 
     void linkedlist() {
+        // #3904 - false positive when linked list is used
         check("static void foo() {\n"
               "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
               "    abc->next = malloc(sizeof(struct ABC));\n"
