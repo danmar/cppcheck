@@ -317,12 +317,22 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("A a()\n"
-                       "{\n"
-                       "    A ret;\n"
-                       "    return ret;\n"
-                       "}\n");
-        ASSERT_EQUALS("", errout.str());
+        {
+            checkUninitVar("A a()\n"
+                           "{\n"
+                           "    A ret;\n"
+                           "    return ret;\n"
+                           "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            checkUninitVar("A a()\n"
+                           "{\n"
+                           "    A ret;\n"
+                           "    return ret;\n"
+                           "}\n",
+                           "test.c");
+            ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ret\n", errout.str());
+        }
 
         checkUninitVar("int a()\n"
                        "{\n"
