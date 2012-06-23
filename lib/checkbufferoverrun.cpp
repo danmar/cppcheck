@@ -47,11 +47,10 @@ static void makeArrayIndexOutOfBoundsError(std::ostream& oss, const CheckBufferO
     oss << "Array '" << arrayInfo.varname();
     for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
         oss << "[" << arrayInfo.num(i) << "]";
-    oss << "' index ";
     if (index.size() == 1)
-        oss << index[0];
+        oss << "' accessed at index " << index[0] << ", which is";
     else {
-        oss << arrayInfo.varname();
+        oss << "' index " << arrayInfo.varname();
         for (unsigned int i = 0; i < index.size(); ++i)
             oss << "[" << index[i] << "]";
     }
