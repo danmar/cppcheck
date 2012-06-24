@@ -161,6 +161,14 @@ public:
     const Token *getFunctionTokenByName(const char funcname[]) const;
 
     /**
+     * Try to determine if function parameter is passed by value by looking
+     * at the function declaration.
+     * @param fpar token for function parameter in the function call
+     * @return true if the parameter is passed by value. if unsure, false is returned
+     */
+    bool isFunctionParameterPassedByValue(const Token *fpar) const;
+
+    /**
      * get error messages that the tokenizer generate
      */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;

@@ -6089,6 +6089,15 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             ret = true;
         }
 
+        // parameter in function call..
+        if (tok3->varId() == varid && Token::Match(tok3->previous(), "[(,] %var% [,)]")) {
+            // If the parameter is passed by value then simplify it
+            if (isFunctionParameterPassedByValue(tok3)) {
+                tok3->str(value);
+                ret = true;
+            }
+        }
+
         // Variable is used somehow in a non-defined pattern => bail out
         if (tok3->varId() == varid) {
             // This is a really generic bailout so let's try to avoid this.
@@ -7298,6 +7307,73 @@ const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
     return NULL;
 }
 
+bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
+{
+    // TODO: If symbol database is available, use it.
+    const Token *ftok;
+
+    // Look at function call, what parameter number is it?
+    unsigned int paranthesis = 1;
+    unsigned int parameter = 1;
+    for (ftok = fpar; ftok; ftok = ftok->previous()) {
+        if (ftok->str() == "(") {
+            --paranthesis;
+            if (paranthesis == 0) {
+                break;
+            }
+        } else if (ftok->str() == ")") {
+            ++paranthesis;
+        } else if (paranthesis == 1 && ftok->str() == ",") {
+            ++parameter;
+        } else if (Token::Match(ftok, "[;{}]")) {
+            break;
+        }
+    }
+
+    // Is this a function call?
+    if (ftok && Token::Match(ftok->tokAt(-2), "[;{}=] %var% (")) {
+        const std::string functionName(ftok->previous()->str() + " (");
+
+        // Locate function declaration..
+        unsigned int indentlevel = 0;
+        for (const Token *tok = tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "{")
+                ++indentlevel;
+            else if (tok->str() == "}")
+                indentlevel = (indentlevel > 0) ? indentlevel - 1U : 0U;
+            else if (indentlevel == 0 && tok->isName() && Token::simpleMatch(tok, functionName.c_str())) {
+                // Goto parameter
+                tok = tok->tokAt(2);
+                unsigned int par = 1;
+                while (tok && par < parameter) {
+                    if (tok->str() == ")")
+                        break;
+                    if (tok->str() == ",")
+                        ++par;
+                    tok = tok->next();
+                }
+                if (!tok)
+                    return false;
+
+                // If parameter was found, determine if it's passed by value
+                if (par == parameter) {
+                    bool knowntype = false;
+                    while (tok && tok->isName()) {
+                        knowntype |= tok->isStandardType();
+                        knowntype |= (tok->str() == "struct");
+                        tok = tok->next();
+                    }
+                    if (!tok || !knowntype)
+                        return false;
+                    if (tok->str() != "," && tok->str() != ")")
+                        return false;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 //---------------------------------------------------------------------------
 

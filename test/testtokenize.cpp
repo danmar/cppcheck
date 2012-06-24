@@ -168,6 +168,7 @@ private:
         TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak); // ticket #2324
         TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
         TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
+        TEST_CASE(simplifyKnownVariablesFunctionCalls); // Function calls (don't assume pass by reference)
         TEST_CASE(simplifyExternC);
 
         TEST_CASE(varid1);
@@ -2513,6 +2514,28 @@ private:
         const char expected[] = "void f ( ) {\n\nx ( 0.25 ) ;\n}";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+    }
+
+    void simplifyKnownVariablesFunctionCalls() {
+        {
+            const char code[] = "void a(int x);"  // <- x is passed by value
+                                "void b() {"
+                                "    int x = 123;"
+                                "    a(x);"   // <- replace with a(123);
+                                "}";
+            const char expected[] = "void a ( int x ) ; void b ( ) { a ( 123 ) ; }";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+        }
+
+        {
+            const char code[] = "void a(int &x);"  // <- x is passed by reference
+                                "void b() {"
+                                "    int x = 123;"
+                                "    a(x);"   // <- don't replace with a(123);
+                                "}";
+            const char expected[] = "void a ( int & x ) ; void b ( ) { int x ; x = 123 ; a ( x ) ; }";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+        }
     }
 
     void simplifyKnownVariablesClassMember() {
