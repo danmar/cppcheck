@@ -86,6 +86,9 @@ private:
 
     std::map<std::string,std::string> cfgalloc;
     std::map<std::string,std::string> cfgdealloc;
+    std::set<std::string> cfgignore;
+    std::set<std::string> cfguse;
+    std::set<std::string> cfgnoreturn;
 
     void parseConfigurationFile(const std::string &filename);
 

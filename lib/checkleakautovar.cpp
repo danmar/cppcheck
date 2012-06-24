@@ -123,6 +123,48 @@ void CheckLeakAutoVar::parseConfigurationFile(const std::string &filename)
                 pos1 = line.find_first_not_of(" ", pos2);
             }
         }
+
+        else if (line.compare(0,7,"IGNORE ",0,7) == 0) {
+            std::string::size_type pos1 = line.find_first_not_of(" ", 7U);
+            while (pos1 < line.size()) {
+                std::string::size_type pos2 = line.find_first_of(" ", pos1);
+                std::string functionName;
+                if (pos2 == std::string::npos)
+                    functionName = line.substr(pos1);
+                else
+                    functionName = line.substr(pos1, pos2-pos1);
+                cfgignore.insert(functionName);
+                pos1 = line.find_first_not_of(" ", pos2);
+            }
+        }
+
+        else if (line.compare(0,4,"USE ",0,4) == 0) {
+            std::string::size_type pos1 = line.find_first_not_of(" ", 4U);
+            while (pos1 < line.size()) {
+                std::string::size_type pos2 = line.find_first_of(" ", pos1);
+                std::string functionName;
+                if (pos2 == std::string::npos)
+                    functionName = line.substr(pos1);
+                else
+                    functionName = line.substr(pos1, pos2-pos1);
+                cfguse.insert(functionName);
+                pos1 = line.find_first_not_of(" ", pos2);
+            }
+        }
+
+        else if (line.compare(0,9,"NORETURN ",0,9) == 0) {
+            std::string::size_type pos1 = line.find_first_not_of(" ", 9U);
+            while (pos1 < line.size()) {
+                std::string::size_type pos2 = line.find_first_of(" ", pos1);
+                std::string functionName;
+                if (pos2 == std::string::npos)
+                    functionName = line.substr(pos1);
+                else
+                    functionName = line.substr(pos1, pos2-pos1);
+                cfgnoreturn.insert(functionName);
+                pos1 = line.find_first_not_of(" ", pos2);
+            }
+        }
     }
 }
 
@@ -383,10 +425,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // Handle scopes that might be noreturn
             if (dealloc.empty() && Token::simpleMatch(tok, ") ; }")) {
+                const std::string &functionName(tok->link()->previous()->str());
                 bool unknown = false;
-                if (_tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
+                if (cfgignore.find(functionName) == cfgignore.end() &&
+                    cfguse.find(functionName) == cfguse.end() &&
+                    _tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (unknown) {
-                        const std::string &functionName(tok->link()->previous()->str());
+                        //const std::string &functionName(tok->link()->previous()->str());
                         varInfo->possibleUsageAll(functionName);
                     } else {
                         varInfo->clear();
@@ -409,6 +454,13 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
 {
     std::map<unsigned int, std::string> &alloctype = varInfo->alloctype;
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
+
+    // Ignore function call?
+    const bool ignore = bool(cfgignore.find(tok->str()) != cfgignore.end());
+    //const bool use = bool(cfguse.find(tok->str()) != cfguse.end());
+
+    if (ignore)
+        return;
 
     for (const Token *arg = tok->tokAt(2); arg; arg = arg->nextArgument()) {
         if ((Token::Match(arg, "%var% [-,)]") && arg->varId() > 0) ||
