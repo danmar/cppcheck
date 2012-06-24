@@ -1185,6 +1185,25 @@ private:
                               "    *(++ptr) = 0;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #3910
+        functionVariableUsage("int foo() {\n"
+                              "    char buf[5];\n"
+                              "    char *data[2];\n"
+                              "    data[0] = buf;\n"
+                              "    do_something(data);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    char buf1[5];\n"
+                              "    char buf2[5];\n"
+                              "    char *data[2];\n"
+                              "    data[0] = buf1;\n"
+                              "    data[1] = buf2;\n"
+                              "    do_something(data);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar17() { // ticket #1720

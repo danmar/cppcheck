@@ -430,7 +430,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
             Variables::VariableUsage* var2 = variables.find(varid2);
 
             if (var2) { // local variable (alias or read it)
-                if (var1->_type == Variables::pointer) {
+                if (var1->_type == Variables::pointer || var1->_type == Variables::pointerArray) {
                     if (dereference)
                         variables.read(varid2);
                     else {
@@ -439,8 +439,12 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                             var2->_type == Variables::pointer) {
                             bool replace = true;
 
+                            // pointerArray => don't replace
+                            if (var1->_type == Variables::pointerArray)
+                                replace = false;
+
                             // check if variable declared in same scope
-                            if (scope == var1->_scope)
+                            else if (scope == var1->_scope)
                                 replace = true;
 
                             // not in same scope as declaration
@@ -839,6 +843,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 } else if (var->_type == Variables::pointer || var->_type == Variables::reference) {
                     variables.read(varid);
                     variables.writeAliases(varid);
+                } else if (var->_type == Variables::pointerArray) {
+                    tok = doAssignment(variables, tok, false, scope);
                 } else
                     variables.writeAll(varid);
             }
