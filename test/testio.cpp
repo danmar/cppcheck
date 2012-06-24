@@ -265,6 +265,18 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    FILE* f;\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n", errout.str());
+
+        check("void foo() {\n"
+              "    FILE* f(stdout);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {

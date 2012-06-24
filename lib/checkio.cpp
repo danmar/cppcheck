@@ -105,9 +105,12 @@ void CheckIO::checkFileUsage()
         if (!var || !var->varId() || !Token::Match(var->typeStartToken(), "FILE *"))
             continue;
 
-        if (var->isLocal())
-            filepointers.insert(std::make_pair(var->varId(), Filepointer(CLOSED)));
-        else {
+        if (var->isLocal()) {
+            if (var->nameToken()->strAt(1) == "(") // initialize by calling "ctor"
+                filepointers.insert(std::make_pair(var->varId(), Filepointer(UNKNOWN)));
+            else
+                filepointers.insert(std::make_pair(var->varId(), Filepointer(CLOSED)));
+        } else {
             filepointers.insert(std::make_pair(var->varId(), Filepointer(UNKNOWN)));
             // TODO: If all fopen calls we find open the file in the same type, we can set Filepointer::mode
         }
