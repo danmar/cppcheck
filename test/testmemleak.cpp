@@ -237,6 +237,7 @@ private:
         TEST_CASE(allocfunc9);
         TEST_CASE(allocfunc10);
         TEST_CASE(allocfunc11);
+        TEST_CASE(allocfunc12); // #3660: allocating and returning non-local pointer => not allocfunc
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -2518,6 +2519,18 @@ private:
         check("void f (double  * & data_val)  {\n"
               "  data_val = malloc(0x100);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void allocfunc12() { // #3660: allocating and returning non-local pointer => not allocfunc
+        check("char *p;\n" // global pointer
+              "char *a()  {\n"
+              "  if (!p) p = malloc(10);\n"
+              "  return p;\n"
+              "}\n"
+              "void b() {\n"
+              "    char *x = a();\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

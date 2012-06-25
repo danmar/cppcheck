@@ -457,6 +457,15 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok,
     if (varid == 0)
         return No;
 
+    if (this != NULL) {
+        // If variable is not local then alloctype shall be "No"
+        // Todo: there can be false negatives about mismatching allocation/deallocation.
+        //       => Generate "alloc ; use ;" if variable is not local?
+        const Variable *var = tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
+        if (!var || !var->isLocal() || var->isStatic())
+            return No;
+    }
+
     // Check if return pointer is allocated..
     AllocType allocType = No;
     while (NULL != (tok = tok->next())) {
