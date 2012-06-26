@@ -2655,7 +2655,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             // * when pos goes beyond a limit the limit needs to be
             //   deleted because it is unsafe to insert/delete text
             //   after the limit otherwise
-            std::map<const PreprocessorMacro *, unsigned int> limits;
+            std::map<const PreprocessorMacro *, size_t> limits;
 
             // pos is the current position in line
             std::string::size_type pos = 0;
@@ -2717,7 +2717,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     // check that pos is within allowed limits for this
                     // macro
                     {
-                        const std::map<const PreprocessorMacro *, unsigned int>::const_iterator it2 = limits.find(macro);
+                        const std::map<const PreprocessorMacro *, size_t>::const_iterator it2 = limits.find(macro);
                         if (it2 != limits.end() && pos <= line.length() - it2->second)
                             break;
                     }
@@ -2777,7 +2777,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         ++pos2;
 
                     // Remove old limits
-                    for (std::map<const PreprocessorMacro *, unsigned int>::iterator iter = limits.begin();
+                    for (std::map<const PreprocessorMacro *, size_t>::iterator iter = limits.begin();
                          iter != limits.end();) {
                         if ((line.length() - pos1) < iter->second) {
                             // We have gone past this limit, so just delete it
