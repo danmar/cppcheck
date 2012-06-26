@@ -209,6 +209,13 @@ private:
 
         checkUninitVar("void f()\n"
                        "{\n"
+                       "    extern int a;\n"
+                       "    a++;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
                        "    int a;\n"
                        "    bar(4 * a);\n"
                        "}\n");
@@ -1910,6 +1917,12 @@ private:
 
         checkUninitVar2("int f() {\n"
                         "    static int x;\n"
+                        "    return ++x;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("int f() {\n"
+                        "    extern int x;\n"
                         "    return ++x;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
