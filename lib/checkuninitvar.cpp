@@ -412,7 +412,7 @@ private:
                 if (var2->isPointer())
                     checks.push_back(new UninitVar(owner, var2, symbolDatabase, isC));
                 else if (var2->typeEndToken()->str() != ">") {
-                    bool stdtype = isC;
+                    bool stdtype = false;  // TODO: change to isC to handle unknown types better
                     for (const Token* tok2 = var2->typeStartToken(); tok2 != var2->nameToken(); tok2 = tok2->next()) {
                         if (tok2->isStandardType()) {
                             stdtype = true;
