@@ -102,6 +102,7 @@ private:
         TEST_CASE(localvaralias10); // ticket #2004
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
+        TEST_CASE(localvarextern);
         TEST_CASE(localvardynamic1);
         TEST_CASE(localvardynamic2); // ticket #2904
         TEST_CASE(localvardynamic3); // ticket #3467
@@ -2791,6 +2792,14 @@ private:
                               "    return x ? a : c;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
+    }
+
+    void localvarextern() {
+        functionVariableUsage("void foo() {\n"
+                              "    extern int i;\n"
+                              "    i = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvardynamic1() {

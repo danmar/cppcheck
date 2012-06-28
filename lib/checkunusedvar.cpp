@@ -597,7 +597,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     if (scope->type != Scope::eClass && scope->type != Scope::eUnion && scope->type != Scope::eStruct) {
         // Find declarations
         for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
-            if (i->isThrow())
+            if (i->isThrow() || i->isExtern())
                 continue;
             Variables::VariableType type = Variables::none;
             if (i->isArray() && (i->nameToken()->previous()->str() == "*" || i->nameToken()->strAt(-2) == "*"))
