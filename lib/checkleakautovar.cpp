@@ -22,6 +22,7 @@
 
 #include "checkleakautovar.h"
 
+#include "checkmemoryleak.h"  // <- CheckMemoryLeak::memoryLeak
 #include "checkother.h"   // <- doubleFreeError
 
 #include "tokenize.h"
@@ -65,22 +66,33 @@ void VarInfo::possibleUsageAll(const std::string &functionName)
 
 void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "newleak", "New memory leak: " + varname);
+    const Standards standards;
+    CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, standards);
+    checkmemleak.memleakError(tok, varname);
+    //reportError(tok, Severity::error, "newleak", "New memory leak: " + varname);
 }
 
 void CheckLeakAutoVar::mismatchError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "newmismatch", "New mismatching allocation and deallocation: " + varname);
+    const Standards standards;
+    CheckMemoryLeak c(_tokenizer, _errorLogger, standards);
+    std::list<const Token *> callstack;
+    callstack.push_back(tok);
+    c.mismatchAllocDealloc(callstack, varname);
+    //reportError(tok, Severity::error, "newmismatch", "New mismatching allocation and deallocation: " + varname);
 }
 
 void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "newdeallocuse", "Using deallocated pointer " + varname);
+    const Standards standards;
+    CheckMemoryLeak c(_tokenizer, _errorLogger, standards);
+    c.deallocuseError(tok, varname);
+    //reportError(tok, Severity::error, "newdeallocuse", "Using deallocated pointer " + varname);
 }
 
 void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "newdeallocret", "Returning/using deallocated pointer " + varname);
+    reportError(tok, Severity::error, "deallocret", "Returning/dereferencing '" + varname + "' after it is deallocated / released");
 }
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)

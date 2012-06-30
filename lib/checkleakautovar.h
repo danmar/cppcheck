@@ -119,18 +119,17 @@ private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckLeakAutoVar c(0, settings, errorLogger);
-        c.leakError(NULL, "p");
-        c.mismatchError(NULL, "p");
-        c.deallocUseError(NULL, "p");
+        c.deallocReturnError(0, "p");
         c.configurationInfo(0, "f");  // user configuration is needed to complete analysis
     }
 
     std::string myName() const {
-        return "Leaks in functions";
+        return "CheckLeakAutoVar";
     }
 
     std::string classInfo() const {
-        return "";
+        return "Checking that detect leaks when a local variable is allocated but not deallocated. "
+               "This checking complements the other checking for memory leaks that Cppcheck has.";
     }
 };
 /// @}

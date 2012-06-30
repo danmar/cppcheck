@@ -115,7 +115,7 @@ private:
               "    p = NULL;\n"
               "    free(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.c:3]: (error) New memory leak: p\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void assign2() {
@@ -203,13 +203,13 @@ private:
               "    free(p);\n"
               "    *p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (error) Using deallocated pointer p\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
 
         check("void f(char *p) {\n"
               "    free(p);\n"
               "    char c = *p;\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (error) Using deallocated pointer p\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
     }
 
     void deallocuse2() {
@@ -231,7 +231,7 @@ private:
               "    free(p);\n"
               "    p = p->next;\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (error) Using deallocated pointer p\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
     }
 
     void deallocuse4() {
@@ -239,7 +239,7 @@ private:
               "    free(p);\n"
               "    return p;\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (error) Returning/using deallocated pointer p\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout.str());
     }
 
     void doublefree() {  // #3895
@@ -296,7 +296,7 @@ private:
               "    if (x) { p = malloc(10); }\n"
               "    else { return 0; }\n"
               "}");
-        ASSERT_EQUALS("[test.c:5]: (error) New memory leak: p\n", errout.str());
+        ASSERT_EQUALS("[test.c:5]: (error) Memory leak: p\n", errout.str());
     }
 
     void ifelse3() {
@@ -357,7 +357,7 @@ private:
               "    else\n"
               "        a = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.c:6]: (error) New memory leak: a\n", errout.str());
+        ASSERT_EQUALS("[test.c:6]: (error) Memory leak: a\n", errout.str());
     }
 
     void switch1() {
@@ -388,7 +388,7 @@ private:
               "    FILE*f=fopen(fname,a);\n"
               "    free(f);\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (error) New mismatching allocation and deallocation: f\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
     }
 
     void return1() {
@@ -396,7 +396,7 @@ private:
               "    char *p = malloc(100);\n"
               "    return 123;\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (error) New memory leak: p\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void return2() {
