@@ -111,12 +111,12 @@
                       Property='OLDERVERSIONFOUND'
                       Minimum='0.0.0' 
                       IncludeMinimum='yes'
-                      Maximum='$(var.ProductVersion)' 
+                      Maximum='$(var.ProductVersion).0' 
                       IncludeMaximum='no' />
     </Upgrade>
 
     <InstallExecuteSequence> 
-      <RemoveExistingProducts After="InstallFinalize">OLDERVERSIONFOUND</RemoveExistingProducts>
+      <RemoveExistingProducts Before="InstallInitialize">OLDERVERSIONFOUND</RemoveExistingProducts>
     </InstallExecuteSequence>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
