@@ -37,7 +37,7 @@ else # !COMSPEC
 endif # COMSPEC
 
 ifndef CXXFLAGS
-    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
+    CXXFLAGS=-O2 -DNDEBUG -Wall
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -240,7 +240,7 @@ lib/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/c
 lib/checkio.o: lib/checkio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkio.o lib/checkio.cpp
 
-lib/checkleakautovar.o: lib/checkleakautovar.cpp lib/checkleakautovar.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/checkother.h lib/symboldatabase.h lib/mathlib.h
+lib/checkleakautovar.o: lib/checkleakautovar.cpp lib/checkleakautovar.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/checkmemoryleak.h lib/checkother.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkleakautovar.o lib/checkleakautovar.cpp
 
 lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h lib/checkuninitvar.h
