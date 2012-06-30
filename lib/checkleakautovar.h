@@ -124,12 +124,11 @@ private:
     }
 
     std::string myName() const {
-        return "CheckLeakAutoVar";
+        return "Memory leaks (function variables)";
     }
 
     std::string classInfo() const {
-        return "Checking that detect leaks when a local variable is allocated but not deallocated. "
-               "This checking complements the other checking for memory leaks that Cppcheck has.";
+        return "Detect when a function variable is allocated but not deallocated.";
     }
 };
 /// @}
