@@ -124,11 +124,11 @@ private:
     }
 
     std::string myName() const {
-        return "Memory leaks (function variables)";
+        return "Leaks (auto variables)";
     }
 
     std::string classInfo() const {
-        return "Detect when a function variable is allocated but not deallocated.";
+        return "Detect when a auto variable is allocated but not deallocated.";
     }
 };
 /// @}
