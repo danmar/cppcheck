@@ -1886,6 +1886,9 @@ bool Tokenizer::tokenize(std::istream &code,
         tok = fortok;
     }*/
 
+    // Convert "type const" to "const type"
+    typeConstToConstType();
+
     simplifyConst();
 
     // struct simplification "struct S {} s; => struct S { } ; S s ;
@@ -7959,6 +7962,20 @@ void Tokenizer::simplifyComparisonOrder()
             const std::string op1(tok->next()->str());
             tok->next()->str(tok->strAt(3));
             tok->tokAt(3)->str(op1);
+        }
+    }
+}
+
+void Tokenizer::typeConstToConstType()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->isStandardType() && Token::simpleMatch(tok->next(), "const")) {
+            tok->next()->str(tok->str());
+            tok->str("const");
+        } else if (Token::Match(tok, "struct %type% const")) {
+            tok->next()->next()->str(tok->next()->str());
+            tok->str("const");
+            tok->next()->str("struct");
         }
     }
 }

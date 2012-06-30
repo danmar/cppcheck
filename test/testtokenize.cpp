@@ -57,6 +57,8 @@ private:
         TEST_CASE(tokenize22);  // special marker $ from preprocessor
         TEST_CASE(tokenize23);  // tokenize "return - __LINE__;"
 
+        TEST_CASE(typeConstToConstType); // change "int const" to "const int".
+
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
         TEST_CASE(wrong_syntax2);
@@ -621,6 +623,11 @@ private:
 
     void tokenize23() { // tokenize 'return - __LINE__' correctly
         ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
+    }
+
+    void typeConstToConstType() { // change "int const" to "const int".
+        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("int const x;"));
+        ASSERT_EQUALS("const struct X x ;", tokenizeAndStringify("struct X const x;"));
     }
 
     void wrong_syntax1() {
@@ -3221,7 +3228,7 @@ private:
         {
             const std::string code = "static int const SZ = 22;\n";
             ASSERT_EQUALS("\n\n##file 0\n"
-                          "1: static int const SZ@1 = 22 ;\n",
+                          "1: const static int SZ@1 = 22 ;\n",
                           tokenizeDebugListing(code, false, "test.c"));
         }
     }
