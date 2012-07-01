@@ -106,18 +106,7 @@
       -->
     </Feature>
 
-    <Upgrade Id='$(var.ProductUpgradeCode)'>
-      <UpgradeVersion OnlyDetect='no' 
-                      Property='OLDERVERSIONFOUND'
-                      Minimum='0.0.0' 
-                      IncludeMinimum='yes'
-                      Maximum='$(var.ProductVersion).0' 
-                      IncludeMaximum='no' />
-    </Upgrade>
-
-    <InstallExecuteSequence> 
-      <RemoveExistingProducts Before="InstallInitialize">OLDERVERSIONFOUND</RemoveExistingProducts>
-    </InstallExecuteSequence>
+    <MajorUpgrade DowngradeErrorMessage='Downgrade is not allowed'/>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <UIRef Id="WixUI_InstallDir"/>
