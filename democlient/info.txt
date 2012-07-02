@@ -1,0 +1,11 @@
+Get cppcheck:
+
+wget https://downloads.sourceforge.net/project/cppcheck/cppcheck/1.54/cppcheck-1.54.tar.bz2
+
+Unpack:
+
+tar xjvf cppcheck-1.54.tar.bz2
+
+Compile:
+
+./build.sh
