@@ -225,6 +225,7 @@ private:
         TEST_CASE(func24);      // Ticket #2705
         TEST_CASE(func25);      // Ticket #2904
         TEST_CASE(func26);
+        TEST_CASE(func27);      // Ticket #2773
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -2228,12 +2229,26 @@ private:
     }
 
     void func26() { // ticket #3444
-        // technically there is a leak here. however warning is not wanted
+        // technically there is a leak here. However warning is not wanted
         check("void f() {\n"
               "    char *p = strdup(\"A=B\");\n"
               "    putenv(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void func27() { // ticket #2773
+        check("void f(FRED *pData)\n"
+              "{\n"
+              "    pData =(FRED*)malloc( 100 );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: pData\n", errout.str());
+
+        check("void f(int *pData)\n"
+              "{\n"
+              "    pData =(int*)malloc( 100 );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: pData\n", errout.str());
     }
 
     void allocfunc1() {
