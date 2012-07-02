@@ -19,6 +19,9 @@
 # - man/manual.docbook
 # - win_installer/productInfo.wxs
 #
+# Make sure versions are set:
+# grep 'VERSION ' cli/cppcheck.rc
+#
 # Update the Changelog..
 # wget http://josefsson.org/git2cl/git2cl
 # chmod 744 git2cl
@@ -29,6 +32,8 @@
 # make dmake
 # ./dmake --release
 # git commit -a -m "1.43: Updated Makefile"
+#
+# Build and test the windows installer
 #
 # Tag:
 # git tag 1.43
