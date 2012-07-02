@@ -73,12 +73,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "cppcheck Application"
-            VALUE "FileVersion", "1.55"
+            VALUE "FileVersion", "1.56 dev"
             VALUE "InternalName", "cppcheck"
             VALUE "LegalCopyright", "Copyright (C) 2007-2012 Daniel Marjamäki and Cppcheck team."
             VALUE "OriginalFilename", "cppcheck.exe"
             VALUE "ProductName", "cppcheck Application"
-            VALUE "ProductVersion", "1.55"
+            VALUE "ProductVersion", "1.56 dev"
         END
     END
     BLOCK "VarFileInfo"
