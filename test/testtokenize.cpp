@@ -324,6 +324,7 @@ private:
         TEST_CASE(vardecl_template_2);
         TEST_CASE(vardecl_union);
         TEST_CASE(vardecl_par);     // #2743 - set links if variable type contains parentheses
+        TEST_CASE(vardecl_par2)     // #3912 - set correct links
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
         TEST_CASE(syntax_error_templates_1);
@@ -4730,6 +4731,17 @@ private:
     void vardecl_par() {
         // ticket #2743 - set links if variable type contains parentheses
         const char code[] = "Fred<int(*)()> fred1=a, fred2=b;";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp", "", false);
+        ASSERT_EQUALS(true, tokenizer.validate());
+    }
+
+    void vardecl_par2() {
+        // ticket #3912 - set correct links
+        const char code[] = "function<void (shared_ptr<MyClass>)> v;";
 
         Settings settings;
         Tokenizer tokenizer(&settings, this);

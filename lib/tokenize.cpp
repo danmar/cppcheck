@@ -2955,7 +2955,7 @@ void Tokenizer::createLinks2()
         } else if (token->str() == ">" || token->str() == ">>") {
             if (links.empty()) // < and > don't match.
                 continue;
-            if (token->next() && !token->next()->isName() && !Token::Match(token->next(), ">|&|*|::|,|("))
+            if (token->next() && !token->next()->isName() && !Token::Match(token->next(), ">|&|*|::|,|(|)"))
                 continue;
 
             // Check type of open link
