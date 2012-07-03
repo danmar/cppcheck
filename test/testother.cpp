@@ -3205,6 +3205,62 @@ private:
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
 
+        check("void f(bool x ) {\n"
+              "  if ( x > false )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
+        check("void f(bool x ) {\n"
+              "  if ( false < x )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
+        check("void f(bool x ) {\n"
+              "  if ( x < false )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
+        check("void f(bool x ) {\n"
+              "  if ( false > x )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
+        check("void f(bool x ) {\n"
+              "  if ( x >= false )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
+        check("void f(bool x ) {\n"
+              "  if ( false >= x )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
+        check("void f(bool x ) {\n"
+              "  if ( x <= false )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
+        check("void f(bool x ) {\n"
+              "  if ( false >= x )\n"
+              "      a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+
         check("typedef int (*func)(bool invert);\n"
               "void x(int, func f);\n"
               "void foo(int error) {\n"

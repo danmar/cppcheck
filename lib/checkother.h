@@ -273,6 +273,7 @@ private:
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
+    void comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression);
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);

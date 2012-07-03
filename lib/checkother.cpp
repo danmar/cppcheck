@@ -1341,10 +1341,14 @@ void CheckOther::checkComparisonOfBoolWithInt()
             } else if (tok->isBoolean() && right->varId()) { // Comparing boolean constant with variable
                 if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(right->varId()))) { // Variable has to be of non-boolean standard type
                     comparisonOfBoolWithIntError(right, tok->str(), false);
+                } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
+                    comparisonOfBoolWithInvalidComparator(right, tok->str());
                 }
             } else if (tok->varId() && right->isBoolean()) { // Comparing variable with boolean constant
                 if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(tok->varId()))) { // Variable has to be of non-boolean standard type
                     comparisonOfBoolWithIntError(tok, right->str(), false);
+                } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
+                    comparisonOfBoolWithInvalidComparator(right, tok->str());
                 }
             } else if (tok->isNumber() && right->isBoolean()) { // number constant with boolean constant
                 comparisonOfBoolWithIntError(tok, right->str(), false);
@@ -1375,6 +1379,15 @@ void CheckOther::comparisonOfBoolWithIntError(const Token *tok, const std::strin
                     "Comparison of a boolean with an integer\n"
                     "The expression \"" + expression + "\" is of type 'bool' "
                     "and it is compared against a integer value.");
+}
+
+void CheckOther::comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression)
+{
+    reportError(tok, Severity::warning, "comparisonOfBoolWithInvalidComparator",
+                "Comparison of a boolean value using relational (<, >, <= or >=) operator.\n"
+                "The expression \"" + expression + "\" is of type 'bool' "
+                "and result is of type 'bool'. Comparing 'bool' value using relational (<, >, <= or >=)"
+                " operator could cause unexpected results.");
 }
 
 //---------------------------------------------------------------------------
