@@ -1928,6 +1928,12 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"  // #3926 - weird cast.
+                        "    int x;\n"
+                        "    *(((char *)&x) + 0) = 0;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // using uninit var in condition
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

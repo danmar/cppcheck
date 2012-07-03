@@ -1268,6 +1268,27 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
             return false;
         }
 
+        // is there something like: ; "*((&var ..expr.. ="  => the variable is assigned
+        if (vartok->previous()->str() == "&") {
+            const Token *tok2 = vartok->tokAt(-2);
+            if (Token::simpleMatch(tok2,")"))
+                tok2 = tok2->link()->previous();
+            while (tok2 && tok2->str() == "(")
+                tok2 = tok2->previous();
+            while (tok2 && tok2->str() == "*")
+                tok2 = tok2->previous();
+            if (Token::Match(tok2, "[;{}] *")) {
+                // there is some such code before vartok: "[*]+ [(]* &"
+                // determine if there is a = after vartok
+                for (tok2 = vartok; tok2; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "[;{}]"))
+                        break;
+                    if (tok2->str() == "=")
+                        return false;
+                }
+            }
+        }
+
         if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]")) {
             return true;
         }
