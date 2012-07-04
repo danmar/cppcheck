@@ -267,7 +267,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
 void CppCheckExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 {
-    reportOut(msg.toXML(false, _settings->_xml_version));
+    reportErr(msg);
 }
 
 void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, size_t sizedone, size_t sizetotal)
