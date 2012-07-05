@@ -336,7 +336,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS("_WIN32", settings.userDefines);
+        ASSERT_EQUALS("_WIN32=1", settings.userDefines);
     }
 
     void defines2() {
@@ -345,7 +345,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS("_WIN32;NODEBUG", settings.userDefines);
+        ASSERT_EQUALS("_WIN32=1;NODEBUG=1", settings.userDefines);
     }
 
     void defines3() {
@@ -354,6 +354,15 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(4, argv));
+        ASSERT_EQUALS("DEBUG=1", settings.userDefines);
+    }
+
+    void defines4() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "-DDEBUG=", "file.cpp"};
+        Settings settings;
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS("DEBUG", settings.userDefines);
     }
 

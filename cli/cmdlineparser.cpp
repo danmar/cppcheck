@@ -330,6 +330,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 define = 2 + argv[i];
             }
 
+            // No "=", append a "=1"
+            if (define.find("=") == std::string::npos)
+                define += "=1";
+
             if (!_settings->userDefines.empty())
                 _settings->userDefines += ";";
             _settings->userDefines += define;
