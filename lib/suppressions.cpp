@@ -224,7 +224,7 @@ std::string Suppressions::addSuppression(const std::string &errorId, const std::
     }
     if (errorId != "*") {
         for (std::string::size_type pos = 0; pos < errorId.length(); ++pos) {
-            if (errorId[pos] < 0 || !std::isalnum(errorId[pos])) {
+            if (errorId[pos] < 0 || (!std::isalnum(errorId[pos]) &&  errorId[pos] != '_')) {
                 return "Failed to add suppression. Invalid id \"" + errorId + "\"";
             }
             if (pos == 0 && std::isdigit(errorId[pos])) {

@@ -45,8 +45,11 @@ private:
 
     void suppressionsBadId1() {
         Suppressions suppressions;
-        std::istringstream s("123");
-        ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s));
+        std::istringstream s1("123");
+        ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s1));
+
+        std::istringstream s2("obsoleteFunctionsrand_r");
+        ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 
     void suppressionsDosFormat() {
