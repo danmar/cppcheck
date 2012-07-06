@@ -350,6 +350,8 @@ private:
 
         // #1879 non regression test case
         TEST_CASE(trac1879);
+
+        TEST_CASE(garbageCode);
     }
 
 
@@ -3805,6 +3807,11 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
     }
 
+    void garbageCode() {
+        check("void h(int l) {\n"
+              "    while\n" // Don't crash (#3870)
+              "}");
+    }
 
 };
 

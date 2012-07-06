@@ -1162,7 +1162,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             addtoken(&rettail, tok, "loop");
 
             if (varid > 0) {
-                for (const Token *tok2 = tok->tokAt(2); tok2 != end; tok2 = tok2->next()) {
+                for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != end; tok2 = tok2->next()) {
                     if (notvar(tok2, varid)) {
                         addtoken(&rettail, tok2, "!var");
                         break;
