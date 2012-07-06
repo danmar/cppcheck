@@ -1772,7 +1772,12 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // enum..
-    simplifyEnum();
+    if (m_timerResults) {
+        Timer t("Tokenizer::tokenize::simplifyEnum", _settings->_showtime, m_timerResults);
+        simplifyEnum();
+    } else {
+        simplifyEnum();
+    }
 
     // Remove __asm..
     simplifyAsm();
@@ -6841,6 +6846,79 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
     return false;
 }
 
+class EnumValue {
+public:
+    EnumValue() {
+        name  = 0;
+        value = 0;
+        start = 0;
+        end   = 0;
+    }
+    EnumValue(const EnumValue &ev) {
+        name  = ev.name;
+        value = ev.value;
+        start = ev.start;
+        end   = ev.end;
+    }
+    EnumValue(Token *name_, Token *value_, Token *start_, Token *end_) {
+        name  = name_;
+        value = value_;
+        start = start_;
+        end   = end_;
+    }
+
+    void simplify(const std::map<std::string, EnumValue> &enumValues) {
+        for (Token *tok = start; tok; tok = tok->next()) {
+            if (enumValues.find(tok->str()) != enumValues.end()) {
+                const EnumValue &other = enumValues.find(tok->str())->second;
+                if (other.value != NULL)
+                    tok->str(other.value->str());
+                else {
+                    bool islast = (tok == end);
+                    Token *last = Tokenizer::copyTokens(tok, other.start, other.end);
+                    tok->deleteThis();
+                    if (islast) {
+                        end = last;
+                    }
+                    tok = last;
+                }
+            }
+            if (tok == end)
+                break;
+        }
+
+        // Simplify calculations..
+        while (Token::Match(start, "%num% %op% %num% %op%") &&
+               start->strAt(1) == start->strAt(3)) {
+            const std::string &op = start->strAt(1);
+            if (op.size() != 1U)
+                break;
+            const std::string &val1 = start->str();
+            const std::string &val2 = start->strAt(2);
+            const std::string result = MathLib::calculate(val1, val2, op[0]);
+            start->str(result);
+            start->deleteNext(2);
+        }
+        if (Token::Match(start, "%num% %op% %num% [,}]")) {
+            const std::string &op = start->strAt(1);
+            if (op.size() == 1U) {
+                const std::string &val1 = start->str();
+                const std::string &val2 = start->strAt(2);
+                const std::string result = MathLib::calculate(val1, val2, op[0]);
+                start->str(result);
+                start->deleteNext(2);
+                value = start;
+                start = end = 0;
+            }
+        }
+    }
+
+    Token *name;
+    Token *value;
+    Token *start;
+    Token *end;
+};
+
 void Tokenizer::simplifyEnum()
 {
     // Don't simplify enums in java files
@@ -6943,6 +7021,7 @@ void Tokenizer::simplifyEnum()
             // iterate over all enumerators between { and }
             // Give each enumerator the const value specified or if not specified, 1 + the
             // previous value or 0 if it is the first one.
+            std::map<std::string,EnumValue> enumValues;
             for (; tok1 && tok1 != end; tok1 = tok1->next()) {
                 Token * enumName = 0;
                 Token * enumValue = 0;
@@ -7017,111 +7096,101 @@ void Tokenizer::simplifyEnum()
                     tok1 = enumValueEnd;
                 }
 
-                // find all uses of this enumerator and substitute it's value for it's name
+                // add enumerator constant..
                 if (enumName && (enumValue || (enumValueStart && enumValueEnd))) {
-                    const std::string pattern = className.empty() ?
-                                                std::string("") :
-                                                std::string(className + " :: " + enumName->str());
-                    int level = 1;
-                    bool inScope = true;
+                    EnumValue ev(enumName, enumValue, enumValueStart, enumValueEnd);
+                    ev.simplify(enumValues);
+                    enumValues[enumName->str()] = ev;
+                    if (ev.start == NULL) {
+                        tok1 = ev.value;
+                        lastEnumValueStart = lastEnumValueEnd = NULL;
+                    }
+                }
+            }
 
-                    bool exitThisScope = false;
-                    int exitScope = 0;
-                    bool simplify = false;
-                    bool hasClass = false;
-                    const Token *endScope = 0;
-                    for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
-                        if (tok2->str() == "}") {
-                            --level;
-                            if (level < 0)
-                                inScope = false;
+            // Substitute enum values
+            {
+                const std::string pattern = className.empty() ?
+                                            std::string("") :
+                                            std::string(className + " :: ");
+                int level = 1;
+                bool inScope = true;
 
-                            if (exitThisScope) {
-                                if (level < exitScope)
-                                    exitThisScope = false;
-                            }
-                        } else if (tok2->str() == "{") {
-                            // Is the same enum redefined?
-                            const Token *begin = end->link();
-                            if (tok2->fileIndex() == begin->fileIndex() &&
-                                tok2->linenr() == begin->linenr() &&
-                                Token::Match(begin->tokAt(-2), "enum %type% {") &&
-                                Token::Match(tok2->tokAt(-2), "enum %type% {") &&
-                                begin->previous()->str() == tok2->previous()->str()) {
-                                // remove duplicate enum
-                                Token * startToken = tok2->tokAt(-3);
-                                tok2 = tok2->link()->next();
-                                Token::eraseTokens(startToken, tok2);
-                                if (!tok2)
-                                    break;
+                std::stack<std::set<std::string> > shadowId;  // duplicate ids in inner scope
+                bool simplify = false;
+                bool hasClass = false;
+                EnumValue *ev = NULL;
+                for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "}") {
+                        --level;
+                        if (level < 0)
+                            inScope = false;
+
+                        if (!shadowId.empty())
+                            shadowId.pop();
+                    } else if (tok2->str() == "{") {
+                        // Is the same enum redefined?
+                        const Token *begin = end->link();
+                        if (tok2->fileIndex() == begin->fileIndex() &&
+                            tok2->linenr() == begin->linenr() &&
+                            Token::Match(begin->tokAt(-2), "enum %type% {") &&
+                            Token::Match(tok2->tokAt(-2), "enum %type% {") &&
+                            begin->previous()->str() == tok2->previous()->str()) {
+                            // remove duplicate enum
+                            Token * startToken = tok2->tokAt(-3);
+                            tok2 = tok2->link()->next();
+                            Token::eraseTokens(startToken, tok2);
+                            if (!tok2)
+                                break;
+                        } else {
+                            // Not a duplicate enum..
+                            ++level;
+
+                            // Create a copy of the shadow ids for the inner scope
+                            if (!shadowId.empty())
+                                shadowId.push(shadowId.top());
+                        }
+                    } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()) && enumValues.find(tok2->strAt(2)) != enumValues.end()) {
+                        simplify = true;
+                        hasClass = true;
+                        ev = &(enumValues.find(tok2->strAt(2))->second);
+                    } else if (inScope &&    // enum is in scope
+                               (shadowId.empty() || shadowId.top().find(tok2->str()) == shadowId.top().end()) &&   // no shadow enum/var/etc of enum
+                               enumValues.find(tok2->str()) != enumValues.end()) {    // tok2 is a enum id with a known value
+                        ev = &(enumValues.find(tok2->str())->second);
+                        if (!duplicateDefinition(&tok2, ev->name)) {
+                            if (tok2->strAt(-1) == "::" ||
+                                Token::Match(tok2->next(), "::|[")) {
+                                // Don't replace this enum if:
+                                // * it's preceded or followed by "::"
+                                // * it's followed by "["
                             } else {
-                                // Not a duplicate enum..
-                                ++level;
+                                simplify = true;
+                                hasClass = false;
+                                ev = &(enumValues.find(tok2->str())->second);
                             }
-                            endScope = tok2->link();
-                        } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str())) {
-                            simplify = true;
-                            hasClass = true;
-                        } else if (inScope && !exitThisScope && tok2->str() == enumName->str()) {
-                            if (!duplicateDefinition(&tok2, enumName)) {
-                                if (tok2->strAt(-1) == "::" ||
-                                    Token::Match(tok2->next(), "::|[")) {
-                                    // Don't replace this enum if:
-                                    // * it's preceded or followed by "::"
-                                    // * it's followed by "["
-                                } else {
-                                    simplify = true;
-                                    hasClass = false;
-                                }
-                            } else {
-                                // something with the same name.
-                                exitScope = level;
-                                if (endScope)
-                                    tok2 = endScope->previous();
-                            }
+                        } else {
+                            // something with the same name.
+                            if (shadowId.empty())
+                                shadowId.push(std::set<std::string>());
+                            shadowId.top().insert(tok2->str());
+                        }
+                    }
+
+                    if (simplify) {
+                        if (ev->value)
+                            tok2->str(ev->value->str());
+                        else {
+                            tok2 = tok2->previous();
+                            tok2->deleteNext();
+                            tok2 = copyTokens(tok2, ev->start, ev->end);
                         }
 
-                        if (simplify) {
-                            // Simplify calculations..
-                            while (Token::Match(enumValueStart, "%num% %op% %num% %op%") &&
-                                   enumValueStart->strAt(1) == enumValueStart->strAt(3)) {
-                                const std::string &op = enumValueStart->strAt(1);
-                                if (op.size() != 1U)
-                                    break;
-                                const std::string &val1 = enumValueStart->str();
-                                const std::string &val2 = enumValueStart->strAt(2);
-                                const std::string result = MathLib::calculate(val1, val2, op[0]);
-                                enumValueStart->str(result);
-                                enumValueStart->deleteNext(2);
-                            }
-                            if (Token::Match(enumValueStart, "%num% %op% %num% [,}]")) {
-                                const std::string &op   = enumValueStart->strAt(1);
-                                if (op.size() == 1U) {
-                                    const std::string &val1 = enumValueStart->str();
-                                    const std::string &val2 = enumValueStart->strAt(2);
-                                    const std::string result = MathLib::calculate(val1, val2, op[0]);
-                                    enumValueStart->str(result);
-                                    enumValueStart->deleteNext(2);
-                                    enumValue = tok1 = enumValueStart;
-                                    enumValueStart = enumValueEnd = 0;
-                                }
-                            }
-
-
-                            if (enumValue)
-                                tok2->str(enumValue->str());
-                            else {
-                                tok2 = tok2->previous();
-                                tok2->deleteNext();
-                                tok2 = copyTokens(tok2, enumValueStart, enumValueEnd);
-                            }
-
-                            if (hasClass) {
-                                tok2->deleteNext(2);
-                            }
-
-                            simplify = false;
+                        if (hasClass) {
+                            tok2->deleteNext(2);
                         }
+
+                        simplify = false;
                     }
                 }
             }
