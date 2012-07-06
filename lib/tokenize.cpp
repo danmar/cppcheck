@@ -1772,12 +1772,7 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // enum..
-    if (m_timerResults) {
-        Timer t("Tokenizer::tokenize::simplifyEnum", _settings->_showtime, m_timerResults);
-        simplifyEnum();
-    } else {
-        simplifyEnum();
-    }
+    simplifyEnum();
 
     // Remove __asm..
     simplifyAsm();
