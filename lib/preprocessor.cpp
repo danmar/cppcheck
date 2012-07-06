@@ -1160,7 +1160,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     }
 
     // Remove defined constants from ifdef configurations..
-    unsigned int count = 0;
+    size_t count = 0;
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it) {
         if (_errorLogger)
             _errorLogger->reportProgress(filename, "Preprocessing (get configurations 2)", (100 * count++) / ret.size());

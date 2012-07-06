@@ -237,7 +237,7 @@ void CppCheckExecutor::reportOut(const std::string &outmsg)
     std::cout << outmsg << std::endl;
 }
 
-void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const unsigned int value)
+void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const size_t value)
 {
     (void)filename;
 
@@ -256,7 +256,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
         std::ostringstream ostr;
         ostr << "progress: "
              << stage
-             << ' ' << int(value) << '%';
+             << ' ' << value << '%';
         if (_settings->_verbose)
             ostr << " time=" << str.substr(11, 8);
 

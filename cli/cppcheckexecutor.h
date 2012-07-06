@@ -70,7 +70,7 @@ public:
     /** xml output of errors */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
-    void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
+    void reportProgress(const std::string &filename, const char stage[], const size_t value);
 
     /**
      * Output information messages.

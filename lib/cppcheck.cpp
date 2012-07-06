@@ -506,7 +506,7 @@ void CppCheck::reportOut(const std::string &outmsg)
     _errorLogger.reportOut(outmsg);
 }
 
-void CppCheck::reportProgress(const std::string &filename, const char stage[], const unsigned int value)
+void CppCheck::reportProgress(const std::string &filename, const char stage[], const size_t value)
 {
     _errorLogger.reportProgress(filename, stage, value);
 }

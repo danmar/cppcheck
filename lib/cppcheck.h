@@ -173,7 +173,7 @@ private:
     std::string _fileContent;
     std::set<std::string> _dependencies;
 
-    void reportProgress(const std::string &filename, const char stage[], const unsigned int value);
+    void reportProgress(const std::string &filename, const char stage[], const size_t value);
 
     /**
      * Output information messages.
