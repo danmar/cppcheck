@@ -288,6 +288,7 @@ void CheckIO::invalidScanf()
 {
     if (!_settings->isEnabled("style"))
         return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         const Token *formatToken = 0;
         if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
@@ -312,40 +313,60 @@ void CheckIO::invalidScanf()
             else if (!format)
                 continue;
 
-            else if (std::isdigit(formatstr[i])) {
+            else if (std::isdigit(formatstr[i]) || formatstr[i] == '*') {
                 format = false;
             }
 
-            else if (std::isalpha(formatstr[i])) {
-                if (formatstr[i] != 'c')  // #3490 - field width limits are not necessary for %c
-                    invalidScanfError(tok);
+            else if (std::isalpha(formatstr[i]) || formatstr[i] == '[') {
+                if (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's'))  // #3490 - field width limits are only necessary for string input
+                    invalidScanfError(tok, false);
+                else if (formatstr[i] != 'n' && formatstr[i] != 'c' && _settings->platformType != Settings::Win32A && _settings->platformType != Settings::Win32W && _settings->platformType != Settings::Win64 && _settings->isEnabled("portability"))
+                    invalidScanfError(tok, true); // Warn about libc bug in versions prior to 2.13-25
                 format = false;
             }
         }
     }
 }
 
-void CheckIO::invalidScanfError(const Token *tok)
+void CheckIO::invalidScanfError(const Token *tok, bool portability)
 {
-    reportError(tok, Severity::warning,
-                "invalidscanf", "scanf without field width limits can crash with huge input data\n"
-                "scanf without field width limits can crash with huge input data. To fix this error "
-                "message add a field width specifier:\n"
-                "    %s => %20s\n"
-                "    %i => %3i\n"
-                "\n"
-                "Sample program that can crash:\n"
-                "\n"
-                "#include <stdio.h>\n"
-                "int main()\n"
-                "{\n"
-                "    int a;\n"
-                "    scanf(\"%i\", &a);\n"
-                "    return 0;\n"
-                "}\n"
-                "\n"
-                "To make it crash:\n"
-                "perl -e 'print \"5\"x2100000' | ./a.out");
+    if (portability)
+        reportError(tok, Severity::portability,
+                    "invalidscanf", "scanf without field width limits can crash with huge input data on some versions of libc.\n"
+                    "scanf without field width limits can crash with huge input data on libc versions older than 2.13-25. Add a field "
+                    "width specifier to fix this problem:\n"
+                    "    %i => %3i\n"
+                    "\n"
+                    "Sample program that can crash:\n"
+                    "\n"
+                    "#include <stdio.h>\n"
+                    "int main()\n"
+                    "{\n"
+                    "    int a;\n"
+                    "    scanf(\"%i\", &a);\n"
+                    "    return 0;\n"
+                    "}\n"
+                    "\n"
+                    "To make it crash:\n"
+                    "perl -e 'print \"5\"x2100000' | ./a.out");
+    else
+        reportError(tok, Severity::warning,
+                    "invalidscanf", "scanf without field width limits can crash with huge input data.\n"
+                    "scanf without field width limits can crash with huge input data. Add a field width "
+                    "specifier to fix this problem:\n"
+                    "    %s => %20s\n"
+                    "\n"
+                    "Sample program that can crash:\n"
+                    "\n"
+                    "#include <stdio.h>\n"
+                    "int main()\n"
+                    "{\n"
+                    "    char c[5];\n"
+                    "    scanf(\"%s\", c);\n"
+                    "    return 0;\n"
+                    "}\n"
+                    "\n"
+                    "To make it crash, type in more than 5 characters.");
 }
 
 //---------------------------------------------------------------------------
@@ -481,9 +502,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                 invalidScanfArgTypeError(tok, tok->str(), numFormat);
 
                             if (*i == 's' && variableInfo && isKnownType(variableInfo, varTypeTok) && variableInfo->isArray() && (variableInfo->dimensions().size() == 1)) {
-                                if (width.empty())
-                                    missingScanfFormatWidthError(tok, tok->str(), numFormat, variableInfo);
-                                else {
+                                if (!width.empty()) {
                                     int numWidth = std::atoi(width.c_str());
                                     if (numWidth  != (variableInfo->dimension(0) - 1))
                                         invalidScanfFormatWidthError(tok, tok->str(), numFormat, numWidth, variableInfo);
@@ -614,14 +633,6 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int num
     std::ostringstream errmsg;
     errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list";
     reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
-}
-void CheckIO::missingScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, const Variable *var)
-{
-    std::ostringstream errmsg;
-    errmsg << functionName << " %s in format string (no. " << numFormat << ") does not specify a width";
-    if (var)
-        errmsg << ", use %" << (var->dimension(0) - 1) << "s to prevent overflowing destination: " << var->name() << "[" << var->dimension(0) << "]";
-    reportError(tok, Severity::warning, "missingScanfFormatWidth", errmsg.str());
 }
 void CheckIO::invalidScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, int width, const Variable *var)
 {

@@ -42,19 +42,21 @@ private:
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
         TEST_CASE(testScanf3);
-        TEST_CASE(testScanf4);
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
     }
 
-    void check(const char code[], bool inconclusive = false) {
+    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
+        if (portability)
+            settings.addEnabled("portability");
         settings.inconclusive = inconclusive;
+        settings.platform(platform);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -354,70 +356,46 @@ private:
 
 
     void testScanf1() {
-        check("#include <stdio.h>\n"
-              "int main(int argc, char **argv)\n"
-              "{\n"
+        check("void foo() {\n"
               "    int a, b;\n"
               "    FILE *file = fopen(\"test\", \"r\");\n"
-              "    b = fscanf(file, \"aa %ds\", &a);\n"
-              "    c = scanf(\"aa %ds\", &a);\n"
-              "    b = fscanf(file, \"aa%%ds\", &a);\n"
+              "    a = fscanf(file, \"aa %s\", bar);\n"
+              "    b = scanf(\"aa %S\", bar);\n"
+              "    b = scanf(\"aa %ls\", bar);\n"
+              "    sscanf(foo, \"%[^~]\", bar);\n"
+              "    scanf(\"%dx%s\", &b, bar);\n"
               "    fclose(file);\n"
-              "    return b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n"
-                      "[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data.\n"
+                      "[test.cpp:5]: (warning) scanf without field width limits can crash with huge input data.\n"
+                      "[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data.\n"
+                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data.\n"
+                      "[test.cpp:8]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
     }
 
     void testScanf2() {
-        check("#include <stdio.h>\n"
-              "int main(int argc, char **argv)\n"
-              "{\n"
-              "    int a, b;\n"
-              "    FILE *file = fopen(\"test\", \"r\");\n"
-              "    b = fscanf(file, \"aa%%%ds\", &a);\n"
-              "    c = scanf(\"aa %%%ds\", &a);\n"
-              "    b = fscanf(file, \"aa%%ds\", &a);\n"
-              "    fclose(file);\n"
-              "    return b;\n"
+        check("void foo() {\n"
+              "    scanf(\"%5s\", bar);\n" // Width specifier given
+              "    scanf(\"%5[^~]\", bar);\n" // Width specifier given
+              "    scanf(\"aa%%s\", bar);\n" // No %s
+              "    scanf(\"aa%d\", &a);\n" // No %s
+              "    scanf(\"aa%ld\", &a);\n" // No %s
+              "    scanf(\"%*[^~]\");\n" // Ignore input
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) fscanf format string has 0 parameters but 1 are given\n"
-                      "[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data\n"
-                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string has 0 parameters but 1 are given\n", errout.str());
     }
 
     void testScanf3() {
-        check("#include <stdio.h>\n"
-              "int main(int argc, char **argv)\n"
-              "{\n"
-              "    char a[32];\n"
-              "    int b, c;\n"
-              "    FILE *file = fopen(\"test\", \"r\");\n"
-              "    c = fscanf(file, \"%[^ ] %d\n\", a, &b);\n"
-              "    fclose(file);\n"
-              "    return c;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        check("void foo() {\n"
+              "    scanf(\"%d\", &a);\n"
+              "    scanf(\"%n\", &a);\n" // No warning on %n, since it doesn't expect user input
+              "    scanf(\"%c\", &c);\n" // No warning on %c; it expects only one character
+              "}", false, true, Settings::Unspecified);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.\n", errout.str());
 
-        check("#include <stdio.h>\n"
-              "int main(int argc, char **argv)\n"
-              "{\n"
-              "    char a[32];\n"
-              "    int b;\n"
-              "    FILE *file = fopen(\"test\", \"r\");\n"
-              "    b = fscanf(file, \"%[^ \n\", a);\n"
-              "    fclose(file);\n"
-              "    return b;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) fscanf format string has 0 parameters but 1 are given\n", errout.str());
-    }
-
-    void testScanf4() {
-        check("void f() {\n"
-              "    char c;\n"
-              "    scanf(\"%c\", &c);\n"
-              "}");
+        check("void foo() {\n"
+              "    scanf(\"%d\", &a);\n"
+              "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -431,7 +409,7 @@ private:
               "    scanf(\"%1u%1u\", &foo, bar());\n"
               "    scanf(\"%*1x %1x %29s\", &count, KeyName);\n" // #3373
               "    fscanf(f, \"%7ms\", &ref);\n" // #3461
-              "    sscanf(ip_port, \"%*[^:]:%d\", &port);\n" // #3468
+              "    sscanf(ip_port, \"%*[^:]:%4d\", &port);\n" // #3468
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -460,14 +438,11 @@ private:
         check("void foo() {\n"
               "    char input[10];\n"
               "    char output[5];\n"
-              "    sscanf(input, \"%s\", output);\n"
               "    sscanf(input, \"%3s\", output);\n"
               "    sscanf(input, \"%4s\", output);\n"
               "    sscanf(input, \"%5s\", output);\n"
               "}", false);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) sscanf %s in format string (no. 1) does not specify a width, use %4s to prevent overflowing destination: output[5]\n"
-                      "[test.cpp:7]: (error) sscanf width 5 in format string (no. 1) is larger than destination, use %4s to prevent overflowing destination: output[5]\n"
-                      "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) sscanf width 5 in format string (no. 1) is larger than destination, use %4s to prevent overflowing destination: output[5]\n", errout.str());
 
         check("void foo() {\n"
               "    char input[10];\n"
@@ -477,10 +452,9 @@ private:
               "    sscanf(input, \"%4s\", output);\n"
               "    sscanf(input, \"%5s\", output);\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) sscanf %s in format string (no. 1) does not specify a width, use %4s to prevent overflowing destination: output[5]\n"
-                      "[test.cpp:5]: (warning, inconclusive) sscanf width 3 in format string (no. 1) is smaller than destination: output[5]\n"
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) sscanf width 3 in format string (no. 1) is smaller than destination: output[5]\n"
                       "[test.cpp:7]: (error) sscanf width 5 in format string (no. 1) is larger than destination, use %4s to prevent overflowing destination: output[5]\n"
-                      "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data\n", errout.str());
+                      "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
     }
 
     void testPrintfArgument() {

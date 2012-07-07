@@ -77,7 +77,7 @@ private:
     void readWriteOnlyFileError(const Token *tok);
     void writeReadOnlyFileError(const Token *tok);
     void useClosedFileError(const Token *tok);
-    void invalidScanfError(const Token *tok);
+    void invalidScanfError(const Token *tok, bool portability);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &function,
                                         unsigned int numFormat,
@@ -88,7 +88,6 @@ private:
     void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
-    void missingScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, const Variable *var);
     void invalidScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, int width, const Variable *var);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -100,7 +99,7 @@ private:
         c.readWriteOnlyFileError(0);
         c.writeReadOnlyFileError(0);
         c.useClosedFileError(0);
-        c.invalidScanfError(0);
+        c.invalidScanfError(0, false);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
         c.invalidScanfArgTypeError(0, "scanf", 1);
         c.invalidPrintfArgTypeError_s(0, 1);
@@ -108,7 +107,6 @@ private:
         c.invalidPrintfArgTypeError_p(0, 1);
         c.invalidPrintfArgTypeError_int(0, 1, 'u');
         c.invalidPrintfArgTypeError_float(0, 1, 'f');
-        c.missingScanfFormatWidthError(0, "scanf", 1, NULL);
         c.invalidScanfFormatWidthError(0, "scanf", 10, 5, NULL);
     }
 
