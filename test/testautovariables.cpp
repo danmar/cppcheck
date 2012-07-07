@@ -106,7 +106,7 @@ private:
               "    int num = 2;\n"
               "    *res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void func1(int **res)\n"
               "{\n"
@@ -132,7 +132,7 @@ private:
               "    int num = 2;\n"
               "    *res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("class Fred {\n"
               "    void func1(int **res);\n"
@@ -161,7 +161,7 @@ private:
               "    int x[100];\n"
               "    *p = x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar4() { // ticket #2928
@@ -186,7 +186,7 @@ private:
               "    char a;\n"
               "    ab->a = &a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar6() { // ticket #2931
@@ -202,7 +202,7 @@ private:
               "    char a[10];\n"
               "    x->str = a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar7() { // ticket #3066
@@ -220,7 +220,7 @@ private:
               "    int i = 0;\n"
               "    p = &i;\n"
               "}", false);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar9() {
@@ -233,7 +233,7 @@ private:
               "    p = &p_fp->i;\n"
               "    p = &fp.f->i;\n"
               "}", false);
-        ASSERT_EQUALS("[test.cpp:6]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_array1() {
@@ -242,7 +242,7 @@ private:
               "    int num=2;"
               "    arr[0]=&num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_array2() {
@@ -254,7 +254,7 @@ private:
               "    int num=2;"
               "    arr[0]=&num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Assigning address of local auto-variable to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_return1() {
@@ -263,7 +263,7 @@ private:
               "    int num=2;"
               "    return &num;"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return of the address of an auto-variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of an auto-variable returned.\n", errout.str());
     }
 
     void testautovar_return2() {
@@ -275,7 +275,7 @@ private:
               "    int num=2;"
               "    return &num;"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Return of the address of an auto-variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Address of an auto-variable returned.\n", errout.str());
     }
 
     void testautovar_return3() {
@@ -295,7 +295,7 @@ private:
               "    char q[] = \"AAAAAAAAAAAA\";\n"
               "    return &q[1];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Return of the address of an auto-variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Address of an auto-variable returned.\n", errout.str());
 
         check("char *foo()\n"
               "{\n"
@@ -327,11 +327,11 @@ private:
               "    char tmp5[256];\n"
               "    delete[] tmp5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocating auto-variable is invalid\n"
-                      "[test.cpp:5]: (error) Deallocating auto-variable is invalid\n"
-                      "[test.cpp:7]: (error) Deallocating auto-variable is invalid\n"
-                      "[test.cpp:9]: (error) Deallocating auto-variable is invalid\n"
-                      "[test.cpp:11]: (error) Deallocating auto-variable is invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n"
+                      "[test.cpp:5]: (error) Deallocation of an auto-variable results in undefined behaviour.\n"
+                      "[test.cpp:7]: (error) Deallocation of an auto-variable results in undefined behaviour.\n"
+                      "[test.cpp:9]: (error) Deallocation of an auto-variable results in undefined behaviour.\n"
+                      "[test.cpp:11]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
 
         check("void func1() {\n"
               "    char* tmp1[256];\n"
@@ -374,7 +374,7 @@ private:
               "    char str[100] = {0};\n"
               "    return str;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to local array variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Pointer to local array variable returned.\n", errout.str());
 
         check("class Fred {\n"
               "    char *foo();\n"
@@ -384,7 +384,7 @@ private:
               "    char str[100] = {0};\n"
               "    return str;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Returning pointer to local array variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Pointer to local array variable returned.\n", errout.str());
     }
 
     void returnLocalVariable2() {
@@ -412,14 +412,14 @@ private:
               "    std::string s;\n"
               "    return s;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Returning reference to auto variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
               "    std::vector<int> v;\n"
               "    return v;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Returning reference to auto variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
@@ -437,7 +437,7 @@ private:
               "{\n"
               "    return hello();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Returning reference to temporary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Reference to temporary returned.\n", errout.str());
     }
 
     void returnReference2() {
@@ -449,7 +449,7 @@ private:
               "    std::string s;\n"
               "    return s;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Returning reference to auto variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::vector<int> &foo();\n"
@@ -459,7 +459,7 @@ private:
               "    std::vector<int> v;\n"
               "    return v;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Returning reference to auto variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::vector<int> &foo();\n"
@@ -482,7 +482,7 @@ private:
               "{\n"
               "    return hello();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Returning reference to temporary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Reference to temporary returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::string hello();\n"
@@ -496,7 +496,7 @@ private:
               "{\n"
               "    return hello();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Returning reference to temporary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Reference to temporary returned.\n", errout.str());
     }
 
     void returnReference3() {
@@ -556,7 +556,7 @@ private:
               "{\n"
               "    return hello().c_str();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Returning pointer to temporary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Pointer to temporary returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::string hello();\n"
@@ -570,7 +570,7 @@ private:
               "{\n"
               "    return hello().c_str();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Returning pointer to temporary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Pointer to temporary returned.\n", errout.str());
     }
 
 
@@ -594,14 +594,14 @@ private:
               "  return &y;\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return the address of function parameter 'y'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of function parameter 'y' returned.\n", errout.str());
 
         check("int ** foo(int * y)\n"
               "{\n"
               "  return &y;\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return the address of function parameter 'y'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of function parameter 'y' returned.\n", errout.str());
 
         check("const int * foo(const int & y)\n"
               "{\n"

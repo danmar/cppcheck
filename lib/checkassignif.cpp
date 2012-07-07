@@ -72,7 +72,7 @@ void CheckAssignIf::assignIfError(const Token *tok, bool result)
 {
     reportError(tok, Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison is always " + std::string(result ? "true" : "false"));
+                "Mismatching assignment and comparison, comparison is always " + std::string(result ? "true" : "false") + ".");
 }
 
 
@@ -117,7 +117,7 @@ void CheckAssignIf::comparisonError(const Token *tok, MathLib::bigint value1, co
     std::ostringstream expression;
     expression << std::hex << "(X & 0x" << value1 << ") " << op << " 0x" << value2;
 
-    const std::string errmsg("Expression '" + expression.str() + "' is always " + (result?"true":"false") + "\n"
+    const std::string errmsg("Expression '" + expression.str() + "' is always " + (result?"true":"false") + ".\n"
                              "The expression '" + expression.str() + "' is always " + (result?"true":"false") +
                              ". Check carefully constants and operators used, these errors might be hard to "
                              "spot sometimes. In case of complex expression it might help to split it to "
@@ -177,8 +177,8 @@ void CheckAssignIf::multiCondition()
 void CheckAssignIf::multiConditionError(const Token *tok, unsigned int line1)
 {
     std::ostringstream errmsg;
-    errmsg << "'else if' condition matches previous condition at line "
-           << line1;
+    errmsg << "Expression is always false because 'else if' condition matches previous condition at line "
+           << line1 << ".";
 
     reportError(tok, Severity::style, "multiCondition", errmsg.str());
 }

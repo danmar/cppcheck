@@ -188,28 +188,28 @@ void CheckAutoVariables::returnPointerToLocalArray()
 
 void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnAddressOfAutoVariable", "Return of the address of an auto-variable");
+    reportError(tok, Severity::error, "returnAddressOfAutoVariable", "Address of an auto-variable returned.");
 }
 
 void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnLocalVariable", "Returning pointer to local array variable");
+    reportError(tok, Severity::error, "returnLocalVariable", "Pointer to local array variable returned.");
 }
 
 void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inconclusive)
 {
     if (!inconclusive) {
         reportError(tok, Severity::error, "autoVariables",
-                    "Assigning address of local auto-variable to a function parameter.\n"
-                    "Dangerous assignment - function parameter takes the address of a local "
-                    "auto-variable. Local auto-variables are reserved from the stack. And the "
-                    "stack is freed when the function ends. So the pointer to a local variable "
+                    "Address of local auto-variable assigned to a function parameter.\n"
+                    "Dangerous assignment - function parameter is assigned the address of a local "
+                    "auto-variable. Local auto-variables are reserved from the stack which "
+                    "is freed when the function ends. So the pointer to a local variable "
                     "is invalid after the function ends.");
     } else {
         reportError(tok, Severity::error, "autoVariables",
-                    "Assigning address of local auto-variable to a function parameter.\n"
-                    "Function parameter takes the address of a local auto-variable. "
-                    "Local auto-variables are reserved from the stack. And the stack is freed when "
+                    "Address of local auto-variable assigned to a function parameter.\n"
+                    "Function parameter is assigned the address of a local auto-variable. "
+                    "Local auto-variables are reserved from the stack which is freed when "
                     "the function ends. The address is invalid after the function ends and it "
                     "might 'leak' from the function through the parameter.", true);
     }
@@ -218,9 +218,10 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "returnAddressOfFunctionParameter",
-                "Return the address of function parameter '" + varname + "'\n"
-                "Address of the function parameter '" + varname + "' is invalid after the function exits. "
-                "Function parameters are created into the stack. When the function exits the stack is deleted.");
+                "Address of function parameter '" + varname + "' returned.\n"
+                "Address of the function parameter '" + varname + "' becomes invalid after the function exits because "
+                "function parameters are stored on the stack which is freed when the function exits. Thus the returned "
+                "value is invalid.");
 }
 
 //---------------------------------------------------------------------------
@@ -288,12 +289,12 @@ void CheckAutoVariables::returnReference()
 
 void CheckAutoVariables::errorReturnReference(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnReference", "Returning reference to auto variable");
+    reportError(tok, Severity::error, "returnReference", "Reference to auto variable returned.");
 }
 
 void CheckAutoVariables::errorReturnTempReference(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnTempReference", "Returning reference to temporary");
+    reportError(tok, Severity::error, "returnTempReference", "Reference to temporary returned.");
 }
 
 void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
@@ -301,8 +302,8 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
     reportError(tok,
                 Severity::error,
                 "autovarInvalidDeallocation",
-                "Deallocating auto-variable is invalid\n"
-                "Deallocating an auto-variable is invalid. You should only free memory "
+                "Deallocation of an auto-variable results in undefined behaviour.\n"
+                "Deallocation of an auto-variable results in undefined behaviour. You should only free memory "
                 "that has been allocated dynamically.");
 }
 
@@ -341,5 +342,5 @@ void CheckAutoVariables::returncstr()
 
 void CheckAutoVariables::errorReturnTempPointer(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnTempPointer", "Returning pointer to temporary");
+    reportError(tok, Severity::error, "returnTempPointer", "Pointer to temporary returned.");
 }

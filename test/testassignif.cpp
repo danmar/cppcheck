@@ -65,21 +65,21 @@ private:
               "    int y = x & 4;\n"
               "    if (y == 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always false.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    int y = x & 4;\n"
               "    if (y != 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always true.\n", errout.str());
 
         // |
         check("void foo(int x) {\n"
               "    int y = x | 0x14;\n"
               "    if (y == 0x710);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Mismatching assignment and comparison, comparison is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Mismatching assignment and comparison, comparison is always false.\n", errout.str());
 
         check("void foo(int x) {\n"
               "    int y = x | 0x14;\n"
@@ -93,19 +93,19 @@ private:
               "{\n"
               "    if (x & 4 == 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if ((x & 4) == 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 4 != 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) != 0x3' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) != 0x3' is always true.\n", errout.str());
     }
 
     void multicompare() {
@@ -114,14 +114,14 @@ private:
               "    if (x & 7);\n"
               "    else if (x == 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'else if' condition matches previous condition at line 3\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"
               "    else if (x & 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'else if' condition matches previous condition at line 3\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
     }
 };
 
