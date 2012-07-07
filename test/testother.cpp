@@ -2345,8 +2345,7 @@ private:
     }
 
     void trac1132() {
-        check("#include <iostream>\n"
-              "class Lock\n"
+        check("class Lock\n"
               "{\n"
               "public:\n"
               "    Lock(int i)\n"
@@ -2365,7 +2364,7 @@ private:
               "    return 0;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:16]: (error) Instance of \"Lock\" object destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (error) Instance of \"Lock\" object destroyed immediately.\n", errout.str());
     }
 
     void trac3693() {
@@ -2449,10 +2448,7 @@ private:
     }
 
     void testMisusedScopeObjectDoesNotPickFunctor() {
-        check("\n"
-              "#include <algorithm>\n"
-              "\n"
-              "class IncrementFunctor\n"
+        check("class IncrementFunctor\n"
               "{\n"
               "public:\n"
               "    void operator()(int &i)\n"
@@ -2545,9 +2541,7 @@ private:
     }
 
     void trac2084() {
-        check("#include <signal.h>\n"
-              "\n"
-              "void f()\n"
+        check("void f()\n"
               "{\n"
               "    struct sigaction sa;\n"
               "\n"

@@ -1857,8 +1857,7 @@ private:
                       "the object. Use operator= instead.\n"
                       "[test.cpp:9]: (performance) Useless call of function \'substr\' because it returns an empty string.\n", errout.str());
 
-        check("#include <string>\n"
-              "int main()\n"
+        check("int main()\n"
               "{\n"
               "    std::string str = \"a1b1\";\n"
               "    return str.find(str[1], 2);\n"

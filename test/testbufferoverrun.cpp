@@ -958,12 +958,11 @@ private:
     }
 
     void array_index_22() {
-        check("#include <cstring>\n"
-              "int main() {\n"
+        check("int main() {\n"
               "  size_t indices[2];\n"
               "  int b = indices[2];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'indices[2]' accessed at index 2, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'indices[2]' accessed at index 2, which is out of bounds\n", errout.str());
     }
 
     void array_index_23() {

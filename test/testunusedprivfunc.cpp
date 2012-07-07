@@ -547,8 +547,7 @@ private:
     }
 
     void testDoesNotIdentifyMethodAsFirstFunctionArgument() {
-        check("#include <iostream>"
-              "void callback(void (*func)(int), int arg)"
+        check("void callback(void (*func)(int), int arg)"
               "{"
               "    (*func)(arg);"
               "}"
@@ -575,8 +574,7 @@ private:
     }
 
     void testDoesNotIdentifyMethodAsMiddleFunctionArgument() {
-        check("#include <iostream>"
-              "void callback(char, void (*func)(int), int arg)"
+        check("void callback(char, void (*func)(int), int arg)"
               "{"
               "    (*func)(arg);"
               "}"
@@ -603,8 +601,7 @@ private:
     }
 
     void testDoesNotIdentifyMethodAsLastFunctionArgument() {
-        check("#include <iostream>"
-              "void callback(int arg, void (*func)(int))"
+        check("void callback(int arg, void (*func)(int))"
               "{"
               "    (*func)(arg);"
               "}"

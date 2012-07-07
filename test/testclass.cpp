@@ -4786,25 +4786,23 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::a' can be const.\n", errout.str());
 
         // ticket #1593
-        checkConst("#include <vector>\n"
-                   "class A\n"
+        checkConst("class A\n"
                    "{\n"
                    "   std::vector<int> m_v;\n"
                    "public:\n"
                    "   A(){}\n"
                    "   unsigned int GetVecSize()  {return m_v.size();}\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'A::GetVecSize' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'A::GetVecSize' can be const.\n", errout.str());
 
-        checkConst("#include <vector>\n"
-                   "class A\n"
+        checkConst("class A\n"
                    "{\n"
                    "   std::vector<int> m_v;\n"
                    "public:\n"
                    "   A(){}\n"
                    "   bool GetVecEmpty()  {return m_v.empty();}\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'A::GetVecEmpty' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'A::GetVecEmpty' can be const.\n", errout.str());
     }
 
     void constVirtualFunc() {

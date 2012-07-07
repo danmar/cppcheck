@@ -1887,8 +1887,7 @@ private:
     }
 
     void uninitVarStream() {
-        check("#include <fstream>\n"
-              "class Foo\n"
+        check("class Foo\n"
               "{\n"
               "private:\n"
               "    int foo;\n"
