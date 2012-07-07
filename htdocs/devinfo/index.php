@@ -42,8 +42,11 @@
   <div class="wrap">
 <h2>Source Code</h2>
 <p>Latest version can be found in the <a href="https://github.com/danmar/cppcheck/">
-cppcheck git repository</a>. To download it, run the following command:</p>
-<pre>git clone git://github.com/danmar/cppcheck.git</pre>
+cppcheck git repository</a>.</p>
+<p>To get the source code using git:</p>
+<pre class="cmd">git clone git://github.com/danmar/cppcheck.git</pre>
+<p>To get the source code using subversion:</p>
+<pre class="cmd">svn checkout https://github.com/danmar/cppcheck/trunk</pre>
 <p>You can also <a href="https://github.com/danmar/cppcheck/downloads">download
 the latest sources in a zip or tgz archive</a> from the github website.</p>
 <h3>Recent Commits</h3>

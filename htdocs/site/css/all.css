@@ -136,6 +136,14 @@ pre.code em {
   border: 1px solid #e2e2e2;
 }
 
+/* Command */
+pre.cmd {
+  padding: .5em;
+  background: #f7f7f7;
+  border: 1px solid #c0c0c0;
+  border-left: 10px solid #c0c0c0;
+}
+
 /* Results table */
 #resultsTable {
   border-collapse: collapse;
