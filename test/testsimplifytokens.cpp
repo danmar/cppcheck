@@ -347,6 +347,7 @@ private:
         TEST_CASE(enum28);
         TEST_CASE(enum29); // ticket #3747 (bitwise or value)
         TEST_CASE(enum30); // ticket #3852 (false positive)
+        TEST_CASE(enum31); // ticket #3934 (calculation in first item)
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -7027,6 +7028,10 @@ private:
         TODO_ASSERT_EQUALS("","[test.cpp:12] -> [test.cpp:7]: (style) Variable 'two' hides enumerator with same name\n", errout.str());
     }
 
+    void enum31() {  // #3934 - calculation in first item
+        const char code[] = "enum { x=2*32, y }; i = y;";
+        ASSERT_EQUALS("i = 65 ;", checkSimplifyEnum(code));
+    }
 
     void removestd() {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));

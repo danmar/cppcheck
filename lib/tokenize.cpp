@@ -7099,6 +7099,7 @@ void Tokenizer::simplifyEnum()
                     if (ev.start == NULL) {
                         tok1 = ev.value;
                         lastEnumValueStart = lastEnumValueEnd = NULL;
+                        lastValue = MathLib::toLongNumber(ev.value->str());
                     }
                 }
             }
