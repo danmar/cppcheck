@@ -21,9 +21,11 @@
 #include <fstream>
 
 #ifndef _WIN32
+#include <vector>
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 #endif
 
 class TestFileLister: public TestFixture {
@@ -55,11 +57,18 @@ private:
 
 #ifndef _WIN32
     void absolutePath() {
-        char current_dir[PATH_MAX];
-        getcwd(current_dir, sizeof(current_dir));
+        std::vector<char> current_dir;
+#ifdef PATH_MAX
+        current_dir.resize(PATH_MAX);
+#else
+        current_dir.resize(1024);
+#endif
+        while (getcwd(&current_dir[0], current_dir.size()) == NULL && errno == ERANGE) {
+            current_dir.resize(current_dir.size() + 1024);
+        }
 
         std::string absolute_path = FileLister::getAbsolutePath(".");
-        ASSERT_EQUALS(current_dir, absolute_path);
+        ASSERT_EQUALS(&current_dir[0], absolute_path);
     }
 #endif
 
