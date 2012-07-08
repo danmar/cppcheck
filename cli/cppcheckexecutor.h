@@ -99,6 +99,7 @@ protected:
      * @brief Parse command line args and get settings and file lists
      * from there.
      *
+     * @param cppcheck cppcheck instance
      * @param argc argc from main()
      * @param argv argv from main()
      * @return false when errors are found in the input

@@ -728,6 +728,7 @@ public:
      * @param dest destination token where copied tokens will be inserted after
      * @param first first token to copy
      * @param last last token to copy
+     * @param one_line true=>copy all tokens to the same line as dest. false=>copy all tokens to dest while keeping the 'line breaks'
      * @return new location of last token copied
      */
     static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);

@@ -77,6 +77,7 @@ public:
      * is returned.
      * @param tok token for the pointer
      * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
+     * @param symbolDatabase symbol database
      * @return true => there is a dereference
      */
     static bool isPointerDeRef(const Token *tok, bool &unknown, const SymbolDatabase* symbolDatabase);

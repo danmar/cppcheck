@@ -125,6 +125,9 @@ public:
     /**
      * Simplify templates : expand all instantiatiations for a template
      * @todo It seems that inner templates should be instantiated recursively
+     * @param tokenlist token list
+     * @param errorlogger error logger
+     * @param _settings settings
      * @param tok token where the template declaration begins
      * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
@@ -139,6 +142,10 @@ public:
 
     /**
      * Simplify templates
+     * @param tokenlist token list
+     * @param errorlogger error logger
+     * @param _settings settings
+     * @param _codeWithTemplates output parameter that is set if code contains templates
      */
     static void simplifyTemplates(
         TokenList& tokenlist,
@@ -148,6 +155,7 @@ public:
 
     /**
      * Simplify constant calculations such as "1+2" => "3"
+     * @param _tokens start token
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
