@@ -201,7 +201,7 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
     if (!inconclusive) {
         reportError(tok, Severity::error, "autoVariables",
                     "Address of local auto-variable assigned to a function parameter.\n"
-                    "Dangerous assignment - function parameter is assigned the address of a local "
+                    "Dangerous assignment - the function parameter is assigned the address of a local "
                     "auto-variable. Local auto-variables are reserved from the stack which "
                     "is freed when the function ends. So the pointer to a local variable "
                     "is invalid after the function ends.");
@@ -303,7 +303,7 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
                 Severity::error,
                 "autovarInvalidDeallocation",
                 "Deallocation of an auto-variable results in undefined behaviour.\n"
-                "Deallocation of an auto-variable results in undefined behaviour. You should only free memory "
+                "The deallocation of an auto-variable results in undefined behaviour. You should only free memory "
                 "that has been allocated dynamically.");
 }
 

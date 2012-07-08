@@ -99,22 +99,22 @@ void Check64BitPortability::assignmentAddressToIntegerError(const Token *tok)
 {
     reportError(tok, Severity::portability,
                 "AssignmentAddressToInteger",
-                "Assigning an address value to the integer (int/long/etc) type is not portable\n"
-                "Assigning an address value to the integer (int/long/etc) type is not portable across different platforms and "
+                "Assigning a pointer to an integer is not portable.\n"
+                "Assigning a pointer to an integer (int/long/etc) is not portable across different platforms and "
                 "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
                 "they are of different width. In worst case you end up assigning 64-bit address to 32-bit integer. The safe "
-                "way is to always assign addresses only to pointer types (or typedefs).");
+                "way is to store addresses only in pointer types (or typedefs like uintptr_t).");
 }
 
 void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
 {
     reportError(tok, Severity::portability,
                 "AssignmentIntegerToAddress",
-                "Assigning an integer (int/long/etc) to a pointer is not portable\n"
+                "Assigning an integer to a pointer is not portable.\n"
                 "Assigning an integer (int/long/etc) to a pointer is not portable across different platforms and "
                 "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
-                "they are of different width. In worst case you end up assigning 32-bit integer to 64-bit pointer. The safe "
-                "way is to always assign address to pointer.");
+                "they are of different width. In worst case you end up assigning 64-bit integer to 32-bit pointer. The safe "
+                "way is to store addresses only in pointer types (or typedefs like uintptr_t).");
 }
 
 void Check64BitPortability::returnPointerError(const Token *tok)
@@ -132,9 +132,9 @@ void Check64BitPortability::returnIntegerError(const Token *tok)
 {
     reportError(tok, Severity::portability,
                 "CastIntegerToAddressAtReturn",
-                "Returning an integer in a function that returns a pointer is not portable.\n"
-                "Returning an integer (int/long/etc) in a function that returns a pointer is not portable across different "
+                "Returning an integer in a function with pointer return type is not portable.\n"
+                "Returning an integer (int/long/etc) in a function with pointer return type is not portable across different "
                 "platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in 64-bit Windows "
-                "and Linux they are of different width. In worst case you end up casting 32-bit integer down to 64-bit pointer. "
+                "and Linux they are of different width. In worst case you end up casting 64-bit integer down to 32-bit pointer. "
                 "The safe way is to always return a pointer.");
 }
