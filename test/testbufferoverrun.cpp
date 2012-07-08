@@ -120,6 +120,7 @@ private:
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);   // FP: struct member. #1576
         TEST_CASE(array_index_for_break);  // FP: for,break
+        TEST_CASE(array_index_for_continue); // for,continue
         TEST_CASE(array_index_for);        // FN: for,if
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
         TEST_CASE(array_index_for_question);	// #2561: for, ?:
@@ -1737,6 +1738,31 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_for_continue() {
+		// #3913
+        check("void f() {\n"
+              "    int a[2];\n"
+              "    for (int i = 0; i < 2; ++i) {\n"
+              "        if (i == 0) {\n"
+              "            continue;\n"
+              "        }\n"
+              "        a[i - 1] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a[2];\n"
+              "    for (int i = 0; i < 2; ++i) {\n"
+              "        if (somecondition) {\n"
+              "            continue;\n"
+              "        }\n"
+              "        a[i - 1] = 0;\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Array 'a[2]' accessed at index -1, which is out of bounds", "", errout.str());
     }
 
     void array_index_for() {

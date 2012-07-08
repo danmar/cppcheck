@@ -224,7 +224,7 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
         end = end->linkAt(2);
     for (; tok != end; tok = tok->next()) {
         // If scanning a "if" block then bailout for "break"
-        if (is_if && tok->str() == "break")
+        if (is_if && (tok->str() == "break" || tok->str() == "continue"))
             return true;
 
         // bailout for "return"
