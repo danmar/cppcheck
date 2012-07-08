@@ -327,7 +327,7 @@ private:
               "    int data[2];\n"
               "    data[ sizeof(data[0]) ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'data[2]' accessed at index 4, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'data[2]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
 
     void sizeof3() {
@@ -349,14 +349,14 @@ private:
               "    str[15] = 0;\n"
               "    str[16] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[16]' accessed at index 16, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[16]' accessed at index 16, which is out of bounds.\n", errout.str());
 
         check("char f()\n"
               "{\n"
               "    char str[16];\n"
               "    return str[16];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[16]' accessed at index 16, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[16]' accessed at index 16, which is out of bounds.\n", errout.str());
 
         // test stack array
         check("int f()\n"
@@ -366,7 +366,7 @@ private:
               "   y = x[ 4 ];\n"
               "   return y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'x[3]' accessed at index 4, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'x[3]' accessed at index 4, which is out of bounds.\n", errout.str());
 
         check("int f()\n"
               "{\n"
@@ -386,7 +386,7 @@ private:
               "    str[15] = 0;\n"
               "    str[16] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[16]' accessed at index 16, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[16]' accessed at index 16, which is out of bounds.\n", errout.str());
     }
 
 
@@ -399,7 +399,7 @@ private:
                   "    for (i = 0; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: val\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n", errout.str());
         }
 
         {
@@ -410,7 +410,7 @@ private:
                   "    for (i = 1; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: val\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n", errout.str());
         }
 
 
@@ -422,7 +422,7 @@ private:
                   "    for (i = a; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: val\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n", errout.str());
         }
 
         {
@@ -454,7 +454,7 @@ private:
                   "        a[i] = 0;\n"
                   "    }\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds: a\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
         }
     }
 
@@ -465,7 +465,7 @@ private:
               "    int i[SIZE];\n"
               "    i[SIZE] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'i[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'i[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
 
@@ -475,7 +475,7 @@ private:
               "    int i[10];\n"
               "    i[ sizeof(i) - 1 ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'i[10]' accessed at index 39, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'i[10]' accessed at index 39, which is out of bounds.\n", errout.str());
     }
 
 
@@ -490,7 +490,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("struct ABC\n"
               "{\n"
@@ -502,7 +502,7 @@ private:
               "    struct ABC abc;\n"
               "    return abc.str[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         // This is not out of bounds because it is a variable length array
         check("struct ABC\n"
@@ -529,7 +529,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         // This is not out of bounds because it is a variable length array
         // and the index is within the memory allocated.
@@ -558,7 +558,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[11] = 0;"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 11, which is out of bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 11, which is out of bounds.\n", "", errout.str());
 
         // This is out of bounds because it is outside the memory allocated.
         check("struct ABC\n"
@@ -571,7 +571,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC) + 10);\n"
               "    x->str[11] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[11]' accessed at index 11, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[11]' accessed at index 11, which is out of bounds.\n", errout.str());
 
         // This is out of bounds because it is outside the memory allocated
         /** @todo this doesn't work because of a bug in sizeof(struct) */
@@ -585,7 +585,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC));\n"
               "    x->str[1] = 0;"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 1, which is out of bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 1, which is out of bounds.\n", "", errout.str());
 
         // This is out of bounds because it is outside the memory allocated
         check("struct ABC\n"
@@ -598,7 +598,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC));\n"
               "    x->str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         // This is out of bounds because it is not a variable array
         check("struct ABC\n"
@@ -611,7 +611,7 @@ private:
               "    struct ABC x;\n"
               "    x.str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         check("struct foo\n"
               "{\n"
@@ -624,7 +624,7 @@ private:
               "    for ( unsigned int i = 0; i < 64; ++i )\n"
               "        f.str[i] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Buffer access out-of-bounds: f.str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Buffer is accessed out of bounds: f.str\n", errout.str());
 
         check("struct AB { char a[NUM]; char b[NUM]; }\n"
               "void f(struct AB *ab) {\n"
@@ -644,7 +644,7 @@ private:
               "{\n"
               "    abc->str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
 
@@ -661,7 +661,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[SIZE] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_9() {
@@ -675,7 +675,7 @@ private:
               "    char str[5];\n"
               "    memclr( str );   // ERROR\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("static void memclr( int i, char *data )\n"
               "{\n"
@@ -687,7 +687,7 @@ private:
               "    char str[5];\n"
               "    memclr( 0, str );   // ERROR\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("static void memclr( int i, char *data )\n"
               "{\n"
@@ -699,7 +699,7 @@ private:
               "    char str[5];\n"
               "    memclr( 10, str );   // ERROR\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds\n",
+        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds.\n",
                            "", errout.str());
 
         // This is not an error
@@ -736,7 +736,7 @@ private:
               "    char buf[10];\n"
               "    a(buf);"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer access out-of-bounds: buf\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
     }
 
 
@@ -757,7 +757,7 @@ private:
               "        abc->str[10] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:13]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
 
@@ -773,7 +773,7 @@ private:
               "{\n"
               "    str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -786,7 +786,7 @@ private:
               "{\n"
               "    return str[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_13() {
@@ -809,7 +809,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i+10] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 19, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 19, which is out of bounds.\n", errout.str());
     }
 
     void array_index_15() {
@@ -819,7 +819,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[10+i] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 19, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 19, which is out of bounds.\n", errout.str());
     }
 
     void array_index_16() {
@@ -829,7 +829,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i+1] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_17() {
@@ -839,7 +839,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i*2] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 18, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index 18, which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -855,7 +855,7 @@ private:
               "    for (int i = 0; i < 12; i+=6)\n"
               "        a[i+6] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[12]' accessed at index 12, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[12]' accessed at index 12, which is out of bounds.\n", errout.str());
     }
 
     void array_index_18() {
@@ -930,7 +930,7 @@ private:
               "  char a[2];\n"
               "  char *end = &(a[3]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2]' accessed at index 3, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2]' accessed at index 3, which is out of bounds.\n", errout.str());
     }
 
     void array_index_20() {
@@ -963,7 +963,7 @@ private:
               "  size_t indices[2];\n"
               "  int b = indices[2];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'indices[2]' accessed at index 2, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'indices[2]' accessed at index 2, which is out of bounds.\n", errout.str());
     }
 
     void array_index_23() {
@@ -972,7 +972,7 @@ private:
               "    char c[10];\n"
               "    c[1<<23]='a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'c[10]' accessed at index 8388608, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'c[10]' accessed at index 8388608, which is out of bounds.\n", errout.str());
     }
 
     void array_index_24() {
@@ -986,66 +986,66 @@ private:
                "    a[-1] = 0;\n"    // negative index
                "    a[" + charMaxPlusOne.str() + "] = 0;\n"   // 128/256 > CHAR_MAX
                "}\n").c_str());
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index "+charMaxPlusOne.str()+", which is out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index "+charMaxPlusOne.str()+", which is out of bounds.\n"
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(signed char n) {\n"
               "    int a[n];\n"     // n <= SCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[128] = 0;\n"   // 128 > SCHAR_MAX
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[128]' accessed at index 128, which is out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[128]' accessed at index 128, which is out of bounds.\n"
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(unsigned char n) {\n"
               "    int a[n];\n"     // n <= UCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[256] = 0;\n"   // 256 > UCHAR_MAX
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' accessed at index 256, which is out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' accessed at index 256, which is out of bounds.\n"
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n"
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(unsigned short n) {\n"
               "    int a[n];\n"     // n <= USHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[65536] = 0;\n" // 65536 > USHRT_MAX
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[65536]' accessed at index 65536, which is out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[65536]' accessed at index 65536, which is out of bounds.\n"
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(signed short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n"
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(int n) {\n"
               "    int a[n];\n"     // n <= INT_MAX
               "    a[-1] = 0;\n"    // negative index
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(unsigned int n) {\n"
               "    int a[n];\n"     // n <= UINT_MAX
               "    a[-1] = 0;\n"    // negative index
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f(signed int n) {\n"
               "    int a[n];\n"     // n <= INT_MAX
               "    a[-1] = 0;\n"    // negative index
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
     }
 
     void array_index_25() {
@@ -1064,7 +1064,7 @@ private:
               "    for (int i = 3; 0 <= i; i--)\n"
               "        a[i] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: a\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1082,7 +1082,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i-1] = a[i];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index -1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_28() {
@@ -1093,7 +1093,7 @@ private:
               "    int *ip = &i[1];\n"
               "    ip[-10] = 1;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array ip[-10] out of bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array ip[-10] out of bounds.\n", "", errout.str());
     }
 
     void array_index_29() {
@@ -1105,7 +1105,7 @@ private:
               "    int *ii = &i[-5];"
               "    ii[10] = 0;"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array ii[10] out of bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array ii[10] out of bounds.\n", "", errout.str());
     }
 
     void array_index_30() {
@@ -1114,7 +1114,7 @@ private:
               "    UINT8 x[2];\n"
               "    x[5] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'x[2]' accessed at index 5, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'x[2]' accessed at index 5, which is out of bounds.\n", errout.str());
     }
 
     void array_index_31() {
@@ -1145,7 +1145,7 @@ private:
               "    struct s1 obj;\n"
               "    x(obj.delay, 123);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj.delay[3]' accessed at index 4, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj.delay[3]' accessed at index 4, which is out of bounds.\n", errout.str());
 
         check("struct s1 {\n"
               "    float a[0];\n"
@@ -1168,7 +1168,7 @@ private:
               "    }\n"
               "    int m_x[1];\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' accessed at index 1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' accessed at index 1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_33() {
@@ -1184,8 +1184,8 @@ private:
               "    y[0][2][0] = 0;\n"
               "    y[0][0][2] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'y[2][2][2]' index y[0][2][0] out of bounds\n"
-                      "[test.cpp:4]: (error) Array 'y[2][2][2]' index y[0][0][2] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'y[2][2][2]' index y[0][2][0] out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'y[2][2][2]' index y[0][0][2] out of bounds.\n", errout.str());
 
         check("struct TEST\n"
               "{\n"
@@ -1204,12 +1204,12 @@ private:
               "    ptest->b[10][2] = 4;\n"
               "    ptest->b[0][19] = 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'test.a[10]' accessed at index 10, which is out of bounds\n"
-                      "[test.cpp:14]: (error) Array 'ptest.a[10]' accessed at index 10, which is out of bounds\n"
-                      "[test.cpp:10]: (error) Array 'test.b[10][5]' index test.b[10][2] out of bounds\n"
-                      "[test.cpp:11]: (error) Array 'test.b[10][5]' index test.b[0][19] out of bounds\n"
-                      "[test.cpp:15]: (error) Array 'ptest.b[10][5]' index ptest.b[10][2] out of bounds\n"
-                      "[test.cpp:16]: (error) Array 'ptest.b[10][5]' index ptest.b[0][19] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'test.a[10]' accessed at index 10, which is out of bounds.\n"
+                      "[test.cpp:14]: (error) Array 'ptest.a[10]' accessed at index 10, which is out of bounds.\n"
+                      "[test.cpp:10]: (error) Array 'test.b[10][5]' index test.b[10][2] out of bounds.\n"
+                      "[test.cpp:11]: (error) Array 'test.b[10][5]' index test.b[0][19] out of bounds.\n"
+                      "[test.cpp:15]: (error) Array 'ptest.b[10][5]' index ptest.b[10][2] out of bounds.\n"
+                      "[test.cpp:16]: (error) Array 'ptest.b[10][5]' index ptest.b[0][19] out of bounds.\n", errout.str());
 
         check("struct TEST\n"
               "{\n"
@@ -1225,10 +1225,10 @@ private:
               "    ptest->a[9][5] = 4;\n"
               "    ptest->a[0][50] = 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'test.a[10][5]' index test.a[9][5] out of bounds\n"
-                      "[test.cpp:9]: (error) Array 'test.a[10][5]' index test.a[0][50] out of bounds\n"
-                      "[test.cpp:12]: (error) Array 'ptest.a[10][5]' index ptest.a[9][5] out of bounds\n"
-                      "[test.cpp:13]: (error) Array 'ptest.a[10][5]' index ptest.a[0][50] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'test.a[10][5]' index test.a[9][5] out of bounds.\n"
+                      "[test.cpp:9]: (error) Array 'test.a[10][5]' index test.a[0][50] out of bounds.\n"
+                      "[test.cpp:12]: (error) Array 'ptest.a[10][5]' index ptest.a[9][5] out of bounds.\n"
+                      "[test.cpp:13]: (error) Array 'ptest.a[10][5]' index ptest.a[0][50] out of bounds.\n", errout.str());
     }
 
     void array_index_35() { // ticket #2889
@@ -1236,14 +1236,14 @@ private:
               "    struct Struct { unsigned m_Var[1]; } s;\n"
               "    s.m_Var[1] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         check("struct Struct { unsigned m_Var[1]; };\n"
               "void f() {\n"
               "    struct Struct s;\n"
               "    s.m_Var[1] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's.m_Var[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         check("struct Struct { unsigned m_Var[1]; };\n"
               "void f() {\n"
@@ -1262,8 +1262,8 @@ private:
               "Fred::Fred(const Fred & rhs) {\n"
               "    m_b[2] = rhs.m_b[2];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_b[2]' accessed at index 2, which is out of bounds\n"
-                      "[test.cpp:7]: (error) Array 'rhs.m_b[2]' accessed at index 2, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_b[2]' accessed at index 2, which is out of bounds.\n"
+                      "[test.cpp:7]: (error) Array 'rhs.m_b[2]' accessed at index 2, which is out of bounds.\n", errout.str());
     }
 
     void array_index_37() {
@@ -1304,7 +1304,7 @@ private:
               "    char a[10];\n"
               "    a[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_40() {
@@ -1337,7 +1337,7 @@ private:
               "    struct Fred { char data[3]; } fred;\n"
               "    fred.data[4] = 0;\n"  // <- error
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'fred.data[3]' accessed at index 4, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'fred.data[3]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
 
     void array_index_42() { // ticket #3569
@@ -1348,7 +1348,7 @@ private:
               "  p[10] = 7;\n"
               "  free(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'p[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'p[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1407,7 +1407,7 @@ private:
               "   y = var[ 0 ].arr[ 3 ];\n"
               "   return y;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var[0].arr[3]' index 3 out of bounds\n","", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var[0].arr[3]' index 3 out of bounds.\n","", errout.str());
 
         check("int f( ) \n"
               "{\n"
@@ -1444,49 +1444,49 @@ private:
               "  char a[2][2];\n"
               "  a[2][1] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[2][1] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[2][1] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2];\n"
               "  a[1][2] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[1][2] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[1][2] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[2][1][1] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[2][1][1] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[2][1][1] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[1][2][1] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][2][1] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][2][1] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2][2];\n"
               "  a[1][2][1][1] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2][2]' index a[1][2][1][1] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2][2]' index a[1][2][1][1] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[1][1][2] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][1][2] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][1][2] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[10][10][10];\n"
               "  a[2*3][4*3][2] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1495,7 +1495,7 @@ private:
               "  char a[ii][ii][ii];\n"
               "  a[i*3][4*ii][ii] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1504,7 +1504,7 @@ private:
               "  char a[ii][ii][ii];\n"
               "  a[i][i][i] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[1][1][1]' index a[2][2][2] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[1][1][1]' index a[2][2][2] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1513,7 +1513,7 @@ private:
               "  char a[ii][ii][ii];\n"
               "  a[i*3][i*3][i] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[6][6][6]' index a[6][6][2] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[6][6][6]' index a[6][6][2] out of bounds.\n", errout.str());
 
         // unknown dim..
         check("void f()\n"
@@ -1559,7 +1559,7 @@ private:
               "  };\n"
               " }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds.\n", "", errout.str());
     }
 
     void array_index_for_in_for() {
@@ -1583,7 +1583,7 @@ private:
               "        data[(i-0)/2] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[8]' accessed at index 17, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[8]' accessed at index 17, which is out of bounds.\n", errout.str());
 
         // #2199 - false negative: array out of bounds in loop when there is calculation
         check("void f()\n"
@@ -1593,7 +1593,7 @@ private:
               "        arr[i + 7] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'arr[5]' accessed at index 11, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'arr[5]' accessed at index 11, which is out of bounds.\n", errout.str());
     }
 
     void array_index_negative1() {
@@ -1603,14 +1603,14 @@ private:
               "    char data[8];\n"
               "    data[-1] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char data[8][4];\n"
               "    data[5][-1] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         // #1614 - negative index is ok for pointers
         check("void foo(char *p)\n"
@@ -1641,7 +1641,7 @@ private:
               "    TEST test;\n"
               "    test.a[-1] = 3;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'test.a[10]' accessed at index -1, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'test.a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_decr() {
@@ -1652,7 +1652,7 @@ private:
               "        data[i] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1670,7 +1670,7 @@ private:
               "        val[i+1] = val[i];\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'val[5]' index -1 out of bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'val[5]' index -1 out of bounds.\n", "", errout.str());
     }
 
 
@@ -1697,7 +1697,7 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
 
         check("void f() {\n"
               "    char data[2];\n"
@@ -1706,7 +1706,7 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
 
         check("void f() {\n"
               "    char data[2];\n"
@@ -1715,7 +1715,7 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
 
         check("void f() {\n"
               "    char data[2];\n"
@@ -1724,7 +1724,7 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
     }
 
     void array_index_for_break() {
@@ -1775,7 +1775,7 @@ private:
               "        a[i] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: a\n", errout.str());
 
         // Ticket #2385 - No false positive
         check("void f() {\n"
@@ -1796,7 +1796,7 @@ private:
               "        a[i] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n", errout.str());
     }
 
     void array_index_for_neq() {
@@ -1807,7 +1807,7 @@ private:
               "        a[i] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n", errout.str());
     }
 
     void array_index_for_question() {
@@ -1860,7 +1860,7 @@ private:
               "    char x[2];\n"
               "    f1(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' accessed at index 4, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
 
     void array_index_string_literal() {
@@ -1870,14 +1870,14 @@ private:
               "    int i = 10;\n"
               "    bar(str[i]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[4]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[4]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    const char *str = \"abc\";\n"
               "    bar(str[4]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1891,7 +1891,7 @@ private:
               "    const char *str = \"a\tc\";\n"
               "    bar(str[4]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds.\n", errout.str());
 
     }
 
@@ -1901,7 +1901,7 @@ private:
               "    char str[3];\n"
               "    strcpy(str, \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f(int fd)\n"
               "{\n"
@@ -1915,7 +1915,7 @@ private:
               "    char str[3];\n"
               "    read(fd, str, 4);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f(int fd)\n"
               "{\n"
@@ -1929,7 +1929,7 @@ private:
               "    char str[3];\n"
               "    write(fd, str, 4);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1950,7 +1950,7 @@ private:
               "    char str[3];\n"
               "    fgets(str, 4, stdin);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         // fread
         check("void f(FILE* fd)\n"
@@ -1958,7 +1958,7 @@ private:
               "char str[3];\n"
               "fread(str,sizeof(char),4,fd);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         // fread
         check("void f(FILE* fd)\n"
@@ -1967,7 +1967,7 @@ private:
               "char str[i];\n"
               "fread(str,sizeof(char),i+1,fd);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
@@ -1982,7 +1982,7 @@ private:
               "char str[3];\n"
               "fwrite(str,sizeof(char),4,fd);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
@@ -1990,7 +1990,7 @@ private:
               "char str[i];\n"
               "fwrite(str,sizeof(char),i+1,fd);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
@@ -2004,28 +2004,28 @@ private:
               "char str[3];\n"
               "recv(s, str, 4, 0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "char str[3];\n"
               "recvfrom(s, str, 4, 0, 0x0, 0x0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "char str[3];\n"
               "send(s, str, 4, 0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "char str[3];\n"
               "sendto(s, str, 4, 0, 0x0, 0x0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
     }
 
 
@@ -2039,7 +2039,7 @@ private:
               "{\n"
               "    strcpy( abc->str, \"abcdef\" );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer is accessed out of bounds: abc.str\n", errout.str());
 
         check("struct ABC\n"
               "{\n"
@@ -2051,7 +2051,7 @@ private:
               "    struct ABC abc;\n"
               "    strcpy( abc.str, \"abcdef\" );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Buffer is accessed out of bounds: abc.str\n", errout.str());
 
         check("struct ABC\n"
               "{\n"
@@ -2062,7 +2062,7 @@ private:
               "{\n"
               "    strcpy( abc.str, \"abcdef\" );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer is accessed out of bounds: abc.str\n", errout.str());
 
         check("static void f()\n"
               "{\n"
@@ -2072,7 +2072,7 @@ private:
               "    } abc;\n"
               "    strcpy( abc.str, \"abcdef\" );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: abc.str\n", errout.str());
 
         check("static void f()\n"
               "{\n"
@@ -2084,7 +2084,7 @@ private:
               "    strcpy( abc->str, \"abcdef\" );\n"
               "    free(abc);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer is accessed out of bounds: abc.str\n", errout.str());
     }
 
 
@@ -2097,7 +2097,7 @@ private:
               "    for (i = 0; i <= 10; ++i)\n"
               "        a[i] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: a\n", errout.str());
     }
 
 
@@ -2108,7 +2108,7 @@ private:
               "    for (int i = 0; i < 8; ++i)\n"
               "        p[i] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: p\n", errout.str());
 
         // No false positive
         check("void foo(int x, int y)\n"
@@ -2129,7 +2129,7 @@ private:
               "  char s[3];\n"
               "  f1(s,3);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Buffer access out-of-bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Buffer is accessed out of bounds.\n", "", errout.str());
 
         check("void f1(char *s,int size)\n"
               "{\n"
@@ -2160,14 +2160,14 @@ private:
               "   strcat(n, \"abc\");\n"
               "   strcat(n, \"def\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: n\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: n\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "   char n[5];\n"
               "   strcat(strcat(n, \"abc\"), \"def\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: n\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: n\n", errout.str());
     }
 
     void buffer_overrun_7() {
@@ -2276,7 +2276,7 @@ private:
               "  sprintf(a, \"%s\", \"b\");\n"
               "  delete a;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_13() {
@@ -2285,13 +2285,13 @@ private:
               "  char a[10];\n"
               "  memset(a+5, 0, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
 
         check("void f() {\n"
               "  char a[10];\n"
               "  memmove(a, a+5, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
     }
 
     void buffer_overrun_14() {
@@ -2300,7 +2300,7 @@ private:
               "  strcpy(b, a);\n"
               "  return b;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void f(char *a) {\n"
               "  char *b = new char[strlen(a) + 1];\n"
@@ -2330,7 +2330,7 @@ private:
               "  strcpy(b, a);\n"
               "  return b;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a));\n"
@@ -2339,7 +2339,7 @@ private:
               "  }\n"
               "  return b;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a) + 1);\n"
@@ -2353,7 +2353,7 @@ private:
               "  strcpy(b, a);\n"
               "  return b;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void f(char *a, char *c) {\n"
               "  char *b = realloc(c, strlen(a) + 1);\n"
@@ -2367,7 +2367,7 @@ private:
               "  sprintf(b, \"%s\", a);\n"
               "  return b;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_15() { // ticket #1787
@@ -2379,7 +2379,7 @@ private:
               "{\n"
               "    sprintf(val, \"drive_%d_partition_%d_size\", i, ii) ;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_16() {
@@ -2409,7 +2409,7 @@ private:
               "    char t[8];\n"
               "    sprintf(t, \"%s\", \"foo     bar\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_18() { // ticket #2576
@@ -2435,7 +2435,7 @@ private:
               "        b[i] = b[i+1];\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'b[7]' accessed at index 7, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'b[7]' accessed at index 7, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_19() { // #2597 - class member with unknown type
@@ -2464,7 +2464,7 @@ private:
               "    for (size_t i = 0; i <= 4; i++)\n"
               "        dst[i] = src[i];\n"
               "} } }\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: dst\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: dst\n", errout.str());
     }
 
     void buffer_overrun_22() { // ticket #3124
@@ -2488,7 +2488,7 @@ private:
               "    memset(a.b, 0, 6 * 6);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: a.b\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: a.b\n", errout.str());
     }
 
     void buffer_overrun_23() { // ticket #3153
@@ -2498,7 +2498,7 @@ private:
               "    memcpy(&dest, source + sizeof(double), sizeof(dest));\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void foo() {\n"
               "    double dest = 23.0;\n"
@@ -2543,7 +2543,7 @@ private:
               "    char a[10];\n"
               "    f1(a);"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Array 'a[10]' accessed at index 100, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Array 'a[10]' accessed at index 100, which is out of bounds.\n", errout.str());
     }
 
     void possible_buffer_overrun_1() { // #3035
@@ -2613,7 +2613,7 @@ private:
               "    char a[10];\n"
               "    char *p = a + 100;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: pointer arithmetic result does not point into or just past the end of the array\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the array.\n", errout.str());
     }
 
     void pointer_out_of_bounds_2() {
@@ -2622,7 +2622,7 @@ private:
               "    p += 100;\n"
               "    free(p);"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: pointer arithmetic result does not point into or just past the end of the buffer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the buffer.\n", errout.str());
 
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -2630,7 +2630,7 @@ private:
               "    *p = 0;\n"
               "    free(p);"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) p is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) p is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -2657,7 +2657,7 @@ private:
               "    char str[3];\n"
               "    sprintf(str, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -2665,7 +2665,7 @@ private:
               "    sprintf(c, \"%s\", \"/usr/LongLongLongLongUserName/bin/LongLongApplicationName\");\n"
               "    delete [] c;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void sprintf2() {
@@ -2675,7 +2675,7 @@ private:
               "    char str[5];\n"
               "    sprintf(str, \"%d: %s\", getnumber(), \"abcde\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void sprintf3() {
@@ -2684,7 +2684,7 @@ private:
               "    char str[3];\n"
               "    sprintf(str, \"test\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -2720,7 +2720,7 @@ private:
               "    char buf[3];\n"
               "    sprintf(buf, \"%s\", condition ? \"11\" : \"222\");\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", "", errout.str());
     }
 
     void sprintf7() {
@@ -2730,7 +2730,7 @@ private:
               "  struct Foo x;\n"
               "  sprintf(x.a, \"aa\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
@@ -2739,7 +2739,7 @@ private:
               "  sprintf(x.a, \"aa\");\n"
               "  free(x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
@@ -2785,7 +2785,7 @@ private:
               "    char str[5];\n"
               "    snprintf(str, 10, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) snprintf size is out of bounds: Supplied size 10 is larger than actual size of 5\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) snprintf size is out of bounds: Supplied size 10 is larger than actual size 5.\n", errout.str());
     }
 
     void snprintf2() {
@@ -2822,7 +2822,7 @@ private:
               "  struct Foo x;\n"
               "  snprintf(x.a, 2, \"aa\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size of 1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size 1.\n", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
@@ -2831,7 +2831,7 @@ private:
               "  snprintf(x.a, 2, \"aa\");\n"
               "  free(x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size of 1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size 1.\n", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
@@ -2888,7 +2888,7 @@ private:
               "  struct Foo x;\n"
               "  strncat(x.a, a, 5);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: x.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: x.a\n", errout.str());
     }
 
 
@@ -2900,7 +2900,7 @@ private:
               "  strcat(x.a, \"aa\");\n"
               "  strcat(x.a, \"aa\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void strcat2() {
@@ -2933,28 +2933,28 @@ private:
               "    S s;\n"
               "    memset(s.a, 0, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: s.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: s.a\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char str[5];\n"
               "    memset(str, 0, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char a[5], b[50];\n"
               "    memcpy(a, b, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char a[5], b[50];\n"
               "    memmove(a, b, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n", errout.str());
 
         // Ticket #909
         check("void f()\n"
@@ -2963,7 +2963,7 @@ private:
               "    char str[] = \"Example string\";\n"
               "    pch = (char*) memchr (str, 'p', 16);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", errout.str());
     }
 
     // ticket #2121 - buffer access out of bounds when using uint32_t
@@ -3010,7 +3010,7 @@ private:
               "{\n"
               "    str[3] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[3]' accessed at index 3, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[3]' accessed at index 3, which is out of bounds.\n", errout.str());
     }
 
     void alloc1() {
@@ -3019,7 +3019,7 @@ private:
               "    char *s = new char[10];\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         // ticket #1670 - false negative when using return
         check("char f()\n"
@@ -3027,7 +3027,7 @@ private:
               "    char *s = new int[10];\n"
               "    return s[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("struct Fred { char c[10]; };\n"
               "char f()\n"
@@ -3035,7 +3035,7 @@ private:
               "    Fred *f = new Fred;\n"
               "    return f->c[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'f.c[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'f.c[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -3057,7 +3057,7 @@ private:
               "buf[9] = 0;\n"
               "delete [] buf;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[9]' accessed at index 9, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[9]' accessed at index 9, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "  int *tab4 = malloc(20 * sizeof(int));\n"
@@ -3086,14 +3086,14 @@ private:
               "    char *s = (char *)malloc(10);\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         // ticket #842
         check("void f() {\n"
               "    int *tab4 = malloc(20 * sizeof(int));\n"
               "    tab4[20] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
 
         // ticket #1134
         check("void f() {\n"
@@ -3101,7 +3101,7 @@ private:
               "    x = malloc(10 * sizeof(int));\n"
               "    x[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     // statically allocated buffer
@@ -3111,14 +3111,14 @@ private:
               "    const char *s = \"123\";\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[4]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[4]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    char *s; s = \"\";\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[1]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[1]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void foo() {\n"
               "    const char *s = \"\";\n"
@@ -3135,7 +3135,7 @@ private:
               "    char *s = (char *)alloca(10);\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void malloc_memset() {
@@ -3143,7 +3143,7 @@ private:
               "    char *p = malloc(10);\n"
               "    memset(p,0,100);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void memset1() {
@@ -3152,7 +3152,7 @@ private:
               "    char s[10];\n"
               "    memset(s, 5, '*');\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The size argument is given as a char constant\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The size argument is given as a char constant.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -3277,7 +3277,7 @@ private:
               " strcpy(a,\"hello\");\n"
               " strncpy(c,a,sizeof(c)+1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3291,7 +3291,7 @@ private:
               "    char c[6];\n"
               "    strncpy(c,\"hello!\",sizeof(c)+1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
         check("struct AB { char a[10]; };\n"
               "void foo(AB *ab)\n"
@@ -3454,7 +3454,7 @@ private:
                 "        i = 1000;\n"
                 "    buf[i] = 0;\n"
                 "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' accessed at index 1000, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' accessed at index 1000, which is out of bounds.\n", errout.str());
 
         epcheck("void f(int a)\n"
                 "{\n"
@@ -3464,7 +3464,7 @@ private:
                 "        i = 1000;\n"
                 "    buf[i][0] = 0;\n"
                 "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' accessed at index 1000, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' accessed at index 1000, which is out of bounds.\n", errout.str());
     }
 
     void executionPaths2() {
@@ -3522,7 +3522,7 @@ private:
                             "    a[i] = 0;\n"
                             "}";
         epcheck(code);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 1000, which is out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 1000, which is out of bounds.\n", errout.str());
     }
 
     void cmdLineArgs1() {
@@ -3532,7 +3532,7 @@ private:
               "    strcpy(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char* argv[])\n"
               "{\n"
@@ -3540,7 +3540,7 @@ private:
               "    strcat(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char* argv[])\n"
               "{\n"
@@ -3548,7 +3548,7 @@ private:
               "    sprintf(prog, \"%s\", argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3556,7 +3556,7 @@ private:
               "    strcpy(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3564,7 +3564,7 @@ private:
               "    strcat(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3572,7 +3572,7 @@ private:
               "    sprintf(prog, \"%s\", argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char **options)\n"
               "{\n"
@@ -3580,7 +3580,7 @@ private:
               "    strcpy(prog, options[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char **options)\n"
               "{\n"
@@ -3588,7 +3588,7 @@ private:
               "    strcat(prog, options[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char **options)\n"
               "{\n"
@@ -3596,7 +3596,7 @@ private:
               "    sprintf(prog, \"%s\", *options);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3657,7 +3657,7 @@ private:
               "    A::X x;\n"
               "    x.buf[10] = 0;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.buf[10]' index 10 out of bounds\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.buf[10]' index 10 out of bounds.\n", "", errout.str());
     }
 
     void getErrorMessages() {
@@ -3680,13 +3680,13 @@ private:
               "    if (s[i] == 'x' && i < y) {\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Array index i is used before limits check\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
 
         check("void f(const char s[]) {\n"
               "    for (i = 0; s[i] == 'x' && i < y; ++i) {\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Array index i is used before limits check\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
     }
 
     void bufferNotZeroTerminated() {
@@ -3744,7 +3744,7 @@ private:
               "    ssize_t len = readlink(path, buf, 255);\n"
               "    buf[len] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) readlink() buf size is out of bounds: Supplied size 255 is larger than actual size of 10\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) readlink() buf size is out of bounds: Supplied size 255 is larger than actual size 10.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3792,7 +3792,7 @@ private:
               "    ssize_t len = readlinkat(dirf, path, buf, 255);\n"
               "    buf[len] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) readlinkat() buf size is out of bounds: Supplied size 255 is larger than actual size of 10\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) readlinkat() buf size is out of bounds: Supplied size 255 is larger than actual size 10.\n", errout.str());
 
         check("void f()\n"
               "{\n"

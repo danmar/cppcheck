@@ -54,7 +54,7 @@ static void makeArrayIndexOutOfBoundsError(std::ostream& oss, const CheckBufferO
         for (unsigned int i = 0; i < index.size(); ++i)
             oss << "[" << index[i] << "]";
     }
-    oss << " out of bounds";
+    oss << " out of bounds.";
 }
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
@@ -72,12 +72,13 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token 
 
 static std::string bufferOverrunMessage(std::string varnames)
 {
-    while (varnames.find(" ") != std::string::npos)
-        varnames.erase(varnames.find(" "), 1);
+    varnames.erase(std::remove(varnames.begin(), varnames.end(), ' '), varnames.end());
 
-    std::string errmsg("Buffer access out-of-bounds");
+    std::string errmsg("Buffer is accessed out of bounds");
     if (!varnames.empty())
         errmsg += ": " + varnames;
+    else
+        errmsg += ".";
 
     return errmsg;
 }
@@ -98,18 +99,20 @@ void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std:
     if (cat)
         reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
                     "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +").\n"
+                    "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +"). "
                     "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
     else
         reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
                     "Possible buffer overflow if strlen(" + src + ") is larger than or equal to sizeof(" + dst + ").\n"
+                    "Possible buffer overflow if strlen(" + src + ") is larger than or equal to sizeof(" + dst + "). "
                     "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
 }
 
 void CheckBufferOverrun::possibleReadlinkBufferOverrunError(const Token* tok, const std::string &funcname, const std::string &varname)
 {
     const std::string errmsg = funcname + "() might return the full size of '" + varname + "'. Lower the supplied size by one.\n" +
-                               funcname + "() might return the full size of '" + varname + "'. Lower the supplied size by one. "
-                               "If a " + varname + "[len] = '\\0'; statement follows, it will overrun the buffer.";
+                               funcname + "() might return the full size of '" + varname + "'. "
+                               "If a " + varname + "[len] = '\\0'; statement follows, it will overrun the buffer. Lower the supplied size by one.";
 
     reportError(tok, Severity::warning, "possibleReadlinkBufferOverrun", errmsg, true);
 }
@@ -131,21 +134,22 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
 
     oss << what << " is out of bounds";
     if (show_size_info)
-        oss << ": Supplied size " << supplied_size << " is larger than actual size of " << actual_size;
+        oss << ": Supplied size " << supplied_size << " is larger than actual size " << actual_size;
+    oss << '.';
     reportError(tok, Severity::error, "outOfBounds", oss.str());
 }
 
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const std::string &object)
 {
-    reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: pointer arithmetic result does not point into or just past the end of the " + object + "\n"
-                "Undefined behaviour: Using pointer arithmetic so that the result does not point into or just past the end of the same object. Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
+    reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the " + object + ".\n"
+                "Undefined behaviour: Using pointer arithmetic so that the result does not point into or just past the end of the " + object + ". Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
 }
 
 void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 {
     if (_settings && !_settings->isEnabled("style"))
         return;
-    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant");
+    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant.");
 }
 
 
@@ -153,16 +157,14 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
 {
     reportError(tok, Severity::warning, "terminateStrncpy",
                 "The buffer '" + varname + "' may not be zero-terminated after the call to strncpy().\n"
-                "The use of strncpy() usually indicates that the programmer wants to ensure "
-                "the buffer is zero-terminated after the call. However if the (buffer) size given for "
-                "the strncpy() call matches the actual buffer size strncpy() does not add the "
-                "zero at the end of the buffer. This may cause bugs later in the code if "
-                "the code assumes buffer is zero-terminated.");
+                "If the source string's size fits or exceeds the given size, strncpy() does not add a "
+                "zero at the end of the buffer. This causes bugs later in the code if the code "
+                "assumes buffer is zero-terminated.");
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
 {
-    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long cmd-line args");
+    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long cmd-line args.");
 }
 
 void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
@@ -1833,7 +1835,7 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
 void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint index)
 {
     std::ostringstream ostr;
-    ostr << "Array index " << index << " is out of bounds";
+    ostr << "Array index " << index << " is out of bounds.";
     reportError(tok, Severity::error, "negativeIndex", ostr.str());
 }
 
@@ -2001,7 +2003,7 @@ private:
             return;
         const CheckBufferOverrun::ArrayInfo& ai = it1->second;
 
-        // Check if varid2 variable has a value that is out-of-bounds
+        // Check if varid2 variable has a value that is out of bounds
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it) {
             c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
@@ -2107,8 +2109,8 @@ void CheckBufferOverrun::arrayIndexThenCheck()
 void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::string &indexName)
 {
     reportError(tok, Severity::style, "arrayIndexThenCheck",
-                "Array index " + indexName + " is used before limits check\n"
-                "Defensive programming: The variable " + indexName + " is used as array index and then there is a check that it is within limits. This can "
-                "mean that the array might be accessed out-of-bounds. Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the "
-                "array will not be accessed when the index is out of limits.");
+                "Array index '" + indexName + "' is used before limits check.\n"
+                "Defensive programming: The variable '" + indexName + "' is used as array index and then there is a check that it is within limits. This can "
+                "mean that the array might be accessed out of bounds. Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the "
+                "array will not be accessed if the index is out of limits.");
 }
