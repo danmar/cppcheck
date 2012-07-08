@@ -4874,7 +4874,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
         if (Token::Match(tok2, "%type% *| %var% , %type% *| %var%"))
             continue;
 
-        if (Token::Match(tok2, "struct|class %type%")) {
+        if (Token::Match(tok2, "struct|union|class %type%")) {
             tok2 = tok2->next();
             ++typelen;
         }

@@ -4726,6 +4726,10 @@ private:
                              "     };\n"
                              "}";
         ASSERT_EQUALS("void f ( ) {\n\nint x ;\nlong & y = x ;\n\n}", tokenizeAndStringify(code2));
+
+        // ticket #3927
+        const char code3[] = "union xy *p = NULL;";
+        ASSERT_EQUALS("union xy * p ; p = 0 ;", tokenizeAndStringify(code3));
     }
 
     void vardecl_par() {
