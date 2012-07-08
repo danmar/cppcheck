@@ -70,7 +70,7 @@ public:
     /** xml output of errors */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
-    void reportProgress(const std::string &filename, const char stage[], const size_t value);
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
 
     /**
      * Output information messages.
@@ -85,7 +85,7 @@ public:
      * @param sizedone The sum of sizes of the files checked.
      * @param sizetotal The total sizes of the files.
      */
-    static void reportStatus(size_t fileindex, size_t filecount, size_t sizedone, size_t sizetotal);
+    static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
 
 protected:
 
@@ -121,7 +121,7 @@ private:
     /**
      * Filename associated with size of file
      */
-    std::map<std::string, size_t> _files;
+    std::map<std::string, std::size_t> _files;
 
     /**
      * Report progress time

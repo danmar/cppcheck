@@ -118,7 +118,7 @@ static BOOL MyFileExists(const std::string& path)
 
 #endif // defined(UNICODE)
 
-void FileLister::recursiveAddFiles(std::map<std::string, size_t> &files, const std::string &path)
+void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path)
 {
     // oss is the search string passed into FindFirst and FindNext.
     // bdir is the base directory which is used to form pathnames.
@@ -161,7 +161,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, size_t> &files, const s
             continue;
 
 #if defined(UNICODE)
-        size_t length = wcslen(ffd.cFileName);
+        std::size_t length = wcslen(ffd.cFileName);
         char * ansiFfd = new char[length + 1];
         TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, length + 1);
 #else // defined(UNICODE)
@@ -182,7 +182,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, size_t> &files, const s
                 const std::string nativename = Path::fromNativeSeparators(fname.str());
                 // Limitation: file sizes are assumed to fit in a 'size_t'
 #ifdef _WIN64
-                files[nativename] = (static_cast<size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
+                files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
 #else
                 files[nativename] = ffd.nFileSizeLow;
 #endif
@@ -246,7 +246,7 @@ std::string FileLister::getAbsolutePath(const std::string& path)
 }
 
 void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
-                                    std::map<std::string, size_t> &files,
+                                    std::map<std::string, std::size_t> &files,
                                     const std::string &path)
 {
     std::ostringstream oss;
@@ -279,7 +279,7 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
                 struct stat sb;
                 if (stat(absolute_path.c_str(), &sb) == 0) {
                     // Limitation: file sizes are assumed to fit in a 'size_t'
-                    files[filename] = static_cast<size_t>(sb.st_size);
+                    files[filename] = static_cast<std::size_t>(sb.st_size);
                 } else
                     files[filename] = 0;
             }
@@ -294,7 +294,7 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
 }
 
 
-void FileLister::recursiveAddFiles(std::map<std::string, size_t> &files, const std::string &path)
+void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path)
 {
     std::set<std::string> seen_paths;
     recursiveAddFiles2(seen_paths, files, path);

@@ -392,7 +392,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
         // Remove comments..
         if (str.compare(i, 2, "//", 0, 2) == 0) {
-            size_t commentStart = i + 2;
+            std::size_t commentStart = i + 2;
             i = str.find('\n', i);
             if (i == std::string::npos)
                 break;
@@ -417,7 +417,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             previous = '\n';
             ++lineno;
         } else if (str.compare(i, 2, "/*", 0, 2) == 0) {
-            size_t commentStart = i + 2;
+            std::size_t commentStart = i + 2;
             unsigned char chPrev = 0;
             ++i;
             while (i < str.length() && (chPrev != '*' || ch != '/')) {
@@ -454,7 +454,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             if (!suppressionIDs.empty()) {
                 if (_settings != NULL) {
                     // Add the suppressions.
-                    for (size_t j(0); j < suppressionIDs.size(); ++j) {
+                    for (std::size_t j = 0; j < suppressionIDs.size(); ++j) {
                         const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
                         if (!errmsg.empty()) {
                             writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
@@ -482,7 +482,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 if (!suppressionIDs.empty()) {
                     if (_settings != NULL) {
                         // Add the suppressions.
-                        for (size_t j(0); j < suppressionIDs.size(); ++j) {
+                        for (std::size_t j = 0; j < suppressionIDs.size(); ++j) {
                             const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
                             if (!errmsg.empty()) {
                                 writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
@@ -1160,7 +1160,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     }
 
     // Remove defined constants from ifdef configurations..
-    size_t count = 0;
+    std::size_t count = 0;
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it) {
         if (_errorLogger)
             _errorLogger->reportProgress(filename, "Preprocessing (get configurations 2)", (100 * count++) / ret.size());
@@ -2655,7 +2655,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             // * when pos goes beyond a limit the limit needs to be
             //   deleted because it is unsafe to insert/delete text
             //   after the limit otherwise
-            std::map<const PreprocessorMacro *, size_t> limits;
+            std::map<const PreprocessorMacro *, std::size_t> limits;
 
             // pos is the current position in line
             std::string::size_type pos = 0;
@@ -2717,7 +2717,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     // check that pos is within allowed limits for this
                     // macro
                     {
-                        const std::map<const PreprocessorMacro *, size_t>::const_iterator it2 = limits.find(macro);
+                        const std::map<const PreprocessorMacro *, std::size_t>::const_iterator it2 = limits.find(macro);
                         if (it2 != limits.end() && pos <= line.length() - it2->second)
                             break;
                     }
@@ -2777,7 +2777,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         ++pos2;
 
                     // Remove old limits
-                    for (std::map<const PreprocessorMacro *, size_t>::iterator iter = limits.begin();
+                    for (std::map<const PreprocessorMacro *, std::size_t>::iterator iter = limits.begin();
                          iter != limits.end();) {
                         if ((line.length() - pos1) < iter->second) {
                             // We have gone past this limit, so just delete it

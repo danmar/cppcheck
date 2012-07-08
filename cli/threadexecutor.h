@@ -39,7 +39,7 @@ class Settings;
  */
 class ThreadExecutor : public ErrorLogger {
 public:
-    ThreadExecutor(const std::map<std::string, size_t> &files, Settings &settings, ErrorLogger &_errorLogger);
+    ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &_errorLogger);
     virtual ~ThreadExecutor();
     unsigned int check();
     virtual void reportOut(const std::string &outmsg);
@@ -56,7 +56,7 @@ public:
     void addFileContent(const std::string &path, const std::string &content);
 
 private:
-    const std::map<std::string, size_t> &_files;
+    const std::map<std::string, std::size_t> &_files;
     Settings &_settings;
     ErrorLogger &_errorLogger;
     unsigned int _fileCount;

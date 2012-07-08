@@ -30,9 +30,9 @@ class TestFixture : public ErrorLogger {
 private:
     static std::ostringstream errmsg;
     static unsigned int countTests;
-    static size_t fails_counter;
-    static size_t todos_counter;
-    static size_t succeeded_todos_counter;
+    static std::size_t fails_counter;
+    static std::size_t todos_counter;
+    static std::size_t succeeded_todos_counter;
 
 protected:
     std::string classname;
@@ -65,7 +65,7 @@ public:
     virtual ~TestFixture() { }
 
     static void printTests();
-    static size_t runTests(const options& args);
+    static std::size_t runTests(const options& args);
 };
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) { if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }

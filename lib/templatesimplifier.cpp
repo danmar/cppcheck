@@ -531,7 +531,7 @@ void TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(const std::li
     }
 }
 
-bool TemplateSimplifier::simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, size_t numberOfArguments, const char patternAfter[])
+bool TemplateSimplifier::simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[])
 {
     if (!Token::simpleMatch(instance, (name + " <").c_str()))
         return false;

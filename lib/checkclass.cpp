@@ -197,13 +197,13 @@ void CheckClass::initVar(const std::string &varname, const Scope *scope, std::ve
 
 void CheckClass::assignAllVar(std::vector<Usage> &usage) const
 {
-    for (size_t i = 0; i < usage.size(); ++i)
+    for (std::size_t i = 0; i < usage.size(); ++i)
         usage[i].assign = true;
 }
 
 void CheckClass::clearAllVar(std::vector<Usage> &usage) const
 {
-    for (size_t i = 0; i < usage.size(); ++i) {
+    for (std::size_t i = 0; i < usage.size(); ++i) {
         usage[i].assign = false;
         usage[i].init = false;
     }
@@ -212,7 +212,7 @@ void CheckClass::clearAllVar(std::vector<Usage> &usage) const
 bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 {
     // Iterate through each base class...
-    for (size_t i = 0; i < scope->derivedFrom.size(); ++i) {
+    for (std::size_t i = 0; i < scope->derivedFrom.size(); ++i) {
         const Scope *derivedFrom = scope->derivedFrom[i].scope;
 
         // Check if base class exists in database
@@ -716,7 +716,7 @@ void CheckClass::noMemset()
 void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type)
 {
     // recursively check all parent classes
-    for (size_t i = 0; i < type->derivedFrom.size(); i++) {
+    for (std::size_t i = 0; i < type->derivedFrom.size(); i++) {
         if (type->derivedFrom[i].scope)
             checkMemsetType(start, tok, type->derivedFrom[i].scope);
     }

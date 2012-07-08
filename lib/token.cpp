@@ -490,7 +490,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
         next = pattern + strlen(pattern);
 
     while (*current) {
-        size_t length = static_cast<size_t>(next - current);
+        std::size_t length = static_cast<std::size_t>(next - current);
 
         if (!tok || length != tok->_str.length() || strncmp(current, tok->_str.c_str(), length))
             return false;
@@ -797,7 +797,7 @@ std::size_t Token::getStrLength(const Token *tok)
 {
     assert(tok != NULL);
 
-    size_t len = 0;
+    std::size_t len = 0;
     const std::string strValue(tok->strValue());
     const char *str = strValue.c_str();
 

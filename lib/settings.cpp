@@ -146,7 +146,7 @@ bool Settings::platform(PlatformType type)
         sizeof_float = sizeof(float);
         sizeof_double = sizeof(double);
         sizeof_long_double = sizeof(long double);
-        sizeof_size_t = sizeof(size_t);
+        sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
         return true;
     case Win32W:

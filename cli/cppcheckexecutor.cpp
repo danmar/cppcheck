@@ -124,7 +124,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         const bool caseSensitive = true;
 #endif
         PathMatch matcher(parser.GetIgnoredPaths(), caseSensitive);
-        for (std::map<std::string, size_t>::iterator i = _files.begin(); i != _files.end();) {
+        for (std::map<std::string, std::size_t>::iterator i = _files.begin(); i != _files.end();) {
             if (matcher.Match(i->first))
                 _files.erase(i++);
             else
@@ -167,14 +167,14 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (settings._jobs == 1) {
         // Single process
 
-        size_t totalfilesize = 0;
-        for (std::map<std::string, size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+        std::size_t totalfilesize = 0;
+        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
             totalfilesize += i->second;
         }
 
-        size_t processedsize = 0;
+        std::size_t processedsize = 0;
         unsigned int c = 0;
-        for (std::map<std::string, size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
             returnValue += cppCheck.check(i->first);
             processedsize += i->second;
             if (!settings._errorsOnly)
@@ -237,7 +237,7 @@ void CppCheckExecutor::reportOut(const std::string &outmsg)
     std::cout << outmsg << std::endl;
 }
 
-void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const size_t value)
+void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
 {
     (void)filename;
 
@@ -270,7 +270,7 @@ void CppCheckExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
     reportErr(msg);
 }
 
-void CppCheckExecutor::reportStatus(size_t fileindex, size_t filecount, size_t sizedone, size_t sizetotal)
+void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal)
 {
     if (filecount > 1) {
         std::ostringstream oss;

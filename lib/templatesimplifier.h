@@ -103,7 +103,7 @@ public:
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, size_t numberOfArguments, const char patternAfter[]);
+    static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation

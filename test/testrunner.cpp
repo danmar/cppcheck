@@ -24,7 +24,7 @@ int main(int argc, const char *argv[])
 {
     options args(argc, argv);
 
-    size_t ret = TestFixture::runTests(args);
+    std::size_t ret = TestFixture::runTests(args);
 
     return (ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }

@@ -37,7 +37,7 @@ public:
      * @param files output map that associates the size of each file with its name
      * @param path root path
      */
-    static void recursiveAddFiles(std::map<std::string, size_t> &files, const std::string &path);
+    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path);
 
     /**
      * @brief Is given path a directory?
@@ -55,7 +55,7 @@ public:
     static std::string getAbsolutePath(const std::string& path);
 
     static void recursiveAddFiles2(std::set<std::string> &seen_paths,
-                                   std::map<std::string, size_t> &files,
+                                   std::map<std::string, std::size_t> &files,
                                    const std::string &path);
 #endif
 };

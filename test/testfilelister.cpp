@@ -74,11 +74,11 @@ private:
 
     void recursiveAddFiles() {
         // Recursively add add files..
-        std::map<std::string, size_t> files;
+        std::map<std::string, std::size_t> files;
         FileLister::recursiveAddFiles(files, ".");
 
         // In case there are leading "./"..
-        for (std::map<std::string, size_t>::iterator i = files.begin(); i != files.end();) {
+        for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {
             if (i->first.compare(0,2,"./") == 0) {
                 files[i->first.substr(2)] = i->second;
                 files.erase(i++);

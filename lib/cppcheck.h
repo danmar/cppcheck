@@ -104,7 +104,7 @@ public:
      */
     static const char * extraVersion();
 
-    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, size_t sizedone, size_t sizetotal);
+    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, std::size_t sizedone, std::size_t sizetotal);
 
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.
@@ -173,7 +173,7 @@ private:
     std::string _fileContent;
     std::set<std::string> _dependencies;
 
-    void reportProgress(const std::string &filename, const char stage[], const size_t value);
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
 
     /**
      * Output information messages.

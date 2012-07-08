@@ -75,7 +75,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
 
 void CppCheck::replaceAll(std::string& code, const std::string &from, const std::string &to)
 {
-    size_t pos = 0;
+    std::size_t pos = 0;
     while ((pos = code.find(from, pos)) != std::string::npos) {
         code.replace(pos, from.length(), to);
         pos += to.length();
@@ -96,7 +96,7 @@ bool CppCheck::findError(std::string code, const char FileName[])
     for (;;) {
 
         // Try to remove included files from the source
-        size_t found=previousCode.rfind("\n#endfile");
+        std::size_t found = previousCode.rfind("\n#endfile");
         if (found == std::string::npos) {
             // No modifications can be done to the code
         } else {
@@ -506,7 +506,7 @@ void CppCheck::reportOut(const std::string &outmsg)
     _errorLogger.reportOut(outmsg);
 }
 
-void CppCheck::reportProgress(const std::string &filename, const char stage[], const size_t value)
+void CppCheck::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
 {
     _errorLogger.reportProgress(filename, stage, value);
 }
@@ -516,7 +516,7 @@ void CppCheck::reportInfo(const ErrorLogger::ErrorMessage &msg)
     _errorLogger.reportInfo(msg);
 }
 
-void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, size_t /*sizedone*/, size_t /*sizetotal*/)
+void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
 {
 
 }

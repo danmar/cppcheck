@@ -58,9 +58,9 @@ public:
 std::ostringstream TestFixture::errmsg;
 unsigned int       TestFixture::countTests;
 
-size_t TestFixture::fails_counter = 0;
-size_t TestFixture::todos_counter = 0;
-size_t TestFixture::succeeded_todos_counter = 0;
+std::size_t TestFixture::fails_counter = 0;
+std::size_t TestFixture::todos_counter = 0;
+std::size_t TestFixture::succeeded_todos_counter = 0;
 
 TestFixture::TestFixture(const std::string &_name)
     :classname(_name)
@@ -229,7 +229,7 @@ void TestFixture::processOptions(const options& args)
     gcc_style_errors = args.gcc_style_errors();
 }
 
-size_t TestFixture::runTests(const options& args)
+std::size_t TestFixture::runTests(const options& args)
 {
     std::string classname(args.which_test());
     std::string testname("");

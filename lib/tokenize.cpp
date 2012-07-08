@@ -3191,7 +3191,7 @@ void Tokenizer::simplifySizeof()
 
         else if (Token::Match(tok, "sizeof ( * %var% )") || Token::Match(tok, "sizeof ( %var% [ %num% ] )")) {
             // Some default value..
-            size_t sz = 0;
+            std::size_t sz = 0;
 
             unsigned int varid = tok->tokAt((tok->strAt(2) == "*") ? 3 : 2)->varId();
             if (varid != 0) {
@@ -7771,8 +7771,8 @@ void Tokenizer::simplifyComma()
 
         // find token where return ends and also count commas
         if (inReturn) {
-            size_t commaCounter = 0;
-            size_t indentlevel = 0;
+            std::size_t commaCounter = 0;
+            std::size_t indentlevel = 0;
 
             for (Token *tok2 = startFrom; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";") {
@@ -9059,7 +9059,7 @@ void Tokenizer::printUnknownTypes()
         ss << unknowns.size() << " unknown types:" << std::endl;
 
         std::set<std::string>::const_iterator it;
-        size_t count = 1;
+        std::size_t count = 1;
 
         for (it = unknowns.begin(); it != unknowns.end(); ++it, ++count)
             ss << count << ": " << *it << std::endl;

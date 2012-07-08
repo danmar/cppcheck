@@ -573,11 +573,11 @@ public:
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
     }
 
-    const Variable *getVariableFromVarId(size_t varId) const {
+    const Variable *getVariableFromVarId(std::size_t varId) const {
         return _variableList[varId];
     }
 
-    size_t getVariableListSize() const {
+    std::size_t getVariableListSize() const {
         return _variableList.size();
     }
 

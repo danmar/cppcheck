@@ -743,11 +743,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     }
 
     /* set all unknown array dimensions that are set by a variable to the maximum size of that variable type */
-    for (size_t i = 1; i <= _tokenizer->varIdCount(); i++) {
+    for (std::size_t i = 1; i <= _tokenizer->varIdCount(); i++) {
         // check each array variable
         if (_variableList[i] && _variableList[i]->isArray()) {
             // check each array dimension
-            for (size_t j = 0; j < _variableList[i]->dimensions().size(); j++) {
+            for (std::size_t j = 0; j < _variableList[i]->dimensions().size(); j++) {
                 // check for a single token dimension that is a variable
                 if (_variableList[i]->dimensions()[j].start &&
                     (_variableList[i]->dimensions()[j].start == _variableList[i]->dimensions()[j].end) &&
@@ -1362,7 +1362,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
         std::cout << "none" << std::endl;
 
     std::cout << indent << "_dimensions:";
-    for (size_t i = 0; i < var->dimensions().size(); i++) {
+    for (std::size_t i = 0; i < var->dimensions().size(); i++) {
         std::cout << " " << var->dimension(i);
     }
     std::cout << std::endl;
@@ -1463,8 +1463,8 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << "    derivedFrom[" << scope->derivedFrom.size() << "] = (";
 
-        size_t count = scope->derivedFrom.size();
-        for (size_t i = 0; i < scope->derivedFrom.size(); ++i) {
+        std::size_t count = scope->derivedFrom.size();
+        for (std::size_t i = 0; i < scope->derivedFrom.size(); ++i) {
             if (scope->derivedFrom[i].isVirtual)
                 std::cout << "Virtual ";
 
@@ -1538,7 +1538,7 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << std::endl;
     }
 
-    for (size_t i = 0; i < _variableList.size(); i++) {
+    for (std::size_t i = 0; i < _variableList.size(); i++) {
         std::cout << "_variableList[" << i << "] = " << _variableList[i] << std::endl;
     }
 }

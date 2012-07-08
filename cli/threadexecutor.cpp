@@ -34,7 +34,7 @@
 #include <sstream>
 #endif
 
-ThreadExecutor::ThreadExecutor(const std::map<std::string, size_t> &files, Settings &settings, ErrorLogger &errorLogger)
+ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : _files(files), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 #ifdef THREADING_MODEL_FORK
@@ -125,16 +125,16 @@ unsigned int ThreadExecutor::check()
     _fileCount = 0;
     unsigned int result = 0;
 
-    size_t totalfilesize = 0;
-    for (std::map<std::string, size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+    std::size_t totalfilesize = 0;
+    for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
         totalfilesize += i->second;
     }
 
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
-    size_t processedsize = 0;
-    std::map<std::string, size_t>::const_iterator i = _files.begin();
+    std::size_t processedsize = 0;
+    std::map<std::string, std::size_t>::const_iterator i = _files.begin();
     for (;;) {
         // Start a new child
         if (i != _files.end() && rpipes.size() < _settings._jobs) {
@@ -207,7 +207,7 @@ unsigned int ThreadExecutor::check()
                             if (p != pipeFile.end()) {
                                 std::string name = p->second;
                                 pipeFile.erase(p);
-                                std::map<std::string, size_t>::const_iterator fs = _files.find(name);
+                                std::map<std::string, std::size_t>::const_iterator fs = _files.find(name);
                                 if (fs != _files.end()) {
                                     size = fs->second;
                                 }

@@ -132,7 +132,7 @@ private:
         errout.str("");
         output.str("");
 
-        std::map<std::string, size_t> files;
+        std::map<std::string, std::size_t> files;
         files["test.cpp"] = 1;
 
         Settings settings;
@@ -143,7 +143,7 @@ private:
             ASSERT_EQUALS("", r);
         }
         ThreadExecutor executor(files, settings, *this);
-        for (std::map<std::string, size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
+        for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
             executor.addFileContent(i->first, code);
 
         executor.check();

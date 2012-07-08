@@ -972,12 +972,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // Detect few strcat() calls
         const std::string strcatPattern = varid > 0 ? std::string("strcat ( %varid% , %str% ) ;") : ("strcat ( " + varnames + " , %str% ) ;");
         if (Token::Match(tok, strcatPattern.c_str(), varid)) {
-            size_t charactersAppend = 0;
+            std::size_t charactersAppend = 0;
             const Token *tok2 = tok;
 
             while (tok2 && Token::Match(tok2, strcatPattern.c_str(), varid)) {
                 charactersAppend += Token::getStrLength(tok2->tokAt(4 + varc));
-                if (charactersAppend >= static_cast<size_t>(total_size)) {
+                if (charactersAppend >= static_cast<std::size_t>(total_size)) {
                     bufferOverrunError(tok2);
                     break;
                 }
@@ -1882,7 +1882,7 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer)
     : _varname(var->name()), _varid(var->varId())
 {
-    for (size_t i = 0; i < var->dimensions().size(); i++)
+    for (std::size_t i = 0; i < var->dimensions().size(); i++)
         _num.push_back(var->dimension(i));
     if (var->typeEndToken()->str() == "*")
         _element_size = tokenizer->sizeOfType(var->typeEndToken());
