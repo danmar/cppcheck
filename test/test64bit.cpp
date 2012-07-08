@@ -73,14 +73,14 @@ private:
               "    int a = p;\n"
               "    return a + 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
 
         check("int foo(int p[])\n"
               "{\n"
               "    int a = p;\n"
               "    return a + 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
 
         check("int foo(int p[])\n"
               "{\n"
@@ -94,7 +94,7 @@ private:
               "    int *p = x;\n"
               "    *p = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer (int/long/etc) to a pointer is not portable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer to a pointer is not portable.\n", errout.str());
     }
 
     void structmember() {
@@ -102,7 +102,7 @@ private:
               "void f(struct Foo *foo) {\n"
               "    int i = foo->p;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an address value to the integer (int/long/etc) type is not portable\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", "", errout.str());
     }
 
     void ptrcompare() {
@@ -144,7 +144,7 @@ private:
         check("void* foo(int i) {\n"
               "    return i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an integer in a function that returns a pointer is not portable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an integer in a function with pointer return type is not portable.\n", errout.str());
 
         check("void* foo(int* i) {\n"
               "    return i;\n"
