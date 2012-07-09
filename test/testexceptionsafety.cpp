@@ -68,7 +68,7 @@ private:
               "        throw e;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Exception thrown in destructor.\n", errout.str());
 
         check("class x {\n"
               "    ~x();\n"
@@ -76,14 +76,14 @@ private:
               "x::~x() {\n"
               "    throw e;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Throwing exception in destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Exception thrown in destructor.\n", errout.str());
 
         check("x::~x() {\n"
               "    throw e;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Throwing exception in destructor\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Exception thrown in destructor.\n", "", errout.str());
 
-        // #3858 - throwing exception in try block in destructor
+        // #3858 - throwing exception in try block in destructor.
         check("class x {\n"
               "    ~x() {\n"
               "        try {\n"
@@ -103,7 +103,7 @@ private:
               "        throw 123;\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout.str());
 
         check("void f() {\n"
               "    static int* p = foo;\n"
@@ -112,7 +112,7 @@ private:
               "        throw 1;\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout.str());
     }
 
     void deallocThrow2() {
@@ -147,7 +147,7 @@ private:
               "    delete p;\n"
               "    throw 1;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout.str());
     }
 
     void rethrowCopy1() {
@@ -161,7 +161,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
     }
 
     void rethrowCopy2() {
@@ -175,7 +175,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
     }
 
     void rethrowCopy3() {
@@ -187,7 +187,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
     }
 
     void rethrowCopy4() {
@@ -219,7 +219,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
 
         check("void f() {\n"
               "    try {\n"

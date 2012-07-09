@@ -188,7 +188,7 @@ private:
                        "    void goo() {}"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
@@ -222,14 +222,14 @@ private:
                        "public:\n"
                        "    void operator=(const B&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n"
-                      "[test.cpp:9]: (style) 'B::operator=' should return 'B &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'.\n"
+                      "[test.cpp:9]: (style) 'B::operator=' should return 'B &'.\n", errout.str());
 
         checkOpertorEq("struct A\n"
                        "{\n"
                        "    void operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
     }
 
     void operatorEq2() {
@@ -238,28 +238,28 @@ private:
                        "public:\n"
                        "    void * operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    A * operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    const A & operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
                        "    B & operator=(const A&);\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
     }
 
     void operatorEq3() { // ticket #3051
@@ -321,7 +321,7 @@ private:
             "public:\n"
             "    A & operator=(const A &a) { return a; }\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class A\n"
@@ -348,7 +348,7 @@ private:
             "    A & operator=(const A &);\n"
             "};\n"
             "A & A::operator=(const A &a) { return a; }\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class A\n"
@@ -357,7 +357,7 @@ private:
             "    A & operator=(const A &a);\n"
             "};\n"
             "A & A::operator=(const A &a) { return a; }\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class A\n"
@@ -381,7 +381,7 @@ private:
             "        B & operator=(const B &b) { return b; }\n"
             "    };\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class A\n"
@@ -407,7 +407,7 @@ private:
             "    };\n"
             "};\n"
             "A::B & A::B::operator=(const A::B &b) { return b; }\n");
-        ASSERT_EQUALS("[test.cpp:10]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
     }
 
     void operatorEqRetRefThis2() {
@@ -417,7 +417,7 @@ private:
             "{\n"
             "  szp &operator =(int *other) {};\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class szp\n"
@@ -425,7 +425,7 @@ private:
             "  szp &operator =(int *other);\n"
             "};\n"
             "szp &szp::operator =(int *other) {}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
     }
 
     void operatorEqRetRefThis3() {
@@ -494,7 +494,7 @@ private:
             "public:\n"
             "    A & operator=(const A &a) { }\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class A {\n"
@@ -502,7 +502,7 @@ private:
             "    A & operator=(const A &a);\n"
             "};\n"
             "A & A :: operator=(const A &a) { }");
-        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
     }
 
     void operatorEqRetRefThis6() { // ticket #2478 (segmentation fault)
@@ -590,7 +590,7 @@ private:
             "        return *this;\n"
             "    }\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // this test has an assignment test but doesn't need it
         checkOpertorEqToSelf(
@@ -645,7 +645,7 @@ private:
             "    s = strdup(a.s);\n"
             "    return *this;\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // ticket #1224
         checkOpertorEqToSelf(
@@ -731,7 +731,7 @@ private:
             "        }\n"
             "    };\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // this test has an assignment test but doesn't need it
         checkOpertorEqToSelf(
@@ -802,7 +802,7 @@ private:
             "    s = strdup(b.s);\n"
             "    return *this;\n"
             " }\n");
-        ASSERT_EQUALS("[test.cpp:11]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
     }
 
     void operatorEqToSelf3() {
@@ -1236,7 +1236,7 @@ private:
             "private:\n"
             "    char * data;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1253,7 +1253,7 @@ private:
             "    strcpy(data, a.data);\n"
             "    return *this;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1269,7 +1269,7 @@ private:
             "private:\n"
             "    char * data;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1286,7 +1286,7 @@ private:
             "    *data = *a.data;\n"
             "    return *this;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
     }
 
     void operatorEqToSelf7() {
@@ -1383,13 +1383,13 @@ private:
                                "class Derived : public Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : protected Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : private Base { public: ~Derived() { (void)11; } };"
@@ -1411,19 +1411,19 @@ private:
                                "class Derived : public Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : protected Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor4() {
@@ -1466,7 +1466,7 @@ private:
                                "class Derived : public Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
@@ -1580,7 +1580,7 @@ private:
                                "public:\n"
                                "    ~B() { int a; }\n"
                                "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class Base which is inherited by class B does not have a virtual destructor\n",
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'B' does not have a virtual destructor.\n",
                            "", errout.str());
     }
 
@@ -1602,7 +1602,7 @@ private:
                                "};\n"
                                "\n"
                                "AA<double> *p = new B; delete p;");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Class AA<double> which is inherited by class B does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Class 'AA<double>' which is inherited by class 'B' does not have a virtual destructor.\n", errout.str());
     }
 
     void checkNoConstructor(const char code[]) {
@@ -1728,7 +1728,7 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(Fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -1739,7 +1739,7 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(Fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -1760,7 +1760,7 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -1772,7 +1772,7 @@ private:
                       "    Pebbles pebbles;\n"
                       "    memset(&pebbles, 0, sizeof(pebbles));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -1783,7 +1783,7 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual method\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual method.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -1794,7 +1794,7 @@ private:
                       "    static Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual method\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual method.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -1809,7 +1809,7 @@ private:
                       "    Pebbles pebbles;\n"
                       "    memset(&pebbles, 0, sizeof(pebbles));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual method\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual method.\n", errout.str());
 
         // Fred not defined in scope
         checkNoMemset("namespace n1 {\n"
@@ -1837,7 +1837,7 @@ private:
                       "    n1::Fred fred;\n"
                       "    memset(&fred, 0, sizeof(n1::Fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
         // Fred with namespace qualifier
         checkNoMemset("namespace n1 {\n"
@@ -1851,7 +1851,7 @@ private:
                       "    n1::Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
     }
 
     void memsetOnStruct() {
@@ -1903,7 +1903,7 @@ private:
                       " struct A fail;\n"
                       " memset(&fail, 0, sizeof(struct A));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("struct Fred\n"
                       "{\n"
@@ -1914,7 +1914,7 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("struct Stringy {\n"
                       "    std::string inner;\n"
@@ -1927,7 +1927,7 @@ private:
                       "    memset(&foo, 0, sizeof(Foo));\n"
                       "}\n");
 
-        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
     }
 
     void memsetVector() {
@@ -1939,7 +1939,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'.\n", errout.str());
 
         checkNoMemset("struct A\n"
                       "{ std::vector<int> ints; };\n"
@@ -1949,7 +1949,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n", errout.str());
 
         checkNoMemset("struct A\n"
                       "{ std::vector<int> ints; };\n"
@@ -1959,7 +1959,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(struct A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n", errout.str());
 
         checkNoMemset("struct A\n"
                       "{ std::vector<int> ints; };\n"
@@ -1969,7 +1969,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(a));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n", errout.str());
 
         checkNoMemset("class A\n"
                       "{ std::vector< std::vector<int> > ints; };\n"
@@ -1979,7 +1979,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class that contains a 'std::vector'.\n", errout.str());
 
         checkNoMemset("struct A\n"
                       "{ std::vector< std::vector<int> > ints; };\n"
@@ -1989,7 +1989,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n", errout.str());
 
         checkNoMemset("struct A\n"
                       "{ std::vector< std::vector<int> > ints; };\n"
@@ -1999,7 +1999,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(a));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n", errout.str());
 
         checkNoMemset("struct A\n"
                       "{ std::vector<int *> ints; };\n"
@@ -2009,7 +2009,7 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n", errout.str());
     }
 
 
@@ -2033,20 +2033,20 @@ private:
 
     void this_subtraction() {
         checkThisSubtraction("; this-x ;");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;");
         ASSERT_EQUALS("", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;\n"
                              "this-x ;\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction\n"
-                      "[test.cpp:3]: (warning) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n"
+                      "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
     void checkConst(const char code[], const Settings *s = 0, bool inconclusive = true) {
@@ -5099,8 +5099,8 @@ private:
                                   "public:\n"
                                   "    Fred() : c(0), b(0), a(0) { }\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong order in the initializer list.\n"
-                      "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong order in the initializer list.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
+                      "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
     }
 
     void checkInitializationListUsage(const char code[]) {

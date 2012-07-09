@@ -1741,7 +1741,7 @@ private:
     }
 
     void array_index_for_continue() {
-		// #3913
+        // #3913
         check("void f() {\n"
               "    int a[2];\n"
               "    for (int i = 0; i < 2; ++i) {\n"
@@ -3284,7 +3284,7 @@ private:
               " char c[6];\n"
               " strncpy(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not null-terminated after the call to strncpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3323,7 +3323,7 @@ private:
               "    strncpy(baz, bar, sizeof(baz));\n"
               "    bar[99] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
 
         // Test with invalid code that there is no segfault
         check("char baz[100];\n"
@@ -3338,7 +3338,7 @@ private:
               "    foo(baz);\n"
               "    foo(baz);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void terminateStrncpy2() {
@@ -3349,7 +3349,7 @@ private:
               "    bar[99] = 0;\n"
               "    return baz;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void terminateStrncpy3() {
@@ -3364,7 +3364,7 @@ private:
               "void bar(char *p) {\n"
               "    strncpy(p, str, 100);\n"
               "}\n", false);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'str' may not be zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'str' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void recursive_long_time() {
@@ -3532,7 +3532,7 @@ private:
               "    strcpy(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char* argv[])\n"
               "{\n"
@@ -3540,7 +3540,7 @@ private:
               "    strcat(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char* argv[])\n"
               "{\n"
@@ -3548,7 +3548,7 @@ private:
               "    sprintf(prog, \"%s\", argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3556,7 +3556,7 @@ private:
               "    strcpy(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3564,7 +3564,7 @@ private:
               "    strcat(prog, argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3572,7 +3572,7 @@ private:
               "    sprintf(prog, \"%s\", argv[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **options)\n"
               "{\n"
@@ -3580,7 +3580,7 @@ private:
               "    strcpy(prog, options[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **options)\n"
               "{\n"
@@ -3588,7 +3588,7 @@ private:
               "    strcat(prog, options[0]);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **options)\n"
               "{\n"
@@ -3596,7 +3596,7 @@ private:
               "    sprintf(prog, \"%s\", *options);\n"
               "}\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
               "{\n"
@@ -3695,21 +3695,21 @@ private:
               "    char c[6];\n"
               "    strncpy(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not null-terminated after the call to strncpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char c[6];\n"
               "    memcpy(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to memcpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not null-terminated after the call to memcpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char c[6];\n"
               "    memmove(c,\"hello!\",sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not zero-terminated after the call to memmove().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not null-terminated after the call to memmove().\n", errout.str());
     }
 
     void readlink() {
@@ -3719,7 +3719,7 @@ private:
               "    ssize_t len = readlink(path, buf, sizeof(buf)-1);\n"
               "    printf(\"%s\n\", buf);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", errout.str());
 
         // C only: Primitive pointer simplification
         check("void f()\n"
@@ -3728,7 +3728,7 @@ private:
               "    ssize_t len = readlink(path, &buf[0], sizeof(buf)-1);\n"
               "    printf(\"%s\n\", buf);\n"
               "}\n", true, "test.c");
-        ASSERT_EQUALS("[test.c:4]: (warning, inconclusive) The buffer 'buf' is not zero-terminated after the call to readlink().\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -3774,7 +3774,7 @@ private:
               "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
               "    printf(\"%s\n\", buf);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) The buffer 'buf' is not zero-terminated after the call to readlinkat().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlinkat().\n", errout.str());
 
         check("void f()\n"
               "{\n"

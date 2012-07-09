@@ -142,7 +142,7 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const std::string &object)
 {
     reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the " + object + ".\n"
-                "Undefined behaviour: Using pointer arithmetic so that the result does not point into or just past the end of the " + object + ". Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
+                "Undefined behaviour: The result of this pointer arithmetic does not point into or just one element past the end of the " + object + ". Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
 }
 
 void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
@@ -156,22 +156,22 @@ void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::warning, "terminateStrncpy",
-                "The buffer '" + varname + "' may not be zero-terminated after the call to strncpy().\n"
+                "The buffer '" + varname + "' may not be null-terminated after the call to strncpy().\n"
                 "If the source string's size fits or exceeds the given size, strncpy() does not add a "
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
-                "assumes buffer is zero-terminated.");
+                "assumes buffer is null-terminated.");
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
 {
-    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long cmd-line args.");
+    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long command line arguments.");
 }
 
 void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
 {
-    const std::string errmsg = "The buffer '" + varname + "' is not zero-terminated after the call to " + function + "().\n"
-                               "The buffer '" + varname + "' is not zero-terminated after the call to " + function + "(). "
-                               "This will cause bugs later in the code if the code assumes the buffer is zero-terminated.";
+    const std::string errmsg = "The buffer '" + varname + "' is not null-terminated after the call to " + function + "().\n"
+                               "The buffer '" + varname + "' is not null-terminated after the call to " + function + "(). "
+                               "This will cause bugs later in the code if the code assumes the buffer is null-terminated.";
 
     reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, true);
 }
@@ -2110,7 +2110,8 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
 {
     reportError(tok, Severity::style, "arrayIndexThenCheck",
                 "Array index '" + indexName + "' is used before limits check.\n"
-                "Defensive programming: The variable '" + indexName + "' is used as array index and then there is a check that it is within limits. This can "
-                "mean that the array might be accessed out of bounds. Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the "
-                "array will not be accessed if the index is out of limits.");
+                "Defensive programming: The variable '" + indexName + "' is used as an array index before it "
+                "is check that is within limits. This can mean that the array might be accessed out of bounds. "
+                "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
+                "not be accessed if the index is out of limits.");
 }

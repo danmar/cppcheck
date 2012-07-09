@@ -343,7 +343,7 @@ private:
               "    void operator=(const Fred &fred) { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='.\n", errout.str());
     }
 
     void initvar_operator_eq3() {
@@ -372,7 +372,7 @@ private:
               "        return *this\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='.\n", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -387,7 +387,7 @@ private:
               "        return *this\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='.\n", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -402,7 +402,7 @@ private:
               "        return *this\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='.\n", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -812,7 +812,7 @@ private:
               "    const A& operator=(const A&){return *this;}\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:12]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
-                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='\n", errout.str());
+                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -823,7 +823,7 @@ private:
               "    const A& operator=(const A&){return *this;}\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
-                      "[test.cpp:7]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='\n", errout.str());
+                      "[test.cpp:7]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
     }
 
     void initvar_nocopy2() { // ticket #2484
@@ -857,7 +857,7 @@ private:
               "    const A& operator=(const A&){return *this;}\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:12]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
-                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='\n", errout.str());
+                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
     }
 
     void initvar_destructor() {
@@ -887,7 +887,7 @@ private:
               "\n"
               "void Fred::operator=(const Fred &f)\n"
               "{ }", true);
-        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='.\n", errout.str());
     }
 
     void uninitVar1() {
@@ -1045,7 +1045,7 @@ private:
               "    }\n"
               "    return *this;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='.\n", errout.str());
     }
 
     void uninitVar9() { // ticket #1730
@@ -1504,7 +1504,7 @@ private:
               "Fred & Fred::clone(const Fred & other) {\n"
               "    return *this;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::x' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::x' is not assigned a value in 'Fred::operator='.\n", errout.str());
     }
 
     void uninitVarArray1() {
@@ -2325,7 +2325,7 @@ private:
               "    }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
-                      "[test.cpp:5]: (warning) Member variable 'A::a' is not assigned a value in 'A::operator='\n", errout.str());
+                      "[test.cpp:5]: (warning) Member variable 'A::a' is not assigned a value in 'A::operator='.\n", errout.str());
     }
 
     void uninitVarPointer() { // #3801
@@ -2375,7 +2375,7 @@ private:
               "    A* const a;\n"
               "    B& operator=(const B& r) { }\n"
               "};");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning) Member variable 'B::a' is not assigned a value in 'B::operator='\n", errout.str()); // #3804
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning) Member variable 'B::a' is not assigned a value in 'B::operator='.\n", errout.str()); // #3804
 
         check("struct B {\n"
               "    const int a;\n"

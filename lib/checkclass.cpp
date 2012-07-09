@@ -481,8 +481,9 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
                 "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
                 "' does not have a constructor.\n"
                 "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
-                " 'does not have a constructor but it has attributes. "
-                "The attributes are not initialized which may cause bugs or undefined behavior.");
+                "' does not have a constructor although it has private member variables. "
+                "Member variables of builtin types are left uninitialized when the class is "
+                "instanciated. That may cause bugs or undefined behavior.");
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
@@ -492,7 +493,7 @@ void CheckClass::uninitVarError(const Token *tok, const std::string &classname, 
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
+    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator='.");
 }
 
 //---------------------------------------------------------------------------
@@ -657,7 +658,7 @@ void CheckClass::privateFunctions()
 
 void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "unusedPrivateFunction", "Unused private function '" + classname + "::" + funcname + "'");
+    reportError(tok, Severity::style, "unusedPrivateFunction", "Unused private function: '" + classname + "::" + funcname + "'");
 }
 
 //---------------------------------------------------------------------------
@@ -749,7 +750,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname);
+    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".");
 }
 
 //---------------------------------------------------------------------------
@@ -790,7 +791,7 @@ void CheckClass::operatorEq()
 
 void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportError(tok, Severity::style, "operatorEq", "\'" + className + "::operator=' should return \'" + className + " &\'");
+    reportError(tok, Severity::style, "operatorEq", "'" + className + "::operator=' should return '" + className + " &'.");
 }
 
 //---------------------------------------------------------------------------
@@ -880,7 +881,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 
 void CheckClass::operatorEqRetRefThisError(const Token *tok)
 {
-    reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to self");
+    reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to 'this' instance.");
 }
 
 //---------------------------------------------------------------------------
@@ -1003,7 +1004,10 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
 
 void CheckClass::operatorEqToSelfError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "operatorEqToSelf", "'operator=' should check for assignment to self");
+    reportError(tok, Severity::warning, "operatorEqToSelf",
+                "'operator=' should check for assignment to self to avoid problems with dynamic memory.\n"
+                "'operator=' should check for assignment to self to ensure that each block of dynamically "
+                "allocated memory is owned and managed by only one instance of the class.");
 }
 
 //---------------------------------------------------------------------------
@@ -1125,7 +1129,11 @@ void CheckClass::virtualDestructor()
 
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived)
 {
-    reportError(tok, Severity::error, "virtualDestructor", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor");
+    reportError(tok, Severity::error, "virtualDestructor", "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor.\n"
+                "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor. "
+                "If you destroy instances of the derived class by deleting a pointer that points to the base class, only "
+                "the destructor of the base class is executed. Thus, dynamic memory that is managed by the derived class "
+                "could leak. This can be avoided by adding a virtual destructor to the base class.");
 }
 
 //---------------------------------------------------------------------------
@@ -1152,7 +1160,7 @@ void CheckClass::thisSubtraction()
 
 void CheckClass::thisSubtractionError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "thisSubtraction", "Suspicious pointer subtraction");
+    reportError(tok, Severity::warning, "thisSubtraction", "Suspicious pointer subtraction. Did you intend to write '->'?");
 }
 
 //---------------------------------------------------------------------------
@@ -1540,26 +1548,21 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "functionConst",
-                "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
-                "The member function '" + classname + "::" + funcname + "' can be made a const "
-                "function. Making this function const function should not cause compiler errors. "
-                "Even though the function can be made const function technically it may not make "
-                "sense conceptually. Think about your design and task of the function first - is "
-                "it a function that must not change object internal state?", true);
+    checkConstError2(tok, 0, classname, funcname);
 }
 
 void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname)
 {
     std::list<const Token *> toks;
     toks.push_back(tok1);
-    toks.push_back(tok2);
+    if (tok2)
+        toks.push_back(tok2);
     reportError(toks, Severity::style, "functionConst",
                 "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
                 "The member function '" + classname + "::" + funcname + "' can be made a const "
-                "function. Making this function const function should not cause compiler errors. "
+                "function. Making this function 'const' should not cause compiler errors. "
                 "Even though the function can be made const function technically it may not make "
-                "sense conceptually. Think about your design and task of the function first - is "
+                "sense conceptually. Think about your design and the task of the function first - is "
                 "it a function that must not change object internal state?", true);
 }
 
@@ -1644,8 +1647,10 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
     toks.push_back(tok2);
     reportError(toks, Severity::style, "initializerList",
                 "Member variable '" + classname + "::" +
-                varname + "' is in the wrong order in the initializer list.\n"
-                "Members are initialized in the order they are declared, not the "
+                varname + "' is in the wrong place in the initializer list.\n"
+                "Member variable '" + classname + "::" +
+                varname + "' is in the wrong place in the initializer list. "
+                "Members are initialized in the order they are declared, not in the "
                 "order they are in the initializer list.  Keeping the initializer list "
                 "in the same order that the members were declared prevents order dependent "
                 "initialization errors.", true);
