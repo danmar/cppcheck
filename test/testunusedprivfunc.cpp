@@ -86,7 +86,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Check for unused private functions..
+        // Check for unused private function:s..
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.privateFunctions();
     }
@@ -108,7 +108,7 @@ private:
               "unsigned int Fred::f()\n"
               "{ }\n");
 
-        ASSERT_EQUALS("[test.cpp:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Unused private function: 'Fred::f'\n", errout.str());
 
         check("#file \"p.h\"\n"
               "class Fred\n"
@@ -126,7 +126,7 @@ private:
               "unsigned int Fred::f()\n"
               "{ }\n");
 
-        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+        ASSERT_EQUALS("[p.h:4]: (style) Unused private function: 'Fred::f'\n", errout.str());
 
         check("#file \"p.h\"\n"
               "class Fred\n"
@@ -142,7 +142,7 @@ private:
               "{\n"
               "}\n"
               "\n");
-        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+        ASSERT_EQUALS("[p.h:4]: (style) Unused private function: 'Fred::f'\n", errout.str());
 
         // Don't warn about include files which implementation we don't see
         check("#file \"p.h\"\n"
@@ -253,7 +253,7 @@ private:
               "Fred::Fred()\n"
               "{}\n");
 
-        ASSERT_EQUALS("[test.cpp:6]: (style) Unused private function 'Fred::get'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Unused private function: 'Fred::get'\n", errout.str());
     }
 
 
@@ -423,7 +423,7 @@ private:
               "    void foo() {}\n" // Skip for overrides of virtual functions of base
               "    void bar() {}\n" // Don't skip if no function is overriden
               "};");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Unused private function 'derived::bar'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (style) Unused private function: 'derived::bar'\n", errout.str());
 
         check("class Base {\n"
               "private:\n"
@@ -470,7 +470,7 @@ private:
               "    friend Bar;\n"
               "    void f() { }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Unused private function 'Foo::f'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Unused private function: 'Foo::f'\n", errout.str());
     }
 
     void borland1() {
@@ -543,7 +543,7 @@ private:
               "    void startListening() {\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function 'Fred::startListening'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function: 'Fred::startListening'\n", errout.str());
     }
 
     void testDoesNotIdentifyMethodAsFirstFunctionArgument() {
