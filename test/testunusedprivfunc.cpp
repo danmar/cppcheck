@@ -86,7 +86,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        // Check for unused private function:s..
+        // Check for unused private functions..
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.privateFunctions();
     }
