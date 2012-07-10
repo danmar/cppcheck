@@ -268,6 +268,8 @@ private:
         TEST_CASE(undef9);
 
         TEST_CASE(macroChar);
+
+        TEST_CASE(validateCfg);
     }
 
 
@@ -3532,6 +3534,16 @@ private:
         ASSERT_EQUALS("\n" + std::string(char(1),1U) + "1\n", OurPreprocessor::expandMacros(filedata,NULL));
         OurPreprocessor::macroChar = '$';
     }
+
+    void validateCfg() {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        ASSERT_EQUALS(false, preprocessor.validateCfg("int x=X;", "X"));
+        ASSERT_EQUALS(false, preprocessor.validateCfg("X=1;", "X"));
+        ASSERT_EQUALS(true, preprocessor.validateCfg("int x=X;", "Y"));
+    }
+
 };
 
 REGISTER_TEST(TestPreprocessor)

@@ -94,8 +94,12 @@ public:
 
     /**
      * Get preprocessed code for a given configuration
+     * @param filedata file data including #if, #define, etc
+     * @param cfg configuration to read out
+     * @param filename name of source file
+     * @param validate true => perform validation that empty configuration macros are not used in the code
      */
-    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
+    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const bool validate = false);
 
     /**
      * simplify condition
@@ -110,6 +114,16 @@ public:
      * @param processedFile The data to be processed
      */
     static void preprocessWhitespaces(std::string &processedFile);
+
+    /**
+     * make sure empty configuration macros are not used in code. the given code must be a single configuration
+     * @param code The input code
+     * @param cfg configuration
+     * @return true => configuration is valid
+     */
+    bool validateCfg(const std::string &code, const std::string &cfg);
+    void validateCfgError(const std::string &cfg);
+
 protected:
 
     /**

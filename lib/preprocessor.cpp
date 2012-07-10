@@ -1510,7 +1510,7 @@ static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
 }
 
 
-std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
+std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const bool validate)
 {
     // For the error report
     unsigned int lineno = 0;
@@ -1703,6 +1703,10 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         }
 
         ret << line << "\n";
+    }
+
+    if (validate && !validateCfg(ret.str(), cfg)) {
+        return "";
     }
 
     return expandMacros(ret.str(), filename, cfg, _errorLogger);
@@ -2552,6 +2556,53 @@ static bool getlines(std::istream &istr, std::string &line)
     return true;
 }
 
+bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
+{
+    // fill up "macros" with empty configuration macros
+    std::set<std::string> macros;
+    for (std::string::size_type pos = 0; pos < cfg.size(); ++pos) {
+        const std::string::size_type pos2 = cfg.find_first_of(";=", pos);
+        if (pos2 == std::string::npos) {
+            macros.insert(cfg.substr(pos));
+            break;
+        }
+        if (cfg[pos2] == ';')
+            macros.insert(cfg.substr(pos, pos2-pos));
+        pos = cfg.find(";", pos2);
+        if (pos != std::string::npos)
+            ++pos;
+    }
+
+    // check if any empty macros are used in code
+    for (std::set<std::string>::const_iterator it = macros.begin(); it != macros.end(); ++it) {
+        const std::string &macro = *it;
+        std::string::size_type pos;
+        for (pos = code.find(macro); pos != std::string::npos; pos = code.find(macro,pos)) {
+            if (pos > 0 && (std::isalnum(code[pos-1U]) || code[pos-1U] == '_'))
+                continue;
+            pos += macro.size();
+            if (pos < code.size() && (std::isalnum(code[pos]) || code[pos] == '_'))
+                continue;
+            // macro is used in code, return false
+            if (_settings->isEnabled("information"))
+                validateCfgError(cfg);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Preprocessor::validateCfgError(const std::string &cfg)
+{
+    const std::string id = "ConfigurationNotChecked";
+    const std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    const Severity::SeverityType severity = Severity::information;
+    ErrorLogger::ErrorMessage errmsg(locationList, severity, "Skipping configuration '" + cfg + "' because it seems to be invalid. Use -D if you want to check it.", id, false);
+    errmsg.file0 = file0;
+    _errorLogger->reportInfo(errmsg);
+}
+
 std::string Preprocessor::expandMacros(const std::string &code, std::string filename, const std::string &cfg, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
@@ -2829,5 +2880,6 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
     Settings settings2(*settings);
     Preprocessor preprocessor(&settings2, errorLogger);
     preprocessor.missingInclude("", 1, "", true);
+    preprocessor.validateCfgError("X");
     preprocessor.error("", 1, "#error message");   // #error ..
 }

@@ -214,9 +214,6 @@ unsigned int CppCheck::processFile(const std::string& filename)
             }
 
             cfg = *it;
-            Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-            const std::string codeWithoutCfg = preprocessor.getcode(filedata, *it, filename);
-            t.Stop();
 
             // If only errors are printed, print filename after the check
             if (_settings._errorsOnly == false && it != configurations.begin()) {
@@ -224,6 +221,10 @@ unsigned int CppCheck::processFile(const std::string& filename)
                 fixedpath = Path::toNativeSeparators(fixedpath);
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
             }
+
+            Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
+            const std::string codeWithoutCfg = preprocessor.getcode(filedata, *it, filename, _settings.userDefines.empty());
+            t.Stop();
 
             const std::string &appendCode = _settings.append();
 
@@ -513,6 +514,21 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
 
 void CppCheck::reportInfo(const ErrorLogger::ErrorMessage &msg)
 {
+    // Suppressing info message?
+    std::string file;
+    unsigned int line(0);
+    if (!msg._callStack.empty()) {
+        file = msg._callStack.back().getfile(false);
+        line = msg._callStack.back().line;
+    }
+    if (_useGlobalSuppressions) {
+        if (_settings.nomsg.isSuppressed(msg._id, file, line))
+            return;
+    } else {
+        if (_settings.nomsg.isSuppressedLocal(msg._id, file, line))
+            return;
+    }
+
     _errorLogger.reportInfo(msg);
 }
 
