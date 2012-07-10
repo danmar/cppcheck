@@ -236,7 +236,8 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 void CheckClass::initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
     bool initList = true;
-    const Token *ftok = func.arg->link();
+    const Token *ftok = func.arg->link()->next();
+    int level = 0;
 
     for (; ftok != func.functionScope->classEnd; ftok = ftok->next()) {
         if (!ftok->next())
@@ -245,19 +246,22 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
         if (initList) {
-            if (Token::Match(ftok, "%var% (")) {
+            if (level == 0 && Token::Match(ftok, "%var% ("))
                 initVar(ftok->str(), scope, usage);
+            else if (level != 0 && Token::Match(ftok, "%var% =")) // assignment in the initializer: var(value = x)
+                assignVar(ftok->str(), scope, usage);
 
-                // assignment in the initializer..
-                // : var(value = x)
-                if (Token::Match(ftok->tokAt(2), "%var% ="))
-                    assignVar(ftok->strAt(2), scope, usage);
+            else if (ftok->str() == "(")
+                level++;
+            else if (ftok->str() == ")")
+                level--;
+            else if (ftok->str() == "{") {
+                if (level == 0)
+                    initList = false;
+                else
+                    ftok = ftok->link();
             }
         }
-
-
-        if (ftok->str() == "{")
-            initList = false;
 
         if (initList)
             continue;

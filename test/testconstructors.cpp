@@ -118,6 +118,7 @@ private:
         TEST_CASE(uninitVarArray8);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
+        TEST_CASE(uninitVarCpp11Init);
         TEST_CASE(uninitVarStruct1);       // ticket #2172
         TEST_CASE(uninitVarStruct2);       // ticket #838
         TEST_CASE(uninitVarUnion1);        // ticket #3196
@@ -1690,6 +1691,17 @@ private:
               "    char a[2][2][2];\n"
               "public:\n"
               "    John() { a[0][0][0] = 0; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarCpp11Init() {
+        check("class Foo {\n"
+              "    std::vector<std::string> bar;\n"
+              "public:\n"
+              "    Foo()\n"
+              "        : bar({\"a\", \"b\"})\n"
+              "    {}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
