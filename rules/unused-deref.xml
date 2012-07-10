@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<rule version="1">
+    <pattern> [;{}] [*] \w+? (\+\+|\-\-) ; </pattern>
+    <message>
+        <id>UnusedDeref</id>
+        <severity>style</severity>
+        <summary>Redundant * found, "*p++" is the same as "*(p++)".</summary>
+    </message>
+</rule>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<rule version="1">
+    <pattern> if \( ([!] )*?(strlen) \( \w+? \) ([>] [0] )*?\) { </pattern>
+    <message>
+        <id>StrlenEmptyString</id>
+        <severity>performance</severity>
+        <summary>Using strlen() to check if a string is empty is not efficient.</summary>
+    </message>
+</rule>
