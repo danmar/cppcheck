@@ -1134,8 +1134,11 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     Scope *new_scope = &scopeList.back();
 
     // skip to start of function
-    while (tok1 && tok1->str() != "{")
+    while (tok1 && tok1->str() != "{") {
+        if (tok1->str() == "(")
+            tok1 = tok1->link();
         tok1 = tok1->next();
+    }
 
     if (tok1) {
         new_scope->classStart = tok1;

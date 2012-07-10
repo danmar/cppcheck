@@ -103,6 +103,7 @@ private:
 
         TEST_CASE(parseFunctionCorrect);
         TEST_CASE(parseFunctionDeclarationCorrect);
+        TEST_CASE(Cpp11InitInInitList);
 
         TEST_CASE(hasGlobalVariables1);
         TEST_CASE(hasGlobalVariables2);
@@ -701,6 +702,15 @@ private:
                       "int bar() {}\n"
                       "void func() {}")
         ASSERT_EQUALS(3, db->findScopeByName("func")->classStart->linenr());
+    }
+
+    void Cpp11InitInInitList() {
+        GET_SYMBOL_DB("class Foo {\n"
+                      "    std::vector<std::string> bar;\n"
+                      "    Foo() : bar({\"a\", \"b\"})\n"
+                      "    {}\n"
+                      "};");
+        ASSERT_EQUALS(4, db->scopeList.front().nestedList.front()->nestedList.front()->classStart->linenr());
     }
 
     void hasGlobalVariables1() {
