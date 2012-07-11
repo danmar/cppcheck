@@ -22,7 +22,7 @@
 
 int main(int argc, char *argv[])
 {
-    options args(argc, argv);
+    options args(argc, const_cast<const char**>(argv));
 
     std::size_t ret = TestFixture::runTests(args);
 
