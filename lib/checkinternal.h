@@ -53,6 +53,7 @@ public:
         checkInternal.checkTokenMatchPatterns();
         checkInternal.checkTokenSimpleMatchPatterns();
         checkInternal.checkMissingPercentCharacter();
+        checkInternal.checkUnknownPattern();
     }
 
     /** @brief %Check if a simple pattern is used inside Token::Match or Token::findmatch */
@@ -64,16 +65,21 @@ public:
     /** @brief %Check for missing % end character in Token::Match pattern */
     void checkMissingPercentCharacter();
 
+    /** @brief %Check for for unkown (invalid) complex patterns like "%typ%" */
+    void checkUnknownPattern();
+
 private:
     void simplePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void complexPatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void missingPercentCharacterError(const Token *tok, const std::string &pattern, const std::string &funcname);
+    void unknownPatternError(const Token* tok, const std::string& pattern);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckInternal c(0, settings, errorLogger);
         c.simplePatternError(0, "class {", "Match");
         c.complexPatternError(0, "%type% ( )", "Match");
         c.missingPercentCharacterError(0, "%num", "Match");
+        c.unknownPatternError(0, "%typ");
     }
 
     std::string myName() const {

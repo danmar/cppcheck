@@ -169,6 +169,51 @@ void CheckInternal::checkMissingPercentCharacter()
     }
 }
 
+void CheckInternal::checkUnknownPattern()
+{
+    static std::set<std::string> knownPatterns;
+    if (knownPatterns.empty()) {
+        knownPatterns.insert("%any%");
+        knownPatterns.insert("%var%");
+        knownPatterns.insert("%type%");
+        knownPatterns.insert("%num%");
+        knownPatterns.insert("%bool%");
+        knownPatterns.insert("%str%");
+        knownPatterns.insert("%varid%");
+        knownPatterns.insert("%or%");
+        knownPatterns.insert("%oror%");
+        knownPatterns.insert("%op%");
+    }
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
+            continue;
+
+        // Get pattern string
+        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+        if (!pattern_tok || pattern_tok->type() != Token::eString)
+            continue;
+
+        const std::string pattern = pattern_tok->strValue();
+        bool inBrackets = false;
+
+        for (std::string::size_type i = 0; i < pattern.length()-1; i++) {
+            if (pattern[i] == '[' && (i == 0 || pattern[i-1] == ' '))
+                inBrackets = true;
+            else if (pattern[i] == ']')
+                inBrackets = false;
+            else if (pattern[i] == '%' && pattern[i+1] != ' ' && pattern[i+1] != '|' && !inBrackets) {
+                std::string::size_type end = pattern.find('%', i+1);
+                if (end != std::string::npos) {
+                    std::string s = pattern.substr(i, end-i+1);
+                    if (knownPatterns.find(s) == knownPatterns.end())
+                        unknownPatternError(tok, s);
+                }
+            }
+        }
+    }
+}
+
 void CheckInternal::simplePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::warning, "simplePatternError",
@@ -188,6 +233,12 @@ void CheckInternal::missingPercentCharacterError(const Token* tok, const std::st
     reportError(tok, Severity::error, "missingPercentCharacter",
                 "Missing percent end character in Token::" + funcname + "() pattern: \"" + pattern + "\""
                );
+}
+
+void CheckInternal::unknownPatternError(const Token* tok, const std::string& pattern)
+{
+    reportError(tok, Severity::error, "unkownPattern",
+                "Unkown pattern used: \"" + pattern + "\"");
 }
 
 #endif // #ifndef NDEBUG

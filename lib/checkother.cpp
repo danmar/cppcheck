@@ -508,7 +508,7 @@ void CheckOther::checkSizeofForPointerSize()
             variable = tok->next();
             tokVar = tok->tokAt(5)->nextArgument();
 
-        } else if (Token::Match(tok, "memset (")) {
+        } else if (Token::simpleMatch(tok, "memset (")) {
             variable = tok->tokAt(2);
             tokVar = variable->tokAt(2)->nextArgument();
 

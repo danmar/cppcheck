@@ -37,6 +37,7 @@ private:
         TEST_CASE(simplePatternSquareBrackets)
         TEST_CASE(simplePatternAlternatives)
         TEST_CASE(missingPercentCharacter)
+        TEST_CASE(unknownPattern)
         TEST_CASE(internalError)
     }
 
@@ -212,7 +213,8 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo % %type % bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo % %type % bar\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo % %type % bar\"\n"
+                      "[test.cpp:3]: (error) Unkown pattern used: \"%type %\"\n", errout.str());
 
         // Find missing % also in 'alternatives' pattern
         check("void f() {\n"
@@ -225,6 +227,19 @@ private:
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo|%oror%|bar\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void unknownPattern() {
+        check("void f() {\n"
+              "    Token::Match(tok, \"%typ%\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Unkown pattern used: \"%typ%\"\n", errout.str());
+
+        // Make sure we don't take %or% for a broken %oror%
+        check("void f() {\n"
+              "    Token::Match(tok, \"%type%\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

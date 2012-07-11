@@ -1334,12 +1334,12 @@ void CheckStl::uselessCalls()
         } else if (tok->varId() && Token::Match(tok, "%var% . swap ( %var% )") &&
                    tok->varId() == tok->tokAt(4)->varId()) {
             uselessCallsSwapError(tok, tok->str());
-        } else if (Token::Match(tok, ". substr (")) {
+        } else if (Token::simpleMatch(tok, ". substr (")) {
             if (Token::Match(tok->tokAt(3), "0| )"))
                 uselessCallsSubstrError(tok, false);
             else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos")
                 uselessCallsSubstrError(tok, false);
-            else if (Token::Match(tok->linkAt(2)->tokAt(-2), ", 0 )"))
+            else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                 uselessCallsSubstrError(tok, true);
         }
     }

@@ -1511,7 +1511,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
                 else if (tok2->isName() && isMemberVar(scope, tok2))
                     return(false); // TODO: Only bailout if function takes argument as non-const reference
             }
-        } else if (Token::Match(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
+        } else if (Token::simpleMatch(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return(false);
         } else if (Token::Match(tok1, "%var% . %var% (")) {
             if (!isMemberVar(scope, tok1))

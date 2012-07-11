@@ -102,7 +102,7 @@ void CheckIO::checkFileUsage()
     std::size_t varListSize = symbolDatabase->getVariableListSize();
     for (std::size_t i = 1; i < varListSize; ++i) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->varId() || !Token::Match(var->typeStartToken(), "FILE *"))
+        if (!var || !var->varId() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
             continue;
 
         if (var->isLocal()) {
@@ -153,7 +153,7 @@ void CheckIO::checkFileUsage()
                 fileTok = tok->tokAt(-2);
                 operation = Filepointer::OPEN;
             } else if (tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") {
-                if (Token::Match(tok, "fflush ( stdin )"))
+                if (Token::simpleMatch(tok, "fflush ( stdin )"))
                     fflushOnInputStreamError(tok, tok->strAt(2));
                 else {
                     fileTok = tok->tokAt(2);
