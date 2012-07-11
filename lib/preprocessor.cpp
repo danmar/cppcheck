@@ -2577,7 +2577,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
     for (std::set<std::string>::const_iterator it = macros.begin(); it != macros.end(); ++it) {
         const std::string &macro = *it;
         std::string::size_type pos = 0;
-        while ((pos = code.find_first_of(std::string("\"'")+macro[0], pos)) != std::string::npos) {
+        while ((pos = code.find_first_of(std::string("#\"'")+macro[0], pos)) != std::string::npos) {
             const std::string::size_type pos1 = pos;
             const std::string::size_type pos2 = pos + macro.size();
             pos++;
@@ -2590,6 +2590,12 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
                     ++pos;
                 }
                 ++pos;
+            }
+
+            // skip preprocessor statement..
+            else if (code[pos1] == '#') {
+                if (pos1 == 0 || code[pos1-1] == '\n')
+                    pos = code.find("\n",pos);
             }
 
             // is macro used in code?

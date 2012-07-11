@@ -3546,6 +3546,7 @@ private:
         ASSERT_EQUALS(true, preprocessor.validateCfg("\"DEBUG()\"", "DEBUG"));
         ASSERT_EQUALS(true, preprocessor.validateCfg("\"\\\"DEBUG()\"", "DEBUG"));
         ASSERT_EQUALS(false, preprocessor.validateCfg("\"DEBUG()\" DEBUG", "DEBUG"));
+        ASSERT_EQUALS(true, preprocessor.validateCfg("#undef DEBUG", "DEBUG"));
     }
 
 };
