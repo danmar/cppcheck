@@ -519,23 +519,31 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     invalidPrintfArgTypeError_n(tok, numFormat);
                                 break;
                             case 'c':
-                            case 'd':
-                            case 'i':
-                            case 'u':
                             case 'x':
                             case 'X':
                             case 'o':
-                                if (varTypeTok && varTypeTok->str() == "const")
-                                    varTypeTok = varTypeTok->next();
-                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "unsigned|signed| bool|short|long|int|char|size_t|unsigned|signed") && !variableInfo->isPointer() && !variableInfo->isArray()))
+                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "bool|short|long|int|char|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
                                     invalidPrintfArgTypeError_int(tok, numFormat, *i);
                                 else if (argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_int(tok, numFormat, *i);
                                 break;
+                            case 'd':
+                            case 'i':
+                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
+                                    if ((varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "bool|short|long|int")) && varTypeTok->str() != "char")
+                                        invalidPrintfArgTypeError_sint(tok, numFormat, *i);
+                                } else if (argListTok->type() == Token::eString)
+                                    invalidPrintfArgTypeError_sint(tok, numFormat, *i);
+                                break;
+                            case 'u':
+                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
+                                    if ((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "short|long|int|size_t")) && varTypeTok->str() != "bool")
+                                        invalidPrintfArgTypeError_uint(tok, numFormat, *i);
+                                } else if (argListTok->type() == Token::eString)
+                                    invalidPrintfArgTypeError_uint(tok, numFormat, *i);
+                                break;
                             case 'p':
-                                if (varTypeTok && varTypeTok->str() == "const")
-                                    varTypeTok = varTypeTok->next();
-                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "unsigned|signed| short|long|int|size_t|unsigned|signed") && !variableInfo->isPointer() && !variableInfo->isArray())
+                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "short|long|int|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
                                     invalidPrintfArgTypeError_p(tok, numFormat);
                                 else if (argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_p(tok, numFormat);
@@ -545,8 +553,6 @@ void CheckIO::checkWrongPrintfScanfArguments()
                             case 'f':
                             case 'g':
                             case 'G':
-                                if (varTypeTok && varTypeTok->str() == "const")
-                                    varTypeTok = varTypeTok->next();
                                 if (varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray()))
                                     invalidPrintfArgTypeError_float(tok, numFormat, *i);
                                 else if (argListTok->type() == Token::eString)
@@ -627,6 +633,18 @@ void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFo
     std::ostringstream errmsg;
     errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an integer given in the argument list";
     reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str());
+}
+void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, char c)
+{
+    std::ostringstream errmsg;
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an unsigned integer given in the argument list";
+    reportError(tok, Severity::warning, "invalidPrintfArgType_uint", errmsg.str());
+}
+void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, char c)
+{
+    std::ostringstream errmsg;
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a signed integer given in the argument list";
+    reportError(tok, Severity::warning, "invalidPrintfArgType_sint", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c)
 {

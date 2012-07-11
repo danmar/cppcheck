@@ -87,6 +87,8 @@ private:
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
+    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, char c);
+    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, char c);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
     void invalidScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, int width, const Variable *var);
 
@@ -105,7 +107,9 @@ private:
         c.invalidPrintfArgTypeError_s(0, 1);
         c.invalidPrintfArgTypeError_n(0, 1);
         c.invalidPrintfArgTypeError_p(0, 1);
-        c.invalidPrintfArgTypeError_int(0, 1, 'u');
+        c.invalidPrintfArgTypeError_int(0, 1, 'X');
+        c.invalidPrintfArgTypeError_uint(0, 1, 'u');
+        c.invalidPrintfArgTypeError_sint(0, 1, 'i');
         c.invalidPrintfArgTypeError_float(0, 1, 'f');
         c.invalidScanfFormatWidthError(0, "scanf", 10, 5, NULL);
     }

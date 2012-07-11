@@ -531,17 +531,51 @@ private:
                       "[test.cpp:7]: (warning) %n in format string (no. 1) requires a pointer to an non-const integer given in the argument list\n", errout.str());
 
         check("class foo {};\n"
-              "void foo(const int* cpi, foo f, bar b, bar* bp, double d) {\n"
-              "    printf(\"%i\", f);\n"
+              "void foo(const int* cpi, foo f, bar b, bar* bp, double d, int i, unsigned int u) {\n"
+              "    printf(\"%X\", f);\n"
               "    printf(\"%c\", \"s4\");\n"
               "    printf(\"%o\", d);\n"
-              "    printf(\"%i\", cpi);\n"
-              "    printf(\"%u\", b);\n"
-              "    printf(\"%u\", bp);\n"
+              "    printf(\"%x\", cpi);\n"
+              "    printf(\"%o\", b);\n"
+              "    printf(\"%X\", bp);\n"
+              "    printf(\"%X\", u);\n"
+              "    printf(\"%X\", i);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %i in format string (no. 1) requires an integer given in the argument list\n"
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %X in format string (no. 1) requires an integer given in the argument list\n"
                       "[test.cpp:4]: (warning) %c in format string (no. 1) requires an integer given in the argument list\n"
                       "[test.cpp:5]: (warning) %o in format string (no. 1) requires an integer given in the argument list\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo(const int* cpi, foo f, bar b, bar* bp, double d, unsigned int u, unsigned char uc) {\n"
+              "    printf(\"%i\", f);\n"
+              "    printf(\"%d\", \"s4\");\n"
+              "    printf(\"%d\", d);\n"
+              "    printf(\"%d\", u);\n"
+              "    printf(\"%d\", cpi);\n"
+              "    printf(\"%i\", b);\n"
+              "    printf(\"%i\", bp);\n"
+              "    printf(\"%i\", uc);\n" // char is smaller than int, so there shouldn't be a problem
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %i in format string (no. 1) requires a signed integer given in the argument list\n"
+                      "[test.cpp:4]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list\n"
+                      "[test.cpp:5]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list\n"
+                      "[test.cpp:6]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo(const int* cpi, foo f, bar b, bar* bp, double d, int i, bool bo) {\n"
+              "    printf(\"%u\", f);\n"
+              "    printf(\"%u\", \"s4\");\n"
+              "    printf(\"%u\", d);\n"
+              "    printf(\"%u\", i);\n"
+              "    printf(\"%u\", cpi);\n"
+              "    printf(\"%u\", b);\n"
+              "    printf(\"%u\", bp);\n"
+              "    printf(\"%u\", bo);\n" // bool shouldn't have a negative sign
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list\n", errout.str());
 
         check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, char c) {\n"
