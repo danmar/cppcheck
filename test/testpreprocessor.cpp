@@ -3542,6 +3542,10 @@ private:
         ASSERT_EQUALS(false, preprocessor.validateCfg("int x=X;", "X"));
         ASSERT_EQUALS(false, preprocessor.validateCfg("X=1;", "X"));
         ASSERT_EQUALS(true, preprocessor.validateCfg("int x=X;", "Y"));
+        ASSERT_EQUALS(true, preprocessor.validateCfg("FOO_DEBUG()", "DEBUG"));
+        ASSERT_EQUALS(true, preprocessor.validateCfg("\"DEBUG()\"", "DEBUG"));
+        ASSERT_EQUALS(true, preprocessor.validateCfg("\"\\\"DEBUG()\"", "DEBUG"));
+        ASSERT_EQUALS(false, preprocessor.validateCfg("\"DEBUG()\" DEBUG", "DEBUG"));
     }
 
 };

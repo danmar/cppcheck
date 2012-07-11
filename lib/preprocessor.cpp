@@ -2576,17 +2576,33 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
     // check if any empty macros are used in code
     for (std::set<std::string>::const_iterator it = macros.begin(); it != macros.end(); ++it) {
         const std::string &macro = *it;
-        std::string::size_type pos;
-        for (pos = code.find(macro); pos != std::string::npos; pos = code.find(macro,pos)) {
-            if (pos > 0 && (std::isalnum(code[pos-1U]) || code[pos-1U] == '_'))
-                continue;
-            pos += macro.size();
-            if (pos < code.size() && (std::isalnum(code[pos]) || code[pos] == '_'))
-                continue;
-            // macro is used in code, return false
-            if (_settings->isEnabled("information"))
-                validateCfgError(cfg);
-            return false;
+        std::string::size_type pos = 0;
+        while ((pos = code.find_first_of(std::string("\"'")+macro[0], pos)) != std::string::npos) {
+            const std::string::size_type pos1 = pos;
+            const std::string::size_type pos2 = pos + macro.size();
+            pos++;
+
+            // skip string..
+            if (code[pos1] == '\"' || code[pos1] == '\'') {
+                while (pos < code.size() && code[pos] != code[pos1]) {
+                    if (code[pos] == '\\')
+                        ++pos;
+                    ++pos;
+                }
+                ++pos;
+            }
+
+            // is macro used in code?
+            else if (code.compare(pos1,macro.size(),macro) == 0) {
+                if (pos1 > 0 && (std::isalnum(code[pos1-1U]) || code[pos1-1U] == '_'))
+                    continue;
+                if (pos2 < code.size() && (std::isalnum(code[pos2]) || code[pos2] == '_'))
+                    continue;
+                // macro is used in code, return false
+                if (_settings->isEnabled("information"))
+                    validateCfgError(cfg);
+                return false;
+            }
         }
     }
 
