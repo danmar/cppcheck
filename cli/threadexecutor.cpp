@@ -316,7 +316,7 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
 
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &/*msg*/)
 {
 
 }
