@@ -1247,7 +1247,7 @@ void CheckStl::checkAutoPointer()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "auto_ptr <")) {
-            if ((tok->previous() && tok->previous()->str() == "<" && Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) ||
+            if ((tok->strAt(-1) == "<" && Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) ||
                 (Token::simpleMatch(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
                 autoPointerContainerError(tok);
             } else {
@@ -1327,21 +1327,27 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 
 void CheckStl::uselessCalls()
 {
+    bool performance = _settings->isEnabled("performance");
+    bool style = _settings->isEnabled("style");
+    if (!performance && !style)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->varId() && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
-            tok->varId() == tok->tokAt(4)->varId()) {
+            tok->varId() == tok->tokAt(4)->varId() && style) {
             uselessCallsReturnValueError(tok->tokAt(4), tok->str(), tok->strAt(2));
         } else if (tok->varId() && Token::Match(tok, "%var% . swap ( %var% )") &&
-                   tok->varId() == tok->tokAt(4)->varId()) {
+                   tok->varId() == tok->tokAt(4)->varId() && performance) {
             uselessCallsSwapError(tok, tok->str());
-        } else if (Token::simpleMatch(tok, ". substr (")) {
+        } else if (Token::simpleMatch(tok, ". substr (") && performance) {
             if (Token::Match(tok->tokAt(3), "0| )"))
                 uselessCallsSubstrError(tok, false);
             else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos")
                 uselessCallsSubstrError(tok, false);
             else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                 uselessCallsSubstrError(tok, true);
-        }
+        } else if (Token::Match(tok, "[{}:;] %var% . empty ( ) ;") && style)
+            uselessCallsEmptyError(tok);
     }
 }
 
@@ -1373,4 +1379,9 @@ void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
         reportError(tok, Severity::performance, "uselessCallsSubstr", "Useless call of function 'substr' because it returns an empty string.");
     else
         reportError(tok, Severity::performance, "uselessCallsSubstr", "Useless call of function 'substr' because it returns a copy of the object. Use operator= instead.");
+}
+
+void CheckStl::uselessCallsEmptyError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "uselessCallsEmpty", "Useless call of function 'empty()'. Did you intend to call 'clear()' instead?");
 }

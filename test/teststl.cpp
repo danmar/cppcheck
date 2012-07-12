@@ -1864,6 +1864,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("bool foo(std::vector<int>& v) {\n"
+              "    v.empty();\n"
+              "    return v.empty();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Useless call of function 'empty()'. Did you intend to call 'clear()' instead?\n", errout.str());
     }
 };
 

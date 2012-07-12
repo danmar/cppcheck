@@ -175,6 +175,7 @@ private:
     void uselessCallsReturnValueError(const Token *tok, const std::string &varname, const std::string &function);
     void uselessCallsSwapError(const Token *tok, const std::string &varname);
     void uselessCallsSubstrError(const Token *tok, bool empty);
+    void uselessCallsEmptyError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckStl c(0, settings, errorLogger);
@@ -200,6 +201,7 @@ private:
         c.uselessCallsReturnValueError(0, "str", "find");
         c.uselessCallsSwapError(0, "str");
         c.uselessCallsSubstrError(0, false);
+        c.uselessCallsEmptyError(0);
     }
 
     std::string myName() const {
@@ -218,7 +220,7 @@ private:
                "* redundant condition\n"
                "* common mistakes when using string::c_str()\n"
                "* using auto pointer (auto_ptr)\n"
-               "* useless calls of string functions";
+               "* useless calls of string and STL functions";
     }
 
     bool isStlContainer(unsigned int varid);
