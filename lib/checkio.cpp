@@ -537,7 +537,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                 break;
                             case 'u':
                                 if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
-                                    if ((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "short|long|int|size_t")) && varTypeTok->str() != "bool")
+                                    if ((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "char|short|long|int|size_t")) && varTypeTok->str() != "bool")
                                         invalidPrintfArgTypeError_uint(tok, numFormat, *i);
                                 } else if (argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_uint(tok, numFormat, *i);
