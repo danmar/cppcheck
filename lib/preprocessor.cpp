@@ -2569,8 +2569,9 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
         if (cfg[pos2] == ';')
             macros.insert(cfg.substr(pos, pos2-pos));
         pos = cfg.find(";", pos2);
-        if (pos != std::string::npos)
-            ++pos;
+        if (pos == std::string::npos)
+            break;
+        ++pos;
     }
 
     // check if any empty macros are used in code

@@ -3539,6 +3539,7 @@ private:
         Settings settings;
         Preprocessor preprocessor(&settings, this);
 
+        ASSERT_EQUALS(true, preprocessor.validateCfg("", "X=42"));  // don't hang when parsing cfg
         ASSERT_EQUALS(false, preprocessor.validateCfg("int x=X;", "X"));
         ASSERT_EQUALS(false, preprocessor.validateCfg("X=1;", "X"));
         ASSERT_EQUALS(true, preprocessor.validateCfg("int x=X;", "Y"));
