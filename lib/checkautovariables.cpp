@@ -35,11 +35,11 @@ namespace {
 }
 
 
-bool CheckAutoVariables::isRefArg(unsigned int varId)
+bool CheckAutoVariables::isRefPtrArg(unsigned int varId)
 {
     const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varId);
 
-    return(var && var->isArgument() && var->isReference());
+    return(var && var->isArgument() && var->isReference() && var->isPointer());
 }
 
 bool CheckAutoVariables::isPtrArg(unsigned int varId)
@@ -92,7 +92,7 @@ void CheckAutoVariables::autoVariables()
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Critical assignment
-            if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefArg(tok->next()->varId()) && isAutoVar(tok->tokAt(4)->varId())) {
+            if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()->varId()) && isAutoVar(tok->tokAt(4)->varId())) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(4)->varId());
                 if (checkRvalueExpression(var, tok->tokAt(5)))
                     errorAutoVariableAssignment(tok->next(), false);

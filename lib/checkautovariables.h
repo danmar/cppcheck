@@ -67,7 +67,7 @@ public:
     void returncstr();
 
 private:
-    bool isRefArg(unsigned int varId);
+    bool isRefPtrArg(unsigned int varId);
     bool isPtrArg(unsigned int varId);
     bool isAutoVar(unsigned int varId);
     bool isAutoVarArray(unsigned int varId);

@@ -221,6 +221,12 @@ private:
               "    p = &i;\n"
               "}", false);
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("void foo(std::string& s) {\n"
+              "    char* p = foo;\n"
+              "    s = &p[0];\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar9() {
