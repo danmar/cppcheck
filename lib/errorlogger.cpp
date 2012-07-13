@@ -318,7 +318,25 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
 
 void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched)
 {
+    // Report unmatched suppressions
     for (std::list<Suppressions::SuppressionEntry>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i) {
+        // don't report "unmatchedSuppression" as unmatched
+        if (i->id == "unmatchedSuppression")
+            continue;
+
+        // check if this unmatched suppression is suppressed
+        bool suppressed = false;
+        for (std::list<Suppressions::SuppressionEntry>::const_iterator i2 = unmatched.begin(); i2 != unmatched.end(); ++i2) {
+            if (i2->id == "unmatchedSuppression") {
+                if ((i2->file == "*" || i2->file == i->file) &&
+                    (i2->line == 0 || i2->line == i->line))
+                    suppressed = true;
+            }
+        }
+
+        if (suppressed)
+            continue;
+
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->file, i->line));
         reportErr(ErrorLogger::ErrorMessage(callStack, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
