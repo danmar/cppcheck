@@ -2935,17 +2935,6 @@ private:
 
     void incorrectLogicOperator3() {
         check("void f(int x, bool& b) {\n"
-              "    b = x > 3 || x == 4;\n"
-              "    b = x < 5 || x == 4;\n"
-              "    b = x >= 3 || x == 4;\n"
-              "    b = x <= 5 || x == 4;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x == 4.\n"
-                      "[test.cpp:3]: (warning) Logical disjunction always evaluates to true: x < 5 || x == 4.\n"
-                      "[test.cpp:4]: (warning) Logical disjunction always evaluates to true: x >= 3 || x == 4.\n"
-                      "[test.cpp:5]: (warning) Logical disjunction always evaluates to true: x <= 5 || x == 4.\n", errout.str());
-
-        check("void f(int x, bool& b) {\n"
               "    b = x > 5 && x == 1;\n"
               "    b = x < 1 && x == 3;\n"
               "    b = x >= 5 && x == 1;\n"
@@ -2985,6 +2974,17 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x, bool& b) {\n"
+              "    b = x > 3 || x == 4;\n"
+              "    b = x < 5 || x == 4;\n"
+              "    b = x >= 3 || x == 4;\n"
+              "    b = x <= 5 || x == 4;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x == 4, the comparison x > 3 is always true.\n"
+                      "[test.cpp:3]: (style) Redundant condition: If x == 4, the comparison x < 5 is always true.\n"
+                      "[test.cpp:4]: (style) Redundant condition: If x == 4, the comparison x >= 3 is always true.\n"
+                      "[test.cpp:5]: (style) Redundant condition: If x == 4, the comparison x <= 5 is always true.\n", errout.str());
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 5 || x != 1;\n"
