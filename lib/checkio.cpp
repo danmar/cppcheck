@@ -252,7 +252,7 @@ void CheckIO::checkFileUsage()
 void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error,
-                "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour.");
+                "fflushOnInputStream", "fflush() called on input stream '" + varname + "' results in undefined behaviour.");
 }
 
 void CheckIO::ioWithoutPositioningError(const Token *tok)
@@ -265,13 +265,13 @@ void CheckIO::readWriteOnlyFileError(const Token *tok)
 {
 
     reportError(tok, Severity::error,
-                "readWriteOnlyFile", "Read operation on a file that was only opened for writing.");
+                "readWriteOnlyFile", "Read operation on a file that was opened only for writing.");
 }
 
 void CheckIO::writeReadOnlyFileError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "writeReadOnlyFile", "Write operation on a file that was only opened for reading.");
+                "writeReadOnlyFile", "Write operation on a file that was opened only for reading.");
 }
 
 void CheckIO::useClosedFileError(const Token *tok)
@@ -505,7 +505,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                 if (!width.empty()) {
                                     int numWidth = std::atoi(width.c_str());
                                     if (numWidth  != (variableInfo->dimension(0) - 1))
-                                        invalidScanfFormatWidthError(tok, tok->str(), numFormat, numWidth, variableInfo);
+                                        invalidScanfFormatWidthError(tok, numFormat, numWidth, variableInfo);
                                 }
                             }
                         } else if (!scan) {
@@ -599,7 +599,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
            << " parameters but "
            << (numFormat > numFunction ? "only " : "")
            << numFunction
-           << " are given";
+           << " are given.";
 
     reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str());
 }
@@ -607,52 +607,52 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
 void CheckIO::invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat)
 {
     std::ostringstream errmsg;
-    errmsg << functionName << " argument no. " << numFormat << ": requires non-const pointers or arrays as arguments";
+    errmsg << functionName << " argument no. " << numFormat << ": requires a non-const pointer or array as argument.";
     reportError(tok, Severity::warning, "invalidScanfArgType", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat)
 {
     std::ostringstream errmsg;
-    errmsg << "%s in format string (no. " << numFormat << ") requires a char* given in the argument list";
+    errmsg << "%s in format string (no. " << numFormat << ") requires a char* given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_s", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat)
 {
     std::ostringstream errmsg;
-    errmsg << "%n in format string (no. " << numFormat << ") requires a pointer to an non-const integer given in the argument list";
+    errmsg << "%n in format string (no. " << numFormat << ") requires a pointer to an non-const integer given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_n", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat)
 {
     std::ostringstream errmsg;
-    errmsg << "%p in format string (no. " << numFormat << ") requires an integer or pointer given in the argument list";
+    errmsg << "%p in format string (no. " << numFormat << ") requires an address given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_p", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an integer given in the argument list";
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an integer given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, char c)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an unsigned integer given in the argument list";
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an unsigned integer given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_uint", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, char c)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a signed integer given in the argument list";
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a signed integer given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_sint", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list";
+    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
 }
-void CheckIO::invalidScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, int width, const Variable *var)
+void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var)
 {
     std::ostringstream errmsg;
     Severity::SeverityType severity = Severity::warning;
@@ -663,16 +663,16 @@ void CheckIO::invalidScanfFormatWidthError(const Token* tok, const std::string &
             if (!_settings->inconclusive)
                 return;
             inconclusive = true;
-            errmsg << functionName << " width " << width << " in format string (no. " << numFormat << ") is smaller than destination"
-                   << ": " << var->name() << "[" << var->dimension(0) << "]";
+            errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is smaller than destination buffer"
+                   << " '" << var->name() << "[" << var->dimension(0) << "]'.";
         } else {
-            errmsg << functionName << " width " << width << " in format string (no. " << numFormat << ") is larger than destination"
-                   << ", use %" << (var->dimension(0) - 1) << "s to prevent overflowing destination: " << var->name() << "[" << var->dimension(0) << "]";
+            errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is larger than destination buffer '"
+                   << var->name() << "[" << var->dimension(0) << "]', use %" << (var->dimension(0) - 1) << "s to prevent overflowing it.";
             severity = Severity::error;
         }
 
     } else
-        errmsg << functionName << " width " << width << " in format string (no. " << numFormat << ") doesn't match destination";
+        errmsg << "Width " << width << " given in format string (no. " << numFormat << ") doesn't match destination buffer.";
 
     reportError(tok, severity, "invalidScanfFormatWidth", errmsg.str(), inconclusive);
 }

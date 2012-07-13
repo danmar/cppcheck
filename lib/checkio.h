@@ -90,7 +90,7 @@ private:
     void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, char c);
     void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, char c);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
-    void invalidScanfFormatWidthError(const Token* tok, const std::string &functionName, unsigned int numFormat, int width, const Variable *var);
+    void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckIO c(0, settings, errorLogger);
@@ -111,7 +111,7 @@ private:
         c.invalidPrintfArgTypeError_uint(0, 1, 'u');
         c.invalidPrintfArgTypeError_sint(0, 1, 'i');
         c.invalidPrintfArgTypeError_float(0, 1, 'f');
-        c.invalidScanfFormatWidthError(0, "scanf", 10, 5, NULL);
+        c.invalidScanfFormatWidthError(0, 10, 5, NULL);
     }
 
     std::string myName() const {
@@ -121,11 +121,12 @@ private:
     std::string classInfo() const {
         return "Check input/output operations.\n"
                "* Bad usage of the function 'sprintf' (overlapping data)\n"
+               "* Missing or wrong width specifiers in 'scanf' format string\n"
                "* Use a file that has been closed\n"
                "* File input/output without positioning results in undefined behaviour\n"
                "* Read to a file that has only been opened for writing (or vice versa)\n"
                "* Using fflush() on an input stream\n"
-               "* Invalid usage of output stream. For example: std::cout << std::cout;'\n"
+               "* Invalid usage of output stream. For example: 'std::cout << std::cout;'\n"
                "* Wrong number of arguments given to 'printf' or 'scanf;'\n";
     }
 };
