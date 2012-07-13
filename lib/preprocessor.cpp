@@ -2560,7 +2560,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
 {
     // fill up "macros" with empty configuration macros
     std::set<std::string> macros;
-    for (std::string::size_type pos = 0; pos < cfg.size(); ++pos) {
+    for (std::string::size_type pos = 0; pos < cfg.size();) {
         const std::string::size_type pos2 = cfg.find_first_of(";=", pos);
         if (pos2 == std::string::npos) {
             macros.insert(cfg.substr(pos));
@@ -2569,9 +2569,8 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
         if (cfg[pos2] == ';')
             macros.insert(cfg.substr(pos, pos2-pos));
         pos = cfg.find(";", pos2);
-        if (pos == std::string::npos)
-            break;
-        ++pos;
+        if (pos != std::string::npos)
+            ++pos;
     }
 
     // check if any empty macros are used in code
