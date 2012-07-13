@@ -1347,7 +1347,7 @@ void CheckStl::uselessCalls()
             else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                 uselessCallsSubstrError(tok, true);
         } else if (Token::Match(tok, "[{}:;] %var% . empty ( ) ;") && style)
-            uselessCallsEmptyError(tok);
+            uselessCallsEmptyError(tok->next());
     }
 }
 

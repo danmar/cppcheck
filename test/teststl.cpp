@@ -1868,7 +1868,7 @@ private:
               "    v.empty();\n"
               "    return v.empty();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Useless call of function 'empty()'. Did you intend to call 'clear()' instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Useless call of function 'empty()'. Did you intend to call 'clear()' instead?\n", errout.str());
     }
 };
 
