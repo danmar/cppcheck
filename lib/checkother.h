@@ -103,6 +103,7 @@ public:
         checkOther.checkAssignBoolToPointer();
         checkOther.checkBitwiseOnBoolean();
         checkOther.checkDoubleFree();
+        checkOther.checkRedundantCopy();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -235,6 +236,7 @@ public:
     /** @brief %Check for double free or double close operations */
     void checkDoubleFree();
     void doubleFreeError(const Token *tok, const std::string &varname);
+    void checkRedundantCopy();
 
 private:
     // Error messages..
@@ -290,6 +292,8 @@ private:
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
 
+    void redundantCopyError(const Token *tok, const std::string &varname);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
 
@@ -305,6 +309,9 @@ private:
         c.sizeofForNumericParameterError(0);
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
+
+        //performance
+        c.redundantCopyError(0, "varname");
 
         // style/warning
         c.cstyleCastError(0);
@@ -363,6 +370,9 @@ private:
                "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* double free() or double closedir()\n"
+
+               //performance
+               "* redundant data copying for const variable\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
