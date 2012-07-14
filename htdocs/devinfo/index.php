@@ -38,9 +38,20 @@
     </ul>
   </div> <!-- .wrap -->
 </div> <!-- #tabs -->
+<div id="anchors">
+  <div class="wrap">
+    <ul>
+      <li><a href="#source-code">Source Code</a></li>
+      <li><a href="#trac-timeline">Trac Timeline</a></li>
+      <li><a href="#active-forum-topics">Active Forum Topics</a></li>
+      <li><a href="#doxygen">Doxygen</a></li>
+      <li><a href="#other">Other</a></li>
+    </ul>
+  </div> <!-- .wrap -->
+</div> <!-- #anchors -->
 <div id="content">
   <div class="wrap">
-<h2>Source Code</h2>
+<h2><a id="source-code">Source Code</a></h2>
 <p>Latest version can be found in the <a href="https://github.com/danmar/cppcheck/">
 cppcheck git repository</a>.</p>
 <p>To get the source code using git:</p>
@@ -52,7 +63,7 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
 <h3>Recent Commits</h3>
 <div id="github-commits"><a href="https://github.com/danmar/cppcheck/commits/master">View recent commits&hellip;</a></div>
 <p><a href="https://github.com/danmar/cppcheck/commits/master">View all commits&hellip;</a></p>
-<h2>Trac Timeline</h2>
+<h2><a id="trac-timeline">Trac Timeline</a></h2>
 <?php
   require '../site/simplepie/simplepie.inc';
 
@@ -68,7 +79,7 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   print("</ul>\n");
 ?>
 <p><a href="http://sourceforge.net/apps/trac/cppcheck/timeline">View complete Trac timeline&hellip;</a></p>
-<h2>Active Forum Topics</h2>
+<h2><a id="active-forum-topics">Active Forum Topics</a></h2>
 <?php
   require '../site/activetopics.php';
 
@@ -85,12 +96,12 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   print("</ul>\n");
 ?>
 <p><a href="http://sourceforge.net/apps/phpbb/cppcheck/search.php?st=0&amp;search_id=active_topics">View all active topics&hellip;</a></p>
-<h2>Doxygen</h2>
+<h2><a id="doxygen">Doxygen</a></h2>
 <ul>
   <li><a href="doxyoutput/">Output</a></li>
   <li><a href="doxygen-errors.txt">Errors</a></li>
 </ul>
-<h2>Other</h2>
+<h2><a id="other">Other</a></h2>
 <ul>
   <li><a href="coverage_report/">Coverage report</a></li>
   <li><a href="cpd.txt">CPD report (duplicate code)</a></li>

@@ -14,7 +14,7 @@ dt {
 a:link { color:#036; text-decoration:underline; }
 a:visited { color:#036; text-decoration:underline; }
 a:focus { color:#369; text-decoration:none; }
-a:hover { color:#369; text-decoration:none; }
+a:link:hover, a:visited:hover { color:#369; text-decoration:none; }
 a:active { color:#369; text-decoration:none; }
 
 /* Header */
@@ -64,6 +64,25 @@ a:active { color:#369; text-decoration:none; }
 #tabs a:hover { color:#fff; text-decoration:underline; }
 #tabs a:active { color:#fff; text-decoration:underline; }
 
+/* Anchors */
+#anchors ul {
+  margin: 0;
+  padding: .5em 0;
+  list-style-type: none;
+  font-size: smaller;
+}
+#anchors ul li {
+  display: inline;
+  margin: 0;
+  padding: 0 .5em;
+}
+#anchors ul li:first-child {
+  padding-left: 0;
+}
+#anchors .wrap {
+  padding: 0;
+}
+
 /* Wrap */
 .wrap {
   width: 50em;
@@ -84,7 +103,7 @@ a.downloadnow {
   width: 12em;
   margin: 0;
   padding: 5px;
- text-align: center;
+  text-align: center;
   text-decoration: none;
   color: white;
   background: #060;

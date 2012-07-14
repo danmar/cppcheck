@@ -35,6 +35,18 @@ uninitialized variables, unused functions" />
     </ul>
   </div> <!-- .wrap -->
 </div> <!-- #tabs -->
+<div id="anchors">
+  <div class="wrap">
+    <ul>
+      <li><a href="#download">Download</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#news">News</a></li>
+      <li><a href="#documentation">Documentation</a></li>
+      <li><a href="#support">Support</a></li>
+      <li><a href="#contribute">Contribute</a></li>
+    </ul>
+  </div> <!-- .wrap -->
+</div> <!-- #anchors -->
 <div id="content">
   <div class="wrap">
 <p><strong>Cppcheck</strong> is an <a href="http://en.wikipedia.org/wiki/Static_analysis_tool">static analysis tool</a>
@@ -43,7 +55,7 @@ not detect syntax errors in the code. Cppcheck primarily detects the types of
 bugs that the compilers normally do not detect. The goal is to detect only real
 errors in the code (i.e. have zero false positives).</p>
 
-<h2>Download</h2>
+<h2><a id="download">Download</a></h2>
 <p><a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.55/cppcheck-1.55-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.55 for Windows</em></a></p>
 <p>You can download the standalone Cppcheck from our
 <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
@@ -59,7 +71,7 @@ as a plugin for your favorite IDE:</p>
 <p>There is no plugin for <strong>Visual Studio</strong>, but it is possible to
 add Cppcheck as an external tool.</p>
 
-<h2>Features</h2>
+<h2><a id="features">Features</a></h2>
 <ul>
   <li>Out of bounds checking</li>
   <li>Check the code for each class</li>
@@ -70,7 +82,7 @@ add Cppcheck as an external tool.</p>
   <li>Check for uninitialized variables and unused functions</li>
 </ul>
 
-<h2>News</h2>
+<h2><a id="news">News</a></h2>
 <?php
   require './site/simplepie/simplepie.inc';
 
@@ -86,11 +98,11 @@ add Cppcheck as an external tool.</p>
 ?>
 <p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
 
-<h2>Documentation</h2>
+<h2><a id="documentation">Documentation</a></h2>
 <p>You can read the <a href="manual.pdf">manual</a> or download some 
 <a href="http://sourceforge.net/projects/cppcheck/files/Articles/">articles</a>.</p>
 
-<h2>Support</h2>
+<h2><a id="support">Support</a></h2>
 <ul>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report
   bugs and feature requests</li>
@@ -98,7 +110,8 @@ add Cppcheck as an external tool.</p>
   or at the IRC channel <a href="irc://irc.freenode.net/">#cppcheck</a></li>
   <li>For more details look at the <a href="http://sourceforge.net/apps/mediawiki/cppcheck/">wiki</a></li>
 </ul>
-<h2>Contribute</h2>
+
+<h2><a id="contribute">Contribute</a></h2>
 <p>You are welcome to contribute. Help is needed.</p>
 <dl>
   <dt>Testing</dt>
