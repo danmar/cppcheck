@@ -7,7 +7,7 @@ jQuery.fn.listCommits = function(username, repository, branch) {
   $.getJSON('https://api.github.com/repos/' + username + '/' + repository + '/commits?sha=' + branch + '&callback=?', function(response) {
     var commits = response.data;
 
-    var list = $('<ul/>');
+    var list = $('<ul class="rssfeeditems"/>');
     target.empty().append(list);
     $(commits).each(function(i) {
       var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha;
@@ -17,7 +17,7 @@ jQuery.fn.listCommits = function(username, repository, branch) {
         author = this.author.name;
       }
 
-      list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> by <strong>' + author + '</strong></li>');
+      list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> <em>by <strong>' + author + '</strong></em></li>');
 
       if (i == 9) return false;
     });
