@@ -1727,6 +1727,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove unnecessary member qualification..
     removeUnnecessaryQualification();
 
+    // Add std:: in front of std classes, when using namespace std; was given
+    simplifyNamespaceStd();
+
     // remove Microsoft MFC..
     simplifyMicrosoftMFC();
 
@@ -2698,7 +2701,7 @@ void Tokenizer::setVarId()
             (tok->isName() && tok->str().at(tok->str().length()-1U) == ':')) {
 
             // No variable declarations in sizeof
-            if (Token::Match(tok->previous(), "sizeof (")) {
+            if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 continue;
             }
 
@@ -5889,7 +5892,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
     Token *tok2 = *_tok2;
     Token *tok3 = *_tok3;
 
-    if (Token::Match(tok2->tokAt(-2), "for (")) {
+    if (Token::simpleMatch(tok2->tokAt(-2), "for (")) {
         // only specific for loops is handled
         if (!Token::Match(tok2, "%varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid))
             return false;
@@ -8546,6 +8549,73 @@ void Tokenizer::simplifyBuiltinExpect()
 
             // remove "likely|unlikely ("
             tok->deleteNext(2);
+        }
+    }
+}
+
+
+// Add std:: in front of std classes, when using namespace std; was given
+void Tokenizer::simplifyNamespaceStd()
+{
+    if (!isCPP())
+        return;
+
+    static const char* stdTypes_[] = { // Types and objects in std namespace that are neither functions nor templates
+        "string", "wstring",
+        "iostream", "ostream", "ofstream", "ostringstream", "istream", "ifstream", "istringstream", "fstream", "stringstream",
+        "stringbuf", "streambuf", "ios", "filebuf", "ios_base",
+        "exception", "bad_exception",
+        "logic_error", "domain_error", "invalid_argument_", "length_error", "out_of_rage", "runtime_error", "range_error", "overflow_error", "underflow_error",
+        "locale",
+        "cout", "cerr", "clog", "cin",
+        "fpos", "streamoff", "streampos", "streamsize"
+    };
+    static const std::set<std::string> stdTypes(stdTypes_, stdTypes_+sizeof(stdTypes_)/sizeof(*stdTypes_));
+    static const char* stdTemplates_[] = {
+        "basic_string", "bitset", "deque", "list", "map", "multimap", "priority_queue", "queue", "set", "stack", "vector", "pair",
+        "iterator", "iterator_traits"
+    };
+    static const std::set<std::string> stdTemplates(stdTemplates_, stdTemplates_+sizeof(stdTemplates_)/sizeof(*stdTemplates_));
+    static const char* stdFunctions_[] = {
+        "getline",
+        "for_each", "find", "find_if", "find_end", "find_first_of", "adjacent_find", "count", "count_if", "mismatch", "equal", "search", "search_n",
+        "copy", "copy_backward", "swap", "swap_ranges", "iter_swap", "transform", "replace", "replace_if", "replace_copy", "replace_copy_if", "fill", "fill_n", "generate", "generate_n", "remove",
+        "remove_if", "remove_copy", "remove_copy_if", "unique", "unique_copy", "reverse", "reverse_copy", "rotate", "rotate_copy", "random_shuffle", "partition", "stable_partition",
+        "sort", "stable_sort", "partial_sort", "partial_sort_copy", "nth_element", "lower_bound", "upper_bound", "equal_range", "binary_search", "merge", "inplace_merge", "includes",
+        "set_union", "set_intersection", "set_difference", "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
+        "min", "max", "min_element", "max_element", "lexicographical_compare", "next_permutation", "prev_permutation",
+        "advance", "back_inserter", "distance", "front_inserter", "inserter",
+        "make_pair"
+    };
+    static const std::set<std::string> stdFunctions(stdFunctions_, stdFunctions_+sizeof(stdFunctions_)/sizeof(*stdFunctions_));
+
+    for (Token* tok = const_cast<Token*>(Token::findsimplematch(list.front(), "using namespace std ;")); tok; tok = tok->next()) {
+        bool insert = false;
+        if (Token::Match(tok, "%var% (") && !Token::Match(tok->previous(), ".|::") && stdFunctions.find(tok->str()) != stdFunctions.end())
+            insert = true;
+        else if (Token::Match(tok, "%var% <") && !Token::Match(tok->previous(), ".|::") && stdTemplates.find(tok->str()) != stdTemplates.end())
+            insert = true;
+        else if (tok->isName() && !Token::Match(tok->next(), "(|<") && !Token::Match(tok->previous(), ".|::") && stdTypes.find(tok->str()) != stdTypes.end())
+            insert = true;
+
+        if (insert) {
+            tok->previous()->insertToken("std");
+            tok->previous()->linenr(tok->linenr()); // For stylistic reasons we put the std:: in the same line as the following token
+            tok->previous()->fileIndex(tok->fileIndex());
+            tok->previous()->insertToken("::");
+        }
+
+        else if (_settings->standards.cpp11 && Token::Match(tok, "!!:: tr1 ::"))
+            tok->next()->str("std");
+    }
+
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (_settings->standards.cpp11 && Token::Match(tok, "std :: tr1 ::"))
+            Token::eraseTokens(tok, tok->tokAt(3));
+
+        else if (Token::Match(tok, "using namespace std ;")) {
+            Token::eraseTokens(tok, tok->tokAt(4));
+            tok->deleteThis();
         }
     }
 }

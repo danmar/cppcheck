@@ -2316,7 +2316,7 @@ private:
         {
             const char code[] = "using namespace std; namespace a{ namespace b{ void f(){} } }";
 
-            const std::string expected("using namespace std ; namespace a { namespace b { void f ( ) { } } }");
+            const std::string expected("namespace a { namespace b { void f ( ) { } } }");
 
             ASSERT_EQUALS(expected, tok(code));
         }

@@ -387,6 +387,8 @@ private:
         TEST_CASE(bitfields12); // ticket #3485 (segmentation fault)
         TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
 
+        TEST_CASE(simplifyNamespaceStd);
+
         TEST_CASE(microsoftMFC);
         TEST_CASE(microsoftMemory);
 
@@ -433,12 +435,13 @@ private:
         TEST_CASE(platformUnix64);
     }
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp") {
+    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = false) {
         errout.str("");
 
         Settings settings;
         settings.debugwarnings = true;
         settings.platform(platform);
+        settings.standards.cpp11 = cpp11;
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -6178,6 +6181,48 @@ private:
 
     void bitfields13() { // ticket #3502 (segmentation fault)
         ASSERT_EQUALS("x y ;", tokenizeAndStringify("struct{x y:};\n",false));
+    }
+
+    void simplifyNamespaceStd() {
+        static const char code1[] = "map<foo, bar> m;"; // namespace std is not used
+        ASSERT_EQUALS("map < foo , bar > m ;", tokenizeAndStringify(code1, false));
+
+        static const char code2[] = "using namespace std;\n"
+                                    "map<foo, bar> m;";
+        ASSERT_EQUALS("std :: map < foo , bar > m ;", tokenizeAndStringify(code2, false));
+
+        static const char code3[] = "using namespace std;\n"
+                                    "string s;";
+        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code3, false));
+
+        static const char code4[] = "using namespace std;\n"
+                                    "void foo() {swap(a, b); }";
+        ASSERT_EQUALS("void foo ( ) { std :: swap ( a , b ) ; }", tokenizeAndStringify(code4, false));
+
+        static const char code5[] = "using namespace std;\n"
+                                    "void foo() {map(a, b); }"; // Thats obviously not std::map<>
+        ASSERT_EQUALS("void foo ( ) { map ( a , b ) ; }", tokenizeAndStringify(code5, false));
+
+        static const char code6[] = "using namespace std;\n"
+                                    "string<wchar_t> s;"; // Thats obviously not std::string
+        ASSERT_EQUALS("string < wchar_t > s ;", tokenizeAndStringify(code6, false));
+
+        static const char code7[] = "using namespace std;\n"
+                                    "swap s;"; // Thats obviously not std::swap
+        ASSERT_EQUALS("swap s ;", tokenizeAndStringify(code7, false));
+
+        static const char code8[] = "using namespace std;\n"
+                                    "std::string s;";
+        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code8, false));
+
+        static const char code9[] = "using namespace std;\n"
+                                    "tr1::function <void(int)> f;";
+        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Unspecified, "test.cpp", false));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Unspecified, "test.cpp", true));
+
+        static const char code10[] = "std::tr1::function <void(int)> f;";
+        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Unspecified, "test.cpp", false));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Unspecified, "test.cpp", true));
     }
 
     void microsoftMFC() {

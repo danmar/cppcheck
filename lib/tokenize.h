@@ -609,6 +609,11 @@ public:
     void unnecessaryQualificationError(const Token *tok, const std::string &qualification) const;
 
     /**
+     * Add std:: in front of std classes, when using namespace std; was given
+     */
+    void simplifyNamespaceStd();
+
+    /**
      * Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
      */
     void simplifyMicrosoftMFC();
