@@ -30,9 +30,6 @@
 #include <list>
 #include <string>
 
-// use tinyxml with STL
-#include <tinyxml.h>
-
 extern std::ostringstream errout;
 extern std::ostringstream output;
 

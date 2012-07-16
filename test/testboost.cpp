@@ -35,7 +35,7 @@ private:
         TEST_CASE(BoostForeachContainerModification)
     }
 
-    void check(const std::string &code) {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -45,7 +45,7 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code.c_str());
+        std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 

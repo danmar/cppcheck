@@ -44,7 +44,7 @@ private:
         TEST_CASE(catchExceptionByValue);
     }
 
-    void check(const std::string &code, bool inconclusive = false) {
+    void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
