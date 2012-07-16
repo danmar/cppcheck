@@ -4104,7 +4104,7 @@ private:
                    "         std::map<unsigned int,unsigned int> _hash;\n"
                    "    public:\n"
                    "         A() : _hash() {}\n"
-                   "         unsigned int fetch(unsigned int key) // cannot be 'const'\n"
+                   "         unsigned int fetch(unsigned int key)\n" // cannot be 'const'
                    "         {\n"
                    "             return _hash[key];\n"
                    "         }\n"

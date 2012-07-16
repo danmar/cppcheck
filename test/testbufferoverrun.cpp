@@ -673,7 +673,7 @@ private:
               "static void f()\n"
               "{\n"
               "    char str[5];\n"
-              "    memclr( str );   // ERROR\n"
+              "    memclr( str );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds.\n", errout.str());
 
@@ -685,7 +685,7 @@ private:
               "static void f()\n"
               "{\n"
               "    char str[5];\n"
-              "    memclr( 0, str );   // ERROR\n"
+              "    memclr( 0, str );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds.\n", errout.str());
 
@@ -697,7 +697,7 @@ private:
               "static void f()\n"
               "{\n"
               "    char str[5];\n"
-              "    memclr( 10, str );   // ERROR\n"
+              "    memclr( 10, str );\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds.\n",
                            "", errout.str());
@@ -712,7 +712,7 @@ private:
               "static void f()\n"
               "{\n"
               "    char str[5];\n"
-              "    memclr( str, 5 );   // ERROR\n"
+              "    memclr( str, 5 );\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
