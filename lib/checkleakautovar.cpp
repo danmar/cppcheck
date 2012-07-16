@@ -422,7 +422,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // Function call..
-        else if (Token::Match(tok, "%type% (")) {
+        else if (Token::Match(tok, "%type% (") && tok->str() != "return") {
             std::string dealloc;
             {
                 const std::map<std::string, std::string>::iterator func = deallocFunctions.find(tok->str());
