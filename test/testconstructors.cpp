@@ -2387,7 +2387,7 @@ private:
               "    A* const a;\n"
               "    B& operator=(const B& r) { }\n"
               "};");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning) Member variable 'B::a' is not assigned a value in 'B::operator='.\n", errout.str()); // #3804
+        ASSERT_EQUALS("", errout.str()); // #3804
 
         check("struct B {\n"
               "    const int a;\n"

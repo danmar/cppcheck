@@ -3229,11 +3229,6 @@ bool Tokenizer::simplifyTokenList()
     delete _symbolDatabase;
     _symbolDatabase = NULL;
 
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "* const"))
-            tok->deleteNext();
-    }
-
     // simplify references
     simplifyReference();
 
@@ -3434,6 +3429,13 @@ bool Tokenizer::simplifyTokenList()
         return false;
 
     list.front()->assignProgressValues();
+
+    // Create symbol database and then remove const keywords
+    getSymbolDatabase();
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "* const"))
+            tok->deleteNext();
+    }
 
     if (_settings->debug) {
         list.front()->printOut(0, list.getFiles());
