@@ -36,56 +36,7 @@
 
 // Here is the catch: cppcheck core is Ansi code (using char type).
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
-// of called functions. So we must convert data given to WinAPI functions from
-// ANSI to Unicode. Likewise we must convert data we get from WinAPI from
-// Unicode to ANSI.
-
-// Note that qmake creates VS project files that define UNICODE but don't
-// define _UNICODE! Which means e.g. TCHAR macros don't work properly.
-
-#if defined(UNICODE)
-
-static bool TransformUcs2ToAnsi(LPCWSTR psUcs, LPSTR psAnsi, int nAnsi)
-{
-    WideCharToMultiByte(CP_ACP, 0, psUcs, -1, psAnsi, nAnsi, NULL, NULL);
-    return true;
-}
-
-static bool TransformAnsiToUcs2(LPCSTR psAnsi, LPWSTR psUcs, UINT nUcs)
-{
-    MultiByteToWideChar(CP_ACP, 0, psAnsi, -1, psUcs, nUcs);
-    return true;
-}
-
-static BOOL MyIsDirectory(const std::string& path)
-{
-    WCHAR * unicodeCleanPath = new WCHAR[path.size() + 1];
-    TransformAnsiToUcs2(path.c_str(), unicodeCleanPath, path.size() + 1);
-    // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    BOOL res = PathIsDirectory(unicodeCleanPath);
-    delete [] unicodeCleanPath;
-    return res;
-}
-
-static HANDLE MyFindFirstFile(const std::string& path, LPWIN32_FIND_DATA findData)
-{
-    WCHAR * unicodeOss = new wchar_t[path.size() + 1];
-    TransformAnsiToUcs2(path.c_str(), unicodeOss, path.size() + 1);
-    HANDLE hFind = FindFirstFile(unicodeOss, findData);
-    delete [] unicodeOss;
-    return hFind;
-}
-
-static BOOL MyFileExists(const std::string& path)
-{
-    WCHAR * unicodeOss = new wchar_t[path.size() + 1];
-    TransformAnsiToUcs2(path.c_str(), unicodeOss, path.size() + 1);
-    BOOL result = PathFileExists(unicodeOss);
-    delete [] unicodeOss;
-    return result;
-}
-
-#else // defined(UNICODE)
+// of called functions. Thus, we explicitly call *A versions of the functions.
 
 static BOOL MyIsDirectory(const std::string& path)
 {
@@ -93,13 +44,13 @@ static BOOL MyIsDirectory(const std::string& path)
     return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
 #else
 // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    return PathIsDirectory(path.c_str());
+    return PathIsDirectoryA(path.c_str());
 #endif
 }
 
-static HANDLE MyFindFirstFile(const std::string& path, LPWIN32_FIND_DATA findData)
+static HANDLE MyFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
 {
-    HANDLE hFind = FindFirstFile(path.c_str(), findData);
+    HANDLE hFind = FindFirstFileA(path.c_str(), findData);
     return hFind;
 }
 
@@ -111,12 +62,10 @@ static BOOL MyFileExists(const std::string& path)
     if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
         result = TRUE;
 #else
-    BOOL result = PathFileExists(path.c_str());
+    BOOL result = PathFileExistsA(path.c_str());
 #endif
     return result;
 }
-
-#endif // defined(UNICODE)
 
 void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path)
 {
@@ -151,7 +100,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
         }
     }
 
-    WIN32_FIND_DATA ffd;
+    WIN32_FIND_DATAA ffd;
     HANDLE hFind = MyFindFirstFile(oss.str(), &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
         return;
@@ -160,16 +109,10 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
             continue;
 
-#if defined(UNICODE)
-        std::size_t length = wcslen(ffd.cFileName);
-        char * ansiFfd = new char[length + 1];
-        TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, length + 1);
-#else // defined(UNICODE)
-        const char * ansiFfd = &ffd.cFileName[0];
+        const char* ansiFfd = ffd.cFileName;
         if (strchr(ansiFfd,'?')) {
-            ansiFfd = &ffd.cAlternateFileName[0];
+            ansiFfd = ffd.cAlternateFileName;
         }
-#endif // defined(UNICODE)
 
         std::ostringstream fname;
         fname << bdir.str() << ansiFfd;
@@ -191,10 +134,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             // Directory
             FileLister::recursiveAddFiles(files, fname.str());
         }
-#if defined(UNICODE)
-        delete [] ansiFfd;
-#endif // defined(UNICODE)
-    } while (FindNextFile(hFind, &ffd) != FALSE);
+    } while (FindNextFileA(hFind, &ffd) != FALSE);
 
     if (INVALID_HANDLE_VALUE != hFind) {
         FindClose(hFind);
