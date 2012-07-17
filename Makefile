@@ -88,6 +88,7 @@ LIBOBJ =      lib/check64bit.o \
               lib/checkexceptionsafety.o \
               lib/checkinternal.o \
               lib/checkio.o \
+              lib/checkmutex.o \
               lib/checkleakautovar.o \
               lib/checkmemoryleak.o \
               lib/checknonreentrantfunctions.o \
@@ -239,6 +240,9 @@ lib/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/c
 
 lib/checkio.o: lib/checkio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkio.o lib/checkio.cpp
+
+lib/checkmutex.o: lib/checkmutex.cpp lib/checkmutex.h lib/check.h lib/config.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkmutex.o lib/checkmutex.cpp
 
 lib/checkleakautovar.o: lib/checkleakautovar.cpp lib/checkleakautovar.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/checkmemoryleak.h lib/checkother.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkleakautovar.o lib/checkleakautovar.cpp
