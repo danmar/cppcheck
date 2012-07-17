@@ -163,6 +163,7 @@ private:
 
         TEST_CASE(staticvar);
         TEST_CASE(externvar);
+        TEST_CASE(referencevar);  // 3954 - false positive for reference pointer
 
         TEST_CASE(alloc_alloc_1);
 
@@ -1005,6 +1006,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void referencevar() {  // 3954 - false positive for reference pointer
+        check("void f() {\n"
+              "    char *&x = get();\n"
+              "    x = malloc(100);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     void alloc_alloc_1() {
