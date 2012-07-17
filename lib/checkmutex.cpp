@@ -53,7 +53,7 @@ void CheckMutex::checkFunction(const Token *tok)	{
 }
 
 void CheckMutex::checkMutexUsageError(const Token *tok, const std::string & fName) {
-    reportError(tok, Severity::error, "pthreadLockUnlockMismatch", "A pthread_mutex_lock call doesnt have a related unlock call in function " + fName + ".");
+    reportError(tok, Severity::error, "pthreadLockUnlockMismatch", "A pthread_mutex_lock call doesn't have a related unlock call in function " + fName + ".");
 }
 
 void CheckMutex::checkMutexUsage()
