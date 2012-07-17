@@ -158,6 +158,7 @@ private:
         TEST_CASE(simplifyKnownVariables47);    // ticket #3627 - >>
         TEST_CASE(simplifyKnownVariables48);    // ticket #3754 - wrong simplification in for loop header
         TEST_CASE(simplifyKnownVariables49);    // #3691 - continue in switch
+        TEST_CASE(simplifyKnownVariables50);    // #4066 sprintf changes
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
@@ -246,6 +247,7 @@ private:
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
         TEST_CASE(varid_using);  // ticket #3648
         TEST_CASE(varid_catch);
+        TEST_CASE(varid_functionPrototypeTemplate);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2360,6 +2362,48 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
     }
 
+    void simplifyKnownVariables50() { // #4066
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    sprintf(str1, \"%%\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "sprintf ( str1 , \"%%\" ) ;\n"
+                                    "strcpy ( str2 , \"%\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[25], str2[25];\n"
+                                "    sprintf(str1, \"abcdef%%%% and %% and %\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 25 ] ; char str2 [ 25 ] ;\n"
+                                    "sprintf ( str1 , \"abcdef%%%% and %% and %\" ) ;\n"
+                                    "strcpy ( str2 , \"abcdef%% and % and %\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    sprintf(str1, \"abc\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "sprintf ( str1 , \"abc\" ) ;\n"
+                                    "strcpy ( str2 , \"abc\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+    }
+
     void simplifyKnownVariablesIfEq1() {
         const char code[] = "void f(int x) {\n"
                             "    if (x==5) {\n"
@@ -3798,6 +3842,11 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
+    void varid_functionPrototypeTemplate() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: function < void ( ) > fptr@1 ;\n", tokenizeDebugListing("function<void(void)> fptr;"));
+    }
+
     void varidclass1() {
         const std::string actual = tokenizeDebugListing(
                                        "class Fred\n"
@@ -4280,21 +4329,21 @@ private:
     void simplifyFunctionParameters() {
         {
             const char code[] = "char a [ ABC ( DEF ) ] ;";
-            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(code, tokenizeAndStringify(code));
         }
 
         {
             const char code[] = "module ( a , a , sizeof ( a ) , 0444 ) ;";
-            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 292 ) ;", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 292 ) ;", tokenizeAndStringify(code));
         }
 
-        ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));
-        ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }", true));
-        ASSERT_EQUALS("int main ( int argc , char * argv [ ] ) { }", tokenizeAndStringify("int main(argc,argv) int argc; char *argv[]; { }", true));
-        ASSERT_EQUALS("int f ( int p , int w , float d ) { }", tokenizeAndStringify("int f(p,w,d) float d; { }", true));
+        ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }"));
+        ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }"));
+        ASSERT_EQUALS("int main ( int argc , char * argv [ ] ) { }", tokenizeAndStringify("int main(argc,argv) int argc; char *argv[]; { }"));
+        ASSERT_EQUALS("int f ( int p , int w , float d ) { }", tokenizeAndStringify("int f(p,w,d) float d; { }"));
 
         // #1067 - Not simplified. Feel free to fix so it is simplified correctly but this syntax is obsolete.
-        ASSERT_EQUALS("int ( * d ( a , b , c ) ) ( ) int a ; int b ; int c ; { }", tokenizeAndStringify("int (*d(a,b,c))()int a,b,c; { }", true));
+        ASSERT_EQUALS("int ( * d ( a , b , c ) ) ( ) int a ; int b ; int c ; { }", tokenizeAndStringify("int (*d(a,b,c))()int a,b,c; { }"));
 
         {
             // This is not a function but the pattern is similar..
@@ -4317,7 +4366,7 @@ private:
                                 "    {"
                                 "    }"
                                 "}";
-            ASSERT_EQUALS("MACRO ( a ) void f ( ) { SetLanguage ( ) ; { } }", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("MACRO ( a ) void f ( ) { SetLanguage ( ) ; { } }", tokenizeAndStringify(code));
         }
     }
 
@@ -4330,7 +4379,7 @@ private:
                             "}\n";
         ASSERT_EQUALS("int f ( float * p , int w , int d , int e , short len )\n"
                       "{\n"
-                      "}", tokenizeAndStringify(code,true));
+                      "}", tokenizeAndStringify(code));
     }
 
     void simplifyFunctionParametersErrors() {
@@ -4349,6 +4398,16 @@ private:
 
         tokenizeAndStringify("void foo(int, int)\n"
                              "{}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #3848 - Don't hang
+        tokenizeAndStringify("sal_Bool ShapeHasText(sal_uLong, sal_uLong) const {\n"
+                             "    return sal_True;\n"
+                             "}\n"
+                             "void CreateSdrOLEFromStorage() {\n"
+                             "    comphelper::EmbeddedObjectContainer aCnt( xDestStorage );\n"
+                             "    { }\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4497,7 +4556,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS("void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 4 + 2 ; }", tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS("void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 6 ; }", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void tokenize_strings() {
@@ -4703,7 +4762,7 @@ private:
     void vardecl_template_1() {
         // ticket #1046
         const char code1[] = "b<(1<<24),10,24> u, v;";
-        const char res1[]  = "b < ( 1 << 24 ) , 10 , 24 > u ; b < ( 1 << 24 ) , 10 , 24 > v ;";
+        const char res1[]  = "b < ( 16777216 ) , 10 , 24 > u ; b < ( 16777216 ) , 10 , 24 > v ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
         // ticket #3571 (segmentation fault)
         tokenizeAndStringify("template <int i = (3>4) > class X4 {};");
@@ -5666,7 +5725,10 @@ private:
                            "struct S\n"
                            "{};\n"
                            "S<int> s;\n";
-        TODO_ASSERT_EQUALS("S < int , ( int ) 0 > s ;",   // wanted result
+        TODO_ASSERT_EQUALS("S<int,(int)0> s ; struct S<int,(int)0> { } ;",   // wanted result
+                           "template < class T , T t >\n"
+                           "struct S\n"
+                           "{ } ;\n"
                            "S < int , ( T ) 0 > s ;",     // current result
                            tokenizeAndStringify(code));
     }
@@ -6449,6 +6511,9 @@ private:
         // ticket #3723 - Simplify condition (0 && a < 123)
         ASSERT_EQUALS("( 0 )",
                       tokenizeAndStringify("( 0 && a < 123 )", true));
+
+        // ticket #3964 - simplify numeric calculations in tokenization
+        ASSERT_EQUALS("char a [ 10 ] ;", tokenizeAndStringify("char a[9+1];"));
     }
 
     void simplifyCompoundAssignment() {

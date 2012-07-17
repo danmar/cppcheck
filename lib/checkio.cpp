@@ -63,7 +63,7 @@ void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamN
 
 //---------------------------------------------------------------------------
 // fflush(stdin) <- fflush only applies to output streams in ANSI C
-// fread(); fwrite(); <- consecutive read/write statements require repositioning inbetween
+// fread(); fwrite(); <- consecutive read/write statements require repositioning in between
 // fopen("","r"); fwrite(); <- write to read-only file (or vice versa)
 // fclose(); fread(); <- Use closed file
 //---------------------------------------------------------------------------
@@ -102,7 +102,7 @@ void CheckIO::checkFileUsage()
     std::size_t varListSize = symbolDatabase->getVariableListSize();
     for (std::size_t i = 1; i < varListSize; ++i) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->varId() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
+        if (!var || !var->varId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
             continue;
 
         if (var->isLocal()) {
@@ -258,7 +258,7 @@ void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varn
 void CheckIO::ioWithoutPositioningError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.");
+                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.");
 }
 
 void CheckIO::readWriteOnlyFileError(const Token *tok)
@@ -383,11 +383,12 @@ static bool isComplexType(const Variable* var, const Token* varTypeTok)
     if (knownTypes.empty()) {
         knownTypes.insert("struct"); // If a type starts with the struct keyword, its a complex type
         knownTypes.insert("string");
+        knownTypes.insert("wstring");
     }
 
     if (varTypeTok->str() == "std")
         varTypeTok = varTypeTok->tokAt(2);
-    return(knownTypes.find(varTypeTok->str()) != knownTypes.end() && !var->isPointer() && !var->isArray());
+    return((knownTypes.find(varTypeTok->str()) != knownTypes.end() || (varTypeTok->strAt(1) == "<" && varTypeTok->linkAt(1) && varTypeTok->linkAt(1)->strAt(1) != "::")) && !var->isPointer() && !var->isArray());
 }
 
 static bool isKnownType(const Variable* var, const Token* varTypeTok)

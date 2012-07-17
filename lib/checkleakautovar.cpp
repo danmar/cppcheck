@@ -240,7 +240,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (tok->varId() > 0) {
             const std::map<unsigned int, std::string>::iterator var = alloctype.find(tok->varId());
             if (var != alloctype.end()) {
-                if (var->second == "dealloc") {
+                if (var->second == "dealloc" && !Token::Match(tok->previous(), "[;{},] %var% =")) {
                     deallocUseError(tok, tok->str());
                 } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                     varInfo->erase(tok->varId());
@@ -310,6 +310,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (var && !var->isArgument() && !var->isLocal()) {
                 continue;
             }
+
+            // Don't check reference variables
+            if (var && var->isReference())
+                continue;
 
             // allocation?
             if (Token::Match(tok->tokAt(2), "%type% (")) {
@@ -502,6 +506,8 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
             } else if (!dealloc.empty()) {
                 alloctype[arg->varId()] = "dealloc";
             }
+        } else if (Token::Match(arg, "%var% (")) {
+            functionCall(arg, varInfo, dealloc);
         }
     }
 }

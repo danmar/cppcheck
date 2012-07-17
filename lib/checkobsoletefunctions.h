@@ -64,67 +64,61 @@ private:
 
     /** init obsolete functions list ' */
     void initObsoleteFunctions() {
-        _obsoletePosixFunctions["bsd_signal"] = "Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function";
+        // Obsolete posix functions, which messages suggest only one alternative and doesn't contain additional information.
+        const struct {
+            const char* bad;
+            const char* good;
+        } posix_stdmsgs[] = {
+            {"bsd_signal", "sigaction"},
+            {"gethostbyaddr", "getnameinfo"},
+            {"gethostbyname", "getaddrinfo"},
+            {"bcmp", "memcmp"},
+            {"bzero", "memset"},
+            {"ecvt", "sprintf"},
+            {"fcvt", "sprintf"},
+            {"gcvt", "sprintf"},
+            {"getwd", "getcwd"},
+            {"index", "strchr"}, // See #2334 (using the Qt Model/View function 'index')
+            {"rindex", "strrchr"},
+            {"pthread_attr_getstackaddr", "pthread_attr_getstack"},
+            {"pthread_attr_setstackaddr", "pthread_attr_setstack"},
+            {"vfork", "fork"},
+            {"wcswcs", "wcsstr"},
+            {"rand_r", "rand"},
+            {"utime", "utimensat"},
+            {"asctime", "strftime"},
+            {"asctime_r", "strftime"},
+            {"ctime", "strftime"},
+            {"ctime_r", "strftime"}
+        };
 
-        _obsoletePosixFunctions["gethostbyaddr"] = "Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getnameinfo' function";
-        _obsoletePosixFunctions["gethostbyname"] = "Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getaddrinfo' function";
+        for (std::size_t i = 0; i < (sizeof(posix_stdmsgs) / sizeof(*posix_stdmsgs)); ++i) {
+            _obsoletePosixFunctions[posix_stdmsgs[i].bad] = "Obsolete function '" + std::string(posix_stdmsgs[i].bad) + "' called. It is recommended to use the function '" + posix_stdmsgs[i].good + "' instead.";
+        }
 
-        _obsoletePosixFunctions["usleep"] = "Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n"
-                                            "Found obsolete function 'usleep'. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function.";
+        _obsoletePosixFunctions["usleep"] = "Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n"
+                                            "The obsolete function 'usleep' is called. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function.";
 
-        _obsoletePosixFunctions["bcmp"]="Found obsolete function 'bcmp'. It is recommended that new applications use the 'memcmp' function";
-        _obsoletePosixFunctions["bcopy"]="Found obsolete function 'bcopy'. It is recommended that new applications use the 'memmove' or 'memcpy' functions";
-        _obsoletePosixFunctions["bzero"]="Found obsolete function 'bzero'. It is recommended that new applications use the 'memset' function";
+        _obsoletePosixFunctions["bcopy"] = "Obsolete function 'bcopy' called. It is recommended to use the 'memmove' or 'memcpy' function instead.";
 
-        _obsoletePosixFunctions["ecvt"]="Found obsolete function 'ecvt'. It is recommended that new applications use the 'sprintf' function";
-        _obsoletePosixFunctions["fcvt"]="Found obsolete function 'fcvt'. It is recommended that new applications use the 'sprintf' function";
-        _obsoletePosixFunctions["gcvt"]="Found obsolete function 'gcvt'. It is recommended that new applications use the 'sprintf' function";
+        _obsoletePosixFunctions["ftime"] = "Obsolete function 'ftime' called. It is recommended to use time(), gettimeofday() or clock_gettime() instead.";
 
-        _obsoletePosixFunctions["ftime"]="Found obsolete function 'ftime'.\n"
-                                         "It is recommended that new applications use time(), gettimeofday(), or clock_gettime() instead. "
-                                         "For high-resolution timing on Windows, QueryPerformanceCounter() and QueryPerformanceFrequency may be used.";
+        _obsoletePosixFunctions["getcontext"] = "Obsolete function 'getcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
+        _obsoletePosixFunctions["makecontext"] = "Obsolete function 'makecontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
+        _obsoletePosixFunctions["swapcontext"] = "Obsolete function 'swapcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
 
-        _obsoletePosixFunctions["getcontext"] = "Found obsolete function 'getcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads";
-        _obsoletePosixFunctions["makecontext"] = "Found obsolete function 'makecontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads";
-        _obsoletePosixFunctions["swapcontext"] = "Found obsolete function 'swapcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads";
+        _obsoletePosixFunctions["scalbln"] = "Obsolete function 'scalb' called. It is recommended to use 'scalbln', 'scalblnf' or 'scalblnl' instead.";
 
-        _obsoletePosixFunctions["getwd"] = "Found obsolete function 'getwd'. It is recommended that new applications use the 'getcwd' function";
+        _obsoletePosixFunctions["ualarm"] = "Obsolete function 'ualarm' called. It is recommended to use 'timer_create', 'timer_delete', 'timer_getoverrun', 'timer_gettime' or 'timer_settime' instead.";
 
-        // See #2334 (using the Qt Model/View function 'index')
-        _obsoletePosixFunctions["index"] ="Found obsolete function 'index'. It is recommended to use the function 'strchr' instead";
+        _obsoletePosixFunctions["tmpnam"] = "Obsolete function 'tmpnam' called. It is recommended to use 'tmpfile', 'mkstemp' or 'mkdtemp' instead.";
 
-        _obsoletePosixFunctions["rindex"] = "Found obsolete function 'rindex'. It is recommended to use the function 'strrchr' instead";
+        _obsoletePosixFunctions["tmpnam_r"] = "Obsolete function 'tmpnam_r' called. It is recommended to use 'tmpfile', 'mkstemp' or 'mkdtemp' instead.";
 
-        _obsoletePosixFunctions["pthread_attr_getstackaddr"] = "Found obsolete function 'pthread_attr_getstackaddr'. It is recommended that new applications use the 'pthread_attr_getstack' function";
-        _obsoletePosixFunctions["pthread_attr_setstackaddr"] = "Found obsolete function 'pthread_attr_setstackaddr'. It is recommended that new applications use the 'pthread_attr_setstack' function";
-
-        _obsoletePosixFunctions["scalbln"] = "Found obsolete function 'scalb'. It is recommended to use either 'scalbln', 'scalblnf' or 'scalblnl' instead of this function";
-
-        _obsoletePosixFunctions["ualarm"] = "Found obsolete function 'ualarm'. It is recommended to use either 'timer_create', 'timer_delete', 'timer_getoverrun', 'timer_gettime', or 'timer_settime' instead of this function";
-
-        _obsoletePosixFunctions["vfork"] = "Found obsolete function 'vfork'. It is recommended to use the function 'fork' instead";
-
-        _obsoletePosixFunctions["wcswcs"] = "Found obsolete function 'wcswcs'. It is recommended to use the function 'wcsstr' instead";
-
-        _obsoletePosixFunctions["rand_r"] = "Found obsolete function 'rand_r'. It is recommended to use the function 'rand' instead";
-
-        _obsoletePosixFunctions["tmpnam"] = "Found obsolete function 'tmpnam'. It is recommended to use either 'tmpfile', 'mkstemp', or 'mkdtemp' instead for this function";
-
-        _obsoletePosixFunctions["tmpnam_r"] = "Found obsolete function 'tmpnam_r'. It is recommended to use either 'tmpfile', 'mkstemp', or 'mkdtemp' instead for this function";
-
-        _obsoletePosixFunctions["utime"] = "Found obsolete function 'utime'. It is recommended to use the function 'utimensat' instead";
-
-        _obsoletePosixFunctions["asctime"] = "Found obsolete function 'asctime'. It is recommended to use the function 'strftime' instead";
-
-        _obsoletePosixFunctions["asctime_r"] = "Found obsolete function 'asctime_r'. It is recommended to use the function 'strftime' instead";
-
-        _obsoletePosixFunctions["ctime"] = "Found obsolete function 'ctime'. It is recommended to use the function 'strftime' instead";
-
-        _obsoletePosixFunctions["ctime_r"] = "Found obsolete function 'ctime'. It is recommended to use the function 'strftime' instead";
-
-        _obsoleteStandardFunctions["gets"] = "Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n"
-                                             "Found obsolete function 'gets'. With gets you'll get buffer overruns if the input data too big for the buffer. It is recommended to use the function 'fgets' instead.";
-        _obsoleteC99Functions["alloca"] = "Found obsolete function 'alloca'. It is recommended to use a variable length array.\nFound obsolete function 'alloca'. It is recommended to use a variable length array or a dynamically allocated array. The function 'alloca' is dangerous for many reasons (http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).";
+        _obsoleteStandardFunctions["gets"] = "Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n"
+                                             "The obsolete function 'gets' is called. With 'gets' you'll get a buffer overrun if the input data exceeds the size of the buffer. It is recommended to use the function 'fgets' instead.";
+        _obsoleteC99Functions["alloca"] = "Obsolete function 'alloca' called. It is recommended to use a variable length array.\n"
+                                          "The obsolete function 'alloca' is called. It is recommended to use a variable length array or a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons (http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).";
 
     }
 
@@ -137,7 +131,7 @@ private:
         }
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Obsolete functions";
     }
 

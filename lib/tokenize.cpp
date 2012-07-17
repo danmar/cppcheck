@@ -26,7 +26,6 @@
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
 #include "timer.h"
-#include "checknullpointer.h"   // isUpper
 
 #include <cstring>
 #include <sstream>
@@ -1403,6 +1402,11 @@ void Tokenizer::simplifyTypedef()
                                 Token::createMutualLinks(tok2, tok3);
                             }
 
+                            if (!tok2->next()) {
+                                syntaxError(tok2);
+                                return; // can't recover so quit
+                            }
+
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
                             tok2 = tok2->next();
 
@@ -1620,6 +1624,12 @@ bool Tokenizer::tokenize(std::istream &code,
     // combine "- %num%"
     concatenateNegativeNumber();
 
+    // simplify simple calculations
+    for (Token *tok = list.front() ? list.front()->next() : NULL; tok; tok = tok->next()) {
+        if (tok->isNumber())
+            TemplateSimplifier::simplifyNumericCalculations(tok->previous());
+    }
+
     // remove extern "C" and extern "C" {}
     if (isCPP())
         simplifyExternC();
@@ -1762,6 +1772,13 @@ bool Tokenizer::tokenize(std::istream &code,
         simplifyTypedef();
     } else {
         simplifyTypedef();
+    }
+
+    for (Token* tok = list.front(); tok;) {
+        if (Token::Match(tok, "union|struct|class union|struct|class"))
+            tok->deleteNext();
+        else
+            tok = tok->next();
     }
 
     // catch bad typedef canonicalization
@@ -1930,7 +1947,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyConditionOperator();
 
     // remove exception specifications..
-    removeExceptionSpecifications(list.front());
+    removeExceptionSpecifications();
 
     // Collapse operator name tokens into single token
     // operator = => operator=
@@ -1984,7 +2001,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     simplifyRedundantConsecutiveBraces();
 
-    return validate();
+    bool valid = validate();
+    if (valid)
+        createSymbolDatabase();
+    return valid;
 }
 //---------------------------------------------------------------------------
 
@@ -2935,6 +2955,9 @@ bool Tokenizer::createLinks()
 
 void Tokenizer::createLinks2()
 {
+    if (isC())
+        return;
+
     std::stack<const Token*> type;
     std::stack<Token*> links;
     for (Token *token = list.front(); token; token = token->next()) {
@@ -2989,7 +3012,7 @@ void Tokenizer::createLinks2()
     }
 }
 
-void Tokenizer::simplifySizeof()
+bool Tokenizer::simplifySizeof()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct %var%")) {
@@ -3046,6 +3069,7 @@ void Tokenizer::simplifySizeof()
         }
     }
 
+    bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() != "sizeof")
             continue;
@@ -3066,6 +3090,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream sz;
             sz << sizeof 'x';
             tok->str(sz.str());
+            ret = true;
             continue;
         }
 
@@ -3077,6 +3102,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream sz;
             sz << sizeof 'x';
             tok->str(sz.str());
+            ret = true;
             continue;
         }
 
@@ -3086,6 +3112,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream ostr;
             ostr << (Token::getStrLength(tok) + 1);
             tok->str(ostr.str());
+            ret = true;
             continue;
         }
 
@@ -3097,6 +3124,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream ostr;
             ostr << (Token::getStrLength(tok) + 1);
             tok->str(ostr.str());
+            ret = true;
             continue;
         }
 
@@ -3169,6 +3197,7 @@ void Tokenizer::simplifySizeof()
         if (Token::simpleMatch(tok->next(), "( * )")) {
             tok->str(MathLib::toString<unsigned long>(sizeOfType(tok->tokAt(2))));
             tok->deleteNext(3);
+            ret = true;
         }
 
         // sizeof( a )
@@ -3178,6 +3207,7 @@ void Tokenizer::simplifySizeof()
                 tok->deleteThis();
                 tok->deleteNext();
                 tok->str(sizeOfVar[tok->varId()]);
+                ret = true;
             } else {
                 // don't try to replace size of variable if variable has
                 // similar name with type (#329)
@@ -3189,6 +3219,7 @@ void Tokenizer::simplifySizeof()
             if (size > 0) {
                 tok->str(MathLib::toString<unsigned int>(size));
                 tok->deleteNext(3);
+                ret = true;
             }
         }
 
@@ -3217,17 +3248,17 @@ void Tokenizer::simplifySizeof()
             if (sz > 0) {
                 tok->str(MathLib::toString<size_t>(sz));
                 Token::eraseTokens(tok, tok->next()->link()->next());
+                ret = true;
             }
         }
     }
-
+    return ret;
 }
 
 bool Tokenizer::simplifyTokenList()
 {
     // clear the _functionList so it can't contain dead pointers
-    delete _symbolDatabase;
-    _symbolDatabase = NULL;
+    deleteSymbolDatabase();
 
     // simplify references
     simplifyReference();
@@ -3367,14 +3398,6 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyIfAssign();    // could be affected by simplifyIfNot
 
-    // In case variable declarations have been updated...
-    if (m_timerResults) {
-        Timer t("Tokenizer::simplifyTokenList::setVarId", _settings->_showtime, m_timerResults);
-        setVarId();
-    } else {
-        setVarId();
-    }
-
     bool modified = true;
     while (modified) {
         modified = false;
@@ -3386,6 +3409,8 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyQuestionMark();
         modified |= simplifyCalculations();
     }
+
+    simplifyConditionOperator();
 
     // replace strlen(str)
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -3431,7 +3456,7 @@ bool Tokenizer::simplifyTokenList()
     list.front()->assignProgressValues();
 
     // Create symbol database and then remove const keywords
-    getSymbolDatabase();
+    createSymbolDatabase();
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "* const"))
             tok->deleteNext();
@@ -3441,7 +3466,7 @@ bool Tokenizer::simplifyTokenList()
         list.front()->printOut(0, list.getFiles());
 
         if (_settings->_verbose)
-            getSymbolDatabase()->printOut("Symbol database");
+            _symbolDatabase->printOut("Symbol database");
     }
 
     if (_settings->debugwarnings) {
@@ -3608,56 +3633,74 @@ void Tokenizer::simplifyRealloc()
 
 void Tokenizer::simplifyFlowControl()
 {
-    unsigned int indentlevel = 0;
-    bool stilldead = false;
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(" || tok->str() == "[") {
-            tok = tok->link();
-            continue;
-        }
 
-        if (tok->str() == "{") {
-            if (tok->previous() && tok->previous()->str() == "=") {
+    for (Token *begin = list.front(); begin; begin = begin->next()) {
+
+        if (begin->str() == "(" || begin->str() == "[" ||
+            (begin->str() == "{" && begin->previous() && begin->strAt(-1) == "="))
+            begin = begin->link();
+
+        //function scope
+        if (!Token::simpleMatch(begin, ") {") && !Token::Match(begin, ") %var% {"))
+            continue;
+
+        Token *end = begin->linkAt(1+(begin->next()->str() == "{" ? 0 : 1));
+        unsigned int indentlevel = 0;
+        bool stilldead = false;
+
+        for (Token *tok = begin; tok != end; tok = tok->next()) {
+            if (tok->str() == "(" || tok->str() == "[") {
                 tok = tok->link();
                 continue;
             }
-            ++indentlevel;
-        } else if (tok->str() == "}") {
-            if (!indentlevel)
-                break;
-            --indentlevel;
-            if (stilldead) {
-                eraseDeadCode(tok, 0);
-                if (indentlevel == 1 || tok->next()->str() != "}" || !Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
-                    stilldead = false;
-                continue;
-            }
-        }
 
-        if (!indentlevel)
-            continue;
-
-        if (Token::Match(tok,"continue|break ;")) {
-            tok = tok->next();
-            eraseDeadCode(tok, 0);
-
-        } else if (Token::Match(tok,"return|throw|exit|abort|goto")) {
-            //catch the first ';'
-            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(" || tok2->str() == "[") {
-                    tok2 = tok2->link();
-                } else if (tok2->str() == ";") {
-                    tok = tok2;
-                    eraseDeadCode(tok, 0);
+            if (tok->str() == "{") {
+                if (tok->previous() && tok->previous()->str() == "=") {
+                    tok = tok->link();
+                    continue;
+                }
+                ++indentlevel;
+            } else if (tok->str() == "}") {
+                if (!indentlevel)
                     break;
-                } else if (Token::Match(tok2, "[{}]"))
-                    break;  //Wrong code.
+                --indentlevel;
+                if (stilldead) {
+                    eraseDeadCode(tok, 0);
+                    if (indentlevel == 1 || tok->next()->str() != "}" || !Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                        stilldead = false;
+                    continue;
+                }
             }
-            //if everything is removed, then remove also the code after an inferior scope
-            //only if the actual scope is not special
-            if (indentlevel > 1 && tok->next()->str() == "}" && Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
-                stilldead = true;
+
+            if (!indentlevel)
+                continue;
+
+            if (Token::Match(tok,"continue|break ;")) {
+                tok = tok->next();
+                eraseDeadCode(tok, 0);
+
+            } else if (Token::Match(tok,"return|goto") ||
+                       (Token::Match(tok,"exit|abort")) ||
+                       (tok->str() == "throw" && !isC())) {
+                //TODO: ensure that we exclude user-defined 'exit|abort|throw', except for 'noreturn'
+                //catch the first ';'
+                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(" || tok2->str() == "[") {
+                        tok2 = tok2->link();
+                    } else if (tok2->str() == ";") {
+                        tok = tok2;
+                        eraseDeadCode(tok, 0);
+                        break;
+                    } else if (Token::Match(tok2, "[{}]"))
+                        break;  //Wrong code.
+                }
+                //if everything is removed, then remove also the code after an inferior scope
+                //only if the actual scope is not special
+                if (indentlevel > 1 && tok->next()->str() == "}" && Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                    stilldead = true;
+            }
         }
+        begin = end;
     }
 }
 
@@ -4059,9 +4102,9 @@ void Tokenizer::simplifyCompoundAssignment()
                 while (tok->next()->str() != ";")
                     tok->deleteNext();
             } else {
-                // Enclose the rhs in parantheses..
+                // Enclose the rhs in parenthesis..
                 if (!Token::Match(tok->tokAt(2), "[;)]")) {
-                    // Only enclose rhs in parantheses if there is some operator
+                    // Only enclose rhs in parenthesis if there is some operator
                     bool someOperator = false;
                     for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                         if (tok2->str() == "(")
@@ -4118,6 +4161,28 @@ void Tokenizer::simplifyCompoundAssignment()
 void Tokenizer::simplifyConditionOperator()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok,"return|= ( true|false ) ?")) {
+            Token *tok2 = tok->tokAt(5);
+            while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->isArithmeticalOp()))
+                tok2 = tok2->next();
+            if (tok2 && tok2->str() == ":") {
+                if (tok->strAt(2) == "false") {
+                    Token::eraseTokens(tok,tok2->next());
+                } else {
+                    Token *tok3 = tok2->next();
+                    while (tok3 && (tok3->isName() || tok3->isNumber() || tok3->isArithmeticalOp()))
+                        tok3 = tok3->next();
+
+                    if (tok3 && tok3->str() == ";") {
+                        tok->deleteNext(4);
+                        tok = tok2;
+                        while (tok && tok->str() != ";")
+                            tok->deleteThis();
+                    }
+                }
+            }
+        }
+
         if (tok->str() == "(")
             tok = tok->link();
         else if (tok->str() == ")")
@@ -4130,7 +4195,7 @@ void Tokenizer::simplifyConditionOperator()
             bool isReturn = false;
             if (tok->next()->str() == "*") {
                 tok = tok->next();
-                var += " " + tok->next()->str();
+                var = tok->next()->str();
                 isPointer = true;
             } else if (tok->next()->str() == "return") {
                 isReturn = true;
@@ -4163,10 +4228,17 @@ void Tokenizer::simplifyConditionOperator()
             if (isReturn)
                 str = "if ( condition ) { return value1 ; } return value2 ;";
             else
-                str = "if ( condition ) { var = value1 ; } else { var = value2 ; }";
+                str = "if ( condition ) { * var = value1 ; } else { * var = value2 ; }";
 
             std::string::size_type pos1 = 0;
             while (pos1 != std::string::npos) {
+                if (str[pos1] == '*') {
+                    pos1 += 2;
+                    if (isPointer) {
+                        tok->insertToken("*");
+                        tok = tok->next();
+                    }
+                }
                 std::string::size_type pos2 = str.find(" ", pos1);
                 if (pos2 == std::string::npos) {
                     tok->insertToken(str.substr(pos1));
@@ -4555,13 +4627,10 @@ bool Tokenizer::simplifyFunctionParameters()
             Token * tokparam = NULL;
 
             //take count of the function name..
-            const std::string funcName(tok->str());
+            const std::string& funcName(tok->str());
 
             //floating token used to check for parameters
             Token *tok1 = tok;
-
-            //goto '('
-            tok = tok->next();
 
             while (NULL != (tok1 = tok1->tokAt(2))) {
                 if (!Token::Match(tok1, "%var% [,)]")) {
@@ -4600,13 +4669,27 @@ bool Tokenizer::simplifyFunctionParameters()
                 }
             }
 
+            //goto '('
+            tok = tok->next();
+
             if (bailOut) {
                 tok = tok->link();
                 continue;
             }
 
-            //there should be the sequence '; {' after the round parenthesis
-            if (!Token::findsimplematch(tok1, "; {")) {
+            tok1 = tok->link()->next();
+
+            // there should be the sequence '; {' after the round parenthesis
+            for (const Token* tok2 = tok1; tok2; tok2 = tok2->next()) {
+                if (Token::simpleMatch(tok2, "; {"))
+                    break;
+                else if (tok2->str() == "{") {
+                    bailOut = true;
+                    break;
+                }
+            }
+
+            if (bailOut) {
                 tok = tok->link();
                 continue;
             }
@@ -5057,7 +5140,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 tok2 = tok2->next();
             }
         }
-        finishedwithkr = (only_k_r_fpar && tok2->strAt(1) == "{");
+        finishedwithkr = (only_k_r_fpar && tok2 && tok2->strAt(1) == "{");
     }
 }
 
@@ -5355,7 +5438,8 @@ void Tokenizer::simplifyIfAssign()
         tok2 = tok2->previous();
         if (tok->strAt(2) == ".") {
             tok2->insertToken(tok->strAt(3));
-            tok2->insertToken(tok->strAt(2));
+            tok2->next()->varId(tok->tokAt(3)->varId());
+            tok2->insertToken(".");
         }
         tok2->insertToken(tok->next()->str());
         tok2->next()->varId(tok->next()->varId());
@@ -5460,9 +5544,10 @@ void Tokenizer::simplifyIfNot()
             }
 
             else if (Token::Match(tok, "%var% == 0|false")) {
-                tok->deleteNext();
-                tok->next()->str(tok->str());
-                tok->str("!");
+                tok->deleteNext(2);
+                tok = tok->previous();
+                tok->insertToken("!");
+                tok = tok->next();
             }
 
             else if (Token::Match(tok, "%var% .|:: %var% == 0|false")) {
@@ -5866,13 +5951,19 @@ bool Tokenizer::simplifyKnownVariables()
                 ret |= simplifyKnownVariablesSimplify(&scopeStart, scopeStart, varid, structname, value, valueIsPointer, valueVarId, valueToken, -1);
             }
 
-            else if (Token::Match(tok2, "strcpy ( %var% , %str% ) ;")) {
+            else if (Token::Match(tok2, "strcpy|sprintf ( %var% , %str% ) ;")) {
                 const unsigned int varid(tok2->tokAt(2)->varId());
+                std::string::size_type n = -1;
                 if (varid == 0)
                     continue;
                 const std::string structname("");
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
+                if (tok2->str() == "sprintf") {
+                    while ((n = value.find("%%",n+1)) != std::string::npos) {
+                        value.replace(n,2,"%");
+                    }
+                }
                 const unsigned int valueVarId(0);
                 const bool valueIsPointer(false);
                 Token *tok3 = tok2;
@@ -6747,6 +6838,7 @@ void Tokenizer::simplifyNestedStrcat()
 
         // Insert the "dst" token
         prevTok->insertToken(tok2->strAt(2));
+        prevTok->next()->varId(tok2->tokAt(2)->varId());
 
         // Insert semicolon after the moved strcat()
         tok->insertToken(";");
@@ -6845,79 +6937,6 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
     }
     return false;
 }
-
-class EnumValue {
-public:
-    EnumValue() {
-        name  = 0;
-        value = 0;
-        start = 0;
-        end   = 0;
-    }
-    EnumValue(const EnumValue &ev) {
-        name  = ev.name;
-        value = ev.value;
-        start = ev.start;
-        end   = ev.end;
-    }
-    EnumValue(Token *name_, Token *value_, Token *start_, Token *end_) {
-        name  = name_;
-        value = value_;
-        start = start_;
-        end   = end_;
-    }
-
-    void simplify(const std::map<std::string, EnumValue> &enumValues) {
-        for (Token *tok = start; tok; tok = tok->next()) {
-            if (enumValues.find(tok->str()) != enumValues.end()) {
-                const EnumValue &other = enumValues.find(tok->str())->second;
-                if (other.value != NULL)
-                    tok->str(other.value->str());
-                else {
-                    bool islast = (tok == end);
-                    Token *last = Tokenizer::copyTokens(tok, other.start, other.end);
-                    tok->deleteThis();
-                    if (islast) {
-                        end = last;
-                    }
-                    tok = last;
-                }
-            }
-            if (tok == end)
-                break;
-        }
-
-        // Simplify calculations..
-        while (Token::Match(start, "%num% %op% %num% %op%") &&
-               start->strAt(1) == start->strAt(3)) {
-            const std::string &op = start->strAt(1);
-            if (op.size() != 1U)
-                break;
-            const std::string &val1 = start->str();
-            const std::string &val2 = start->strAt(2);
-            const std::string result = MathLib::calculate(val1, val2, op[0]);
-            start->str(result);
-            start->deleteNext(2);
-        }
-        if (Token::Match(start, "%num% %op% %num% [,}]")) {
-            const std::string &op = start->strAt(1);
-            if (op.size() == 1U) {
-                const std::string &val1 = start->str();
-                const std::string &val2 = start->strAt(2);
-                const std::string result = MathLib::calculate(val1, val2, op[0]);
-                start->str(result);
-                start->deleteNext(2);
-                value = start;
-                start = end = 0;
-            }
-        }
-    }
-
-    Token *name;
-    Token *value;
-    Token *start;
-    Token *end;
-};
 
 void Tokenizer::simplifyEnum()
 {
@@ -7021,7 +7040,6 @@ void Tokenizer::simplifyEnum()
             // iterate over all enumerators between { and }
             // Give each enumerator the const value specified or if not specified, 1 + the
             // previous value or 0 if it is the first one.
-            std::map<std::string,EnumValue> enumValues;
             for (; tok1 && tok1 != end; tok1 = tok1->next()) {
                 Token * enumName = 0;
                 Token * enumValue = 0;
@@ -7096,102 +7114,111 @@ void Tokenizer::simplifyEnum()
                     tok1 = enumValueEnd;
                 }
 
-                // add enumerator constant..
+                // find all uses of this enumerator and substitute it's value for it's name
                 if (enumName && (enumValue || (enumValueStart && enumValueEnd))) {
-                    EnumValue ev(enumName, enumValue, enumValueStart, enumValueEnd);
-                    ev.simplify(enumValues);
-                    enumValues[enumName->str()] = ev;
-                    if (ev.start == NULL) {
-                        tok1 = ev.value;
-                        lastEnumValueStart = lastEnumValueEnd = NULL;
-                        lastValue = MathLib::toLongNumber(ev.value->str());
-                    }
-                }
-            }
+                    const std::string pattern = className.empty() ?
+                                                std::string("") :
+                                                std::string(className + " :: " + enumName->str());
+                    int level = 1;
+                    bool inScope = true;
 
-            // Substitute enum values
-            {
-                const std::string pattern = className.empty() ?
-                                            std::string("") :
-                                            std::string(className + " :: ");
-                int level = 1;
-                bool inScope = true;
+                    bool exitThisScope = false;
+                    int exitScope = 0;
+                    bool simplify = false;
+                    bool hasClass = false;
+                    const Token *endScope = 0;
+                    for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
+                        if (tok2->str() == "}") {
+                            --level;
+                            if (level < 0)
+                                inScope = false;
 
-                std::stack<std::set<std::string> > shadowId;  // duplicate ids in inner scope
-                bool simplify = false;
-                bool hasClass = false;
-                EnumValue *ev = NULL;
-                for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "}") {
-                        --level;
-                        if (level < 0)
-                            inScope = false;
-
-                        if (!shadowId.empty())
-                            shadowId.pop();
-                    } else if (tok2->str() == "{") {
-                        // Is the same enum redefined?
-                        const Token *begin = end->link();
-                        if (tok2->fileIndex() == begin->fileIndex() &&
-                            tok2->linenr() == begin->linenr() &&
-                            Token::Match(begin->tokAt(-2), "enum %type% {") &&
-                            Token::Match(tok2->tokAt(-2), "enum %type% {") &&
-                            begin->previous()->str() == tok2->previous()->str()) {
-                            // remove duplicate enum
-                            Token * startToken = tok2->tokAt(-3);
-                            tok2 = tok2->link()->next();
-                            Token::eraseTokens(startToken, tok2);
-                            if (!tok2)
-                                break;
-                        } else {
-                            // Not a duplicate enum..
-                            ++level;
-
-                            // Create a copy of the shadow ids for the inner scope
-                            if (!shadowId.empty())
-                                shadowId.push(shadowId.top());
-                        }
-                    } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()) && enumValues.find(tok2->strAt(2)) != enumValues.end()) {
-                        simplify = true;
-                        hasClass = true;
-                        ev = &(enumValues.find(tok2->strAt(2))->second);
-                    } else if (inScope &&    // enum is in scope
-                               (shadowId.empty() || shadowId.top().find(tok2->str()) == shadowId.top().end()) &&   // no shadow enum/var/etc of enum
-                               enumValues.find(tok2->str()) != enumValues.end()) {    // tok2 is a enum id with a known value
-                        ev = &(enumValues.find(tok2->str())->second);
-                        if (!duplicateDefinition(&tok2, ev->name)) {
-                            if (tok2->strAt(-1) == "::" ||
-                                Token::Match(tok2->next(), "::|[")) {
-                                // Don't replace this enum if:
-                                // * it's preceded or followed by "::"
-                                // * it's followed by "["
-                            } else {
-                                simplify = true;
-                                hasClass = false;
-                                ev = &(enumValues.find(tok2->str())->second);
+                            if (exitThisScope) {
+                                if (level < exitScope)
+                                    exitThisScope = false;
                             }
-                        } else {
-                            // something with the same name.
-                            if (shadowId.empty())
-                                shadowId.push(std::set<std::string>());
-                            shadowId.top().insert(tok2->str());
+                        } else if (tok2->str() == "{") {
+                            // Is the same enum redefined?
+                            const Token *begin = end->link();
+                            if (tok2->fileIndex() == begin->fileIndex() &&
+                                tok2->linenr() == begin->linenr() &&
+                                Token::Match(begin->tokAt(-2), "enum %type% {") &&
+                                Token::Match(tok2->tokAt(-2), "enum %type% {") &&
+                                begin->previous()->str() == tok2->previous()->str()) {
+                                // remove duplicate enum
+                                Token * startToken = tok2->tokAt(-3);
+                                tok2 = tok2->link()->next();
+                                Token::eraseTokens(startToken, tok2);
+                                if (!tok2)
+                                    break;
+                            } else {
+                                // Not a duplicate enum..
+                                ++level;
+                            }
+                            endScope = tok2->link();
+                        } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str())) {
+                            simplify = true;
+                            hasClass = true;
+                        } else if (inScope && !exitThisScope && tok2->str() == enumName->str()) {
+                            if (!duplicateDefinition(&tok2, enumName)) {
+                                if (tok2->strAt(-1) == "::" ||
+                                    Token::Match(tok2->next(), "::|[")) {
+                                    // Don't replace this enum if:
+                                    // * it's preceded or followed by "::"
+                                    // * it's followed by "["
+                                } else {
+                                    simplify = true;
+                                    hasClass = false;
+                                }
+                            } else {
+                                // something with the same name.
+                                exitScope = level;
+                                if (endScope)
+                                    tok2 = endScope->previous();
+                            }
                         }
-                    }
 
-                    if (simplify) {
-                        if (ev->value)
-                            tok2->str(ev->value->str());
-                        else {
-                            tok2 = tok2->previous();
-                            tok2->deleteNext();
-                            tok2 = copyTokens(tok2, ev->start, ev->end);
+                        if (simplify) {
+                            // Simplify calculations..
+                            while (Token::Match(enumValueStart, "%num% %op% %num% %op%") &&
+                                   enumValueStart->strAt(1) == enumValueStart->strAt(3)) {
+                                const std::string &op = enumValueStart->strAt(1);
+                                if (op.size() != 1U)
+                                    break;
+                                const std::string &val1 = enumValueStart->str();
+                                const std::string &val2 = enumValueStart->strAt(2);
+                                const std::string result = MathLib::calculate(val1, val2, op[0]);
+                                enumValueStart->str(result);
+                                enumValueStart->deleteNext(2);
+                            }
+                            if (Token::Match(enumValueStart, "%num% %op% %num% [,}]")) {
+                                const std::string &op   = enumValueStart->strAt(1);
+                                if (op.size() == 1U) {
+                                    const std::string &val1 = enumValueStart->str();
+                                    const std::string &val2 = enumValueStart->strAt(2);
+                                    const std::string result = MathLib::calculate(val1, val2, op[0]);
+                                    enumValueStart->str(result);
+                                    enumValueStart->deleteNext(2);
+                                    enumValue = tok1 = enumValueStart;
+                                    enumValueStart = enumValueEnd = 0;
+                                }
+                            }
+
+
+                            if (enumValue)
+                                tok2->str(enumValue->str());
+                            else {
+                                tok2 = tok2->previous();
+                                tok2->deleteNext();
+                                tok2 = copyTokens(tok2, enumValueStart, enumValueEnd);
+                            }
+
+                            if (hasClass) {
+                                tok2->deleteNext(2);
+                            }
+
+                            simplify = false;
                         }
-
-                        if (hasClass) {
-                            tok2->deleteNext(2);
-                        }
-
-                        simplify = false;
                     }
                 }
             }
@@ -7332,7 +7359,7 @@ void Tokenizer::simplifyStd()
 
 //---------------------------------------------------------------------------
 
-bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
+bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown)
 {
     if (unknown)
         *unknown = false;
@@ -7340,8 +7367,11 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
     if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
         const Token *tok = endScopeToken->linkAt(-2)->previous();
 
+        if (!tok)
+            return true;
+
         // function pointer call..
-        if (tok && Token::Match(tok->tokAt(-4), "[;{}] ( * %var% )"))
+        if (Token::Match(tok->tokAt(-4), "[;{}] ( * %var% )"))
             return true;
 
         if (!tok->isName())
@@ -7367,8 +7397,6 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 
 const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
-    getSymbolDatabase();
-
     std::list<Scope>::const_iterator scope;
 
     for (scope = _symbolDatabase->scopeList.begin(); scope != _symbolDatabase->scopeList.end(); ++scope) {
@@ -7386,17 +7414,17 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
     const Token *ftok;
 
     // Look at function call, what parameter number is it?
-    unsigned int paranthesis = 1;
+    unsigned int parenthesis = 1;
     unsigned int parameter = 1;
     for (ftok = fpar; ftok; ftok = ftok->previous()) {
         if (ftok->str() == "(") {
-            --paranthesis;
-            if (paranthesis == 0) {
+            --parenthesis;
+            if (parenthesis == 0) {
                 break;
             }
         } else if (ftok->str() == ")") {
-            ++paranthesis;
-        } else if (paranthesis == 1 && ftok->str() == ",") {
+            ++parenthesis;
+        } else if (parenthesis == 1 && ftok->str() == ",") {
             ++parameter;
         } else if (Token::Match(ftok, "[;{}]")) {
             break;
@@ -7832,9 +7860,9 @@ void Tokenizer::simplifyComma()
 }
 
 
-void Tokenizer::removeExceptionSpecifications(Token *tok) const
+void Tokenizer::removeExceptionSpecifications()
 {
-    while (tok) {
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, ") const| throw (")) {
             if (tok->next()->str() == "const") {
                 Token::eraseTokens(tok->next(), tok->linkAt(3));
@@ -7843,8 +7871,6 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
                 Token::eraseTokens(tok, tok->linkAt(2));
             tok->deleteNext();
         }
-
-        tok = tok->next();
     }
 }
 
@@ -8020,8 +8046,11 @@ void Tokenizer::simplifyComparisonOrder()
             if (!operand2->isName() && !operand2->isNumber())
                 continue;
             const std::string op1(tok->next()->str());
-            tok->next()->str(tok->strAt(3));
+            unsigned int var1 = tok->next()->varId();
+            tok->next()->str(operand2->str());
+            tok->next()->varId(operand2->varId());
             tok->tokAt(3)->str(op1);
+            tok->tokAt(3)->varId(var1);
             if (tok->strAt(2) == ">")
                 tok->tokAt(2)->str("<");
             else
@@ -8030,8 +8059,11 @@ void Tokenizer::simplifyComparisonOrder()
             if (!tok->next()->isName() && !tok->next()->isNumber())
                 continue;
             const std::string op1(tok->next()->str());
+            unsigned int var1 = tok->next()->varId();
             tok->next()->str(tok->strAt(3));
+            tok->next()->varId(tok->tokAt(3)->varId());
             tok->tokAt(3)->str(op1);
+            tok->tokAt(3)->varId(var1);
         }
     }
 }
@@ -8063,7 +8095,7 @@ void Tokenizer::simplifyConst()
     }
 }
 
-void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
     Tokenizer t(settings, errorLogger);
     t.syntaxError(0, ' ');
@@ -8165,8 +8197,10 @@ void Tokenizer::simplifyFuncInWhile()
         if (!end)
             break;
 
+        const unsigned int varid = ++_varId; // Create new variable
         tok->str("int");
         tok->next()->insertToken("cppcheck:r");
+        tok->tokAt(2)->varId(varid);
         tok->insertToken("while");
         tok->insertToken(";");
         tok->insertToken(")");
@@ -8176,8 +8210,10 @@ void Tokenizer::simplifyFuncInWhile()
         tok->insertToken(func->str());
         tok->insertToken("=");
         tok->insertToken("cppcheck:r");
+        tok->next()->varId(varid);
         Token::createMutualLinks(tok->tokAt(4), tok->tokAt(6));
         end->previous()->insertToken("cppcheck:r");
+        end->previous()->varId(varid);
         end->previous()->insertToken("=");
         Token::move(func, func->tokAt(3), end->previous());
         end->previous()->insertToken(";");
@@ -8895,12 +8931,57 @@ void Tokenizer::simplifyQtSignalsSlots()
     }
 }
 
-const SymbolDatabase *Tokenizer::getSymbolDatabase() const
+void Tokenizer::createSymbolDatabase()
 {
-    if (!_symbolDatabase)
+    if (!_symbolDatabase) {
         _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
 
-    return _symbolDatabase;
+        // Set scope pointers
+        for (std::list<Scope>::iterator scope = _symbolDatabase->scopeList.begin(); scope != _symbolDatabase->scopeList.end(); ++scope) {
+            Token* start = const_cast<Token*>(scope->classStart);
+            Token* end = const_cast<Token*>(scope->classEnd);
+            if (scope->type == Scope::eGlobal) {
+                start = const_cast<Token*>(list.front());
+                end = const_cast<Token*>(list.back());
+            }
+            if (start && end) {
+                start->scope(&*scope);
+                end->scope(&*scope);
+            }
+            if (start != end && start->next() != end) {
+                for (Token* tok = start->next(); tok != end; tok = tok->next()) {
+                    if (tok->str() == "{") {
+                        bool break2 = false;
+                        for (std::list<Scope*>::const_iterator innerScope = scope->nestedList.begin(); innerScope != scope->nestedList.end(); ++innerScope) {
+                            if (tok == (*innerScope)->classStart) { // Is begin of inner scope
+                                tok = tok->link();
+                                if (!tok || tok->next() == end || !tok->next()) {
+                                    break2 = true;
+                                    break;
+                                }
+                                tok = tok->next();
+                                break;
+                            }
+                        }
+                        if (break2)
+                            break;
+                    }
+                    tok->scope(&*scope);
+                }
+            }
+        }
+    }
+}
+
+void Tokenizer::deleteSymbolDatabase()
+{
+    // Clear scope pointers
+    for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
+        tok->scope(0);
+    }
+
+    delete _symbolDatabase;
+    _symbolDatabase = 0;
 }
 
 void Tokenizer::simplifyOperatorName()
@@ -9078,8 +9159,6 @@ void Tokenizer::simplifyReturnStrncat()
 
 void Tokenizer::printUnknownTypes()
 {
-    getSymbolDatabase();
-
     std::set<std::string> unknowns;
 
     for (unsigned int i = 1; i <= _varId; ++i) {

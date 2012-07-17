@@ -810,7 +810,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    if (_settings && (!_settings->userDefines.empty() || !_settings->userUndefs.empty())) {
+    if (_settings && !_settings->userDefines.empty()) {
         std::map<std::string, std::string> defs;
 
         // TODO: break out this code. There is other similar code.
@@ -849,12 +849,40 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = replaceIfDefined(processedFile);
 
         // Get all possible configurations..
-        if (!_settings || (_settings && _settings->userDefines.empty()))
-            resultConfigurations = getcfgs(processedFile, filename);
+        resultConfigurations = getcfgs(processedFile, filename);
+
+        // Remove configurations that are disabled by -U
+        handleUndef(resultConfigurations);
     }
 }
 
+void Preprocessor::handleUndef(std::list<std::string> &configurations) const
+{
+    if (_settings && !_settings->userUndefs.empty()) {
+        for (std::list<std::string>::iterator cfg = configurations.begin(); cfg != configurations.end();) {
+            bool undef = false;
+            for (std::set<std::string>::const_iterator it = _settings->userUndefs.begin(); it != _settings->userUndefs.end(); ++it) {
+                if (*it == *cfg)
+                    undef = true;
+                else if (cfg->compare(0,it->length(),*it)==0 && cfg->find_first_of(";=") == it->length())
+                    undef = true;
+                else if (cfg->find(";" + *it) == std::string::npos)
+                    ;
+                else if (cfg->find(";" + *it + ";") != std::string::npos)
+                    undef = true;
+                else if (cfg->find(";" + *it + "=") != std::string::npos)
+                    undef = true;
+                else if (cfg->find(";" + *it) + it->size() + 1U == cfg->size())
+                    undef = true;
+            }
 
+            if (undef)
+                configurations.erase(cfg++);
+            else
+                ++cfg;
+        }
+    }
+}
 
 // Get the DEF in this line: "#ifdef DEF"
 std::string Preprocessor::getdef(std::string line, bool def)
@@ -1054,8 +1082,6 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                     const std::string value(it->substr(pos + 1));
                     varmap[varname] = value;
                 }
-
-                simplifyVarMap(varmap);
                 simplifyCondition(varmap, def, false);
             }
 
@@ -1410,6 +1436,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     bool modified = true;
     while (modified) {
         modified = false;
+        modified |= tokenizer.simplifySizeof();
         modified |= tokenizer.simplifyCalculations();
         modified |= tokenizer.simplifyRedundantParenthesis();
         for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next()) {

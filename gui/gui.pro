@@ -39,8 +39,8 @@ TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_fi.ts \
                 cppcheck_fr.ts \
                 cppcheck_ja.ts \
+                cppcheck_ko.ts \
                 cppcheck_nl.ts \
-                cppcheck_pl.ts \
                 cppcheck_ru.ts \
                 cppcheck_sr.ts \
                 cppcheck_sv.ts

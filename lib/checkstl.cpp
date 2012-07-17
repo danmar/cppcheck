@@ -46,53 +46,42 @@ void CheckStl::dereferenceErasedError(const Token *tok, const std::string &itern
 
 void CheckStl::iterators()
 {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // Using same iterator against different containers.
     // for (it = foo.begin(); it != bar.end(); ++it)
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Locate an iterator..
-        if (!Token::Match(tok, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ;|+") &&
-            !(Token::Match(tok, "%var% = %var% . find (") && Token::simpleMatch(tok->linkAt(5), ") ;")))
-            continue;
+    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
-        // Get variable ids for both the iterator and container
-        const unsigned int iteratorId(tok->varId());
-        const unsigned int containerId(tok->tokAt(2)->varId());
-        if (iteratorId == 0 || containerId == 0)
+        // Check that its an iterator
+        if (!var || !var->isLocal() || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
             continue;
-
-        // check that it's an iterator..
-        {
-            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(iteratorId);
-            if (!var || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
-                continue;
-        }
 
         // the validIterator flag says if the iterator has a valid value or not
-        bool validIterator = true;
+        bool validIterator = Token::Match(var->nameToken()->next(), "[(=]");
+        const Scope* invalidationScope = 0;
+
+        // The container this iterator can be used with
+        const Variable* container = 0;
+        const Scope* containerAssignScope = 0;
 
         // When "validatingToken" is reached the validIterator is set to true
         const Token* validatingToken = 0;
 
-        // counter for { and }
-        unsigned int indent = 0;
-
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
-        for (const Token *tok2 = tok->tokAt(7); tok2; tok2 = tok2->next()) {
+        for (const Token *tok2 = var->nameToken(); tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
+            if (invalidationScope && tok2 == invalidationScope->classEnd)
+                validIterator = true; // Assume that the iterator becomes valid again
+            if (containerAssignScope && tok2 == containerAssignScope->classEnd)
+                container = 0; // We don't know which containers might be used with the iterator
+
             if (tok2 == validatingToken)
                 validIterator = true;
 
-            // If a { is found then count it and continue
-            if (tok2->str() == "{" && ++indent)
-                continue;
-
-            // If a } is found then count it. break if indentlevel becomes 0.
-            if (tok2->str() == "}" && --indent == 0)
-                break;
-
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
-                iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
+            if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && container && tok2->tokAt(2)->varId() != container->varId()) {
+                iteratorsError(tok2, container->name(), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }
 
@@ -100,7 +89,7 @@ void CheckStl::iterators()
             else if (Token::Match(tok2, "%var% . insert|erase ( *| %varid% )|,", iteratorId)) {
                 const Token* itTok = tok2->tokAt(4);
                 if (itTok->str() == "*") {
-                    if (tok->strAt(2) == "insert")
+                    if (tok2->strAt(2) == "insert")
                         continue;
 
                     itTok = itTok->next();
@@ -111,28 +100,27 @@ void CheckStl::iterators()
 
                 // If insert/erase is used on different container then
                 // report an error
-                if (tok2->varId() != containerId) {
+                if (container && tok2->varId() != container->varId()) {
                     // skip error message if container is a set..
-                    if (tok2->varId() > 0) {
-                        const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-                        const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
-                        const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
+                    const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
+                    const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
 
-                        if (Token::Match(decltok, "const| std :: set"))
-                            continue; // No warning
-                    }
+                    if (Token::Match(decltok, "const| std :: set"))
+                        continue; // No warning
 
                     // skip error message if the iterator is erased/inserted by value
                     if (itTok->previous()->str() == "*")
                         continue;
 
                     // Show error message, mismatching iterator is used.
-                    iteratorsError(tok2, tok->strAt(2), tok2->str());
+                    iteratorsError(tok2, container->name(), tok2->str());
                 }
 
                 // invalidate the iterator if it is erased
-                else if (tok2->strAt(2) == std::string("erase"))
+                else if (tok2->strAt(2) == std::string("erase")) {
                     validIterator = false;
+                    invalidationScope = tok2->scope();
+                }
 
                 // skip the operation
                 tok2 = itTok->next();
@@ -147,13 +135,23 @@ void CheckStl::iterators()
             }
 
             // Reassign the iterator
-            else if (Token::Match(tok2, "%varid% = %var% ;", iteratorId)) {
-                // Assume that the iterator becomes valid.
-                // TODO: add checking that checks if the iterator becomes valid or not
-                validIterator = true;
+            else if (Token::Match(tok2, "%varid% = %var% . begin|rbegin|cbegin|crbegin|find (", iteratorId)) {
+                validatingToken = tok2->linkAt(5);
+                container = symbolDatabase->getVariableFromVarId(tok2->tokAt(2)->varId());
+                containerAssignScope = tok2->scope();
 
                 // skip ahead
-                tok2 = tok2->tokAt(3);
+                tok2 = tok2->tokAt(5);
+            }
+
+            // Reassign the iterator
+            else if (Token::Match(tok2, "%varid% = %var%", iteratorId)) {
+                // Assume that the iterator becomes valid.
+                // TODO: add checking that checks if the iterator becomes valid or not
+                validatingToken = Token::findmatch(tok2->tokAt(2), "[;)]");
+
+                // skip ahead
+                tok2 = tok2->tokAt(2);
             }
 
             // Dereferencing invalid iterator?
@@ -596,15 +594,9 @@ void CheckStl::pushback()
                 const Token *pushbackTok = 0;
 
                 // Count { and } for tok3
-                unsigned int indent3 = 0;
-                for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next()) {
-                    if (tok3->str() == "{")
-                        ++indent3;
-                    else if (tok3->str() == "}") {
-                        if (indent3 <= 1)
-                            break;
-                        --indent3;
-                    } else if (tok3->str() == "break" || tok3->str() == "return") {
+                const Token *tok3 = tok2->tokAt(20);
+                for (const Token* const end3 = tok3->linkAt(-1); tok3 != end3; tok3 = tok3->next()) {
+                    if (tok3->str() == "break" || tok3->str() == "return") {
                         pushbackTok = 0;
                         break;
                     } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve|resize (", varId)) {
@@ -680,8 +672,11 @@ void CheckStl::stlBoundries()
         // Declaring iterator..
         if (tok->str() == "<" && Token::Match(tok->previous(), STL_CONTAINER_LIST)) {
             const std::string& container_name(tok->strAt(-1));
-            while (tok && tok->str() != ">")
-                tok = tok->next();
+            if (tok->link())
+                tok = tok->link();
+            else
+                while (tok && tok->str() != ">")
+                    tok = tok->next();
             if (!tok)
                 break;
 
@@ -691,15 +686,9 @@ void CheckStl::stlBoundries()
                     continue;
 
                 // Using "iterator < ..." is not allowed
-                unsigned int indentlevel = 0;
-                for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "{")
-                        ++indentlevel;
-                    else if (tok2->str() == "}") {
-                        if (indentlevel == 0)
-                            break;
-                        --indentlevel;
-                    } else if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
+                const Token* const end = tok->scope()->classEnd;
+                for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
                         stlBoundriesError(tok2, container_name);
                     } else if (Token::Match(tok2, "> %varid% !!.", iteratorid)) {
                         stlBoundriesError(tok2, container_name);
@@ -1332,6 +1321,8 @@ void CheckStl::uselessCalls()
     if (!performance && !style)
         return;
 
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->varId() && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
             tok->varId() == tok->tokAt(4)->varId() && style) {
@@ -1342,12 +1333,15 @@ void CheckStl::uselessCalls()
         } else if (Token::simpleMatch(tok, ". substr (") && performance) {
             if (Token::Match(tok->tokAt(3), "0| )"))
                 uselessCallsSubstrError(tok, false);
-            else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos")
-                uselessCallsSubstrError(tok, false);
-            else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
+            else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos") {
+                if (!symbolDatabase->getVariableFromVarId(tok->linkAt(2)->previous()->varId())) // Make sure that its no variable
+                    uselessCallsSubstrError(tok, false);
+            } else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                 uselessCallsSubstrError(tok, true);
         } else if (Token::Match(tok, "[{}:;] %var% . empty ( ) ;") && style)
             uselessCallsEmptyError(tok->next());
+        else if (Token::Match(tok, "[{};] std :: remove ("))
+            uselessCallsRemoveError(tok->next());
     }
 }
 
@@ -1384,4 +1378,11 @@ void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
 void CheckStl::uselessCallsEmptyError(const Token *tok)
 {
     reportError(tok, Severity::warning, "uselessCallsEmpty", "Useless call of function 'empty()'. Did you intend to call 'clear()' instead?");
+}
+
+void CheckStl::uselessCallsRemoveError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "uselessCallsRemove", "Return value of std::remove() ignored. Elements remain in container.\n"
+                "The return value of std::remove() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
+                "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.");
 }

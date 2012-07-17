@@ -64,6 +64,7 @@ private:
         TEST_CASE(varScope11);      // #2475 - struct initialization is not inner scope
         TEST_CASE(varScope12);
         TEST_CASE(varScope13);      // variable usage in inner loop
+        TEST_CASE(varScope14);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -79,6 +80,7 @@ private:
         TEST_CASE(sizeofCalculation);
 
         TEST_CASE(switchRedundantAssignmentTest);
+        TEST_CASE(switchRedundantOperationTest);
         TEST_CASE(switchRedundantBitwiseOperationTest);
         TEST_CASE(switchFallThroughCase);
         TEST_CASE(unreachableCode);
@@ -123,6 +125,7 @@ private:
         TEST_CASE(clarifyCondition3);     // if (! a & b)
         TEST_CASE(clarifyCondition4);     // ticket #3110
         TEST_CASE(clarifyCondition5);     // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
+        TEST_CASE(clarifyCondition6);     // #3818
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
 
         TEST_CASE(comparisonOfBoolExpressionWithInt1);
@@ -141,7 +144,7 @@ private:
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateIf1); // ticket 3689
         TEST_CASE(duplicateBranch);
-        TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparision between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
+        TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
@@ -151,11 +154,16 @@ private:
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(checkPointerSizeof);
         TEST_CASE(checkSignOfUnsignedVariable);
+        TEST_CASE(checkSignOfPointer);
 
         TEST_CASE(checkForSuspiciousSemicolon1);
         TEST_CASE(checkForSuspiciousSemicolon2);
 
         TEST_CASE(checkDoubleFree);
+
+        TEST_CASE(checkRedundantCopy);
+
+        TEST_CASE(checkNegativeShift);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
@@ -752,6 +760,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void varScope14() {
+        // #3941
+        varScope("void f() {\n"
+                 "    const int i( foo());\n"
+                 "    if(a) {\n"
+                 "        for ( ; i < 10; ++i) ;\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void checkOldStylePointerCast(const char code[]) {
         // Clear the error buffer..
         errout.str("");
@@ -966,6 +985,9 @@ private:
 
         testPassedByValue("void f(const std::vector<std::string> v) {}");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by reference.\n", errout.str());
+
+        testPassedByValue("void f(const std::vector<std::string>::size_type s) {}");
+        ASSERT_EQUALS("", errout.str());
 
         testPassedByValue("void f(const std::vector<int> &v) {}");
         ASSERT_EQUALS("", errout.str());
@@ -1587,6 +1609,361 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void switchRedundantOperationTest() {
+
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        ++y;\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "      {\n"
+              "        ++y;\n"
+              "      }\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y;\n"
+              "    case 3:\n"
+              "        ++y;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        ++y;\n"
+              "    case 3:\n"
+              "        ++y;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        --y;\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "      {\n"
+              "        --y;\n"
+              "      }\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y;\n"
+              "    case 3:\n"
+              "        --y;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        --y;\n"
+              "    case 3:\n"
+              "        --y;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y++;\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "      {\n"
+              "        y++;\n"
+              "      }\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y = 2;\n"
+              "    case 3:\n"
+              "        y++;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y++;\n"
+              "    case 3:\n"
+              "        y++;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y--;\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "      {\n"
+              "        y--;\n"
+              "      }\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y = 2;\n"
+              "    case 3:\n"
+              "        y--;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y--;\n"
+              "    case 3:\n"
+              "        y--;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y++;\n"
+              "    case 3:\n"
+              "        if (x)\n"
+              "        {\n"
+              "            y = 3;\n"
+              "        }\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
+              "    {\n"
+              "    case 2:\n"
+              "      {\n"
+              "        y++;\n"
+              "        if (y)\n"
+              "            printf(\"%d\", y);\n"
+              "      }\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int x = a;\n"
+              "    int y = 1;\n"
+              "    switch (x)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        x++;\n"
+              "    case 3:\n"
+              "        y++;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (x)\n"
+              "    {\n"
+              "    case 2:\n"
+              "      {\n"
+              "        int y++;\n"
+              "      }\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (x)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y++;\n"
+              "        break;\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    while(xyz()) {\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y++;\n"
+              "            continue;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "        bar(y);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    while(xyz()) {\n"
+              "        switch (x)\n"
+              "        {\n"
+              "        case 2:\n"
+              "            y++;\n"
+              "            throw e;\n"
+              "        case 3:\n"
+              "            y = 3;\n"
+              "        }\n"
+              "        bar(y);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (x)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y++;\n"
+              "        printf(\"%d\", y);\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (x)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y++;\n"
+              "        bar();\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void switchRedundantBitwiseOperationTest() {
         check("void foo(int a)\n"
@@ -2288,7 +2665,14 @@ private:
               "{\n"
               "        std::string var = var = \"test\";\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", errout.str());
+
+        // #4073 (segmentation fault)
+        check("void Foo::myFunc( int a )\n"
+              "{\n"
+              "    if (a == 42)\n"
+              "    a = a;\n"
+              "}\n");
 
         check("void foo()\n"
               "{\n"
@@ -3249,7 +3633,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
 
         check("void f(bool x ) {\n"
-              "  if ( false >= x )\n"
+              "  if ( false <= x )\n"
               "      a++;\n"
               "}\n"
              );
@@ -3640,6 +4024,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void clarifyCondition6() {
+        check("template<class Y>\n"
+              "SharedPtr& operator=( SharedPtr<Y> const & r ) {\n"
+              "    px = r.px;\n"
+              "    return *this;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void bitwiseOnBoolean() { // 3062
         check("void f(_Bool a, _Bool b) {\n"
               "    if(a & b) {}\n"
@@ -3652,19 +4045,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
 
         check("void f(bool a, bool b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
               "    if(a & !b) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a | b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean || ?\n", errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a | !b) {}\n"
@@ -3704,11 +4087,6 @@ private:
               "    if(a & b) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'b' is used in bitwise operation. Did you mean && ?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean && ?\n", errout.str());
 
         check("void f(int a, int b) {\n"
               "    if(a & b) {}\n"
@@ -4068,7 +4446,7 @@ private:
 
     void duplicateBranch1() {
 
-        // tests inspired by http://www.viva64.com/en/b/0149/ ( Comparision between PVS-Studio and cppcheck )
+        // tests inspired by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck )
         // Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
         check("void f()\n"
               "{\n"
@@ -4420,6 +4798,11 @@ private:
 
         check(
             "int *x = malloc(sizeof(x));\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
+            "int *x = malloc(sizeof(&x));\n"
             "free(x);");
         ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
@@ -4811,6 +5194,78 @@ private:
             check_signOfUnsignedVariable(code, true);
             ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Checking if unsigned variable 'x' is less than zero. This might be a false warning.\n", errout.str());
         }
+    }
+
+    void checkSignOfPointer() {
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (x >= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (*x >= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (x < 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (*x < 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 <= x)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (0 <= x[0])"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 <= x.y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 > x)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (0 > x[0])"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 > x.y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkForSuspiciousSemicolon1() {
@@ -5254,6 +5709,133 @@ private:
             "}"
         );
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+    }
+
+    void check_redundant_copy(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.addEnabled("performance");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Simplify token list..
+        CheckOther checkOther(&tokenizer, &settings, this);
+        tokenizer.simplifyTokenList();
+        checkOther.checkRedundantCopy();
+    }
+    void checkRedundantCopy() {
+        check_redundant_copy("class A{public:A(){}};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a = getA();\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for a to avoid unnecessary data copying.\n", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const int a = getA();\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    int getA = 0;\n"
+                             "    const int a = getA + 3;\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{public:A(){}};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a(getA());\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for a to avoid unnecessary data copying.\n", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const int a(getA());\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{\n"
+                             "public:A(int a=0){_a = a;}\n"
+                             "A operator+(const A & a){return A(_a+a._a);}\n"
+                             "private:int _a;};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a = getA() + 1;\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{\n"
+                             "public:A(int a=0){_a = a;}\n"
+                             "A operator+(const A & a){return A(_a+a._a);}\n"
+                             "private:int _a;};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a(getA()+1);\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkNegativeShift() {
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a << -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   int i = -1;\n"
+              "   a << i;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a >> -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   int i = -1;\n"
+              "   a >> i;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n", "", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a <<= -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a >>= -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
     }
 };
 

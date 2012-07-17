@@ -820,8 +820,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
 
     // regular function?
     else if (Token::Match(tok, "%var% (") && tok->previous() &&
-             (tok->previous()->isName() || tok->previous()->str() == "&" || tok->previous()->str() == "*" || // Either a return type in front of tok
-              tok->previous()->str() == "::" || tok->previous()->str() == "~" || // or a scope qualifier in front of tok
+             (tok->previous()->isName() || tok->strAt(-1) == ">" || tok->strAt(-1) == "&" || tok->strAt(-1) == "*" || // Either a return type in front of tok
+              tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct()) && // or a ctor/dtor
              (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
               Token::Match(tok->next()->link(), ") : %var% (|::"))) {
@@ -1262,8 +1262,8 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
         const std::list<const Token*> locationList(1, tok);
         const ErrorLogger::ErrorMessage errmsg(locationList, &_tokenizer->list,
                                                Severity::debug,
-                                               msg,
                                                "debug",
+                                               msg,
                                                false);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
@@ -1919,6 +1919,10 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
                 Token::simpleMatch(tok->linkAt(4), ") ;"))) {
         return tok->linkAt(4);
     }
+
+    // friend?
+    if (Token::Match(tok, "friend %type%") && tok->next()->varId() == 0)
+        return Token::findsimplematch(tok->tokAt(2), ";");
 
     // skip const|static|mutable|extern
     while (Token::Match(tok, "const|static|mutable|extern")) {

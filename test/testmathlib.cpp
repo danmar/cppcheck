@@ -43,42 +43,42 @@ private:
         TEST_CASE(isLessEqual)
     }
 
-    void isGreater() {
+    void isGreater() const {
         ASSERT_EQUALS(true , MathLib::isGreater("1.0", "0.001"));
         ASSERT_EQUALS(false, MathLib::isGreater("-1.0", "0.001"));
     }
 
-    void isGreaterEqual() {
+    void isGreaterEqual() const {
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.00", "1.0"));
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.001", "1.0"));
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.0", "0.001"));
         ASSERT_EQUALS(false, MathLib::isGreaterEqual("-1.0", "0.001"));
     }
 
-    void isEqual() {
+    void isEqual() const {
         ASSERT_EQUALS(true  , MathLib::isEqual("1.0", "1.0"));
         ASSERT_EQUALS(false , MathLib::isEqual("1.", "1.01"));
         ASSERT_EQUALS(true  , MathLib::isEqual("0.1","1.0E-1"));
     }
 
-    void isNotEqual() {
+    void isNotEqual() const {
         ASSERT_EQUALS(false , MathLib::isNotEqual("1.0", "1.0"));
         ASSERT_EQUALS(true  , MathLib::isNotEqual("1.", "1.01"));
     }
 
-    void isLess() {
+    void isLess() const {
         ASSERT_EQUALS(false , MathLib::isLess("1.0", "0.001"));
         ASSERT_EQUALS(true  , MathLib::isLess("-1.0", "0.001"));
     }
 
-    void isLessEqual() {
+    void isLessEqual() const {
         ASSERT_EQUALS(true  , MathLib::isLessEqual("1.00", "1.0"));
         ASSERT_EQUALS(false , MathLib::isLessEqual("1.001", "1.0"));
         ASSERT_EQUALS(false , MathLib::isLessEqual("1.0", "0.001"));
         ASSERT_EQUALS(true  , MathLib::isLessEqual("-1.0", "0.001"));
     }
 
-    void calculate() {
+    void calculate() const {
         // addition
         ASSERT_EQUALS("256", MathLib::add("0xff", "1"));
         ASSERT_EQUALS("249", MathLib::add("250", "-1"));
@@ -87,6 +87,8 @@ private:
         ASSERT_EQUALS("-1" , MathLib::add("0", "-1"));
         ASSERT_EQUALS("1"  , MathLib::add("1", "0"));
         ASSERT_EQUALS("0"  , MathLib::add("0", "0."));
+        ASSERT_EQUALS("1.0000001"  , MathLib::add("1", "0.00000001"));  // #4016
+        ASSERT_EQUALS("30666.22"  , MathLib::add("30666.22", "0.0"));  // #4068
 
         // subtraction
         ASSERT_EQUALS("254", MathLib::subtract("0xff", "1"));
@@ -96,6 +98,8 @@ private:
         ASSERT_EQUALS("1"  , MathLib::subtract("0", "-1"));
         ASSERT_EQUALS("1"  , MathLib::subtract("1", "0"));
         ASSERT_EQUALS("0"  , MathLib::subtract("0", "0."));
+        ASSERT_EQUALS("0.99999999"  , MathLib::subtract("1", "0.00000001")); // #4016
+        ASSERT_EQUALS("30666.22"  , MathLib::subtract("30666.22", "0.0"));  // #4068
 
         // multiply
         ASSERT_EQUALS("-0.003"          , MathLib::multiply("-1e-3", "3"));
@@ -124,7 +128,7 @@ private:
         ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
     }
 
-    void calculate1() { // mod
+    void calculate1() const { // mod
         ASSERT_EQUALS("0"    , MathLib::calculate("2"	 , "1"    , '%'));
         ASSERT_EQUALS("0"    , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
@@ -134,7 +138,7 @@ private:
         ASSERT_EQUALS("1.7"  , MathLib::calculate("18.5" , "4.2" , '%'));
     }
 
-    void convert() {
+    void convert() const {
         // ------------------
         // tolong conversion:
         // ------------------
@@ -198,7 +202,7 @@ private:
 
     }
 
-    void isint() {
+    void isint() const {
         // zero tests
         ASSERT_EQUALS(true , MathLib::isInt("0"));
         ASSERT_EQUALS(false, MathLib::isInt("0."));
@@ -275,7 +279,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("LL"));
     }
 
-    void isnegative() {
+    void isnegative() const {
         ASSERT_EQUALS(true, MathLib::isNegative("-1"));
         ASSERT_EQUALS(true, MathLib::isNegative("-1."));
         ASSERT_EQUALS(true, MathLib::isNegative("-1.0"));
@@ -289,7 +293,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E-2"));
     }
 
-    void isfloat() {
+    void isfloat() const {
         ASSERT_EQUALS(false, MathLib::isFloat("0"));
         ASSERT_EQUALS(true , MathLib::isFloat("0."));
         ASSERT_EQUALS(true , MathLib::isFloat("0.0"));

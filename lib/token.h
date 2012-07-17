@@ -24,6 +24,8 @@
 #include <ostream>
 #include "config.h"
 
+class Scope;
+
 /// @addtogroup Core
 /// @{
 
@@ -384,6 +386,21 @@ public:
     }
 
     /**
+     * Associate this token with given scope
+     * @param scope Scope to be associated
+     */
+    void scope(Scope* s) {
+        _scope = s;
+    }
+
+    /**
+     * Returns a pointer to the scope containing this token.
+     */
+    Scope* scope() const {
+        return _scope;
+    }
+
+    /**
      * Links two elements against each other.
      **/
     static void createMutualLinks(Token *begin, Token *end);
@@ -473,6 +490,9 @@ private:
     Token *_next;
     Token *_previous;
     Token *_link;
+
+    Scope* _scope;
+
     std::string _str;
     unsigned int _varId;
     unsigned int _fileIndex;

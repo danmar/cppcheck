@@ -90,6 +90,7 @@ private:
         TEST_CASE(localvar42); // ticket #3603
         TEST_CASE(localvar43); // ticket #3742
         TEST_CASE(localvar44); // ticket #3602
+        TEST_CASE(localvar45); // ticket #4020
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -114,6 +115,8 @@ private:
         TEST_CASE(localvarconst2);
 
         TEST_CASE(localvarthrow); // ticket #3687
+
+        TEST_CASE(localVarStd);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -140,6 +143,8 @@ private:
         TEST_CASE(localvarIfNOT);    // #3104 - if ( NOT var )
         TEST_CASE(localvarAnd);      // #3672
         TEST_CASE(localvarSwitch);   // #3744 - false positive when localvar is used in switch
+
+        TEST_CASE(crash1);
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -377,7 +382,8 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        if (!tokenizer.tokenize(istr, filename))
+            return;
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
@@ -1514,6 +1520,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvar45() { // #4020 - FP
+        functionVariableUsage("void func() {\n"
+                              "    int *sp_mem[2] = { 0x00, 0x00 };\n"
+                              "    int src = 1, dst = 2;\n"
+                              "    sp_mem[(dst + i)][3] = src;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvaralias1() {
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2575,6 +2590,14 @@ private:
                               "    return 0;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class Fred {char c;};\n"
+                              "class A : public Fred { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: a\n", errout.str());
     }
 
     void localvarStruct6() {
@@ -3085,10 +3108,10 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("std::string foo() {\n"
-                              "    std::string s;\n"
+                              "    std::string s;\n" // Class instances are initialized. Assignement is not necessary
                               "    return s;\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is not assigned a value\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("std::string foo() {\n"
                               "    std::string s = \"foo\";\n"
@@ -3129,6 +3152,33 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localVarStd() {
+        functionVariableUsage("void f() {\n"
+                              "    std::string x = foo();\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::vector<int> x;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: x\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::vector<int> x(100);\n"
+                              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used\n", "", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::vector<MyClass> x;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: x\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::vector<MyClass> x(100);\n" // Might have a side-effect
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     // ticket #3104 - false positive when variable is read with "if (NOT var)"
     void localvarIfNOT() {
         functionVariableUsage("void f() {\n"
@@ -3162,6 +3212,13 @@ private:
 
         // Don't write an error that "a" is not used
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void crash1() {
+        functionVariableUsage("SAL_WNODEPRECATED_DECLARATIONS_PUSH\n"
+                              "void convertToTokenArray() {\n"
+                              "}\n"
+                              "SAL_WNODEPRECATED_DECLARATIONS_POP"); // #4033
     }
 };
 

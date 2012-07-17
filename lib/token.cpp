@@ -33,6 +33,7 @@ Token::Token(Token **t) :
     _next(0),
     _previous(0),
     _link(0),
+    _scope(0),
     _str(""),
     _varId(0),
     _fileIndex(0),
@@ -91,12 +92,12 @@ void Token::update_property_info()
                  _str == "||" ||
                  _str == "!")
             _type = eLogicalOp;
-        else if (_str == "==" ||
-                 _str == "!=" ||
-                 _str == "<"  ||
-                 _str == "<=" ||
-                 _str == ">"  ||
-                 _str == ">=")
+        else if ((_str == "==" ||
+                  _str == "!=" ||
+                  _str == "<"  ||
+                  _str == "<=" ||
+                  _str == ">"  ||
+                  _str == ">=") && !_link)
             _type = eComparisonOp;
         else if (_str == "++" ||
                  _str == "--")
@@ -159,9 +160,7 @@ void Token::concatStr(std::string const& b)
 
 std::string Token::strValue() const
 {
-    assert(_str.length() >= 2);
-    assert(_str[0] == '"');
-    assert(_str[_str.length()-1] == '"');
+    assert(_type == eString);
     return _str.substr(1, _str.length() - 2);
 }
 
@@ -195,6 +194,7 @@ void Token::deleteThis()
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
         _link = _next->_link;
+        _scope = _next->_scope;
         if (_link)
             _link->link(this);
 
@@ -213,6 +213,7 @@ void Token::deleteThis()
         _fileIndex = _previous->_fileIndex;
         _linenr = _previous->_linenr;
         _link = _previous->_link;
+        _scope = _previous->_scope;
         if (_link)
             _link->link(this);
 
@@ -293,17 +294,7 @@ const Token *Token::linkAt(int index) const
 {
     const Token *tok = this->tokAt(index);
     if (!tok) {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("");
-        loc.line = this->linenr();
-        locationList.push_back(loc);
-        const ErrorLogger::ErrorMessage errmsg(locationList,
-                                               Severity::error,
-                                               "Internal error. Token::linkAt called with index outside the tokens range.",
-                                               "cppcheckError",
-                                               false);
-        Check::reportError(errmsg);
+        throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
     }
     return tok ? tok->link() : 0;
 }
@@ -312,17 +303,7 @@ Token *Token::linkAt(int index)
 {
     Token *tok = this->tokAt(index);
     if (!tok) {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("");
-        loc.line = this->linenr();
-        locationList.push_back(loc);
-        const ErrorLogger::ErrorMessage errmsg(locationList,
-                                               Severity::error,
-                                               "Internal error. Token::linkAt called with index outside the tokens range.",
-                                               "cppcheckError",
-                                               false);
-        Check::reportError(errmsg);
+        throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
     }
     return tok ? tok->link() : 0;
 }
@@ -1020,13 +1001,19 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
         }
 
         if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
-            while (lineNumber < tok->linenr()) {
-                ++lineNumber;
-                ret << '\n';
-                if (linenumbers) {
-                    ret << lineNumber << ':';
-                    if (lineNumber == tok->linenr())
-                        ret << ' ';
+            if (lineNumber+4 < tok->linenr() && fileInd == static_cast<int>(tok->_fileIndex)) {
+                ret << '\n' << lineNumber+1 << ":\n|\n";
+                ret << tok->linenr()-1 << ":\n";
+                ret << tok->linenr() << ": ";
+            } else {
+                while (lineNumber < tok->linenr()) {
+                    ++lineNumber;
+                    ret << '\n';
+                    if (linenumbers) {
+                        ret << lineNumber << ':';
+                        if (lineNumber == tok->linenr())
+                            ret << ' ';
+                    }
                 }
             }
             lineNumber = tok->linenr();

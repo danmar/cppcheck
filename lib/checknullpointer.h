@@ -99,7 +99,7 @@ public:
 
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname);
-    void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive = false);
+    void nullPointerError(const Token *tok, const std::string &varname, const Token* nullcheck, bool inconclusive = false);
 
 private:
 
@@ -110,7 +110,7 @@ private:
     }
 
     /** Name of check */
-    std::string myName() const {
+    static std::string myName() {
         return "Null pointer";
     }
 
@@ -119,12 +119,6 @@ private:
         return "Null pointers\n"
                "* null pointer dereferencing\n";
     }
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * Locate insufficient null-pointer handling after loop
-     */
-    void nullPointerAfterLoop();
 
     /**
      * @brief Does one part of the check for nullPointer().

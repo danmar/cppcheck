@@ -123,8 +123,8 @@ private:
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
     void operatorEqToSelfError(const Token *tok);
-    void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
-    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
+    void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic);
+    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
 
@@ -140,12 +140,13 @@ private:
         c.thisSubtractionError(0);
         c.operatorEqRetRefThisError(0);
         c.operatorEqToSelfError(0);
-        c.checkConstError(0, "class", "function");
+        c.checkConstError(0, "class", "function", false);
+        c.checkConstError(0, "class", "function", true);
         c.initializerListError(0, 0, "class", "variable");
         c.suggestInitializationList(0, "variable");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Class";
     }
 
@@ -160,8 +161,8 @@ private:
                "* 'operator=' should return reference to self\n"
                "* 'operator=' should check for assignment to self\n"
                "* Constness for member functions\n"
-               "* Order of initalizations\n"
-               "* Suggest usage of initalization list\n"
+               "* Order of initializations\n"
+               "* Suggest usage of initialization list\n"
                "* Suspicious subtraction from 'this'\n";
     }
 
@@ -176,7 +177,7 @@ private:
     bool isMemberVar(const Scope *scope, const Token *tok);
     bool isMemberFunc(const Scope *scope, const Token *tok);
     bool isConstMemberFunc(const Scope *scope, const Token *tok);
-    bool checkConstFunc(const Scope *scope, const Function *func);
+    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed);
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
@@ -212,13 +213,13 @@ private:
      * @brief set all variables in list assigned
      * @param usage reference to usage vector
      */
-    void assignAllVar(std::vector<Usage> &usage) const;
+    static void assignAllVar(std::vector<Usage> &usage);
 
     /**
      * @brief set all variables in list not assigned and not initialized
      * @param usage reference to usage vector
      */
-    void clearAllVar(std::vector<Usage> &usage) const;
+    static void clearAllVar(std::vector<Usage> &usage);
 
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
@@ -229,7 +230,7 @@ private:
      */
     void initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage);
 
-    bool canNotCopy(const Scope *scope) const;
+    static bool canNotCopy(const Scope *scope);
 };
 /// @}
 //---------------------------------------------------------------------------

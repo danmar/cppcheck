@@ -42,6 +42,7 @@ private:
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
         TEST_CASE(testScanf3);
+        TEST_CASE(testScanf4); // #ticket 2553
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
@@ -279,6 +280,13 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n" // #3965
+              "    FILE* f[3];\n"
+              "    f[0] = fopen(name, mode);\n"
+              "    fclose(f[0]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {
@@ -286,13 +294,13 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "    fread(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
 
         check("void foo(FILE* f) {\n"
               "    fread(buffer, 5, 6, f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
 
         check("void foo(FILE* f, bool read) {\n"
               "    if(read)\n"
@@ -335,7 +343,7 @@ private:
               "    long pos = ftell(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
     }
 
     void fflushOnInputStream() {
@@ -397,6 +405,16 @@ private:
               "    scanf(\"%d\", &a);\n"
               "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testScanf4() { // ticket #2553
+
+        check("void f()\n"
+              "{\n"
+              "  char str [8];\n"
+              "  scanf (\"%70s\",str);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it.\n", errout.str());
     }
 
 

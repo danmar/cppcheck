@@ -37,7 +37,7 @@ private:
         TEST_CASE(is_csharp);
     }
 
-    void simplify_path() {
+    void simplify_path() const {
         // Path::simplifyPath()
         ASSERT_EQUALS("index.h", Path::simplifyPath("index.h"));
         ASSERT_EQUALS("index.h", Path::simplifyPath("./index.h"));
@@ -65,7 +65,7 @@ private:
         ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("\"the/path to/index.cpp\""));
     }
 
-    void accept_file() {
+    void accept_file() const {
         ASSERT(Path::acceptFile("index.cpp"));
         ASSERT(Path::acceptFile("index.invalid.cpp"));
         ASSERT(Path::acceptFile("index.invalid.Cpp"));
@@ -77,7 +77,7 @@ private:
         ASSERT(Path::acceptFile("C")==false);
     }
 
-    void getRelative() {
+    void getRelative() const {
         std::vector<std::string> basePaths;
         basePaths.push_back(""); // Don't crash with empty paths
         basePaths.push_back("C:/foo");
@@ -91,7 +91,7 @@ private:
         ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
     }
 
-    void is_c() {
+    void is_c() const {
         ASSERT(Path::isC("index.cpp")==false);
         ASSERT(Path::isC("")==false);
         ASSERT(Path::isC("c")==false);
@@ -106,7 +106,7 @@ private:
 #endif
     }
 
-    void is_cpp() {
+    void is_cpp() const {
         ASSERT(Path::isCPP("index.c")==false);
 
         // In unix .C is considered C++
@@ -120,14 +120,14 @@ private:
         ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));
     }
 
-    void is_java() {
+    void is_java() const {
         ASSERT(Path::isJava("index.cpp")==false);
         ASSERT(Path::isJava("index.java"));
         ASSERT(Path::isJava("C:\\foo\\index.java"));
         ASSERT(Path::isJava("C:\\foo\\index.Java"));
     }
 
-    void is_csharp() {
+    void is_csharp() const {
         ASSERT(Path::isCSharp("index.cpp")==false);
         ASSERT(Path::isCSharp("index.cs"));
         ASSERT(Path::isCSharp("C:\\foo\\index.cs"));

@@ -92,24 +92,14 @@ void CheckExceptionSafety::deallocThrow()
         if (!var || !(var->isGlobal() || var->isStatic()))
             continue;
 
-        // indentlevel..
-        unsigned int indentlevel = 0;
-
         // Token where throw occurs
         const Token *ThrowToken = 0;
 
         // is there a throw after the deallocation?
-        for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "{")
-                ++indentlevel;
-            else if (tok2->str() == "}") {
-                if (indentlevel == 0)
-                    break;
-                --indentlevel;
-            }
-
+        const Token* const end2 = tok->scope()->classEnd;
+        for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
             // Throw after delete -> Dead pointer
-            else if (tok2->str() == "throw") {
+            if (tok2->str() == "throw") {
                 if (_settings->inconclusive) { // For inconclusive checking, throw directly.
                     deallocThrowError(tok2, tok->str());
                     break;

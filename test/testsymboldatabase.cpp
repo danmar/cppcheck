@@ -62,6 +62,8 @@ private:
     }
 
     void run() {
+        TEST_CASE(array);
+
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
         TEST_CASE(test_isVariableDeclarationIdentifiesSimpleDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedDeclaration);
@@ -97,6 +99,7 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+        TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
 
         TEST_CASE(classWithFriend);
@@ -151,6 +154,17 @@ private:
         TEST_CASE(symboldatabase28);
 
         TEST_CASE(isImplicitlyVirtual);
+    }
+
+    void array() {
+        std::istringstream code("int a[10+2];");
+        TokenList list(NULL);
+        list.createTokens(code, "test.c");
+        list.front()->tokAt(2)->link(list.front()->tokAt(6));
+        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, NULL, NULL);
+        ASSERT(v.isArray());
+        ASSERT_EQUALS(1U, v.dimensions().size());
+        ASSERT_EQUALS(0U, v.dimension(0));
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -323,8 +337,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesArray() {
         reset();
-        givenACodeSampleToTokenize array("::std::string v[3];");
-        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        givenACodeSampleToTokenize arr("::std::string v[3];");
+        bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("v", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
@@ -336,8 +350,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesOfArrayPointers() {
         reset();
-        givenACodeSampleToTokenize array("A *a[5];");
-        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        givenACodeSampleToTokenize arr("A *a[5];");
+        bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
@@ -641,10 +655,28 @@ private:
         }
     }
 
+    void functionDeclarationTemplate() {
+        GET_SYMBOL_DB("std::map<int, string> foo() {}")
+
+        // 2 scopes: Global and Function
+        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("foo"));
+
+        if (db) {
+            const Scope *scope = &db->scopeList.front();
+
+            ASSERT(scope && scope->functionList.size() == 1);
+
+            const Function *foo = &scope->functionList.front();
+
+            ASSERT(foo && foo->token->str() == "foo");
+            ASSERT(foo && foo->hasBody);
+        }
+    }
+
     void functionDeclarations() {
         GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}")
 
-        // 3 scopes: Global, Class, and Function
+        // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("foo"));
 
         if (db) {

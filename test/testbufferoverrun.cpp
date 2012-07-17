@@ -111,6 +111,7 @@ private:
         TEST_CASE(array_index_41); // structs with the same name
         TEST_CASE(array_index_42);
         TEST_CASE(array_index_43); // struct with array
+        TEST_CASE(array_index_44); // #3979
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1420,6 +1421,30 @@ private:
               "   var[ 0 ].arr[ 2 ] = 2;\n"
               "   y = var[ 0 ].arr[ 2 ];\n"
               "   return y;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_44() { // #3979 (false positive)
+
+        check("void f()\n"
+              "{\n"
+              "    char buf[2];\n"
+              "    int i;\n"
+              "    for (i = 2; --i >= 0; )\n"
+              "    {\n"
+              " 	   buf[i] = 1;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    double	 buf[2];\n"
+              "    for (int i = 2; i--; )\n"
+              "    {\n"
+              " 	   buf[i] = 2.;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3278,13 +3303,6 @@ private:
               " strncpy(c,a,sizeof(c)+1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: c\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              " char c[6];\n"
-              " strncpy(c,\"hello!\",sizeof(c));\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not null-terminated after the call to strncpy().\n", errout.str());
 
         check("void f()\n"
               "{\n"

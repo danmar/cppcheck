@@ -100,7 +100,7 @@ private:
         c.errorReturnAddressOfFunctionParameter(0, "parameter");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Auto Variables";
     }
 

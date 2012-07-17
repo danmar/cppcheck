@@ -80,7 +80,7 @@ private:
         c.multiConditionError(0,1);
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Match assignments and conditions";
     }
 

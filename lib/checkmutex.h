@@ -21,14 +21,23 @@
 #define CheckMutexH
 //---------------------------------------------------------------------------
 
+/**
+ * @file
+ *
+ * %Check that within a function each mutex which is locked is also
+ * unlocked before returning from the function.
+ *
+ * The code checks the above for pthread mutexes (i.e. functions pthread_mutex_lock
+ * and pthread_mutex_unlock)
+ */
+
 #include "check.h"
 #include "config.h"
-class Variable;
 
 /// @addtogroup Checks
 /// @{
 
-/** @brief %Check input output operations. */
+/** @brief %Check related to pthread_mutex. */
 class CPPCHECKLIB CheckMutex : public Check {
 public:
     /** @brief This constructor is used when registering CheckMutex */
@@ -43,26 +52,27 @@ public:
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckMutex checkMutex(tokenizer, settings, errorLogger);
+        checkMutex.checkMutexUsage();
 
     }
 
     /** @brief Run checks on the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckMutex checkMutex(tokenizer, settings, errorLogger);
-
-    //    checkMutex.checkCoutCerrMisusage();
-        checkMutex.checkMutexUsage();
-    //    checkMutex.invalidScanf();
     }
 
 
-    /** @brief %Check usage of files*/
+    /** @brief %Check usage of pthread_mutex_lock and pthread_mutex_unlock */
     void checkMutexUsage();
 
 private:
     void checkFunction(const Token* tok);
+    std::string getMutexVariable(const Token * tok4);
+    void setAllMutexState(std::map<std::string, bool>& mutexToState, bool value);
+    void checkMutexState(std::map<std::string, bool>& mutexToState, 
+            const Token * locationTok, Token *functionName); 
     // Reporting errors..
-    void checkMutexUsageError(const Token* tok, const std::string& functionName);
+    void checkMutexUsageError(const Token* tok, std::string, const std::string& functionName);
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckMutex c(0, settings, errorLogger);
     }
@@ -72,15 +82,10 @@ private:
     }
 
     std::string classInfo() const {
-        return "Check input/output operations.\n"
-               "* Bad usage of the function 'sprintf' (overlapping data)\n"
-               "* Use a file that has been closed\n"
-               "* File input/output without positioning results in undefined behaviour\n"
-               "* Read to a file that has only been opened for writing (or vice versa)\n"
-               "* Using fflush() on an input stream\n"
-               "* Invalid usage of output stream. For example: std::cout << std::cout;'\n"
-               "* Wrong number of arguments given to 'printf' or 'scanf;'\n";
-    }
+        return "Check pthread_mutex locking.\n"
+               "* Each pthread_mutex_lock call should have a corresponding pthread_mutex_unlock call\n"
+               "  before returning from method\n";
+    } 
 };
 /// @}
 //---------------------------------------------------------------------------

@@ -96,7 +96,7 @@ private:
         c.uninitvarError(0, "varname");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Uninitialized variables";
     }
 

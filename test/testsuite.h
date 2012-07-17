@@ -44,17 +44,17 @@ protected:
 
     bool runTest(const char testname[]);
 
-    void assert_(const char *filename, unsigned int linenr, bool condition);
+    void assert_(const char *filename, unsigned int linenr, bool condition) const;
 
-    void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "");
-    void assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg="");
-    void assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg="");
+    void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "") const;
+    void assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg="") const;
+    void assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg="") const;
 
     void todoAssertEquals(const char *filename, unsigned int linenr, const std::string &wanted,
-                          const std::string &current, const std::string &actual);
+                          const std::string &current, const std::string &actual) const;
     void todoAssertEquals(const char *filename, unsigned int linenr, long long wanted,
-                          long long current, long long actual);
-    void assertThrowFail(const char *filename, unsigned int linenr);
+                          long long current, long long actual) const;
+    void assertThrowFail(const char *filename, unsigned int linenr) const;
     void processOptions(const options& args);
 public:
     virtual void reportOut(const std::string &outmsg);

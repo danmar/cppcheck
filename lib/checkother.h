@@ -103,6 +103,8 @@ public:
         checkOther.checkAssignBoolToPointer();
         checkOther.checkBitwiseOnBoolean();
         checkOther.checkDoubleFree();
+        checkOther.checkRedundantCopy();
+        checkOther.checkNegativeBitwiseShift();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -236,6 +238,12 @@ public:
     void checkDoubleFree();
     void doubleFreeError(const Token *tok, const std::string &varname);
 
+    /** @brief %Check for code creating redundant copies */
+    void checkRedundantCopy();
+
+    /** @brief %Check for bitwise operation with negative right operand */
+    void checkNegativeBitwiseShift();
+
 private:
     // Error messages..
     void clarifyCalculationError(const Token *tok, const std::string &op);
@@ -257,6 +265,7 @@ private:
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
+    void redundantOperationInSwitchError(const Token *tok, const std::string &varname);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void redundantStrcpyInSwitchError(const Token *tok, const std::string &varname);
     void switchCaseFallThrough(const Token *tok);
@@ -283,12 +292,16 @@ private:
     void unreachableCodeError(const Token* tok, bool inconclusive);
     void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
+    void pointerLessThanZeroError(const Token *tok, bool inconclusive);
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
+    void pointerPositiveError(const Token *tok, bool inconclusive);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void SuspiciousSemicolonError(const Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
+    void negativeBitwiseShiftError(const Token *tok);
+    void redundantCopyError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -305,6 +318,10 @@ private:
         c.sizeofForNumericParameterError(0);
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
+        c.negativeBitwiseShiftError(0);
+
+        //performance
+        c.redundantCopyError(0, "varname");
 
         // style/warning
         c.cstyleCastError(0);
@@ -318,6 +335,7 @@ private:
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0, false);
         c.redundantAssignmentInSwitchError(0, "varname");
+        c.redundantOperationInSwitchError(0, "varname");
         c.switchCaseFallThrough(0);
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
@@ -339,6 +357,8 @@ private:
         c.unreachableCodeError(0, false);
         c.unsignedLessThanZeroError(0, "varname", false);
         c.unsignedPositiveError(0, "varname", false);
+        c.pointerLessThanZeroError(0, false);
+        c.pointerPositiveError(0, false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0, true);
         c.SuspiciousSemicolonError(0);
@@ -346,7 +366,7 @@ private:
         c.moduloAlwaysTrueFalseError(0, "1");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Other";
     }
 
@@ -363,6 +383,10 @@ private:
                "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* double free() or double closedir()\n"
+               "* bitwise operation with negative right operand\n"
+
+               //performance
+               "* redundant data copying for const variable\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
@@ -370,7 +394,6 @@ private:
                "* redundant if\n"
                "* bad usage of the function 'strtol'\n"
                "* [[CheckUnsignedDivision|unsigned division]]\n"
-               "* Dangerous usage of 'scanf'\n"
                "* passing parameter by value\n"
                "* [[IncompleteStatement|Incomplete statement]]\n"
                "* [[charvar|check how signed char variables are used]]\n"
@@ -378,6 +401,7 @@ private:
                "* condition that is always true/false\n"
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* redundant assignment in a switch statement\n"
+               "* redundant pre/post operation in a switch statement\n"
                "* redundant bitwise operation in a switch statement\n"
                "* redundant strcpy in a switch statement\n"
                "* look for 'sizeof sizeof ..'\n"

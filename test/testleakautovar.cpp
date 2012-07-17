@@ -43,11 +43,13 @@ private:
         TEST_CASE(assign8);
         TEST_CASE(assign9);
         TEST_CASE(assign10);
+        TEST_CASE(assign11); // #3942: x = a(b(p));
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
+        TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -85,6 +87,7 @@ private:
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
         TEST_CASE(test2);
+        TEST_CASE(test3);  // #3954 - reference pointer
 
         // Possible leak => Further configuration is needed for complete analysis
         TEST_CASE(configuration1);
@@ -199,6 +202,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void assign11() { // #3942 - FP for x = a(b(p));
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    x = a(b(p));\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (information) b configuration is needed to establish if there is a leak or not\n", errout.str());
+    }
+
     void deallocuse1() {
         check("void f(char *p) {\n"
               "    free(p);\n"
@@ -241,6 +252,14 @@ private:
               "    return p;\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout.str());
+    }
+
+    void deallocuse5() {  // #4018
+        check("void f(char *p) {\n"
+              "    free(p), p = 0;\n"
+              "    *p = 0;\n"  // <- Make sure pointer info is reset. It is NOT a freed pointer dereference
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895
@@ -467,6 +486,14 @@ private:
         check("struct Fred {\n"
               "    char *p;\n"
               "    void f1() { free(p); }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void test3() {	// 3954 - reference pointer
+        check("void f() {\n"
+              "    char *&p = x();\n"
+              "    p = malloc(10);\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }

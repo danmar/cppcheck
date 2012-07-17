@@ -72,7 +72,7 @@ public:
      * \param unknown set to true if it's unknown if the scope is noreturn
      * \return true if scope ends with a function call that might be 'noreturn'
      */
-    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0) const;
+    static bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0);
 
     /**
      * Tokenize code
@@ -171,7 +171,7 @@ public:
     /**
      * get error messages that the tokenizer generate
      */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
+    static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
     /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
      */
@@ -207,8 +207,10 @@ public:
 
     /**
      * Replace sizeof() to appropriate size.
+     * @return true if modifications to token-list are done.
+     *         false if no modifications are done.
      */
-    void simplifySizeof();
+    bool simplifySizeof();
 
     /**
      * Simplify variable declarations (split up)
@@ -525,10 +527,9 @@ public:
     void simplifyFunctionPointers();
 
     /**
-     * Remove exception specifications. This function calls itself recursively.
-     * @param tok First token in scope to cleanup
+     * Remove exception specifications.
      */
-    void removeExceptionSpecifications(Token *tok) const;
+    void removeExceptionSpecifications();
 
 
     /**
@@ -695,7 +696,11 @@ public:
         list.setSettings(settings);
     }
 
-    const SymbolDatabase *getSymbolDatabase() const;
+    const SymbolDatabase *getSymbolDatabase() const {
+        return _symbolDatabase;
+    }
+    void createSymbolDatabase();
+    void deleteSymbolDatabase();
 
     Token *deleteInvalidTypedef(Token *typeDef);
 
@@ -728,6 +733,13 @@ public:
         return list.front();
     }
 
+private:
+    /** Disable copy constructor, no implementation */
+    Tokenizer(const Tokenizer &);
+
+    /** Disable assignment operator, no implementation */
+    Tokenizer &operator=(const Tokenizer &);
+
     /**
      * Copy tokens.
      * @param dest destination token where copied tokens will be inserted after
@@ -738,13 +750,6 @@ public:
      */
     static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
-private:
-    /** Disable copy constructor, no implementation */
-    Tokenizer(const Tokenizer &);
-
-    /** Disable assignment operator, no implementation */
-    Tokenizer &operator=(const Tokenizer &);
-
     /** settings */
     const Settings * _settings;
 
@@ -752,7 +757,7 @@ private:
     ErrorLogger * const _errorLogger;
 
     /** Symbol database that all checks etc can use */
-    mutable SymbolDatabase *_symbolDatabase;
+    SymbolDatabase *_symbolDatabase;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */

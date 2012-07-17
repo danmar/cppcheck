@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2011 Daniel Marjamäki and cppcheck team.</source>
+        <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -260,10 +260,6 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished">Pas de fichiers trouvés !</translation>
     </message>
     <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Sélectionner les fichiers à vérifier</translation>
-    </message>
-    <message>
         <source>Select directory to check</source>
         <translation type="unfinished">Sélectionner le répertoire à vérifier</translation>
     </message>
@@ -318,10 +314,6 @@ Parameters: -l(line) (file)</source>
     <message>
         <source>Russian</source>
         <translation type="unfinished">Russe</translation>
-    </message>
-    <message>
-        <source>Polish</source>
-        <translation type="unfinished">Polonais</translation>
     </message>
     <message>
         <source>&amp;Toolbars</source>
@@ -599,6 +591,16 @@ Do you want to remove the file from the recently used projects -list?</source>
     </message>
     <message>
         <source>Posix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Korean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current results will be cleared.
+
+Opening a new XML file will clear current results.Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

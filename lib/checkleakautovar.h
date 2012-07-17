@@ -123,7 +123,7 @@ private:
         c.configurationInfo(0, "f");  // user configuration is needed to complete analysis
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Leaks (auto variables)";
     }
 

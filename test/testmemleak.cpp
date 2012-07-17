@@ -163,6 +163,7 @@ private:
 
         TEST_CASE(staticvar);
         TEST_CASE(externvar);
+        TEST_CASE(referencevar);  // 3954 - false positive for reference pointer
 
         TEST_CASE(alloc_alloc_1);
 
@@ -366,7 +367,8 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        if (!tokenizer.tokenize(istr, "test.cpp"))
+            return "";
         tokenizer.simplifyTokenList();
 
         const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());
@@ -424,6 +426,7 @@ private:
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; free((void *)s);", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; free((void *)(s));", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; free(reinterpret_cast<void *>(s));", "s"));
+        ASSERT_EQUALS(";;dealloc;", getcode("char *s; ::free(s);", "s")); // #2802
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete s;", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete (s);", "s"));
         TODO_ASSERT_EQUALS(";;dealloc;",
@@ -434,6 +437,7 @@ private:
         ASSERT_EQUALS(";;dealloc;", getcode("void *p; foo(close(p));", "p"));
         ASSERT_EQUALS(";;;;", getcode("FILE *f1; FILE *f2; fclose(f1);", "f2"));
         ASSERT_EQUALS(";;returnuse;", getcode("FILE *f; return fclose(f) == EOF ? 1 : 2;", "f"));
+        ASSERT_EQUALS(";;dealloc;", getcode("char *s; s ? free(s) : 0;", "s"));
 
         // if..
         ASSERT_EQUALS(";;if{}", getcode("char *s; if (a) { }", "s"));
@@ -528,8 +532,8 @@ private:
         ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int f; f=open(a,b); if(f>=0)close(f);", "f"));
         ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int f; f=open(a,b); if(f>-1)close(f);", "f"));
         ASSERT_EQUALS(";;alloc;ifv{;}", getcode("int f; f=open(a,b); if(f!=-1 || x);", "f"));
-        ASSERT_EQUALS(";;;dealloc;loop{}}", getcode(";int f; while (close(f) == -1) { } }", "f"));
-        ASSERT_EQUALS(";;;dealloc;assign;;}", getcode(";int res; res = close(res); }", "res"));
+        ASSERT_EQUALS(";;;dealloc;loop{}", getcode(";int f; while (close(f) == -1) { }", "f"));
+        ASSERT_EQUALS(";;;dealloc;assign;;", getcode(";int res; res = close(res);", "res"));
 
         ASSERT_EQUALS(";;dealloc;", getcode("int f; e |= fclose(f);", "f"));
 
@@ -558,7 +562,7 @@ private:
     }
 
 
-    void call_func() {
+    void call_func() const {
         // whitelist..
         ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("qsort"));
         ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("scanf"));
@@ -1005,6 +1009,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void referencevar() {  // 3954 - false positive for reference pointer
+        check("void f() {\n"
+              "    char *&x = get();\n"
+              "    x = malloc(100);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     void alloc_alloc_1() {
@@ -3112,25 +3123,6 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void checkvcl(const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
-        Settings settings;
-        settings.experimental = true;
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-
-        // Check for memory leaks..
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.check();
     }
 
 

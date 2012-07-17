@@ -93,7 +93,7 @@ private:
               "{\n"
               "    bsd_signal(SIGABRT, SIG_IGN);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'bsd_signal'. It is recommended that new applications use the 'sigaction' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'bsd_signal' called. It is recommended to use the function 'sigaction' instead.\n", errout.str());
 
         check("int f()\n"
               "{\n"
@@ -112,7 +112,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'gethostbyname'. It is recommended that new applications use the 'getaddrinfo' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'gethostbyname' called. It is recommended to use the function 'getaddrinfo' instead.\n", errout.str());
     }
 
     void testgethostbyaddr() {
@@ -124,7 +124,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Found obsolete function 'gethostbyaddr'. It is recommended that new applications use the 'getnameinfo' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Obsolete function 'gethostbyaddr' called. It is recommended to use the function 'getnameinfo' instead.\n", errout.str());
     }
 
     void testusleep() {
@@ -132,7 +132,7 @@ private:
               "{\n"
               "    usleep( 1000 );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n", errout.str());
     }
 
     void testindex() {
@@ -172,7 +172,7 @@ private:
               "    const char i = index(var, 0);\n"
               "    return i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n",
+        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'index' called. It is recommended to use the function 'strchr' instead.\n",
                       errout.str());
     }
 
@@ -180,7 +180,7 @@ private:
         check("void TDataModel::forceRowRefresh(int row) {\n"
               "    emit dataChanged(index(row, 0), index(row, columnCount() - 1));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Found obsolete function 'index'. It is recommended to use the function 'strchr' instead\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Obsolete function 'index' called. It is recommended to use the function 'strchr' instead.\n", errout.str());
     }
 
     void testrindex() {
@@ -195,7 +195,7 @@ private:
               "    const char var[7] = 'rindex';\n"
               "    print(rindex(var, 0));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'rindex'. It is recommended to use the function 'strrchr' instead\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'rindex' called. It is recommended to use the function 'strrchr' instead.\n", errout.str());
     }
 
 
@@ -213,7 +213,7 @@ private:
               "{\n"
               "    char *x = gets();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
     }
 
     void testalloca() {
@@ -221,7 +221,7 @@ private:
               "{\n"
               "    char *x = alloca(10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'alloca'. It is recommended to use a variable length array.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'alloca' called. It is recommended to use a variable length array.\n", errout.str());
     }
 
     // ticket #3121
@@ -244,7 +244,7 @@ private:
               "{\n"
               "    char *x = std::gets(str);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
     }
 
     // multiple use
@@ -254,7 +254,8 @@ private:
               "    char *x = std::gets(str);\n"
               "    usleep( 1000 );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n[test.cpp:4]: (style) Found obsolete function 'usleep'. It is recommended that new applications use the 'nanosleep' or 'setitimer' function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n"
+                      "[test.cpp:4]: (style) Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n", errout.str());
     }
 
     void test_c_declaration() {
@@ -264,14 +265,14 @@ private:
               "    char s [ 10 ] ;\n"
               "    gets ( s ) ;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Found obsolete function 'gets'. It is recommended to use the function 'fgets' instead\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
 
         check("int getcontext(ucontext_t *ucp);\n"
               "int f (ucontext_t *ucp)\n"
               "{\n"
               "    getcontext ( ucp ) ;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Found obsolete function 'getcontext'. Due to portability issues with this function, applications are recommended to be rewritten to use POSIX threads\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'getcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.\n", errout.str());
     }
 
     void test_function_with_body() {

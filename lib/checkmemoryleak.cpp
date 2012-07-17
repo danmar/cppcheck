@@ -266,7 +266,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
     if (Token::Match(tok, "delete [ ] ( %varid% ) ;", varid))
         return NewArray;
 
-    if (Token::Match(tok, "free|kfree ( %varid% ) ;", varid) ||
+    if (tok && tok->str() == "::")
+        tok = tok->next();
+
+    if (Token::Match(tok, "free|kfree ( %varid% ) [;:]", varid) ||
         Token::Match(tok, "free|kfree ( %varid% -", varid) ||
         Token::Match(tok, "realloc ( %varid% , 0 ) ;", varid))
         return Malloc;
@@ -985,7 +988,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
-            if (Token::Match(tok->previous(), "[;{})=|] %var%")) {
+            if (Token::Match(tok->previous(), "[;{})=|] ::| %var%")) {
+                if (Token::Match(tok, "%varid% ?", varid))
+                    tok = tok->tokAt(2);
+
                 AllocType dealloc = getDeallocationType(tok, varid);
 
                 if (dealloc != No && tok->str() == "fcloseall" && alloctype != dealloc)
@@ -2237,7 +2243,7 @@ void CheckMemoryLeakInFunction::check()
         if (!var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || !var->scope())
             continue;
 
-        if (var->isArgument() && var->isReference())
+        if (var->isReference())
             continue;
 
         if (!var->isPointer() && var->typeStartToken()->str() != "int")

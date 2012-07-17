@@ -44,6 +44,7 @@ private:
         TEST_CASE(iterator10);
         TEST_CASE(iterator11);
         TEST_CASE(iterator12);
+        TEST_CASE(iterator13);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -378,6 +379,50 @@ private:
               "    int pos = s.find(x);\n"
               "    s.erase(pos);\n"
               "    s.erase(pos);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator13() {
+        check("void f() {\n"
+              "    std::vector<int> a;\n"
+              "    std::vector<int> t;\n"
+              "    std::vector<int>::const_iterator it;\n"
+              "    it = a.begin();\n"
+              "    while (it!=a.end())\n"
+              "        v++it;\n"
+              "    it = t.begin();\n"
+              "    while (it!=a.end())\n"
+              "        ++it;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Same iterator is used with both t and a\n", errout.str());
+
+        // #4062
+        check("void f() {\n"
+              "    std::vector<int> a;\n"
+              "    std::vector<int> t;\n"
+              "    std::vector<int>::const_iterator it;\n"
+              "    it = a.begin();\n"
+              "    while (it!=a.end())\n"
+              "        v++it;\n"
+              "    it = t.begin();\n"
+              "    while (it!=t.end())\n"
+              "        ++it;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> a;\n"
+              "    std::vector<int> t;\n"
+              "    std::vector<int>::const_iterator it;\n"
+              "    if(z)\n"
+              "        it = a.begin();\n"
+              "    else\n"
+              "        it = t.begin();\n"
+              "    while (z && it!=a.end())\n"
+              "        v++it;\n"
+              "    while (!z && it!=t.end())\n"
+              "        v++it;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1154,7 +1199,7 @@ private:
               "    static set<Foo>::const_iterator current;\n"
               "    return 25 > current->bar;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereferenced iterator 'current' has been erased\n", errout.str());
     }
 
 
@@ -1872,6 +1917,21 @@ private:
               "    return v.empty();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Useless call of function 'empty()'. Did you intend to call 'clear()' instead?\n", errout.str());
+
+        check("void f() {\n" // #4032
+              "    const std::string greeting(\"Hello World !!!\");\n"
+              "    const std::string::size_type npos = greeting.rfind(\" \");\n"
+              "    if (npos != std::string::npos)\n"
+              "        std::cout << greeting.substr(0, npos) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::remove(a.begin(), a.end(), val);\n"
+              "    x = std::remove(a.begin(), a.end(), val);\n"
+              "    a.erase(std::remove(a.begin(), a.end(), val));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of std::remove() ignored. Elements remain in container.\n", errout.str());
     }
 };
 

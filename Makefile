@@ -37,7 +37,7 @@ else # !COMSPEC
 endif # COMSPEC
 
 ifndef CXXFLAGS
-    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
+    CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wconversion -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
 
 ifeq ($(HAVE_RULES),yes)
@@ -88,6 +88,7 @@ LIBOBJ =      lib/check64bit.o \
               lib/checkexceptionsafety.o \
               lib/checkinternal.o \
               lib/checkio.o \
+              lib/checkmutex.o \
               lib/checkleakautovar.o \
               lib/checkmemoryleak.o \
               lib/checknonreentrantfunctions.o \
@@ -163,7 +164,8 @@ TESTOBJ =     test/options.o \
               test/testuninitvar.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
-              test/testunusedvar.o
+              test/testunusedvar.o \
+              test/testmutex.o
 
 ifndef TINYXML
     TINYXML = externals/tinyxml/tinystr.o \
@@ -240,6 +242,9 @@ lib/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/c
 lib/checkio.o: lib/checkio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkio.o lib/checkio.cpp
 
+lib/checkmutex.o: lib/checkmutex.cpp lib/checkmutex.h lib/check.h lib/config.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkmutex.o lib/checkmutex.cpp
+
 lib/checkleakautovar.o: lib/checkleakautovar.cpp lib/checkleakautovar.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/checkmemoryleak.h lib/checkother.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkleakautovar.o lib/checkleakautovar.cpp
 
@@ -309,7 +314,7 @@ lib/timer.o: lib/timer.cpp lib/timer.h lib/config.h
 lib/token.o: lib/token.cpp lib/token.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/token.o lib/token.cpp
 
-lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/mathlib.h lib/settings.h lib/standards.h lib/check.h lib/token.h lib/path.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/checknullpointer.h
+lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/mathlib.h lib/settings.h lib/standards.h lib/check.h lib/token.h lib/path.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/tokenize.o lib/tokenize.cpp
 
 lib/tokenlist.o: lib/tokenlist.cpp lib/tokenlist.h lib/config.h lib/token.h lib/mathlib.h lib/path.h lib/preprocessor.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h
@@ -462,3 +467,5 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/errorl
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/token.h lib/settings.h lib/standards.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testunusedvar.o test/testunusedvar.cpp
 
+test/testmutex.o: test/testmutex.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/token.h lib/settings.h lib/standards.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testmutex.o test/testmutex.cpp

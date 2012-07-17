@@ -198,7 +198,17 @@ std::string MathLib::add(const std::string & first, const std::string & second)
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString<bigint>(toLongNumber(first) + toLongNumber(second));
     }
-    return toString<double>(toDoubleNumber(first) + toDoubleNumber(second));
+
+    double d1 = toDoubleNumber(first);
+    double d2 = toDoubleNumber(second);
+
+    int count = 0;
+    while (d1 > 100000.0 * d2 && toString<double>(d1+d2)==first && ++count<5)
+        d2 *= 10.0;
+    while (d2 > 100000.0 * d1 && toString<double>(d1+d2)==second && ++count<5)
+        d1 *= 10.0;
+
+    return toString<double>(d1 + d2);
 }
 
 std::string MathLib::subtract(const std::string &first, const std::string &second)
@@ -206,7 +216,17 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString<bigint>(toLongNumber(first) - toLongNumber(second));
     }
-    return toString<double>(toDoubleNumber(first) - toDoubleNumber(second));
+
+    double d1 = toDoubleNumber(first);
+    double d2 = toDoubleNumber(second);
+
+    int count = 0;
+    while (d1 > 100000.0 * d2 && toString<double>(d1-d2)==first && ++count<5)
+        d2 *= 10.0;
+    while (d2 > 100000.0 * d1 && toString<double>(d1-d2)==second && ++count<5)
+        d1 *= 10.0;
+
+    return toString<double>(d1 - d2);
 }
 
 std::string MathLib::divide(const std::string &first, const std::string &second)
