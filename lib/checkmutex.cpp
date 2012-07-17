@@ -35,25 +35,26 @@ namespace {
 }
 
 void CheckMutex::checkFunction(const Token *tok)	{
-        bool lock = false ;
-        bool unlock = false ;
+      bool lock = false; 
+      Token * functionName = tok->link()->tokAt(-1)->link()->tokAt(-1);
 
-        Token * functionName = tok->link()->tokAt(-1)->link()->tokAt(-1);
-
-        for ( const Token *tok2 = tok->link() ; tok2 && tok2 != tok; tok2 = tok2->next() ) {
-           if ( tok2->str() ==  "pthread_mutex_lock" ) 	{
-		lock = true ; 
-           } else if ( tok2->str() == "pthread_mutex_unlock" )  {
-                unlock = true ; 
-           }
-        }
-        if (lock != unlock)	{
-	   checkMutexUsageError(functionName, functionName->str()) ;
-        }
+      for ( const Token *tok2 = tok->link() ; tok2 && tok2 != tok; tok2 = tok2->next() ) {
+         if ( tok2->str() ==  "pthread_mutex_lock" ) 	{
+            lock = true ; 
+         } else if ( tok2->str() == "pthread_mutex_unlock" )  {
+            lock = false ;
+         } else if ( tok2->str() == "return"  ) { 
+            if (lock) {
+                 checkMutexUsageError(tok2, functionName->str()) ;
+            }
+            lock = true ; 
+         } 
+      } // for loop
 }
 
-void CheckMutex::checkMutexUsageError(const Token *tok, const std::string & fName) {
-    reportError(tok, Severity::error, "pthreadLockUnlockMismatch", "A pthread_mutex_lock call doesn't have a related unlock call in function " + fName + ".");
+void CheckMutex::checkMutexUsageError(const Token *tok, const std::string & functionName) {
+    reportError(tok, Severity::error, "pthreadLockUnlockMismatch", "A pthread_mutex_lock call doesn't have a related unlock call in function "
+		 + functionName + ".");
 }
 
 void CheckMutex::checkMutexUsage()

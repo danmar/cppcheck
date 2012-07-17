@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-class Variable;
 
 /// @addtogroup Checks
 /// @{
@@ -49,7 +48,6 @@ public:
     /** @brief Run checks on the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckMutex checkMutex(tokenizer, settings, errorLogger);
-
         checkMutex.checkMutexUsage();
     }
 
