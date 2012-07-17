@@ -311,6 +311,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 continue;
             }
 
+            // Don't check reference variables
+            if (var && var->isReference())
+                continue;
+
             // allocation?
             if (Token::Match(tok->tokAt(2), "%type% (")) {
                 const std::map<std::string, std::string>::const_iterator it = allocFunctions.find(tok->strAt(2));

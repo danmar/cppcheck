@@ -688,6 +688,12 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f() {\n"
+                       "   char a[10];\n"
+                       "   if (a[0] = x){}\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int foo(int x)\n"
                        "{\n"
                        "    int i;\n"
