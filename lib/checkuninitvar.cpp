@@ -33,6 +33,16 @@ namespace {
 
 //---------------------------------------------------------------------------
 
+
+// Skip [ .. ]
+static const Token * skipBrackets(const Token *tok)
+{
+    while (tok && tok->str() == "[")
+        tok = tok->link()->next();
+    return tok;
+}
+
+
 /// @addtogroup Checks
 /// @{
 
@@ -860,7 +870,7 @@ private:
         if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)"))
             use(checks, &tok);
 
-        else if (Token::Match(&tok, "!| %var% ["))
+        else if (Token::Match(&tok, "!| %var% [") && !Token::simpleMatch(skipBrackets(tok.next()), "="))
             use_array_or_pointer_data(checks, tok.str() == "!" ? tok.next() : &tok);
 
         else if (Token::Match(&tok, "!| %var% (")) {
