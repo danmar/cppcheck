@@ -124,6 +124,8 @@ public:
     bool validateCfg(const std::string &code, const std::string &cfg);
     void validateCfgError(const std::string &cfg);
 
+    void handleUndef(std::list<std::string> &configurations) const;
+
 protected:
 
     /**

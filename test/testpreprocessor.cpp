@@ -268,6 +268,9 @@ private:
         TEST_CASE(undef7);
         TEST_CASE(undef8);
         TEST_CASE(undef9);
+        TEST_CASE(undef10);
+
+        TEST_CASE(handleUndef);
 
         TEST_CASE(macroChar);
 
@@ -3502,7 +3505,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[file.c:2]: (information) Include file: \"config.h\" not found.\n", errout.str());
         ASSERT_EQUALS("\n\n\n\nvoid foo();\n", actual[""]);
     }
 
@@ -3527,6 +3530,58 @@ private:
         // Compare results..
         ASSERT_EQUALS(1U, actual.size());
         ASSERT_EQUALS("\n\nFred & Wilma\n\n\n\n", actual[""]);
+    }
+
+    void undef10() {
+        Settings settings;
+
+        const char filedata[] = "#ifndef X\n"
+                                "#endif\n"
+                                "#ifndef Y\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        settings.userUndefs.insert("X"); // User undefs should override internal defines
+
+        Preprocessor preprocessor(&settings, this);
+
+        std::string processedFile;
+        std::list<std::string> resultConfigurations;
+        const std::list<std::string> includePaths;
+        preprocessor.preprocess(istr, processedFile, resultConfigurations, "file.c", includePaths);
+
+
+        // Compare results. Two configurations "" and "Y". No "X".
+        ASSERT_EQUALS(2U, resultConfigurations.size());
+        ASSERT_EQUALS("", resultConfigurations.front());
+        ASSERT_EQUALS("Y", resultConfigurations.back());
+    }
+
+    void handleUndef() {
+        Settings settings;
+        settings.userUndefs.insert("X");
+        const Preprocessor preprocessor(&settings, this);
+        std::list<std::string> configurations;
+
+        // configurations to keep
+        configurations.clear();
+        configurations.push_back("XY;");
+        configurations.push_back("AX;");
+        configurations.push_back("A;XY");
+        preprocessor.handleUndef(configurations);
+        ASSERT_EQUALS(3U, configurations.size());
+
+        // configurations to remove
+        configurations.clear();
+        configurations.push_back("X;Y");
+        configurations.push_back("X=1;Y");
+        configurations.push_back("A;X;B");
+        configurations.push_back("A;X=1;B");
+        configurations.push_back("A;X");
+        configurations.push_back("A;X=1");
+        preprocessor.handleUndef(configurations);
+        ASSERT_EQUALS(0U, configurations.size());
     }
 
     void macroChar() {
