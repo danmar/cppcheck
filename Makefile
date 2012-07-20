@@ -164,7 +164,8 @@ TESTOBJ =     test/options.o \
               test/testuninitvar.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
-              test/testunusedvar.o
+              test/testunusedvar.o \
+              test/testmutex.o
 
 ifndef TINYXML
     TINYXML = externals/tinyxml/tinystr.o \
@@ -466,3 +467,5 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/errorl
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/token.h lib/settings.h lib/standards.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testunusedvar.o test/testunusedvar.cpp
 
+test/testmutex.o: test/testmutex.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/token.h lib/settings.h lib/standards.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testmutex.o test/testmutex.cpp

@@ -37,8 +37,8 @@ namespace {
 void CheckMutex::checkFunction(const Token *tok)	{
       bool lock = false; 
       Token * functionName = tok->link()->tokAt(-1)->link()->tokAt(-1);
-
-      for ( const Token *tok2 = tok->link() ; tok2 && tok2 != tok; tok2 = tok2->next() ) {
+      const Token *tok2 = NULL ;
+      for ( tok2 = tok->link() ; tok2 && tok2 != tok; tok2 = tok2->next() ) {
          if ( tok2->str() ==  "pthread_mutex_lock" ) 	{
             lock = true ; 
          } else if ( tok2->str() == "pthread_mutex_unlock" )  {
@@ -47,9 +47,21 @@ void CheckMutex::checkFunction(const Token *tok)	{
             if (lock) {
                  checkMutexUsageError(tok2, functionName->str()) ;
             }
-            lock = true ; 
+            const Token * tok3 = NULL ;
+            for (tok3 = tok2->next(); tok3 ; tok3 = tok3->next() )   {
+                if (tok3->str() == ";" ) { break ; }
+            }    
+            if ( tok3->next() && (tok3->next() != tok)  )  {
+                 lock = true ; // only if this is an interim return
+            } else {
+                 lock = false ;
+            }
          } 
       } // for loop
+   
+      if (lock)  {
+            checkMutexUsageError(tok2, functionName->str() ) ;
+      }
 }
 
 void CheckMutex::checkMutexUsageError(const Token *tok, const std::string & functionName) {

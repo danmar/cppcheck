@@ -42,13 +42,13 @@ public:
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckMutex checkMutex(tokenizer, settings, errorLogger);
+        checkMutex.checkMutexUsage();
 
     }
 
     /** @brief Run checks on the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckMutex checkMutex(tokenizer, settings, errorLogger);
-        checkMutex.checkMutexUsage();
     }
 
 
