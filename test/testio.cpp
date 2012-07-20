@@ -286,13 +286,13 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "    fread(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
 
         check("void foo(FILE* f) {\n"
               "    fread(buffer, 5, 6, f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
 
         check("void foo(FILE* f, bool read) {\n"
               "    if(read)\n"
@@ -335,7 +335,7 @@ private:
               "    long pos = ftell(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
     }
 
     void fflushOnInputStream() {

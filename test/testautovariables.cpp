@@ -88,6 +88,7 @@ private:
         TEST_CASE(returnReference4);
         TEST_CASE(returnReference5);
         TEST_CASE(returnReference6);
+        TEST_CASE(returnReference7);
 
         // return c_str()..
         TEST_CASE(returncstr);
@@ -548,6 +549,15 @@ private:
         check("Fred & create() {\n"
               "    Fred &fred(*new Fred);\n"
               "    return fred;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference7() {  // 3791 - false positive for overloaded function
+        check("std::string a();\n"
+              "std::string &a(int);\n"
+              "std::string &b() {\n"
+              "    return a(12);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

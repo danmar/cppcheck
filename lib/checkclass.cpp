@@ -516,7 +516,7 @@ void CheckClass::initializationListUsage()
 
         Scope* owner = scope->functionOf;
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% (")) // Assignments might depend on this function call or if/for/while/switch statment from now on.
+            if (Token::Match(tok, "%var% (")) // Assignments might depend on this function call or if/for/while/switch statement from now on.
                 break;
             if (Token::Match(tok, "try|do {"))
                 break;

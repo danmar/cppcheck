@@ -231,8 +231,31 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
 {
     if (!Token::Match(tok, "return %var% ("))
         return false;
-    // TODO: Find all functions that return objects by value
-    return bool(NULL != Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->next()->str() + " (").c_str()));
+
+    const std::string &funcname(tok->next()->str());
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    std::list<Scope>::const_iterator scope;
+
+    bool retref = false;   // is there such a function that returns a reference?
+    bool retvalue = false; // is there such a function that returns a value?
+
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (scope->type == Scope::eFunction) {
+            if (scope->classDef->str() == funcname) {
+                const Token *tok2 = scope->classDef;
+                while (tok2 && Token::Match(tok2->tokAt(-2), "%type% ::"))
+                    tok2 = tok2->tokAt(-2);
+                if (tok2 && Token::simpleMatch(tok2->tokAt(-3), "std :: string"))
+                    retvalue = true;
+                else if (tok2 && Token::simpleMatch(tok2->tokAt(-4), "std :: string &"))
+                    retref = true;
+            }
+        }
+    }
+
+    return bool(!retref && retvalue);
 }
 
 //---------------------------------------------------------------------------

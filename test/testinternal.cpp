@@ -214,7 +214,7 @@ private:
               "    Token::Match(tok, \"foo % %type % bar\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo % %type % bar\"\n"
-                      "[test.cpp:3]: (error) Unkown pattern used: \"%type %\"\n", errout.str());
+                      "[test.cpp:3]: (error) Unknown pattern used: \"%type %\"\n", errout.str());
 
         // Find missing % also in 'alternatives' pattern
         check("void f() {\n"
@@ -235,7 +235,7 @@ private:
         check("void f() {\n"
               "    Token::Match(tok, \"%typ%\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Unkown pattern used: \"%typ%\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Unknown pattern used: \"%typ%\"\n", errout.str());
 
         // Make sure we don't take %or% for a broken %oror%
         check("void f() {\n"

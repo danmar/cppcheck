@@ -4059,9 +4059,9 @@ void Tokenizer::simplifyCompoundAssignment()
                 while (tok->next()->str() != ";")
                     tok->deleteNext();
             } else {
-                // Enclose the rhs in parantheses..
+                // Enclose the rhs in parenthesis..
                 if (!Token::Match(tok->tokAt(2), "[;)]")) {
-                    // Only enclose rhs in parantheses if there is some operator
+                    // Only enclose rhs in parenthesis if there is some operator
                     bool someOperator = false;
                     for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                         if (tok2->str() == "(")
