@@ -65,7 +65,7 @@ public:
     /** @brief %Check for missing % end character in Token::Match pattern */
     void checkMissingPercentCharacter();
 
-    /** @brief %Check for for unkown (invalid) complex patterns like "%typ%" */
+    /** @brief %Check for for unknown (invalid) complex patterns like "%typ%" */
     void checkUnknownPattern();
 
 private:

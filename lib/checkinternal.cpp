@@ -237,8 +237,8 @@ void CheckInternal::missingPercentCharacterError(const Token* tok, const std::st
 
 void CheckInternal::unknownPatternError(const Token* tok, const std::string& pattern)
 {
-    reportError(tok, Severity::error, "unkownPattern",
-                "Unkown pattern used: \"" + pattern + "\"");
+    reportError(tok, Severity::error, "unknownPattern",
+                "Unknown pattern used: \"" + pattern + "\"");
 }
 
 #endif // #ifndef NDEBUG

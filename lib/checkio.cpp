@@ -63,7 +63,7 @@ void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamN
 
 //---------------------------------------------------------------------------
 // fflush(stdin) <- fflush only applies to output streams in ANSI C
-// fread(); fwrite(); <- consecutive read/write statements require repositioning inbetween
+// fread(); fwrite(); <- consecutive read/write statements require repositioning in between
 // fopen("","r"); fwrite(); <- write to read-only file (or vice versa)
 // fclose(); fread(); <- Use closed file
 //---------------------------------------------------------------------------
@@ -258,7 +258,7 @@ void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varn
 void CheckIO::ioWithoutPositioningError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush inbetween result in undefined behaviour.");
+                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.");
 }
 
 void CheckIO::readWriteOnlyFileError(const Token *tok)
