@@ -156,6 +156,8 @@ private:
         TEST_CASE(checkForSuspiciousSemicolon2);
 
         TEST_CASE(checkDoubleFree);
+
+        TEST_CASE(checkRedundantCopy);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
@@ -5254,6 +5256,92 @@ private:
             "}"
         );
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+    }
+
+    void check_redundant_copy(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.addEnabled("performance");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Simplify token list..
+        CheckOther checkOther(&tokenizer, &settings, this);
+        tokenizer.simplifyTokenList();
+        checkOther.checkRedundantCopy();
+    }
+    void checkRedundantCopy() {
+        check_redundant_copy("class A{public:A(){}};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a = getA();\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for a to avoid unnecessary data copying.\n", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const int a = getA();\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    int getA = 0;\n"
+                             "    const int a = getA + 3;\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{public:A(){}};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a(getA());\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for a to avoid unnecessary data copying.\n", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const int a(getA());\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{\n"
+                             "public:A(int a=0){_a = a;}\n"
+                             "A operator+(const A & a){return A(_a+a._a);}\n"
+                             "private:int _a;};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a = getA() + 1;\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{\n"
+                             "public:A(int a=0){_a = a;}\n"
+                             "A operator+(const A & a){return A(_a+a._a);}\n"
+                             "private:int _a;};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a(getA()+1);\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
