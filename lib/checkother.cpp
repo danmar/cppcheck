@@ -3004,3 +3004,51 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
                     "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.");
     }
 }
+/*
+This check rule works for checking the "const A a = getA()" usage when getA() returns "const A &" or "A &".
+In most scenarios, "const A & a = getA()" will be more efficient.
+*/
+void CheckOther::checkRedundantCopy()
+{
+    if (!_settings->isEnabled("performance"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok=tok->next()) {
+        const char *expect_end_token;
+        if (Token::Match(tok, "const %type% %var% =")) {
+            //match "const A a =" usage
+            expect_end_token = ";";
+        } else if (Token::Match(tok, "const %type% %var% (")) {
+            //match "const A a (" usage
+            expect_end_token = ")";
+        } else {
+            continue;
+        }
+
+        if (tok->strAt(1) == tok->strAt(4)) //avoid "const A a = A();"
+            continue;
+        if (!symbolDatabase->isClassOrStruct(tok->next()->str())) //avoid when %type% is standard type
+            continue;
+        const Token *var_tok = tok->tokAt(2);
+        tok = tok->tokAt(4);
+        while (tok &&Token::Match(tok,"%var% ."))
+            tok = tok->tokAt(2);
+        if (!Token::Match(tok, "%var% ("))
+            break;
+        const Token *match_end = (tok->next()->link()!=NULL)?tok->next()->link()->next():NULL;
+        if (match_end==NULL || !Token::Match(match_end,expect_end_token)) //avoid usage like "const A a = getA()+3"
+            break;
+        const Token *fToken = _tokenizer->getFunctionTokenByName(tok->str().c_str());
+        if (fToken &&fToken->previous() && fToken->previous()->str() == "&") {
+            redundantCopyError(var_tok,var_tok->str());
+        }
+    }
+}
+void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
+{
+    reportError(tok, Severity::performance,"redundantCopy",
+                "Const variable '"+varname+"' can be reference to avoid data copying.\n"
+                "Redundant copying of data. Consider changing const variable '"+varname+"' to const reference.");
+}
