@@ -969,6 +969,9 @@ private:
         testPassedByValue("void f(const std::vector<std::string> v) {}");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by reference.\n", errout.str());
 
+        testPassedByValue("void f(const std::vector<std::string>::size_type s) {}");
+        ASSERT_EQUALS("", errout.str());
+
         testPassedByValue("void f(const std::vector<int> &v) {}");
         ASSERT_EQUALS("", errout.str());
 
