@@ -70,7 +70,8 @@ private:
               "    functionCall() ;\n"
               "    return ;\n" 
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) A pthread_mutex_lock call doesn't have a related unlock call in function f.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) A pthread_mutex_lock call doesn't have a related unlock call in function f.\n",
+           errout.str());
     }
     void MutexComplexPass() {
         check("int f() {\n"
@@ -95,7 +96,8 @@ private:
               "       functionCall2(); \n"
               "    }\n" 
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) A pthread_mutex_lock call doesn't have a related unlock call in function f.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) A pthread_mutex_lock call doesn't have a related unlock call in function f.\n",
+           errout.str());
     }
 
 };
