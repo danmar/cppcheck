@@ -837,8 +837,13 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     const Token *tok2 = tok1->previous();
                     if (tok2 && (tok2->isArithmeticalOp() || tok2->str() == "(")) {
                         while (tok2 && !Token::Match(tok2, "[;{}?:]")) {
-                            if (tok2->str() == ")")
+                            if (tok2->str() == ")") {
                                 tok2 = tok2->link();
+                                if (Token::Match(tok2, "( %varid% =", varid)) {
+                                    tok2 = tok2->next();
+                                    break;
+                                }
+                            }
                             // guarded by &&
                             if (tok2->varId() == varid && tok2->next()->str() == "&&")
                                 break;

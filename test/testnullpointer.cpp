@@ -743,6 +743,13 @@ private:
               "    $if(!p){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #3914 - false positive
+              "    int *p;\n"
+              "    ((p=ret()) && (x=*p));\n"
+              "    if (p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer5() {
