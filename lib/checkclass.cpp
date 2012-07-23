@@ -531,11 +531,17 @@ void CheckClass::initializationListUsage()
                                 allowed = false;
                                 break;
                             }
+                        } else if (tok2->str() == "this") { // 'this' instance is not completely constructed in initialization list
+                            allowed = false;
+                            break;
+                        } else if (Token::Match(tok2, "%var% (") && tok2->strAt(-1) != "." && isMemberFunc(owner, tok2)) { // Member function called?
+                            allowed = false;
+                            break;
                         }
                     }
                     if (!allowed)
                         continue;
-                    if (!var->isPointer() && (var->type() || Token::Match(var->typeStartToken(), "std :: string|wstring") || Token::Match(var->typeStartToken(), "std :: %type% <") || symbolDatabase->isClassOrStruct(var->typeStartToken()->str())))
+                    if (!var->isPointer() && (var->type() || Token::Match(var->typeStartToken(), "std :: string|wstring !!::") || (Token::Match(var->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(var->typeStartToken()->linkAt(3), "> ::")) || symbolDatabase->isClassOrStruct(var->typeStartToken()->str())))
                         suggestInitializationList(tok, tok->str());
                 }
             }

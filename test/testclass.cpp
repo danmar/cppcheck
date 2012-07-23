@@ -5189,6 +5189,25 @@ private:
                                      "    Fred() { try { a = new int; } catch(...) {} }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    std::string s;\n"
+                                     "    Fred() { s = toString((size_t)this); }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    std::string a;\n"
+                                     "    std::string foo();\n"
+                                     "    Fred() { a = foo(); }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
+                                     "    std::string a;\n"
+                                     "    Fred() { a = foo(); }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
     }
 };
 
