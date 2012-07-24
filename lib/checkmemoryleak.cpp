@@ -266,6 +266,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
     if (Token::Match(tok, "delete [ ] ( %varid% ) ;", varid))
         return NewArray;
 
+    if (tok && tok->str() == "::")
+        tok = tok->next();
+
     if (Token::Match(tok, "free|kfree ( %varid% ) ;", varid) ||
         Token::Match(tok, "free|kfree ( %varid% -", varid) ||
         Token::Match(tok, "realloc ( %varid% , 0 ) ;", varid))
@@ -985,7 +988,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
-            if (Token::Match(tok->previous(), "[;{})=|] %var%")) {
+            if (Token::Match(tok->previous(), "[;{})=|] ::| %var%")) {
                 AllocType dealloc = getDeallocationType(tok, varid);
 
                 if (dealloc != No && tok->str() == "fcloseall" && alloctype != dealloc)
