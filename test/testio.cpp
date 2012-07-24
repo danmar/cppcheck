@@ -42,6 +42,7 @@ private:
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
         TEST_CASE(testScanf3);
+        TEST_CASE(testScanf4); // #ticket 2553
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
@@ -397,6 +398,16 @@ private:
               "    scanf(\"%d\", &a);\n"
               "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testScanf4() { // ticket #2553
+
+        check("void f()\n"
+              "{\n"
+              "  char str [8];\n"
+              "  scanf (\"%70s\",str);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it.\n", errout.str());
     }
 
 
