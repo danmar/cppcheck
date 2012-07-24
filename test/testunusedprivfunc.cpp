@@ -140,8 +140,7 @@ private:
               "\n"
               "void Fred::f()\n"
               "{\n"
-              "}\n"
-              "\n");
+              "}\n");
         ASSERT_EQUALS("[p.h:4]: (style) Unused private function: 'Fred::f'\n", errout.str());
 
         // Don't warn about include files which implementation we don't see
@@ -157,8 +156,7 @@ private:
               "\n"
               "int main()\n"
               "{\n"
-              "}\n"
-              "\n");
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

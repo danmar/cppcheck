@@ -860,7 +860,6 @@ void Preprocessor::handleUndef(std::list<std::string> &configurations) const
 {
     if (_settings && !_settings->userUndefs.empty()) {
         for (std::list<std::string>::iterator cfg = configurations.begin(); cfg != configurations.end();) {
-            const std::string strcfg(*cfg);
             bool undef = false;
             for (std::set<std::string>::const_iterator it = _settings->userUndefs.begin(); it != _settings->userUndefs.end(); ++it) {
                 if (*it == *cfg)
@@ -880,7 +879,7 @@ void Preprocessor::handleUndef(std::list<std::string> &configurations) const
             if (undef)
                 configurations.erase(cfg++);
             else
-                cfg++;
+                ++cfg;
         }
     }
 }

@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "path.h"
 
+#include <algorithm>
 #include <sstream>
 #include <stack>
 #include <cctype>   // std::isdigit, std::isalnum, etc
@@ -31,8 +32,7 @@ std::string Suppressions::parseFile(std::istream &istr)
     std::string line;
     while (std::getline(istr, line))
         filedata += line + "\n";
-    while (filedata.find("\r") != std::string::npos)
-        filedata[filedata.find("\r")] = '\n';
+    std::replace(filedata.begin(), filedata.end(), '\r', '\n');
 
     // Parse filedata..
     std::istringstream istr2(filedata);

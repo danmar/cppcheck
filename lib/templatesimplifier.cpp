@@ -22,6 +22,7 @@
 #include "tokenlist.h"
 #include "errorlogger.h"
 #include "settings.h"
+#include <algorithm>
 #include <sstream>
 #include <list>
 #include <set>
@@ -353,8 +354,7 @@ std::set<std::string> TemplateSimplifier::simplifyTemplatesExpandSpecialized(Tok
         const std::string pattern(s + " > (");
 
         // remove spaces to create new name
-        while (s.find(" ") != std::string::npos)
-            s.erase(s.find(" "), 1);
+        s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
         const std::string name(s + ">");
         expandedtemplates.insert(name);
 
