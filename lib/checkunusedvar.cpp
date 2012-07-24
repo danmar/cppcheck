@@ -612,7 +612,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointerPointer;
             else if (i->isPointer())
                 type = Variables::pointer;
-            else if (_tokenizer->isC() || i->typeEndToken()->isStandardType() || isRecordTypeWithoutSideEffects(*i) || Token::simpleMatch(i->nameToken()->tokAt(-3), "std :: string"))
+            else if (_tokenizer->isC() || i->typeEndToken()->isStandardType() || isRecordTypeWithoutSideEffects(*i) || Token::simpleMatch(i->typeStartToken(), "std ::"))
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
@@ -675,22 +675,21 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             break;
         }
 
-        if (Token::Match(tok, "%type% const| *|&| const| *| const| %var% [;=[(]")) { // Declaration: Skip
-            // Before a declaration there should be ;{}
-            const Token *prev = tok;
-            while (prev && prev->isName() && prev->str() != "return" && prev->str() != "throw")
-                prev = prev->previous();
-            if (Token::Match(prev, "[;{}]")) {
-
-                tok = tok->next();
-                while (Token::Match(tok, "const|*|&"))
-                    tok = tok->next();
-                tok = Token::findmatch(tok, "[;=[(]");
-                if (tok && Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
-                    tok = tok->next();
-                else if (tok && Token::Match(tok, "= %var% ;")) // Simple initialization
-                    tok = tok->next();
-                if (!tok)
+        if (Token::Match(tok->previous(), "[;{}]")) {
+            for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->varId()) {
+                    const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->varId());
+                    if (var && var->nameToken() == tok2) { // Declaration: Skip
+                        tok = tok2->next();
+                        if (tok && Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
+                            tok = tok->next();
+                        else if (tok && Token::Match(tok, "= %var% ;")) // Simple initialization
+                            tok = tok->next();
+                        else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
+                            tok = tok->previous();
+                        break;
+                    }
+                } else if (Token::Match(tok2, "[;({=]"))
                     break;
             }
         }
