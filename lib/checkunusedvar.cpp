@@ -940,6 +940,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         for (Variables::VariableMap::const_iterator it = variables.varUsage().begin(); it != variables.varUsage().end(); ++it) {
             const Variables::VariableUsage &usage = it->second;
             const std::string &varname = usage._name->str();
+            const Variable* var = symbolDatabase->getVariableFromVarId(it->first);
 
             // variable has been marked as unused so ignore it
             if (usage._name->isUnused())
@@ -961,7 +962,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unusedVariableError(usage._name, varname);
 
             // variable has not been written but has been modified
-            else if (usage._modified && !usage._write && !usage._allocateMemory)
+            else if (usage._modified && !usage._write && !usage._allocateMemory && !Token::simpleMatch(var->typeStartToken(), "std ::"))
                 unassignedVariableError(usage._name, varname);
 
             // variable has been written but not read
@@ -969,7 +970,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unreadVariableError(usage._name, varname);
 
             // variable has been read but not written
-            else if (!usage._write && !usage._allocateMemory)
+            else if (!usage._write && !usage._allocateMemory && !Token::simpleMatch(var->typeStartToken(), "std ::"))
                 unassignedVariableError(usage._name, varname);
         }
     }
