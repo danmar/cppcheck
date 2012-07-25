@@ -293,17 +293,7 @@ const Token *Token::linkAt(int index) const
 {
     const Token *tok = this->tokAt(index);
     if (!tok) {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("");
-        loc.line = this->linenr();
-        locationList.push_back(loc);
-        const ErrorLogger::ErrorMessage errmsg(locationList,
-                                               Severity::error,
-                                               "Internal error. Token::linkAt called with index outside the tokens range.",
-                                               "cppcheckError",
-                                               false);
-        Check::reportError(errmsg);
+        throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
     }
     return tok ? tok->link() : 0;
 }
@@ -312,17 +302,7 @@ Token *Token::linkAt(int index)
 {
     Token *tok = this->tokAt(index);
     if (!tok) {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("");
-        loc.line = this->linenr();
-        locationList.push_back(loc);
-        const ErrorLogger::ErrorMessage errmsg(locationList,
-                                               Severity::error,
-                                               "Internal error. Token::linkAt called with index outside the tokens range.",
-                                               "cppcheckError",
-                                               false);
-        Check::reportError(errmsg);
+        throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
     }
     return tok ? tok->link() : 0;
 }
