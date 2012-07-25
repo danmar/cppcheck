@@ -5082,7 +5082,7 @@ private:
     void simplifyTypedef66() { // ticket #2341
         const char code[] = "typedef long* GEN;\n"
                             "extern GEN (*foo)(long);";
-        const std::string actual(tok(code));
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 

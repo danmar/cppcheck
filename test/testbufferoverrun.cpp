@@ -3306,13 +3306,6 @@ private:
 
         check("void f()\n"
               "{\n"
-              " char c[6];\n"
-              " strncpy(c,\"hello!\",sizeof(c));\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'c' is not null-terminated after the call to strncpy().\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
               "    char c[6];\n"
               "    strncpy(c,\"hello!\",sizeof(c)+1);\n"
               "}\n");

@@ -1463,12 +1463,6 @@ private:
         // points at derived class
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : public Base { public: ~Derived() { (void)11; } };"
-                               "Base *base = new Derived;\n"
-                               "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
-
-        checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
         ASSERT_EQUALS("", errout.str());
     }
