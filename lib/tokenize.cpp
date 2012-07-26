@@ -7048,7 +7048,7 @@ void Tokenizer::simplifyEnum()
                         // value is previous expression + 1
                         tok1->insertToken("+");
                         tok1 = tok1->next();
-                        tok1->insertToken(MathLib::toString<MathLib::bigint>(lastValue));
+                        tok1->insertToken("1");
                         enumValue = 0;
                         enumValueStart = valueStart->next();
                         enumValueEnd = tok1->next();
@@ -7072,19 +7072,10 @@ void Tokenizer::simplifyEnum()
                     enumValueStart = tok1;
                     enumValueEnd = tok1;
                     int level = 0;
-                    if (enumValueEnd->str() == "(" ||
-                        enumValueEnd->str() == "[" ||
-                        enumValueEnd->str() == "{")
-                        ++level;
-                    while (enumValueEnd->next() &&
-                           (!Token::Match(enumValueEnd->next(), "}|,") || level)) {
-                        if (enumValueEnd->next()->str() == "(" ||
-                            enumValueEnd->next()->str() == "[" ||
-                            enumValueEnd->next()->str() == "{")
+                    while (enumValueEnd->next() && (!Token::Match(enumValueEnd->next(), "[},]") || level)) {
+                        if (Token::Match(enumValueEnd, "(|["))
                             ++level;
-                        else if (enumValueEnd->next()->str() == ")" ||
-                                 enumValueEnd->next()->str() == "]" ||
-                                 enumValueEnd->next()->str() == "}")
+                        else if (Token::Match(enumValueEnd->next(), "]|)"))
                             --level;
 
                         enumValueEnd = enumValueEnd->next();
@@ -7101,11 +7092,11 @@ void Tokenizer::simplifyEnum()
                     EnumValue ev(enumName, enumValue, enumValueStart, enumValueEnd);
                     ev.simplify(enumValues);
                     enumValues[enumName->str()] = ev;
-                    if (ev.start == NULL) {
-                        tok1 = ev.value;
-                        lastEnumValueStart = lastEnumValueEnd = NULL;
+                    lastEnumValueStart = ev.start;
+                    lastEnumValueEnd = ev.end;
+                    if (ev.start == NULL)
                         lastValue = MathLib::toLongNumber(ev.value->str());
-                    }
+                    tok1 = ev.end ? ev.end : ev.value;
                 }
             }
 
