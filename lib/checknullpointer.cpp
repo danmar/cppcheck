@@ -115,7 +115,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_nullptr.insert("vprintf");
         functionNames1_nullptr.insert("fprintf");
         functionNames1_nullptr.insert("vfprintf");
-        functionNames1_nullptr.insert("tmpnam");
         functionNames1_nullptr.insert("fread");
         functionNames1_nullptr.insert("gets");
         functionNames1_nullptr.insert("gmtime");
