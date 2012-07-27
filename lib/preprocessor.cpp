@@ -1082,8 +1082,6 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                     const std::string value(it->substr(pos + 1));
                     varmap[varname] = value;
                 }
-
-                simplifyVarMap(varmap);
                 simplifyCondition(varmap, def, false);
             }
 
