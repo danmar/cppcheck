@@ -302,21 +302,6 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
     return false;
 }
 
-void TemplateSimplifier::removeAllTemplates(Token *tok)
-{
-    bool goback = false;
-    for (; tok; tok = tok->next()) {
-        if (goback) {
-            tok = tok->previous();
-            goback = false;
-        }
-
-        if (tok->str() == "template")
-            goback = removeTemplate(tok);
-    }
-}
-
-
 std::set<std::string> TemplateSimplifier::simplifyTemplatesExpandSpecialized(Token *tokens)
 {
     std::set<std::string> expandedtemplates;

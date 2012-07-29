@@ -160,11 +160,6 @@ public:
 private:
 
     /**
-     * Remove all "template < ..." they can cause false positives because they are not expanded
-     */
-    static void removeAllTemplates(Token *tok);
-
-    /**
      * Remove a specific "template < ..." template class/function
      */
     static bool removeTemplate(Token *tok);
