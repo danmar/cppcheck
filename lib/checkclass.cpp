@@ -583,11 +583,6 @@ void CheckClass::privateFunctions()
     if (!_settings->isEnabled("style"))
         return;
 
-    // don't check code that contains templates. Templates that are
-    // "unused" are removed from the code. #2067
-    if (_tokenizer->codeWithTemplates())
-        return;
-
     for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check classes and structures
         if (!scope->isClassOrStruct())
