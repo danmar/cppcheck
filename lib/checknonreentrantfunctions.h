@@ -74,11 +74,11 @@ private:
 
         // generate messages
         for (unsigned int i = 0; i < (sizeof(non_reentrant_functions_list) / sizeof(char *)); ++i) {
-            std::string strMsg("Found non reentrant function \'");
+            std::string strMsg("Non reentrant function '");
             strMsg+=non_reentrant_functions_list[i];
-            strMsg+= "\'. For threadsafe applications it is recommended to use the reentrant replacement function \'";
+            strMsg+= "' called. For threadsafe applications it is recommended to use the reentrant replacement function '";
             strMsg+=non_reentrant_functions_list[i];
-            strMsg+="_r\'";
+            strMsg+="_r'.";
             _nonReentrantFunctions[non_reentrant_functions_list[i]] = strMsg;
         }
     }
