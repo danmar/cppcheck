@@ -280,6 +280,13 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n" // #3965
+              "    FILE* f[3];\n"
+              "    f[0] = fopen(name, mode);\n"
+              "    fclose(f[0]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {

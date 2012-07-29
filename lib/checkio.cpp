@@ -102,7 +102,7 @@ void CheckIO::checkFileUsage()
     std::size_t varListSize = symbolDatabase->getVariableListSize();
     for (std::size_t i = 1; i < varListSize; ++i) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->varId() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
+        if (!var || !var->varId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
             continue;
 
         if (var->isLocal()) {
