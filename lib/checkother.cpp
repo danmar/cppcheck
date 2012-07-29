@@ -1595,7 +1595,7 @@ void CheckOther::checkVariableScope()
             tok = tok->tokAt(3);
             if (!tok->isNumber() && tok->type() != Token::eString && tok->type() != Token::eChar && !tok->isBoolean())
                 continue;
-        } else if (tok->str() == "=" &&
+        } else if ((tok->str() == "=") &&
                    ((!tok->next()->isNumber() && tok->next()->type() != Token::eString && tok->next()->type() != Token::eChar && !tok->next()->isBoolean()) || tok->strAt(2) != ";"))
             continue;
         lookupVar(tok, var);
