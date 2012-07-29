@@ -4280,21 +4280,21 @@ private:
     void simplifyFunctionParameters() {
         {
             const char code[] = "char a [ ABC ( DEF ) ] ;";
-            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(code, tokenizeAndStringify(code));
         }
 
         {
             const char code[] = "module ( a , a , sizeof ( a ) , 0444 ) ;";
-            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 292 ) ;", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("module ( a , a , sizeof ( a ) , 292 ) ;", tokenizeAndStringify(code));
         }
 
-        ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));
-        ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }", true));
-        ASSERT_EQUALS("int main ( int argc , char * argv [ ] ) { }", tokenizeAndStringify("int main(argc,argv) int argc; char *argv[]; { }", true));
-        ASSERT_EQUALS("int f ( int p , int w , float d ) { }", tokenizeAndStringify("int f(p,w,d) float d; { }", true));
+        ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }"));
+        ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }"));
+        ASSERT_EQUALS("int main ( int argc , char * argv [ ] ) { }", tokenizeAndStringify("int main(argc,argv) int argc; char *argv[]; { }"));
+        ASSERT_EQUALS("int f ( int p , int w , float d ) { }", tokenizeAndStringify("int f(p,w,d) float d; { }"));
 
         // #1067 - Not simplified. Feel free to fix so it is simplified correctly but this syntax is obsolete.
-        ASSERT_EQUALS("int ( * d ( a , b , c ) ) ( ) int a ; int b ; int c ; { }", tokenizeAndStringify("int (*d(a,b,c))()int a,b,c; { }", true));
+        ASSERT_EQUALS("int ( * d ( a , b , c ) ) ( ) int a ; int b ; int c ; { }", tokenizeAndStringify("int (*d(a,b,c))()int a,b,c; { }"));
 
         {
             // This is not a function but the pattern is similar..
@@ -4317,7 +4317,7 @@ private:
                                 "    {"
                                 "    }"
                                 "}";
-            ASSERT_EQUALS("MACRO ( a ) void f ( ) { SetLanguage ( ) ; { } }", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("MACRO ( a ) void f ( ) { SetLanguage ( ) ; { } }", tokenizeAndStringify(code));
         }
     }
 
@@ -4330,7 +4330,7 @@ private:
                             "}\n";
         ASSERT_EQUALS("int f ( float * p , int w , int d , int e , short len )\n"
                       "{\n"
-                      "}", tokenizeAndStringify(code,true));
+                      "}", tokenizeAndStringify(code));
     }
 
     void simplifyFunctionParametersErrors() {
@@ -4349,6 +4349,16 @@ private:
 
         tokenizeAndStringify("void foo(int, int)\n"
                              "{}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #3848 - Don't hang
+        tokenizeAndStringify("sal_Bool ShapeHasText(sal_uLong, sal_uLong) const {\n"
+                             "    return sal_True;\n"
+                             "}\n"
+                             "void CreateSdrOLEFromStorage() {\n"
+                             "    comphelper::EmbeddedObjectContainer aCnt( xDestStorage );\n"
+                             "    { }\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 

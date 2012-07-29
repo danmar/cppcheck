@@ -4555,13 +4555,10 @@ bool Tokenizer::simplifyFunctionParameters()
             Token * tokparam = NULL;
 
             //take count of the function name..
-            const std::string funcName(tok->str());
+            const std::string& funcName(tok->str());
 
             //floating token used to check for parameters
             Token *tok1 = tok;
-
-            //goto '('
-            tok = tok->next();
 
             while (NULL != (tok1 = tok1->tokAt(2))) {
                 if (!Token::Match(tok1, "%var% [,)]")) {
@@ -4600,13 +4597,27 @@ bool Tokenizer::simplifyFunctionParameters()
                 }
             }
 
+            //goto '('
+            tok = tok->next();
+
             if (bailOut) {
                 tok = tok->link();
                 continue;
             }
 
-            //there should be the sequence '; {' after the round parenthesis
-            if (!Token::findsimplematch(tok1, "; {")) {
+            tok1 = tok->link()->next();
+
+            // there should be the sequence '; {' after the round parenthesis
+            for (const Token* tok2 = tok1; tok2; tok2 = tok2->next()) {
+                if (Token::simpleMatch(tok2, "; {"))
+                    break;
+                else if (tok2->str() == "{") {
+                    bailOut = true;
+                    break;
+                }
+            }
+
+            if (bailOut) {
                 tok = tok->link();
                 continue;
             }
