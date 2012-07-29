@@ -65,11 +65,6 @@ public:
     static unsigned int templateParameters(const Token *tok);
 
     /**
-     * Remove "template < ..." they can cause false positives because they are not expanded
-     */
-    static void removeTemplates(Token *tok);
-
-    /**
      * Expand specialized templates : "template<>.."
      * @return names of expanded templates
      */
@@ -131,8 +126,9 @@ public:
      * @param tok token where the template declaration begins
      * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
+     * @return true if the template was instantiated
      */
-    static void simplifyTemplateInstantions(
+    static bool simplifyTemplateInstantions(
         TokenList& tokenlist,
         ErrorLogger& errorlogger,
         const Settings *_settings,
@@ -160,6 +156,19 @@ public:
      *         false if no modifications are done.
      */
     static bool simplifyCalculations(Token *_tokens);
+
+private:
+
+    /**
+     * Remove all "template < ..." they can cause false positives because they are not expanded
+     */
+    static void removeAllTemplates(Token *tok);
+
+    /**
+     * Remove a specific "template < ..." template class/function
+     */
+    static bool removeTemplate(Token *tok);
+
 };
 
 /// @}

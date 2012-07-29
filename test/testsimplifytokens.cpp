@@ -1649,7 +1649,8 @@ private:
                             "template <classname T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const std::string expected("Fred<float> fred ; "
+        const std::string expected("template < classname T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
+                                   "Fred<float> fred ; "
                                    "class Fred<float> { } "
                                    "Fred<float> :: Fred<float> ( ) { }");
 
@@ -1679,7 +1680,7 @@ private:
                                 "\n"
                                 "};\n";
 
-            const std::string expected(";");
+            const std::string expected("template < class T > class ABC { public: } ;");
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1695,18 +1696,19 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const std::string wanted("int main ( ) { "
+            const std::string wanted("template < typename T > class ABC { public: } ; "
+                                     "int main ( ) { "
                                      "std :: vector < int > v ; "
                                      "v . push_back ( 4 ) ; "
                                      "return 0 ; "
                                      "}");
 
-            const std::string current("int main ( ) { "
+            const std::string current("template < typename T > class ABC { public: } ; "
+                                      "int main ( ) { "
                                       "ABC < int > :: type v ; "
                                       "v . push_back ( 4 ) ; "
                                       "return 0 ; "
-                                      "}"
-                                     );
+                                      "}");
 
             TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
@@ -1722,7 +1724,12 @@ private:
                                 "    }\n"
                                 "};\n";
 
-            const std::string expected(";");
+            const std::string expected("template < typename T > class ABC { "
+                                       "public: void f ( ) { "
+                                       "ABC < int > :: type v ; "
+                                       "v . push_back ( 4 ) ; "
+                                       "} "
+                                       "} ;");
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1747,9 +1754,12 @@ private:
                             "\n"
                             "template<typename T> inline B<T> h() { return B<T>(); }\n";
 
-        ASSERT_EQUALS("", tok(code));
+        ASSERT_EQUALS("template < typename T > class A ; "
+                      "template < typename T > class B ; "
+                      "template < typename T > class A { void f ( ) { B < T > a ; a = B < T > :: g ( ) ; T b ; b = 0 ; } } ; "
+                      "template < typename T > B < T > h ( ) { return B < T > ( ) ; }", tok(code));
 
-        ASSERT_EQUALS("class A { } ;", tok("class A{ template<typename T> int foo(T d);};"));
+        ASSERT_EQUALS("class A { template < typename T > int foo ( T d ) ; } ;", tok("class A{ template<typename T> int foo(T d);};"));
     }
 
     void template9() {
@@ -1767,7 +1777,9 @@ private:
                             "} ;\n";
 
         // The expected result..
-        std::string expected("void f ( ) { A<int> a ; } class A<int> { } class A<T> { }");
+        std::string expected("void f ( ) { A<int> a ; } "
+                             "template < typename T > class B { void g ( ) { A<T> b ; b = A<T> :: h ( ) ; } } ; "
+                             "class A<int> { } class A<T> { }");
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -1977,7 +1989,8 @@ private:
                             "A<int> a;\n";
 
         // The expected result..
-        const std::string expected("A<int> a ; "
+        const std::string expected("template < class T > A < T > :: ~ A ( ) { } "  // <- TODO: this should be removed
+                                   "A<int> a ; "
                                    "class A<int> { public: ~ A<int> ( ) ; } "
                                    "A<int> :: ~ A<int> ( ) { }");
         ASSERT_EQUALS(expected, tok(code));
@@ -2010,18 +2023,6 @@ private:
 
             const std::string expected("Fred<float> fred ; "
                                        "struct Fred<float> { Fred<float> ( ) ; }");
-
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "template <classname T> struct Fred { };\n"
-                                "template <classname T> Fred<T>::Fred() { }\n"
-                                "Fred<float> fred;";
-
-            const std::string expected("Fred<float> fred ; "
-                                       "struct Fred<float> { } "
-                                       "Fred<float> :: Fred<float> ( ) { }");
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -2091,7 +2092,8 @@ private:
                             "\n"
                             "bitset<1> z;";
 
-        const char actual[] = "bitset<1> z ; "
+        const char actual[] = "template < int n > struct B { int a [ n ] ; } ; "
+                              "bitset<1> z ; "
                               "class bitset<1> : B < ( ) > { }";
 
         const char expected[] = "bitset<1> z ; "
@@ -2112,13 +2114,13 @@ private:
                             "\n"
                             "C<2> a;\n";
         // TODO: expand A also
-        ASSERT_EQUALS("C<2> a ; class C<2> : public A < char [ 2 ] > { }", tok(code));
+        ASSERT_EQUALS("template < class T > class A { public: T x ; } ; C<2> a ; class C<2> : public A < char [ 2 ] > { }", tok(code));
     }
 
     void template27() {
         // #3350 - template inside macro call
         const char code[] = "X(template<class T> class Fred);";
-        ASSERT_EQUALS("X ( class Fred ) ;", tok(code));
+        ASSERT_EQUALS("X ( template < class T > class Fred ) ;", tok(code));
     }
 
     void template28() {
@@ -2133,13 +2135,13 @@ private:
         const char code[] = "template<typename T> struct A;\n"
                             "struct B { template<typename T> struct C };\n"
                             "{};";
-        ASSERT_EQUALS("struct B { } ; { } ;", tok(code));
+        ASSERT_EQUALS("template < typename T > struct A ; struct B { template < typename T > struct C } ; { } ;", tok(code));
     }
 
     void template30() {
         // #3529 - template < template < ..
         const char code[] = "template<template<class> class A, class B> void f(){}";
-        ASSERT_EQUALS("", tok(code));
+        ASSERT_EQUALS("template < template < class > class A , class B > void f ( ) { }", tok(code));
     }
 
     void template_unhandled() {
@@ -2264,7 +2266,7 @@ private:
                                 "{ }";
 
             // The expected result..
-            const std::string expected("");
+            const std::string expected("template < class T > void foo ( T :: t * ) { }");
             ASSERT_EQUALS(expected, tok(code));
         }
 
@@ -2284,13 +2286,13 @@ private:
         const char code[] = "class Fred {\n"
                             "    template<class T> explicit Fred(T t) { }\n"
                             "}";
-        ASSERT_EQUALS("class Fred { explicit Fred ( T t ) { } }", tok(code));
+        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } }", tok(code));
 
         // #3532
         const char code2[] = "class Fred {\n"
                              "    template<class T> Fred(T t) { }\n"
                              "}";
-        ASSERT_EQUALS("class Fred { Fred ( T t ) { } }", tok(code2));
+        ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } }", tok(code2));
     }
 
     unsigned int templateParameters(const char code[]) {
@@ -4465,7 +4467,7 @@ private:
     void simplifyTypedef39() {
         const char code[] = "typedef int A;\n"
                             "template <const A, volatile A>::value;";
-        const char expected[] = "";
+        const char expected[] = "template < const int , int > :: value ;";
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
@@ -4476,7 +4478,7 @@ private:
         const char code[] = "typedef int A;\n"
                             "typedef int B;\n"
                             "template <class A, class B> class C { };";
-        const char expected[] = ";";
+        const char expected[] = "template < class A , class B > class C { } ;";
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
@@ -4954,7 +4956,7 @@ private:
                             "    typedef void (SomeTemplateClass<DISPATCHER>::*MessageDispatcherFunc)(SerialInputMessage&);\n"
                             "};\n";
         // The expected result..
-        const std::string expected(";");
+        const std::string expected("template < typename DISPATCHER > class SomeTemplateClass { } ;");
         ASSERT_EQUALS(expected, tok(code));
 
         // Check for output..

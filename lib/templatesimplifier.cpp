@@ -236,7 +236,73 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     return 0;
 }
 
-void TemplateSimplifier::removeTemplates(Token *tok)
+bool TemplateSimplifier::removeTemplate(Token *tok)
+{
+    if (!Token::simpleMatch(tok, "template <"))
+        return false;
+
+    int indentlevel = 0;
+    unsigned int countgt = 0;   // Counter for ">"
+    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+
+        if (tok2->str() == "(") {
+            tok2 = tok2->link();
+        } else if (tok2->str() == ")") {  // garbage code! (#3504)
+            Token::eraseTokens(tok,tok2);
+            tok->deleteThis();
+            return false;
+        }
+
+        else if (tok2->str() == "{") {
+            tok2 = tok2->link()->next();
+            Token::eraseTokens(tok, tok2);
+            if (tok2 && tok2->str() == ";" && tok2->next())
+                tok->deleteNext();
+            tok->deleteThis();
+            return true;
+        } else if (tok2->str() == "}") {  // garbage code! (#3449)
+            Token::eraseTokens(tok,tok2);
+            tok->deleteThis();
+            return false;
+        }
+
+        // Count ">"
+        if (tok2->str() == ">")
+            countgt++;
+
+        // don't remove constructor
+        if (tok2->str() == "explicit" ||
+            (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") && Token::simpleMatch(tok2->next()->link(), ") {"))) {
+            Token::eraseTokens(tok, tok2);
+            tok->deleteThis();
+            return true;
+        }
+
+        if (tok2->str() == ";") {
+            tok2 = tok2->next();
+            Token::eraseTokens(tok, tok2);
+            tok->deleteThis();
+            return true;
+        }
+
+        if (tok2->str() == "<")
+            ++indentlevel;
+
+        else if (indentlevel >= 2 && tok2->str() == ">")
+            --indentlevel;
+
+        else if (Token::Match(tok2, "> class|struct %var% [,)]")) {
+            tok2 = tok2->next();
+            Token::eraseTokens(tok, tok2);
+            tok->deleteThis();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void TemplateSimplifier::removeAllTemplates(Token *tok)
 {
     bool goback = false;
     for (; tok; tok = tok->next()) {
@@ -244,70 +310,9 @@ void TemplateSimplifier::removeTemplates(Token *tok)
             tok = tok->previous();
             goback = false;
         }
-        if (!Token::simpleMatch(tok, "template <"))
-            continue;
 
-        int indentlevel = 0;
-        unsigned int countgt = 0;   // Counter for ">"
-        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-
-            if (tok2->str() == "(") {
-                tok2 = tok2->link();
-            } else if (tok2->str() == ")") {  // garbage code! (#3504)
-                Token::eraseTokens(tok,tok2);
-                tok->deleteThis();
-                break;
-            }
-
-            else if (tok2->str() == "{") {
-                tok2 = tok2->link()->next();
-                Token::eraseTokens(tok, tok2);
-                if (tok2 && tok2->str() == ";" && tok2->next())
-                    tok->deleteNext();
-                tok->deleteThis();
-                goback = true;
-                break;
-            } else if (tok2->str() == "}") {  // garbage code! (#3449)
-                Token::eraseTokens(tok,tok2);
-                tok->deleteThis();
-                break;
-            }
-
-            // Count ">"
-            if (tok2->str() == ">")
-                countgt++;
-
-            // don't remove constructor
-            if (tok2->str() == "explicit" ||
-                (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") && Token::simpleMatch(tok2->next()->link(), ") {"))) {
-                Token::eraseTokens(tok, tok2);
-                tok->deleteThis();
-                goback = true;
-                break;
-            }
-
-            if (tok2->str() == ";") {
-                tok2 = tok2->next();
-                Token::eraseTokens(tok, tok2);
-                tok->deleteThis();
-                goback = true;
-                break;
-            }
-
-            if (tok2->str() == "<")
-                ++indentlevel;
-
-            else if (indentlevel >= 2 && tok2->str() == ">")
-                --indentlevel;
-
-            else if (Token::Match(tok2, "> class|struct %var% [,)]")) {
-                tok2 = tok2->next();
-                Token::eraseTokens(tok, tok2);
-                tok->deleteThis();
-                goback = true;
-                break;
-            }
-        }
+        if (tok->str() == "template")
+            goback = removeTemplate(tok);
     }
 }
 
@@ -955,7 +960,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
 }
 
 
-void TemplateSimplifier::simplifyTemplateInstantions(
+bool TemplateSimplifier::simplifyTemplateInstantions(
     TokenList& tokenlist,
     ErrorLogger& errorlogger,
     const Settings *_settings,
@@ -976,7 +981,7 @@ void TemplateSimplifier::simplifyTemplateInstantions(
 
     // bail out if the end of the file was reached
     if (!tok)
-        return;
+        return false;
 
     // get the position of the template name
     int namepos = TemplateSimplifier::simplifyTemplatesGetTemplateNamePosition(tok);
@@ -986,7 +991,7 @@ void TemplateSimplifier::simplifyTemplateInstantions(
             std::list<const Token *> callstack(1, tok);
             errorlogger.reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug", "simplifyTemplates: bailing out", false));
         }
-        return;
+        return false;
     }
 
     // name of template function/class..
@@ -997,6 +1002,8 @@ void TemplateSimplifier::simplifyTemplateInstantions(
     // locate template usage..
     std::string::size_type amountOftemplateInstantiations = templateInstantiations.size();
     unsigned int recursiveCount = 0;
+
+    bool instantiated = false;
 
     for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
         if (amountOftemplateInstantiations != templateInstantiations.size()) {
@@ -1065,6 +1072,7 @@ void TemplateSimplifier::simplifyTemplateInstantions(
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
             TemplateSimplifier::simplifyTemplatesExpandTemplate(tokenlist, tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantion,templateInstantiations);
+            instantiated = true;
         }
 
         // Replace all these template usages..
@@ -1112,6 +1120,9 @@ void TemplateSimplifier::simplifyTemplateInstantions(
             removeTokens.pop_back();
         }
     }
+
+    // Template has been instantiated .. then remove the template declaration
+    return instantiated;
 }
 
 
@@ -1129,10 +1140,8 @@ void TemplateSimplifier::simplifyTemplates(
     // this info is used by checks
     std::list<Token *> templates(TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
 
-    if (templates.empty()) {
-        TemplateSimplifier::removeTemplates(tokenlist.front());
+    if (templates.empty())
         return;
-    }
 
     // There are templates..
     // Remove "typename" unless used in template arguments..
@@ -1151,11 +1160,9 @@ void TemplateSimplifier::simplifyTemplates(
     // Locate possible instantiations of templates..
     std::list<Token *> templateInstantiations(TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(tokenlist.front()));
 
-    // No template instantiations? Then remove all templates.
-    if (templateInstantiations.empty()) {
-        TemplateSimplifier::removeTemplates(tokenlist.front());
+    // No template instantiations? Then return.
+    if (templateInstantiations.empty())
         return;
-    }
 
     // Template arguments with default values
     TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(templates, templateInstantiations);
@@ -1165,14 +1172,24 @@ void TemplateSimplifier::simplifyTemplates(
     //while (!done)
     {
         //done = true;
+        std::list<Token *> templates2;
         for (std::list<Token *>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1) {
-            TemplateSimplifier::simplifyTemplateInstantions(
-                tokenlist,
-                errorlogger,
-                _settings,
-                *iter1, templateInstantiations, expandedtemplates);
+            bool instantiated = TemplateSimplifier::simplifyTemplateInstantions(tokenlist,
+                                errorlogger,
+                                _settings,
+                                *iter1,
+                                templateInstantiations,
+                                expandedtemplates);
+            if (instantiated)
+                templates2.push_back(*iter1);
+        }
+
+        for (std::list<Token *>::iterator it = templates2.begin(); it != templates2.end(); ++it) {
+            std::list<Token *>::iterator it1 = std::find(templates.begin(), templates.end(), *it);
+            if (it1 != templates.end()) {
+                templates.erase(it1);
+                removeTemplate(*it);
+            }
         }
     }
-
-    TemplateSimplifier::removeTemplates(tokenlist.front());
 }

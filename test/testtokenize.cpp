@@ -5676,7 +5676,10 @@ private:
                            "struct S\n"
                            "{};\n"
                            "S<int> s;\n";
-        TODO_ASSERT_EQUALS("S < int , ( int ) 0 > s ;",   // wanted result
+        TODO_ASSERT_EQUALS("S<int,(int)0> s ; struct S<int,(int)0> { } ;",   // wanted result
+                           "template < class T , T t >\n"
+                           "struct S\n"
+                           "{ } ;\n"
                            "S < int , ( T ) 0 > s ;",     // current result
                            tokenizeAndStringify(code));
     }
