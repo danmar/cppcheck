@@ -160,8 +160,8 @@ private:
                "* 'operator=' should return reference to self\n"
                "* 'operator=' should check for assignment to self\n"
                "* Constness for member functions\n"
-               "* Order of initalizations\n"
-               "* Suggest usage of initalization list\n"
+               "* Order of initializations\n"
+               "* Suggest usage of initialization list\n"
                "* Suspicious subtraction from 'this'\n";
     }
 

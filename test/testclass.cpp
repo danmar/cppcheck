@@ -5127,27 +5127,27 @@ private:
                                      "    std::string s;\n"
                                      "    Fred() { a = 0; s = \"foo\"; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 's' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 's' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
 
         checkInitializationListUsage("class Fred {\n"
                                      "    std::vector<int> v;\n"
                                      "    Fred() { v = unknown; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'v' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'v' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
 
         checkInitializationListUsage("class C { std::string s; };\n"
                                      "class Fred {\n"
                                      "    C c;\n"
                                      "    Fred() { c = unknown; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
 
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
                                      "    C c;\n"
                                      "    Fred() { c = unknown; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
 
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
@@ -5173,7 +5173,7 @@ private:
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
                                      "    C a; int b;\n"
-                                     "    Fred() : b(5) { a = b; }\n" // Don't issue a message here: You actually could move it to the initalization list, but it would cause problems if you change the order of the variable declarations.
+                                     "    Fred() : b(5) { a = b; }\n" // Don't issue a message here: You actually could move it to the initialization list, but it would cause problems if you change the order of the variable declarations.
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -5201,7 +5201,7 @@ private:
                                      "    std::string a;\n"
                                      "    Fred() { a = foo(); }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider to perform initalization in initialization list.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
     }
 };
 
