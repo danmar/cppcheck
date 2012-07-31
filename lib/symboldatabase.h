@@ -363,7 +363,7 @@ private:
     /** @brief array dimensions */
     std::vector<Dimension> _dimensions;
 
-    /** @brief fill in information, depending on Tokens given at instanciation */
+    /** @brief fill in information, depending on Tokens given at instantiation */
     void evaluate();
 };
 

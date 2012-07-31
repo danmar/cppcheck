@@ -7388,17 +7388,17 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
     const Token *ftok;
 
     // Look at function call, what parameter number is it?
-    unsigned int paranthesis = 1;
+    unsigned int parenthesis = 1;
     unsigned int parameter = 1;
     for (ftok = fpar; ftok; ftok = ftok->previous()) {
         if (ftok->str() == "(") {
-            --paranthesis;
-            if (paranthesis == 0) {
+            --parenthesis;
+            if (parenthesis == 0) {
                 break;
             }
         } else if (ftok->str() == ")") {
-            ++paranthesis;
-        } else if (paranthesis == 1 && ftok->str() == ",") {
+            ++parenthesis;
+        } else if (parenthesis == 1 && ftok->str() == ",") {
             ++parameter;
         } else if (Token::Match(ftok, "[;{}]")) {
             break;

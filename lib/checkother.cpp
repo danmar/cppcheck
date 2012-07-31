@@ -2549,7 +2549,7 @@ void CheckOther::checkExpressionRange(const std::list<const Function*> &constFun
     for (; it != expressions.getMap().end(); ++it) {
         // check expression..
         bool valid = true;
-        unsigned int parantheses = 0;  // ()
+        unsigned int parenthesis = 0;  // ()
         unsigned int brackets = 0;     // []
 
         // taking address?
@@ -2559,13 +2559,13 @@ void CheckOther::checkExpressionRange(const std::list<const Function*> &constFun
 
         for (const Token *tok = it->second.start; tok && tok != it->second.end; tok = tok->next()) {
             if (tok->str() == "(") {
-                ++parantheses;
+                ++parenthesis;
             } else if (tok->str() == ")") {
-                if (parantheses == 0) {
+                if (parenthesis == 0) {
                     valid = false;
                     break;
                 }
-                --parantheses;
+                --parenthesis;
             } else if (tok->str() == "[") {
                 ++brackets;
             } else if (tok->str() == "]") {
@@ -2580,7 +2580,7 @@ void CheckOther::checkExpressionRange(const std::list<const Function*> &constFun
             }
         }
 
-        if (!valid || parantheses!=0 || brackets!=0)
+        if (!valid || parenthesis!=0 || brackets!=0)
             continue;
 
         const ExpressionTokens &expr = it->second;
