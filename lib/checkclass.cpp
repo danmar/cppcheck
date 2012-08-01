@@ -1197,15 +1197,13 @@ void CheckClass::checkConst()
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // does the function have a body?
-            if (func->type == Function::eFunction && func->hasBody && !func->isFriend && !func->isStatic && !func->isConst && !func->isVirtual) {
+            if (func->type == Function::eFunction && func->hasBody && !func->isFriend && !func->isStatic && !func->isVirtual) {
                 // get last token of return type
-                const Token *previous = func->tokenDef->isName() ? func->token->previous() : func->token->tokAt(-2);
-                while (previous && previous->str() == "::")
-                    previous = previous->tokAt(-2);
+                const Token *previous = func->tokenDef->previous();
 
                 // does the function return a pointer or reference?
                 if (Token::Match(previous, "*|&")) {
-                    const Token *temp = func->token->previous();
+                    const Token *temp = previous;
 
                     while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:"))
                         temp = temp->previous();
@@ -1213,7 +1211,7 @@ void CheckClass::checkConst()
                     if (temp->str() != "const")
                         continue;
                 } else if (Token::Match(previous->previous(), "*|& >")) {
-                    const Token *temp = func->token->previous();
+                    const Token *temp = previous;
 
                     while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:")) {
                         temp = temp->previous();
@@ -1223,27 +1221,15 @@ void CheckClass::checkConst()
 
                     if (temp->str() != "const")
                         continue;
-                } else if (func->isOperator && Token::Match(func->tokenDef->previous(), ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
-                    const std::string& opName = func->token->str();
+                } else if (func->isOperator && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
+                    const std::string& opName = func->tokenDef->str();
                     if (opName.compare(8, 5, "const") != 0 && opName[opName.size()-1] == '&')
                         continue;
                 } else {
                     // don't warn for unknown types..
                     // LPVOID, HDC, etc
-                    if (previous->isName()) {
-                        bool allupper = true;
-                        const std::string& s(previous->str());
-                        for (std::string::size_type pos = 0; pos < s.size(); ++pos) {
-                            const char ch = s[pos];
-                            if (ch != '_' && !std::isupper(ch)) {
-                                allupper = false;
-                                break;
-                            }
-                        }
-
-                        if (allupper && s.size() > 2)
-                            continue;
-                    }
+                    if (previous->isUpperCaseName() && previous->str().size() > 2 && !symbolDatabase->isClassOrStruct(previous->str()))
+                        continue;
                 }
 
                 // check if base class function is virtual
@@ -1252,8 +1238,9 @@ void CheckClass::checkConst()
                         continue;
                 }
 
+                bool memberAccessed = false;
                 // if nothing non-const was found. write error..
-                if (checkConstFunc(&(*scope), &*func)) {
+                if (checkConstFunc(&(*scope), &*func, memberAccessed)) {
                     std::string classname = scope->className;
                     const Scope *nest = scope->nestedIn;
                     while (nest && nest->type != Scope::eGlobal) {
@@ -1269,10 +1256,12 @@ void CheckClass::checkConst()
                     else if (func->tokenDef->str() == "[")
                         functionName += "]";
 
-                    if (func->isInline)
-                        checkConstError(func->token, classname, functionName);
-                    else // not inline
-                        checkConstError2(func->token, func->tokenDef, classname, functionName);
+                    if (!func->isConst || (!memberAccessed && !func->isOperator)) {
+                        if (func->isInline)
+                            checkConstError(func->token, classname, functionName, !memberAccessed && !func->isOperator);
+                        else // not inline
+                            checkConstError2(func->token, func->tokenDef, classname, functionName, !memberAccessed && !func->isOperator);
+                    }
                 }
             }
         }
@@ -1309,7 +1298,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
             if (tok->varId() == 0)
                 symbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
 
-            return !var->isMutable();
+            return !var->isStatic();
         }
     }
 
@@ -1375,7 +1364,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
         /** @todo we need to look at the argument types when there are overloaded functions
           * with the same number of arguments */
         if (func->tokenDef->str() == tok->str() && (func->argCount() == args || (func->argCount() > args && countMinArgs(func->argDef) <= args))) {
-            return true;
+            return !func->isStatic;
         }
     }
 
@@ -1437,138 +1426,139 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
     return false;
 }
 
-bool CheckClass::checkConstFunc(const Scope *scope, const Function *func)
+bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->classStart; tok1 && tok1 != func->functionScope->classEnd; tok1 = tok1->next()) {
-        // assignment.. = += |= ..
-        if (tok1->isAssignmentOp()) {
-            if (tok1->next()->str() == "this") {
+        if (tok1->isName() && isMemberVar(scope, tok1)) {
+            memberAccessed = true;
+            const Variable* v = symbolDatabase->getVariableFromVarId(tok1->varId());
+            if (v && v->isMutable())
+                continue;
+
+            if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
                 return(false);
-            } else if (isMemberVar(scope, tok1->previous())) {
-                return(false);
+
+            unsigned int lastVarId = tok1->varId();
+            const Token* end = tok1;
+            for (;;) {
+                if (Token::Match(end->next(), ". %var%")) {
+                    end = end->tokAt(2);
+                    if (end->varId())
+                        lastVarId = end->varId();
+                } else if (end->strAt(1) == "[") {
+                    if (end->varId()) {
+                        const Variable *var = symbolDatabase->getVariableFromVarId(end->varId());
+
+                        if (var && Token::simpleMatch(var->typeStartToken(), "std :: map")) // operator[] changes a map
+                            return(false);
+                    }
+                    end = end->linkAt(1);
+                } else if (end->strAt(1) == ")")
+                    end = end->next();
+                else
+                    break;
             }
+
+            if (end->strAt(1) == "(") {
+                const Variable *var = symbolDatabase->getVariableFromVarId(lastVarId);
+                if (!var)
+                    return(false);
+                if (Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
+                    && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy")))
+                    ;
+                else if (!var->type() || !isConstMemberFunc(var->type(), end))
+                    return(false);
+            }
+
+            // Assignment
+            else if (end->next()->type() == Token::eAssignmentOp)
+                return(false);
+
+            // Streaming
+            else if (end->strAt(1) == "<<" && tok1->strAt(-1) != "<<")
+                return(false);
+            else if (tok1->strAt(-1) == ">>")
+                return(false);
+
+            // ++/--
+            else if (end->next()->type() == Token::eIncDecOp || tok1->previous()->type() == Token::eIncDecOp)
+                return(false);
+
+
+            const Token* start = tok1;
+            while (tok1->strAt(-1) == ")")
+                tok1 = tok1->linkAt(-1);
+
+            if (start->strAt(-1) == "delete")
+                return(false);
+
+            tok1 = end;
         }
 
         // streaming: <<
-        else if (tok1->str() == "<<" && isMemberVar(scope, tok1->previous()) && tok1->strAt(-2) != "<<") {
-            return(false);
-        } else if (Token::simpleMatch(tok1->previous(), ") <<") &&
-                   isMemberVar(scope, tok1->tokAt(-2))) {
-            return(false);
-        }
-
-        // streaming: >>
-        else if (tok1->str() == ">>" && isMemberVar(scope, tok1->next())) {
-            return(false);
-        }
-
-        // increment/decrement (member variable?)..
-        else if (tok1->type() == Token::eIncDecOp) {
-            // var++ and var--
-            if (Token::Match(tok1->previous(), "%var%") &&
-                tok1->previous()->str() != "return") {
-                if (isMemberVar(scope, tok1->previous())) {
-                    return(false);
-                }
-            }
-
-            // var[...]++ and var[...]--
-            else if (tok1->previous()->str() == "]") {
-                if (isMemberVar(scope, tok1->previous()->link()->previous())) {
-                    return(false);
-                }
-            }
-
-            // ++var and --var
-            else if (Token::Match(tok1->next(), "%var%")) {
-                if (isMemberVar(scope, tok1->next())) {
-                    return(false);
-                }
-            }
-        }
-
-        // std::map variable member
-        else if (Token::Match(tok1, "%var% [") && isMemberVar(scope, tok1)) {
-            const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
-
-            if (var && (var->typeStartToken()->str() == "map" ||
-                        Token::simpleMatch(var->typeStartToken(), "std :: map"))) {
+        else if (Token::simpleMatch(tok1->previous(), ") <<") &&
+                 isMemberVar(scope, tok1->tokAt(-2))) {
+            const Variable* var = symbolDatabase->getVariableFromVarId(tok1->tokAt(-2)->varId());
+            if (!var || !var->isMutable())
                 return(false);
-            }
         }
+
 
         // function call..
         else if (Token::Match(tok1, "%var% (") && !tok1->isStandardType() &&
                  !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
-            if (isMemberFunc(scope, tok1) && !isConstMemberFunc(scope, tok1) && tok1->strAt(-1) != ".") {
-                return(false);
+            if (isMemberFunc(scope, tok1) && tok1->strAt(-1) != ".") {
+                if (!isConstMemberFunc(scope, tok1))
+                    return(false);
+                memberAccessed = true;
             }
             // Member variable given as parameter
             for (const Token* tok2 = tok1->tokAt(2); tok2 && tok2 != tok1->next()->link(); tok2 = tok2->next()) {
                 if (tok2->str() == "(")
                     tok2 = tok2->link();
-                else if (tok2->isName() && isMemberVar(scope, tok2))
-                    return(false); // TODO: Only bailout if function takes argument as non-const reference
+                else if (tok2->isName() && isMemberVar(scope, tok2)) {
+                    const Variable* var = symbolDatabase->getVariableFromVarId(tok2->varId());
+                    if (!var || !var->isMutable())
+                        return(false); // TODO: Only bailout if function takes argument as non-const reference
+                }
             }
         } else if (Token::simpleMatch(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return(false);
-        } else if (Token::Match(tok1, "%var% . %var% (")) {
-            if (!isMemberVar(scope, tok1))
-                tok1 = tok1->next();
-            else if (tok1->varId()) {
-                const Variable *var = symbolDatabase->getVariableFromVarId(tok1->varId());
-
-                if (var && Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
-                    && (Token::Match(tok1->tokAt(2), "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(tok1->tokAt(2), "rfind|copy")))
-                    tok1 = tok1->next();
-                else if (var) { // Check if the function is const
-                    const Scope* type = var->type();
-                    if (!type || !isConstMemberFunc(type, tok1->tokAt(2)))
-                        return(false);
-                    else
-                        tok1 = tok1->next();
-                } else
-                    return(false);
-            } else
-                return(false);
-        }
-
-        // delete..
-        else if (tok1->str() == "delete") {
-            const Token* end = Token::findsimplematch(tok1->next(), ";")->previous();
-            while (end->str() == ")")
-                end = end->previous();
-            if (end->str() == "this")
-                return(false);
-            if (end->isName() && isMemberVar(scope, end))
-                return(false);
-
         }
     }
 
     return(true);
 }
 
-void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
+void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic)
 {
-    checkConstError2(tok, 0, classname, funcname);
+    checkConstError2(tok, 0, classname, funcname, suggestStatic);
 }
 
-void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname)
+void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic)
 {
     std::list<const Token *> toks;
     toks.push_back(tok1);
     if (tok2)
         toks.push_back(tok2);
-    reportError(toks, Severity::style, "functionConst",
-                "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
-                "The member function '" + classname + "::" + funcname + "' can be made a const "
-                "function. Making this function 'const' should not cause compiler errors. "
-                "Even though the function can be made const function technically it may not make "
-                "sense conceptually. Think about your design and the task of the function first - is "
-                "it a function that must not change object internal state?", true);
+    if (!suggestStatic)
+        reportError(toks, Severity::style, "functionConst",
+                    "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
+                    "The member function '" + classname + "::" + funcname + "' can be made a const "
+                    "function. Making this function 'const' should not cause compiler errors. "
+                    "Even though the function can be made const function technically it may not make "
+                    "sense conceptually. Think about your design and the task of the function first - is "
+                    "it a function that must not change object internal state?", true);
+    else
+        reportError(toks, Severity::performance, "functionStatic",
+                    "Technically the member function '" + classname + "::" + funcname + "' can be static.\n"
+                    "The member function '" + classname + "::" + funcname + "' can be made a static "
+                    "function. Making a function static can bring a performance benefit since no 'this' instance is "
+                    "passed to the function. This change should not cause compiler errors but it does not "
+                    "necessarily make sense conceptually. Think about your design and the task of the function first - "
+                    "is it a function that must not access members of class instances?", true);
 }
 
 //---------------------------------------------------------------------------

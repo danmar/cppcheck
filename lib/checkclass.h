@@ -123,8 +123,8 @@ private:
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
     void operatorEqToSelfError(const Token *tok);
-    void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
-    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
+    void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic);
+    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
 
@@ -140,7 +140,8 @@ private:
         c.thisSubtractionError(0);
         c.operatorEqRetRefThisError(0);
         c.operatorEqToSelfError(0);
-        c.checkConstError(0, "class", "function");
+        c.checkConstError(0, "class", "function", false);
+        c.checkConstError(0, "class", "function", true);
         c.initializerListError(0, 0, "class", "variable");
         c.suggestInitializationList(0, "variable");
     }
@@ -176,7 +177,7 @@ private:
     bool isMemberVar(const Scope *scope, const Token *tok);
     bool isMemberFunc(const Scope *scope, const Token *tok);
     bool isConstMemberFunc(const Scope *scope, const Token *tok);
-    bool checkConstFunc(const Scope *scope, const Function *func);
+    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed);
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */

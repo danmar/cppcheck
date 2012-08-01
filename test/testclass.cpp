@@ -93,7 +93,7 @@ private:
         TEST_CASE(const15);
         TEST_CASE(const16); // ticket #1551
         TEST_CASE(const17); // ticket #1552
-        TEST_CASE(const18); // ticket #1563
+        TEST_CASE(const18);
         TEST_CASE(const19); // ticket #1612
         TEST_CASE(const20); // ticket #1602
         TEST_CASE(const21); // ticket #1683
@@ -2075,13 +2075,13 @@ private:
         checkConst("class Fred {\n"
                    "    const std::string foo() { return ""; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    std::string s;\n"
                    "    const std::string & foo() { return ""; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
         // constructors can't be const..
         checkConst("class Fred {\n"
@@ -2120,7 +2120,7 @@ private:
                    "    int x;\n"
                    "    void b() { a(); }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::b' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::b' can be static.\n", errout.str());
 
         // static functions can't be const..
         checkConst("class foo\n"
@@ -2134,7 +2134,7 @@ private:
         checkConst("class Fred {\n"
                    "    const std::string foo() const throw() { return ""; }\n"
                    "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
     }
 
     void const2() {
@@ -2242,34 +2242,11 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n", errout.str());
 
         checkConst("class Fred {\n"
-                   "    const std::string foo();\n"
-                   "};\n"
-                   "const std::string Fred::foo() { return ""; }");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
-
-        checkConst("class Fred {\n"
                    "    std::string s;\n"
                    "    const std::string & foo();\n"
                    "};\n"
                    "const std::string & Fred::foo() { return ""; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
-
-        // constructors can't be const..
-        checkConst("class Fred {\n"
-                   "    int a;\n"
-                   "public:\n"
-                   "    Fred()\n"
-                   "};\n"
-                   "Fred::Fred() { }");
-        ASSERT_EQUALS("", errout.str());
-
-        // assignment through |=..
-        checkConst("class Fred {\n"
-                   "    int a;\n"
-                   "    int setA();\n"
-                   "};\n"
-                   "int Fred::setA() { a |= true; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
         // functions with a function call to a non-const member can't be const.. (#1305)
         checkConst("class Fred\n"
@@ -2405,7 +2382,7 @@ private:
                    "void Fred::foo() { }"
                    "void Fred::foo(std::string & a) { a = s; }"
                    "void Fred::foo(const std::string & a) { s = a; }");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n"
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n"
                       "[test.cpp:7] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
 
         // check functions with different or missing parameter names
@@ -2422,11 +2399,11 @@ private:
                    "void Fred::foo3(int a, int b) { }\n"
                    "void Fred::foo4(int a, int b) { }\n"
                    "void Fred::foo5(int, int) { }");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo1' can be const.\n"
-                      "[test.cpp:10] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::foo2' can be const.\n"
-                      "[test.cpp:11] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'Fred::foo3' can be const.\n"
-                      "[test.cpp:12] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'Fred::foo4' can be const.\n"
-                      "[test.cpp:13] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::foo5' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo1' can be static.\n"
+                      "[test.cpp:10] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::foo2' can be static.\n"
+                      "[test.cpp:11] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'Fred::foo3' can be static.\n"
+                      "[test.cpp:12] -> [test.cpp:6]: (performance, inconclusive) Technically the member function 'Fred::foo4' can be static.\n"
+                      "[test.cpp:13] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'Fred::foo5' can be static.\n", errout.str());
 
         // check nested classes
         checkConst("class Fred {\n"
@@ -2622,7 +2599,7 @@ private:
     }
 
     void const6() {
-        // ticket # 1491
+        // ticket #1491
         checkConst("class foo {\n"
                    "public:\n"
                    "};\n"
@@ -2634,7 +2611,7 @@ private:
                    "public:\n"
                    "    void foo() { }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
         checkConst("struct fast_string\n"
                    "{\n"
@@ -3197,13 +3174,12 @@ private:
     }
 
     void const18() {
-        // ticket #1563
         checkConst("class Fred {\n"
                    "static int x;\n"
                    "public:\n"
                    "    void set(int i) { x = i; }\n"
                    "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::set' can be static.\n", errout.str());
     }
 
     void const19() {
@@ -3451,7 +3427,7 @@ private:
                    "        UnknownScope::x = x_;\n"
                    "    }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'AA::vSetXPos' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'AA::vSetXPos' can be static.\n", errout.str());
 
     }
 
@@ -3880,7 +3856,7 @@ private:
                    "{\n"
                    "}\n");
 
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'Fred::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'Fred::f' can be static.\n", errout.str());
 
         checkConst("class Fred\n"
                    "{\n"
@@ -3894,7 +3870,7 @@ private:
                    "{\n"
                    "}\n");
 
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'Fred::f' can be static.\n", errout.str());
 
         checkConst("namespace NS {\n"
                    "    class Fred\n"
@@ -3910,7 +3886,7 @@ private:
                    "    }\n"
                    "}\n");
 
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:8]: (style, inconclusive) Technically the member function 'NS::Fred::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static.\n", errout.str());
 
         checkConst("namespace NS {\n"
                    "    class Fred\n"
@@ -3926,7 +3902,7 @@ private:
                    "{\n"
                    "}\n");
 
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (style, inconclusive) Technically the member function 'NS::Fred::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static.\n", errout.str());
 
         checkConst("class Foo {\n"
                    "    class Fred\n"
@@ -3942,7 +3918,7 @@ private:
                    "{\n"
                    "}\n");
 
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (style, inconclusive) Technically the member function 'Foo::Fred::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'Foo::Fred::f' can be static.\n", errout.str());
     }
 
     void const43() { // ticket 2377
@@ -4031,7 +4007,7 @@ private:
                    "    };\n"
                    "}\n");
 
-        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'tools::WorkspaceControl::toGrid' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (performance, inconclusive) Technically the member function 'tools::WorkspaceControl::toGrid' can be static.\n", errout.str());
     }
 
     void const46() { // ticket 2663
@@ -4046,8 +4022,8 @@ private:
                    "    }\n"
                    "};\n");
 
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Altren::fun1' can be const.\n"
-                      "[test.cpp:7]: (style, inconclusive) Technically the member function 'Altren::fun2' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Altren::fun1' can be static.\n"
+                      "[test.cpp:7]: (performance, inconclusive) Technically the member function 'Altren::fun2' can be static.\n", errout.str());
     }
 
     void const47() { // ticket 2670
@@ -4058,7 +4034,7 @@ private:
                    "  void bar() { foo(); }\n"
                    "};\n");
 
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static.\n", errout.str());
 
         checkConst("class Altren {\n"
                    "public:\n"
@@ -4067,7 +4043,8 @@ private:
                    "  void bar() { foo(1); }\n"
                    "};\n");
 
-        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'Altren::bar' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static.\n"
+                      "[test.cpp:5]: (style, inconclusive) Technically the member function 'Altren::bar' can be const.\n", errout.str());
     }
 
     void const48() { // ticket 2672
@@ -4157,7 +4134,7 @@ private:
                    "private:\n"
                    "    int bar;\n"
                    "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'foo::DoSomething' can be static.\n", errout.str());
     }
 
     void const53() { // ticket 3049
@@ -4201,7 +4178,7 @@ private:
                    "    switch (x) { }\n"
                    "    }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static.\n", errout.str());
 
         checkConst("class A\n"
                    "{\n"
@@ -4244,7 +4221,7 @@ private:
                    "\n"
                    "    return RET_NOK;\n"
                    "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'A::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'A::f' can be static.\n", errout.str());
 
         checkConst("class MyObject {\n"
                    "public:\n"
@@ -4252,7 +4229,7 @@ private:
                    "    for (int i = 0; i < 5; i++) { }\n"
                    "    }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static.\n", errout.str());
     }
 
     void const57() { // tickets #2669 and #2477
@@ -4277,7 +4254,8 @@ private:
                    "private:\n"
                    "  MyGUI::IntCoord mCoordValue;\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:15]: (style, inconclusive) Technically the member function 'SelectorControl::getSize' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (performance, inconclusive) Technically the member function 'MyGUI::types::TCoord::size' can be static.\n"
+                      "[test.cpp:15]: (style, inconclusive) Technically the member function 'SelectorControl::getSize' can be const.\n", errout.str());
 
         checkConst("struct Foo {\n"
                    "    Bar b;\n"
@@ -4308,7 +4286,8 @@ private:
                    "        b.run();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'Foo::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Bar::run' can be static.\n"
+                      "[test.cpp:6]: (style, inconclusive) Technically the member function 'Foo::foo' can be const.\n", errout.str());
     }
 
     void const58() {
@@ -4317,14 +4296,14 @@ private:
                    "        f.clear();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static.\n", errout.str());
 
         checkConst("struct MyObject {\n"
                    "    int foo(Foo f) {\n"
                    "        return f.length();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static.\n", errout.str());
 
         checkConst("struct MyObject {\n"
                    "    Foo f;\n"
@@ -4373,8 +4352,8 @@ private:
                    "        return foo3();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'Foo::bar3' can be const.\n"
-                      "[test.cpp:14]: (style, inconclusive) Technically the member function 'Foo::bar4' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (performance, inconclusive) Technically the member function 'Foo::bar3' can be static.\n"
+                      "[test.cpp:14]: (performance, inconclusive) Technically the member function 'Foo::bar4' can be static.\n", errout.str());
     }
 
     void const_passThisToMemberOfOtherClass() {
@@ -4392,7 +4371,7 @@ private:
                    "        f.foo();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'Foo::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Foo::foo' can be static.\n", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation() {
@@ -4451,25 +4430,25 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return ++a; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return --a; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a++; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a--; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
     }
 
     void constassign1() {
@@ -4507,31 +4486,31 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return a=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a-=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a+=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a*=-1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a/=-2; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
     }
 
     void constassign2() {
@@ -4563,31 +4542,31 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return s.a=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a-=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a+=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a*=-1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a/=-2; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("struct A { int a; };\n"
                    "class Fred {\n"
@@ -4655,25 +4634,25 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return ++a[0]; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return --a[0]; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]++; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]--; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
     }
 
     void constassignarray() {
@@ -4711,31 +4690,31 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return a[0]=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]-=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]+=1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]*=-1; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]/=-2; }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::nextA' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static.\n", errout.str());
     }
 
     // return pointer/reference => not const
@@ -4777,7 +4756,8 @@ private:
                    "    void f() const { };\n"
                    "    void a() { f(); };\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::a' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::f' can be static.\n"
+                      "[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::a' can be const.\n", errout.str());
 
         // ticket #1593
         checkConst("class A\n"
@@ -5040,7 +5020,7 @@ private:
         settings.addEnabled("style");
 
         checkConst(code, &settings, true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'foo::f' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'foo::f' can be static.\n", errout.str());
 
         checkConst(code, &settings, false); // TODO: Set inconclusive to true (preprocess it)
         ASSERT_EQUALS("", errout.str());
