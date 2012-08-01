@@ -52,13 +52,6 @@ private:
         TEST_CASE(defines2);
         TEST_CASE(defines3);
         //TEST_CASE(defines4);
-        //TEST_CASE(fileListStdin); // Hangs
-        TEST_CASE(ignorefilepaths1);
-        TEST_CASE(ignorefilepaths2);
-        //TEST_CASE(ignorepaths1);
-        //TEST_CASE(ignorepaths2);
-        //TEST_CASE(ignorepaths3);
-        //TEST_CASE(ignorepaths4);
         TEST_CASE(includesnopath);
         TEST_CASE(includes);
         TEST_CASE(includesslash);
