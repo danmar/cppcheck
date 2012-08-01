@@ -1930,7 +1930,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyConditionOperator();
 
     // remove exception specifications..
-    removeExceptionSpecifications(list.front());
+    removeExceptionSpecifications();
 
     // Collapse operator name tokens into single token
     // operator = => operator=
@@ -7334,7 +7334,7 @@ void Tokenizer::simplifyStd()
 
 //---------------------------------------------------------------------------
 
-bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
+bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown)
 {
     if (unknown)
         *unknown = false;
@@ -7834,9 +7834,9 @@ void Tokenizer::simplifyComma()
 }
 
 
-void Tokenizer::removeExceptionSpecifications(Token *tok) const
+void Tokenizer::removeExceptionSpecifications()
 {
-    while (tok) {
+    for(Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, ") const| throw (")) {
             if (tok->next()->str() == "const") {
                 Token::eraseTokens(tok->next(), tok->linkAt(3));
@@ -7845,8 +7845,6 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
                 Token::eraseTokens(tok, tok->linkAt(2));
             tok->deleteNext();
         }
-
-        tok = tok->next();
     }
 }
 
@@ -8065,7 +8063,7 @@ void Tokenizer::simplifyConst()
     }
 }
 
-void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
     Tokenizer t(settings, errorLogger);
     t.syntaxError(0, ' ');

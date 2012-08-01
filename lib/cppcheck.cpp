@@ -543,8 +543,6 @@ void CppCheck::getErrorMessages()
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         (*it)->getErrorMessages(this, &_settings);
 
-    Tokenizer tokenizer(&_settings, 0);
-    tokenizer.getErrorMessages(this, &_settings);
-
+    Tokenizer::getErrorMessages(this, &_settings);
     Preprocessor::getErrorMessages(this, &_settings);
 }

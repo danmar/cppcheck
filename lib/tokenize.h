@@ -72,7 +72,7 @@ public:
      * \param unknown set to true if it's unknown if the scope is noreturn
      * \return true if scope ends with a function call that might be 'noreturn'
      */
-    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0) const;
+    static bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0);
 
     /**
      * Tokenize code
@@ -171,7 +171,7 @@ public:
     /**
      * get error messages that the tokenizer generate
      */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
+    static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
     /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
      */
@@ -525,10 +525,9 @@ public:
     void simplifyFunctionPointers();
 
     /**
-     * Remove exception specifications. This function calls itself recursively.
-     * @param tok First token in scope to cleanup
+     * Remove exception specifications.
      */
-    void removeExceptionSpecifications(Token *tok) const;
+    void removeExceptionSpecifications();
 
 
     /**
