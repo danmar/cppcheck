@@ -561,7 +561,7 @@ private:
     }
 
 
-    void call_func() {
+    void call_func() const {
         // whitelist..
         ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("qsort"));
         ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("scanf"));
