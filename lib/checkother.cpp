@@ -156,7 +156,7 @@ void CheckOther::clarifyCondition()
                     tok2 = tok2->link();
                 else if (tok2->type() == Token::eComparisonOp) {
                     // This might be a template
-                    if (!isC && Token::Match(tok2->previous(), "%var% <"))
+                    if (!isC && tok2->link())
                         break;
 
                     clarifyConditionError(tok, tok->strAt(2) == "=", false);
@@ -170,6 +170,9 @@ void CheckOther::clarifyCondition()
     // using boolean result in bitwise operation ! x [&|^]
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "!|<|<=|==|!=|>|>=")) {
+            if (tok->link()) // don't write false positives when templates are used
+                continue;
+
             const Token *tok2 = tok->next();
 
             // Todo: There are false positives if '(' if encountered. It
@@ -186,8 +189,7 @@ void CheckOther::clarifyCondition()
 
             if (Token::Match(tok2, "[&|^]")) {
                 // don't write false positives when templates are used
-                if (Token::Match(tok, "<|>") && (Token::Match(tok2, "& ,|>") ||
-                                                 Token::simpleMatch(tok2->previous(), "const &")))
+                if (Token::Match(tok2, "&|* ,|>") || Token::simpleMatch(tok2->previous(), "const &"))
                     continue;
 
                 // #3609 - CWinTraits<WS_CHILD|WS_VISIBLE>::..

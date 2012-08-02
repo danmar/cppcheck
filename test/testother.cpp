@@ -124,6 +124,7 @@ private:
         TEST_CASE(clarifyCondition3);     // if (! a & b)
         TEST_CASE(clarifyCondition4);     // ticket #3110
         TEST_CASE(clarifyCondition5);     // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
+        TEST_CASE(clarifyCondition6);     // #3818
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
 
         TEST_CASE(comparisonOfBoolExpressionWithInt1);
@@ -3654,6 +3655,15 @@ private:
 
     void clarifyCondition5() { // ticket #3609 (using | in template instantiation)
         check("CWinTraits<WS_CHILD|WS_VISIBLE>::GetWndStyle(0);");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void clarifyCondition6() {
+        check("template<class Y>\n"
+              "SharedPtr& operator=( SharedPtr<Y> const & r ) {\n"
+              "    px = r.px;\n"
+              "    return *this;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

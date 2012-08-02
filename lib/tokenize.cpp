@@ -2935,6 +2935,9 @@ bool Tokenizer::createLinks()
 
 void Tokenizer::createLinks2()
 {
+    if (isC())
+        return;
+
     std::stack<const Token*> type;
     std::stack<Token*> links;
     for (Token *token = list.front(); token; token = token->next()) {
@@ -7836,7 +7839,7 @@ void Tokenizer::simplifyComma()
 
 void Tokenizer::removeExceptionSpecifications()
 {
-    for(Token* tok = list.front(); tok; tok = tok->next()) {
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, ") const| throw (")) {
             if (tok->next()->str() == "const") {
                 Token::eraseTokens(tok->next(), tok->linkAt(3));
