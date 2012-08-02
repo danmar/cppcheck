@@ -1,4 +1,6 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>About</name>
     <message>
@@ -13,7 +15,7 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - 정적 C/C++ 코드 분석 도구.</translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
         <translation>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</translation>
     </message>
@@ -606,10 +608,6 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <source>Korean</source>
         <translation>한국어</translation>
-    </message>
-    <message>
-        <source>Polish</source>
-        <translation>폴란드어</translation>
     </message>
     <message>
         <source>Russian</source>
