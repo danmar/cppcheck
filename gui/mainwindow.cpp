@@ -608,6 +608,23 @@ void MainWindow::ClearResults()
 
 void MainWindow::OpenXML()
 {
+    if (mUI.mResults->HasResults()) {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle(tr("Cppcheck"));
+        const QString msg(tr("Current results will be cleared.\n\n"
+                             "Opening a new XML file will clear current results."
+                             "Do you want to proceed?"));
+        msgBox.setText(msg);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.addButton(QMessageBox::Yes);
+        msgBox.addButton(QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::Yes);
+        int dlgResult = msgBox.exec();
+        if (dlgResult == QMessageBox::No) {
+            return;
+        }
+    }
+
     QString selectedFilter;
     const QString filter(tr("XML files (*.xml)"));
     QString selectedFile = QFileDialog::getOpenFileName(this,
@@ -617,6 +634,7 @@ void MainWindow::OpenXML()
                            &selectedFilter);
 
     if (!selectedFile.isEmpty()) {
+        mUI.mResults->Clear();
         mUI.mResults->ReadErrorsXml(selectedFile);
     }
 }
