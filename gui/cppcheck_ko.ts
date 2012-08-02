@@ -625,6 +625,12 @@ Do you want to remove the file from the recently used projects -list?</source>
         <source>Swedish</source>
         <translation>스웨덴어</translation>
     </message>
+    <message>
+        <source>Current results will be cleared.
+
+Opening a new XML file will clear current results.Do you want to proceed?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
