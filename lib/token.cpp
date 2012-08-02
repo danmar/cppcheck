@@ -91,12 +91,12 @@ void Token::update_property_info()
                  _str == "||" ||
                  _str == "!")
             _type = eLogicalOp;
-        else if (_str == "==" ||
-                 _str == "!=" ||
-                 _str == "<"  ||
-                 _str == "<=" ||
-                 _str == ">"  ||
-                 _str == ">=")
+        else if ((_str == "==" ||
+                  _str == "!=" ||
+                  _str == "<"  ||
+                  _str == "<=" ||
+                  _str == ">"  ||
+                  _str == ">=") && !_link)
             _type = eComparisonOp;
         else if (_str == "++" ||
                  _str == "--")
@@ -159,9 +159,7 @@ void Token::concatStr(std::string const& b)
 
 std::string Token::strValue() const
 {
-    assert(_str.length() >= 2);
-    assert(_str[0] == '"');
-    assert(_str[_str.length()-1] == '"');
+    assert(_type == eString);
     return _str.substr(1, _str.length() - 2);
 }
 
@@ -1000,13 +998,19 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
         }
 
         if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
-            while (lineNumber < tok->linenr()) {
-                ++lineNumber;
-                ret << '\n';
-                if (linenumbers) {
-                    ret << lineNumber << ':';
-                    if (lineNumber == tok->linenr())
-                        ret << ' ';
+            if (lineNumber+4 < tok->linenr() && fileInd == static_cast<int>(tok->_fileIndex)) {
+                ret << '\n' << lineNumber+1 << ":\n|\n";
+                ret << tok->linenr()-1 << ":\n";
+                ret << tok->linenr() << ": ";
+            } else {
+                while (lineNumber < tok->linenr()) {
+                    ++lineNumber;
+                    ret << '\n';
+                    if (linenumbers) {
+                        ret << lineNumber << ':';
+                        if (lineNumber == tok->linenr())
+                            ret << ' ';
+                    }
                 }
             }
             lineNumber = tok->linenr();
