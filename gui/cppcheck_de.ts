@@ -21,8 +21,7 @@
     <message utf8="true">
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
-        <oldsource>Copyright © 2007-2011 Daniel Marjamäki and cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2012 Daniel Marjamäki und das Cppcheck-Team.</translation>
+        <translation>Copyright © 2007-2012 Daniel Marjamäki und das Cppcheck-Team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -576,7 +575,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="mainwindow.cpp" line="71"/>
         <source>Quick Filter:</source>
-        <translation type="unfinished"></translation>
+        <translation>Schnellfilter:</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="407"/>
@@ -640,7 +639,9 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation >Aktuelle Ergebnisse werden gelöscht.
+
+          Das Einlesen einer XML Datei löscht die aktuellen Ergebnisse. Fortfahren?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="631"/>
@@ -761,7 +762,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
     <message>
         <location filename="translationhandler.cpp" line="38"/>
         <source>Korean</source>
-        <translation type="unfinished"></translation>
+        <translation>Koreanisch</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="41"/>
@@ -1235,7 +1236,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden 
     <message>
         <location filename="settings.ui" line="135"/>
         <source>Enable inline suppressions</source>
-        <translation type="unfinished"></translation>
+        <translation>Inline-Fehlerunterdrückung aktivieren</translation>
     </message>
     <message>
         <location filename="settings.ui" line="156"/>
@@ -1309,7 +1310,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden 
     <message>
         <location filename="settingsdialog.cpp" line="84"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>kA</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="202"/>
