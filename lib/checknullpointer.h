@@ -110,7 +110,7 @@ private:
     }
 
     /** Name of check */
-    std::string myName() const {
+    static std::string myName() {
         return "Null pointer";
     }
 

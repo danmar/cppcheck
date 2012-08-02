@@ -92,7 +92,7 @@ private:
         }
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Non reentrant functions";
     }
 

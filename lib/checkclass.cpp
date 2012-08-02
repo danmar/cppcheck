@@ -153,7 +153,7 @@ void CheckClass::constructors()
     }
 }
 
-bool CheckClass::canNotCopy(const Scope *scope) const
+bool CheckClass::canNotCopy(const Scope *scope)
 {
     std::list<Function>::const_iterator func;
     bool privateAssign = false;
@@ -195,13 +195,13 @@ void CheckClass::initVar(const std::string &varname, const Scope *scope, std::ve
     }
 }
 
-void CheckClass::assignAllVar(std::vector<Usage> &usage) const
+void CheckClass::assignAllVar(std::vector<Usage> &usage)
 {
     for (std::size_t i = 0; i < usage.size(); ++i)
         usage[i].assign = true;
 }
 
-void CheckClass::clearAllVar(std::vector<Usage> &usage) const
+void CheckClass::clearAllVar(std::vector<Usage> &usage)
 {
     for (std::size_t i = 0; i < usage.size(); ++i) {
         usage[i].assign = false;

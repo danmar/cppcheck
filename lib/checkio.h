@@ -114,7 +114,7 @@ private:
         c.invalidScanfFormatWidthError(0, 10, 5, NULL);
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "IO";
     }
 

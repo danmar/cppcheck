@@ -146,7 +146,7 @@ private:
         c.suggestInitializationList(0, "variable");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Class";
     }
 
@@ -213,13 +213,13 @@ private:
      * @brief set all variables in list assigned
      * @param usage reference to usage vector
      */
-    void assignAllVar(std::vector<Usage> &usage) const;
+    static void assignAllVar(std::vector<Usage> &usage);
 
     /**
      * @brief set all variables in list not assigned and not initialized
      * @param usage reference to usage vector
      */
-    void clearAllVar(std::vector<Usage> &usage) const;
+    static void clearAllVar(std::vector<Usage> &usage);
 
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
@@ -230,7 +230,7 @@ private:
      */
     void initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage);
 
-    bool canNotCopy(const Scope *scope) const;
+    static bool canNotCopy(const Scope *scope);
 };
 /// @}
 //---------------------------------------------------------------------------

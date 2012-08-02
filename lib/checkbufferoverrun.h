@@ -246,7 +246,7 @@ public:
     }
 private:
 
-    std::string myName() const {
+    static std::string myName() {
         return "Bounds checking";
     }
 

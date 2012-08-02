@@ -325,7 +325,7 @@ private:
      * Get name of class (--doc)
      * @return name of class
      */
-    std::string myName() const {
+    static std::string myName() {
         return "Memory leaks (function variables)";
     }
 
@@ -382,7 +382,7 @@ private:
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
     { }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Memory leaks (class variables)";
     }
 
@@ -421,7 +421,7 @@ private:
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
     { }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Memory leaks (struct members)";
     }
 
@@ -460,7 +460,7 @@ private:
         c.functionCallLeak(0, "funcName", "funcName");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Memory leaks (address not taken)";
     }
 

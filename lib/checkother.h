@@ -353,7 +353,7 @@ private:
         c.moduloAlwaysTrueFalseError(0, "1");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Other";
     }
 
@@ -380,7 +380,6 @@ private:
                "* redundant if\n"
                "* bad usage of the function 'strtol'\n"
                "* [[CheckUnsignedDivision|unsigned division]]\n"
-               "* Dangerous usage of 'scanf'\n"
                "* passing parameter by value\n"
                "* [[IncompleteStatement|Incomplete statement]]\n"
                "* [[charvar|check how signed char variables are used]]\n"

@@ -131,7 +131,7 @@ private:
         }
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Obsolete functions";
     }
 

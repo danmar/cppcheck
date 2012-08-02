@@ -60,7 +60,7 @@ private:
         c.postfixOperatorError(0);
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "Using postfix operators";
     }
 

@@ -82,7 +82,7 @@ private:
         c.unknownPatternError(0, "%typ");
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "cppcheck internal API usage";
     }
 

@@ -75,7 +75,7 @@ private:
         c.returnPointerError(0);
     }
 
-    std::string myName() const {
+    static std::string myName() {
         return "64-bit portability";
     }
 
