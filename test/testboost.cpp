@@ -61,7 +61,7 @@ private:
               "        data.push_back(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
 
         check("void f() {\n"
               "    set<int> data;\n"
@@ -69,7 +69,7 @@ private:
               "        data.insert(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
 
         check("void f() {\n"
               "    set<int> data;\n"
@@ -77,7 +77,7 @@ private:
               "        data.erase(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
 
         // Check single line usage
         check("void f() {\n"
@@ -85,7 +85,7 @@ private:
               "    BOOST_FOREACH(const int &i, data)\n"
               "        data.clear();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
 
         // Container returned as result of a function -> Be quiet
         check("void f() {\n"
