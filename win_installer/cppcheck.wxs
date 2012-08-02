@@ -43,8 +43,8 @@
             <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.TranslationsDir)\cppcheck_fi.qm' />
             <File Id='cppcheck_fr.qm' Name='cppcheck_fr.qm' Source='$(var.TranslationsDir)\cppcheck_fr.qm' />
             <File Id='cppcheck_ja.qm' Name='cppcheck_ja.qm' Source='$(var.TranslationsDir)\cppcheck_ja.qm' />
+            <File Id='cppcheck_ko.qm' Name='cppcheck_ko.qm' Source='$(var.TranslationsDir)\cppcheck_ko.qm' />
             <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.TranslationsDir)\cppcheck_nl.qm' />
-            <File Id='cppcheck_pl.qm' Name='cppcheck_pl.qm' Source='$(var.TranslationsDir)\cppcheck_pl.qm' />
             <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.TranslationsDir)\cppcheck_ru.qm' />
             <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
             <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
