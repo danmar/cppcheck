@@ -472,11 +472,11 @@ void CheckNullPointer::nullPointerAfterLoop()
 
                 // Is the loop variable dereferenced?
                 if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase)) {
-                    nullPointerError(tok2, varname, tok->linenr(), inconclusive);
+                    nullPointerError(tok2, varname, tok, inconclusive);
                 }
 
                 else if (unknown && _settings->inconclusive) {
-                    nullPointerError(tok2, varname, tok->linenr(), true);
+                    nullPointerError(tok2, varname, tok, true);
                 }
 
                 break;
@@ -537,7 +537,7 @@ void CheckNullPointer::nullPointerLinkedList()
                                 ++indentlevel4;
                             else if (tok4->str() == "}") {
                                 if (indentlevel4 <= 1) {
-                                    nullPointerError(tok1, var->name(), scope->classDef->linenr());
+                                    nullPointerError(tok1, var->name(), scope->classDef);
                                     break;
                                 }
                                 --indentlevel4;
@@ -740,7 +740,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             else if (!tok2->isExpandedMacro() && Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
                 // Is this variable a pointer?
                 if (var->isPointer())
-                    nullPointerError(tok1, varname, tok2->linenr(), inconclusive);
+                    nullPointerError(tok1, varname, tok2, inconclusive);
                 break;
             }
         }
@@ -808,7 +808,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                         std::list<const Token *> varlist;
                         parseFunctionCall(*(tok2->next()), varlist, 0);
                         if (!varlist.empty() && varlist.front() == tok2->tokAt(3)) {
-                            nullPointerError(tok2->tokAt(3), varname, tok->linenr(), inconclusive);
+                            nullPointerError(tok2->tokAt(3), varname, tok, inconclusive);
                             break;
                         }
                     }
@@ -886,7 +886,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     } else if (Token::Match(tok1->tokAt(-2), "&&|%oror% !")) {
                         break;
                     } else if (CheckNullPointer::isPointerDeRef(tok1, unknown, symbolDatabase)) {
-                        nullPointerError(tok1, varname, tok->linenr(), inconclusive);
+                        nullPointerError(tok1, varname, tok, inconclusive);
                         break;
                     } else if (tok1->strAt(-1) == "&") {
                         break;
@@ -958,7 +958,6 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
         // Name and line of the pointer
         const std::string &pointerName = vartok->str();
-        const unsigned int linenr = vartok->linenr();
 
         // if this is true then it is known that the pointer is null
         bool null = true;
@@ -973,12 +972,12 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 }
                 // Pointer is used
                 else if (Token::Match(tok2, "* %varid%", varid)) {
-                    nullPointerError(tok2->tokAt(2), pointerName, linenr, false);
+                    nullPointerError(tok2->tokAt(2), pointerName, vartok, false);
                     break;
                 }
                 // Pointer is used
                 else if (Token::Match(tok2, "%varid% .", varid)) {
-                    nullPointerError(tok2, pointerName, linenr, false);
+                    nullPointerError(tok2, pointerName, vartok, false);
                     break;
                 }
             }
@@ -1033,9 +1032,9 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 for (; tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                     if (tok2->varId() == varid) {
                         if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase))
-                            nullPointerError(tok2, pointerName, linenr, inconclusive);
+                            nullPointerError(tok2, pointerName, vartok, inconclusive);
                         else if (unknown)
-                            nullPointerError(tok2, pointerName, linenr, true);
+                            nullPointerError(tok2, pointerName, vartok, true);
                     }
                 }
                 break;
@@ -1059,7 +1058,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 parseFunctionCall(*tok2, vars, 0);
                 for (std::list<const Token *>::const_iterator it = vars.begin(); it != vars.end(); ++it) {
                     if (Token::Match(*it, "%varid% [,)]", varid)) {
-                        nullPointerError(*it, pointerName, linenr, inconclusive);
+                        nullPointerError(*it, pointerName, vartok, inconclusive);
                         break;
                     }
                 }
@@ -1093,10 +1092,10 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                     ;
 
                 else if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase))
-                    nullPointerError(tok2, pointerName, linenr, inconclusive);
+                    nullPointerError(tok2, pointerName, vartok, inconclusive);
 
                 else if (unknown && _settings->inconclusive)
-                    nullPointerError(tok2, pointerName, linenr, true);
+                    nullPointerError(tok2, pointerName, vartok, true);
 
                 else
                     break;
@@ -1411,8 +1410,11 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname);
 }
 
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive)
+void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive)
 {
-    const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<unsigned int>(line));
-    reportError(tok, Severity::error, "nullPointer", errmsg, inconclusive);
+    std::list<const Token*> callstack;
+    callstack.push_back(tok);
+    callstack.push_back(nullCheck);
+    const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check it against null.");
+    reportError(callstack, Severity::error, "nullPointer", errmsg, inconclusive);
 }

@@ -99,7 +99,7 @@ public:
 
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname);
-    void nullPointerError(const Token *tok, const std::string &varname, const unsigned int line, bool inconclusive = false);
+    void nullPointerError(const Token *tok, const std::string &varname, const Token* nullcheck, bool inconclusive = false);
 
 private:
 
