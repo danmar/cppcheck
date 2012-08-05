@@ -122,12 +122,6 @@ private:
 
     /**
      * @brief Does one part of the check for nullPointer().
-     * Locate insufficient null-pointer handling after loop
-     */
-    void nullPointerAfterLoop();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
      * looping through items in a linked list in a inner loop..
      */
     void nullPointerLinkedList();
