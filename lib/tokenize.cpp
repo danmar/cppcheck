@@ -26,7 +26,6 @@
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
 #include "timer.h"
-#include "checknullpointer.h"   // isUpper
 
 #include <cstring>
 #include <sstream>
