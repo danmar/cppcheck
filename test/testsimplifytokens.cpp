@@ -124,6 +124,7 @@ private:
         TEST_CASE(template28);
         TEST_CASE(template29);  // #3449 - don't crash for garbage code
         TEST_CASE(template30);  // #3529 - template < template < ..
+        TEST_CASE(template31);  // #4010 - reference type
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2142,6 +2143,12 @@ private:
         // #3529 - template < template < ..
         const char code[] = "template<template<class> class A, class B> void f(){}";
         ASSERT_EQUALS("template < template < class > class A , class B > void f ( ) { }", tok(code));
+    }
+
+    void template31() {
+        // #4010 - template reference type
+        const char code[] = "template<class T> struct A{}; A<int&> a;";
+        ASSERT_EQUALS("A<int&> a ; struct A<int&> { }", tok(code));
     }
 
     void template_unhandled() {
