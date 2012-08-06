@@ -6889,6 +6889,8 @@ public:
                 else {
                     bool islast = (tok == end);
                     Token *last = Tokenizer::copyTokens(tok, other.start, other.end);
+                    if (last == tok->next())  // tok->deleteThis() invalidates a pointer that points at the next token
+                        last = tok;
                     tok->deleteThis();
                     if (islast) {
                         end = last;
