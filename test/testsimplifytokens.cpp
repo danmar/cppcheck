@@ -5719,7 +5719,7 @@ private:
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
         const char code[] = "typedef int x[]; int main() { return x }";
         tok(code);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void simplifyTypedefFunction1() {
