@@ -3440,6 +3440,28 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "class Fred\n"
+                                "{\n"
+                                "public:\n"
+                                "    bool foo() const { return f; }\n"
+                                "    bool exit();\n"
+                                "\n"
+                                "private:\n"
+                                "   bool f;\n"
+                                "};\n";
+            const char expected[] = "class Fred "
+                                    "{"
+                                    " public:"
+                                    " bool foo ( ) const { return f ; }"
+                                    " bool exit ( ) ;"
+                                    ""
+                                    " private:"
+                                    " bool f ; "
+                                    "} ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void strcat1() {

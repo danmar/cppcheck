@@ -3643,7 +3643,8 @@ void Tokenizer::simplifyFlowControl()
             tok = tok->next();
             eraseDeadCode(tok, 0);
 
-        } else if (Token::Match(tok,"return|throw|exit|abort|goto")) {
+        } else if (Token::Match(tok,"return|goto") ||
+                   (Token::Match(tok,"exit|throw|abort") && !Token::Match(tok->previous(),"%type%"))) {
             //catch the first ';'
             for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "[") {
