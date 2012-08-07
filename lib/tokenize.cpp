@@ -1402,6 +1402,11 @@ void Tokenizer::simplifyTypedef()
                                 Token::createMutualLinks(tok2, tok3);
                             }
 
+                            if (!tok2->next()) {
+                                syntaxError(tok2);
+                                return; // can't recover so quit
+                            }
+
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
                             tok2 = tok2->next();
 

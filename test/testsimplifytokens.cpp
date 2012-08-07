@@ -288,6 +288,7 @@ private:
         TEST_CASE(simplifyTypedef104); // ticket #3070
         TEST_CASE(simplifyTypedef105); // ticket #3616
         TEST_CASE(simplifyTypedef106); // ticket #3619
+        TEST_CASE(simplifyTypedef107); // ticket #3963 - bad code => segmentation fault
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5711,6 +5712,12 @@ private:
 
     void simplifyTypedef106() { // ticket #3619 (segmentation fault)
         const char code[] = "typedef void f ();\ntypedef { f }";
+        tok(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
+        const char code[] = "typedef int x[]; int main() { return x }";
         tok(code);
         ASSERT_EQUALS("", errout.str());
     }
