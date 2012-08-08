@@ -125,6 +125,7 @@ private:
         TEST_CASE(template29);  // #3449 - don't crash for garbage code
         TEST_CASE(template30);  // #3529 - template < template < ..
         TEST_CASE(template31);  // #4010 - reference type
+        TEST_CASE(template32);  // #3818 - mismatching template not handled well
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2151,6 +2152,23 @@ private:
         // #4010 - template reference type
         const char code[] = "template<class T> struct A{}; A<int&> a;";
         ASSERT_EQUALS("A<int&> a ; struct A<int&> { }", tok(code));
+    }
+
+    void template32() {
+        // #3818 - mismatching template not handled well
+        const char code[] = "template <class T1, class T2, class T3, class T4 > struct A { };\n"
+                            "\n"
+                            "template <class T>\n"
+                            "struct B\n"
+                            "{\n"
+                            "    public:\n"
+                            "        A < int, Pair<T, int>, int > a;\n"  // mismatching parameters => don't instantiate
+                            "};\n"
+                            "\n"
+                            "B<int> b;\n";
+        ASSERT_EQUALS("template < class T1 , class T2 , class T3 , class T4 > struct A { } ; "
+                      "B<int> b ; "
+                      "struct B<int> { public: A < int , Pair < int , int > , int > a ; }", tok(code));
     }
 
     void template_unhandled() {
