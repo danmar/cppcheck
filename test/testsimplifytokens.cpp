@@ -126,6 +126,7 @@ private:
         TEST_CASE(template30);  // #3529 - template < template < ..
         TEST_CASE(template31);  // #4010 - reference type
         TEST_CASE(template32);  // #3818 - mismatching template not handled well
+        TEST_CASE(template33);  // #3818 - inner templates in template instantiation not handled well
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2169,6 +2170,18 @@ private:
         ASSERT_EQUALS("template < class T1 , class T2 , class T3 , class T4 > struct A { } ; "
                       "B<int> b ; "
                       "struct B<int> { public: A < int , Pair < int , int > , int > a ; }", tok(code));
+    }
+
+    void template33() {
+        // #3818 - inner templates in template instantiation not handled well
+        const char code[] = "template<class T> struct A { };\n"
+                            "template<class T> struct B { };\n"
+                            "template<class T> struct C { A<B<X<T> > > ab; };\n"
+                            "C<int> c;";
+        ASSERT_EQUALS("template < class T > struct A { } ; "
+                      "template < class T > struct B { } ; "
+                      "C<int> c ; "
+                      "struct C<int> { A < B < X < int > > > ab ; }", tok(code));
     }
 
     void template_unhandled() {

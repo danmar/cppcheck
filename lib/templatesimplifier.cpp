@@ -1014,7 +1014,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
         std::string typeForNewNameStr;
         std::string templateMatchPattern(name + " < ");
         unsigned int indentlevel = 0;
-        for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
+        for (const Token *tok3 = tok2->tokAt(2); tok3 && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
             // #2648 - unhandled parenthesis => bail out
             // #2721 - unhandled [ => bail out
             if (tok3->str() == "(" || tok3->str() == "[") {
@@ -1027,7 +1027,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
             }
             if (tok3->str() == "<" && templateParameters(tok3) > 0)
                 ++indentlevel;
-            else if (indentlevel > 0 && Token::simpleMatch(tok3, "> ,"))
+            else if (indentlevel > 0 && Token::simpleMatch(tok3, "> [,>]"))
                 --indentlevel;
             templateMatchPattern += tok3->str();
             templateMatchPattern += " ";
