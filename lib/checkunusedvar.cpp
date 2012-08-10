@@ -681,9 +681,9 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->varId());
                     if (var && var->nameToken() == tok2) { // Declaration: Skip
                         tok = tok2->next();
-                        if (tok && Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
+                        if (Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
                             tok = tok->next();
-                        else if (tok && Token::Match(tok, "= %var% ;")) // Simple initialization
+                        else if (Token::Match(tok, "= %var% ;")) // Simple initialization
                             tok = tok->next();
                         else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
                             tok = tok->previous();
@@ -885,7 +885,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                  Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new") && tok->strAt(2) != "=")
             variables.readAll(tok->next()->varId());
 
-        else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || tok->next()->isExtendedOp()))
+        else if (Token::Match(tok, "%var%") && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp()))
             variables.readAll(tok->varId());
 
         else if (Token::Match(tok, "%var% ;") && Token::Match(tok->previous(), "[;{}:]"))
@@ -908,9 +908,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         else if (tok->isAssignmentOp()) {
             for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                 if (tok2->varId()) {
-                    variables.read(tok2->varId());
                     if (tok2->next()->isAssignmentOp())
                         variables.write(tok2->varId());
+                    else
+                        variables.read(tok2->varId());
                 }
             }
         }

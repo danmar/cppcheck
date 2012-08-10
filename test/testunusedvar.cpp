@@ -142,6 +142,8 @@ private:
         TEST_CASE(localvarIfNOT);    // #3104 - if ( NOT var )
         TEST_CASE(localvarAnd);      // #3672
         TEST_CASE(localvarSwitch);   // #3744 - false positive when localvar is used in switch
+
+        TEST_CASE(crash1);
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -3191,6 +3193,13 @@ private:
 
         // Don't write an error that "a" is not used
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void crash1() {
+        functionVariableUsage("SAL_WNODEPRECATED_DECLARATIONS_PUSH\n"
+                              "void convertToTokenArray() {\n"
+                              "}\n"
+                              "SAL_WNODEPRECATED_DECLARATIONS_POP"); // #4033
     }
 };
 
