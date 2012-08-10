@@ -3615,58 +3615,74 @@ void Tokenizer::simplifyRealloc()
 
 void Tokenizer::simplifyFlowControl()
 {
-    unsigned int indentlevel = 0;
-    bool stilldead = false;
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(" || tok->str() == "[") {
-            tok = tok->link();
-            continue;
-        }
 
-        if (tok->str() == "{") {
-            if (tok->previous() && tok->previous()->str() == "=") {
+    for (Token *begin = list.front(); begin; begin = begin->next()) {
+
+        if (begin->str() == "(" || begin->str() == "[" ||
+            (begin->str() == "{" && begin->previous() && begin->strAt(-1) == "="))
+            begin = begin->link();
+
+        //function scope
+        if (!Token::simpleMatch(begin, ") {") && !Token::Match(begin, ") %var% {"))
+            continue;
+
+        Token *end = begin->linkAt(1+(begin->next()->str() == "{" ? 0 : 1));
+        unsigned int indentlevel = 0;
+        bool stilldead = false;
+
+        for (Token *tok = begin; tok != end; tok = tok->next()) {
+            if (tok->str() == "(" || tok->str() == "[") {
                 tok = tok->link();
                 continue;
             }
-            ++indentlevel;
-        } else if (tok->str() == "}") {
-            if (!indentlevel)
-                break;
-            --indentlevel;
-            if (stilldead) {
-                eraseDeadCode(tok, 0);
-                if (indentlevel == 1 || tok->next()->str() != "}" || !Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
-                    stilldead = false;
-                continue;
-            }
-        }
 
-        if (!indentlevel)
-            continue;
-
-        if (Token::Match(tok,"continue|break ;")) {
-            tok = tok->next();
-            eraseDeadCode(tok, 0);
-
-        } else if (Token::Match(tok,"return|goto") ||
-                   (Token::Match(tok,"exit|abort") && !Token::Match(tok->previous(),"%type%")) ||
-                   (tok->str() == "throw" && !isC())) {
-            //catch the first ';'
-            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(" || tok2->str() == "[") {
-                    tok2 = tok2->link();
-                } else if (tok2->str() == ";") {
-                    tok = tok2;
-                    eraseDeadCode(tok, 0);
+            if (tok->str() == "{") {
+                if (tok->previous() && tok->previous()->str() == "=") {
+                    tok = tok->link();
+                    continue;
+                }
+                ++indentlevel;
+            } else if (tok->str() == "}") {
+                if (!indentlevel)
                     break;
-                } else if (Token::Match(tok2, "[{}]"))
-                    break;  //Wrong code.
+                --indentlevel;
+                if (stilldead) {
+                    eraseDeadCode(tok, 0);
+                    if (indentlevel == 1 || tok->next()->str() != "}" || !Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                        stilldead = false;
+                    continue;
+                }
             }
-            //if everything is removed, then remove also the code after an inferior scope
-            //only if the actual scope is not special
-            if (indentlevel > 1 && tok->next()->str() == "}" && Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
-                stilldead = true;
+
+            if (!indentlevel)
+                continue;
+
+            if (Token::Match(tok,"continue|break ;")) {
+                tok = tok->next();
+                eraseDeadCode(tok, 0);
+
+            } else if (Token::Match(tok,"return|goto") ||
+                       (Token::Match(tok,"exit|abort")) ||
+                       (tok->str() == "throw" && !isC())) {
+                //TODO: ensure that we exclude user-defined 'exit|abort|throw', except for 'noreturn'
+                //catch the first ';'
+                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(" || tok2->str() == "[") {
+                        tok2 = tok2->link();
+                    } else if (tok2->str() == ";") {
+                        tok = tok2;
+                        eraseDeadCode(tok, 0);
+                        break;
+                    } else if (Token::Match(tok2, "[{}]"))
+                        break;  //Wrong code.
+                }
+                //if everything is removed, then remove also the code after an inferior scope
+                //only if the actual scope is not special
+                if (indentlevel > 1 && tok->next()->str() == "}" && Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                    stilldead = true;
+            }
         }
+        begin = end;
     }
 }
 

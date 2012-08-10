@@ -3491,6 +3491,31 @@ private:
                                     "} ;";
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "class abort { };\n"
+                                "\n"
+                                "class Fred\n"
+                                "{\n"
+                                "    public:\n"
+                                "    bool foo() const { return f; }\n"
+                                "    abort exit();\n"
+                                "\n"
+                                "    private:\n"
+                                "bool f;\n"
+                                "};\n";
+            const char expected[] = "class abort { } ; "
+                                    "class Fred "
+                                    "{"
+                                    " public:"
+                                    " bool foo ( ) const { return f ; }"
+                                    " abort exit ( ) ;"
+                                    ""
+                                    " private:"
+                                    " bool f ; "
+                                    "} ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void strcat1() {
