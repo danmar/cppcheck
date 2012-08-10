@@ -3374,14 +3374,6 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyIfAssign();    // could be affected by simplifyIfNot
 
-    // In case variable declarations have been updated...
-    if (m_timerResults) {
-        Timer t("Tokenizer::simplifyTokenList::setVarId", _settings->_showtime, m_timerResults);
-        setVarId();
-    } else {
-        setVarId();
-    }
-
     bool modified = true;
     while (modified) {
         modified = false;
@@ -5093,7 +5085,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 tok2 = tok2->next();
             }
         }
-        finishedwithkr = (only_k_r_fpar && tok2->strAt(1) == "{");
+        finishedwithkr = (only_k_r_fpar && tok2 && tok2->strAt(1) == "{");
     }
 }
 
@@ -5391,7 +5383,8 @@ void Tokenizer::simplifyIfAssign()
         tok2 = tok2->previous();
         if (tok->strAt(2) == ".") {
             tok2->insertToken(tok->strAt(3));
-            tok2->insertToken(tok->strAt(2));
+            tok2->next()->varId(tok->tokAt(3)->varId());
+            tok2->insertToken(".");
         }
         tok2->insertToken(tok->next()->str());
         tok2->next()->varId(tok->next()->varId());
@@ -5496,9 +5489,10 @@ void Tokenizer::simplifyIfNot()
             }
 
             else if (Token::Match(tok, "%var% == 0|false")) {
-                tok->deleteNext();
-                tok->next()->str(tok->str());
-                tok->str("!");
+                tok->deleteNext(2);
+                tok = tok->previous();
+                tok->insertToken("!");
+                tok = tok->next();
             }
 
             else if (Token::Match(tok, "%var% .|:: %var% == 0|false")) {
@@ -6783,6 +6777,7 @@ void Tokenizer::simplifyNestedStrcat()
 
         // Insert the "dst" token
         prevTok->insertToken(tok2->strAt(2));
+        prevTok->next()->varId(tok2->tokAt(2)->varId());
 
         // Insert semicolon after the moved strcat()
         tok->insertToken(";");
@@ -7311,8 +7306,11 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown)
     if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
         const Token *tok = endScopeToken->linkAt(-2)->previous();
 
+        if (!tok)
+            return true;
+
         // function pointer call..
-        if (tok && Token::Match(tok->tokAt(-4), "[;{}] ( * %var% )"))
+        if (Token::Match(tok->tokAt(-4), "[;{}] ( * %var% )"))
             return true;
 
         if (!tok->isName())
@@ -7989,8 +7987,11 @@ void Tokenizer::simplifyComparisonOrder()
             if (!operand2->isName() && !operand2->isNumber())
                 continue;
             const std::string op1(tok->next()->str());
-            tok->next()->str(tok->strAt(3));
+            unsigned int var1 = tok->next()->varId();
+            tok->next()->str(operand2->str());
+            tok->next()->varId(operand2->varId());
             tok->tokAt(3)->str(op1);
+            tok->tokAt(3)->varId(var1);
             if (tok->strAt(2) == ">")
                 tok->tokAt(2)->str("<");
             else
@@ -7999,8 +8000,11 @@ void Tokenizer::simplifyComparisonOrder()
             if (!tok->next()->isName() && !tok->next()->isNumber())
                 continue;
             const std::string op1(tok->next()->str());
+            unsigned int var1 = tok->next()->varId();
             tok->next()->str(tok->strAt(3));
+            tok->next()->varId(tok->tokAt(3)->varId());
             tok->tokAt(3)->str(op1);
+            tok->tokAt(3)->varId(var1);
         }
     }
 }
@@ -8134,8 +8138,10 @@ void Tokenizer::simplifyFuncInWhile()
         if (!end)
             break;
 
+        const unsigned int varid = ++_varId; // Create new variable
         tok->str("int");
         tok->next()->insertToken("cppcheck:r");
+        tok->tokAt(2)->varId(varid);
         tok->insertToken("while");
         tok->insertToken(";");
         tok->insertToken(")");
@@ -8145,8 +8151,10 @@ void Tokenizer::simplifyFuncInWhile()
         tok->insertToken(func->str());
         tok->insertToken("=");
         tok->insertToken("cppcheck:r");
+        tok->next()->varId(varid);
         Token::createMutualLinks(tok->tokAt(4), tok->tokAt(6));
         end->previous()->insertToken("cppcheck:r");
+        end->previous()->varId(varid);
         end->previous()->insertToken("=");
         Token::move(func, func->tokAt(3), end->previous());
         end->previous()->insertToken(";");
