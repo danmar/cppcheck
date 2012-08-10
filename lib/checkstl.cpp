@@ -1332,6 +1332,8 @@ void CheckStl::uselessCalls()
     if (!performance && !style)
         return;
 
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->varId() && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
             tok->varId() == tok->tokAt(4)->varId() && style) {
@@ -1342,9 +1344,10 @@ void CheckStl::uselessCalls()
         } else if (Token::simpleMatch(tok, ". substr (") && performance) {
             if (Token::Match(tok->tokAt(3), "0| )"))
                 uselessCallsSubstrError(tok, false);
-            else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos")
-                uselessCallsSubstrError(tok, false);
-            else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
+            else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos") {
+                if (!symbolDatabase->getVariableFromVarId(tok->linkAt(2)->previous()->varId())) // Make sure that its no variable
+                    uselessCallsSubstrError(tok, false);
+            } else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                 uselessCallsSubstrError(tok, true);
         } else if (Token::Match(tok, "[{}:;] %var% . empty ( ) ;") && style)
             uselessCallsEmptyError(tok->next());

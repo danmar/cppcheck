@@ -1872,6 +1872,14 @@ private:
               "    return v.empty();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Useless call of function 'empty()'. Did you intend to call 'clear()' instead?\n", errout.str());
+
+        check("void f() {\n" // #4032
+              "    const std::string greeting(\"Hello World !!!\");\n"
+              "    const std::string::size_type npos = greeting.rfind(\" \");\n"
+              "    if (npos != std::string::npos)\n"
+              "        std::cout << greeting.substr(0, npos) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
