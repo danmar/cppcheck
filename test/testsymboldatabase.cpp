@@ -62,6 +62,8 @@ private:
     }
 
     void run() {
+        TEST_CASE(array);
+
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
         TEST_CASE(test_isVariableDeclarationIdentifiesSimpleDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedDeclaration);
@@ -151,6 +153,17 @@ private:
         TEST_CASE(symboldatabase28);
 
         TEST_CASE(isImplicitlyVirtual);
+    }
+
+    void array() {
+        std::istringstream code("int a[10+2];");
+        TokenList list(NULL);
+        list.createTokens(code, "test.c");
+        list.front()->tokAt(2)->link(list.front()->tokAt(6));
+        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, NULL, NULL);
+        ASSERT(v.isArray());
+        ASSERT_EQUALS(1U, v.dimensions().size());
+        ASSERT_EQUALS(0U, v.dimension(0));
     }
 
     void test_isVariableDeclarationCanHandleNull() {
