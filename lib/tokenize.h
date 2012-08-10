@@ -727,6 +727,13 @@ public:
         return list.front();
     }
 
+private:
+    /** Disable copy constructor, no implementation */
+    Tokenizer(const Tokenizer &);
+
+    /** Disable assignment operator, no implementation */
+    Tokenizer &operator=(const Tokenizer &);
+
     /**
      * Copy tokens.
      * @param dest destination token where copied tokens will be inserted after
@@ -736,13 +743,6 @@ public:
      * @return new location of last token copied
      */
     static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
-
-private:
-    /** Disable copy constructor, no implementation */
-    Tokenizer(const Tokenizer &);
-
-    /** Disable assignment operator, no implementation */
-    Tokenizer &operator=(const Tokenizer &);
 
     /** settings */
     const Settings * _settings;

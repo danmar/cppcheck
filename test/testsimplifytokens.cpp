@@ -351,9 +351,6 @@ private:
         TEST_CASE(enum28);
         TEST_CASE(enum29); // ticket #3747 (bitwise or value)
         TEST_CASE(enum30); // ticket #3852 (false positive)
-        TEST_CASE(enum31); // ticket #3934 (calculation in first item)
-        TEST_CASE(enum32); // ticket #3998 (access violation)
-        TEST_CASE(enum33); // ticket #4015 (segmentation fault)
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -6773,7 +6770,7 @@ private:
                                 "1 + sizeof ( int ) + "
                                 "1 + sizeof ( int ) + 100 + "
                                 "1 + sizeof ( int ) + 100 + 1 + "
-                                "1 + sizeof ( int ) + 100 + 1 + 1 + "
+                                "1 + sizeof ( int ) + 100 + 2 + "
                                 "90 + "
                                 "91 ;";
 
@@ -7099,20 +7096,6 @@ private:
         TODO_ASSERT_EQUALS("","[test.cpp:12] -> [test.cpp:7]: (style) Variable 'two' hides enumerator with same name\n", errout.str());
     }
 
-    void enum31() {  // #3934 - calculation in first item
-        const char code[] = "enum { x=2*32, y }; i = y;";
-        ASSERT_EQUALS("i = 65 ;", checkSimplifyEnum(code));
-    }
-
-    void enum32() {  // #3998 - wrong enum simplification => access violation
-        const char code[] = "enum { x=(32), y=x, z }; { a, z }";
-        ASSERT_EQUALS("{ a , ( 32 ) + 1 }", checkSimplifyEnum(code));
-    }
-
-    void enum33() {  // #4015 - segmentation fault
-        const char code[] = "enum { A=SOME_VALUE, B=A };";
-        ASSERT_EQUALS(";", checkSimplifyEnum(code));
-    }
 
     void removestd() {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
