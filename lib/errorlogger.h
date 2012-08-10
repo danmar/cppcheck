@@ -32,6 +32,13 @@ class TokenList;
 /// @addtogroup Core
 /// @{
 
+/** @brief Simple container to be thrown when internal error is detected. */
+struct InternalError {
+    InternalError(const Token *tok, const std::string &errorMsg);
+    const Token *token;
+    std::string errorMessage;
+};
+
 /** @brief enum class for severity. Used when reporting errors. */
 class CPPCHECKLIB Severity {
 public:
@@ -109,7 +116,7 @@ public:
         case debug:
             return "debug";
         };
-        return "???";
+        throw InternalError(NULL, "Unknown severity");
     }
     static SeverityType fromString(const std::string &severity) {
         if (severity.empty())
@@ -297,13 +304,6 @@ public:
     void reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
-};
-
-/** @brief Simple container to be thrown when internal error is detected. */
-struct InternalError {
-    InternalError(const Token *tok, const std::string &errorMsg);
-    const Token *token;
-    std::string errorMessage;
 };
 
 /// @}
