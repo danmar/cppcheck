@@ -3233,8 +3233,7 @@ void Tokenizer::simplifySizeof()
 bool Tokenizer::simplifyTokenList()
 {
     // clear the _functionList so it can't contain dead pointers
-    delete _symbolDatabase;
-    _symbolDatabase = NULL;
+    deleteSymbolDatabase();
 
     // simplify references
     simplifyReference();
@@ -8874,10 +8873,57 @@ void Tokenizer::simplifyQtSignalsSlots()
 
 const SymbolDatabase *Tokenizer::getSymbolDatabase() const
 {
-    if (!_symbolDatabase)
+    if (!_symbolDatabase) {
         _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
 
+        // Set scope pointers
+        for (std::list<Scope>::iterator scope = _symbolDatabase->scopeList.begin(); scope != _symbolDatabase->scopeList.end(); ++scope) {
+            Token* start = const_cast<Token*>(scope->classStart);
+            Token* end = const_cast<Token*>(scope->classEnd);
+            if (scope->type == Scope::eGlobal) {
+                start = const_cast<Token*>(list.front());
+                end = const_cast<Token*>(list.back());
+            }
+            if (start && end) {
+                start->scope(&*scope);
+                end->scope(&*scope);
+            }
+            if (start != end && start->next() != end) {
+                for (Token* tok = start->next(); tok != end; tok = tok->next()) {
+                    if (tok->str() == "{") {
+                        bool break2 = false;
+                        for (std::list<Scope*>::const_iterator innerScope = scope->nestedList.begin(); innerScope != scope->nestedList.end(); ++innerScope) {
+                            if (tok == (*innerScope)->classStart) { // Is begin of inner scope
+                                tok = tok->link();
+                                if (!tok || tok->next() == end || !tok->next()) {
+                                    break2 = true;
+                                    break;
+                                }
+                                tok = tok->next();
+                                break;
+                            }
+                        }
+                        if (break2)
+                            break;
+                    }
+                    tok->scope(&*scope);
+                }
+            }
+        }
+    }
+
     return _symbolDatabase;
+}
+
+void Tokenizer::deleteSymbolDatabase()
+{
+    // Clear scope pointers
+    for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
+        tok->scope(0);
+    }
+
+    delete _symbolDatabase;
+    _symbolDatabase = 0;
 }
 
 void Tokenizer::simplifyOperatorName()

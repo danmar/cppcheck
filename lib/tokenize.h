@@ -695,6 +695,7 @@ public:
     }
 
     const SymbolDatabase *getSymbolDatabase() const;
+    void deleteSymbolDatabase();
 
     Token *deleteInvalidTypedef(Token *typeDef);
 
