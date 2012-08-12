@@ -1435,19 +1435,8 @@ void CheckOther::checkUnreachableCode()
                 if (tok->str() == "break") // If the previous was a break, too: Issue warning
                     duplicateBreakError(secondBreak, inconclusive);
                 else {
-                    unsigned int indent = 0;
-                    for (const Token* tok2 = tok; tok2; tok2 = tok2->previous()) { // Check, if the enclosing scope is a switch (TODO: Can we use SymbolDatabase here?)
-                        if (tok2->str() == "}")
-                            indent++;
-                        else if (indent == 0 && tok2->str() == "{" && tok2->strAt(-1) == ")") {
-                            if (tok2->previous()->link()->strAt(-1) != "switch") {
-                                duplicateBreakError(secondBreak, inconclusive);
-                                break;
-                            } else
-                                break;
-                        } else if (tok2->str() == "{")
-                            indent--;
-                    }
+                    if (tok->scope()->type != Scope::eSwitch) // Check, if the enclosing scope is a switch
+                        duplicateBreakError(secondBreak, inconclusive);
                 }
                 tok = Token::findmatch(secondBreak, "[}:]");
             } else if (!Token::Match(secondBreak, "return|}|case|default") && secondBreak->strAt(1) != ":") { // TODO: No bailout for unconditional scopes

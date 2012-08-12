@@ -455,17 +455,10 @@ void CheckNullPointer::nullPointerLinkedList()
                         // Make sure there is a "break" or "return" inside the loop.
                         // Without the "break" a null pointer could be dereferenced in the
                         // for statement.
-                        // indentlevel4 is a counter for { and }. When scanning the code with tok4
-                        unsigned int indentlevel4 = 1;
                         for (const Token *tok4 = scope->classStart; tok4; tok4 = tok4->next()) {
-                            if (tok4->str() == "{")
-                                ++indentlevel4;
-                            else if (tok4->str() == "}") {
-                                if (indentlevel4 <= 1) {
-                                    nullPointerError(tok1, var->name(), scope->classDef);
-                                    break;
-                                }
-                                --indentlevel4;
+                            if (tok4 == i->classEnd) {
+                                nullPointerError(tok1, var->name(), scope->classDef);
+                                break;
                             }
 
                             // There is a "break" or "return" inside the loop.
@@ -609,19 +602,10 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         }
 
         // count { and } using tok2
-        unsigned int indentlevel2 = 0;
-        for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "{")
-                ++indentlevel2;
-
-            else if (tok2->str() == "}") {
-                if (indentlevel2 == 0)
-                    break;
-                --indentlevel2;
-            }
-
+        const Token* const end2 = tok1->scope()->classEnd;
+        for (const Token *tok2 = tok1->tokAt(3); tok2 != end2; tok2 = tok2->next()) {
             // label / ?:
-            else if (tok2->str() == ":")
+            if (tok2->str() == ":")
                 break;
 
             // function call..
@@ -650,7 +634,7 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 break;
 
             // return/break at base level => stop checking
-            else if (indentlevel2 == 0 && (tok2->str() == "return" || tok2->str() == "break"))
+            else if (tok2->scope()->classEnd == end2 && (tok2->str() == "return" || tok2->str() == "break"))
                 break;
 
             // Function call: If the pointer is not a local variable it

@@ -680,8 +680,11 @@ void CheckStl::stlBoundries()
         // Declaring iterator..
         if (tok->str() == "<" && Token::Match(tok->previous(), STL_CONTAINER_LIST)) {
             const std::string& container_name(tok->strAt(-1));
-            while (tok && tok->str() != ">")
-                tok = tok->next();
+            if (tok->link())
+                tok = tok->link();
+            else
+                while (tok && tok->str() != ">")
+                    tok = tok->next();
             if (!tok)
                 break;
 
@@ -691,15 +694,9 @@ void CheckStl::stlBoundries()
                     continue;
 
                 // Using "iterator < ..." is not allowed
-                unsigned int indentlevel = 0;
-                for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "{")
-                        ++indentlevel;
-                    else if (tok2->str() == "}") {
-                        if (indentlevel == 0)
-                            break;
-                        --indentlevel;
-                    } else if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
+                const Token* const end = tok->scope()->classEnd;
+                for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
                         stlBoundriesError(tok2, container_name);
                     } else if (Token::Match(tok2, "> %varid% !!.", iteratorid)) {
                         stlBoundriesError(tok2, container_name);

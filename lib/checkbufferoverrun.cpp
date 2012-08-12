@@ -829,19 +829,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     // out of bounds then this flag will be set.
     bool pointerIsOutOfBounds = false;
 
-    // Count { and } for tok
-    int indentlevel = 0;
-    for (; tok; tok = tok->next()) {
-        if (tok->str() == "{") {
-            ++indentlevel;
-        }
-
-        else if (tok->str() == "}") {
-            --indentlevel;
-            if (indentlevel < 0)
-                return;
-        }
-
+    for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
         if (varid != 0 && Token::Match(tok, "%varid% = new|malloc|realloc", varid)) {
             // Abort
             break;
@@ -1034,22 +1022,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
     const Token *scope_begin = tok->previous();
     assert(scope_begin != 0);
 
-    // Count { and } for tok
-    unsigned int indentlevel = 0;
-    for (; tok; tok = tok->next()) {
-        if (tok->str() == "{") {
-            ++indentlevel;
-        }
-
-        else if (tok->str() == "}") {
-            if (indentlevel == 0)
-                return;
-            --indentlevel;
-        }
-
+    for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
         // Skip array declarations
-        else if (Token::Match(tok, "[;{}] %type% *| %var% [") &&
-                 tok->strAt(1) != "return") {
+        if (Token::Match(tok, "[;{}] %type% *| %var% [") && tok->strAt(1) != "return") {
             tok = tok->tokAt(3);
             continue;
         }
@@ -1737,21 +1712,9 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
         } else
             continue;
 
-        // count { and } for tok
-        int indentlevel = 0;
-        for (; tok && tok->next(); tok = tok->next()) {
-            // To avoid false positives and added complexity, we will only look for
-            // improper usage of the buffer within the block that it was allocated
-            if (tok->str() == "{") {
-                ++indentlevel;
-            }
-
-            else if (tok->str() == "}") {
-                --indentlevel;
-                if (indentlevel < 0)
-                    return;
-            }
-
+        // To avoid false positives and added complexity, we will only look for
+        // improper usage of the buffer within the block that it was allocated
+        for (const Token* const end = tok->scope()->classEnd; tok && tok->next() && tok != end; tok = tok->next()) {
             // If the buffers are modified, we can't be sure of their sizes
             if (tok->varId() == srcVarId || tok->varId() == dstVarId)
                 break;
