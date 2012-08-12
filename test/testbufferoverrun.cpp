@@ -1436,7 +1436,7 @@ private:
               " 	   buf[i] = 1;\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("","[test.cpp:7]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1446,7 +1446,7 @@ private:
               " 	   buf[i] = 2.;\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("","[test.cpp:6]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {

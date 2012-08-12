@@ -279,6 +279,10 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
     } else
         return 0;
 
+    if (!init_value.empty() && (Token::Match(tok, "-- %varid%", varid) || Token::Match(tok, "%varid% --", varid))) {
+        init_value = MathLib::subtract(init_value, "1");
+    }
+
     return tok;
 }
 
