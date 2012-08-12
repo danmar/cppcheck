@@ -61,11 +61,9 @@ void CheckStl::iterators()
             continue;
 
         // check that it's an iterator..
-        {
-            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(iteratorId);
-            if (!var || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
-                continue;
-        }
+        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(iteratorId);
+        if (!var || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
+            continue;
 
         // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = true;
@@ -73,22 +71,11 @@ void CheckStl::iterators()
         // When "validatingToken" is reached the validIterator is set to true
         const Token* validatingToken = 0;
 
-        // counter for { and }
-        unsigned int indent = 0;
-
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
-        for (const Token *tok2 = tok->tokAt(7); tok2; tok2 = tok2->next()) {
+        for (const Token *tok2 = tok->tokAt(7); tok2 != var->scope()->classEnd && tok2 != tok->scope()->classEnd; tok2 = tok2->next()) {
             if (tok2 == validatingToken)
                 validIterator = true;
-
-            // If a { is found then count it and continue
-            if (tok2->str() == "{" && ++indent)
-                continue;
-
-            // If a } is found then count it. break if indentlevel becomes 0.
-            if (tok2->str() == "}" && --indent == 0)
-                break;
 
             // Is iterator compared against different container?
             if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
@@ -596,15 +583,9 @@ void CheckStl::pushback()
                 const Token *pushbackTok = 0;
 
                 // Count { and } for tok3
-                unsigned int indent3 = 0;
-                for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next()) {
-                    if (tok3->str() == "{")
-                        ++indent3;
-                    else if (tok3->str() == "}") {
-                        if (indent3 <= 1)
-                            break;
-                        --indent3;
-                    } else if (tok3->str() == "break" || tok3->str() == "return") {
+                const Token *tok3 = tok2->tokAt(20);
+                for (const Token* const end3 = tok3->linkAt(-1); tok3 != end3; tok3 = tok3->next()) {
+                    if (tok3->str() == "break" || tok3->str() == "return") {
                         pushbackTok = 0;
                         break;
                     } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve|resize (", varId)) {
