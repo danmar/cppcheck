@@ -240,7 +240,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (tok->varId() > 0) {
             const std::map<unsigned int, std::string>::iterator var = alloctype.find(tok->varId());
             if (var != alloctype.end()) {
-                if (var->second == "dealloc") {
+                if (var->second == "dealloc" && !Token::Match(tok->previous(), "[;{},] %var% =")) {
                     deallocUseError(tok, tok->str());
                 } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                     varInfo->erase(tok->varId());
