@@ -209,9 +209,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         while (Token::Match(tok, "*|&|const"))
             tok = tok->next();
 
-        // Function pointer..
-        if (Token::simpleMatch(tok, "( * ) ("))
-            tok = tok->linkAt(3)->next();
+        // Function pointer or prototype..
+        while (tok->str() == "(")
+            tok = tok->link()->next();
 
         // inner template
         if (tok->str() == "<") {

@@ -246,6 +246,7 @@ private:
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
         TEST_CASE(varid_using);  // ticket #3648
         TEST_CASE(varid_catch);
+        TEST_CASE(varid_functionPrototypeTemplate);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -3796,6 +3797,11 @@ private:
                                 "3: catch ( exception & e@1 ) { }\n"
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid_functionPrototypeTemplate() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: function < void ( ) > fptr@1 ;\n", tokenizeDebugListing("function<void(void)> fptr;"));
     }
 
     void varidclass1() {
