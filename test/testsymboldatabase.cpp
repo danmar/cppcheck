@@ -336,8 +336,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesArray() {
         reset();
-        givenACodeSampleToTokenize array("::std::string v[3];");
-        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        givenACodeSampleToTokenize arr("::std::string v[3];");
+        bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("v", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
@@ -349,8 +349,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesOfArrayPointers() {
         reset();
-        givenACodeSampleToTokenize array("A *a[5];");
-        bool result = si.isVariableDeclaration(array.tokens(), vartok, typetok);
+        givenACodeSampleToTokenize arr("A *a[5];");
+        bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());

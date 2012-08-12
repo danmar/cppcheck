@@ -389,8 +389,8 @@ public:
      * Associate this token with given scope
      * @param scope Scope to be associated
      */
-    void scope(Scope* scope) {
-        _scope = scope;
+    void scope(Scope* s) {
+        _scope = s;
     }
 
     /**
