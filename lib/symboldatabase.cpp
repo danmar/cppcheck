@@ -1262,8 +1262,8 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
         const std::list<const Token*> locationList(1, tok);
         const ErrorLogger::ErrorMessage errmsg(locationList, &_tokenizer->list,
                                                Severity::debug,
-                                               msg,
                                                "debug",
+                                               msg,
                                                false);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
