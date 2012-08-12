@@ -1920,6 +1920,10 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         return tok->linkAt(4);
     }
 
+    // friend?
+    if (Token::Match(tok, "friend %type%") && tok->next()->varId() == 0)
+        return Token::findsimplematch(tok->tokAt(2), ";");
+
     // skip const|static|mutable|extern
     while (Token::Match(tok, "const|static|mutable|extern")) {
         tok = tok->next();

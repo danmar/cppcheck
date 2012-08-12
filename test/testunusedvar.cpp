@@ -381,7 +381,8 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        if (!tokenizer.tokenize(istr, filename))
+            return;
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);

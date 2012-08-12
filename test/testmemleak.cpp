@@ -367,7 +367,8 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        if (!tokenizer.tokenize(istr, "test.cpp"))
+            return "";
         tokenizer.simplifyTokenList();
 
         const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());

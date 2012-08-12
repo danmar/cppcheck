@@ -694,7 +694,10 @@ public:
         list.setSettings(settings);
     }
 
-    const SymbolDatabase *getSymbolDatabase() const;
+    const SymbolDatabase *getSymbolDatabase() const {
+        return _symbolDatabase;
+    }
+    void createSymbolDatabase();
     void deleteSymbolDatabase();
 
     Token *deleteInvalidTypedef(Token *typeDef);
@@ -752,7 +755,7 @@ private:
     ErrorLogger * const _errorLogger;
 
     /** Symbol database that all checks etc can use */
-    mutable SymbolDatabase *_symbolDatabase;
+    SymbolDatabase *_symbolDatabase;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */

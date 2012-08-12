@@ -1768,6 +1768,13 @@ bool Tokenizer::tokenize(std::istream &code,
         simplifyTypedef();
     }
 
+    for (Token* tok = list.front(); tok;) {
+        if (Token::Match(tok, "union|struct|class union|struct|class"))
+            tok->deleteNext();
+        else
+            tok = tok->next();
+    }
+
     // catch bad typedef canonicalization
     //
     // to reproduce bad typedef, download upx-ucl from:
@@ -1988,7 +1995,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     simplifyRedundantConsecutiveBraces();
 
-    return validate();
+    bool valid = validate();
+    if (valid)
+        createSymbolDatabase();
+    return valid;
 }
 //---------------------------------------------------------------------------
 
@@ -3429,7 +3439,7 @@ bool Tokenizer::simplifyTokenList()
     list.front()->assignProgressValues();
 
     // Create symbol database and then remove const keywords
-    getSymbolDatabase();
+    createSymbolDatabase();
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "* const"))
             tok->deleteNext();
@@ -3439,7 +3449,7 @@ bool Tokenizer::simplifyTokenList()
         list.front()->printOut(0, list.getFiles());
 
         if (_settings->_verbose)
-            getSymbolDatabase()->printOut("Symbol database");
+            _symbolDatabase->printOut("Symbol database");
     }
 
     if (_settings->debugwarnings) {
@@ -7335,8 +7345,6 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown)
 
 const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
-    getSymbolDatabase();
-
     std::list<Scope>::const_iterator scope;
 
     for (scope = _symbolDatabase->scopeList.begin(); scope != _symbolDatabase->scopeList.end(); ++scope) {
@@ -8871,7 +8879,7 @@ void Tokenizer::simplifyQtSignalsSlots()
     }
 }
 
-const SymbolDatabase *Tokenizer::getSymbolDatabase() const
+void Tokenizer::createSymbolDatabase()
 {
     if (!_symbolDatabase) {
         _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
@@ -8911,8 +8919,6 @@ const SymbolDatabase *Tokenizer::getSymbolDatabase() const
             }
         }
     }
-
-    return _symbolDatabase;
 }
 
 void Tokenizer::deleteSymbolDatabase()
@@ -9101,8 +9107,6 @@ void Tokenizer::simplifyReturnStrncat()
 
 void Tokenizer::printUnknownTypes()
 {
-    getSymbolDatabase();
-
     std::set<std::string> unknowns;
 
     for (unsigned int i = 1; i <= _varId; ++i) {

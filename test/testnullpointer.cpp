@@ -86,7 +86,8 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        if (!tokenizer.tokenize(istr, "test.cpp"))
+            return;
 
         // Check for redundant code..
         CheckNullPointer checkNullPointer(&tokenizer, &settings, this);
