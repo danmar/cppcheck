@@ -127,6 +127,7 @@ private:
         TEST_CASE(template31);  // #4010 - reference type
         TEST_CASE(template32);  // #3818 - mismatching template not handled well
         TEST_CASE(template33);  // #3818 - inner templates in template instantiation not handled well
+        TEST_CASE(template34);  // #3706 - namespace => hang
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2179,6 +2180,18 @@ private:
                       "template < class T > struct B { } ; "
                       "C<int> c ; "
                       "struct C<int> { A < B < X < int > > > ab ; }", tok(code));
+    }
+
+    void template34() {
+        // #3706 - namespace => hang
+        const char code[] = "namespace abc {\n"
+                            "template <typename T> struct X { void f(X<T> &x) {} };\n"
+                            "}\n"
+                            "template <> int X<int>::Y(0);";
+        ASSERT_EQUALS("namespace abc { "
+                      "template < typename T > struct X { void f ( X < T > & x ) { } } ; "
+                      "} "
+                      "template < > int X < int > :: Y ( 0 ) ;", tok(code));
     }
 
     void template_unhandled() {
