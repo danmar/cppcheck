@@ -87,6 +87,7 @@ private:
         ASSERT_EQUALS("-1" , MathLib::add("0", "-1"));
         ASSERT_EQUALS("1"  , MathLib::add("1", "0"));
         ASSERT_EQUALS("0"  , MathLib::add("0", "0."));
+        ASSERT_EQUALS("1.0000001"  , MathLib::add("1", "0.00000001"));  // #4016
 
         // subtraction
         ASSERT_EQUALS("254", MathLib::subtract("0xff", "1"));
@@ -96,6 +97,7 @@ private:
         ASSERT_EQUALS("1"  , MathLib::subtract("0", "-1"));
         ASSERT_EQUALS("1"  , MathLib::subtract("1", "0"));
         ASSERT_EQUALS("0"  , MathLib::subtract("0", "0."));
+        ASSERT_EQUALS("0.99999999"  , MathLib::subtract("1", "0.00000001")); // #4016
 
         // multiply
         ASSERT_EQUALS("-0.003"          , MathLib::multiply("-1e-3", "3"));

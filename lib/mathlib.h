@@ -39,6 +39,7 @@ public:
     template<typename T>
     static std::string toString(const T &d) {
         std::ostringstream result;
+        result.precision(8);
         result << d;
         if (isNullValue(result.str()))
             return std::string("0");
