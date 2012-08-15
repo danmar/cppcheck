@@ -27,45 +27,79 @@
 #include <cctype>
 #include <cstdlib>
 #include <stdio.h>
+#include <map>
 //---------------------------------------------------------------------------
+
+typedef std::map<std::string, bool>::iterator Iter;
 
 // Register CheckMutex..
 namespace {
     CheckMutex instance;
 }
+std::string CheckMutex::getMutexVariable(const Token * tok4) {
+    std::string mutexVariable ;
+    Token *tok4Link = tok4->link() ;
+    for ( tok4 = tok4->next(); tok4 != tok4Link ; tok4 = tok4->next() )   {
+         mutexVariable +=  tok4->str() ;
+    }
+    return mutexVariable ;
+}
+
+void CheckMutex::checkMutexState(std::map<std::string, bool> mutexToState, 
+            const Token * locationTok, Token *functionName) {
+   for (Iter i = mutexToState.begin() ; i != mutexToState.end() ; i++ ) {
+       if (i->second == true)    {
+           checkMutexUsageError(locationTok, i->first, functionName->str()) ;
+       }
+   }
+}
+            
+void CheckMutex::setAllMutexState(std::map<std::string, bool> mutexToState, bool value) {
+   for (Iter i = mutexToState.begin() ; i != mutexToState.end() ; i++ ) {
+       i->second = value ;
+   }
+}
 
 void CheckMutex::checkFunction(const Token *tok)	{
-      bool lock = false; 
+      // map mutex to its state i.e. its locked or unlocked 
+      std::map<std::string, bool> mutexToState ; 
       Token * functionName = tok->link()->tokAt(-1)->link()->tokAt(-1);
       const Token *tok2 = NULL ;
       for ( tok2 = tok->link() ; tok2 && tok2 != tok; tok2 = tok2->next() ) {
          if ( tok2->str() ==  "pthread_mutex_lock" ) 	{
-            lock = true ; 
-         } else if ( tok2->str() == "pthread_mutex_unlock" )  {
-            lock = false ;
-         } else if ( tok2->str() == "return"  ) { 
-            if (lock) {
-                 checkMutexUsageError(tok2, functionName->str()) ;
-            }
+            const Token *tok4 = tok2->next() ; 
+            if (tok4->str() != "(" ) { // make sure this is a function call
+                  continue ;  
+            }  
+            /// get the mutex passed to the pthread_mutex_lock function 
+            mutexToState[getMutexVariable(tok4)] = true ; 
+         } else if ( tok2->str() == "pthread_mutex_unlock" ) {
+            const Token *tok4 = tok2->next() ; 
+            if (tok4->str() != "(" ) { // make sure this is a function call
+                  continue ;  
+            }  
+            /// get the mutex passed to the pthread_mutex_lock function 
+            mutexToState[getMutexVariable(tok4)] = false ; 
+         } else if ( tok2->str() == "return"  ) {
+            checkMutexState(mutexToState, tok2, functionName);  
+            
             const Token * tok3 = NULL ;
             for (tok3 = tok2->next(); tok3 ; tok3 = tok3->next() )   {
                 if (tok3->str() == ";" ) { break ; }
             }    
             if ( tok3->next() && (tok3->next() != tok)  )  {
-                 lock = true ; // only if this is an interim return
-            } else {
-                 lock = false ;
-            }
+                 setAllMutexState(mutexToState, true); // only if this is an interim return
+            } // else {
+  //               setAllMutexState(mutexToState, false);
+    //        }
          } 
       } // for loop
    
-      if (lock)  {
-            checkMutexUsageError(tok2, functionName->str() ) ;
-      }
+      //checkMutexState(mutexToState, tok2, functionName);  
 }
 
-void CheckMutex::checkMutexUsageError(const Token *tok, const std::string & functionName) {
-    reportError(tok, Severity::error, "pthreadLockUnlockMismatch", "A pthread_mutex_lock call doesn't have a related unlock call in function "
+void CheckMutex::checkMutexUsageError(const Token *tok, const std::string mutex, const std::string & functionName) {
+    reportError(tok, Severity::error, "pthreadLockUnlockMismatch", "A pthread_mutex_lock call on mutex "+mutex+" doesn't have a related unlock call in function "
 		 + functionName + ".");
 }
 

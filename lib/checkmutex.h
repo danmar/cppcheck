@@ -57,8 +57,12 @@ public:
 
 private:
     void checkFunction(const Token* tok);
+    std::string getMutexVariable(const Token * tok4);
+    void setAllMutexState(std::map<std::string, bool> mutexToState, bool value);
+    void checkMutexState(std::map<std::string, bool> mutexToState, 
+            const Token * locationTok, Token *functionName); 
     // Reporting errors..
-    void checkMutexUsageError(const Token* tok, const std::string& functionName);
+    void checkMutexUsageError(const Token* tok, std::string, const std::string& functionName);
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckMutex c(0, settings, errorLogger);
     }
