@@ -457,6 +457,21 @@ private:
         return tokenizer.tokens()->stringifyList(0, false);
     }
 
+    std::string tokenizeDebugListing(const std::string &code, bool simplify = false, const char filename[] = "test.cpp") {
+        errout.str("");
+
+        Settings settings;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+
+        if (simplify)
+            tokenizer.simplifyTokenList();
+
+        // result..
+        return tokenizer.tokens()->stringifyList(true);
+    }
 
     void simplifyTokenList1() {
         // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAssign..
@@ -2769,6 +2784,14 @@ private:
         }
         // Ticket #3572 (segmentation fault)
         ASSERT_EQUALS("0 ; x = { ? y : z ; }", tok("0; x = { ? y : z; }"));
+
+        {
+            // #4019 - varid
+            const char code[] = "; char *p; *p = a ? 1 : 0;";
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: ; char * p@1 ; if ( a ) { * p@1 = 1 ; } else { * p@1 = 0 ; }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
     }
 
     void calculations() {

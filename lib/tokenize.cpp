@@ -4156,7 +4156,7 @@ void Tokenizer::simplifyConditionOperator()
             bool isReturn = false;
             if (tok->next()->str() == "*") {
                 tok = tok->next();
-                var += " " + tok->next()->str();
+                var = tok->next()->str();
                 isPointer = true;
             } else if (tok->next()->str() == "return") {
                 isReturn = true;
@@ -4189,10 +4189,17 @@ void Tokenizer::simplifyConditionOperator()
             if (isReturn)
                 str = "if ( condition ) { return value1 ; } return value2 ;";
             else
-                str = "if ( condition ) { var = value1 ; } else { var = value2 ; }";
+                str = "if ( condition ) { * var = value1 ; } else { * var = value2 ; }";
 
             std::string::size_type pos1 = 0;
             while (pos1 != std::string::npos) {
+                if (str[pos1] == '*') {
+                    pos1 += 2;
+                    if (isPointer) {
+                        tok->insertToken("*");
+                        tok = tok->next();
+                    }
+                }
                 std::string::size_type pos2 = str.find(" ", pos1);
                 if (pos2 == std::string::npos) {
                     tok->insertToken(str.substr(pos1));
