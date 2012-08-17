@@ -21,6 +21,16 @@
 #define CheckMutexH
 //---------------------------------------------------------------------------
 
+/**
+ * @file
+ *
+ * %Check that within a function each mutex which is locked is also
+ * unlocked before returning from the function.
+ *
+ * The code checks the above for pthread mutexes (i.e. functions pthread_mutex_lock
+ * and pthread_mutex_unlock)
+ */
+
 #include "check.h"
 #include "config.h"
 
@@ -58,8 +68,8 @@ public:
 private:
     void checkFunction(const Token* tok);
     std::string getMutexVariable(const Token * tok4);
-    void setAllMutexState(std::map<std::string, bool> mutexToState, bool value);
-    void checkMutexState(std::map<std::string, bool> mutexToState, 
+    void setAllMutexState(std::map<std::string, bool>& mutexToState, bool value);
+    void checkMutexState(std::map<std::string, bool>& mutexToState, 
             const Token * locationTok, Token *functionName); 
     // Reporting errors..
     void checkMutexUsageError(const Token* tok, std::string, const std::string& functionName);
@@ -72,9 +82,10 @@ private:
     }
 
     std::string classInfo() const {
-        return "Check pthread_mutex.\n"
-               "* Each pthread_mutex_lock call should have a corresponding pthread_mutex_unlock call\n";
-    }
+        return "Check pthread_mutex locking.\n"
+               "* Each pthread_mutex_lock call should have a corresponding pthread_mutex_unlock call\n"
+               "  before returning from method\n";
+    } 
 };
 /// @}
 //---------------------------------------------------------------------------
