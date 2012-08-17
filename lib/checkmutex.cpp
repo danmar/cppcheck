@@ -97,9 +97,6 @@ void CheckMutex::checkFunction(const Token *tok)	{
                 // check state of all mutexes 
                 checkMutexState(mutexToState, tok2, functionName);  
                 setAllMutexState(mutexToState, true); 
-   for (Iter i = mutexToState.begin() ; i != mutexToState.end() ; i++ ) {
-       if (i->second==true) {printf("True\n"); } else { printf("False\n"); }
-   }
             } else { // last return. check and break from loop
                 checkMutexState(mutexToState, tok2, functionName);
                 lastReturnExists = true;
@@ -110,7 +107,7 @@ void CheckMutex::checkFunction(const Token *tok)	{
       } // for loop
    
      // taking care of functions which return void and hence may not have a return statement
-     if (!lastReturnExists) {  fprintf(stdout,"No Last return\n");
+     if (!lastReturnExists) { 
           checkMutexState(mutexToState, tok, functionName);
      }
 }
