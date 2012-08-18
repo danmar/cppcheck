@@ -2792,6 +2792,15 @@ private:
                                     "1: ; char * p@1 ; if ( a ) { * p@1 = 1 ; } else { * p@1 = 0 ; }\n";
             ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
         }
+
+        {
+            // #3922 - (true)
+            ASSERT_EQUALS("; x = 2 ;", tok("; x = (true)?2:4;"));
+            ASSERT_EQUALS("; x = 4 ;", tok("; x = (false)?2:4;"));
+            ASSERT_EQUALS("; x = * a ;", tok("; x = (true)?*a:*b;"));
+            ASSERT_EQUALS("; x = * b ;", tok("; x = (false)?*a:*b;"));
+            ASSERT_EQUALS("void f ( ) { return 1 ; }", tok("void f() { char *p=0; return (p==0)?1:2; }"));
+        }
     }
 
     void calculations() {

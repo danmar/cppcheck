@@ -3395,6 +3395,8 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyCalculations();
     }
 
+    simplifyConditionOperator();
+
     // replace strlen(str)
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "strlen ( %str% )")) {
@@ -4144,6 +4146,28 @@ void Tokenizer::simplifyCompoundAssignment()
 void Tokenizer::simplifyConditionOperator()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok,"return|= ( true|false ) ?")) {
+            Token *tok2 = tok->tokAt(5);
+            while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->isArithmeticalOp()))
+                tok2 = tok2->next();
+            if (tok2 && tok2->str() == ":") {
+                if (tok->strAt(2) == "false") {
+                    Token::eraseTokens(tok,tok2->next());
+                } else {
+                    Token *tok3 = tok2->next();
+                    while (tok3 && (tok3->isName() || tok3->isNumber() || tok3->isArithmeticalOp()))
+                        tok3 = tok3->next();
+
+                    if (tok3 && tok3->str() == ";") {
+                        tok->deleteNext(4);
+                        tok = tok2;
+                        while (tok && tok->str() != ";")
+                            tok->deleteThis();
+                    }
+                }
+            }
+        }
+
         if (tok->str() == "(")
             tok = tok->link();
         else if (tok->str() == ")")
