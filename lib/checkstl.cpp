@@ -46,40 +46,42 @@ void CheckStl::dereferenceErasedError(const Token *tok, const std::string &itern
 
 void CheckStl::iterators()
 {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     // Using same iterator against different containers.
     // for (it = foo.begin(); it != bar.end(); ++it)
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Locate an iterator..
-        if (!Token::Match(tok, "%var% = %var% . begin|rbegin|cbegin|crbegin ( ) ;|+") &&
-            !(Token::Match(tok, "%var% = %var% . find (") && Token::simpleMatch(tok->linkAt(5), ") ;")))
-            continue;
+    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
-        // Get variable ids for both the iterator and container
-        const unsigned int iteratorId(tok->varId());
-        const unsigned int containerId(tok->tokAt(2)->varId());
-        if (iteratorId == 0 || containerId == 0)
-            continue;
-
-        // check that it's an iterator..
-        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(iteratorId);
-        if (!var || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
+        // Check that its an iterator
+        if (!var || !var->isLocal() || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
             continue;
 
         // the validIterator flag says if the iterator has a valid value or not
-        bool validIterator = true;
+        bool validIterator = Token::Match(var->nameToken()->next(), "[(=]");
+        const Scope* invalidationScope = 0;
+
+        // The container this iterator can be used with
+        const Variable* container = 0;
+        const Scope* containerAssignScope = 0;
 
         // When "validatingToken" is reached the validIterator is set to true
         const Token* validatingToken = 0;
 
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
-        for (const Token *tok2 = tok->tokAt(7); tok2 != var->scope()->classEnd && tok2 != tok->scope()->classEnd; tok2 = tok2->next()) {
+        for (const Token *tok2 = var->nameToken(); tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
+            if (invalidationScope && tok2 == invalidationScope->classEnd)
+                validIterator = true; // Assume that the iterator becomes valid again
+            if (containerAssignScope && tok2 == containerAssignScope->classEnd)
+                container = 0; // We don't know which containers might be used with the iterator
+
             if (tok2 == validatingToken)
                 validIterator = true;
 
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId) {
-                iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
+            if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && container && tok2->tokAt(2)->varId() != container->varId()) {
+                iteratorsError(tok2, container->name(), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }
 
@@ -87,7 +89,7 @@ void CheckStl::iterators()
             else if (Token::Match(tok2, "%var% . insert|erase ( *| %varid% )|,", iteratorId)) {
                 const Token* itTok = tok2->tokAt(4);
                 if (itTok->str() == "*") {
-                    if (tok->strAt(2) == "insert")
+                    if (tok2->strAt(2) == "insert")
                         continue;
 
                     itTok = itTok->next();
@@ -98,10 +100,9 @@ void CheckStl::iterators()
 
                 // If insert/erase is used on different container then
                 // report an error
-                if (tok2->varId() != containerId) {
+                if (container && tok2->varId() != container->varId()) {
                     // skip error message if container is a set..
                     if (tok2->varId() > 0) {
-                        const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
                         const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
                         const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
 
@@ -114,12 +115,14 @@ void CheckStl::iterators()
                         continue;
 
                     // Show error message, mismatching iterator is used.
-                    iteratorsError(tok2, tok->strAt(2), tok2->str());
+                    iteratorsError(tok2, container->name(), tok2->str());
                 }
 
                 // invalidate the iterator if it is erased
-                else if (tok2->strAt(2) == std::string("erase"))
+                else if (tok2->strAt(2) == std::string("erase")) {
                     validIterator = false;
+                    invalidationScope = tok2->scope();
+                }
 
                 // skip the operation
                 tok2 = itTok->next();
@@ -134,13 +137,23 @@ void CheckStl::iterators()
             }
 
             // Reassign the iterator
-            else if (Token::Match(tok2, "%varid% = %var% ;", iteratorId)) {
-                // Assume that the iterator becomes valid.
-                // TODO: add checking that checks if the iterator becomes valid or not
-                validIterator = true;
+            else if (Token::Match(tok2, "%varid% = %var% . begin|rbegin|cbegin|crbegin|find (", iteratorId)) {
+                validatingToken = tok2->linkAt(5);
+                container = symbolDatabase->getVariableFromVarId(tok2->tokAt(2)->varId());
+                containerAssignScope = tok2->scope();
 
                 // skip ahead
-                tok2 = tok2->tokAt(3);
+                tok2 = tok2->tokAt(5);
+            }
+
+            // Reassign the iterator
+            else if (Token::Match(tok2, "%varid% = %var%", iteratorId)) {
+                // Assume that the iterator becomes valid.
+                // TODO: add checking that checks if the iterator becomes valid or not
+                validatingToken = Token::findmatch(tok2->tokAt(2), "[;)]");
+
+                // skip ahead
+                tok2 = tok2->tokAt(2);
             }
 
             // Dereferencing invalid iterator?
