@@ -870,9 +870,9 @@ void CheckOther::switchCaseFallThrough(const Token *tok)
 //
 //    int y = y;        // <- redundant initialization to self
 //---------------------------------------------------------------------------
-static bool isPOD(const Tokenizer *tokenizer, const Variable* var)
+static bool isTypeWithoutSideEffects(const Tokenizer *tokenizer, const Variable* var)
 {
-    return ((var && (!var->isClass() || var->isPointer())) || !tokenizer->isCPP());
+    return ((var && (!var->isClass() || var->isPointer()) || Token::simpleMatch(var->typeStartToken(), "std ::")) || !tokenizer->isCPP());
 }
 
 void CheckOther::checkSelfAssignment()
@@ -887,7 +887,7 @@ void CheckOther::checkSelfAssignment()
     while (tok) {
         if (Token::Match(tok->previous(), "[;{}]") &&
             tok->varId() && tok->varId() == tok->tokAt(2)->varId() &&
-            isPOD(_tokenizer, symbolDatabase->getVariableFromVarId(tok->varId()))) {
+            isTypeWithoutSideEffects(_tokenizer, symbolDatabase->getVariableFromVarId(tok->varId()))) {
             bool err = true;
 
             // no false positive for 'x = x ? x : 1;'
@@ -1567,7 +1567,7 @@ void CheckOther::checkVariableScope()
 
     for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->isLocal() || (!var->typeStartToken()->isStandardType() && !var->typeStartToken()->next()->isStandardType()))
+        if (!var || !var->isLocal() || (!var->isPointer() && !var->typeStartToken()->isStandardType() && !var->typeStartToken()->next()->isStandardType()))
             continue;
 
         bool forHead = false; // Don't check variables declared in header of a for loop
@@ -1758,7 +1758,7 @@ static bool isChar(const Variable* var)
 
 static bool isSignedChar(const Variable* var)
 {
-    return(isChar(var) && !var->typeEndToken()->isUnsigned() && (!var->typeEndToken()->previous() || !var->typeEndToken()->previous()->isUnsigned()));
+    return(isChar(var) && !var->typeStartToken()->isUnsigned());
 }
 
 void CheckOther::checkCharVariable()
@@ -2176,7 +2176,7 @@ void CheckOther::checkDuplicateIf()
         expressionMap.insert(std::make_pair(expression, tok));
 
         // find the next else if (...) statement
-        const Token *tok1 = tok->next()->link()->next()->link();
+        const Token *tok1 = scope->classEnd;
 
         // check all the else if (...) statements
         while (Token::simpleMatch(tok1, "} else if (") &&

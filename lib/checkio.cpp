@@ -383,11 +383,12 @@ static bool isComplexType(const Variable* var, const Token* varTypeTok)
     if (knownTypes.empty()) {
         knownTypes.insert("struct"); // If a type starts with the struct keyword, its a complex type
         knownTypes.insert("string");
+        knownTypes.insert("wstring");
     }
 
     if (varTypeTok->str() == "std")
         varTypeTok = varTypeTok->tokAt(2);
-    return(knownTypes.find(varTypeTok->str()) != knownTypes.end() && !var->isPointer() && !var->isArray());
+    return((knownTypes.find(varTypeTok->str()) != knownTypes.end() || (varTypeTok->strAt(1) == "<" && varTypeTok->linkAt(1) && varTypeTok->linkAt(1)->strAt(1) != "::")) && !var->isPointer() && !var->isArray());
 }
 
 static bool isKnownType(const Variable* var, const Token* varTypeTok)

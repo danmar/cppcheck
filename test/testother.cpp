@@ -2306,7 +2306,7 @@ private:
               "{\n"
               "        std::string var = var = \"test\";\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", errout.str());
 
         check("void foo()\n"
               "{\n"
