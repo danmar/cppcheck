@@ -1624,6 +1624,12 @@ bool Tokenizer::tokenize(std::istream &code,
     // combine "- %num%"
     concatenateNegativeNumber();
 
+    // simplify simple calculations
+    for (Token *tok = list.front() ? list.front()->next() : NULL; tok; tok = tok->next()) {
+        if (tok->isNumber())
+            TemplateSimplifier::simplifyNumericCalculations(tok->previous());
+    }
+
     // remove extern "C" and extern "C" {}
     if (isCPP())
         simplifyExternC();

@@ -705,6 +705,74 @@ static bool isLowerEqualThanMulDiv(const Token* lower)
     return isLowerThanMulDiv(lower) || Token::Match(lower, "[*/%]");
 }
 
+
+bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
+{
+    bool ret = false;
+    // (1-2)
+    while (tok->tokAt(4) && tok->next()->isNumber() && tok->tokAt(3)->isNumber()) { // %any% %num% %any% %num% %any%
+        const Token* op = tok->tokAt(2);
+        const Token* after = tok->tokAt(4);
+        if (Token::Match(tok, "* %num% /") && tok->next()->str() == MathLib::multiply(tok->strAt(3), MathLib::divide(tok->next()->str(), tok->strAt(3)))) {
+            // Division where result is a whole number
+        } else if (!((op->str() == "*" && (isLowerThanMulDiv(tok) || tok->str() == "*") && isLowerEqualThanMulDiv(after)) || // associative
+                     (Token::Match(op, "[/%]") && isLowerThanMulDiv(tok) && isLowerEqualThanMulDiv(after)) || // NOT associative
+                     (Token::Match(op, "[+-]") && isLowerThanMulDiv(tok) && isLowerThanMulDiv(after)) || // Only partially (+) associative, but handled later
+                     (Token::Match(op, ">>|<<") && isLowerThanShift(tok) && isLowerThanPlusMinus(after)) || // NOT associative
+                     (op->str() == "&" && isLowerThanShift(tok) && isLowerThanShift(after)) || // associative
+                     (op->str() == "^" && isLowerThanAnd(tok) && isLowerThanAnd(after)) || // associative
+                     (op->str() == "|" && isLowerThanXor(tok) && isLowerThanXor(after)))) // associative
+            break;
+
+        tok = tok->next();
+
+        // Don't simplify "%num% / 0"
+        if (Token::Match(op, "[/%] 0"))
+            continue;
+
+        // Integer operations
+        if (Token::Match(op, ">>|<<|&|^|%or%")) {
+            const char cop = op->str()[0];
+            const MathLib::bigint leftInt(MathLib::toLongNumber(tok->str()));
+            const MathLib::bigint rightInt(MathLib::toLongNumber(tok->strAt(2)));
+            std::string result;
+
+            if (cop == '&' || cop == '|' || cop == '^')
+                result = MathLib::calculate(tok->str(), tok->strAt(2), cop);
+            else if (cop == '<') {
+                if (tok->previous()->str() != "<<") // Ensure that its not a shift operator as used for streams
+                    result = MathLib::toString<MathLib::bigint>(leftInt << rightInt);
+            } else
+                result = MathLib::toString<MathLib::bigint>(leftInt >> rightInt);
+
+            if (!result.empty()) {
+                ret = true;
+                tok->str(result);
+                tok->deleteNext(2);
+                continue;
+            }
+        }
+
+        else if (Token::Match(tok->previous(), "- %num% - %num%"))
+            tok->str(MathLib::add(tok->str(), tok->strAt(2)));
+        else if (Token::Match(tok->previous(), "- %num% + %num%"))
+            tok->str(MathLib::subtract(tok->str(), tok->strAt(2)));
+        else {
+            try {
+                tok->str(MathLib::calculate(tok->str(), tok->strAt(2), op->str()[0]));
+            } catch (InternalError &e) {
+                e.token = tok;
+                throw;
+            }
+        }
+
+        tok->deleteNext(2);
+
+        ret = true;
+    }
+    return ret;
+}
+
 // TODO: This is not the correct class for simplifyCalculations(), so it
 // should be moved away.
 bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
@@ -882,67 +950,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         }
 
         else {
-            // (1-2)
-            while (tok->tokAt(4) && tok->next()->isNumber() && tok->tokAt(3)->isNumber()) { // %any% %num% %any% %num% %any%
-                const Token* op = tok->tokAt(2);
-                const Token* after = tok->tokAt(4);
-                if (Token::Match(tok, "* %num% /") && tok->next()->str() == MathLib::multiply(tok->strAt(3), MathLib::divide(tok->next()->str(), tok->strAt(3)))) {
-                    // Division where result is a whole number
-                } else if (!((op->str() == "*" && (isLowerThanMulDiv(tok) || tok->str() == "*") && isLowerEqualThanMulDiv(after)) || // associative
-                             (Token::Match(op, "[/%]") && isLowerThanMulDiv(tok) && isLowerEqualThanMulDiv(after)) || // NOT associative
-                             (Token::Match(op, "[+-]") && isLowerThanMulDiv(tok) && isLowerThanMulDiv(after)) || // Only partially (+) associative, but handled later
-                             (Token::Match(op, ">>|<<") && isLowerThanShift(tok) && isLowerThanPlusMinus(after)) || // NOT associative
-                             (op->str() == "&" && isLowerThanShift(tok) && isLowerThanShift(after)) || // associative
-                             (op->str() == "^" && isLowerThanAnd(tok) && isLowerThanAnd(after)) || // associative
-                             (op->str() == "|" && isLowerThanXor(tok) && isLowerThanXor(after)))) // associative
-                    break;
-
-                tok = tok->next();
-
-                // Don't simplify "%num% / 0"
-                if (Token::Match(op, "[/%] 0"))
-                    continue;
-
-                // Integer operations
-                if (Token::Match(op, ">>|<<|&|^|%or%")) {
-                    const char cop = op->str()[0];
-                    const MathLib::bigint leftInt(MathLib::toLongNumber(tok->str()));
-                    const MathLib::bigint rightInt(MathLib::toLongNumber(tok->strAt(2)));
-                    std::string result;
-
-                    if (cop == '&' || cop == '|' || cop == '^')
-                        result = MathLib::calculate(tok->str(), tok->strAt(2), cop);
-                    else if (cop == '<') {
-                        if (tok->previous()->str() != "<<") // Ensure that its not a shift operator as used for streams
-                            result = MathLib::toString<MathLib::bigint>(leftInt << rightInt);
-                    } else
-                        result = MathLib::toString<MathLib::bigint>(leftInt >> rightInt);
-
-                    if (!result.empty()) {
-                        ret = true;
-                        tok->str(result);
-                        tok->deleteNext(2);
-                        continue;
-                    }
-                }
-
-                else if (Token::Match(tok->previous(), "- %num% - %num%"))
-                    tok->str(MathLib::add(tok->str(), tok->strAt(2)));
-                else if (Token::Match(tok->previous(), "- %num% + %num%"))
-                    tok->str(MathLib::subtract(tok->str(), tok->strAt(2)));
-                else {
-                    try {
-                        tok->str(MathLib::calculate(tok->str(), tok->strAt(2), op->str()[0]));
-                    } catch (InternalError &e) {
-                        e.token = tok;
-                        throw;
-                    }
-                }
-
-                tok->deleteNext(2);
-
-                ret = true;
-            }
+            ret |= simplifyNumericCalculations(tok);
         }
     }
     return ret;

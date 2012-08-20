@@ -151,6 +151,15 @@ public:
 
     /**
      * Simplify constant calculations such as "1+2" => "3"
+     * @param tok start token
+     * @return true if modifications to token-list are done.
+     *         false if no modifications are done.
+     */
+    static bool simplifyNumericCalculations(Token *tok);
+
+    /**
+     * Simplify constant calculations such as "1+2" => "3".
+     * This also perform simple cleanup of parantheses etc.
      * @param _tokens start token
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.

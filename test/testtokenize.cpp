@@ -4513,7 +4513,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS("void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 4 + 2 ; }", tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS("void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 6 ; }", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void tokenize_strings() {
@@ -4719,7 +4719,7 @@ private:
     void vardecl_template_1() {
         // ticket #1046
         const char code1[] = "b<(1<<24),10,24> u, v;";
-        const char res1[]  = "b < ( 1 << 24 ) , 10 , 24 > u ; b < ( 1 << 24 ) , 10 , 24 > v ;";
+        const char res1[]  = "b < ( 16777216 ) , 10 , 24 > u ; b < ( 16777216 ) , 10 , 24 > v ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
         // ticket #3571 (segmentation fault)
         tokenizeAndStringify("template <int i = (3>4) > class X4 {};");
@@ -6468,6 +6468,9 @@ private:
         // ticket #3723 - Simplify condition (0 && a < 123)
         ASSERT_EQUALS("( 0 )",
                       tokenizeAndStringify("( 0 && a < 123 )", true));
+
+        // ticket #3964 - simplify numeric calculations in tokenization
+        ASSERT_EQUALS("char a [ 10 ] ;", tokenizeAndStringify("char a[9+1];"));
     }
 
     void simplifyCompoundAssignment() {
