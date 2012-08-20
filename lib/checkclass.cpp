@@ -738,16 +738,16 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     std::list<Variable>::const_iterator var;
 
     for (var = type->varlist.begin(); var != type->varlist.end(); ++var) {
-        // don't warn if variable static or const
-        if (!var->isStatic() && !var->isConst()) {
+        // don't warn if variable static or const, pointer or referece
+        if (!var->isStatic() && !var->isConst() && !var->isPointer() && !var->isReference()) {
             const Token *tok1 = var->typeStartToken();
 
-            // check for std:: type that is not a pointer or reference
-            if (Token::simpleMatch(tok1, "std ::") && !Token::Match(var->nameToken()->previous(), "*|&"))
+            // check for std:: type
+            if (Token::simpleMatch(tok1, "std ::"))
                 memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
 
-            // check for known type that is not a pointer or reference
-            else if (var->type() && !Token::Match(var->nameToken()->previous(), "*|&"))
+            // check for known type
+            else if (var->type())
                 checkMemsetType(start, tok, var->type());
         }
     }

@@ -102,13 +102,11 @@ void CheckStl::iterators()
                 // report an error
                 if (container && tok2->varId() != container->varId()) {
                     // skip error message if container is a set..
-                    if (tok2->varId() > 0) {
-                        const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
-                        const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
+                    const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
+                    const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
 
-                        if (Token::Match(decltok, "const| std :: set"))
-                            continue; // No warning
-                    }
+                    if (Token::Match(decltok, "const| std :: set"))
+                        continue; // No warning
 
                     // skip error message if the iterator is erased/inserted by value
                     if (itTok->previous()->str() == "*")
