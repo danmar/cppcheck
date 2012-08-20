@@ -553,15 +553,14 @@ void CheckOther::checkSizeofForPointerSize()
         // This is to allow generic operations with sizeof
         for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()) {}
 
-        // Now check for the sizeof usage. Once here, everything using sizeof(varid)
+        // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
         // looks suspicious
         // Do it for first variable
-        if (variable && (Token::Match(tokVar, "sizeof ( %varid% )", variable->varId()) ||
-                         Token::Match(tokVar, "sizeof %varid%", variable->varId()))) {
+        if (variable && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable->varId()) ||
+                         Token::Match(tokVar, "sizeof &| %varid%", variable->varId()))) {
             sizeofForPointerError(variable, variable->str());
-            // Then do it for second - TODO: Perhaps we should invert?
-        } else if (variable2 && (Token::Match(tokVar, "sizeof ( %varid% )", variable2->varId()) ||
-                                 Token::Match(tokVar, "sizeof %varid%", variable2->varId()))) {
+        } else if (variable2 && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable2->varId()) ||
+                                 Token::Match(tokVar, "sizeof &| %varid%", variable2->varId()))) {
             sizeofForPointerError(variable2, variable2->str());
         }
     }

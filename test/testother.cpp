@@ -4436,6 +4436,11 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
 
         check(
+            "int *x = malloc(sizeof(&x));\n"
+            "free(x);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
+
+        check(
             "int *x = malloc(100 * sizeof(x));\n"
             "free(x);");
         ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Using size of pointer x instead of size of its data.\n", errout.str());
