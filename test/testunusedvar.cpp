@@ -2580,6 +2580,14 @@ private:
                               "    return 0;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class Fred {char c;};\n"
+                              "class A : public Fred { int i; };\n"
+                              "int foo() {\n"
+                              "    A a;\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: a\n", errout.str());
     }
 
     void localvarStruct6() {

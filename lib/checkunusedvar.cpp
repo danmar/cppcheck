@@ -537,16 +537,17 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     return tok;
 }
 
-static bool isRecordTypeWithoutSideEffects(const Variable& var)
+static bool isRecordTypeWithoutSideEffects(const Scope* type)
 {
     // a type that has no side effects (no constructors and no members with constructors)
-    /** @todo false negative: check base class for side effects */
     /** @todo false negative: check constructors for side effects */
-    if (var.type() && var.type()->numConstructors == 0 &&
-        (var.type()->varlist.empty() || var.type()->needInitialization == Scope::True) &&
-        var.type()->derivedFrom.empty())
-        return true;
-
+    if (type && type->numConstructors == 0 &&
+        (type->varlist.empty() || type->needInitialization == Scope::True)) {
+        bool yes = true;
+        for (std::vector<Scope::BaseInfo>::const_iterator i = type->derivedFrom.begin(); yes && i != type->derivedFrom.end(); ++i)
+            yes = isRecordTypeWithoutSideEffects(i->scope);
+        return yes;
+    }
     return false;
 }
 
@@ -612,7 +613,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointerPointer;
             else if (i->isPointer())
                 type = Variables::pointer;
-            else if (_tokenizer->isC() || i->typeEndToken()->isStandardType() || isRecordTypeWithoutSideEffects(*i) || Token::simpleMatch(i->typeStartToken(), "std ::"))
+            else if (_tokenizer->isC() || i->typeEndToken()->isStandardType() || isRecordTypeWithoutSideEffects(i->type()) || Token::simpleMatch(i->typeStartToken(), "std ::"))
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
@@ -787,7 +788,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         // is it a user defined type?
                         if (!type->isStandardType()) {
                             const Variable* variable = _tokenizer->getSymbolDatabase()->getVariableFromVarId(start->varId());
-                            if (!variable || !isRecordTypeWithoutSideEffects(*variable))
+                            if (!variable || !isRecordTypeWithoutSideEffects(variable->type()))
                                 allocate = false;
                         }
                     }
