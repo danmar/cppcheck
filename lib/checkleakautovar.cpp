@@ -506,6 +506,8 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
             } else if (!dealloc.empty()) {
                 alloctype[arg->varId()] = "dealloc";
             }
+        } else if (Token::Match(arg, "%var% (")) {
+            functionCall(arg, varInfo, dealloc);
         }
     }
 }

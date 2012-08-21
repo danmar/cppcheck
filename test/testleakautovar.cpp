@@ -43,6 +43,7 @@ private:
         TEST_CASE(assign8);
         TEST_CASE(assign9);
         TEST_CASE(assign10);
+        TEST_CASE(assign11); // #3942: x = a(b(p));
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -199,6 +200,14 @@ private:
               "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign11() { // #3942 - FP for x = a(b(p));
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    x = a(b(p));\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (information) b configuration is needed to establish if there is a leak or not\n", errout.str());
     }
 
     void deallocuse1() {
