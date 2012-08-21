@@ -153,6 +153,7 @@ private:
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(checkPointerSizeof);
         TEST_CASE(checkSignOfUnsignedVariable);
+        TEST_CASE(checkSignOfPointer);
 
         TEST_CASE(checkForSuspiciousSemicolon1);
         TEST_CASE(checkForSuspiciousSemicolon2);
@@ -4828,6 +4829,78 @@ private:
             check_signOfUnsignedVariable(code, true);
             ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Checking if unsigned variable 'x' is less than zero. This might be a false warning.\n", errout.str());
         }
+    }
+
+    void checkSignOfPointer() {
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (x >= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (*x >= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (x < 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (*x < 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 <= x)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (0 <= x[0])"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 <= x.y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 > x)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x) {\n"
+            "  if (0 > x[0])"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 > x.y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkForSuspiciousSemicolon1() {

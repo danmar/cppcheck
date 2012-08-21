@@ -2921,7 +2921,7 @@ void CheckOther::comparisonOfBoolExpressionWithIntError(const Token *tok, bool n
 
 
 //---------------------------------------------------------------------------
-// Check testing sign of unsigned variables.
+// Check testing sign of unsigned variables and pointers.
 //---------------------------------------------------------------------------
 void CheckOther::checkSignOfUnsignedVariable()
 {
@@ -2942,23 +2942,31 @@ void CheckOther::checkSignOfUnsignedVariable()
             continue;
 
         // check all the code in the function
-        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok, tok->str(), inconclusive);
+                    unsignedLessThanZeroError(tok, var->name(), inconclusive);
+                else if (var && var->isPointer() && tok->strAt(-1) != "*")
+                    pointerLessThanZeroError(tok, inconclusive);
             } else if (Token::Match(tok, "0 >|>= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok, tok->strAt(2), inconclusive);
+                    unsignedLessThanZeroError(tok, var->name(), inconclusive);
+                else if (var && var->isPointer() && !Token::Match(tok->tokAt(3), "[.[]"))
+                    pointerLessThanZeroError(tok, inconclusive);
             } else if (Token::Match(tok, "0 <= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok, tok->strAt(2), inconclusive);
+                    unsignedPositiveError(tok, var->name(), inconclusive);
+                else if (var && var->isPointer() && !Token::Match(tok->tokAt(3), "[.[]"))
+                    pointerPositiveError(tok, inconclusive);
             } else if (Token::Match(tok, "%var% >= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->varId());
                 if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok, tok->str(), inconclusive);
+                    unsignedPositiveError(tok, var->name(), inconclusive);
+                else if (var && var->isPointer() && tok->strAt(-1) != "*")
+                    pointerPositiveError(tok, inconclusive);
             }
         }
     }
@@ -2981,6 +2989,12 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
     }
 }
 
+void CheckOther::pointerLessThanZeroError(const Token *tok, bool inconclusive)
+{
+    reportError(tok, Severity::style, "pointerLessThanZero",
+                "A pointer can not be negative so it is either pointless or an error to check if it is.", inconclusive);
+}
+
 void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive)
 {
     if (inconclusive) {
@@ -2993,6 +3007,12 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
         reportError(tok, Severity::style, "unsignedPositive",
                     "An unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.");
     }
+}
+
+void CheckOther::pointerPositiveError(const Token *tok, bool inconclusive)
+{
+    reportError(tok, Severity::style, "pointerPositive",
+                "A pointer can not be negative so it is either pointless or an error to check if it is not.", inconclusive);
 }
 
 /*

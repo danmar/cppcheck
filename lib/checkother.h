@@ -236,6 +236,8 @@ public:
     /** @brief %Check for double free or double close operations */
     void checkDoubleFree();
     void doubleFreeError(const Token *tok, const std::string &varname);
+
+    /** @brief %Check for code creating redundant copies */
     void checkRedundantCopy();
 
 private:
@@ -285,7 +287,9 @@ private:
     void unreachableCodeError(const Token* tok, bool inconclusive);
     void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
+    void pointerLessThanZeroError(const Token *tok, bool inconclusive);
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
+    void pointerPositiveError(const Token *tok, bool inconclusive);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void SuspiciousSemicolonError(const Token *tok);
@@ -346,6 +350,8 @@ private:
         c.unreachableCodeError(0, false);
         c.unsignedLessThanZeroError(0, "varname", false);
         c.unsignedPositiveError(0, "varname", false);
+        c.pointerLessThanZeroError(0, false);
+        c.pointerPositiveError(0, false);
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0, true);
         c.SuspiciousSemicolonError(0);
