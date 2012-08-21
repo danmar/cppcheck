@@ -2309,6 +2309,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of \"var\" to itself\n", errout.str());
 
+        // #4073 (segmentation fault)
+        check("void Foo::myFunc( int a )\n"
+              "{\n"
+              "    if (a == 42)\n"
+              "    a = a;\n"
+              "}\n");
+
         check("void foo()\n"
               "{\n"
               "        int x = 1;\n"
