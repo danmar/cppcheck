@@ -62,7 +62,6 @@ public:
         checkStl.size();
         checkStl.redundantCondition();
         checkStl.missingComparison();
-
     }
 
 
@@ -176,6 +175,7 @@ private:
     void uselessCallsSwapError(const Token *tok, const std::string &varname);
     void uselessCallsSubstrError(const Token *tok, bool empty);
     void uselessCallsEmptyError(const Token *tok);
+    void uselessCallsRemoveError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckStl c(0, settings, errorLogger);
@@ -202,6 +202,7 @@ private:
         c.uselessCallsSwapError(0, "str");
         c.uselessCallsSubstrError(0, false);
         c.uselessCallsEmptyError(0);
+        c.uselessCallsRemoveError(0);
     }
 
     static std::string myName() {
