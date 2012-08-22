@@ -99,6 +99,7 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+        TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
 
         TEST_CASE(classWithFriend);
@@ -654,10 +655,28 @@ private:
         }
     }
 
+    void functionDeclarationTemplate() {
+        GET_SYMBOL_DB("std::map<int, string> foo() {}")
+
+        // 2 scopes: Global and Function
+        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("foo"));
+
+        if (db) {
+            const Scope *scope = &db->scopeList.front();
+
+            ASSERT(scope && scope->functionList.size() == 1);
+
+            const Function *foo = &scope->functionList.front();
+
+            ASSERT(foo && foo->token->str() == "foo");
+            ASSERT(foo && foo->hasBody);
+        }
+    }
+
     void functionDeclarations() {
         GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}")
 
-        // 3 scopes: Global, Class, and Function
+        // 2 scopes: Global and Function
         ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("foo"));
 
         if (db) {

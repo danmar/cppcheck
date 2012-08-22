@@ -820,8 +820,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
 
     // regular function?
     else if (Token::Match(tok, "%var% (") && tok->previous() &&
-             (tok->previous()->isName() || tok->previous()->str() == "&" || tok->previous()->str() == "*" || // Either a return type in front of tok
-              tok->previous()->str() == "::" || tok->previous()->str() == "~" || // or a scope qualifier in front of tok
+             (tok->previous()->isName() || tok->strAt(-1) == ">" || tok->strAt(-1) == "&" || tok->strAt(-1) == "*" || // Either a return type in front of tok
+              tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct()) && // or a ctor/dtor
              (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
               Token::Match(tok->next()->link(), ") : %var% (|::"))) {
