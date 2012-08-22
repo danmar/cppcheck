@@ -162,6 +162,8 @@ private:
         TEST_CASE(checkDoubleFree);
 
         TEST_CASE(checkRedundantCopy);
+
+        TEST_CASE(checkNegativeShift);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
@@ -5793,6 +5795,47 @@ private:
                              "    return 0;\n"
                              "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkNegativeShift() {
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a << -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   int i = -1;\n"
+              "   a << i;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a >> -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   int i = -1;\n"
+              "   a >> i;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n",errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a <<= -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a >>= -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());s
     }
 };
 

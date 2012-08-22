@@ -104,6 +104,7 @@ public:
         checkOther.checkBitwiseOnBoolean();
         checkOther.checkDoubleFree();
         checkOther.checkRedundantCopy();
+        checkOther.checkNegativeBitwiseShift();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -240,6 +241,9 @@ public:
     /** @brief %Check for code creating redundant copies */
     void checkRedundantCopy();
 
+    /** @brief %Check for bitwise operation with negative right operand */
+    void checkNegativeBitwiseShift();
+
 private:
     // Error messages..
     void clarifyCalculationError(const Token *tok, const std::string &op);
@@ -296,7 +300,7 @@ private:
     void SuspiciousSemicolonError(const Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
-
+    void negativeBitwiseShiftError(const Token *tok);
     void redundantCopyError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -314,6 +318,7 @@ private:
         c.sizeofForNumericParameterError(0);
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
+        c.negativeBitwiseShiftError(0);
 
         //performance
         c.redundantCopyError(0, "varname");
@@ -378,6 +383,7 @@ private:
                "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* double free() or double closedir()\n"
+               "* bitwise operation with negative right operand\n"
 
                //performance
                "* redundant data copying for const variable\n"

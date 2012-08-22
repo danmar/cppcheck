@@ -3096,3 +3096,23 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
                 "Use const reference for "+varname+" to avoid unnecessary data copying.\n"
                 "The const "+varname+" gets a copy of the data since const reference is not used. You can avoid the unnecessary data copying by converting "+varname+" to const reference instead of just const.");
 }
+
+//---------------------------------------------------------------------------
+// Checking for shift by negative values
+//---------------------------------------------------------------------------
+
+void CheckOther::checkNegativeBitwiseShift()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next()) {
+        if (Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num >>|<< %num%")) {
+            if ((tok->strAt(2))[0] == '-')
+                negativeBitwiseShiftError(tok);
+        }
+    }
+}
+
+
+void CheckOther::negativeBitwiseShiftError(const Token *tok)
+{
+    reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value.");
+}
