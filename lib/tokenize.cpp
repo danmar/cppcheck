@@ -5950,7 +5950,7 @@ bool Tokenizer::simplifyKnownVariables()
                 const std::string structname("");
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
-                if ((tok2->tokAt(0))->str() == "sprintf") {
+                if (tok2->str() == "sprintf") {
                     while ((n = value.find("%%",n+1)) != std::string::npos) {
                         value.replace(n,2,"%");
                     }
