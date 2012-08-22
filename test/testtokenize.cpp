@@ -158,6 +158,7 @@ private:
         TEST_CASE(simplifyKnownVariables47);    // ticket #3627 - >>
         TEST_CASE(simplifyKnownVariables48);    // ticket #3754 - wrong simplification in for loop header
         TEST_CASE(simplifyKnownVariables49);    // #3691 - continue in switch
+	TEST_CASE(simplifyKnownVariables50);    // #4066 sprintf changes
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
@@ -2359,6 +2360,48 @@ private:
                                 "}\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+    }
+
+    void simplifyKnownVariables50() { // #4066
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    sprintf(str1, \"%%\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "sprintf ( str1 , \"%%\" ) ;\n"
+                                    "strcpy ( str2 , \"%\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[25], str2[25];\n"
+                                "    sprintf(str1, \"abcdef%%%% and %% and %\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 25 ] ; char str2 [ 25 ] ;\n"
+                                    "sprintf ( str1 , \"abcdef%%%% and %% and %\" ) ;\n"
+                                    "strcpy ( str2 , \"abcdef%% and % and %\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    sprintf(str1, \"abc\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "sprintf ( str1 , \"abc\" ) ;\n"
+                                    "strcpy ( str2 , \"abc\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariablesIfEq1() {
