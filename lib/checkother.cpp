@@ -605,6 +605,14 @@ void CheckOther::checkRedundantAssignmentInSwitch()
         std::map<unsigned int, const Token*> stringsCopied;
         std::map<unsigned int, const Token*> varsWithBitsSet;
         std::map<unsigned int, std::string> bitOperations;
+        /**
+         * 	A separate map for variables with post/pre increment/decrement has been kept since
+         * 	CASE 1(Reduntant):      CASE 2(NOT Reduntant):			CASE 3(NOT Reduntant):
+         * 		ret++;					ret = 3;						ret++;
+         * 		ret = 2;				ret++;							ret++;
+         *
+         */
+        std::map<unsigned int, const Token*> varsOperatedByPostORPreFix;
 
         for (const Token *tok2 = i->classStart->next(); tok2 != i->classEnd; tok2 = tok2->next()) {
             if (tok2->str() == "{") {
@@ -616,6 +624,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                     for (const Token* tok3 = tok2; tok3 != endOfConditional; tok3 = tok3->next()) {
                         if (tok3->varId() != 0) {
                             varsAssigned.erase(tok3->varId());
+                            varsOperatedByPostORPreFix.erase(tok3->varId());
                             stringsCopied.erase(tok3->varId());
                             varsWithBitsSet.erase(tok3->varId());
                             bitOperations.erase(tok3->varId());
@@ -623,6 +632,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                             varsAssigned.clear();
                             varsWithBitsSet.clear();
                             bitOperations.clear();
+                            varsOperatedByPostORPreFix.erase(tok3->varId());
 
                             if (tok3->str() != "strcpy" && tok3->str() != "strncpy")
                                 stringsCopied.clear();
@@ -635,18 +645,33 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             // Variable assignment. Report an error if it's assigned to twice before a break. E.g.:
             //    case 3: b = 1;    // <== redundant
             //    case 4: b = 2;
+
             if (Token::Match(tok2->previous(), ";|{|}|: %var% = %any% ;") && tok2->varId() != 0) {
                 std::map<unsigned int, const Token*>::iterator i2 = varsAssigned.find(tok2->varId());
-                if (i2 == varsAssigned.end())
-                    varsAssigned[tok2->varId()] = tok2;
-                else
-                    redundantAssignmentInSwitchError(i2->second, i2->second->str());
+                std::map<unsigned int, const Token*>::iterator i3 = varsOperatedByPostORPreFix.find(tok2->varId());
 
+                if (i2 == varsAssigned.end() && i3 == varsOperatedByPostORPreFix.end())
+                    varsAssigned[tok2->varId()] = tok2;
+
+                else {
+                    if (i3 == varsOperatedByPostORPreFix.end())
+                        redundantAssignmentInSwitchError(i2->second, i2->second->str());
+                    else
+                        redundantOperationInSwitchError(i3->second, i3->second->str());
+
+                }
                 stringsCopied.erase(tok2->varId());
                 varsWithBitsSet.erase(tok2->varId());
                 bitOperations.erase(tok2->varId());
             }
 
+
+            else if ((Token::Match(tok2->previous(), ";|{|}|: %var% ++|-- ;") ||
+                      Token::Match(tok2->tokAt(-2), ";|{|}|: ++|-- %var% ;"))  && tok2->varId() != 0) {
+                std::map<unsigned int, const Token*>::iterator i2 = varsOperatedByPostORPreFix.find(tok2->varId());
+                if (i2 == varsOperatedByPostORPreFix.end())
+                    varsOperatedByPostORPreFix[tok2->varId()] = tok2;
+            }
             // Bitwise operation. Report an error if it's performed twice before a break. E.g.:
             //    case 3: b |= 1;    // <== redundant
             //    case 4: b |= 1;
@@ -700,6 +725,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                 varsAssigned.clear();
                 varsWithBitsSet.clear();
                 bitOperations.clear();
+                varsOperatedByPostORPreFix.clear();
 
                 if (tok2->str() != "strcpy" && tok2->str() != "strncpy")
                     stringsCopied.clear();
@@ -712,6 +738,13 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::s
 {
     reportError(tok, Severity::warning,
                 "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
+}
+
+void CheckOther::redundantOperationInSwitchError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning,
+                "redundantOperationInSwitch", "Redundant operation on '" + varname + "' in switch.");
+
 }
 
 void CheckOther::redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname)

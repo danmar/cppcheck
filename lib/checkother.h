@@ -261,6 +261,7 @@ private:
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
+    void redundantOperationInSwitchError(const Token *tok, const std::string &varname);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void redundantStrcpyInSwitchError(const Token *tok, const std::string &varname);
     void switchCaseFallThrough(const Token *tok);
@@ -329,6 +330,7 @@ private:
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0, false);
         c.redundantAssignmentInSwitchError(0, "varname");
+        c.redundantOperationInSwitchError(0, "varname");
         c.switchCaseFallThrough(0);
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
@@ -393,6 +395,7 @@ private:
                "* condition that is always true/false\n"
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* redundant assignment in a switch statement\n"
+               "* redundant pre/post operation in a switch statement\n"
                "* redundant bitwise operation in a switch statement\n"
                "* redundant strcpy in a switch statement\n"
                "* look for 'sizeof sizeof ..'\n"
