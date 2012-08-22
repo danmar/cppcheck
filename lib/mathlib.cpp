@@ -201,9 +201,11 @@ std::string MathLib::add(const std::string & first, const std::string & second)
 
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);
-    while (d1 > 100000.0 * d2 && toString<double>(d1+d2)==first)
+
+    int count = 0;
+    while (d1 > 100000.0 * d2 && toString<double>(d1+d2)==first && ++count<5)
         d2 *= 10.0;
-    while (d2 > 100000.0 * d1 && toString<double>(d1+d2)==second)
+    while (d2 > 100000.0 * d1 && toString<double>(d1+d2)==second && ++count<5)
         d1 *= 10.0;
 
     return toString<double>(d1 + d2);
@@ -217,9 +219,11 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);
-    while (d1 > 100000.0 * d2 && toString<double>(d1-d2)==first)
+
+    int count = 0;
+    while (d1 > 100000.0 * d2 && toString<double>(d1-d2)==first && ++count<5)
         d2 *= 10.0;
-    while (d2 > 100000.0 * d1 && toString<double>(d1-d2)==second)
+    while (d2 > 100000.0 * d1 && toString<double>(d1-d2)==second && ++count<5)
         d1 *= 10.0;
 
     return toString<double>(d1 - d2);
