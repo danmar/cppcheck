@@ -557,6 +557,12 @@ private:
               "    return foo();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Don't crash with function in unknown scope (#4076)
+        check("X& a::Bar() {}"
+              "X& foo() {"
+              "    return Bar();"
+              "}");
     }
 
     void returnReference3() {

@@ -243,7 +243,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
     bool retvalue = false; // is there such a function that returns a value?
 
     for (scope = symbolDatabase->scopeList.begin(); !retref && scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type == Scope::eFunction && scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor) {
+        if (scope->type == Scope::eFunction && scope->function && scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor) {
             if (scope->className == funcname) {
                 retref = scope->classDef->strAt(-1) == "&";
                 if (!retref) {
