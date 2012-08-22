@@ -5835,7 +5835,7 @@ private:
               "   int a = 123;\n"
               "   a >>= -1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());s
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
     }
 };
 
