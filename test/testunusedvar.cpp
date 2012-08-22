@@ -90,6 +90,7 @@ private:
         TEST_CASE(localvar42); // ticket #3603
         TEST_CASE(localvar43); // ticket #3742
         TEST_CASE(localvar44); // ticket #3602
+        TEST_CASE(localvar45); // ticket #4020
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1516,6 +1517,15 @@ private:
                               "    delete [] piArray;\n"
                               "    piArray = NULL;\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar45() { // #4020 - FP
+        functionVariableUsage("void func() {\n"
+                              "    int *sp_mem[2] = { 0x00, 0x00 };\n"
+                              "    int src = 1, dst = 2;\n"
+                              "    sp_mem[(dst + i)][3] = src;\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

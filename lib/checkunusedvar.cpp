@@ -356,8 +356,11 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     if (var1) {
         // jump behind '='
         tok = tok->next();
-        while (tok->str() != "=")
+        while (tok->str() != "=") {
+            if (tok->varId())
+                variables.read(tok->varId());
             tok = tok->next();
+        }
         tok = tok->next();
 
         if (Token::Match(tok, "&| %var%") ||
@@ -479,6 +482,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                                 variables.readAliases(varid2);
                             else
                                 variables.read(varid2);
+                        } else {
+                            variables.read(varid2);
                         }
                     }
                 } else if (var1->_type == Variables::reference) {
