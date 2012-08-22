@@ -3012,7 +3012,7 @@ void Tokenizer::createLinks2()
     }
 }
 
-void Tokenizer::simplifySizeof()
+bool Tokenizer::simplifySizeof()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct %var%")) {
@@ -3069,6 +3069,7 @@ void Tokenizer::simplifySizeof()
         }
     }
 
+    bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() != "sizeof")
             continue;
@@ -3089,6 +3090,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream sz;
             sz << sizeof 'x';
             tok->str(sz.str());
+            ret = true;
             continue;
         }
 
@@ -3100,6 +3102,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream sz;
             sz << sizeof 'x';
             tok->str(sz.str());
+            ret = true;
             continue;
         }
 
@@ -3109,6 +3112,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream ostr;
             ostr << (Token::getStrLength(tok) + 1);
             tok->str(ostr.str());
+            ret = true;
             continue;
         }
 
@@ -3120,6 +3124,7 @@ void Tokenizer::simplifySizeof()
             std::ostringstream ostr;
             ostr << (Token::getStrLength(tok) + 1);
             tok->str(ostr.str());
+            ret = true;
             continue;
         }
 
@@ -3192,6 +3197,7 @@ void Tokenizer::simplifySizeof()
         if (Token::simpleMatch(tok->next(), "( * )")) {
             tok->str(MathLib::toString<unsigned long>(sizeOfType(tok->tokAt(2))));
             tok->deleteNext(3);
+            ret = true;
         }
 
         // sizeof( a )
@@ -3201,6 +3207,7 @@ void Tokenizer::simplifySizeof()
                 tok->deleteThis();
                 tok->deleteNext();
                 tok->str(sizeOfVar[tok->varId()]);
+                ret = true;
             } else {
                 // don't try to replace size of variable if variable has
                 // similar name with type (#329)
@@ -3212,6 +3219,7 @@ void Tokenizer::simplifySizeof()
             if (size > 0) {
                 tok->str(MathLib::toString<unsigned int>(size));
                 tok->deleteNext(3);
+                ret = true;
             }
         }
 
@@ -3240,10 +3248,11 @@ void Tokenizer::simplifySizeof()
             if (sz > 0) {
                 tok->str(MathLib::toString<size_t>(sz));
                 Token::eraseTokens(tok, tok->next()->link()->next());
+                ret = true;
             }
         }
     }
-
+    return ret;
 }
 
 bool Tokenizer::simplifyTokenList()

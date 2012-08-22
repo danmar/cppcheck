@@ -1436,6 +1436,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     bool modified = true;
     while (modified) {
         modified = false;
+        modified |= tokenizer.simplifySizeof();
         modified |= tokenizer.simplifyCalculations();
         modified |= tokenizer.simplifyRedundantParenthesis();
         for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next()) {

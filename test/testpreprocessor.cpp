@@ -275,6 +275,8 @@ private:
         TEST_CASE(macroChar);
 
         TEST_CASE(validateCfg);
+
+        TEST_CASE(if_sizeof);
     }
 
 
@@ -3608,6 +3610,22 @@ private:
         ASSERT_EQUALS(true, preprocessor.validateCfg("#undef DEBUG", "DEBUG"));
     }
 
+    void if_sizeof() { // #4071
+        static const char* code = "#if sizeof(wchar_t) == 2\n"
+                                  "Fred & Wilma\n"
+                                  "#elif sizeof(wchar_t) == 4\n"
+                                  "Fred & Wilma\n"
+                                  "#else\n"
+                                  "#endif";
+
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        ASSERT_EQUALS("\nFred & Wilma\n\n\n\n\n", actual[""]);
+    }
 };
 
 REGISTER_TEST(TestPreprocessor)
