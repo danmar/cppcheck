@@ -238,22 +238,45 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
 
     std::list<Scope>::const_iterator scope;
 
+    bool func = false;     // Might it be a function call?
     bool retref = false;   // is there such a function that returns a reference?
     bool retvalue = false; // is there such a function that returns a value?
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type == Scope::eFunction) {
-            if (scope->classDef->str() == funcname) {
-                const Token *tok2 = scope->classDef;
-                while (tok2 && Token::Match(tok2->tokAt(-2), "%type% ::"))
-                    tok2 = tok2->tokAt(-2);
-                if (tok2 && Token::simpleMatch(tok2->tokAt(-3), "std :: string"))
-                    retvalue = true;
-                else if (tok2 && Token::simpleMatch(tok2->tokAt(-4), "std :: string &"))
-                    retref = true;
+    for (scope = symbolDatabase->scopeList.begin(); !retref && scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (scope->type == Scope::eFunction && scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor) {
+            if (scope->className == funcname) {
+                retref = scope->classDef->strAt(-1) == "&";
+                if (!retref) {
+                    const Token* start = scope->classDef;
+                    while (start->previous() && !Token::Match(start->previous(), ";|}|{|public:|private:|protected:")) {
+                        if ((start->str() == ")" || start->str() == ">") && start->link())
+                            start = start->link();
+                        start = start->previous();
+                    }
+                    if (start->str() == "const")
+                        start = start->next();
+                    if (start->str() == "::")
+                        start = start->next();
+
+                    if (Token::simpleMatch(start, "std ::")) {
+                        if (start->strAt(3) != "<" || !Token::simpleMatch(start->linkAt(3), "> ::"))
+                            retvalue = true;
+                        else
+                            retref = true; // Assume that a reference is returned
+                    } else {
+                        if (symbolDatabase->isClassOrStruct(start->str()))
+                            retvalue = true;
+                        else
+                            retref = true;
+                    }
+
+                }
+                func = true;
             }
         }
     }
+    if (!func && symbolDatabase->isClassOrStruct(funcname))
+        return true;
 
     return bool(!retref && retvalue);
 }

@@ -445,6 +445,34 @@ private:
               "    return hello();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("std::string hello() {\n"
+              "     return std::string();\n"
+              "}\n"
+              "\n"
+              "std::string &f() {\n"
+              "    return hello();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("class Foo;\n"
+              "Foo hello() {\n"
+              "     return Foo();\n"
+              "}\n"
+              "\n"
+              "Foo& f() {\n"
+              "    return hello();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("Foo hello() {\n"
+              "     return Foo();\n"
+              "}\n"
+              "\n"
+              "Foo& f() {\n" // Unknown type - might be a reference
+              "    return hello();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReference2() {
@@ -504,6 +532,31 @@ private:
               "    return hello();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:11]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("class Bar;\n"
+              "Bar foo() {\n"
+              "     return something;\n"
+              "}\n"
+              "Bar& bar() {\n"
+              "    return foo();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("std::map<int, string> foo() {\n"
+              "     return something;\n"
+              "}\n"
+              "std::map<int, string>& bar() {\n"
+              "    return foo();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("Bar foo() {\n"
+              "     return something;\n"
+              "}\n"
+              "Bar& bar() {\n" // Unknown type - might be a typedef to a reference type
+              "    return foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReference3() {
