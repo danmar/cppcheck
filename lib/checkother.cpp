@@ -3061,58 +3061,41 @@ void CheckOther::checkRedundantCopy()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok=tok->next()) {
         const char *expect_end_token;
-        if (Token::Match(tok, "const %type% %var% =")) {
-            //match "const A a =" usage
-            expect_end_token = ";";
-        } else if (Token::Match(tok, "const %type% %var% (")) {
-            //match "const A a (" usage
-            expect_end_token = ")";
-        } else {
-            continue;
-        }
-
-        if (tok->strAt(1) == tok->strAt(4)) //avoid "const A a = A();"
-            continue;
-        if (!symbolDatabase->isClassOrStruct(tok->next()->str())) //avoid when %type% is standard type
-            continue;
-        const Token *var_tok = tok->tokAt(2);
-        tok = tok->tokAt(4);
-        while (tok &&Token::Match(tok,"%var% ."))
-            tok = tok->tokAt(2);
-        if (!Token::Match(tok, "%var% ("))
-            break;
-        const Token *match_end = (tok->next()->link()!=NULL)?tok->next()->link()->next():NULL;
-        if (match_end==NULL || !Token::Match(match_end,expect_end_token)) //avoid usage like "const A a = getA()+3"
-            break;
-        const Token *fToken = _tokenizer->getFunctionTokenByName(tok->str().c_str());
-        if (fToken &&fToken->previous() && fToken->previous()->str() == "&") {
-            redundantCopyError(var_tok,var_tok->str());
-        }
-    }
-}
-void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
+        if (Token::Match(tok, "const %type% %var% ="))
+          Token::simpleMatch(tok1->linkAt(3), ") {")) {
+            // get the
+// Check for incompletely filled buffers.          Token::simpleMatch(tok1->linkAt(3), ") {")) {
+            // get the
+void CheckOther::checkIncompleteArrayFill()
 {
-    reportError(tok, Severity::performance,"redundantCopyLocalConst",
-                "Use const reference for "+varname+" to avoid unnecessary data copying.\n"
-                "The const "+varname+" gets a copy of the data since const reference is not used. You can avoid the unnecessary data copying by converting "+varname+" to const reference instead of just const.");
-}
+    if (!_settings->inconclusive || ion = tok1->tokAt(4)->stringifyList(tok1->linkAt(3));
 
-//---------------------------------------------------------------------------
-// Checking for shift by negative values
-//---------------------------------------------------------------------------
+            // try to look up the expression to check for duplicates
+      for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "memset|memcpy|memmove ( %var% ,") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
+            const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
+            if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
+                continue;
 
-void CheckOther::checkNegativeBitwiseShift()
-{
-    for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next()) {
-        if (Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num >>|<< %num%")) {
-            if ((tok->strAt(2))[0] == '-')
-                negativeBitwiseShiftError(tok);
+            if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
+                unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
+                if ((size != 1 && size != 100 && size != 0) || Token::Match(var->typeEndToken(), "*"))
+                    incompleteArrayFillError(tok, var->name(), tok->str(), false);
+                else if (var->typeStartToken()->str() == "bool" && _settings->isEnabled("portability")) // sizeof(bool) is not 1 on all platforms
+                    incompleteArrayFillError(tok, var->name(), tok->str(), true);
+            }
         }
     }
 }
 
-
-void CheckOther::negativeBitwiseShiftError(const Token *tok)
+void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean)
 {
-    reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value.");
+    if (boolean)
+        reportError(tok, Severity::portability, "incompleteArrayFill",
+                    "Array '" + buffer + "' might be filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
+                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but the type 'bool' is larger than 1 on some platforms. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
+    else
+        reportError(tok, Severity::warning, "incompleteArrayFill",
+                    "Array '" + buffer + "' is filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
+                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but an element of the given array is larger than one byte. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
 }

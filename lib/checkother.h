@@ -74,6 +74,7 @@ public:
         checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkComparisonOfBoolExpressionWithInt();
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
+        checkOther.checkIncompleteArrayFill();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -238,7 +239,8 @@ public:
     void checkDoubleFree();
     void doubleFreeError(const Token *tok, const std::string &varname);
 
-    /** @brief %Check for code creating redundant copies */
+    /** @brief %Check for code creating redu    /** @brief %Check for buffers that are filled incompletely with memset and similar functions */
+    void checkIncompleteArrayFill redundant copies */
     void checkRedundantCopy();
 
     /** @brief %Check for bitwise operation with negative right operand */
@@ -297,7 +299,7 @@ private:
     void pointerPositiveError(const Token *tok, bool inconclusive);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
-    void SuspiciousSemicolonError(const Token *tok);
+    void SuspiciousSemicolonError(con    void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool booleanconst Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
     void negativeBitwiseShiftError(const Token *tok);
@@ -356,6 +358,7 @@ private:
         c.duplicateBreakError(0, false);
         c.unreachableCodeError(0, false);
         c.unsignedLessThanZeroError(0, "varname", false);
+     c.incompleteArrayFillError(0, "buffer", "memset", falselse);
         c.unsignedPositiveError(0, "varname", false);
         c.pointerLessThanZeroError(0, false);
         c.pointerPositiveError(0, false);
@@ -414,7 +417,8 @@ private:
                "* comparison of a boolean expression with an integer other than 0 or 1\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
-               "* suspicious condition (string literals as boolean)\n"
+               "* suspic
+               "* Array filled incompletely using memset/memcpy/memmovuspicious condition (string literals as boolean)\n"
                "* duplicate break statement\n"
                "* unreachable code\n"
                "* testing if unsigned variable is negative\n"
@@ -426,16 +430,4 @@ private:
     }
 
     void checkExpressionRange(const std::list<const Function*> &constFunctions,
-                              const Token *start,
-                              const Token *end,
-                              const std::string &toCheck);
-
-    void complexDuplicateExpressionCheck(const std::list<const Function*> &constFunctions,
-                                         const Token *classStart,
-                                         const std::string &toCheck,
-                                         const std::string &alt);
-};
-/// @}
-//---------------------------------------------------------------------------
-#endif
-
+       
