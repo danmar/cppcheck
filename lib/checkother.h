@@ -83,6 +83,7 @@ public:
 
         // Checks
         checkOther.clarifyCalculation();
+        checkOther.clarifyStatement();
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
 
@@ -111,7 +112,8 @@ public:
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
 
-    /** @brief Suspicious condition (assignment+comparison) */
+    /** @brief Suspicious condition (assignment+comparison) Suspicious statement like '*A++;' */
+    void clarifyStatementignment+comparison) */
     void clarifyCondition();
 
     /** @brief Are there C-style pointer casts in a c++ file? */
@@ -247,7 +249,7 @@ public:
     void checkNegativeBitwiseShift();
 
 private:
-    // Error messages..
+    // Error messages.clarifyStatementError(const Token* tokor messages..
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void sizeofsizeofError(const Token *tok);
@@ -339,6 +341,7 @@ private:
         c.redundantAssignmentInSwitchError(0, "varname");
         c.redundantOperationInSwitchError(0, "varname");
         c.switchCaseFallThrough(0);
+clarifyStatementError(0lThrough(0);
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);

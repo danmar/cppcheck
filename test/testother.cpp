@@ -116,7 +116,7 @@ private:
         TEST_CASE(memsetZeroBytes);
 
         TEST_CASE(sizeofForArrayParameter);
-        TEST_CASE(sizeofForNumericParameter);
+        TEST_CASE(sizeofForNumericPar        TEST_CASE(clarifyStatementParameter);
 
         TEST_CASE(clarifyCalculation);
 
@@ -3030,8 +3030,14 @@ private:
                       "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:5]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:6]: (warning) Comparison of modulo result is predetermined, because icause it is always less than 5.\n"
-                      "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, x > 5 && x != l conjunction always evaluates to false: x < 1 && x > 1.\n", errout.str());
+                      "[test.cpp:6]: (warning) Comparison of modu   "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(i || x <= 3.\n", errout.str());
+
+        check("void f(int x) {\n"
+         x > 5 && x != l conjunction always evaluates to false: x < 1 && x > 1.\n", errout.str());
 
         check("void           "}\n"
              );
@@ -3634,7 +3640,48 @@ sult is predetermined, because it is always less than 5.\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
 
-        check("void f(bool x ) {\n"
+        check("voidvoid clarifyStatement() {
+        check("char* f(char* c) {\n"
+              "    *c++;\n"
+              "    return c;n
+    void clarifyCondition1() {
+        check("void f() {\n"
+         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("char* f(char** c) {\n"
+              "    *c[5]--;\n"
+              "    return *c;n
+    void clarifyCondition1() {
+        check("void f() {\n"
+         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("void f(Foo f) {\n"
+              "    *f.a++;n
+    void clarifyCondition1() {
+        check("void f() {\n"
+         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("void f(Foo f) {\n"
+              "    *f.a[5].v[3]++;n
+    void clarifyCondition1() {
+        check("void f() {\n"
+         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("void f(Foo f) {\n"
+              "    *f.a(1, 5).v[x + y]++;n
+    void clarifyCondition1() {
+        check("void f() {\n"
+         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("char* f(char* c) {\n"
+              "    (*c)++;\n"
+              "    return cl 0"
+                      " bytes of \'p\'\n", errout.str());
+
+  
+        check("void f(char* c) {\n"
+              "    bar(*c++)   check("void f(int x) {\n"
+              "    if (x < 1 && x > 1check("void f(bool x ) {\n"
               "  if ( false <= x )\n"
               "      a++;\n"
               "}\n"

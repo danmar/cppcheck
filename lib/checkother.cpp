@@ -230,7 +230,38 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
 }
 
 //---------------------------------------------------------------------------
-// if (bool & bool) -> if (bool && bool)
+// Clarify (meaningless) statements like *foo++; with parantheses.teStatement()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    fovoid CheckOther::clarifyStatementves. This pattern only checks for string.
+        //       Investifor (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[{};] * %var%")) {
+            tok = tok->tokAt(3);
+            while (tok) {
+                if (tok->str() == "[")
+                    tok = tok->link()->next();
+                if (Token::Match(tok, ".|:: %var%")) {
+                    if (tok->strAt(2) == "(")
+                        tok = tok->linkAt(2)->next();
+                    else
+                        tok = tok->tokAt(2);
+                } else
+                    break;
+            }
+            if (Token::Match(tok, "++|-- [;,]"))
+                clarifyStatementError(tok);
+        }
+    }
+}
+
+void CheckOther::clarifyStatementError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n"
+                "A statement like '*A++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
+                "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?ossible unexpanded macro hiding for/while..
+            else if (tok->str() != "else" &&if (bool & bool) -> if (bool && bool)
 // if (bool | bool) -> if (bool || bool)
 //---------------------------------------------------------------------------
 void CheckOther::checkBitwiseOnBoolean()
@@ -2164,50 +2195,36 @@ void CheckOther::incorrectStringBooleanError(const Token *tok, const std::string
 //-----------------------------------------------------------------------------
 // check for duplicate expressions in if statements
 // if (a) { } else if (a) { }
-//-----------------------------------------------------------------------------
+//----------------------------ok1->linkAt(3), ") {")) {
+            // get the expression from the token stream
+            expression = tok1->tokAt(4)->stringifyList(tok1->linkAt(3));
 
-static bool expressionHasSideEffects(const Token *first, const Token *last)
-{
-    for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
-        // check for assignment
-        if (tok->isAssignmentOp())
-            return true;
+            // try to look up the expression to check for duplicates
+            std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
 
-        // check for inc/dec
-        else if (tok->type() == Token::eIncDecOp)
-            return true;
+            // found a duplicate
+            if (it != expressionMap.end()) {
+                // check for expressions that have side effects and ignore them
+                if (!expressionHasSideEffects(tok1->tokAt(4), tok1->linkAt(3)->previous()))
+                    duplicateIfError(it->second, tok1->next());
+            }
 
-        // check for function call
-        else if (Token::Match(tok, "%var% (") &&
-                 !(Token::Match(tok, "c_str|string") || tok->isStandardType()))
-            return true;
+            // not a duplicate expression so save it and its location
+            else
+                expressionMap.insert(std::make_pair(expression, tok1->next()));
+
+            // find the next else if (...) statement
+            tok1 = tok1->linkAt(3)->next()->link();
+        }
     }
-
-    return false;
 }
 
-void CheckOther::checkDuplicateIf()
-{
-    if (!_settings->isEnabled("style"))
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        const Token* const tok = scope->classDef;
-        // only check if statements
-        if (scope->type != Scope::eIf || !tok)
-            continue;
-
-        std::map<std::string, const Token*> expressionMap;
-
-        // get the expression from the token stream
-        std::string expression = tok->tokAt(2)->stringifyList(tok->next()->link());
-
-        // save the expression and its location
-        expressionMap.insert(std::make_pair(expression, tok));
-
-        // find the next else if (...) statement
+void CheckOther::duplicateIf          else if (Token::simpleMatch(tok->next()->link(), ") ;")) {
+                for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+           If", "Found duplicate if expressions.\n"
+                "Finding the same expression more than once is suspicious and might indicate "
+                "a cut and paste or logic error. Please examine this code carefully to determine "
+                "if it is  next else if (...) statement
         const Token *tok1 = scope->classEnd;
 
         // check all the else if (...) statements
