@@ -230,38 +230,7 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
 }
 
 //---------------------------------------------------------------------------
-// Clarify (meaningless) statements like *foo++; with parantheses.teStatement()
-{
-    if (!_settings->isEnabled("style"))
-        return;
-
-    fovoid CheckOther::clarifyStatementves. This pattern only checks for string.
-        //       Investifor (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[{};] * %var%")) {
-            tok = tok->tokAt(3);
-            while (tok) {
-                if (tok->str() == "[")
-                    tok = tok->link()->next();
-                if (Token::Match(tok, ".|:: %var%")) {
-                    if (tok->strAt(2) == "(")
-                        tok = tok->linkAt(2)->next();
-                    else
-                        tok = tok->tokAt(2);
-                } else
-                    break;
-            }
-            if (Token::Match(tok, "++|-- [;,]"))
-                clarifyStatementError(tok);
-        }
-    }
-}
-
-void CheckOther::clarifyStatementError(const Token *tok)
-{
-    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n"
-                "A statement like '*A++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
-                "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?ossible unexpanded macro hiding for/while..
-            else if (tok->str() != "else" &&if (bool & bool) -> if (bool && bool)
+// if (bool & bool) -> if (bool && bool)
 // if (bool | bool) -> if (bool || bool)
 //---------------------------------------------------------------------------
 void CheckOther::checkBitwiseOnBoolean()
@@ -2195,36 +2164,50 @@ void CheckOther::incorrectStringBooleanError(const Token *tok, const std::string
 //-----------------------------------------------------------------------------
 // check for duplicate expressions in if statements
 // if (a) { } else if (a) { }
-//----------------------------ok1->linkAt(3), ") {")) {
-            // get the expression from the token stream
-            expression = tok1->tokAt(4)->stringifyList(tok1->linkAt(3));
+//-----------------------------------------------------------------------------
 
-            // try to look up the expression to check for duplicates
-            std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
+static bool expressionHasSideEffects(const Token *first, const Token *last)
+{
+    for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
+        // check for assignment
+        if (tok->isAssignmentOp())
+            return true;
 
-            // found a duplicate
-            if (it != expressionMap.end()) {
-                // check for expressions that have side effects and ignore them
-                if (!expressionHasSideEffects(tok1->tokAt(4), tok1->linkAt(3)->previous()))
-                    duplicateIfError(it->second, tok1->next());
-            }
+        // check for inc/dec
+        else if (tok->type() == Token::eIncDecOp)
+            return true;
 
-            // not a duplicate expression so save it and its location
-            else
-                expressionMap.insert(std::make_pair(expression, tok1->next()));
-
-            // find the next else if (...) statement
-            tok1 = tok1->linkAt(3)->next()->link();
-        }
+        // check for function call
+        else if (Token::Match(tok, "%var% (") &&
+                 !(Token::Match(tok, "c_str|string") || tok->isStandardType()))
+            return true;
     }
+
+    return false;
 }
 
-void CheckOther::duplicateIf          else if (Token::simpleMatch(tok->next()->link(), ") ;")) {
-                for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-           If", "Found duplicate if expressions.\n"
-                "Finding the same expression more than once is suspicious and might indicate "
-                "a cut and paste or logic error. Please examine this code carefully to determine "
-                "if it is  next else if (...) statement
+void CheckOther::checkDuplicateIf()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        const Token* const tok = scope->classDef;
+        // only check if statements
+        if (scope->type != Scope::eIf || !tok)
+            continue;
+
+        std::map<std::string, const Token*> expressionMap;
+
+        // get the expression from the token stream
+        std::string expression = tok->tokAt(2)->stringifyList(tok->next()->link());
+
+        // save the expression and its location
+        expressionMap.insert(std::make_pair(expression, tok));
+
+        // find the next else if (...) statement
         const Token *tok1 = scope->classEnd;
 
         // check all the else if (...) statements
@@ -3078,41 +3061,58 @@ void CheckOther::checkRedundantCopy()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok=tok->next()) {
         const char *expect_end_token;
-        if (Token::Match(tok, "const %type% %var% ="))
-          Token::simpleMatch(tok1->linkAt(3), ") {")) {
-            // get the
-// Check for incompletely filled buffers.          Token::simpleMatch(tok1->linkAt(3), ") {")) {
-            // get the
-void CheckOther::checkIncompleteArrayFill()
+        if (Token::Match(tok, "const %type% %var% =")) {
+            //match "const A a =" usage
+            expect_end_token = ";";
+        } else if (Token::Match(tok, "const %type% %var% (")) {
+            //match "const A a (" usage
+            expect_end_token = ")";
+        } else {
+            continue;
+        }
+
+        if (tok->strAt(1) == tok->strAt(4)) //avoid "const A a = A();"
+            continue;
+        if (!symbolDatabase->isClassOrStruct(tok->next()->str())) //avoid when %type% is standard type
+            continue;
+        const Token *var_tok = tok->tokAt(2);
+        tok = tok->tokAt(4);
+        while (tok &&Token::Match(tok,"%var% ."))
+            tok = tok->tokAt(2);
+        if (!Token::Match(tok, "%var% ("))
+            break;
+        const Token *match_end = (tok->next()->link()!=NULL)?tok->next()->link()->next():NULL;
+        if (match_end==NULL || !Token::Match(match_end,expect_end_token)) //avoid usage like "const A a = getA()+3"
+            break;
+        const Token *fToken = _tokenizer->getFunctionTokenByName(tok->str().c_str());
+        if (fToken &&fToken->previous() && fToken->previous()->str() == "&") {
+            redundantCopyError(var_tok,var_tok->str());
+        }
+    }
+}
+void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 {
-    if (!_settings->inconclusive || ion = tok1->tokAt(4)->stringifyList(tok1->linkAt(3));
+    reportError(tok, Severity::performance,"redundantCopyLocalConst",
+                "Use const reference for "+varname+" to avoid unnecessary data copying.\n"
+                "The const "+varname+" gets a copy of the data since const reference is not used. You can avoid the unnecessary data copying by converting "+varname+" to const reference instead of just const.");
+}
 
-            // try to look up the expression to check for duplicates
-      for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "memset|memcpy|memmove ( %var% ,") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
-            const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
-            if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
-                continue;
+//---------------------------------------------------------------------------
+// Checking for shift by negative values
+//---------------------------------------------------------------------------
 
-            if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
-                unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
-                if ((size != 1 && size != 100 && size != 0) || Token::Match(var->typeEndToken(), "*"))
-                    incompleteArrayFillError(tok, var->name(), tok->str(), false);
-                else if (var->typeStartToken()->str() == "bool" && _settings->isEnabled("portability")) // sizeof(bool) is not 1 on all platforms
-                    incompleteArrayFillError(tok, var->name(), tok->str(), true);
-            }
+void CheckOther::checkNegativeBitwiseShift()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next()) {
+        if (Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num >>|<< %num%")) {
+            if ((tok->strAt(2))[0] == '-')
+                negativeBitwiseShiftError(tok);
         }
     }
 }
 
-void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean)
+
+void CheckOther::negativeBitwiseShiftError(const Token *tok)
 {
-    if (boolean)
-        reportError(tok, Severity::portability, "incompleteArrayFill",
-                    "Array '" + buffer + "' might be filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
-                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but the type 'bool' is larger than 1 on some platforms. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
-    else
-        reportError(tok, Severity::warning, "incompleteArrayFill",
-                    "Array '" + buffer + "' is filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
-                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but an element of the given array is larger than one byte. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
+    reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value.");
 }

@@ -116,7 +116,7 @@ private:
         TEST_CASE(memsetZeroBytes);
 
         TEST_CASE(sizeofForArrayParameter);
-        TEST_CASE(sizeofForNumericPar        TEST_CASE(clarifyStatementParameter);
+        TEST_CASE(sizeofForNumericParameter);
 
         TEST_CASE(clarifyCalculation);
 
@@ -159,8 +159,7 @@ private:
         TEST_CASE(checkForSuspiciousSemicolon1);
         TEST_CASE(checkForSuspiciousSemicolon2);
 
-        TEST_CASE(checkDoub
-        TEST_CASE(incompleteArrayFilloubleFree);
+        TEST_CASE(checkDoubleFree);
 
         TEST_CASE(checkRedundantCopy);
 
@@ -169,7 +168,6 @@ private:
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
         // Clear the error buffer..
-        errout.straddEnabled("portability..
         errout.str("");
 
         Settings settings;
@@ -3030,21 +3028,15 @@ private:
                       "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:5]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
-                      "[test.cpp:6]: (warning) Comparison of modu   "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
+                      "[test.cpp:6]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+                      "[test.cpp:7]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n", errout.str());
 
-        check("void f(i || x <= 3.\n", errout.str());
-
-        check("void f(int x) {\n"
-         x > 5 && x != l conjunction always evaluates to false: x < 1 && x > 1.\n", errout.str());
-
-        check("void           "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning)> 5) && (x != 1) conjunction always evaluates to false: x < 1 && x > 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-sult is predetermined, because it is always less than 5.\n"
+        check("void f(bool& b1, bool& b2) {\n"
+              "    b1 = bar() % 5 < 889;\n"
+              "    if(x[593] % 5 <= 5)\n"
+              "        b2 = x.a % 5 == 5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n", errout.str());
     }
@@ -3640,48 +3632,7 @@ sult is predetermined, because it is always less than 5.\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
 
-        check("voidvoid clarifyStatement() {
-        check("char* f(char* c) {\n"
-              "    *c++;\n"
-              "    return c;n
-    void clarifyCondition1() {
-        check("void f() {\n"
-         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
-
-        check("char* f(char** c) {\n"
-              "    *c[5]--;\n"
-              "    return *c;n
-    void clarifyCondition1() {
-        check("void f() {\n"
-         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
-
-        check("void f(Foo f) {\n"
-              "    *f.a++;n
-    void clarifyCondition1() {
-        check("void f() {\n"
-         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
-
-        check("void f(Foo f) {\n"
-              "    *f.a[5].v[3]++;n
-    void clarifyCondition1() {
-        check("void f() {\n"
-         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
-
-        check("void f(Foo f) {\n"
-              "    *f.a(1, 5).v[x + y]++;n
-    void clarifyCondition1() {
-        check("void f() {\n"
-         Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
-
-        check("char* f(char* c) {\n"
-              "    (*c)++;\n"
-              "    return cl 0"
-                      " bytes of \'p\'\n", errout.str());
-
-  
-        check("void f(char* c) {\n"
-              "    bar(*c++)   check("void f(int x) {\n"
-              "    if (x < 1 && x > 1check("void f(bool x ) {\n"
+        check("void f(bool x ) {\n"
               "  if ( false <= x )\n"
               "      a++;\n"
               "}\n"
@@ -5495,54 +5446,396 @@ sult is predetermined, because it is always less than 5.\n"
         ASSERT_EQUALS("", errout.str());
 
         check(
-    
-    void incompleteArrayFill() {
-        check("void f() {\n"
-              "    int a[5];\n"
-              "    memset(a, 123, 5);\n"
-              "    memcpy(a, b, 5);\n"
-              "    memmove(a, b, 5);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n"
-                      "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
-                      "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'al (<, >, <= or >=) operator.\n", errout.str());
+            "void f() {\n"
+            "    char *p = malloc(100);\n"
+            "    if (x) {\n"
+            "        free(p);\n"
+            "        exit();\n"
+            "    }\n"
+            "    free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
 
-        check("void Foo* a[5];\n"
-              "    memset(a, 'a', 5);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
+        check(
+            "void f() {\n"
+            "    char *p = malloc(100);\n"
+            "    if (x) {\n"
+            "        free(p);\n"
+            "		 x = 0;\n"
+            "    }\n"
+            "    free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
 
-        check("class Foo {int a; int b;};\n"
-              "void f() {\n"
-              "    Foo a[5];\n"
-              "    memset(a, 'a', 5);\n"
+        check(
+            "void f() {\n"
+            "    char *p = do_something();\n"
+            "    free(p);\n"
+            "    p = do_something();\n"
+            "    free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  g_free(p);\n"
+            "  g_free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p, char *r) {\n"
+            "  g_free(p);\n"
+            "  g_free(r);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  g_free(p);\n"
+            "  getNext(&p);\n"
+            "  g_free(p);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  g_free(p);\n"
+            "  bar();\n"
+            "  g_free(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete p;\n"
+            "  delete p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p, char *r) {\n"
+            "  delete p;\n"
+            "  delete r;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete p;\n"
+            "  getNext(&p);\n"
+            "  delete p;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete p;\n"
+            "  bar();\n"
+            "  delete p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete[] p;\n"
+            "  delete[] p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(char *p, char *r) {\n"
+            "  delete[] p;\n"
+            "  delete[] r;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete[] p;\n"
+            "  getNext(&p);\n"
+            "  delete[] p;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  delete[] p;\n"
+            "  bar();\n"
+            "  delete[] p;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+
+        check(
+            "~LineMarker() {\n"
+            "  delete pxpm;\n"
+            "}\n"
+            "LineMarker &operator=(const LineMarker &) {\n"
+            "  delete pxpm;\n"
+            "  pxpm = NULL;\n"
+            "  return *this;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo()\n"
+            "{\n"
+            "  int* ptr = NULL;\n"
+            "  try\n"
+            "    {\n"
+            "      ptr = new int(4);\n"
+            "    }\n"
+            "  catch(...)\n"
+            "    {\n"
+            "      delete ptr;\n"
+            "      throw;\n"
+            "    }\n"
+            "  delete ptr;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int foo()\n"
+            "{\n"
+            "	int* a = new int;\n"
+            "	bool doDelete = true;\n"
+            "	if (a != 0)\n"
+            "	{\n"
+            "		doDelete = false;\n"
+            "		delete a;\n"
+            "	}\n"
+            "	if(doDelete)\n"
+            "		delete a;\n"
+            "	return 0;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    while(1) {\n"
+            "        x = new char[100];\n"
+            "        if (y++ > 100)\n"
+            "            break;\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    for (int i = 0; i < 10000; i++) {\n"
+            "        x = new char[100];\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    while (isRunning()) {\n"
+            "        x = new char[100];\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    while (isRunning()) {\n"
+            "        x = malloc(100);\n"
+            "        free(x);\n"
+            "    }\n"
+            "    free(x);\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    for (;;) {\n"
+            "        x = new char[100];\n"
+            "        if (y++ > 100)\n"
+            "            break;\n"
+            "        delete[] x;\n"
+            "    }\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(int y)\n"
+            "{\n"
+            "    char * x = NULL;\n"
+            "    do {\n"
+            "        x = new char[100];\n"
+            "        if (y++ > 100)\n"
+            "            break;\n"
+            "        delete[] x;\n"
+            "    } while (1);\n"
+            "    delete[] x;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void f()\n"
+            "{\n"
+            "    char *p = 0;\n"
+            "    if (x < 100) {\n"
+            "        p = malloc(10);\n"
+            "        free(p);\n"
+            "    }\n"
+            "    free(p);\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+    }
+
+    void check_redundant_copy(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.addEnabled("performance");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Simplify token list..
+        CheckOther checkOther(&tokenizer, &settings, this);
+        tokenizer.simplifyTokenList();
+        checkOther.checkRedundantCopy();
+    }
+    void checkRedundantCopy() {
+        check_redundant_copy("class A{public:A(){}};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a = getA();\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for a to avoid unnecessary data copying.\n", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const int a = getA();\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    int getA = 0;\n"
+                             "    const int a = getA + 3;\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{public:A(){}};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a(getA());\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for a to avoid unnecessary data copying.\n", errout.str());
+
+        check_redundant_copy("const int& getA(){static int a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const int a(getA());\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{\n"
+                             "public:A(int a=0){_a = a;}\n"
+                             "A operator+(const A & a){return A(_a+a._a);}\n"
+                             "private:int _a;};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a = getA() + 1;\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check_redundant_copy("class A{\n"
+                             "public:A(int a=0){_a = a;}\n"
+                             "A operator+(const A & a){return A(_a+a._a);}\n"
+                             "private:int _a;};\n"
+                             "const A& getA(){static A a;return a;}\n"
+                             "int main()\n"
+                             "{\n"
+                             "    const A a(getA()+1);\n"
+                             "    return 0;\n"
+                             "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkNegativeShift() {
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a << -1;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", 1() {
-        check("void f(int x) {\n"
-              "    if ((x &&Foo a[5];\n" // Size of foo is unknown
-              "    memset(a, 'a', 5)   check("void f(int x) {\n"
-              "    if (x < 1 && x > 1
-        check("void f() {\n"
-              "    char a[5];\n"
-              "    memset(a, 'a', 5)   check("void f(int x) {\n"
-              "    if (x < 1 && x > 1
-        check("void f() {\n"
-              "    int a[5];\n"
-              "    memset(a+15, 'a', 5)   check("void f(int x) {\n"
-              "    if (x < 1 && x > 1
-        check("void f() {\n"
-              "    bool a[5];\n"
-              "    memset(a, false, 5*sizeof(bool))   check("void f(int x) {\n"
-              "    if (x < 1 && x > 1
-        check("void f() {\n"
-              "    bool a[5];\n"
-              "    memset(a, false, 5*sizeof(*a))   check("void f(int x) {\n"
-              "    if (x < 1 && x > 1
-        check("void f() {\n"
-              "    bool a[5];\n"
-              "    memset(a, false, 5);\n"
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   int i = -1;\n"
+              "   a << i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability, inconclusive) Array 'a' might be filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a >> -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   int i = -1;\n"
+              "   a >> i;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n", "", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a <<= -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123;\n"
+              "   a >>= -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
     }
 };
 
