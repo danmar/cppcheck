@@ -74,6 +74,7 @@ public:
         checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkComparisonOfBoolExpressionWithInt();
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
+        checkOther.checkIncompleteArrayFill();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -82,6 +83,7 @@ public:
 
         // Checks
         checkOther.clarifyCalculation();
+        checkOther.clarifyStatement();
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
 
@@ -112,6 +114,9 @@ public:
 
     /** @brief Suspicious condition (assignment+comparison) */
     void clarifyCondition();
+
+    /** @brief Suspicious statement like '*A++;' */
+    void clarifyStatement();
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
@@ -244,10 +249,14 @@ public:
     /** @brief %Check for bitwise operation with negative right operand */
     void checkNegativeBitwiseShift();
 
+    /** @brief %Check for buffers that are filled incompletely with memset and similar functions */
+    void checkIncompleteArrayFill();
+
 private:
     // Error messages..
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
+    void clarifyStatementError(const Token* tok);
     void sizeofsizeofError(const Token *tok);
     void sizeofCalculationError(const Token *tok, bool inconclusive);
     void cstyleCastError(const Token *tok);
@@ -302,6 +311,7 @@ private:
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
     void negativeBitwiseShiftError(const Token *tok);
     void redundantCopyError(const Token *tok, const std::string &varname);
+    void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -344,6 +354,7 @@ private:
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
+        c.clarifyStatementError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
         c.incrementBooleanError(0);
@@ -364,6 +375,7 @@ private:
         c.SuspiciousSemicolonError(0);
         c.cctypefunctionCallError(0, "funname", "value");
         c.moduloAlwaysTrueFalseError(0, "1");
+        c.incompleteArrayFillError(0, "buffer", "memset", false);
     }
 
     static std::string myName() {
@@ -422,7 +434,8 @@ private:
                "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "* incorrect usage of functions from ctype library.\n"
-               "* Comparisons of modulo results that are always true/false.\n";
+               "* Comparisons of modulo results that are always true/false.\n"
+               "* Array filled incompletely using memset/memcpy/memmove.\n";
     }
 
     void checkExpressionRange(const std::list<const Function*> &constFunctions,

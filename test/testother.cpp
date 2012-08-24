@@ -119,6 +119,7 @@ private:
         TEST_CASE(sizeofForNumericParameter);
 
         TEST_CASE(clarifyCalculation);
+        TEST_CASE(clarifyStatement);
 
         TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
@@ -164,6 +165,8 @@ private:
         TEST_CASE(checkRedundantCopy);
 
         TEST_CASE(checkNegativeShift);
+
+        TEST_CASE(incompleteArrayFill);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
@@ -172,6 +175,7 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
+        settings.addEnabled("portability");
         settings.inconclusive = inconclusive;
         settings.experimental = experimental;
 
@@ -3942,6 +3946,46 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void clarifyStatement() {
+        check("char* f(char* c) {\n"
+              "    *c++;\n"
+              "    return c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("char* f(char** c) {\n"
+              "    *c[5]--;\n"
+              "    return *c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("void f(Foo f) {\n"
+              "    *f.a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("void f(Foo f) {\n"
+              "    *f.a[5].v[3]++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("void f(Foo f) {\n"
+              "    *f.a(1, 5).v[x + y]++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("char* f(char* c) {\n"
+              "    (*c)++;\n"
+              "    return c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char* c) {\n"
+              "    bar(*c++);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     // clarify conditions with = and comparison
     void clarifyCondition1() {
         check("void f() {\n"
@@ -5836,6 +5880,67 @@ private:
               "   a >>= -1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+    }
+
+    void incompleteArrayFill() {
+        check("void f() {\n"
+              "    int a[5];\n"
+              "    memset(a, 123, 5);\n"
+              "    memcpy(a, b, 5);\n"
+              "    memmove(a, b, 5);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n"
+                      "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
+                      "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'?\n", errout.str());
+
+        check("void f() {\n"
+              "    Foo* a[5];\n"
+              "    memset(a, 'a', 5);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
+
+        check("class Foo {int a; int b;};\n"
+              "void f() {\n"
+              "    Foo a[5];\n"
+              "    memset(a, 'a', 5);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", "", errout.str());
+
+        check("void f() {\n"
+              "    Foo a[5];\n" // Size of foo is unknown
+              "    memset(a, 'a', 5);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char a[5];\n"
+              "    memset(a, 'a', 5);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a[5];\n"
+              "    memset(a+15, 'a', 5);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    bool a[5];\n"
+              "    memset(a, false, 5*sizeof(bool));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    bool a[5];\n"
+              "    memset(a, false, 5*sizeof(*a));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    bool a[5];\n"
+              "    memset(a, false, 5);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability, inconclusive) Array 'a' might be filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
     }
 };
 

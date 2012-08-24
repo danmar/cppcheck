@@ -230,6 +230,41 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
 }
 
 //---------------------------------------------------------------------------
+// Clarify (meaningless) statements like *foo++; with parantheses.
+//---------------------------------------------------------------------------
+void CheckOther::clarifyStatement()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[{};] * %var%")) {
+            tok = tok->tokAt(3);
+            while (tok) {
+                if (tok->str() == "[")
+                    tok = tok->link()->next();
+                if (Token::Match(tok, ".|:: %var%")) {
+                    if (tok->strAt(2) == "(")
+                        tok = tok->linkAt(2)->next();
+                    else
+                        tok = tok->tokAt(2);
+                } else
+                    break;
+            }
+            if (Token::Match(tok, "++|-- [;,]"))
+                clarifyStatementError(tok);
+        }
+    }
+}
+
+void CheckOther::clarifyStatementError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n"
+                "A statement like '*A++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
+                "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?");
+}
+
+//---------------------------------------------------------------------------
 // if (bool & bool) -> if (bool && bool)
 // if (bool | bool) -> if (bool || bool)
 //---------------------------------------------------------------------------
@@ -3115,4 +3150,44 @@ void CheckOther::checkNegativeBitwiseShift()
 void CheckOther::negativeBitwiseShiftError(const Token *tok)
 {
     reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value.");
+}
+
+
+//---------------------------------------------------------------------------
+// Check for incompletely filled buffers.
+//---------------------------------------------------------------------------
+void CheckOther::checkIncompleteArrayFill()
+{
+    if (!_settings->inconclusive || !_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "memset|memcpy|memmove ( %var% ,") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
+            const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
+            if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
+                continue;
+
+            if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
+                unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
+                if ((size != 1 && size != 100 && size != 0) || Token::Match(var->typeEndToken(), "*"))
+                    incompleteArrayFillError(tok, var->name(), tok->str(), false);
+                else if (var->typeStartToken()->str() == "bool" && _settings->isEnabled("portability")) // sizeof(bool) is not 1 on all platforms
+                    incompleteArrayFillError(tok, var->name(), tok->str(), true);
+            }
+        }
+    }
+}
+
+void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean)
+{
+    if (boolean)
+        reportError(tok, Severity::portability, "incompleteArrayFill",
+                    "Array '" + buffer + "' might be filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
+                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but the type 'bool' is larger than 1 on some platforms. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
+    else
+        reportError(tok, Severity::warning, "incompleteArrayFill",
+                    "Array '" + buffer + "' is filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
+                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but an element of the given array is larger than one byte. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
 }
