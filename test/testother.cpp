@@ -153,6 +153,7 @@ private:
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
 
         TEST_CASE(alwaysTrueFalseStringCompare);
+        TEST_CASE(suspiciousStringCompare);
         TEST_CASE(checkPointerSizeof);
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -4821,6 +4822,33 @@ private:
             "    std::cout << \"Equal\n\"\n"
             "  }\n"
             "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void suspiciousStringCompare() {
+        check("bool foo(char* c) {\n"
+              "    return c == \"x\";\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
+
+        check("bool foo(const char* c) {\n"
+              "    return \"x\" == c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return foo+\"x\" == c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return \"x\" == c+foo;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(const std::string& c) {\n"
+              "    return \"x\" == c;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

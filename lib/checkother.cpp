@@ -2834,6 +2834,44 @@ void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const st
                 "This could be a logic bug.");
 }
 
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CheckOther::checkSuspiciousStringCompare()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (const Token* tok = _tokenizer->list.front(); tok && tok->tokAt(3); tok = tok->next()) {
+        if (tok->next()->type() != Token::eComparisonOp)
+            continue;
+
+        const Token* varTok = tok;
+        const Token* litTok = tok->tokAt(2);
+
+        if (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+")
+            continue;
+
+        if ((varTok->type() == Token::eString || varTok->type() == Token::eVariable) && (litTok->type() == Token::eString || litTok->type() == Token::eVariable) && litTok->type() != varTok->type()) {
+            if (varTok->type() == Token::eString)
+                std::swap(varTok, litTok);
+
+            const Variable* var = symbolDatabase->getVariableFromVarId(varTok->varId());
+            if (var && var->isPointer())
+                suspiciousStringCompareError(tok, var->name());
+        }
+    }
+}
+
+void CheckOther::suspiciousStringCompareError(const Token* tok, const std::string& var)
+{
+    reportError(tok, Severity::warning, "literalWithCharPtrCompare",
+                "String literal compared with variable '" + var + "'. Did you intend to use strcmp() instead?");
+}
+
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CheckOther::checkModuloAlwaysTrueFalse()

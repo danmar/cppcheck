@@ -301,6 +301,8 @@ public:
     }
     void varId(unsigned int id) {
         _varId = id;
+        if (id != 0)
+            _type = eVariable;
     }
 
     /**

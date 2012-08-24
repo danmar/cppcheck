@@ -75,6 +75,7 @@ public:
         checkOther.checkComparisonOfBoolExpressionWithInt();
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
         checkOther.checkIncompleteArrayFill();
+        checkOther.checkSuspiciousStringCompare();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -200,6 +201,9 @@ public:
     /** @brief %Check for using bad usage of strncmp and substr */
     void checkIncorrectStringCompare();
 
+    /** @brief %Check for comparison of a string literal with a char* variable */
+    void checkSuspiciousStringCompare();
+
     /** @brief %Check for using postfix increment on bool */
     void checkIncrementBoolean();
 
@@ -297,6 +301,7 @@ private:
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
+    void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
     void assignBoolToPointerError(const Token *tok);
@@ -356,6 +361,7 @@ private:
         c.clarifyConditionError(0, true, false);
         c.clarifyStatementError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
+        c.suspiciousStringCompareError(0, "foo");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
         c.incrementBooleanError(0);
         c.comparisonOfBoolWithIntError(0, "varname", true);
@@ -427,6 +433,7 @@ private:
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
                "* suspicious condition (string literals as boolean)\n"
+               "* suspicious comparison of a string literal with a char* variable\n"
                "* duplicate break statement\n"
                "* unreachable code\n"
                "* testing if unsigned variable is negative\n"
