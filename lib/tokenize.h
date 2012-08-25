@@ -463,6 +463,8 @@ public:
 
     bool hasComplicatedSyntaxErrorsInTemplates();
 
+    void simplifyReservedWordNullptr();
+
     /**
      * Simplify e.g. 'atol("0")' into '0'
      */

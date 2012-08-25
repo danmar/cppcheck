@@ -4646,17 +4646,12 @@ private:
     }
 
     void simplify_null() {
-        {
-            const char code[] =
-                "int * p = NULL;\n"
-                "int * q = __null;\n";
-            const char expected[] =
-                "int * p ; p = 0 ;\nint * q ; q = 0 ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
-        }
-
-        ASSERT_EQUALS("( a == nullptr )", tokenizeAndStringify("(a==nullptr)", false, false, Settings::Unspecified, "test.c"));
-        ASSERT_EQUALS("( ! a )",       tokenizeAndStringify("(a==nullptr)", false, false, Settings::Unspecified, "test.cpp"));
+        const char code[] =
+            "int * p = NULL;\n"
+            "int * q = __null;\n";
+        const char expected[] =
+            "int * p ; p = 0 ;\nint * q ; q = 0 ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
 
     void simplifyMulAndParens() {
