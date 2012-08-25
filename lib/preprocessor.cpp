@@ -1001,13 +1001,17 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         }
 
         if (line.compare(0, 8, "#define ") == 0) {
-            bool valid = true;
+            bool valid = false;
             for (std::string::size_type pos = 8; pos < line.size(); ++pos) {
                 char ch = line[pos];
-                if (ch=='_' || (ch>='a' && ch<='z') || (ch>='A' && ch<='Z') || (pos>8 && ch>='0' && ch<='9'))
+                if (ch=='_' || (ch>='a' && ch<='z') || (ch>='A' && ch<='Z') || (pos>8 && ch>='0' && ch<='9')) {
+                    valid = true;
                     continue;
-                if (ch==' ' || ch=='(')
-                    break;
+                }
+                if (ch==' ' || ch=='(') {
+                    if (valid)
+                        break;
+                }
                 valid = false;
                 break;
             }

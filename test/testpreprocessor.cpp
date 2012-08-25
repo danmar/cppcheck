@@ -232,7 +232,8 @@ private:
         TEST_CASE(testPreprocessorRead3);
         TEST_CASE(testPreprocessorRead4);
 
-        TEST_CASE(invalid_define);	// #2605 - hang for: '#define ='
+        TEST_CASE(invalid_define_1);	// #2605 - hang for: '#define ='
+        TEST_CASE(invalid_define_2);	// #4036 - hang for: '#define () {(int f(x) }'
 
         // Show 'missing include' warnings
         TEST_CASE(missingInclude);
@@ -2955,11 +2956,22 @@ private:
         }
     }
 
-    void invalid_define() {
+    void invalid_define_1() {
         Settings settings;
         Preprocessor preprocessor(&settings, this);
 
         std::istringstream src("#define =\n");
+        std::string processedFile;
+        std::list<std::string> cfg;
+        std::list<std::string> paths;
+        preprocessor.preprocess(src, processedFile, cfg, "", paths); // don't hang
+    }
+
+    void invalid_define_2() {  // #4036 - hang
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        std::istringstream src("#define () {(int f(x) }\n");
         std::string processedFile;
         std::list<std::string> cfg;
         std::list<std::string> paths;
