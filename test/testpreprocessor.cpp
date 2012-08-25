@@ -3611,9 +3611,9 @@ private:
     }
 
     void if_sizeof() { // #4071
-        static const char* code = "#if sizeof(wchar_t) == 2\n"
+        static const char* code = "#if sizeof(unsigned short) == 2\n"
                                   "Fred & Wilma\n"
-                                  "#elif sizeof(wchar_t) == 4\n"
+                                  "#elif sizeof(unsigned short) == 4\n"
                                   "Fred & Wilma\n"
                                   "#else\n"
                                   "#endif";
@@ -3623,7 +3623,6 @@ private:
         std::istringstream istr(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.c");
-
         ASSERT_EQUALS("\nFred & Wilma\n\n\n\n\n", actual[""]);
     }
 };
