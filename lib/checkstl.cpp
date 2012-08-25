@@ -926,8 +926,8 @@ void CheckStl::size()
 
             if (varid) {
                 // check for comparison to zero
-                if (Token::Match(end, "==|<=|!=|> 0") ||
-                    Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<")) {
+                if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
+                    (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<"))) {
                     if (isStlContainer(varid))
                         sizeError(tok1);
                 }
