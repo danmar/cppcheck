@@ -2106,7 +2106,7 @@ void Tokenizer::simplifyNull()
     }
 
     // nullptr..
-    if (isCPP()) {
+    if (isCPP() && _settings->standards.cpp == Standards::CPP11) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (tok->str() == "nullptr")
                 tok->str("0");
@@ -8396,7 +8396,7 @@ void Tokenizer::simplifyKeyword()
 {
     const char *pattern;
 
-    if (_settings->standards.c99)
+    if (_settings->standards.c >= Standards::C99)
         pattern = "volatile|inline|__inline|__forceinline|register|restrict|__restrict|__restrict__";
     else
         pattern = "volatile|inline|__inline|__forceinline|register|__restrict|__restrict__";
@@ -8639,12 +8639,12 @@ void Tokenizer::simplifyNamespaceStd()
             tok->previous()->insertToken("::");
         }
 
-        else if (_settings->standards.cpp11 && Token::Match(tok, "!!:: tr1 ::"))
+        else if (_settings->standards.cpp == Standards::CPP11 && Token::Match(tok, "!!:: tr1 ::"))
             tok->next()->str("std");
     }
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (_settings->standards.cpp11 && Token::Match(tok, "std :: tr1 ::"))
+        if (_settings->standards.cpp == Standards::CPP11 && Token::Match(tok, "std :: tr1 ::"))
             Token::eraseTokens(tok, tok->tokAt(3));
 
         else if (Token::Match(tok, "using namespace std ;")) {

@@ -75,7 +75,7 @@ private:
         Settings settings;
         settings.addEnabled("style");
         settings.standards.posix = true;
-        settings.standards.c99 = true;
+        settings.standards.c = Standards::C11;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -221,7 +221,7 @@ private:
               "{\n"
               "    char *x = alloca(10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'alloca' called. It is recommended to use a variable length array.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n", errout.str());
     }
 
     // ticket #3121

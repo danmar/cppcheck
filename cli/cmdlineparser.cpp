@@ -438,15 +438,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // --std
         else if (strcmp(argv[i], "--std=posix") == 0) {
             _settings->standards.posix = true;
-        }
-
-        // --C99
-        else if (strcmp(argv[i], "--std=c99") == 0) {
-            _settings->standards.c99 = true;
-        }
-
-        else if (strcmp(argv[i], "--std=c++11") == 0) {
-            _settings->standards.cpp11 = true;
+        } else if (strcmp(argv[i], "--std=c89") == 0) {
+            _settings->standards.c = Standards::C89;
+        } else if (strcmp(argv[i], "--std=c99") == 0) {
+            _settings->standards.c = Standards::C99;
+        } else if (strcmp(argv[i], "--std=c11") == 0) {
+            _settings->standards.c = Standards::C11;
+        } else if (strcmp(argv[i], "--std=c++03") == 0) {
+            _settings->standards.cpp = Standards::CPP03;
+        } else if (strcmp(argv[i], "--std=c++11") == 0) {
+            _settings->standards.cpp = Standards::CPP11;
         }
 
         // Output formatter
@@ -792,16 +793,22 @@ void CmdLineParser::PrintHelp() const
               "    --rule-file=<file>   Use given rule file. For more information, see: \n"
               "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
-              "    --std=<id>           Enable some standard related checks.\n"
+              "    --std=<id>           Set standard.\n"
               "                         The available options are:\n"
               "                          * posix\n"
-              "                                 Checks related to POSIX-specific functionality\n"
+              "                                 POSIX compatible code\n"
+              "                          * c89\n"
+              "                                 C code is C89 compatible\n"
               "                          * c99\n"
-              "                                 C99 standard related checks\n"
+              "                                 C code is C99 compatible\n"
+              "                          * c11\n"
+              "                                 C code is C11 compatible (default)\n"
+              "                          * c++03\n"
+              "                                 C++ code is C++03 compatible\n"
               "                          * c++11\n"
-              "                                 C++11 standard related checks\n"
-              "                         Example to enable more than one checks:\n"
-              "                           'cppcheck --std=c99 --std=posix file.cpp'\n"
+              "                                 C++ code is C++11 compatible (default)\n"
+              "                         More than one --std can be used:\n"
+              "                           'cppcheck --std=c99 --std=posix file.c'\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"
@@ -830,7 +837,7 @@ void CmdLineParser::PrintHelp() const
               "  cppcheck --quiet ../myproject/\n"
               "\n"
               "  # Check test.cpp, enable all checks:\n"
-              "  cppcheck --enable=all --inconclusive --std=c++11 test.cpp\n"
+              "  cppcheck --enable=all --inconclusive test.cpp\n"
               "\n"
               "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
               "  cppcheck -I inc1/ -I inc2/ f.cpp\n"

@@ -73,7 +73,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                         reportError(tok->next(), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     }
                 }
-                if (_settings->standards.c99) {
+                if (_settings->standards.c >= Standards::C99) {
                     it = _obsoleteC99Functions.find(tok->str());
                     if (it != _obsoleteC99Functions.end()) {
                         reportError(tok->next(), Severity::style, "obsoleteFunctions"+it->first, it->second);

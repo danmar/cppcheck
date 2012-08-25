@@ -446,8 +446,6 @@ private:
         errout.str("");
 
         Settings settings;
-        if (Path::isC(filename))
-            settings.standards.c99 = true;
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);

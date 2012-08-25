@@ -681,7 +681,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT(settings.standards.c99);
+        ASSERT(settings.standards.c == Standards::C99);
     }
 
     void stdcpp11() {
@@ -690,7 +690,7 @@ private:
         Settings settings;
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT(settings.standards.cpp11);
+        ASSERT(settings.standards.cpp == Standards::CPP11);
     }
 
     void suppressionsOld() {

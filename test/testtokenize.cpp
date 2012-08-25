@@ -437,13 +437,13 @@ private:
         TEST_CASE(platformUnix64);
     }
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = false) {
+    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
         Settings settings;
         settings.debugwarnings = true;
         settings.platform(platform);
-        settings.standards.cpp11 = cpp11;
+        settings.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2630,6 +2630,8 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.standards.c   = Standards::C89;
+        settings.standards.cpp = Standards::CPP03;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -4920,7 +4922,7 @@ private:
 
     void vardecl14() {
         const char code[] = "::std::tr1::shared_ptr<int> pNum1, pNum2;\n";
-        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code, false, false, Settings::Unspecified, "test.cpp", false));
     }
 
     void vardecl15() {
