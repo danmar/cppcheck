@@ -74,19 +74,18 @@ private:
         TEST_CASE(crash1);
     }
 
-    void check(const char code[], bool inconclusive = false, bool cpp11 = false) {
+    void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
         settings.inconclusive = inconclusive;
-        settings.standards.cpp11 = cpp11;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        if (!tokenizer.tokenize(istr, "test.cpp"))
+        if (!tokenizer.tokenize(istr, filename))
             return;
 
         // Check for redundant code..
@@ -1159,19 +1158,17 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
-    void nullpointer12() { // ticket #2470
-        check("int foo()\n"
-              "{\n"
-              "  int* i = nullptr;\n"
-              "  return *i;\n"
-              "}\n", false, true); // Check as C++11 code
+    void nullpointer12() { // ticket #2470, #4035
+        const char code[] = "int foo()\n"
+                            "{\n"
+                            "  int* i = nullptr;\n"
+                            "  return *i;\n"
+                            "}\n";
+
+        check(code, false, "test.cpp"); // C++ file => nullptr means NULL
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
-        check("int foo(int nullptr)\n"
-              "{\n"
-              "  int* i = nullptr;\n"
-              "  return *i;\n"
-              "}", true);
+        check(code, false, "test.c"); // C file => nullptr does not mean NULL
         ASSERT_EQUALS("", errout.str());
     }
 

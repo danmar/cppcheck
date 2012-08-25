@@ -1995,8 +1995,6 @@ bool Tokenizer::tokenize(std::istream &code,
 
     removeRedundantSemicolons();
 
-    simplifyReservedWordNullptr();
-
     simplifyParameterVoid();
 
     simplifyRedundantConsecutiveBraces();
@@ -2106,6 +2104,14 @@ void Tokenizer::simplifyNull()
             tok->str("0");
         }
     }
+
+    // nullptr..
+    if (isCPP()) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (tok->str() == "nullptr")
+                tok->str("0");
+        }
+    }
 }
 
 void Tokenizer::concatenateNegativeNumber()
@@ -2195,16 +2201,6 @@ void Tokenizer::simplifyParameterVoid()
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%var% ( void )"))
             tok->next()->deleteNext();
-    }
-}
-
-void Tokenizer::simplifyReservedWordNullptr()
-{
-    if (_settings->standards.cpp11) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (tok->str() == "nullptr")
-                tok->str("0");
-        }
     }
 }
 
