@@ -836,7 +836,14 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // assignment
-        else if (Token::Match(tok, "%var% [") && Token::simpleMatch(skipBracketsAndMembers(tok->next()), "=")) {
+        else if ((Token::Match(tok, "%var% [") && Token::simpleMatch(skipBracketsAndMembers(tok->next()), "=")) ||
+                 (Token::simpleMatch(tok, "* (") && Token::simpleMatch(tok->next()->link(), ") ="))) {
+            if (tok->str() == "*") {
+                tok = tok->tokAt(2);
+                if (tok->str() == "(")
+                    tok = tok->link()->next();
+            }
+
             unsigned int varid = tok->varId();
             const Variables::VariableUsage *var = variables.find(varid);
 
