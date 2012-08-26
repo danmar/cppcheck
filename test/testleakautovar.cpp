@@ -94,6 +94,8 @@ private:
         TEST_CASE(configuration2);
         TEST_CASE(configuration3);
         TEST_CASE(configuration4);
+
+        TEST_CASE(ptrptr);
     }
 
     void check(const char code[]) {
@@ -544,6 +546,13 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (information) set_data configuration is needed to establish if there is a leak or not\n", errout.str());
+    }
+
+    void ptrptr() {
+        check("void f() {\n"
+              "    char **p = malloc(10);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
     }
 };
 

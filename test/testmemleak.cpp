@@ -353,6 +353,8 @@ private:
         TEST_CASE(trac1879);
 
         TEST_CASE(garbageCode);
+
+        TEST_CASE(ptrptr);
     }
 
 
@@ -3798,6 +3800,15 @@ private:
         check("void h(int l) {\n"
               "    while\n" // Don't crash (#3870)
               "}");
+    }
+
+    void ptrptr() {
+        check("void f() {\n"
+              "    char *p;\n"
+              "    char **pp = &p;\n"
+              "    *pp = calloc(10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
 };
