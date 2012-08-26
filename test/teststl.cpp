@@ -1724,6 +1724,11 @@ private:
               "    Foo(str.c_str());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int atoi(const std::string& str) {\n" // #3729: Don't suggest recursive call
+              "    return atoi(str.c_str());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void autoPointer() {
