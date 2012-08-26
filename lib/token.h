@@ -303,6 +303,8 @@ public:
         _varId = id;
         if (id != 0)
             _type = eVariable;
+        else
+            update_property_info();
     }
 
     /**
