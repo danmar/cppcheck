@@ -504,8 +504,8 @@ Settings MainWindow::GetCppcheckSettings()
     result._inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
     result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
-    result.standards.cpp11 = mSettings->value(SETTINGS_STD_CPP11, false).toBool();
-    result.standards.c99 = mSettings->value(SETTINGS_STD_C99, false).toBool();
+    result.standards.cpp = mSettings->value(SETTINGS_STD_CPP11, false).toBool() ? Standards::CPP11 : Standards::CPP03;
+    result.standards.c = mSettings->value(SETTINGS_STD_C99, false).toBool() ? Standards::C99 : Standards::C89;
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
     if (result._jobs <= 0) {
