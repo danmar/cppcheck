@@ -4280,6 +4280,9 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("DensePropertyMap<int, true> visited;"); // #4075
+        ASSERT_EQUALS("", errout.str());
     }
 
     void comparisonOfBoolWithInt2() {
