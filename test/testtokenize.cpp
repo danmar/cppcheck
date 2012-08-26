@@ -224,6 +224,7 @@ private:
         TEST_CASE(varid49); // #3799 - void f(std::vector<int>)
         TEST_CASE(varid50); // #3760 - explicit
         TEST_CASE(varid51); // don't set varid for template function
+        TEST_CASE(varid52); // Set varid for nested templates
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3377,6 +3378,17 @@ private:
         const std::string code("T t; t.x<0>();");
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: T t@1 ; t@1 . x < 0 > ( ) ;\n",
+                      tokenizeDebugListing(code, false, "test.cpp"));
+    }
+
+    void varid52() {
+        const std::string code("A<B<C>::D> e;\n"
+                               "B< C<> > b[10];\n"
+                               "B<C<>> c[10];");
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: A < B < C > :: D > e@1 ;\n"
+                      "2: B < C < > > b@2 [ 10 ] ;\n"
+                      "3: B < C < > > c@3 [ 10 ] ;\n",
                       tokenizeDebugListing(code, false, "test.cpp"));
     }
 
