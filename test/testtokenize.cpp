@@ -424,6 +424,8 @@ private:
         TEST_CASE(simplifyOperatorName5);
         TEST_CASE(simplifyOperatorName6); // ticket #3194
 
+        TEST_CASE(simplifyNullArray);
+
         // Some simple cleanups of unhandled macros in the global scope
         TEST_CASE(removeMacrosInGlobalScope);
 
@@ -6698,6 +6700,10 @@ private:
         const char code2[] = "value_type * operator -- (int);";
         const char result2[] = "value_type * operator-- ( int ) ;";
         ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+    }
+
+    void simplifyNullArray() {
+        ASSERT_EQUALS("* ( foo . bar [ 5 ] ) = x ;", tokenizeAndStringify("0[foo.bar[5]] = x;"));
     }
 
     void removeMacrosInGlobalScope() {

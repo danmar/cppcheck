@@ -1693,6 +1693,15 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // Simplify: 0[foo] -> *(foo)
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "0 [") && tok->linkAt(1)) {
+            tok->str("*");
+            tok->next()->str("(");
+            tok->linkAt(1)->str(")");
+        }
+    }
+
     // Remove "volatile", "inline", "register", and "restrict"
     simplifyKeyword();
 
