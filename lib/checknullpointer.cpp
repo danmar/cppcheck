@@ -104,8 +104,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("mktime");
 
         functionNames1_nullptr.insert("itoa");
-        functionNames1_nullptr.insert("mbstowcs");
-        functionNames1_nullptr.insert("wcstombs");
         functionNames1_nullptr.insert("memcpy");
         functionNames1_nullptr.insert("memmove");
         functionNames1_nullptr.insert("memset");
