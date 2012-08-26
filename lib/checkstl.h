@@ -221,7 +221,7 @@ private:
                "* redundant condition\n"
                "* common mistakes when using string::c_str()\n"
                "* using auto pointer (auto_ptr)\n"
-               "* useless calls of string and STL functions";
+               "* useless calls of string and STL functions\n";
     }
 
     bool isStlContainer(unsigned int varid);

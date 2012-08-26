@@ -334,7 +334,7 @@ private:
      * @return Wiki formatted information about this class
      */
     std::string classInfo() const {
-        return "Is there any allocated memory when a function goes out of scope";
+        return "Is there any allocated memory when a function goes out of scope\n";
     }
 
     /** Function names for functions that are "noreturn" */
@@ -387,7 +387,7 @@ private:
     }
 
     std::string classInfo() const {
-        return "If the constructor allocate memory then the destructor must deallocate it.";
+        return "If the constructor allocate memory then the destructor must deallocate it.\n";
     }
 };
 
@@ -426,7 +426,7 @@ private:
     }
 
     std::string classInfo() const {
-        return "Don't forget to deallocate struct members";
+        return "Don't forget to deallocate struct members\n";
     }
 };
 
@@ -465,7 +465,7 @@ private:
     }
 
     std::string classInfo() const {
-        return "Not taking the address to allocated memory";
+        return "Not taking the address to allocated memory\n";
     }
 };
 /// @}

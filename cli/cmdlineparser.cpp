@@ -521,13 +521,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 const std::string info((*it)->classInfo());
                 if (!name.empty() && !info.empty())
                     doc << "===" << name << "===\n"
-                        << info << "\n\n";
+                        << info << "\n";
             }
 
-            std::string doc2(doc.str());
-            while (doc2.find("\n\n\n") != std::string::npos)
-                doc2.erase(doc2.find("\n\n\n"), 1);
-            std::cout << doc2;
+            std::cout << doc.str();
             _exitAfterPrint = true;
             return true;
         }

@@ -82,7 +82,7 @@ private:
     std::string classInfo() const {
         return "Check if there is 64-bit portability issues:\n"
                "* assign address to/from int/long\n"
-               "* casting address from/to integer when returning from function";
+               "* casting address from/to integer when returning from function\n";
     }
 };
 /// @}

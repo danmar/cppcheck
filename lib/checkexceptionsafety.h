@@ -117,7 +117,7 @@ private:
                "* Throwing exceptions in destructors\n"
                "* Throwing exception during invalid state\n"
                "* Throwing a copy of a caught exception instead of rethrowing the original exception\n"
-               "* Exception caught by value instead of by reference";
+               "* Exception caught by value instead of by reference\n";
     }
 };
 /// @}

@@ -128,7 +128,7 @@ private:
     }
 
     std::string classInfo() const {
-        return "Detect when a auto variable is allocated but not deallocated.";
+        return "Detect when a auto variable is allocated but not deallocated.\n";
     }
 };
 /// @}

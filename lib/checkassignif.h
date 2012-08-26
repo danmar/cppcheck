@@ -88,7 +88,7 @@ private:
         return "Match assignments and conditions:\n"
                "* Mismatching assignment and comparison => comparison is always true/false\n"
                "* Mismatching lhs and rhs in comparison => comparison is always true/false\n"
-               "* Detect matching 'if' and 'else if' conditions";
+               "* Detect matching 'if' and 'else if' conditions\n";
     }
 };
 /// @}

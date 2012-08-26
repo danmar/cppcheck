@@ -251,7 +251,7 @@ private:
     }
 
     std::string classInfo() const {
-        return "out of bounds checking";
+        return "out of bounds checking\n";
     }
 };
 /// @}
