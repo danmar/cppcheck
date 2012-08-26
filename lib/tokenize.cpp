@@ -2457,28 +2457,6 @@ void Tokenizer::simplifyTemplates()
 }
 //---------------------------------------------------------------------------
 
-std::string Tokenizer::getNameForFunctionParams(const Token *start)
-{
-    if (start->next() == start->link())
-        return "";
-
-    std::string result;
-    bool findNextComma = false;
-    for (const Token *tok = start->next(); tok && tok != start->link(); tok = tok->next()) {
-        if (findNextComma) {
-            if (tok->str() == ",")
-                findNextComma = false;
-
-            continue;
-        }
-
-        result.append(tok->str() + ",");
-        findNextComma = true;
-    }
-
-    return result;
-}
-
 
 static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId, bool executableScope)
 {
@@ -7664,22 +7642,6 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
             tok->deleteNext();
         }
     }
-}
-
-//---------------------------------------------------------------------------
-
-const char *Tokenizer::getParameterName(const Token *ftok, unsigned int par)
-{
-    unsigned int _par = 1;
-    for (; ftok; ftok = ftok->next()) {
-        if (ftok->str() == ")")
-            break;
-        else if (ftok->str() == ",")
-            ++_par;
-        else if (par == _par && Token::Match(ftok, "%var% [,)]"))
-            return ftok->str().c_str();
-    }
-    return NULL;
 }
 
 //---------------------------------------------------------------------------

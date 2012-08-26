@@ -136,16 +136,6 @@ public:
     void simplifyMulAndParens();
 
     /**
-     * Get parameter name of function
-     * @param ftok The token for the function name in a function
-     *             implementation/declaration
-     * @param par   parameter number (1,2,3,..)
-     * @return if the parameter was found then the parameter name is
-     *         returned. Otherwise NULL is returned.
-     */
-    static const char *getParameterName(const Token *ftok, unsigned int par);
-
-    /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
@@ -647,16 +637,6 @@ public:
      * operator = => operator=
      */
     void simplifyOperatorName();
-
-    /**
-     * This will return a short name describing function parameters
-     * e.g. parameters: (int a, char b) should get name "int,char,".
-     * This should help to identify functions with the same name,
-     * but with different parameters.
-     * @param start The "(" token
-     * @return, e.g. "int,char,"
-     */
-    static std::string getNameForFunctionParams(const Token *start);
 
     /**
      * check for duplicate enum definition
