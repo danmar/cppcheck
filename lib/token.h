@@ -374,7 +374,7 @@ public:
      */
     void link(Token *linkToToken) {
         _link = linkToToken;
-        if(_str == "<" || _str == ">")
+        if (_str == "<" || _str == ">")
             update_property_info();
     }
 
