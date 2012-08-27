@@ -1941,6 +1941,7 @@ private:
               "    std::remove(a.begin(), a.end(), val);\n"
               "    x = std::remove(a.begin(), a.end(), val);\n"
               "    a.erase(std::remove(a.begin(), a.end(), val));\n"
+              "    std::remove(\"foo.txt\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of std::remove() ignored. Elements remain in container.\n", errout.str());
     }

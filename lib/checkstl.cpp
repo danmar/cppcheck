@@ -1340,7 +1340,7 @@ void CheckStl::uselessCalls()
                 uselessCallsSubstrError(tok, true);
         } else if (Token::Match(tok, "[{}:;] %var% . empty ( ) ;") && style)
             uselessCallsEmptyError(tok->next());
-        else if (Token::Match(tok, "[{};] std :: remove ("))
+		else if (Token::Match(tok, "[{};] std :: remove (") && tok->tokAt(5)->nextArgument())
             uselessCallsRemoveError(tok->next());
     }
 }
