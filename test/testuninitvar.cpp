@@ -558,6 +558,22 @@ private:
                        "  return Range;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #4040 - False positive
+        checkUninitVar("int f(int x)  {\n"
+                       "    int iter;\n"
+                       "    {\n"
+                       "        union\n"
+                       "        {\n"
+                       "            int asInt;\n"
+                       "            double asDouble;\n"
+                       "        };\n"
+                       "\n"
+                       "        iter = x;\n"
+                       "    }\n"
+                       "    return 1 + iter;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar3() { // #3844
