@@ -50,6 +50,7 @@ private:
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
         TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
+        TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -260,6 +261,14 @@ private:
         check("void f(char *p) {\n"
               "    free(p), p = 0;\n"
               "    *p = 0;\n"  // <- Make sure pointer info is reset. It is NOT a freed pointer dereference
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse6() {  // #4034
+        check("void f(char *p) {\n"
+              "    free(p);\n"
+              "    x = p = foo();\n"  // <- p is not dereferenced
               "}");
         ASSERT_EQUALS("", errout.str());
     }
