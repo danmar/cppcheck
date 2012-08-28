@@ -2585,27 +2585,32 @@ static void setVarIdClassDeclaration(Token * const startToken,
 
     // replace varids..
     unsigned int indentlevel = 0;
+    bool initList = false;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
-        if (tok->str() == "{")
+        if (tok->str() == "{") {
+            initList = false;
             ++indentlevel;
-        else if (tok->str() == "}")
+        } else if (tok->str() == "}")
             --indentlevel;
-        else if (indentlevel > 0 && tok->isName() && tok->varId() <= scopeStartVarId) {
-            if (Token::Match(tok->previous(), "::|."))
-                continue;
-            if (tok->next()->str() == "::") {
-                if (tok->str() == className)
-                    tok = tok->tokAt(2);
-                else
+        else if (tok->isName() && tok->varId() <= scopeStartVarId) {
+            if (indentlevel > 0 || (initList && indentlevel == 0 && (tok->strAt(-1) == "," || tok->strAt(-1) == ":"))) {
+                if (Token::Match(tok->previous(), "::|."))
                     continue;
-            }
+                if (tok->next()->str() == "::") {
+                    if (tok->str() == className)
+                        tok = tok->tokAt(2);
+                    else
+                        continue;
+                }
 
-            const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
-            if (it != variableId.end()) {
-                tok->varId(it->second);
-                setVarIdStructMembers(&tok, structMembers, _varId);
+                const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
+                if (it != variableId.end()) {
+                    tok->varId(it->second);
+                    setVarIdStructMembers(&tok, structMembers, _varId);
+                }
             }
-        }
+        } else if (indentlevel == 0 && tok->str() == ":")
+            initList = true;
     }
 }
 
