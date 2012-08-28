@@ -341,6 +341,9 @@ public:
     /** Replace a "goto" with the statements */
     void simplifyGoto();
 
+    /** Simplify useless C++ empty namespaces, like: 'namespace %var% { }'*/
+    void simplifyEmptyNamespaces();
+
     /** Simplify redundant code placed after control flow statements :
      * 'return', 'throw', 'goto', 'break' and 'continue'
      */

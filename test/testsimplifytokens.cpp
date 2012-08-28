@@ -2380,6 +2380,12 @@ private:
 
     void namespaces() {
         {
+            const char code[] = "namespace std { }";
+
+            ASSERT_EQUALS(";", tok(code));
+        }
+
+        {
             const char code[] = "using namespace std; namespace a{ namespace b{ void f(){} } }";
 
             const std::string expected("namespace a { namespace b { void f ( ) { } } }");
@@ -2391,14 +2397,6 @@ private:
             const char code[] = "namespace b{ void f(){} }";
 
             const std::string expected("namespace b { void f ( ) { } }");
-
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "int a; namespace b{ }";
-
-            const std::string expected("int a ; namespace b { }");
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -5629,11 +5627,9 @@ private:
         const char code[] = "typedef long Long;\n"
                             "namespace NS {\n"
                             "}\n";
-        const char expected[] = "namespace NS { "
-                                "}";
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS(";", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 

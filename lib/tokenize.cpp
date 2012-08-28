@@ -2008,6 +2008,8 @@ bool Tokenizer::tokenize(std::istream &code,
 
     simplifyRedundantConsecutiveBraces();
 
+    simplifyEmptyNamespaces();
+
     bool valid = validate();
     if (valid)
         createSymbolDatabase();
@@ -3427,6 +3429,8 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyRedundantConsecutiveBraces();
 
+    simplifyEmptyNamespaces();
+
     if (!validate())
         return false;
 
@@ -3604,6 +3608,41 @@ void Tokenizer::simplifyRealloc()
                 //goto before last ";" and continue
                 tok = tok->next();
             }
+        }
+    }
+}
+
+void Tokenizer::simplifyEmptyNamespaces()
+{
+    if (isC())
+        return;
+
+    bool goback = false;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (goback) {
+            tok = tok->previous();
+            goback = false;
+        }
+        if (tok->str() == "(" || tok->str() == "[" || tok->str() == "{") {
+            tok = tok->link();
+            continue;
+        }
+        if (!Token::Match(tok, "namespace %var% {"))
+            continue;
+        if (tok->strAt(3) == "}") {
+            tok->deleteNext(3);             // remove '%var% { }'
+            if (tok->next()) {              // '%empty% namespace %anytoken%'?
+                if (!tok->previous()) {
+                    tok->deleteThis();      // remove 'namespace'
+                    goback = true;
+                } else {                    // '%any% namespace %any%'
+                    tok = tok->previous();  // goto previous token
+                    tok->deleteNext();      // remove next token: 'namespace'
+                }
+            } else                          // '%empty% namespace %empty%'?
+                tok->str(";");              // change 'namespace' to ';'
+        } else {
+            tok = tok->tokAt(2);
         }
     }
 }
