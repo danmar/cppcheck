@@ -2539,23 +2539,12 @@ static void setVarIdStructMembers(Token **tok1,
         if (TemplateSimplifier::templateParameters(tok->next()) > 0)
             break;
 
-        std::map<unsigned int, std::map<std::string,unsigned int> >::iterator structIterator;
-        structIterator = structMembers->find(struct_varid);
-        if (structIterator == structMembers->end()) {
-            std::map<std::string,unsigned int> members;
-            members[tok->str()] = ++ (*_varId);
-            (*structMembers)[struct_varid] = members;
+        std::map<std::string,unsigned int>& members = (*structMembers)[struct_varid];
+        if (members.empty() || members.find(tok->str()) == members.end()) {
+            members[tok->str()] = ++(*_varId);
             tok->varId(*_varId);
         } else {
-            std::map<std::string,unsigned int> &members = structIterator->second;
-            std::map<std::string,unsigned int>::const_iterator memberIterator;
-            memberIterator = members.find(tok->str());
-            if (memberIterator == members.end()) {
-                members[tok->str()] = ++(*_varId);
-                tok->varId(*_varId);
-            } else {
-                tok->varId(memberIterator->second);
-            }
+            tok->varId(members[tok->str()]);
         }
     }
     if (tok)
