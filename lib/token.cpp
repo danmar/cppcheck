@@ -341,7 +341,7 @@ static int multiComparePercent(const char * * haystack_p,
 {
     const char *haystack = *haystack_p;
 
-    if (haystack[0] == '%' && haystack[1] != '|') {
+    if (haystack[0] == '%' && haystack[1] != '|' && haystack[1] != '\0' && haystack[1] != ' ') {
         if (haystack[1] == 'o' && // "%op%"
             haystack[2] == 'p' &&
             haystack[3] == '%') {
@@ -564,7 +564,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Compare the first character of the string for optimization reasons
         // before doing more detailed checks.
-        if (p[0] == '%') {
+        if (p[0] == '%' && p[1]!='|') {
             bool patternUnderstood = false;
             switch (p[1]) {
             case 'v':
