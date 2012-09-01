@@ -613,7 +613,15 @@ private:
                               "\"hello world\"\n"
                               "};\n"
                               "}\n";
-        ASSERT_EQUALS(tok(code2), tok(code1));
+
+        Settings settings;
+        settings.platform(Settings::Unspecified);
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code1);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        ASSERT_EQUALS(tok(code2), tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(13) && tokenizer.tokens()->tokAt(13)->isLong());
     }
 
     void double_plus() {

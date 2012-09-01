@@ -1600,6 +1600,31 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // Combine wide strings
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
+            // Combine 'L "string"'
+            tok->str(tok->next()->str());
+            tok->deleteNext();
+            tok->isLong(true);
+        }
+    }
+
+    // Combine strings
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str()[0] != '"')
+            continue;
+
+        tok->str(simplifyString(tok->str()));
+        while (tok->next() && tok->next()->type() == Token::eString) {
+            tok->next()->str(simplifyString(tok->next()->str()));
+
+            // Two strings after each other, combine them
+            tok->concatStr(tok->next()->str());
+            tok->deleteNext();
+        }
+    }
+
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     simplifySQL();
 
@@ -3242,30 +3267,6 @@ bool Tokenizer::simplifyTokenList()
     simplifyStd();
 
     simplifyGoto();
-
-    // Combine wide strings
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
-            // Combine 'L "string"'
-            tok->str(tok->next()->str());
-            tok->deleteNext();
-        }
-    }
-
-    // Combine strings
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str()[0] != '"')
-            continue;
-
-        tok->str(simplifyString(tok->str()));
-        while (tok->next() && tok->next()->type() == Token::eString) {
-            tok->next()->str(simplifyString(tok->next()->str()));
-
-            // Two strings after each other, combine them
-            tok->concatStr(tok->next()->str());
-            tok->deleteNext();
-        }
-    }
 
     simplifySizeof();
 
