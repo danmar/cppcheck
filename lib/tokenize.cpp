@@ -4191,6 +4191,8 @@ void Tokenizer::simplifyConditionOperator()
                         tok = tok2;
                         while (tok && tok->str() != ";")
                             tok->deleteThis();
+                        if (!tok)
+                            break;
                     }
                 }
             }
