@@ -183,7 +183,7 @@ protected:
      * clean up #-preprocessor lines (only)
      * @param processedFile The data to be processed
      */
-    std::string preprocessCleanupDirectives(const std::string &processedFile) const;
+    static std::string preprocessCleanupDirectives(const std::string &processedFile);
 
     /**
      * Returns the string between double quote characters or \< \> characters.

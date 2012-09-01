@@ -210,7 +210,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     return result;
 }
 
-std::string Preprocessor::preprocessCleanupDirectives(const std::string &processedFile) const
+std::string Preprocessor::preprocessCleanupDirectives(const std::string &processedFile)
 {
     std::ostringstream code;
     std::istringstream sstr(processedFile);
