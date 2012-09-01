@@ -3288,6 +3288,49 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
+              "   if((x==3) && (x!=4))\n"
+              "        a++;\n"
+              "}\n"
+             );
+
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x == 3, the comparison x != 4 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x!=4) && (x==3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x == 3, the comparison x != 4 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x==3) || (x!=4))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x == 3, the comparison x != 4 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x!=4) || (x==3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x == 3, the comparison x != 4 is always true.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x==3) && (x!=3))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x != 3 && x == 3.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if ((x==6) || (x!=6))\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 6 || x == 6.\n", errout.str());
+
+        check("void f(int x) {\n"
               "    if (x > 10 || x < 3)\n"
               "        a++;\n"
               "}\n"
