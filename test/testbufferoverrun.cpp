@@ -154,6 +154,8 @@ private:
         TEST_CASE(buffer_overrun_21);
         TEST_CASE(buffer_overrun_22); // #3124
         TEST_CASE(buffer_overrun_23); // #3153
+        TEST_CASE(buffer_overrun_24); // #4106
+        TEST_CASE(buffer_overrun_25); // #4096
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(possible_buffer_overrun_1); // #3035
 
@@ -2532,6 +2534,38 @@ private:
               "}\n");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void buffer_overrun_24() { // ticket #4106
+        check("void main() {\n"
+              "   int array[] = {1,2};\n"
+              "   int x = 0;\n"
+              "   for( int i = 0; i<6; ) { \n"
+              "      x += array[i];\n"
+              "       i++;  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: array\n", errout.str());
+
+        check("void main() {\n"
+              "   int array[] = {1,2};\n"
+              "   int x = 0;\n"
+              "   for( int i = 0; i<6; ) { \n"
+              "       i++;  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_25() { // ticket #4096
+        check("void main() {\n"
+              "   int array[] = {1,2};\n"
+              "   int x = 0;\n"
+              "   for( int i = 0; i<6; ) { \n"
+              "      x += array[i++];\n"
+              "         }\n"
+              "}\n");
+
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: array\n", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch() {

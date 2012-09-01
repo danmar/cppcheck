@@ -796,6 +796,54 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     parse_for_body(tok2->next(), arrayInfo, counter_name, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
 }
 
+void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &arrayInfo)
+{
+    const MathLib::bigint size = arrayInfo.num(0);
+    const Token *tok3 = tok->tokAt(2);
+    std::string counter_name;
+    unsigned int counter_varid = 0;
+    std::string counter_init_value;
+
+    tok3 = for_init(tok3, counter_varid, counter_name, counter_init_value);
+
+    bool maxMinFlipped = false;
+    std::string min_counter_value = counter_init_value;
+    std::string max_counter_value;
+    MathLib::bigint max_value = MathLib::toLongNumber(max_counter_value);
+
+    for_condition(tok3, counter_varid, min_counter_value, max_counter_value, maxMinFlipped);
+    while (tok3 && tok3->str() != ";") {
+        tok3 = tok3->next();
+    }
+
+    for (const Token* tok2 = tok; tok2; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "%var% < %num%")) {
+            max_value = MathLib::toLongNumber(tok2->strAt(2));
+            max_value = max_value - 1;
+        }
+    }
+
+    bool usedInArray = false;
+
+    if (max_value > size) {
+        if (tok3->strAt(1) == ")") {
+
+            for (const Token *loopTok = tok3->tokAt(2); loopTok->str() != "}" ; loopTok = loopTok->next()) {
+                if (loopTok->varId() == arrayInfo.varid() && loopTok->tokAt(2)->varId() == counter_varid)
+                    usedInArray = true;
+            }
+
+            for (const Token *loopTok = tok3->tokAt(2); loopTok->str() != "}" ; loopTok = loopTok->next()) {
+                if (usedInArray && (counter_varid == loopTok->varId())) {
+                    if (Token::Match(loopTok->next(), " ++ ") ||
+                        (loopTok->previous()->type() == Token::eIncDecOp)) {
+                        bufferOverrunError(tok, arrayInfo.varname());
+                    }
+                }
+            }
+        }
+    }
+}
 
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo)
 {
@@ -1102,6 +1150,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         // Loop..
         else if (Token::simpleMatch(tok, "for (")) {
             bool bailout = false;
+            arrayIndexInForLoop(tok, arrayInfo);
             checkScopeForBody(tok, arrayInfo, bailout);
             if (bailout)
                 break;
