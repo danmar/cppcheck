@@ -53,10 +53,13 @@
 # xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
 #
 # Upload manual.pdf , manual.html and version.txt...
-# sftp hyd_danmar,cppcheck@web.sourceforge.net
+# sftp danielmarjamaki,cppcheck@web.sourceforge.net
 #
 # save "cppcheck --doc" output on wiki
 #
+# compile new democlient:
+# ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net
+# ./build.sh 1.23
 
 # Tag to use
 tag=$1
@@ -69,5 +72,5 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
 
-# scp cppcheck-1.52.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/1.52/
+scp ../$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
 
