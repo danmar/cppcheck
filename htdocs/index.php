@@ -56,7 +56,7 @@ bugs that the compilers normally do not detect. The goal is to detect only real
 errors in the code (i.e. have zero false positives).</p>
 
 <h2><a id="download">Download</a></h2>
-<p><a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.55/cppcheck-1.55-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.55 for Windows</em></a></p>
+<p><a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.56/cppcheck-1.56-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.56 for Windows</em></a></p>
 <p>You can download the standalone Cppcheck from our
 <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
 as a plugin for your favorite IDE:</p>
