@@ -598,7 +598,7 @@ private:
     Function* addGlobalFunctionDecl(Scope*& scope, const Token *argStart, const Token* funcStart);
     Function* addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
-    bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart) const;
+    static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
 
     /** class/struct types */
     std::set<std::string> classAndStructTypes;
