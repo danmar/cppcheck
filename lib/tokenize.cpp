@@ -2826,36 +2826,33 @@ void Tokenizer::setVarId()
                 tok2->varId(varlist[tok2->str()]);
             }
 
-            // Member functions for this class..
-            std::list<Token *> funclist;
-            {
-                const std::string funcpattern(classname + " :: %var% (");
-                for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
-                    Token *tok2 = *func;
+            // Set variable ids in member functions for this class..
+            const std::string funcpattern(classname + " :: %var% (");
+            for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
+                Token *tok2 = *func;
 
-                    // Found a class function..
-                    if (Token::Match(tok2, funcpattern.c_str())) {
-                        // Goto the end parenthesis..
-                        tok2 = tok2->linkAt(3);
-                        if (!tok2)
-                            break;
+                // Found a class function..
+                if (Token::Match(tok2, funcpattern.c_str())) {
+                    // Goto the end parenthesis..
+                    tok2 = tok2->linkAt(3);
+                    if (!tok2)
+                        break;
 
-                        // If this is a function implementation.. add it to funclist
-                        if (Token::Match(tok2, ") const|volatile| {")) {
-                            while (tok2->str() != "{")
-                                tok2 = tok2->next();
-                            setVarIdClassFunction(tok2, tok2->link(), varlist, &structMembers, &_varId);
+                    // If this is a function implementation.. add it to funclist
+                    if (Token::Match(tok2, ") const|volatile| {")) {
+                        while (tok2->str() != "{")
+                            tok2 = tok2->next();
+                        setVarIdClassFunction(tok2, tok2->link(), varlist, &structMembers, &_varId);
+                    }
+
+                    // constructor with initializer list
+                    if (Token::Match(tok2, ") : %var% (")) {
+                        const Token *tok3 = tok2;
+                        while (Token::Match(tok3, ") [:,] %var% (")) {
+                            tok3 = tok3->linkAt(3);
                         }
-
-                        // constructor with initializer list
-                        if (Token::Match(tok2, ") : %var% (")) {
-                            const Token *tok3 = tok2;
-                            while (Token::Match(tok3, ") [:,] %var% (")) {
-                                tok3 = tok3->linkAt(3);
-                            }
-                            if (Token::simpleMatch(tok3, ") {")) {
-                                setVarIdClassFunction(tok2, tok3->next()->link(), varlist, &structMembers, &_varId);
-                            }
+                        if (Token::simpleMatch(tok3, ") {")) {
+                            setVarIdClassFunction(tok2, tok3->next()->link(), varlist, &structMembers, &_varId);
                         }
                     }
                 }
