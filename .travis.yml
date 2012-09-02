@@ -1,4 +1,5 @@
 language: cpp
 compiler:
   - gcc
+  - clang
 script: make test && ./cppcheck . cli gui lib
