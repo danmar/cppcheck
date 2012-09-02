@@ -621,8 +621,8 @@ void CheckOther::checkRedundantAssignment()
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (!i->isExecutable())
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (!scope->isExecutable())
             continue;
 
         ///std::cout << std::endl << "scope: " << i->className << std::endl;
@@ -631,7 +631,7 @@ void CheckOther::checkRedundantAssignment()
         std::map<unsigned int, const Token*> memAssignments;
         const Token* writtenArgumentsEnd = 0;
 
-        for (const Token* tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok == writtenArgumentsEnd)
                 writtenArgumentsEnd = 0;
 
@@ -657,7 +657,7 @@ void CheckOther::checkRedundantAssignment()
                                 error = false;
                         }
                         if (error) {
-                            if (i->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, tok->str());
                             else
                                 redundantAssignmentError(it->second, tok, tok->str());
@@ -686,7 +686,7 @@ void CheckOther::checkRedundantAssignment()
                         if (it == memAssignments.end())
                             memAssignments[param1->varId()] = tok;
                         else {
-                            if (i->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantCopyInSwitchError(it->second, tok, param1->str());
                             else
                                 redundantCopyError(it->second, tok, param1->str());
