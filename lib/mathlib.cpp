@@ -217,6 +217,9 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
         return toString<bigint>(toLongNumber(first) - toLongNumber(second));
     }
 
+    if (first == second)
+        return "0.0" ;
+
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);
 

@@ -123,6 +123,7 @@ private:
         ASSERT_EQUALS("5"   , MathLib::divide("25.5", "5.1"));
         ASSERT_EQUALS("7"   , MathLib::divide("21.", "3"));
         ASSERT_EQUALS("1"   , MathLib::divide("3", "2"));
+        ASSERT_EQUALS("0.0" , MathLib::subtract("0.0", "0.0"));
 
         // Unknown action should throw exception
         ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
