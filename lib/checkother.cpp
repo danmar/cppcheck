@@ -704,13 +704,20 @@ void CheckOther::checkRedundantAssignment()
                     if (!_tokenizer->IsScopeNoReturn(funcEnd, &noreturn) && !noreturn) {
                         for (std::map<unsigned int, const Token*>::iterator i = varAssignments.begin(); i != varAssignments.end(); ++i) {
                             const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-                            if (!var || (!var->isLocal() && !var->isArgument()))
+                            if (!var || (!var->isLocal() && !var->isArgument())) {
                                 varAssignments.erase(i++);
+                                if (i == varAssignments.end())
+                                    break;
+                            }
                         }
                         for (std::map<unsigned int, const Token*>::iterator i = memAssignments.begin(); i != memAssignments.end(); ++i) {
                             const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-                            if (!var || (!var->isLocal() && !var->isArgument()))
+                            if (!var || (!var->isLocal() && !var->isArgument())) {
                                 memAssignments.erase(i++);
+                                if (i == memAssignments.end())
+                                    break;
+                            }
+
                         }
                     } else {
                         varAssignments.clear();
