@@ -705,12 +705,12 @@ void CheckOther::checkRedundantAssignment()
                         for (std::map<unsigned int, const Token*>::iterator i = varAssignments.begin(); i != varAssignments.end(); ++i) {
                             const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
                             if (!var || (!var->isLocal() && !var->isArgument()))
-                                i = varAssignments.erase(i);
+                                varAssignments.erase(i++);
                         }
                         for (std::map<unsigned int, const Token*>::iterator i = memAssignments.begin(); i != memAssignments.end(); ++i) {
                             const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
                             if (!var || (!var->isLocal() && !var->isArgument()))
-                                i = memAssignments.erase(i);
+                                memAssignments.erase(i++);
                         }
                     } else {
                         varAssignments.clear();
