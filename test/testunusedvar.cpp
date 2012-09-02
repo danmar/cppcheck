@@ -424,23 +424,23 @@ private:
                               "{\n"
                               "    int j = 0;\n"
                               "    int & i = j;\n"
-                              "    j = j;\n"
+                              "    x(j);\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int j = 0;\n"
                               "    const int & i = j;\n"
-                              "    j = j;\n"
+                              "    x(j);\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int j = 0;\n"
                               "    int & i(j);\n"
-                              "    j = j;\n"
+                              "    x(j);\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
 
@@ -448,7 +448,7 @@ private:
                               "{\n"
                               "    int j = 0;\n"
                               "    const int & i(j);\n"
-                              "    j = j;\n"
+                              "    x(j);\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
 
@@ -581,6 +581,12 @@ private:
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    char *i = \"123456789\";\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i = 0;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
     }
@@ -975,7 +981,9 @@ private:
                               "    int a, b, c;\n"
                               "    a = b = c = f();\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
+                      "[test.cpp:3]: (style) Variable 'b' is assigned a value that is never used\n"
+                      "[test.cpp:3]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("int * foo()\n"
                               "{\n"
@@ -1184,7 +1192,7 @@ private:
                               "    char *ptr = buf;\n"
                               "    *(ptr++) = 0;\n"
                               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'buf' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("int foo()\n"
                               "{\n"
@@ -1192,7 +1200,7 @@ private:
                               "    char *ptr = buf - 1;\n"
                               "    *(++ptr) = 0;\n"
                               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'buf' is not assigned a value\n", errout.str());
 
         // #3910
         functionVariableUsage("int foo() {\n"
@@ -1516,7 +1524,6 @@ private:
                               "        piArray[uiIndex] = -1234;\n"
                               "    }\n"
                               "    delete [] piArray;\n"
-                              "    piArray = NULL;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1757,7 +1764,7 @@ private:
                               "{\n"
                               "    int *b = a;\n"
                               "    int c = b[0];\n"
-                              "    c = c;\n"
+                              "    x(c);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1765,7 +1772,7 @@ private:
                               "{\n"
                               "    int *b = a;\n"
                               "    int c = b[0];\n"
-                              "    c = c;\n"
+                              "    x(c);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1980,7 +1987,7 @@ private:
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int * a;\n"
-                              "    a = a;\n"
+                              "    x(a);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

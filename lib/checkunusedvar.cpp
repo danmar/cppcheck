@@ -256,8 +256,10 @@ void Variables::write(unsigned int varid)
 {
     VariableUsage *usage = find(varid);
 
-    if (usage)
+    if (usage) {
         usage->_write = true;
+        usage->_read = false;
+    }
 }
 
 void Variables::writeAliases(unsigned int varid)
@@ -730,9 +732,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
+        else if (Token::Match(tok->tokAt(-2), "while|if") && Token::Match(tok->tokAt(1), "=") && tok->varId() && tok->varId() == tok->tokAt(2)->varId()) {
+            variables.use(tok->tokAt(2)->varId());
+        }
         // assignment
         else if (!Token::Match(tok->tokAt(-2), "[;{}.] %var% (") &&
-                 (Token::Match(tok, "*| (| ++|--| %var% ++|--| )| =") ||
+                 (Token::Match(tok, "*| ++|--| %var% ++|--| =") ||
                   Token::Match(tok, "*| ( const| %type% *| ) %var% ="))) {
             bool dereference = false;
             bool pre = false;
