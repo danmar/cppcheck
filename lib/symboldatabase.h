@@ -474,6 +474,10 @@ public:
         return (type == eClass || type == eStruct);
     }
 
+    bool isExecutable() const {
+        return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace;
+    }
+
     bool isLocal() const {
         return (type == eIf || type == eElse || type == eElseIf ||
                 type == eFor || type == eWhile || type == eDo ||
