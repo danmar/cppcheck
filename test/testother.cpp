@@ -168,6 +168,9 @@ private:
         TEST_CASE(checkNegativeShift);
 
         TEST_CASE(incompleteArrayFill);
+
+        TEST_CASE(redundantVarAssignment);
+        TEST_CASE(redundantMemWrite);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
@@ -177,6 +180,7 @@ private:
         Settings settings;
         settings.addEnabled("style");
         settings.addEnabled("portability");
+        settings.addEnabled("performance");
         settings.inconclusive = inconclusive;
         settings.experimental = experimental;
 
@@ -1384,7 +1388,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant assignment of \"y\" in switch\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1400,7 +1404,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant assignment of \"y\" in switch\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1557,7 +1561,7 @@ private:
               "      strcpy(str, \"b'\");\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Switch case fall-through. Redundant strcpy of \"str\".\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. This might indicate a missing 'break;'.\n", errout.str());
 
         check("void foo(char *str, int a)\n"
               "{\n"
@@ -1569,7 +1573,7 @@ private:
               "      strncpy(str, \"b'\");\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Switch case fall-through. Redundant strcpy of \"str\".\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. This might indicate a missing 'break;'.\n", errout.str());
 
         check("void foo(char *str, int a)\n"
               "{\n"
@@ -1584,7 +1588,7 @@ private:
               "      z++;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Switch case fall-through. Redundant strcpy of \"str\".\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Buffer 'str' is being written before its old content has been used. This might indicate a missing 'break;'.\n", errout.str());
 
         check("void foo(char *str, int a)\n"
               "{\n"
@@ -1615,7 +1619,6 @@ private:
     }
 
     void switchRedundantOperationTest() {
-
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1628,7 +1631,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1643,7 +1646,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1682,7 +1685,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1697,7 +1700,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1736,7 +1739,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1751,7 +1754,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1790,7 +1793,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1805,7 +1808,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Redundant operation on 'y' in switch.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -1875,21 +1878,6 @@ private:
               "        x++;\n"
               "    case 3:\n"
               "        y++;\n"
-              "    }\n"
-              "    bar(y);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-        check("void foo()\n"
-              "{\n"
-              "    int y = 1;\n"
-              "    switch (x)\n"
-              "    {\n"
-              "    case 2:\n"
-              "      {\n"
-              "        int y++;\n"
-              "      }\n"
-              "    case 3:\n"
-              "        y = 3;\n"
               "    }\n"
               "    bar(y);\n"
               "}\n");
@@ -3368,9 +3356,9 @@ private:
     void incorrectLogicOperator3() {
         check("void f(int x, bool& b) {\n"
               "    b = x > 5 && x == 1;\n"
-              "    b = x < 1 && x == 3;\n"
-              "    b = x >= 5 && x == 1;\n"
-              "    b = x <= 1 && x == 3;\n"
+              "    c = x < 1 && x == 3;\n"
+              "    d = x >= 5 && x == 1;\n"
+              "    e = x <= 1 && x == 3;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 5 && x == 1.\n"
                       "[test.cpp:3]: (warning) Logical conjunction always evaluates to false: x < 1 && x == 3.\n"
@@ -3409,9 +3397,9 @@ private:
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 3 || x == 4;\n"
-              "    b = x < 5 || x == 4;\n"
-              "    b = x >= 3 || x == 4;\n"
-              "    b = x <= 5 || x == 4;\n"
+              "    c = x < 5 || x == 4;\n"
+              "    d = x >= 3 || x == 4;\n"
+              "    e = x <= 5 || x == 4;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x == 4, the comparison x > 3 is always true.\n"
                       "[test.cpp:3]: (style) Redundant condition: If x == 4, the comparison x < 5 is always true.\n"
@@ -3420,9 +3408,9 @@ private:
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 5 || x != 1;\n"
-              "    b = x < 1 || x != 3;\n"
-              "    b = x >= 5 || x != 1;\n"
-              "    b = x <= 1 || x != 3;\n"
+              "    c = x < 1 || x != 3;\n"
+              "    d = x >= 5 || x != 1;\n"
+              "    e = x <= 1 || x != 3;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 5, the comparison x != 1 is always true.\n"
                       "[test.cpp:3]: (style) Redundant condition: If x < 1, the comparison x != 3 is always true.\n"
@@ -3431,9 +3419,9 @@ private:
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 6 && x > 5;\n"
-              "    b = x > 5 || x > 6;\n"
-              "    b = x < 6 && x < 5;\n"
-              "    b = x < 5 || x < 6;\n"
+              "    c = x > 5 || x > 6;\n"
+              "    d = x < 6 && x < 5;\n"
+              "    e = x < 5 || x < 6;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 6, the comparison x > 5 is always true.\n"
                       "[test.cpp:3]: (style) Redundant condition: If x > 5, the comparison x > 6 is always true.\n"
@@ -5963,7 +5951,9 @@ private:
               "    memcpy(a, b, 5);\n"
               "    memmove(a, b, 5);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n"
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n"
+                      "[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n"
+                      "[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n"
                       "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
                       "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'?\n", errout.str());
 
@@ -6015,6 +6005,196 @@ private:
               "    memset(a, false, 5);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability, inconclusive) Array 'a' might be filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
+    }
+
+    void redundantVarAssignment() {
+        // Simple tests
+        check("void f(int i) {\n"
+              "    i = 1;\n"
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("int i;\n"
+              "void f() {\n"
+              "    i = 1;\n"
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "    int i;\n"
+              "    i = 1;\n"
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        // Testing different types
+        check("void f() {\n"
+              "    Foo& bar = foo();\n"
+              "    bar = x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f() {\n"
+              "    Foo& bar = foo();\n"
+              "    bar = x;\n"
+              "    bar = y();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'bar' is reassigned a value before the old one has been used.\n", errout.str());
+
+        // Tests with function call between assignment
+        check("void bar() {}\n"
+              "void f(int i) {\n"
+              "    i = 1;\n"
+              "    bar();\n"
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void bar() {}\n"
+              "int i;\n"
+              "void f() {\n"
+              "    i = 1;\n"
+              "    bar();\n" // Global variable might be accessed in bar()
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar() {}\n"
+              "void f() {\n"
+              "    int i;\n"
+              "    i = 1;\n"
+              "    bar();\n"
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    i = 1;\n"
+              "    bar();\n" // Unknown function - can be noreturn
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar(int i) {}\n"
+              "void f(int i) {\n"
+              "    i = 1;\n"
+              "    bar(i);\n" // Passed as argument
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Branch tests
+        check("void f(int i) {\n"
+              "    i = 1;\n"
+              "    if(x)\n"
+              "        i = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    if(x)\n"
+              "        i = 0;\n"
+              "    i = 1;\n"
+              "    i = 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+    }
+
+    void redundantMemWrite() {
+        // Simple tests
+        check("void f(void* a) {\n"
+              "    memcpy(a, foo, bar);\n"
+              "    memset(a, 0, bar);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+
+        check("void* a;\n"
+              "void f() {\n"
+              "    strcpy(a, foo);\n"
+              "    strncpy(a, 0, bar);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "    void* a = foo();\n"
+              "    sprintf(a, foo);\n"
+              "    memmove(a, 0, bar);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+
+        // Writing to different parts of a buffer
+        check("void f(void* a) {\n"
+              "    memcpy(a, foo, bar);\n"
+              "    memset(a+5, 0, bar);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Use variable as second argument
+        check("void f(void* a, void* b) {\n"
+              "    memset(a, 0, 5);\n"
+              "    memcpy(b, a, 5);\n"
+              "    memset(a, 1, 5);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // strcat is special
+        check("void f(void* a) {\n"
+              "    strcpy(a, foo);\n"
+              "    strcat(a, bar);\n" // Not redundant
+              "    strcpy(a, x);\n" // Redundant
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+
+        // Tests with function call between copy
+        check("void bar() {}\n"
+              "void f(void* a) {\n"
+              "    snprintf(a, foo, bar);\n"
+              "    bar();\n"
+              "    memset(a, 0, size);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+
+        check("void bar() {}\n"
+              "void* a;\n"
+              "void f() {\n"
+              "    memset(a, 0, size);\n"
+              "    bar();\n" // Global variable might be accessed in bar()
+              "    memset(a, 0, size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar() {}\n"
+              "void f() {\n"
+              "    void* a = foo();\n"
+              "    memset(a, 0, size);\n"
+              "    bar();\n"
+              "    memset(a, 0, size);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+
+        check("void f(void* a) {\n"
+              "    memset(a, 0, size);\n"
+              "    bar();\n" // Unknown function - can be noreturn
+              "    memset(a, 0, size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar(void* a) {}\n"
+              "void f(void* a) {\n"
+              "    memset(a, 0, size);\n"
+              "    bar(a);\n" // Passed as argument
+              "    memset(a, 0, size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Branch tests
+        check("void f(void* a) {\n"
+              "    memset(a, 0, size);\n"
+              "    if(x)\n"
+              "        memset(a, 0, size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

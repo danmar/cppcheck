@@ -611,6 +611,155 @@ void CheckOther::sizeofForPointerError(const Token *tok, const std::string &varn
 }
 
 //---------------------------------------------------------------------------
+// Detect redundant assignments: x = 0; x = 4;
+//---------------------------------------------------------------------------
+
+void CheckOther::checkRedundantAssignment()
+{
+    if (!_settings->isEnabled("performance"))
+        return;
+
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (!i->isExecutable())
+            continue;
+
+        ///std::cout << std::endl << "scope: " << i->className << std::endl;
+
+        std::map<unsigned int, const Token*> varAssignments;
+        std::map<unsigned int, const Token*> memAssignments;
+        const Token* writtenArgumentsEnd = 0;
+
+        for (const Token* tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
+            if (tok == writtenArgumentsEnd)
+                writtenArgumentsEnd = 0;
+
+            if (tok->str() == "{" && tok->strAt(-1) != "{" && tok->strAt(-1) != "=" && tok->strAt(-4) != "case" && tok->strAt(-3) != "default") { // conditional or non-executable inner scope: Skip it and reset status
+                tok = tok->link();
+                varAssignments.clear();
+                memAssignments.clear();
+            } else if (Token::Match(tok, "for|if|while (")) {
+                tok = tok->linkAt(1);
+            } else if (Token::Match(tok, "break|return|continue|throw|goto")) {
+                varAssignments.clear();
+                memAssignments.clear();
+            } else if (tok->type() == Token::eVariable) {
+                std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
+                if (tok->next()->isAssignmentOp() && Token::Match(tok->previous(), "[;{}]")) { // Assignment
+                    ///std::cout << "assign: " << tok->varId() << std::endl;
+                    if (it != varAssignments.end()) {
+                        bool error = true; // Ensure that variable is not used on right side
+                        for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+                            if (tok2->str() == ";")
+                                break;
+                            else if (tok2->varId() == tok->varId())
+                                error = false;
+                        }
+                        if (error) {
+                            if (i->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                                redundantAssignmentInSwitchError(it->second, tok, tok->str());
+                            else
+                                redundantAssignmentError(it->second, tok, tok->str());
+                        }
+                        it->second = tok;
+                    }
+                    varAssignments[tok->varId()] = tok;
+                    memAssignments.erase(tok->varId());
+                } else if (tok->next()->type() == Token::eIncDecOp || (tok->previous()->type() == Token::eIncDecOp && !Token::Match(tok->next(), ".|[|("))) { // Variable incremented/decremented
+                    varAssignments[tok->varId()] = tok;
+                    memAssignments.erase(tok->varId());
+                } else if (!Token::Match(tok->tokAt(-2), "sizeof (")) { // Other usage of variable
+                    ///std::cout << "use: " << tok->varId() << std::endl;
+                    if (it != varAssignments.end())
+                        varAssignments.erase(it);
+                    if (!writtenArgumentsEnd) // Indicates that we are in the first argument of strcpy/memcpy/... function
+                        memAssignments.erase(tok->varId());
+                }
+            } else if (Token::Match(tok, "%var% (")) { // Function call. Global variables might be used. Reset their status
+                bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat");
+                if (memfunc) {
+                    const Token* param1 = tok->tokAt(2);
+                    writtenArgumentsEnd = param1->next();
+                    if (param1->varId() && param1->strAt(1) == "," && tok->str() != "strcat" && tok->str() != "strncat") {
+                        std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
+                        if (it == memAssignments.end())
+                            memAssignments[param1->varId()] = tok;
+                        else {
+                            if (i->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                                redundantCopyInSwitchError(it->second, tok, param1->str());
+                            else
+                                redundantCopyError(it->second, tok, param1->str());
+                        }
+                    }
+                } else {
+                    const Function* func = symbolDatabase->findFunctionByToken(_tokenizer->getFunctionTokenByName(tok->str().c_str()));
+                    if (!func || !func->hasBody) {
+                        varAssignments.clear();
+                        memAssignments.clear();
+                        continue;
+                    }
+                    const Token* funcEnd = func->functionScope->classEnd;
+                    bool noreturn;
+                    if (!_tokenizer->IsScopeNoReturn(funcEnd, &noreturn) && !noreturn) {
+                        for (std::map<unsigned int, const Token*>::iterator i = varAssignments.begin(); i != varAssignments.end(); ++i) {
+                            const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
+                            if (!var || (!var->isLocal() && !var->isArgument()))
+                                i = varAssignments.erase(i);
+                        }
+                        for (std::map<unsigned int, const Token*>::iterator i = memAssignments.begin(); i != memAssignments.end(); ++i) {
+                            const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
+                            if (!var || (!var->isLocal() && !var->isArgument()))
+                                i = memAssignments.erase(i);
+                        }
+                    } else {
+                        varAssignments.clear();
+                        memAssignments.clear();
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var)
+{
+    std::list<const Token*> callstack;
+    callstack.push_back(tok1);
+    callstack.push_back(tok2);
+    reportError(callstack, Severity::performance, "redundantCopy",
+                "Buffer '" + var + "' is being written before its old content has been used.");
+}
+
+void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
+{
+    std::list<const Token*> callstack;
+    callstack.push_back(tok1);
+    callstack.push_back(tok2);
+    reportError(callstack, Severity::warning, "redundantCopyInSwitch",
+                "Buffer '" + var + "' is being written before its old content has been used. This might indicate a missing 'break;'.");
+}
+
+void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var)
+{
+    std::list<const Token*> callstack;
+    callstack.push_back(tok1);
+    callstack.push_back(tok2);
+    reportError(callstack, Severity::performance, "redundantAssignment",
+                "Variable '" + var + "' is reassigned a value before the old one has been used.");
+}
+
+void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
+{
+    std::list<const Token*> callstack;
+    callstack.push_back(tok1);
+    callstack.push_back(tok2);
+    reportError(callstack, Severity::warning, "redundantAssignInSwitch",
+                "Variable '" + var + "' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.");
+}
+
+
+//---------------------------------------------------------------------------
 //    switch (x)
 //    {
 //        case 2:
@@ -636,18 +785,8 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             continue;
 
         // Check the contents of the switch statement
-        std::map<unsigned int, const Token*> varsAssigned;
-        std::map<unsigned int, const Token*> stringsCopied;
         std::map<unsigned int, const Token*> varsWithBitsSet;
         std::map<unsigned int, std::string> bitOperations;
-        /**
-         * 	A separate map for variables with post/pre increment/decrement has been kept since
-         * 	CASE 1(Reduntant):      CASE 2(NOT Reduntant):			CASE 3(NOT Reduntant):
-         * 		ret++;					ret = 3;						ret++;
-         * 		ret = 2;				ret++;							ret++;
-         *
-         */
-        std::map<unsigned int, const Token*> varsOperatedByPostORPreFix;
 
         for (const Token *tok2 = i->classStart->next(); tok2 != i->classEnd; tok2 = tok2->next()) {
             if (tok2->str() == "{") {
@@ -658,19 +797,11 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                     const Token* endOfConditional = tok2->link();
                     for (const Token* tok3 = tok2; tok3 != endOfConditional; tok3 = tok3->next()) {
                         if (tok3->varId() != 0) {
-                            varsAssigned.erase(tok3->varId());
-                            varsOperatedByPostORPreFix.erase(tok3->varId());
-                            stringsCopied.erase(tok3->varId());
                             varsWithBitsSet.erase(tok3->varId());
                             bitOperations.erase(tok3->varId());
                         } else if (Token::Match(tok3, functionPattern) || Token::Match(tok3, breakPattern)) {
-                            varsAssigned.clear();
                             varsWithBitsSet.clear();
                             bitOperations.clear();
-                            varsOperatedByPostORPreFix.erase(tok3->varId());
-
-                            if (tok3->str() != "strcpy" && tok3->str() != "strncpy")
-                                stringsCopied.clear();
                         }
                     }
                     tok2 = endOfConditional;
@@ -682,31 +813,10 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             //    case 4: b = 2;
 
             if (Token::Match(tok2->previous(), ";|{|}|: %var% = %any% ;") && tok2->varId() != 0) {
-                std::map<unsigned int, const Token*>::iterator i2 = varsAssigned.find(tok2->varId());
-                std::map<unsigned int, const Token*>::iterator i3 = varsOperatedByPostORPreFix.find(tok2->varId());
-
-                if (i2 == varsAssigned.end() && i3 == varsOperatedByPostORPreFix.end())
-                    varsAssigned[tok2->varId()] = tok2;
-
-                else {
-                    if (i3 == varsOperatedByPostORPreFix.end())
-                        redundantAssignmentInSwitchError(i2->second, i2->second->str());
-                    else
-                        redundantOperationInSwitchError(i3->second, i3->second->str());
-
-                }
-                stringsCopied.erase(tok2->varId());
                 varsWithBitsSet.erase(tok2->varId());
                 bitOperations.erase(tok2->varId());
             }
 
-
-            else if ((Token::Match(tok2->previous(), ";|{|}|: %var% ++|-- ;") ||
-                      Token::Match(tok2->tokAt(-2), ";|{|}|: ++|-- %var% ;"))  && tok2->varId() != 0) {
-                std::map<unsigned int, const Token*>::iterator i2 = varsOperatedByPostORPreFix.find(tok2->varId());
-                if (i2 == varsOperatedByPostORPreFix.end())
-                    varsOperatedByPostORPreFix[tok2->varId()] = tok2;
-            }
             // Bitwise operation. Report an error if it's performed twice before a break. E.g.:
             //    case 3: b |= 1;    // <== redundant
             //    case 4: b |= 1;
@@ -730,26 +840,12 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                     varsWithBitsSet.erase(tok2->varId());
                     bitOperations.erase(tok2->varId());
                 }
-
-                stringsCopied.erase(tok2->varId());
-                varsAssigned.erase(tok2->varId());
             }
 
-            // String copy. Report an error if it's copied to twice before a break. E.g.:
-            //    case 3: strcpy(str, "a");    // <== redundant
-            //    case 4: strcpy(str, "b");
-            else if (Token::Match(tok2->previous(), ";|{|}|: strcpy|strncpy ( %var% ,") && tok2->tokAt(2)->varId() != 0) {
-                std::map<unsigned int, const Token*>::iterator i2 = stringsCopied.find(tok2->tokAt(2)->varId());
-                if (i2 == stringsCopied.end())
-                    stringsCopied[tok2->tokAt(2)->varId()] = tok2->tokAt(2);
-                else
-                    redundantStrcpyInSwitchError(i2->second, i2->second->str());
-            }
             // Not a simple assignment so there may be good reason if this variable is assigned to twice. E.g.:
             //    case 3: b = 1;
             //    case 4: b++;
             else if (tok2->varId() != 0 && tok2->strAt(1) != "|" && tok2->strAt(1) != "&") {
-                varsAssigned.erase(tok2->varId());
                 varsWithBitsSet.erase(tok2->varId());
                 bitOperations.erase(tok2->varId());
             }
@@ -757,29 +853,11 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             // Reset our record of assignments if there is a break or function call. E.g.:
             //    case 3: b = 1; break;
             if (Token::Match(tok2, functionPattern) || Token::Match(tok2, breakPattern)) {
-                varsAssigned.clear();
                 varsWithBitsSet.clear();
                 bitOperations.clear();
-                varsOperatedByPostORPreFix.clear();
-
-                if (tok2->str() != "strcpy" && tok2->str() != "strncpy")
-                    stringsCopied.clear();
             }
         }
     }
-}
-
-void CheckOther::redundantAssignmentInSwitchError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "redundantAssignInSwitch", "Redundant assignment of \"" + varname + "\" in switch");
-}
-
-void CheckOther::redundantOperationInSwitchError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "redundantOperationInSwitch", "Redundant operation on '" + varname + "' in switch.");
-
 }
 
 void CheckOther::redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname)
@@ -788,13 +866,6 @@ void CheckOther::redundantBitwiseOperationInSwitchError(const Token *tok, const 
                 "redundantBitwiseOperationInSwitch", "Redundant bitwise operation on \"" + varname + "\" in switch");
 }
 
-void CheckOther::redundantStrcpyInSwitchError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "redundantStrcpyInSwitch",
-                "Switch case fall-through. Redundant strcpy of \"" + varname + "\".\n"
-                "Switch case fall-through. Redundant strcpy of \"" + varname + "\". The string is overwritten in a later case block.");
-}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -59,6 +59,7 @@ public:
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
+        checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
@@ -167,6 +168,9 @@ public:
 
     /** @brief %Check for calculations inside sizeof */
     void sizeofCalculation();
+
+    /** @brief copying to memory or assigning to a variablen twice */
+    void checkRedundantAssignment();
 
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
@@ -277,10 +281,11 @@ private:
     void zerodivError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
-    void redundantAssignmentInSwitchError(const Token *tok, const std::string &varname);
-    void redundantOperationInSwitchError(const Token *tok, const std::string &varname);
+    void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var);
+    void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
+    void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
+    void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
-    void redundantStrcpyInSwitchError(const Token *tok, const std::string &varname);
     void switchCaseFallThrough(const Token *tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
@@ -337,6 +342,8 @@ private:
 
         //performance
         c.redundantCopyError(0, "varname");
+        c.redundantCopyError(0, 0, "var");
+        c.redundantAssignmentError(0, 0, "var");
 
         // style/warning
         c.cstyleCastError(0);
@@ -349,8 +356,8 @@ private:
         c.strPlusCharError(0);
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0, false);
-        c.redundantAssignmentInSwitchError(0, "varname");
-        c.redundantOperationInSwitchError(0, "varname");
+        c.redundantAssignmentInSwitchError(0, 0, "var");
+        c.redundantCopyInSwitchError(0, 0, "var");
         c.switchCaseFallThrough(0);
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
@@ -405,6 +412,7 @@ private:
 
                //performance
                "* redundant data copying for const variable\n"
+               "* subsequent assignment or copying to a variable or buffer\n"
 
                // style
                "* C-style pointer cast in cpp file\n"
