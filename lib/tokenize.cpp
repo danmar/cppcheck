@@ -1646,6 +1646,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
 
+    // replace 'sin(0)' to '0' and other similar math expressions
+    simplifyMathExpressions();
+
     // combine "- %num%"
     concatenateNegativeNumber();
 
@@ -9215,6 +9218,32 @@ void Tokenizer::printUnknownTypes()
 
         if (_errorLogger)
             _errorLogger->reportOut(ss.str());
+    }
+}
+
+void Tokenizer::simplifyMathExpressions()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+
+        if (Token::Match(tok,"exp ( 0 )") || Token::Match(tok,"cosh ( 0 )") || Token::Match(tok,"cos ( 0 )") || Token::Match(tok,"sqrt ( 1 )")) {
+            tok->deleteNext(3);
+            tok->str("1");
+        }
+
+        if (Token::Match(tok,"sinh ( 0 )") || Token::Match(tok,"sin ( 0 )") || Token::Match(tok,"sqrt ( 0 )") || Token::Match(tok,"ln ( 1 )")) {
+            tok->deleteNext(3);
+            tok->str("0");
+        }
+
+        if (Token::Match(tok,"pow ( sin ( %var% ) , 2 ) + pow ( cos ( %var% ) , 2 )")) {
+            tok->deleteNext(18);
+            tok->str("1");
+        }
+
+        if (Token::Match(tok,"pow ( sinh ( %var% ) , 2 ) - pow ( cosh ( %var% ) , 2 )")) {
+            tok->deleteNext(18);
+            tok->str("-1");
+        }
     }
 }
 

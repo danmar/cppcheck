@@ -439,6 +439,8 @@ private:
         TEST_CASE(platformWin64);
         TEST_CASE(platformUnix32);
         TEST_CASE(platformUnix64);
+
+        TEST_CASE(simplifyMathExpressions); //ticket #1620
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -7188,6 +7190,36 @@ private:
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unix64));
     }
+
+    void simplifyMathExpressions() {//#1620
+        const char *code1 ="void foo() {\n"
+                           "std::cout<<sin(0);\n"
+                           "std::cout<<cos(0);\n"
+                           "std::cout<<sinh(0);\n"
+                           "std::cout<<cosh(0);\n"
+                           "std::cout<<exp(0);\n"
+                           "std::cout<<sqrt(0);\n"
+                           "std::cout<<sqrt(1);\n"
+                           "std::cout<<ln(1);\n"
+                           "std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
+                           "std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
+                           "}";
+
+        const char *expected1 ="void foo ( ) {\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << -1 ;\n"
+                               "}";
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
+    }
+
 };
 
 REGISTER_TEST(TestTokenizer)
