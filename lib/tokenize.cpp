@@ -5957,7 +5957,7 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
-                const std::string structname = "";
+                const std::string structname;
 
                 const Token *valueToken = tok2->tokAt(3);
                 std::string value(tok2->strAt(3));
@@ -5973,7 +5973,7 @@ bool Tokenizer::simplifyKnownVariables()
                 std::string::size_type n = -1;
                 if (varid == 0)
                     continue;
-                const std::string structname("");
+                const std::string structname;
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
                 if (tok2->str() == "sprintf") {
@@ -9250,7 +9250,7 @@ void Tokenizer::simplifyMathExpressions()
 const std::string& Tokenizer::getSourceFilePath() const
 {
     if (list.getFiles().empty()) {
-        static const std::string empty("");
+        static const std::string empty;
         return empty;
     }
     return list.getFiles()[0];
