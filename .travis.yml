@@ -1,4 +1,4 @@
 language: cpp
 compiler:
   - gcc
-script: make test && make clean && make CXXFLAGS=-O2 && ./cppcheck -q . cli gui lib
+script: make test && g++ -O2 -o cppcheck lib/*.cpp cli/*.cpp && ./cppcheck -q cli gui lib
