@@ -1553,6 +1553,22 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void bar() {}\n" // bar isn't noreturn
+              "void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (x)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y = 2;\n"
+              "        bar();\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
+
         check("void foo(char *str, int a)\n"
               "{\n"
               "    switch (a)\n"
@@ -6045,16 +6061,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'bar' is reassigned a value before the old one has been used.\n", errout.str());
 
         // Tests with function call between assignment
-        check("void bar() {}\n"
-              "void f(int i) {\n"
+        check("void f(int i) {\n"
               "    i = 1;\n"
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
-        check("void bar() {}\n"
-              "int i;\n"
+        check("int i;\n"
               "void f() {\n"
               "    i = 1;\n"
               "    bar();\n" // Global variable might be accessed in bar()
@@ -6062,21 +6076,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void bar() {}\n"
-              "void f() {\n"
+        check("void f() {\n"
               "    int i;\n"
               "    i = 1;\n"
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
-
-        check("void f(int i) {\n"
-              "    i = 1;\n"
-              "    bar();\n" // Unknown function - can be noreturn
-              "    i = 1;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void bar(int i) {}\n"
               "void f(int i) {\n"
@@ -6149,16 +6155,14 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
         // Tests with function call between copy
-        check("void bar() {}\n"
-              "void f(void* a) {\n"
+        check("void f(void* a) {\n"
               "    snprintf(a, foo, bar);\n"
               "    bar();\n"
               "    memset(a, 0, size);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
-        check("void bar() {}\n"
-              "void* a;\n"
+        check("void* a;\n"
               "void f() {\n"
               "    memset(a, 0, size);\n"
               "    bar();\n" // Global variable might be accessed in bar()
@@ -6166,21 +6170,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void bar() {}\n"
-              "void f() {\n"
+        check("void f() {\n"
               "    void* a = foo();\n"
               "    memset(a, 0, size);\n"
               "    bar();\n"
               "    memset(a, 0, size);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
-
-        check("void f(void* a) {\n"
-              "    memset(a, 0, size);\n"
-              "    bar();\n" // Unknown function - can be noreturn
-              "    memset(a, 0, size);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
         check("void bar(void* a) {}\n"
               "void f(void* a) {\n"

@@ -705,7 +705,7 @@ void CheckOther::checkRedundantAssignment()
                                 redundantCopyError(it->second, tok, param1->str());
                         }
                     }
-                } else {
+                } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
                     const Function* func = symbolDatabase->findFunctionByToken(_tokenizer->getFunctionTokenByName(tok->str().c_str()));
                     if (!func || !func->hasBody) {
                         varAssignments.clear();
@@ -721,6 +721,9 @@ void CheckOther::checkRedundantAssignment()
                         varAssignments.clear();
                         memAssignments.clear();
                     }
+                } else { // Noreturn functions outside switch don't cause problems
+                    eraseNotLocalArg(varAssignments, symbolDatabase);
+                    eraseNotLocalArg(memAssignments, symbolDatabase);
                 }
             }
         }
