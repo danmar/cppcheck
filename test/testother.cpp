@@ -1366,11 +1366,17 @@ private:
     }
 
     void sizeofCalculation() {
-        check("sizeof(a+b)");
+        check("int a, b; int a,sizeof(a+b)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
 
-        check("sizeof(-a)");
+        check("int a, b; sizeof(a*b)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
+
+        check("int a, b; sizeof(-a)");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
+
+        check("int a, b; sizeof(*a)");
+        ASSERT_EQUALS("", errout.str());
 
         check("sizeof(void * const)");
         ASSERT_EQUALS("", errout.str());
