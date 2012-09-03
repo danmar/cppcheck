@@ -942,6 +942,8 @@ private:
                                 "    return reinterpret_cast<long long*>(c);\n"
                                 "}", true);
         ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to integer* is not portable due to different binary data representations on different platforms\n", errout.str());
+
+        checkInvalidPointerCast("Q_DECLARE_METATYPE(int*)"); // #4135 - don't crash
     }
 
     void dangerousStrolUsage() {
