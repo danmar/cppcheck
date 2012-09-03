@@ -614,6 +614,19 @@ void CheckOther::sizeofForPointerError(const Token *tok, const std::string &varn
 // Detect redundant assignments: x = 0; x = 4;
 //---------------------------------------------------------------------------
 
+static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, const SymbolDatabase* symbolDatabase)
+{
+    for (std::map<unsigned int, const Token*>::iterator i = container.begin(); i != container.end();) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
+        if (!var || (!var->isLocal() && !var->isArgument())) {
+            container.erase(i++);
+            if (i == container.end())
+                break;
+        } else
+            ++i;
+    }
+}
+
 void CheckOther::checkRedundantAssignment()
 {
     if (!_settings->isEnabled("performance"))
@@ -702,23 +715,8 @@ void CheckOther::checkRedundantAssignment()
                     const Token* funcEnd = func->functionScope->classEnd;
                     bool noreturn;
                     if (!_tokenizer->IsScopeNoReturn(funcEnd, &noreturn) && !noreturn) {
-                        for (std::map<unsigned int, const Token*>::iterator i = varAssignments.begin(); i != varAssignments.end(); ++i) {
-                            const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-                            if (!var || (!var->isLocal() && !var->isArgument())) {
-                                varAssignments.erase(i++);
-                                if (i == varAssignments.end())
-                                    break;
-                            }
-                        }
-                        for (std::map<unsigned int, const Token*>::iterator i = memAssignments.begin(); i != memAssignments.end(); ++i) {
-                            const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-                            if (!var || (!var->isLocal() && !var->isArgument())) {
-                                memAssignments.erase(i++);
-                                if (i == memAssignments.end())
-                                    break;
-                            }
-
-                        }
+                        eraseNotLocalArg(varAssignments, symbolDatabase);
+                        eraseNotLocalArg(memAssignments, symbolDatabase);
                     } else {
                         varAssignments.clear();
                         memAssignments.clear();
