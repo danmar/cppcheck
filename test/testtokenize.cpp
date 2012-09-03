@@ -66,6 +66,8 @@ private:
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
 
+        TEST_CASE(foreach);     // #3690
+
         TEST_CASE(minus);
 
         TEST_CASE(longtok);
@@ -704,6 +706,12 @@ private:
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void foreach() {
+        // #3690
+        const std::string code("void f() { for each ( char c in MyString ) { Console::Write(c); } }");
+        ASSERT_EQUALS("void f ( ) { for ( char c in MyString ) { Console :: Write ( c ) ; } }" ,tokenizeAndStringify(code.c_str()));
     }
 
     void minus() {

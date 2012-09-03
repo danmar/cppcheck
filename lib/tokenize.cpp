@@ -1593,10 +1593,15 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // if MACRO
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|for|while|BOOST_FOREACH %var% (")) {
-            syntaxError(tok);
-            return false;
+            if (Token::simpleMatch(tok, "for each"))
+                // 'for each ( )' -> 'for ( )'
+                tok->deleteNext();
+            else {
+                syntaxError(tok);
+                return false;
+            }
         }
     }
 
