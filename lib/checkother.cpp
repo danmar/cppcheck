@@ -394,7 +394,7 @@ void CheckOther::invalidPointerCast()
         if (Token::Match(tok, "( const| %type% const| * )") || Token::Match(tok, "( const| %type% %type% const| * )")) {
             toTok = tok->next();
             nextTok = tok->link()->next();
-            if (nextTok->str() == "(")
+            if (nextTok && nextTok->str() == "(")
                 nextTok = nextTok->next();
         } else if (Token::Match(tok, "reinterpret_cast < const| %type% const| * > (") || Token::Match(tok, "reinterpret_cast < const| %type% %type% const| * > (")) {
             nextTok = tok->tokAt(5);
