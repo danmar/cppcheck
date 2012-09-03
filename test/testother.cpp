@@ -4040,6 +4040,29 @@ private:
               "    bar(*c++);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("char*** f(char*** c) {\n"
+              "    ***c++;\n"
+              "    return c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("char** f(char*** c) {\n"
+              "    **c[5]--;\n"
+              "    return **c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+
+        check("char*** f(char*** c) {\n"
+              "    (***c)++;\n"
+              "    return c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void *f(char** c) {\n"
+              "    bar(**c++);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison

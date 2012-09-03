@@ -238,21 +238,29 @@ void CheckOther::clarifyStatement()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[{};] * %var%")) {
-            tok = tok->tokAt(3);
-            while (tok) {
-                if (tok->str() == "[")
-                    tok = tok->link()->next();
-                if (Token::Match(tok, ".|:: %var%")) {
-                    if (tok->strAt(2) == "(")
-                        tok = tok->linkAt(2)->next();
-                    else
-                        tok = tok->tokAt(2);
-                } else
-                    break;
+        if (Token::Match(tok, "* %var%")) {
+            const Token *tok2=tok->previous();
+
+            while (Token::Match(tok2, "*"))
+                tok2=tok2->previous();
+
+            if (Token::Match(tok2, "[{};]")) {
+                tok = tok->tokAt(2);
+                while (tok) {
+                    if (tok->str() == "[")
+                        tok = tok->link()->next();
+
+                    if (Token::Match(tok, ".|:: %var%")) {
+                        if (tok->strAt(2) == "(")
+                            tok = tok->linkAt(2)->next();
+                        else
+                            tok = tok->tokAt(2);
+                    } else
+                        break;
+                }
+                if (Token::Match(tok, "++|-- [;,]"))
+                    clarifyStatementError(tok);
             }
-            if (Token::Match(tok, "++|-- [;,]"))
-                clarifyStatementError(tok);
         }
     }
 }
