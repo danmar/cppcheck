@@ -2390,7 +2390,7 @@ private:
         {
             const char code[] = "namespace std { }";
 
-            ASSERT_EQUALS(";", tok(code));
+            ASSERT_EQUALS("", tok(code));
         }
 
         {
@@ -5637,7 +5637,7 @@ private:
                             "}\n";
 
         checkSimplifyTypedef(code);
-        ASSERT_EQUALS(";", tok(code));
+        ASSERT_EQUALS("", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
