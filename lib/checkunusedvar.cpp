@@ -599,7 +599,7 @@ static const Token * skipBracketsAndMembers(const Token *tok)
 //---------------------------------------------------------------------------
 // Usage of function variables
 //---------------------------------------------------------------------------
-void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables)
+void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables, bool insideLoop, std::vector<unsigned int> &usedVariables)
 {
     // Find declarations if the scope is executable..
     if (scope->type != Scope::eClass && scope->type != Scope::eUnion && scope->type != Scope::eStruct) {
@@ -653,12 +653,21 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
     }
 
+    if (scope->classDef->str() == "for" || scope->classDef->str() == "while") {
+        insideLoop = true;
+    }
+
     // Check variable usage
     for (const Token *tok = scope->classDef->next(); tok && tok != scope->classEnd; tok = tok->next()) {
-        if (tok->str() == "for") {
+        if (tok->str() == "for" || tok->str() == "while") {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classDef == tok) { // Find associated scope
-                    checkFunctionVariableUsage_iterateScopes(*i, variables); // Scan child scope
+                    checkFunctionVariableUsage_iterateScopes(*i, variables, true, usedVariables); // Scan child scope
+                    insideLoop = false;
+                    std::vector<unsigned int>::iterator it;
+                    for (it = usedVariables.begin(); it != usedVariables.end(); it++) {
+                        variables.read((*it));
+                    }
                     tok = (*i)->classStart->link();
                     break;
                 }
@@ -669,7 +678,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         if (tok->str() == "{") {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classStart == tok) { // Find associated scope
-                    checkFunctionVariableUsage_iterateScopes(*i, variables); // Scan child scope
+                    checkFunctionVariableUsage_iterateScopes(*i, variables, insideLoop, usedVariables); // Scan child scope
                     tok = tok->link();
                     break;
                 }
@@ -872,48 +881,70 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.read(tok->next()->varId());
             } else // addressof
                 variables.use(tok->next()->varId()); // use = read + write
-        } else if (Token::Match(tok, ">> %var%"))
+            usedVariables.push_back(tok->next()->varId());
+        } else if (Token::Match(tok, ">> %var%")) {
             variables.use(tok->next()->varId()); // use = read + write
-        else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]"))
+            usedVariables.push_back(tok->next()->varId());
+        } else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]")) {
             variables.read(tok->varId());
+            usedVariables.push_back(tok->next()->varId());
+        }
 
         // function parameter
-        else if (Token::Match(tok, "[(,] %var% ["))
+        else if (Token::Match(tok, "[(,] %var% [")) {
             variables.use(tok->next()->varId());   // use = read + write
-        else if (Token::Match(tok, "[(,] %var% [,)]") && tok->previous()->str() != "*") {
+            usedVariables.push_back(tok->next()->varId());
+        } else if (Token::Match(tok, "[(,] %var% [,)]") && tok->previous()->str() != "*") {
             variables.use(tok->next()->varId());   // use = read + write
+            usedVariables.push_back(tok->next()->varId());
         } else if (Token::Match(tok, "[(,] (") &&
-                   Token::Match(tok->next()->link(), ") %var% [,)]"))
+                   Token::Match(tok->next()->link(), ") %var% [,)]")) {
             variables.use(tok->next()->link()->next()->varId());   // use = read + write
+            usedVariables.push_back(tok->next()->link()->next()->varId());
+        }
 
         // function
         else if (Token::Match(tok, "%var% (")) {
             variables.read(tok->varId());
-            if (Token::Match(tok->tokAt(2), "%var% ="))
+            usedVariables.push_back(tok->varId());
+            if (Token::Match(tok->tokAt(2), "%var% =")) {
                 variables.read(tok->tokAt(2)->varId());
+                usedVariables.push_back(tok->tokAt(2)->varId());
+            }
         }
 
-        else if (Token::Match(tok, "[{,] %var% [,}]"))
+        else if (Token::Match(tok, "[{,] %var% [,}]")) {
             variables.read(tok->next()->varId());
+            usedVariables.push_back(tok->next()->varId());
+        }
 
-        else if (Token::Match(tok, "%var% ."))
+        else if (Token::Match(tok, "%var% .")) {
             variables.use(tok->varId());   // use = read + write
+            usedVariables.push_back(tok->varId());
+        }
 
         else if (tok->isExtendedOp() &&
-                 Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new") && tok->strAt(2) != "=")
+                 Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new") && tok->strAt(2) != "=") {
             variables.readAll(tok->next()->varId());
+            usedVariables.push_back(tok->next()->varId());
+        }
 
-        else if (Token::Match(tok, "%var%") && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp()))
+        else if (Token::Match(tok, "%var%") && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp())) {
             variables.readAll(tok->varId());
+            usedVariables.push_back(tok->varId());
+        }
 
-        else if (Token::Match(tok, "%var% ;") && Token::Match(tok->previous(), "[;{}:]"))
+        else if (Token::Match(tok, "%var% ;") && Token::Match(tok->previous(), "[;{}:]")) {
             variables.readAll(tok->varId());
+            usedVariables.push_back(tok->varId());
+        }
 
         else if (Token::Match(tok, "++|-- %var%")) {
             if (!Token::Match(tok->previous(), "[;{}:]"))
                 variables.use(tok->next()->varId());
             else
                 variables.modified(tok->next()->varId());
+            usedVariables.push_back(tok->next()->varId());
         }
 
         else if (Token::Match(tok, "%var% ++|--")) {
@@ -921,6 +952,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.use(tok->varId());
             else
                 variables.modified(tok->varId());
+            usedVariables.push_back(tok->varId());
         }
 
         else if (tok->isAssignmentOp()) {
@@ -930,6 +962,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         variables.write(tok2->varId());
                     else
                         variables.read(tok2->varId());
+                    usedVariables.push_back(tok2->varId());
                 }
             }
         }
@@ -952,7 +985,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         // varId, usage {read, write, modified}
         Variables variables;
 
-        checkFunctionVariableUsage_iterateScopes(&*scope, variables);
+        std::vector<unsigned int> usedVariables;
+        checkFunctionVariableUsage_iterateScopes(&*scope, variables, false, usedVariables);
 
 
         // Check usage of all variables in the current scope..
