@@ -6111,6 +6111,26 @@ private:
               "   a >>= -1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   int a = 123 << -1;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Shifting by a negative value.\n", "", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   std::cout << -1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   std::cout << a << -1 ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "   std::cout << 3 << -1 ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incompleteArrayFill() {

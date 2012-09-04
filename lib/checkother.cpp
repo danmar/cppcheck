@@ -3329,10 +3329,18 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 
 void CheckOther::checkNegativeBitwiseShift()
 {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next()) {
-        if (Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num >>|<< %num%")) {
-            if ((tok->strAt(2))[0] == '-')
-                negativeBitwiseShiftError(tok);
+        if ((Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num% >>|<< %num%")) && !Token::Match(tok->previous(),">>|<<")) {
+            if (tok->isName()) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                if (var && var->typeStartToken()->isStandardType() && (tok->strAt(2))[0] == '-')
+                    negativeBitwiseShiftError(tok);
+            } else {
+                if ((tok->strAt(2))[0] == '-')
+                    negativeBitwiseShiftError(tok);
+            }
         }
     }
 }
