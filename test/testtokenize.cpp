@@ -5728,8 +5728,8 @@ private:
     }
 
     void removeRedundantAssignment() {
-        ASSERT_EQUALS("void f ( ) { int * q ; }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
-        ASSERT_EQUALS("void f ( ) { int * q ; }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
         ASSERT_EQUALS("int f ( int * x ) { return * x ; }", tokenizeAndStringify("int f(int *x) { return *x; }", true));
     }
 

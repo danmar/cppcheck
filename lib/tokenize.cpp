@@ -3333,19 +3333,34 @@ bool Tokenizer::simplifyTokenList()
     }
 
     // Replace "&str[num]" => "(str + num)"
-    //TODO: fix the fails testrunner reports:
-    //1)
-    //test/teststl.cpp:805: Assertion failed.
-    //Expected:
-    //"[test.cpp:7]: (error) Invalid pointer 'first' after push_back / push_front\n".
-    //Actual:
-    //"".
-    /*for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%var%") && !Token::Match(tok, "%num%")
+    std::set<unsigned int> pod;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->isStandardType()) {
+            while (tok && (tok->str() == "*" || tok->isName())) {
+                if (tok->varId() > 0) {
+                    pod.insert(tok->varId());
+                    break;
+                }
+                tok = tok->next();
+            }
+        }
+    }
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%var%")
+            && !Token::Match(tok, "%num%")
             && !Token::Match(tok, "]|)")
             && (Token::Match(tok->next(), "& %var% [ %num% ]") ||
                 Token::Match(tok->next(), "& %var% [ %var% ]"))) {
             tok = tok->next();
+
+            if (tok->next()->varId()) {
+                if (pod.find(tok->next()->varId()) == pod.end()) {
+                    tok = tok->tokAt(5);
+                    continue;
+                }
+            }
+
             // '&' => '('
             tok->str("(");
 
@@ -3359,7 +3374,9 @@ bool Tokenizer::simplifyTokenList()
             tok->str(")");
             Token::createMutualLinks(tok->tokAt(-4), tok);
         }
-    }*/
+    }
+
+    removeRedundantAssignment();
 
     simplifyRealloc();
 

@@ -421,6 +421,7 @@ private:
         TEST_CASE(consecutiveBraces);
 
         TEST_CASE(undefinedSizeArray);
+        TEST_CASE(simplifyCase3304);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -6701,7 +6702,6 @@ private:
         const char expected[] = "void f ( ) "
                                 "{"
                                 " int a [ 10 ] ;"
-                                " int * p ; p = & a [ 0 ] ;"
                                 " * a = 0 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
@@ -7883,6 +7883,17 @@ private:
         ASSERT_EQUALS("int * * * x ;", tok("int * x [][];"));
         ASSERT_EQUALS("int * * * * x ;", tok("int * * x [][];"));
         ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
+    }
+
+    void simplifyCase3304() { // ticket #3304
+        const char code[] = "void foo() {\n"
+                            "    int a[10];\n"
+                            "    memset(&a[4], 0, 20*sizeof(int));\n"
+                            "}";
+        ASSERT_EQUALS("void foo ( ) {"
+                      " int a [ 10 ] ;"
+                      " memset ( a + 4 , 0 , 80 ) ;"
+                      " }", tok(code, true));
     }
 };
 
