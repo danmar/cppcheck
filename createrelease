@@ -73,4 +73,3 @@ git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.ta
 git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
 
 scp ../$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
-

@@ -684,7 +684,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     checkFunctionVariableUsage_iterateScopes(*i, variables, true, usedVariables); // Scan child scope
                     insideLoop = false;
                     std::vector<unsigned int>::iterator it;
-                    for (it = usedVariables.begin(); it != usedVariables.end(); it++) {
+                    for (it = usedVariables.begin(); it != usedVariables.end(); ++it) {
                         variables.read((*it), tok);
                     }
                     tok = (*i)->classStart->link();

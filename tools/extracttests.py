@@ -37,7 +37,7 @@ class Extract:
             if res != None:
                 testclass = res.group(1)
 
-            # end of testclass 
+            # end of testclass
             if re.match('};', line) != None:
                 testclass = None
 
@@ -230,8 +230,8 @@ if filename != None:
 
         # create files for each functionName
         for functionName in functionNames:
-            writeHtmlFile(e.nodes, 
-                          functionName, 
+            writeHtmlFile(e.nodes,
+                          functionName,
                           htmldir + 'errors-' + functionName + '.htm',
                           True)
             writeHtmlFile(e.nodes,
@@ -278,4 +278,3 @@ if filename != None:
     else:
         for node in e.nodes:
             print node['functionName']
-

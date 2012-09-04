@@ -98,4 +98,3 @@ private:
 };
 
 REGISTER_TEST(TestFileLister)
-

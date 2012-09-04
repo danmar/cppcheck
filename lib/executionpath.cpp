@@ -483,4 +483,3 @@ void checkExecutionPaths(const SymbolDatabase *symbolDatabase, ExecutionPath *c)
         }
     }
 }
-

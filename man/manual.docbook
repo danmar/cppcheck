@@ -663,10 +663,10 @@ int a(int sz)
     <programlisting>Usage: cppcheck-htmlreport [options]
 
 Options:
-  -h, --help      show this help message and exit 
-  --file=FILE     The cppcheck xml output file to read defects from. 
-                  Default is reading from stdin. 
-  --report-dir=REPORT_DIR 
+  -h, --help      show this help message and exit
+  --file=FILE     The cppcheck xml output file to read defects from.
+                  Default is reading from stdin.
+  --report-dir=REPORT_DIR
                   The directory where the html report content is written.
   --source-dir=SOURCE_DIR
                   Base directory where source code files can be found.</programlisting>
@@ -746,4 +746,3 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
     </section>
   </chapter>
 </book>
-

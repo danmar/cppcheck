@@ -92,4 +92,3 @@ If you want to use --rule and --rule-file then dependencies are needed:
 ## Webpage ##
 
 http://cppcheck.sourceforge.net/
-

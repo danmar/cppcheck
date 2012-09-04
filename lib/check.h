@@ -155,4 +155,3 @@ inline Check::Check(const std::string &aname)
 /// @}
 
 #endif
-

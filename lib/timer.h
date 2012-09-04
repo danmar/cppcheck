@@ -76,5 +76,4 @@ private:
     bool _stopped;
 };
 
-
 #endif // TIMER_H

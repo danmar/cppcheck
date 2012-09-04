@@ -32,5 +32,3 @@ int main()
     f(a);
     possible_style();
 }
-
-

@@ -88,7 +88,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         the Free Software Foundation.</para>
       <para>On Debian systems, the complete text of the GNU General Public
         License can be found in
-	<filename>/usr/share/common-licenses/GPL-3</filename>.</para>
+    <filename>/usr/share/common-licenses/GPL-3</filename>.</para>
     </legalnotice>
   </refentryinfo>
   <refmeta>
@@ -122,10 +122,10 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
       <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
-      <arg choice="opt"><option>--relative-paths=&lt;paths&gt;</option></arg>            
+      <arg choice="opt"><option>--relative-paths=&lt;paths&gt;</option></arg>
       <arg choice="opt"><option>--report-progress</option></arg>
       <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
-      <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>            
+      <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--std=&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
@@ -141,11 +141,11 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   </refsynopsisdiv>
   <refsect1 id="description">
     <title>DESCRIPTION</title>
-    <para>Cppcheck is a command-line tool that tries to detect bugs that your C/C++ 
-      compiler doesn't see. It is versatile, and can check non-standard code 
-      including various compiler extensions, inline assembly code, etc. 
-      Its internal preprocessor can handle includes, macros, and several 
-      preprocessor commands. While Cppcheck is highly configurable, 
+    <para>Cppcheck is a command-line tool that tries to detect bugs that your C/C++
+      compiler doesn't see. It is versatile, and can check non-standard code
+      including various compiler extensions, inline assembly code, etc.
+      Its internal preprocessor can handle includes, macros, and several
+      preprocessor commands. While Cppcheck is highly configurable,
       you can start using it just by giving it a path to the source code.
     </para>
   </refsect1>
@@ -161,24 +161,24 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <listitem>
           <para>This allows you to provide information about functions by providing an implementation for these.</para>
         </listitem>
-      </varlistentry>      
+      </varlistentry>
       <varlistentry>
         <term><option>--check-config</option></term>
         <listitem>
           <para>Check Cppcheck configuration. The normal code analysis is disabled by this flag.</para>
         </listitem>
-      </varlistentry>      
+      </varlistentry>
       <varlistentry>
         <term><option>-D&lt;id&gt;</option></term>
         <listitem>
-          <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration. 
+          <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration.
 Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
       </varlistentry>
         <varlistentry>
             <term><option>-U&lt;id&gt;</option></term>
             <listitem>
-                <para>By default Cppcheck checks all configurations. Use '-U' to explicitly hide certain #ifdef &lt;id&gt; code paths from checking. 
+                <para>By default Cppcheck checks all configurations. Use '-U' to explicitly hide certain #ifdef &lt;id&gt; code paths from checking.
 Example: '-UDEBUG'</para>
             </listitem>
         </varlistentry>
@@ -210,7 +210,7 @@ Example: '-UDEBUG'</para>
                 <glossdef>
                   <para>Enable portability messages</para>
                 </glossdef>
-              </glossentry>              
+              </glossentry>
               <glossentry>
                 <glossterm>information</glossterm>
                 <glossdef>
@@ -228,8 +228,8 @@ Example: '-UDEBUG'</para>
                 <glossdef>
                   <para>Warn if there are missing includes. For detailed information use --check-config</para>
                 </glossdef>
-              </glossentry>              
-            </glosslist>          
+              </glossentry>
+            </glosslist>
             By default none of the additional checks are enabled. Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunction. See also --std
           </para>
         </listitem>
@@ -248,7 +248,7 @@ Example: '-UDEBUG'</para>
         <listitem>
           <para>Print a list of all possible error messages in XML format.</para>
         </listitem>
-      </varlistentry>      
+      </varlistentry>
       <varlistentry>
         <term><option>--exitcode-suppressions=&lt;file&gt;</option></term>
         <listitem>
@@ -293,17 +293,17 @@ First given path is searched for contained header files first. If paths are rela
       <varlistentry>
         <term><option>-i &lt;dir&gt;</option></term>
         <listitem>
-          <para>Give path to ignore. Give several -i parameters to ignore several paths. Give directory name or filename with path as parameter. 
+          <para>Give path to ignore. Give several -i parameters to ignore several paths. Give directory name or filename with path as parameter.
 Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term><option>--inconclusive</option></term>
         <listitem>
-          <para>Allow that Cppcheck reports even though the analysis is inconclusive. 
+          <para>Allow that Cppcheck reports even though the analysis is inconclusive.
 There are false positives with this option. Each result must be carefully investigated before you know if it is good or bad.</para>
         </listitem>
-      </varlistentry>              
+      </varlistentry>
       <varlistentry>
         <term><option>--inline-suppr</option></term>
         <listitem>
@@ -352,18 +352,18 @@ There are false positives with this option. Each result must be carefully invest
                 <glossdef>
                   <para>32 bit Windows UNICODE character encoding</para>
                 </glossdef>
-              </glossentry>              
+              </glossentry>
               <glossentry>
                 <glossterm>win64</glossterm>
                 <glossdef>
                   <para>64 bit Windows</para>
                 </glossdef>
               </glossentry>
-            </glosslist>          
+            </glosslist>
             By default the platform which was used to compile Cppcheck is used.
           </para>
         </listitem>
-      </varlistentry>      
+      </varlistentry>
       <varlistentry>
         <term><option>-q</option></term>
         <term><option>--quiet</option></term>
@@ -391,13 +391,13 @@ There are false positives with this option. Each result must be carefully invest
         <listitem>
           <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero.</para>
         </listitem>
-      </varlistentry>   
+      </varlistentry>
       <varlistentry>
         <term><option>--rule-file=&lt;file&gt;</option></term>
         <listitem>
           <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax.</para>
         </listitem>
-      </varlistentry>  
+      </varlistentry>
       <varlistentry>
         <term><option>-s</option></term>
         <term><option>--style</option></term>
@@ -446,11 +446,11 @@ There are false positives with this option. Each result must be carefully invest
                   <para>C++ code is C++11 compatible (default)</para>
                 </glossdef>
               </glossentry>
-            </glosslist>          
+            </glosslist>
             Example to set more than one standards: 'cppcheck --std=c99 --std=posix file.cpp'
           </para>
         </listitem>
-      </varlistentry>      
+      </varlistentry>
       <varlistentry>
         <term><option>--suppress=&lt;spec&gt;</option></term>
         <listitem>

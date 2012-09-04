@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <cstdlib>
 #include <algorithm>
@@ -55,12 +54,12 @@ public:
         printf("%s\n", str.c_str());
     }
 
-    void reportProgress(const 
-                std::string &filename, 
+    void reportProgress(const
+                std::string &filename,
                 const char stage[],
                 const unsigned int value)
     {
-        if (std::time(NULL) >= stoptime) 
+        if (std::time(NULL) >= stoptime)
         {
             printf("time to analyse the "
                    "code is more than 1 "
@@ -89,4 +88,3 @@ int main()
 
     return EXIT_SUCCESS;
 }
-

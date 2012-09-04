@@ -290,4 +290,3 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppre
     }
     return r;
 }
-

@@ -140,25 +140,25 @@ unsigned int ThreadExecutor::check()
         if (i != _files.end() && rpipes.size() < _settings._jobs) {
             int pipes[2];
             if (pipe(pipes) == -1) {
-                std::cerr << "pipe() failed: "<< strerror(errno) << std::endl;
+                std::cerr << "pipe() failed: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
             }
 
             int flags = 0;
             if ((flags = fcntl(pipes[0], F_GETFL, 0)) < 0) {
-                std::cerr << "fcntl(F_GETFL) failed: "<< strerror(errno) << std::endl;
+                std::cerr << "fcntl(F_GETFL) failed: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
             }
 
             if (fcntl(pipes[0], F_SETFL, flags | O_NONBLOCK) < 0) {
-                std::cerr << "fcntl(F_SETFL) failed: "<< strerror(errno) << std::endl;
+                std::cerr << "fcntl(F_SETFL) failed: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
             }
 
             pid_t pid = fork();
             if (pid < 0) {
                 // Error
-                std::cerr << "Failed to create child process: "<< strerror(errno) << std::endl;
+                std::cerr << "Failed to create child process: " << strerror(errno) << std::endl;
                 exit(EXIT_FAILURE);
             } else if (pid == 0) {
                 close(pipes[0]);
@@ -269,7 +269,7 @@ void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
     char *out = new char[ len + 1 + sizeof(len)];
     out[0] = static_cast<char>(type);
     std::memcpy(&(out[1]), &len, sizeof(len));
-    std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
+    std::memcpy(&(out[1 + sizeof(len)]), data.c_str(), len);
     if (write(_wpipe, out, len + 1 + sizeof(len)) <= 0) {
         delete [] out;
         out = 0;

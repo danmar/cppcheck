@@ -130,7 +130,7 @@ private:
     }
 
     void calculate1() const { // mod
-        ASSERT_EQUALS("0"    , MathLib::calculate("2"	 , "1"    , '%'));
+        ASSERT_EQUALS("0"    , MathLib::calculate("2"    , "1"    , '%'));
         ASSERT_EQUALS("0"    , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
         ASSERT_EQUALS("1"    , MathLib::calculate("100"  , "3"   , '%'));
@@ -145,38 +145,38 @@ private:
         // ------------------
 
         // from hex
-        ASSERT_EQUALS(10	, MathLib::toLongNumber("0xa"));
-        ASSERT_EQUALS(10995	, MathLib::toLongNumber("0x2AF3"));
-        ASSERT_EQUALS(-10	, MathLib::toLongNumber("-0xa"));
+        ASSERT_EQUALS(10    , MathLib::toLongNumber("0xa"));
+        ASSERT_EQUALS(10995 , MathLib::toLongNumber("0x2AF3"));
+        ASSERT_EQUALS(-10   , MathLib::toLongNumber("-0xa"));
         ASSERT_EQUALS(-10995, MathLib::toLongNumber("-0x2AF3"));
-        ASSERT_EQUALS(10	, MathLib::toLongNumber("+0xa"));
+        ASSERT_EQUALS(10    , MathLib::toLongNumber("+0xa"));
         ASSERT_EQUALS(10995 , MathLib::toLongNumber("+0x2AF3"));
 
         // from octal
-        ASSERT_EQUALS(8 	, MathLib::toLongNumber("010"));
-        ASSERT_EQUALS(8 	, MathLib::toLongNumber("+010"));
-        ASSERT_EQUALS(-8 	, MathLib::toLongNumber("-010"));
-        ASSERT_EQUALS(125 	, MathLib::toLongNumber("0175"));
-        ASSERT_EQUALS(125 	, MathLib::toLongNumber("+0175"));
-        ASSERT_EQUALS(-125 	, MathLib::toLongNumber("-0175"));
+        ASSERT_EQUALS(8     , MathLib::toLongNumber("010"));
+        ASSERT_EQUALS(8     , MathLib::toLongNumber("+010"));
+        ASSERT_EQUALS(-8    , MathLib::toLongNumber("-010"));
+        ASSERT_EQUALS(125   , MathLib::toLongNumber("0175"));
+        ASSERT_EQUALS(125   , MathLib::toLongNumber("+0175"));
+        ASSERT_EQUALS(-125  , MathLib::toLongNumber("-0175"));
 
         // from base 10
-        ASSERT_EQUALS(10	, MathLib::toLongNumber("10"));
-        ASSERT_EQUALS(10	, MathLib::toLongNumber("10."));
-        ASSERT_EQUALS(10	, MathLib::toLongNumber("10.0"));
-        ASSERT_EQUALS(100	, MathLib::toLongNumber("10E+1"));
-        ASSERT_EQUALS(1	    , MathLib::toLongNumber("10E-1"));
-        ASSERT_EQUALS(100	, MathLib::toLongNumber("+10E+1"));
-        ASSERT_EQUALS(-1	, MathLib::toLongNumber("-10E-1"));
-        ASSERT_EQUALS(100	, MathLib::toLongNumber("+10.E+1"));
-        ASSERT_EQUALS(-1	, MathLib::toLongNumber("-10.E-1"));
-        ASSERT_EQUALS(100	, MathLib::toLongNumber("+10.0E+1"));
-        ASSERT_EQUALS(-1	, MathLib::toLongNumber("-10.0E-1"));
+        ASSERT_EQUALS(10    , MathLib::toLongNumber("10"));
+        ASSERT_EQUALS(10    , MathLib::toLongNumber("10."));
+        ASSERT_EQUALS(10    , MathLib::toLongNumber("10.0"));
+        ASSERT_EQUALS(100   , MathLib::toLongNumber("10E+1"));
+        ASSERT_EQUALS(1     , MathLib::toLongNumber("10E-1"));
+        ASSERT_EQUALS(100   , MathLib::toLongNumber("+10E+1"));
+        ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10E-1"));
+        ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.E+1"));
+        ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.E-1"));
+        ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.0E+1"));
+        ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.0E-1"));
 
         // -----------------
         // to double number:
         // -----------------
-        ASSERT_EQUALS_DOUBLE(10.0	, MathLib::toDoubleNumber("10"));
+        ASSERT_EQUALS_DOUBLE(10.0   , MathLib::toDoubleNumber("10"));
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"));
         ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"));
         ASSERT_EQUALS_DOUBLE(-100.0, MathLib::toDoubleNumber("-1.0E+2"));
@@ -330,5 +330,3 @@ private:
 };
 
 REGISTER_TEST(TestMathLib)
-
-

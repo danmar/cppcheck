@@ -66,4 +66,3 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
     }
 }
 //---------------------------------------------------------------------------
-

@@ -84,4 +84,3 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     }
 }
 //---------------------------------------------------------------------------
-

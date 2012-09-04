@@ -76,7 +76,7 @@
       <para>Save that code as <filename>dealloc.cpp</filename> and then use
       <command>cppcheck --rule=".+" dealloc.cpp</command>:</para>
 
-      <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp 
+      <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp
 Checking dealloc.cpp...
 [dealloc.cpp:1]: (style) found ' void f ( ) { if ( p ) { free ( p ) ; } }'</programlisting>
 
