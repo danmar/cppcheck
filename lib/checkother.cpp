@@ -259,17 +259,20 @@ void CheckOther::clarifyStatement()
                         break;
                 }
                 if (Token::Match(tok, "++|-- [;,]"))
-                    clarifyStatementError(tok);
+                    //TODO: change the string in order to remove the excessive spaces between the tokens.
+                    clarifyStatementError(tok, 
+                                          tok2->next()->stringifyList(tok->tokAt(2)),
+                                          "("+tok2->next()->stringifyList(tok)+")"+tok->stringifyList(tok->tokAt(2)));
             }
         }
     }
 }
 
-void CheckOther::clarifyStatementError(const Token *tok)
+void CheckOther::clarifyStatementError(const Token *tok, const std::string &expr, const std::string &suggested)
 {
-    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n"
-                "A statement like '*A++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
-                "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?");
+    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement: '" + expr + "'. Did you intend to write '" + suggested + "'?\n"
+                "A statement like '*expr++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
+                "Thus, the dereference is meaningless. Did you intend to write '(*expr)++;'?");
 }
 
 //---------------------------------------------------------------------------
