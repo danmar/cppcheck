@@ -260,7 +260,7 @@ void CheckOther::clarifyStatement()
                 }
                 if (Token::Match(tok, "++|-- [;,]"))
                     //TODO: change the string in order to remove the excessive spaces between the tokens.
-                    clarifyStatementError(tok, 
+                    clarifyStatementError(tok,
                                           tok2->next()->stringifyList(tok->tokAt(2)),
                                           "("+tok2->next()->stringifyList(tok)+")"+tok->stringifyList(tok->tokAt(2)));
             }
