@@ -823,11 +823,9 @@ void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &
         }
     }
 
-    bool usedInArray = false;
-
     if (max_value > size) {
         if (tok3->strAt(1) == ")") {
-
+            bool usedInArray = false;
             for (const Token *loopTok = tok3->tokAt(2); loopTok->str() != "}" ; loopTok = loopTok->next()) {
                 if (loopTok->varId() == arrayInfo.varid() && loopTok->tokAt(2)->varId() == counter_varid)
                     usedInArray = true;

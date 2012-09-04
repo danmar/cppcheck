@@ -138,7 +138,6 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
 
     if (INVALID_HANDLE_VALUE != hFind) {
         FindClose(hFind);
-        hFind = INVALID_HANDLE_VALUE;
     }
 }
 

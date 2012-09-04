@@ -1123,14 +1123,13 @@ void Tokenizer::simplifyTypedef()
                     //    classes, casts, operators, and template parameters
 
                     // try to determine which category this substitution is
-                    bool isDerived = false;
                     bool inCast = false;
                     bool inTemplate = false;
                     bool inOperator = false;
                     bool inSizeof = false;
 
                     // check for derived class: class A : some_typedef {
-                    isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
+                    bool isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
 
                     // check for cast: (some_typedef) A or static_cast<some_typedef>(A)
                     // todo: check for more complicated casts like: (const some_typedef *)A
@@ -3755,10 +3754,7 @@ bool Tokenizer::removeRedundantConditions()
             continue;
 
         // Find matching else
-        Token *elseTag = 0;
-
-        // Find the closing "}"
-        elseTag = tok->linkAt(4)->next();
+        Token *elseTag = tok->linkAt(4)->next();
 
         bool boolValue = (tok->strAt(2) == "true");
 

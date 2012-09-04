@@ -905,10 +905,8 @@ std::string Preprocessor::getdef(std::string line, bool def)
     if (line.compare(0, 12, "#if defined ") == 0)
         line.erase(0, 11);
     else if (line.compare(0, 15, "#elif !defined(") == 0) {
-        std::string::size_type pos = 0;
-
         line.erase(0, 15);
-        pos = line.find(")");
+        std::string::size_type pos = line.find(")");
         // if pos == ::npos then another part of the code will complain
         // about the mismatch
         if (pos != std::string::npos)
@@ -2024,7 +2022,6 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     std::string::size_type pos = 0;
     std::string::size_type endfilePos = 0;
     std::set<std::string> handledFiles;
-    endfilePos = pos;
     while ((pos = code.find("#include", pos)) != std::string::npos) {
         // Accept only includes that are at the start of a line
         if (pos > 0 && code[pos-1] != '\n') {
