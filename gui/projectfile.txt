@@ -46,4 +46,3 @@ where:
 
 For real life examples see the cppcheck.cppcheck-file in the Cppcheck sources
 root-directory or gui.cppcheck file in gui-directory.
-

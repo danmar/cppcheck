@@ -315,7 +315,7 @@ static bool for_condition(const Token *tok2, unsigned int varid, std::string &mi
         while (tok2 && tok2->str() != ";") {
             if (tok2->str() == "(")
                 tok2 = tok2->link();
-            else if (tok2->str() == ")")	// unexpected ")" => break
+            else if (tok2->str() == ")")    // unexpected ")" => break
                 break;
             if (tok2->str() == "&&" || tok2->str() == "||") {
                 if (for_condition(tok2->next(), varid, min_value, max_value, maxMinFlipped))

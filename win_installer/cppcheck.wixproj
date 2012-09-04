@@ -1,19 +1,19 @@
 <Project DefaultTargets="All" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <DefineSolutionProperties>false</DefineSolutionProperties>
-    
+
     <WixToolPath Condition="'$(WixToolPath)' == ''">$(PROGRAMFILES)\Windows Installer XML v3.5\bin\</WixToolPath>
     <WixTargetsPath Condition="'$(WixTargetsPath)' == ''">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
-    
+
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    
+
     <OutputName Condition=" '$(ProductVersion)' != '' ">cppcheck-$(ProductVersion)-$(Platform)-Setup</OutputName>
     <OutputPath>..\Build\</OutputPath>
     <IntermediateOutputPath>..\BuildTmp\Wix\$(Platform)\</IntermediateOutputPath>
     <OutputType>package</OutputType>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <WixExtension Include="$(WixToolPath)WixUIExtension.dll" />
     <Compile Include="cppcheck.wxs"/>

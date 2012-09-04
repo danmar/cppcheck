@@ -124,7 +124,7 @@ private:
         TEST_CASE(array_index_for_continue); // for,continue
         TEST_CASE(array_index_for);        // FN: for,if
         TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
-        TEST_CASE(array_index_for_question);	// #2561: for, ?:
+        TEST_CASE(array_index_for_question);    // #2561: for, ?:
         TEST_CASE(array_index_for_andand_oror);  // FN: using && or || in the for loop condition
         TEST_CASE(array_index_vla_for);    // #3221: access VLA inside for
         TEST_CASE(array_index_extern);      // FP when using 'extern'. #1684
@@ -194,7 +194,7 @@ private:
         TEST_CASE(strcat2);
         TEST_CASE(strcat3);
 
-        TEST_CASE(memfunc1);		// memchr/memset/memcpy
+        TEST_CASE(memfunc1);        // memchr/memset/memcpy
         TEST_CASE(memfunc2);
 
         TEST_CASE(varid1);
@@ -206,7 +206,7 @@ private:
         TEST_CASE(alloc2);    // Buffer allocated with malloc
         TEST_CASE(alloc3);    // statically allocated buffer
         TEST_CASE(alloc4);    // Buffer allocated with alloca
-        TEST_CASE(malloc_memset);	// using memset on buffer allocated with malloc
+        TEST_CASE(malloc_memset);   // using memset on buffer allocated with malloc
 
         TEST_CASE(memset1);
         TEST_CASE(memset2);
@@ -219,7 +219,7 @@ private:
         TEST_CASE(terminateStrncpy3);
         TEST_CASE(recursive_long_time);
 
-        TEST_CASE(crash1);	// Ticket #1587 - crash
+        TEST_CASE(crash1);  // Ticket #1587 - crash
         TEST_CASE(crash2);  // Ticket #2607 - crash
         TEST_CASE(crash3);  // Ticket #3034 - crash
 
@@ -1400,9 +1400,9 @@ private:
 
         check("int f( ) \n"
               "{\n"
-              "	struct {\n"
-              "		int arr[ 3 ];\n"
-              "	} var[ 1 ];\n"
+              " struct {\n"
+              "     int arr[ 3 ];\n"
+              " } var[ 1 ];\n"
               "   int y;\n"
               "   var[ 0 ].arr[ 0 ] = 0;\n"
               "   var[ 0 ].arr[ 1 ] = 1;\n"
@@ -1414,9 +1414,9 @@ private:
 
         check("int f( ) \n"
               "{\n"
-              "	struct {\n"
-              "		int arr[ 3 ];\n"
-              "	} var[ 1 ];\n"
+              " struct {\n"
+              "     int arr[ 3 ];\n"
+              " } var[ 1 ];\n"
               "   int y;\n"
               "   var[ 0 ].arr[ 0 ] = 0;\n"
               "   var[ 0 ].arr[ 1 ] = 1;\n"
@@ -1435,17 +1435,17 @@ private:
               "    int i;\n"
               "    for (i = 2; --i >= 0; )\n"
               "    {\n"
-              " 	   buf[i] = 1;\n"
+              "        buf[i] = 1;\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
-              "    double	 buf[2];\n"
+              "    double    buf[2];\n"
               "    for (int i = 2; i--; )\n"
               "    {\n"
-              " 	   buf[i] = 2.;\n"
+              "        buf[i] = 2.;\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -2417,7 +2417,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"	// ticket #2093
+        check("void f() {\n"    // ticket #2093
               "    gchar x[3];\n"
               "    strcpy(x, \"12\");\n"
               "}\n");

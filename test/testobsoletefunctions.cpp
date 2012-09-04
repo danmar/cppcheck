@@ -293,5 +293,3 @@ private:
 };
 
 REGISTER_TEST(TestObsoleteFunctions)
-
-

@@ -1888,7 +1888,7 @@ void CheckOther::functionVariableUsage()
 
                 // check if a local variable is used to initialize this variable
                 if (varid > 0) {
-                    Variables::VariableUsage	*var = variables.find(varid);
+                    Variables::VariableUsage    *var = variables.find(varid);
 
                     if (type == Variables::pointer) {
                         variables.use(tok->tokAt(4)->varId());

@@ -28,4 +28,3 @@ int main(int argc, char *argv[])
 
     return (ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
-

@@ -126,4 +126,3 @@ private:
 };
 
 REGISTER_TEST(TestAssignIf)
-

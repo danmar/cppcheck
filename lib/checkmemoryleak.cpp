@@ -2759,4 +2759,3 @@ void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string 
 {
     reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.");
 }
-

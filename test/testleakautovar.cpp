@@ -486,14 +486,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test1() {	// 3809
+    void test1() {  // 3809
         check("void f(double*&p) {\n"
               "    p = malloc(0x100);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test2() {	// 3899
+    void test2() {  // 3899
         check("struct Fred {\n"
               "    char *p;\n"
               "    void f1() { free(p); }\n"
@@ -501,7 +501,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test3() {	// 3954 - reference pointer
+    void test3() {  // 3954 - reference pointer
         check("void f() {\n"
               "    char *&p = x();\n"
               "    p = malloc(10);\n"
@@ -566,4 +566,3 @@ private:
 };
 
 REGISTER_TEST(TestLeakAutoVar)
-

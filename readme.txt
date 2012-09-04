@@ -80,4 +80,3 @@ Cross compiling Win32 (CLI) version of Cppcheck in Linux
 Webpage
 
     http://cppcheck.sourceforge.net/
-

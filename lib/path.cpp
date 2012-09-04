@@ -208,4 +208,3 @@ bool Path::acceptFile(const std::string &filename)
 {
     return(Path::isCPP(filename) || Path::isC(filename));
 }
-

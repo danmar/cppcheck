@@ -1,5 +1,5 @@
 #!/bin/bash
-# The version check in this script is used to avoid commit battles 
+# The version check in this script is used to avoid commit battles
 # between different developers that use different astyle versions as
 # different versions might have different output (this has happened in
 # the past).
@@ -9,8 +9,8 @@
 ASTYLE_VERSION="Artistic Style Version 2."
 
 if [[ "`astyle --version 2>&1`" != ${ASTYLE_VERSION}* ]]; then
-	echo "You should use: ${ASTYLE_VERSION}";
-	exit 1;
+    echo "You should use: ${ASTYLE_VERSION}";
+    exit 1;
 fi
 
 style="--style=stroustrup --indent=spaces=4 --indent-namespaces --lineend=linux --min-conditional-indent=0"
@@ -30,4 +30,3 @@ astyle $style $options test/*.h
 astyle $style $options tools/*.cpp
 astyle $style $options --recursive "samples/*.c"
 astyle $style $options --recursive "samples/*.cpp"
-

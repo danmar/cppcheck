@@ -224,4 +224,3 @@ private:
 };
 
 REGISTER_TEST(TestCharVar)
-

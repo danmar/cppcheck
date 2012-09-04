@@ -260,4 +260,3 @@ private:
 };
 
 REGISTER_TEST(TestUnusedFunctions)
-

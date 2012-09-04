@@ -45,4 +45,3 @@ There are tests for the GUI in gui/test -directory. There is test.pro
 builds own binary. Test is run by simple running that binary. The binary also
 has several options to select tests etc. You can get the help by running
 "binaryname -help" -command.
-

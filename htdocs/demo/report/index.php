@@ -40,7 +40,7 @@
 <h2>Online Demo Report</h2>
 <?php
   $isCodePosted = isset($_POST['code']) && !empty($_POST['code']);
-  
+
   /**
    * ...
    * @param string $code Source code
@@ -52,7 +52,7 @@
         'code' => $code
       )
     );
-    
+
     $opts = array('http' =>
       array(
         'method'  => 'POST',
@@ -60,12 +60,12 @@
         'content' => $postdata
       )
     );
-    
+
     $context = stream_context_create($opts);
-    
+
     return file_get_contents('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
   }
-  
+
   /**
    * ...
    * @param string $output Output lines
@@ -89,33 +89,33 @@
       return array();
     }
   }
-  
+
   function cut_string($string, $length = 1024) {
     if (strlen($string) > $length) {
       return substr($string, 0, $length);
     }
     return $string;
   }
-  
+
   if ($isCodePosted) { //if code posted...
     include_once '../../site/geshi/geshi.php';
-    
+
     $code = cut_string($_POST['code']);
-    
+
     $geshi = new GeSHi($code, 'cpp');
     $geshi->enable_classes();
     $geshi->set_header_type(GESHI_HEADER_PRE_TABLE);
     $geshi->enable_line_numbers(GESHI_NORMAL_LINE_NUMBERS);
     $geshi->set_overall_class('geshicode');
-    
+
     echo "<h3>Input</h3>\n";
     echo $geshi->parse_code();
-    
+
     echo "<h3>Output</h3>\n";
-    
+
     $output = get_democlient_output($code);
     $results = parse_democlient_output($output);
-    
+
     if (!empty($results)) {
       echo "<table id=\"resultsTable\">\n";
       echo "<thead>\n";

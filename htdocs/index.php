@@ -99,8 +99,8 @@ add Cppcheck as an external tool.</p>
 <p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
 
 <h2><a id="documentation">Documentation</a></h2>
-<p>You can read the <a href="manual.pdf">manual</a> or download some 
-<a href="http://sourceforge.net/projects/cppcheck/files/Articles/">articles</a>.</p>
+<p>You can read the <a href="manual.pdf">manual</a> or download some
+<a href="http://sourceforge.net/projects/cppcheck/files/Articles/"> articles</a>.</p>
 
 <h2><a id="support">Support</a></h2>
 <ul>
@@ -115,7 +115,7 @@ add Cppcheck as an external tool.</p>
 <p>You are welcome to contribute. Help is needed.</p>
 <dl>
   <dt>Testing</dt>
-  <dd>Pick a project and test it's source with latest version. Write tickets to 
+  <dd>Pick a project and test it's source with latest version. Write tickets to
   <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> about issues you
   find from Cppcheck. If you test open source projects and write bug reports to
   them, check the issues in the “<a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Found_bugs">Found bugs</a>”
