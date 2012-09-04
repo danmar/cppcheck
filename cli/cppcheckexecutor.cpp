@@ -276,7 +276,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
         std::ostringstream oss;
         oss << fileindex << '/' << filecount
             << " files checked " <<
-            (sizetotal > 0 ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal*100) : 0)
+            (sizetotal > 0 ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal * 100) : 0)
             << "% done";
         std::cout << oss.str() << std::endl;
     }

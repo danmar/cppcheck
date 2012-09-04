@@ -79,7 +79,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
     oss << cleanedPath;
 
     if (MyIsDirectory(cleanedPath)) {
-        char c = cleanedPath[ cleanedPath.size()-1 ];
+        char c = cleanedPath[ cleanedPath.size() - 1 ];
         switch (c) {
         case '\\':
             oss << '*';
@@ -110,7 +110,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             continue;
 
         const char* ansiFfd = ffd.cFileName;
-        if (strchr(ansiFfd,'?')) {
+        if (strchr(ansiFfd, '?')) {
             ansiFfd = ffd.cAlternateFileName;
         }
 
@@ -190,7 +190,7 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
 {
     std::ostringstream oss;
     oss << path;
-    if (path.length() > 0 && path[path.length()-1] == '/')
+    if (path.length() > 0 && path[path.length() - 1] == '/')
         oss << "*";
 
     glob_t glob_results;
@@ -209,10 +209,10 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
         if (seen_paths.find(absolute_path) != seen_paths.end())
             continue;
 
-        if (filename[filename.length()-1] != '/') {
+        if (filename[filename.length() - 1] != '/') {
             // File
 
-            if (Path::sameFileName(path,filename) || Path::acceptFile(filename)) {
+            if (Path::sameFileName(path, filename) || Path::acceptFile(filename)) {
                 seen_paths.insert(absolute_path);
 
                 struct stat sb;

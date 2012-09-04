@@ -77,7 +77,7 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
                 PathName = Path::removeQuotationMarks(PathName);
 
                 // If path doesn't end with / or \, add it
-                if (PathName[PathName.length()-1] != '/')
+                if (PathName[PathName.length() - 1] != '/')
                     PathName += '/';
 
                 PathNames.push_back(PathName);
@@ -160,7 +160,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Filter errors
         else if (strncmp(argv[i], "--suppressions-list=", 20) == 0) {
-            std::string filename = argv[i]+20;
+            std::string filename = argv[i] + 20;
             std::ifstream f(filename.c_str());
             if (!f.is_open()) {
                 std::string message("cppcheck: Couldn't open the file: \"");
@@ -211,7 +211,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         else if (strncmp(argv[i], "--suppress=", 11) == 0) {
-            std::string suppression = argv[i]+11;
+            std::string suppression = argv[i] + 11;
             const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
             if (!errmsg.empty()) {
                 PrintMessage(errmsg);
@@ -236,13 +236,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_relativePaths = true;
         else if (strncmp(argv[i], "-rp=", 4) == 0 || strncmp(argv[i], "--relative-paths=", 17) == 0) {
             _settings->_relativePaths = true;
-            if (argv[i][argv[i][3]=='='?4:17] != 0) {
-                std::string paths = argv[i]+(argv[i][3]=='='?4:17);
+            if (argv[i][argv[i][3] == '=' ? 4 : 17] != 0) {
+                std::string paths = argv[i] + (argv[i][3] == '=' ? 4 : 17);
                 std::string::size_type pos;
                 do {
                     pos = paths.find(';');
                     _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
-                    paths.erase(0, pos+1);
+                    paths.erase(0, pos + 1);
                 } while (pos != std::string::npos);
             } else {
                 PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
@@ -256,7 +256,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Define the XML file version (and enable XML output)
         else if (strncmp(argv[i], "--xml-version=", 14) == 0) {
-            std::string numberString(argv[i]+14);
+            std::string numberString(argv[i] + 14);
 
             std::istringstream iss(numberString);
             if (!(iss >> _settings->_xml_version)) {
@@ -302,7 +302,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --error-exitcode=1
         else if (strncmp(argv[i], "--error-exitcode=", 17) == 0) {
-            std::string temp = argv[i]+17;
+            std::string temp = argv[i] + 17;
             std::istringstream iss(temp);
             if (!(iss >> _settings->_exitCode)) {
                 _settings->_exitCode = 0;
@@ -382,7 +382,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             path = Path::removeQuotationMarks(path);
 
             // If path doesn't end with / or \, add it
-            if (path[path.length()-1] != '/')
+            if (path[path.length() - 1] != '/')
                 path += '/';
 
             _settings->_includePaths.push_back(path);
@@ -423,7 +423,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                 if (FileLister::isDirectory(path)) {
                     // If directory name doesn't end with / or \, add it
-                    if (path[path.length()-1] != '/')
+                    if (path[path.length() - 1] != '/')
                         path += '/';
                 }
                 _ignoredPaths.push_back(path);
@@ -456,7 +456,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // "--template path/"
             if (argv[i][10] == '=')
                 _settings->_outputFormat = argv[i] + 11;
-            else if ((i+1) < argc && argv[i+1][0] != '-') {
+            else if ((i + 1) < argc && argv[i + 1][0] != '-') {
                 ++i;
                 _settings->_outputFormat = argv[i];
             } else {
@@ -489,7 +489,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             // "-j3"
             else
-                numberString = argv[i]+2;
+                numberString = argv[i] + 2;
 
             std::istringstream iss(numberString);
             if (!(iss >> _settings->_jobs)) {
@@ -553,7 +553,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // Rule file
         else if (strncmp(argv[i], "--rule-file=", 12) == 0) {
             TiXmlDocument doc;
-            if (doc.LoadFile(12+argv[i])) {
+            if (doc.LoadFile(12 + argv[i])) {
                 TiXmlElement *node = doc.FirstChildElement();
                 for (; node && node->ValueStr() == "rule"; node = node->NextSiblingElement()) {
                     Settings::Rule rule;
@@ -592,7 +592,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Specify platform
         else if (strncmp(argv[i], "--platform=", 11) == 0) {
-            std::string platform(11+argv[i]);
+            std::string platform(11 + argv[i]);
 
             if (platform == "win32A")
                 _settings->platform(Settings::Win32A);
@@ -617,7 +617,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strncmp(argv[i], "--max-configs=", 14) == 0) {
             _settings->_force = false;
 
-            std::istringstream iss(14+argv[i]);
+            std::istringstream iss(14 + argv[i]);
             if (!(iss >> _settings->_maxConfigs)) {
                 PrintMessage("cppcheck: argument to '--max-configs=' is not a number.");
                 return false;
