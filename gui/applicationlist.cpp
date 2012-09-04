@@ -196,6 +196,16 @@ bool ApplicationList::FindDefaultWindowsEditor()
         return true;
     }
 
+    const QString notepadTwoPath = appPath + "\\Notepad2\\Notepad2.exe";
+    if (QFileInfo(notepadTwoPath).isExecutable()) {
+        Application app;
+        app.setName("Notepad2");
+        app.setPath("\"" + notepadTwoPath + "\"");
+        app.setParameters("/g (line) (file)");
+        AddApplication(app);
+        return true;
+    }
+
     const QString windowsPath(getenv("windir"));
     const QString notepadPath = windowsPath + "\\system32\\notepad.exe";
     if (QFileInfo(notepadPath).isExecutable()) {
