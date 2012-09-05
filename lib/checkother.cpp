@@ -260,7 +260,7 @@ void CheckOther::clarifyStatement()
                 }
                 if (Token::Match(tok, "++|-- [;,]"))
                     //TODO: change the string in order to remove the excessive spaces between the tokens.
-                    clarifyStatementError(tok, 
+                    clarifyStatementError(tok,
                                           tok2->next()->stringifyList(tok->tokAt(2)),
                                           "("+tok2->next()->stringifyList(tok)+")"+tok->stringifyList(tok->tokAt(2)));
             }
@@ -2408,6 +2408,63 @@ void CheckOther::checkDuplicateBranch()
         }
     }
 }
+
+
+//-----------------------------------------------------------------------------
+// Check for a free() of an invalid address
+// char* p = malloc(100);
+// free(p + 10);
+//-----------------------------------------------------------------------------
+void CheckOther::checkInvalidFree()
+{
+    std::set<unsigned int> allocatedVariables;
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+
+        // Keep track of which variables were assigned addresses to newly-allocated memory
+        if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
+            allocatedVariables.insert(tok->varId());
+        }
+
+        // If these variables assigned new values before being used to free the memory, we can't
+        // say anything about whether the resulting expression is valid
+        else if (Token::Match(tok, "%var% =")) {
+            allocatedVariables.erase(tok->varId());
+        }
+
+        // If a variable that was previously assigned a newly-allocated memory location is
+        // added or subtracted from when used to free the memory, report an error.
+        else if (Token::Match(tok, "free|g_free|delete ( %any% +|- %any%") ||
+                 Token::Match(tok, "delete [ ] ( %any% +|- %any%") ||
+                 Token::Match(tok, "delete %any% +|- %any%")) {
+
+            int varIdx = tok->strAt(1) == "(" ? 2 :
+                         tok->strAt(3) == "(" ? 4 : 1;
+            unsigned int var1 = tok->tokAt(varIdx)->varId();
+            unsigned int var2 = tok->tokAt(varIdx + 2)->varId();
+            if (allocatedVariables.find(var1) != allocatedVariables.end() ||
+                allocatedVariables.find(var2) != allocatedVariables.end()) {
+                invalidFreeError(tok);
+            }
+        }
+
+        // If the previously-allocated variable is passed in to another function
+        // as a parameter, it might be modified, so we shouldn't report an error
+        // if it is later used to free memory
+        else if (Token::Match(tok, "%var% (")) {
+            const Token* tok2 = Token::findmatch(tok->tokAt(1), "%var%", tok->linkAt(1));
+            while (tok2 != NULL) {
+                allocatedVariables.erase(tok2->varId());
+                tok2 = Token::findmatch(tok2->next(), "%var%", tok->linkAt(1));
+            }
+        }
+    }
+}
+
+void CheckOther::invalidFreeError(const Token *tok)
+{
+    reportError(tok, Severity::error, "invalidFree", "Invalid memory address freed.");
+}
+
 
 //-----------------------------------------------------------------------------
 // Check for double free

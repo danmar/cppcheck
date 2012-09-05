@@ -745,8 +745,8 @@ private:
     void error2() {
         errout.str("");
 
-        const char filedata[] = "#error ê\n"
-                                "#warning ê\n"
+        const char filedata[] = "#error \xAB\n"
+                                "#warning \xAB\n"
                                 "123";
 
         // Read string..
