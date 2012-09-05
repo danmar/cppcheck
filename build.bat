@@ -38,26 +38,26 @@ if "%1" == "all" goto cppcheck
 goto help
 
 :cppcheck
-cd cli
+pushd cli
 qmake -config %TARGET% HAVE_RULES=%HAVE_RULES%
 %MAKE%
-cd ..
+popd
 if "%1" == "all" goto gui
 goto end
 
 :gui
-cd gui
+pushd gui
 qmake -config %TARGET% HAVE_RULES=%HAVE_RULES%
 %MAKE%
 lrelease gui.pro
-cd ..
+popd
 goto end
 
 :tests
-cd test
+pushd test
 qmake -config %TARGET% HAVE_RULES=%HAVE_RULES%
 %MAKE%
-cd ..
+popd
 goto end
 
 :help
