@@ -33,6 +33,7 @@ private:
 
 
     void run() {
+        TEST_CASE(avoidDeadEndInNestedIfs);
         TEST_CASE(assignBoolToPointer);
 
         TEST_CASE(zeroDiv1);
@@ -249,6 +250,43 @@ private:
         checkOther.checkAlwaysTrueOrFalseStringCompare();
 
         logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename));
+    }
+
+
+    void avoidDeadEndInNestedIfs() {
+        check("void foo(int a, int b)\n"
+              "{\n"
+              "    if(a==b)\n"
+              "        if(a!=b)\n"
+              "            cout << a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) There are opposite condition checks in your nested-if block, which leads to a dead code block\n", errout.str());
+
+        check("void foo(int i) \n"
+              "{\n"
+              "   if(i > 5) {\n"
+              "       i = bar();\n"
+              "       if(i < 5) {\n"
+              "           cout << a;  \n"
+              "       }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("void foo(int& i)\n"
+              "{\n"
+              "    i=6;\n"
+              "}\n"
+              "void bar(int i)\n"
+              "{\n"
+              "    if(i>5){\n"
+              "        foo(i);\n"
+              "        if(i<5){\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -84,6 +84,7 @@ public:
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
+        checkOther.avoidDeadEndInNestedIfs();
         checkOther.clarifyCalculation();
         checkOther.clarifyStatement();
         checkOther.checkConstantFunctionParameter();
@@ -111,6 +112,9 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
     }
+
+    /** To check the dead code in a program, which is unaccessible due to the counter-conditions check in nested-if statements **/
+    void avoidDeadEndInNestedIfs();
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
@@ -267,6 +271,7 @@ public:
 
 private:
     // Error messages..
+    void warningDeadCode(const Token *tok);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void clarifyStatementError(const Token* tok, const std::string &expr, const std::string &suggested);
@@ -351,6 +356,7 @@ private:
         c.redundantAssignmentError(0, 0, "var");
 
         // style/warning
+        c.warningDeadCode(0);
         c.cstyleCastError(0);
         c.dangerousUsageStrtolError(0);
         c.passedByValueError(0, "parametername");
@@ -421,6 +427,7 @@ private:
                "* subsequent assignment or copying to a variable or buffer\n"
 
                // style
+               "* Find dead code which is unaccessible due to the counter-conditions check in nested if statements\n"
                "* C-style pointer cast in cpp file\n"
                "* casting between incompatible pointer types\n"
                "* redundant if\n"

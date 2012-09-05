@@ -3382,3 +3382,112 @@ void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& b
                     "Array '" + buffer + "' is filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
                     "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but an element of the given array is larger than one byte. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
 }
+
+
+void CheckOther::avoidDeadEndInNestedIfs()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        const Token* const toke = scope->classDef;
+
+
+        if (scope->type == Scope::eIf && toke) {
+
+            int flag = 0;
+            const Token *op1Tok, *op2Tok;
+            op1Tok = scope->classDef->tokAt(2);
+            op2Tok = scope->classDef->tokAt(4);
+
+            if (scope->classDef->strAt(6) == "{") {
+
+                if (scope->classDef->strAt(3) == "==") {
+                    for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
+                        if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
+                            break;
+                        else if (Token::Match(tok, "%any% ( %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() || tok->strAt(2) == op2Tok->str()))
+                                break;
+                        } else if (Token::Match(tok, "%any% ( %any% , %any%")) {
+                            for (const Token* tok2 = tok->next(); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+                                if (tok2->str() == op1Tok->str()) {
+                                    flag = 1;
+                                    break;
+                                }
+                            }
+                        } else if (Token::Match(tok, "if ( %any% !=|<|>|<=|>= %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
+                                warningDeadCode(toke);
+                        }
+                    }
+                } else if (scope->classDef->strAt(3) == "!=") {
+                    for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
+                        if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
+                            break;
+                        else if (Token::Match(tok, "%any% ( %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() || tok->strAt(2) == op2Tok->str()))
+                                break;
+                        } else if (Token::Match(tok, "%any% ( %any% , %any%")) {
+                            for (const Token* tok2 = tok->next(); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+                                if (tok2->str() == op1Tok->str()) {
+                                    flag = 1;
+                                    break;
+                                }
+                            }
+                        } else if (Token::Match(tok, "if ( %any% ==|>=|<= %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
+                                warningDeadCode(toke);
+                        }
+                    }
+                } else if (scope->classDef->strAt(3) == "<") {
+                    for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
+                        if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
+                            break;
+                        else if (Token::Match(tok, "%any% ( %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() || tok->strAt(2) == op2Tok->str()))
+                                break;
+                        } else if (Token::Match(tok, "%any% ( %any% , %any%")) {
+                            for (const Token* tok2 = tok->next(); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+                                if (tok2->str() == op1Tok->str()) {
+                                    flag = 1;
+                                    break;
+                                }
+                            }
+                        } else if (Token::Match(tok, "if ( %any% <|<=|>|>=|== %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
+                                warningDeadCode(toke);
+                        }
+                    }
+                } else if (scope->classDef->strAt(3) == "<=") {
+                    for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
+                        if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
+                            break;
+                        else if (Token::Match(tok, "%any% ( %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() || tok->strAt(2) == op2Tok->str()))
+                                break;
+                        } else if (Token::Match(tok, "%any% ( %any% , %any%")) {
+                            for (const Token* tok2 = tok->next(); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+                                if (tok2->str() == op1Tok->str()) {
+                                    flag = 1;
+                                    break;
+                                }
+                            }
+                        } else if (Token::Match(tok, "if ( %any% <|<=|>|>= %any% )")) {
+                            if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
+                                warningDeadCode(toke);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+void CheckOther::warningDeadCode(const Token *tok)
+{
+    reportError(tok, Severity::warning, "redundantOperationIn", "There are opposite condition checks in your nested-if block, which leads to a dead code block", true);
+}
