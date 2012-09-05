@@ -67,11 +67,15 @@ ResultsView::~ResultsView()
     //dtor
 }
 
-void ResultsView::Clear()
+void ResultsView::Clear(bool results)
 {
-    mUI.mTree->Clear();
+    if (results) {
+        mUI.mTree->Clear();
+        mErrorsFound = false;
+    }
+
     mUI.mDetails->setText("");
-    mErrorsFound = false;
+
     mStatistics->Clear();
 
     //Clear the progressbar
@@ -83,14 +87,13 @@ void ResultsView::Clear()
 void ResultsView::Clear(const QString &filename)
 {
     mUI.mTree->Clear(filename);
-    mUI.mDetails->setText("");
-    mErrorsFound = false;
-    mStatistics->Clear();
 
-    // Clear the progressbar
-    mUI.mProgress->setMaximum(PROGRESS_MAX);
-    mUI.mProgress->setValue(0);
-    mUI.mProgress->setFormat("%p%");
+    /**
+     * @todo Optimize this.. It is inefficient to check this every time.
+     */
+    // If the results list got empty..
+    if (!mUI.mTree->HasResults())
+        mErrorsFound = false;
 }
 
 void ResultsView::Progress(int value, const QString& description)

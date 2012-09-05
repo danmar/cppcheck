@@ -301,7 +301,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
         pathList.AddExcludeList(mProject->GetProjectFile()->GetExcludedPaths());
     QStringList fileNames = pathList.GetFileList();
 
-    mUI.mResults->Clear();
+    mUI.mResults->Clear(true);
     mThread->ClearFiles();
 
     if (fileNames.isEmpty()) {
@@ -586,6 +586,9 @@ void MainWindow::ReCheck()
     if (files.empty())
         return;
 
+    // Clear details, statistics and progress
+    mUI.mResults->Clear(false);
+
     // Clear results for changed files
     for (int i = 0; i < files.size(); ++i)
         mUI.mResults->Clear(files[i]);
@@ -601,7 +604,7 @@ void MainWindow::ReCheck()
 
 void MainWindow::ClearResults()
 {
-    mUI.mResults->Clear();
+    mUI.mResults->Clear(true);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
 }
@@ -634,7 +637,7 @@ void MainWindow::OpenXML()
                            &selectedFilter);
 
     if (!selectedFile.isEmpty()) {
-        mUI.mResults->Clear();
+        mUI.mResults->Clear(true);
         mUI.mResults->ReadErrorsXml(selectedFile);
     }
 }
