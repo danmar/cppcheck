@@ -232,8 +232,8 @@ private:
         TEST_CASE(testPreprocessorRead3);
         TEST_CASE(testPreprocessorRead4);
 
-        TEST_CASE(invalid_define_1);	// #2605 - hang for: '#define ='
-        TEST_CASE(invalid_define_2);	// #4036 - hang for: '#define () {(int f(x) }'
+        TEST_CASE(invalid_define_1); // #2605 - hang for: '#define ='
+        TEST_CASE(invalid_define_2); // #4036 - hang for: '#define () {(int f(x) }'
 
         // Show 'missing include' warnings
         TEST_CASE(missingInclude);
