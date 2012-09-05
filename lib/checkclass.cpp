@@ -153,6 +153,131 @@ void CheckClass::constructors()
     }
 }
 
+void CheckClass::copyconstructors()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+    std::vector<unsigned int> var_id;
+    std::vector<std::string> var_name;
+    std::list<Scope>::const_iterator scope;
+    std::list<Function>::const_iterator func;
+    unsigned int flag=0,varid=0;
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (!scope->isClassOrStruct()) /*scope is class or structure*/
+            continue;
+        int count_no_variables=0,count_copy_constructor=0,count_no_allocated_variables=0,count_no_of_pointer_variable=0;
+        std::list<Variable>::const_iterator var;
+        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+            if (var->isPointer()) {
+                count_no_of_pointer_variable ++;
+            }
+        }
+        if (count_no_of_pointer_variable>0) {
+            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                if (func->type == Function::eConstructor && func->functionScope) {
+                    for (const Token* tok = func->functionScope->classStart; tok!=func->functionScope->classEnd; tok=tok->next()) {
+                        const char pattern[] = "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc";
+                        if (Token::Match(tok, pattern)) {
+                            std::vector<std::string>::iterator it=var_name.begin();
+                            std::vector<unsigned int>::iterator itr;
+                            for (itr=var_id.begin(); itr!=var_id.end(); ++itr,++it) {
+                                if (*itr==tok->varId()) {
+                                    break;
+                                }
+                            }
+                            if (itr==var_id.end()) {
+                                var_id.push_back(tok->varId());
+                                var_name.push_back(tok->str());
+                                count_no_allocated_variables++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (func->type == Function::eCopyConstructor) {
+                count_copy_constructor++;
+                break;
+            }
+        }
+        if (!var_id.empty() && count_copy_constructor==0) {
+            noCopyConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
+        }
+        if (count_copy_constructor==1) {
+            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                if (func->type == Function::eCopyConstructor && func->functionScope) {
+                    const Token* tok = func->tokenDef->linkAt(1)->next();
+                    if (tok->str()==":") {
+                        tok=tok->next();
+                        if (Token::Match(tok,"%var% ( %var% . %var% )")) {
+
+                            for (std::vector<unsigned int>::iterator itr=var_id.begin(); itr!=var_id.end(); ++itr) {
+                                if (*itr==tok->varId()) {
+                                    flag=1;
+                                    varid=tok->varId();
+
+                                }
+                            }
+                        }
+
+                    }
+                    for (tok=func->functionScope->classStart; tok!=func->functionScope->classEnd; tok=tok->next()) {
+                        const char pattern[] = "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc";
+                        if (Token::Match(tok, pattern)) {
+                            std::vector<std::string>::iterator it=var_name.begin();
+
+                            for (std::vector<unsigned int>::iterator itr=var_id.begin(); itr!=var_id.end(); ++itr,++it) {
+                                if (*itr==tok->varId()) {
+                                    if (varid==tok->varId()) {
+                                        flag=0;
+                                    }
+                                    count_no_variables++;
+                                    var_id.erase(itr);
+                                    var_name.erase(it);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (flag==1) {
+                copyConstructorShallowCopyError(scope->classDef, scope->className, scope->classDef->str() == "struct");
+            }
+            /*if count mismatch throw error*/
+            if (count_no_variables!=count_no_allocated_variables) {
+                copyConstructorMallocError(scope->classDef, scope->className, scope->classDef->str() == "struct",var_name);
+            }
+        }
+        var_id.clear();
+        var_name.clear();
+    }
+}
+
+void CheckClass::copyConstructorMallocError(const Token *tok, const std::string &classname, bool isStruct, const std::vector<std::string>& var_name)
+{
+    for (std::vector<std::string>::const_iterator itr=var_name.begin(); itr!=var_name.end(); ++itr) {
+        reportError(tok, Severity::style, "copyConstructorNoAllocation", "The copy constructor of " + std::string(isStruct ? "struct" : "class") + " '" + classname +"' does not allocate memory for class member " + *itr+".");
+    }
+}
+
+void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string &classname, bool isStruct)
+{
+    // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
+    reportError(tok, Severity::style, "copyConstructorPointerCopying", "The copy constructor of " + std::string(isStruct ? "struct" : "class") + " '" + classname +"' does not allocate memory for pointer class member and copying pointer values.");
+
+}
+
+void CheckClass::noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct)
+{
+    // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
+    reportError(tok, Severity::style, "noCopyConstructor",
+                "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
+                "' does not have a copy constructor which is required since the class contains a pointer member.");
+
+}
+
 bool CheckClass::canNotCopy(const Scope *scope)
 {
     std::list<Function>::const_iterator func;

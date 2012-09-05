@@ -43,6 +43,8 @@ private:
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
 
+        TEST_CASE(copyConstructor);
+
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
         TEST_CASE(noConstructor3);
@@ -160,6 +162,141 @@ private:
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
     }
+
+    void checkCopyConstructor(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.addEnabled("style");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.copyconstructors();
+    }
+
+    void copyConstructor() {
+        checkCopyConstructor("class F\n"
+                             "{\n"
+                             "   public:\n"
+                             "   char *c,*p,*d;\n"
+                             "   F(const F &f) :p(f.p)\n"
+                             "   {\n"
+                             "     p=(char *)malloc(strlen(f.p)+1);\n"
+                             "     strcpy(p,f.p);\n"
+                             "    }\n"
+                             "    F(char *str)\n"
+                             "    {\n"
+                             "      p=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(p,str);\n"
+                             "     }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class F\n"
+                             "{\n"
+                             "   public:\n"
+                             "   char *c,*p,*d;\n"
+                             "   F(const F &f) :p(f.p)\n"
+                             "   {\n"
+                             "   }\n"
+                             "    F(char *str)\n"
+                             "    {\n"
+                             "   p=(char *)malloc(strlen(str)+1);\n"
+                             "   strcpy(p,str);\n"
+                             "    }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The copy constructor of class 'F' does not allocate memory for pointer class member and copying pointer values.\n[test.cpp:1]: (style) The copy constructor of class 'F' does not allocate memory for class member p.\n", errout.str());
+
+        checkCopyConstructor("class kalci\n"
+                             "{\n"
+                             "   public:\n"
+                             "   char *c,*p,*d;\n"
+                             "   kalci()\n"
+                             "   {\n"
+                             "     p=(char *)malloc(100);\n"
+                             "     strcpy(p,\"hello\");\n"
+                             "     c=(char *)malloc(100);\n"
+                             "     strcpy(p,\"hello\");\n"
+                             "     d=(char *)malloc(100);\n"
+                             "     strcpy(p,\"hello\");\n"
+                             "     }\n"
+                             "   kalci(const kalci &f)\n"
+                             "   {\n"
+                             "     p=(char *)malloc(strlen(str)+1);\n"
+                             "     strcpy(p,f.p);\n"
+                             "     c=(char *)malloc(strlen(str)+1);\n"
+                             "     strcpy(p,f.p);\n"
+                             "     d=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(p,f.p);\n"
+                             "}\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class F\n"
+                             "{\n"
+                             "   public:\n"
+                             "   char *c,*p,*d;\n"
+                             "F(char *str,char *st,char *string)\n"
+                             "{\n"
+                             "   p=(char *)malloc(100);\n"
+                             "   strcpy(p,str);\n"
+                             "   c=(char *)malloc(100);\n"
+                             "   strcpy(p,st);\n"
+                             "    d=(char *)malloc(100);\n"
+                             "    strcpy(p,string);\n"
+                             "}\n"
+                             "F(const F &f)\n"
+                             "{\n"
+                             "   p=(char *)malloc(strlen(str)+1);\n"
+                             "   strcpy(p,f.p);\n"
+                             "   c=(char *)malloc(strlen(str)+1);\n"
+                             "   strcpy(p,f.p);\n"
+                             "}\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The copy constructor of class 'F' does not allocate memory for class member d.\n", errout.str());
+
+        checkCopyConstructor("class F\n"
+                             "{\n"
+                             "   public:\n"
+                             "   char *c,*p,*d;\n"
+                             "   F()\n"
+                             "   {\n"
+                             "     p=(char *)malloc(100);\n"
+                             "     c=(char *)malloc(100);\n"
+                             "     d=(char*)malloc(100);\n"
+                             "    }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'F' does not have a copy constructor which is required since the class contains a pointer member.\n", errout.str());
+
+        checkCopyConstructor("class F\n"
+                             "{\n"
+                             "  public:\n"
+                             "  char *c;\n"
+                             "  const char *p,*d;\n"
+                             "  F(char *str,char *st,char *string)\n"
+                             "  {\n"
+                             "    p=str;\n"
+                             "    d=st;\n"
+                             "    c=(char *)malloc(strlen(string)+1);\n"
+                             "    strcpy(d,string);\n"
+                             "   }\n"
+                             "F(const F &f)\n"
+                             "{\n"
+                             "   p=f.p;\n"
+                             "   d=f.d;\n"
+                             "   c=(char *)malloc(strlen(str)+1);\n"
+                             "   strcpy(d,f.p);\n"
+                             "}\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     // Check the operator Equal
     void checkOpertorEq(const char code[]) {
