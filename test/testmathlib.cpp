@@ -83,22 +83,22 @@ private:
         ASSERT_EQUALS("256", MathLib::add("0xff", "1"));
         ASSERT_EQUALS("249", MathLib::add("250", "-1"));
         ASSERT_EQUALS("251", MathLib::add("250", "1"));
-        ASSERT_EQUALS("-2.0", MathLib::add("-1.", "-1"));
+        ASSERT_EQUALS("-2" , MathLib::add("-1.", "-1"));
         ASSERT_EQUALS("-1" , MathLib::add("0", "-1"));
         ASSERT_EQUALS("1"  , MathLib::add("1", "0"));
-        ASSERT_EQUALS("0.0", MathLib::add("0", "0."));
-        ASSERT_EQUALS("1.0000001", MathLib::add("1", "0.00000001"));  // #4016
-        ASSERT_EQUALS("30666.22" , MathLib::add("30666.22", "0.0"));  // #4068
+        ASSERT_EQUALS("0"  , MathLib::add("0", "0."));
+        ASSERT_EQUALS("1.0000001"  , MathLib::add("1", "0.00000001"));  // #4016
+        ASSERT_EQUALS("30666.22"  , MathLib::add("30666.22", "0.0"));  // #4068
 
         // subtraction
         ASSERT_EQUALS("254", MathLib::subtract("0xff", "1"));
         ASSERT_EQUALS("251", MathLib::subtract("250", "-1"));
         ASSERT_EQUALS("249", MathLib::subtract("250", "1"));
-        ASSERT_EQUALS("0.0", MathLib::subtract("-1.", "-1"));
+        ASSERT_EQUALS("0"  , MathLib::subtract("-1.", "-1"));
         ASSERT_EQUALS("1"  , MathLib::subtract("0", "-1"));
         ASSERT_EQUALS("1"  , MathLib::subtract("1", "0"));
-        ASSERT_EQUALS("0.0", MathLib::subtract("0", "0."));
-        ASSERT_EQUALS("0.99999999", MathLib::subtract("1", "0.00000001")); // #4016
+        ASSERT_EQUALS("0"  , MathLib::subtract("0", "0."));
+        ASSERT_EQUALS("0.99999999"  , MathLib::subtract("1", "0.00000001")); // #4016
         ASSERT_EQUALS("30666.22"  , MathLib::subtract("30666.22", "0.0"));  // #4068
 
         // multiply
@@ -106,11 +106,11 @@ private:
         ASSERT_EQUALS("-11.96"          , MathLib::multiply("-2.3", "5.2"));
         ASSERT_EQUALS("3000"            , MathLib::multiply("1E3", "3"));
         ASSERT_EQUALS("3000"            , MathLib::multiply("1E+3", "3"));
-        ASSERT_EQUALS("3000.0"          , MathLib::multiply("1.0E3", "3"));
-        ASSERT_EQUALS("-3000.0"         , MathLib::multiply("-1.0E3", "3"));
-        ASSERT_EQUALS("-3000.0"         , MathLib::multiply("-1.0E+3", "3"));
-        ASSERT_EQUALS("0.0"             , MathLib::multiply("-1.0E+3", "0"));
-        ASSERT_EQUALS("0.0"             , MathLib::multiply("+1.0E+3", "0"));
+        ASSERT_EQUALS("3000"            , MathLib::multiply("1.0E3", "3"));
+        ASSERT_EQUALS("-3000"           , MathLib::multiply("-1.0E3", "3"));
+        ASSERT_EQUALS("-3000"           , MathLib::multiply("-1.0E+3", "3"));
+        ASSERT_EQUALS("0"               , MathLib::multiply("-1.0E+3", "0"));
+        ASSERT_EQUALS("0"               , MathLib::multiply("+1.0E+3", "0"));
         ASSERT_EQUALS("2147483648"      , MathLib::multiply("2","1073741824"));
         ASSERT_EQUALS("536870912"       , MathLib::multiply("512","1048576"));
 
@@ -120,9 +120,10 @@ private:
         ASSERT_EQUALS("5"   , MathLib::divide("-10", "-2"));
         ASSERT_EQUALS("-2.5", MathLib::divide("-10.", "4"));
         ASSERT_EQUALS("2.5" , MathLib::divide("-10.", "-4"));
-        ASSERT_EQUALS("5.0" , MathLib::divide("25.5", "5.1"));
-        ASSERT_EQUALS("7.0" , MathLib::divide("21.", "3"));
+        ASSERT_EQUALS("5"   , MathLib::divide("25.5", "5.1"));
+        ASSERT_EQUALS("7"   , MathLib::divide("21.", "3"));
         ASSERT_EQUALS("1"   , MathLib::divide("3", "2"));
+        ASSERT_EQUALS("0.0" , MathLib::subtract("0.0", "0.0"));
 
         // Unknown action should throw exception
         ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
@@ -130,10 +131,10 @@ private:
 
     void calculate1() const { // mod
         ASSERT_EQUALS("0"    , MathLib::calculate("2"	 , "1"    , '%'));
-        ASSERT_EQUALS("0.0"  , MathLib::calculate("2.0"  , "1.0"  , '%'));
+        ASSERT_EQUALS("0"    , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
         ASSERT_EQUALS("1"    , MathLib::calculate("100"  , "3"   , '%'));
-        ASSERT_EQUALS("12.0" , MathLib::calculate("12.0" , "13.0" , '%'));
+        ASSERT_EQUALS("12"   , MathLib::calculate("12.0" , "13.0" , '%'));
         ASSERT_EQUALS("1.3"  , MathLib::calculate("5.3"  , "2.0" , '%'));
         ASSERT_EQUALS("1.7"  , MathLib::calculate("18.5" , "4.2" , '%'));
     }

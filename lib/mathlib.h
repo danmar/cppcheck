@@ -37,9 +37,12 @@ public:
     static double toDoubleNumber(const std::string & str);
 
     template<typename T>
-    static std::string toString(const T& d) {
+    static std::string toString(const T &d) {
         std::ostringstream result;
-        result << std::noshowpos << std::dec << d;
+        result.precision(8);
+        result << d;
+        if (isNullValue(result.str()))
+            return std::string("0");
         return result.str();
     }
 
@@ -74,9 +77,6 @@ public:
      */
     static bool isOctalDigit(char c);
 };
-
-template<>
-CPPCHECKLIB std::string MathLib::toString<double>(const double& d);
 
 /// @}
 

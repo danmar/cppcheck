@@ -27,20 +27,6 @@
 #include <cmath>
 #include <cctype>
 
-template<>
-std::string MathLib::toString<double>(const double& d)
-{
-    std::ostringstream result;
-    result.precision(8);
-    result << d;
-    std::string temp = result.str();
-    if (isNullValue(temp))
-        return std::string("0.0");
-    if (temp.find('.') == std::string::npos)
-        return temp + ".0";
-    return temp;
-}
-
 MathLib::bigint MathLib::toLongNumber(const std::string &str)
 {
     // hexadecimal numbers:
@@ -230,6 +216,9 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString<bigint>(toLongNumber(first) - toLongNumber(second));
     }
+
+    if (first == second)
+        return "0.0" ;
 
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);
