@@ -106,6 +106,7 @@ public:
 
         checkOther.checkAssignBoolToPointer();
         checkOther.checkBitwiseOnBoolean();
+        checkOther.checkInvalidFree();
         checkOther.checkDoubleFree();
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
@@ -246,6 +247,10 @@ public:
 
     /** @brief %Check for suspicious use of semicolon */
     void checkSuspiciousSemicolon();
+
+    /** @brief %Check for free() operations on invalid memory locations */
+    void checkInvalidFree();
+    void invalidFreeError(const Token *tok);
 
     /** @brief %Check for double free or double close operations */
     void checkDoubleFree();
@@ -407,6 +412,7 @@ private:
                "* sizeof for numeric given as function argument\n"
                "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
+               "* free() or delete of an invalid memory location\n"
                "* double free() or double closedir()\n"
                "* bitwise operation with negative right operand\n"
 

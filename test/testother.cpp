@@ -162,6 +162,7 @@ private:
         TEST_CASE(checkForSuspiciousSemicolon2);
 
         TEST_CASE(checkDoubleFree);
+        TEST_CASE(checkInvalidFree);
 
         TEST_CASE(checkRedundantCopy);
 
@@ -5862,6 +5863,89 @@ private:
             "}"
         );
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+    }
+
+
+    void checkInvalidFree() {
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = (char *)malloc(1024);\n"
+            "  free(a + 10);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = (char *)malloc(1024);\n"
+            "  free(a - 10);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = (char *)malloc(1024);\n"
+            "  free(10 + a);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = new char[1024];\n"
+            "  delete[] (a + 10);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = new char;\n"
+            "  delete (a + 10);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = new char;\n"
+            "  a = a - 10;\n"
+            "  delete (a + 10);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = new char;\n"
+            "  bar(a);\n"
+            "  delete (a + 10);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = new char;\n"
+            "  char *b = new char;\n"
+            "  bar(a);\n"
+            "  delete (a + 10);\n"
+            "  delete (b + 10);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Invalid memory address freed.\n", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = new char;\n"
+            "  char *b = new char;\n"
+            "  bar(a, b);\n"
+            "  delete (a + 10);\n"
+            "  delete (b + 10);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo(char *p) {\n"
+            "  char *a = new char;\n"
+            "  bar()\n"
+            "  delete (a + 10);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid memory address freed.\n", errout.str());
     }
 
     void check_redundant_copy(const char code[]) {
