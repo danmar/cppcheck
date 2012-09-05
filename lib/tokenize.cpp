@@ -1123,14 +1123,13 @@ void Tokenizer::simplifyTypedef()
                     //    classes, casts, operators, and template parameters
 
                     // try to determine which category this substitution is
-                    bool isDerived = false;
                     bool inCast = false;
                     bool inTemplate = false;
                     bool inOperator = false;
                     bool inSizeof = false;
 
                     // check for derived class: class A : some_typedef {
-                    isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
+                    bool isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
 
                     // check for cast: (some_typedef) A or static_cast<some_typedef>(A)
                     // todo: check for more complicated casts like: (const some_typedef *)A
@@ -1593,10 +1592,15 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // if MACRO
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|for|while|BOOST_FOREACH %var% (")) {
-            syntaxError(tok);
-            return false;
+            if (Token::simpleMatch(tok, "for each"))
+                // 'for each ( )' -> 'for ( )'
+                tok->deleteNext();
+            else {
+                syntaxError(tok);
+                return false;
+            }
         }
     }
 
@@ -1645,6 +1649,9 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
+
+    // replace 'sin(0)' to '0' and other similar math expressions
+    simplifyMathExpressions();
 
     // combine "- %num%"
     concatenateNegativeNumber();
@@ -3325,19 +3332,34 @@ bool Tokenizer::simplifyTokenList()
     }
 
     // Replace "&str[num]" => "(str + num)"
-    //TODO: fix the fails testrunner reports:
-    //1)
-    //test/teststl.cpp:805: Assertion failed.
-    //Expected:
-    //"[test.cpp:7]: (error) Invalid pointer 'first' after push_back / push_front\n".
-    //Actual:
-    //"".
-    /*for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%var%") && !Token::Match(tok, "%num%")
+    std::set<unsigned int> pod;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->isStandardType()) {
+            while (tok && (tok->str() == "*" || tok->isName())) {
+                if (tok->varId() > 0) {
+                    pod.insert(tok->varId());
+                    break;
+                }
+                tok = tok->next();
+            }
+        }
+    }
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%var%")
+            && !Token::Match(tok, "%num%")
             && !Token::Match(tok, "]|)")
             && (Token::Match(tok->next(), "& %var% [ %num% ]") ||
                 Token::Match(tok->next(), "& %var% [ %var% ]"))) {
             tok = tok->next();
+
+            if (tok->next()->varId()) {
+                if (pod.find(tok->next()->varId()) == pod.end()) {
+                    tok = tok->tokAt(5);
+                    continue;
+                }
+            }
+
             // '&' => '('
             tok->str("(");
 
@@ -3351,7 +3373,9 @@ bool Tokenizer::simplifyTokenList()
             tok->str(")");
             Token::createMutualLinks(tok->tokAt(-4), tok);
         }
-    }*/
+    }
+
+    removeRedundantAssignment();
 
     simplifyRealloc();
 
@@ -3629,16 +3653,14 @@ void Tokenizer::simplifyEmptyNamespaces()
             continue;
         if (tok->strAt(3) == "}") {
             tok->deleteNext(3);             // remove '%var% { }'
-            if (tok->next()) {              // '%empty% namespace %anytoken%'?
-                if (!tok->previous()) {
-                    tok->deleteThis();      // remove 'namespace'
-                    goback = true;
-                } else {                    // '%any% namespace %any%'
-                    tok = tok->previous();  // goto previous token
-                    tok->deleteNext();      // remove next token: 'namespace'
-                }
-            } else                          // '%empty% namespace %empty%'?
-                tok->str(";");              // change 'namespace' to ';'
+            if (!tok->previous()) {
+                // remove 'namespace' or replace it with ';' if isolated
+                tok->deleteThis();
+                goback = true;
+            } else {                    // '%any% namespace %any%'
+                tok = tok->previous();  // goto previous token
+                tok->deleteNext();      // remove next token: 'namespace'
+            }
         } else {
             tok = tok->tokAt(2);
         }
@@ -3732,10 +3754,7 @@ bool Tokenizer::removeRedundantConditions()
             continue;
 
         // Find matching else
-        Token *elseTag = 0;
-
-        // Find the closing "}"
-        elseTag = tok->linkAt(4)->next();
+        Token *elseTag = tok->linkAt(4)->next();
 
         bool boolValue = (tok->strAt(2) == "true");
 
@@ -5956,7 +5975,7 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
-                const std::string structname = "";
+                const std::string structname;
 
                 const Token *valueToken = tok2->tokAt(3);
                 std::string value(tok2->strAt(3));
@@ -5972,7 +5991,7 @@ bool Tokenizer::simplifyKnownVariables()
                 std::string::size_type n = -1;
                 if (varid == 0)
                     continue;
-                const std::string structname("");
+                const std::string structname;
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
                 if (tok2->str() == "sprintf") {
@@ -9220,10 +9239,36 @@ void Tokenizer::printUnknownTypes()
     }
 }
 
+void Tokenizer::simplifyMathExpressions()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+
+        if (Token::Match(tok,"exp ( 0 )") || Token::Match(tok,"cosh ( 0 )") || Token::Match(tok,"cos ( 0 )") || Token::Match(tok,"sqrt ( 1 )")) {
+            tok->deleteNext(3);
+            tok->str("1");
+        }
+
+        if (Token::Match(tok,"sinh ( 0 )") || Token::Match(tok,"sin ( 0 )") || Token::Match(tok,"sqrt ( 0 )") || Token::Match(tok,"ln ( 1 )")) {
+            tok->deleteNext(3);
+            tok->str("0");
+        }
+
+        if (Token::Match(tok,"pow ( sin ( %var% ) , 2 ) + pow ( cos ( %var% ) , 2 )")) {
+            tok->deleteNext(18);
+            tok->str("1");
+        }
+
+        if (Token::Match(tok,"pow ( sinh ( %var% ) , 2 ) - pow ( cosh ( %var% ) , 2 )")) {
+            tok->deleteNext(18);
+            tok->str("-1");
+        }
+    }
+}
+
 const std::string& Tokenizer::getSourceFilePath() const
 {
     if (list.getFiles().empty()) {
-        static const std::string empty("");
+        static const std::string empty;
         return empty;
     }
     return list.getFiles()[0];

@@ -772,18 +772,16 @@ static void addtoken(Token **rettail, const Token *tok, const std::string &str)
 
 Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, CheckMemoryLeak::AllocType &alloctype, CheckMemoryLeak::AllocType &dealloctype, bool classmember, unsigned int sz)
 {
-    Token *rethead = 0, *rettail = 0;
-
     // variables whose value depends on if(!var). If one of these variables
     // is used in a if-condition then generate "ifv" instead of "if".
     std::set<unsigned int> extravar;
 
     // The first token should be ";"
-    rethead = new Token(0);
+    Token* rethead = new Token(0);
     rethead->str(";");
     rethead->linenr(tok->linenr());
     rethead->fileIndex(tok->fileIndex());
-    rettail = rethead;
+    Token* rettail = rethead;
 
     int indentlevel = 0;
     int parlevel = 0;

@@ -942,6 +942,8 @@ private:
                                 "    return reinterpret_cast<long long*>(c);\n"
                                 "}", true);
         ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to integer* is not portable due to different binary data representations on different platforms\n", errout.str());
+
+        checkInvalidPointerCast("Q_DECLARE_METATYPE(int*)"); // #4135 - don't crash
     }
 
     void dangerousStrolUsage() {
@@ -1364,11 +1366,17 @@ private:
     }
 
     void sizeofCalculation() {
-        check("sizeof(a+b)");
+        check("int a, b; int a,sizeof(a+b)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
 
-        check("sizeof(-a)");
+        check("int a, b; sizeof(a*b)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
+
+        check("int a, b; sizeof(-a)");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof()\n", errout.str());
+
+        check("int a, b; sizeof(*a)");
+        ASSERT_EQUALS("", errout.str());
 
         check("sizeof(void * const)");
         ASSERT_EQUALS("", errout.str());
@@ -1550,6 +1558,22 @@ private:
               "    bar(y);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void bar() {}\n" // bar isn't noreturn
+              "void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (x)\n"
+              "    {\n"
+              "    case 2:\n"
+              "        y = 2;\n"
+              "        bar();\n"
+              "    case 3:\n"
+              "        y = 3;\n"
+              "    }\n"
+              "    bar(y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. This might indicate a missing 'break;'.\n", errout.str());
 
         check("void foo(char *str, int a)\n"
               "{\n"
@@ -3983,28 +4007,28 @@ private:
               "    *c++;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* c ++ ;'. Did you intend to write '(* c)++ ;'?\n", errout.str());
 
         check("char* f(char** c) {\n"
               "    *c[5]--;\n"
               "    return *c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* c [ 5 ] -- ;'. Did you intend to write '(* c [ 5 ])-- ;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* f . a ++ ;'. Did you intend to write '(* f . a)++ ;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a[5].v[3]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* f . a [ 5 ] . v [ 3 ] ++ ;'. Did you intend to write '(* f . a [ 5 ] . v [ 3 ])++ ;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a(1, 5).v[x + y]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* f . a ( 1 , 5 ) . v [ x + y ] ++ ;'. Did you intend to write '(* f . a ( 1 , 5 ) . v [ x + y ])++ ;'?\n", errout.str());
 
         check("char* f(char* c) {\n"
               "    (*c)++;\n"
@@ -4014,6 +4038,29 @@ private:
 
         check("void f(char* c) {\n"
               "    bar(*c++);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char*** f(char*** c) {\n"
+              "    ***c++;\n"
+              "    return c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* * * c ++ ;'. Did you intend to write '(* * * c)++ ;'?\n", errout.str());
+
+        check("char** f(char*** c) {\n"
+              "    **c[5]--;\n"
+              "    return **c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* * c [ 5 ] -- ;'. Did you intend to write '(* * c [ 5 ])-- ;'?\n", errout.str());
+
+        check("char*** f(char*** c) {\n"
+              "    (***c)++;\n"
+              "    return c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void *f(char** c) {\n"
+              "    bar(**c++);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -6043,16 +6090,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'bar' is reassigned a value before the old one has been used.\n", errout.str());
 
         // Tests with function call between assignment
-        check("void bar() {}\n"
-              "void f(int i) {\n"
+        check("void f(int i) {\n"
               "    i = 1;\n"
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
-        check("void bar() {}\n"
-              "int i;\n"
+        check("int i;\n"
               "void f() {\n"
               "    i = 1;\n"
               "    bar();\n" // Global variable might be accessed in bar()
@@ -6060,21 +6105,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void bar() {}\n"
-              "void f() {\n"
+        check("void f() {\n"
               "    int i;\n"
               "    i = 1;\n"
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
-
-        check("void f(int i) {\n"
-              "    i = 1;\n"
-              "    bar();\n" // Unknown function - can be noreturn
-              "    i = 1;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void bar(int i) {}\n"
               "void f(int i) {\n"
@@ -6147,16 +6184,14 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
         // Tests with function call between copy
-        check("void bar() {}\n"
-              "void f(void* a) {\n"
+        check("void f(void* a) {\n"
               "    snprintf(a, foo, bar);\n"
               "    bar();\n"
               "    memset(a, 0, size);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
-        check("void bar() {}\n"
-              "void* a;\n"
+        check("void* a;\n"
               "void f() {\n"
               "    memset(a, 0, size);\n"
               "    bar();\n" // Global variable might be accessed in bar()
@@ -6164,21 +6199,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void bar() {}\n"
-              "void f() {\n"
+        check("void f() {\n"
               "    void* a = foo();\n"
               "    memset(a, 0, size);\n"
               "    bar();\n"
               "    memset(a, 0, size);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
-
-        check("void f(void* a) {\n"
-              "    memset(a, 0, size);\n"
-              "    bar();\n" // Unknown function - can be noreturn
-              "    memset(a, 0, size);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
         check("void bar(void* a) {}\n"
               "void f(void* a) {\n"

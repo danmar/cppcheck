@@ -462,6 +462,11 @@ public:
     void simplifyMathFunctions();
 
     /**
+     * Simplify e.g. 'sin(0)' into '0'
+     */
+    void simplifyMathExpressions();
+
+    /**
      * Modify strings in the token list by replacing hex and oct
      * values. E.g. "\x61" -> "a" and "\000" -> "\0"
      * @param source The string to be modified, e.g. "\x61"

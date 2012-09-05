@@ -66,6 +66,8 @@ private:
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
 
+        TEST_CASE(foreach);     // #3690
+
         TEST_CASE(minus);
 
         TEST_CASE(longtok);
@@ -439,6 +441,8 @@ private:
         TEST_CASE(platformWin64);
         TEST_CASE(platformUnix32);
         TEST_CASE(platformUnix64);
+
+        TEST_CASE(simplifyMathExpressions); //ticket #1620
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -702,6 +706,12 @@ private:
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void foreach() {
+        // #3690
+        const std::string code("void f() { for each ( char c in MyString ) { Console::Write(c); } }");
+        ASSERT_EQUALS("void f ( ) { for ( char c in MyString ) { Console :: Write ( c ) ; } }" ,tokenizeAndStringify(code.c_str()));
     }
 
     void minus() {
@@ -5718,8 +5728,8 @@ private:
     }
 
     void removeRedundantAssignment() {
-        ASSERT_EQUALS("void f ( ) { int * q ; }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
-        ASSERT_EQUALS("void f ( ) { int * q ; }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
         ASSERT_EQUALS("int f ( int * x ) { return * x ; }", tokenizeAndStringify("int f(int *x) { return *x; }", true));
     }
 
@@ -7188,6 +7198,36 @@ private:
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unix64));
     }
+
+    void simplifyMathExpressions() {//#1620
+        const char *code1 ="void foo() {\n"
+                           "std::cout<<sin(0);\n"
+                           "std::cout<<cos(0);\n"
+                           "std::cout<<sinh(0);\n"
+                           "std::cout<<cosh(0);\n"
+                           "std::cout<<exp(0);\n"
+                           "std::cout<<sqrt(0);\n"
+                           "std::cout<<sqrt(1);\n"
+                           "std::cout<<ln(1);\n"
+                           "std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
+                           "std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
+                           "}";
+
+        const char *expected1 ="void foo ( ) {\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << 0 ;\n"
+                               "std :: cout << 1 ;\n"
+                               "std :: cout << -1 ;\n"
+                               "}";
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
+    }
+
 };
 
 REGISTER_TEST(TestTokenizer)

@@ -238,30 +238,41 @@ void CheckOther::clarifyStatement()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[{};] * %var%")) {
-            tok = tok->tokAt(3);
-            while (tok) {
-                if (tok->str() == "[")
-                    tok = tok->link()->next();
-                if (Token::Match(tok, ".|:: %var%")) {
-                    if (tok->strAt(2) == "(")
-                        tok = tok->linkAt(2)->next();
-                    else
-                        tok = tok->tokAt(2);
-                } else
-                    break;
+        if (Token::Match(tok, "* %var%")) {
+            const Token *tok2=tok->previous();
+
+            while (Token::Match(tok2, "*"))
+                tok2=tok2->previous();
+
+            if (Token::Match(tok2, "[{};]")) {
+                tok = tok->tokAt(2);
+                while (tok) {
+                    if (tok->str() == "[")
+                        tok = tok->link()->next();
+
+                    if (Token::Match(tok, ".|:: %var%")) {
+                        if (tok->strAt(2) == "(")
+                            tok = tok->linkAt(2)->next();
+                        else
+                            tok = tok->tokAt(2);
+                    } else
+                        break;
+                }
+                if (Token::Match(tok, "++|-- [;,]"))
+                    //TODO: change the string in order to remove the excessive spaces between the tokens.
+                    clarifyStatementError(tok,
+                                          tok2->next()->stringifyList(tok->tokAt(2)),
+                                          "("+tok2->next()->stringifyList(tok)+")"+tok->stringifyList(tok->tokAt(2)));
             }
-            if (Token::Match(tok, "++|-- [;,]"))
-                clarifyStatementError(tok);
         }
     }
 }
 
-void CheckOther::clarifyStatementError(const Token *tok)
+void CheckOther::clarifyStatementError(const Token *tok, const std::string &expr, const std::string &suggested)
 {
-    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n"
-                "A statement like '*A++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
-                "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?");
+    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement: '" + expr + "'. Did you intend to write '" + suggested + "'?\n"
+                "A statement like '*expr++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
+                "Thus, the dereference is meaningless. Did you intend to write '(*expr)++;'?");
 }
 
 //---------------------------------------------------------------------------
@@ -394,7 +405,7 @@ void CheckOther::invalidPointerCast()
         if (Token::Match(tok, "( const| %type% const| * )") || Token::Match(tok, "( const| %type% %type% const| * )")) {
             toTok = tok->next();
             nextTok = tok->link()->next();
-            if (nextTok->str() == "(")
+            if (nextTok && nextTok->str() == "(")
                 nextTok = nextTok->next();
         } else if (Token::Match(tok, "reinterpret_cast < const| %type% const| * > (") || Token::Match(tok, "reinterpret_cast < const| %type% %type% const| * > (")) {
             nextTok = tok->tokAt(5);
@@ -614,6 +625,19 @@ void CheckOther::sizeofForPointerError(const Token *tok, const std::string &varn
 // Detect redundant assignments: x = 0; x = 4;
 //---------------------------------------------------------------------------
 
+static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, const SymbolDatabase* symbolDatabase)
+{
+    for (std::map<unsigned int, const Token*>::iterator i = container.begin(); i != container.end();) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
+        if (!var || (!var->isLocal() && !var->isArgument())) {
+            container.erase(i++);
+            if (i == container.end())
+                break;
+        } else
+            ++i;
+    }
+}
+
 void CheckOther::checkRedundantAssignment()
 {
     if (!_settings->isEnabled("performance"))
@@ -692,7 +716,7 @@ void CheckOther::checkRedundantAssignment()
                                 redundantCopyError(it->second, tok, param1->str());
                         }
                     }
-                } else {
+                } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
                     const Function* func = symbolDatabase->findFunctionByToken(_tokenizer->getFunctionTokenByName(tok->str().c_str()));
                     if (!func || !func->hasBody) {
                         varAssignments.clear();
@@ -702,27 +726,15 @@ void CheckOther::checkRedundantAssignment()
                     const Token* funcEnd = func->functionScope->classEnd;
                     bool noreturn;
                     if (!_tokenizer->IsScopeNoReturn(funcEnd, &noreturn) && !noreturn) {
-                        for (std::map<unsigned int, const Token*>::iterator i = varAssignments.begin(); i != varAssignments.end(); ++i) {
-                            const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-                            if (!var || (!var->isLocal() && !var->isArgument())) {
-                                varAssignments.erase(i++);
-                                if (i == varAssignments.end())
-                                    break;
-                            }
-                        }
-                        for (std::map<unsigned int, const Token*>::iterator i = memAssignments.begin(); i != memAssignments.end(); ++i) {
-                            const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-                            if (!var || (!var->isLocal() && !var->isArgument())) {
-                                memAssignments.erase(i++);
-                                if (i == memAssignments.end())
-                                    break;
-                            }
-
-                        }
+                        eraseNotLocalArg(varAssignments, symbolDatabase);
+                        eraseNotLocalArg(memAssignments, symbolDatabase);
                     } else {
                         varAssignments.clear();
                         memAssignments.clear();
                     }
+                } else { // Noreturn functions outside switch don't cause problems
+                    eraseNotLocalArg(varAssignments, symbolDatabase);
+                    eraseNotLocalArg(memAssignments, symbolDatabase);
                 }
             }
         }
@@ -3006,9 +3018,11 @@ void CheckOther::sizeofCalculation()
         if (Token::simpleMatch(tok, "sizeof (")) {
             const Token* const end = tok->linkAt(1);
             for (const Token *tok2 = tok->tokAt(2); tok2 != end; tok2 = tok2->next()) {
-                if (tok2->isOp() && (!tok2->isExpandedMacro() || _settings->inconclusive) && !Token::Match(tok2, ">|<|&|*")) {
-                    sizeofCalculationError(tok2, tok2->isExpandedMacro());
-                    break;
+                if (tok2->isOp() && (!tok2->isExpandedMacro() || _settings->inconclusive) && !Token::Match(tok2, ">|<|&") && (Token::Match(tok2->previous(), "%var%") || !Token::Match(tok2, "*"))) {
+                    if (!(Token::Match(tok2->previous(), "%type%") || Token::Match(tok2->next(), "%type%"))) {
+                        sizeofCalculationError(tok2, tok2->isExpandedMacro());
+                        break;
+                    }
                 }
             }
         }

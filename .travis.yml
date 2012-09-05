@@ -2,4 +2,4 @@ language: cpp
 compiler:
   - gcc
   - clang
-script: make test && ./cppcheck . cli gui lib
+script: make test && g++ -o cppcheck -O2 cli/*.cpp lib/*.cpp -Ilib && ./cppcheck --error-exitcode=1 -q cli gui lib
