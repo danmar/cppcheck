@@ -639,7 +639,7 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation >Aktuelle Ergebnisse werden gelöscht.
+        <translation>Aktuelle Ergebnisse werden gelöscht.
 
           Das Einlesen einer XML Datei löscht die aktuellen Ergebnisse. Fortfahren?</translation>
     </message>
