@@ -33,7 +33,7 @@ private:
 
     void run() {
         TEST_CASE(uninitvar1);
-        TEST_CASE(uninitvar_bitop);		// using uninitialized operand in bit operation
+        TEST_CASE(uninitvar_bitop);     // using uninitialized operand in bit operation
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
         TEST_CASE(uninitvar_arrays);    // arrays
         TEST_CASE(uninitvar_class);     // class/struct
@@ -262,15 +262,15 @@ private:
 
         // Ticket #3597
         checkUninitVar("int f() {\n"
-                       "	int a;\n"
-                       "	int b = 1;\n"
-                       "	(b += a) = 1;\n"
+                       "    int a;\n"
+                       "    int b = 1;\n"
+                       "    (b += a) = 1;\n"
                        "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n","", errout.str());
 
         checkUninitVar("int f() {\n"
-                       "	int a,b,c;\n"
-                       "	a = b = c;\n"
+                       "    int a,b,c;\n"
+                       "    a = b = c;\n"
                        "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", "", errout.str());
 
@@ -554,7 +554,7 @@ private:
         checkUninitVar("MachineLoopRange *MachineLoopRanges::getLoopRange(const MachineLoop *Loop) {\n"
                        "  MachineLoopRange *&Range = Cache[Loop];\n"
                        "  if (!Range)\n"
-                       "	Range = new MachineLoopRange(Loop, Allocator, *Indexes);\n"
+                       "    Range = new MachineLoopRange(Loop, Allocator, *Indexes);\n"
                        "  return Range;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -581,14 +581,14 @@ private:
         checkUninitVar("namespace std _GLIBCXX_VISIBILITY(default)\n"
                        "{\n"
                        "_GLIBCXX_BEGIN_NAMESPACE_CONTAINER\n"
-                       "  typedef unsigned long _Bit_type;\n"
-                       "  struct _Bit_reference\n"
-                       "  {\n"
-                       "	 _Bit_type * _M_p;\n"
-                       "	 _Bit_type _M_mask;\n"
-                       "	 _Bit_reference(_Bit_type * __x, _Bit_type __y)\n"
-                       "	 : _M_p(__x), _M_mask(__y) { }\n"
-                       "  };\n"
+                       "    typedef unsigned long _Bit_type;\n"
+                       "    struct _Bit_reference\n"
+                       "    {\n"
+                       "        _Bit_type * _M_p;\n"
+                       "        _Bit_type _M_mask;\n"
+                       "        _Bit_reference(_Bit_type * __x, _Bit_type __y)\n"
+                       "         : _M_p(__x), _M_mask(__y) { }\n"
+                       "    };\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1620,7 +1620,7 @@ private:
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int x);"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(const int &x) { }"));
         ASSERT_EQUALS("foo", analyseFunctions("void foo(int &x) { ++x; }"));
-        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char* oldname, const char* newname);"));	// Ticket #914
+        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char* oldname, const char* newname);")); // Ticket #914
         ASSERT_EQUALS("rename", analyseFunctions("int rename (const char oldname[], const char newname[]);"));
         ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
         ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));

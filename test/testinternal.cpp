@@ -254,7 +254,7 @@ private:
               "class Z {\n"
               "   char z[1];\n"
               "   Z(){\n"
-              " 	  z[0] = 0;\n"
+              "      z[0] = 0;\n"
               "   }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());

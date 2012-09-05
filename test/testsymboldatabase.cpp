@@ -933,7 +933,7 @@ private:
         ASSERT_EQUALS(true, function->hasBody);
     }
 
-    void namespaces3() {	// #3854 - namespace with unknown macro
+    void namespaces3() { // #3854 - namespace with unknown macro
         GET_SYMBOL_DB("namespace fred UNKNOWN_MACRO(default) {\n"
                       "}\n");
         ASSERT_EQUALS(2U, db->scopeList.size());

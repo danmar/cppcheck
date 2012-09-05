@@ -1906,8 +1906,8 @@ private:
               "    s1 = s1.substr();\n"
               "    s2 = s1.substr(x);\n"
               "    s1 = s2.substr(0, x);\n"
-              "	   s1 = s2.substr(0,std::string::npos);\n"
-              "	   s1 = s2.substr(x+5-n, 0);\n"
+              "    s1 = s2.substr(0,std::string::npos);\n"
+              "    s1 = s2.substr(x+5-n, 0);\n"
               "    \n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (performance) Useless call of function \'substr\' because it returns a copy of "
