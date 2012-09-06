@@ -852,6 +852,12 @@ private:
             ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().index() == 0);
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            GET_SYMBOL_DB("void g(std::map<int, int> m = std::map<int, int>()) { }");
+            const Scope* g = db->findScopeByName("g");
+            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().index() == 0 && g->function->initializedArgCount() == 1);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void functionArgs2() {

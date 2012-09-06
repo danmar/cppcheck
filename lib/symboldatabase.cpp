@@ -1621,8 +1621,11 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             // skip default values
             if (tok->str() == "=") {
-                while (tok->str() != "," && tok->str() != ")")
+                while (tok->str() != "," && tok->str() != ")") {
+                    if (tok->link())
+                        tok = tok->link();
                     tok = tok->next();
+                }
             }
 
             argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope));
