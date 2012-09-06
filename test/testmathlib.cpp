@@ -100,6 +100,7 @@ private:
         ASSERT_EQUALS("0"  , MathLib::subtract("0", "0."));
         ASSERT_EQUALS("0.99999999"  , MathLib::subtract("1", "0.00000001")); // #4016
         ASSERT_EQUALS("30666.22"  , MathLib::subtract("30666.22", "0.0"));  // #4068
+        ASSERT_EQUALS("0.0" , MathLib::subtract("0.0", "0.0"));
 
         // multiply
         ASSERT_EQUALS("-0.003"          , MathLib::multiply("-1e-3", "3"));
@@ -123,20 +124,23 @@ private:
         ASSERT_EQUALS("5"   , MathLib::divide("25.5", "5.1"));
         ASSERT_EQUALS("7"   , MathLib::divide("21.", "3"));
         ASSERT_EQUALS("1"   , MathLib::divide("3", "2"));
-        ASSERT_EQUALS("0.0" , MathLib::subtract("0.0", "0.0"));
+        ASSERT_THROW(MathLib::divide("123", "0"), InternalError); // throw
+        MathLib::divide("123", "0.0"); // don't throw
 
         // Unknown action should throw exception
         ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
     }
 
     void calculate1() const { // mod
-        ASSERT_EQUALS("0"    , MathLib::calculate("2"	 , "1"    , '%'));
+        ASSERT_EQUALS("0"    , MathLib::calculate("2"    , "1"    , '%'));
         ASSERT_EQUALS("0"    , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
         ASSERT_EQUALS("1"    , MathLib::calculate("100"  , "3"   , '%'));
         ASSERT_EQUALS("12"   , MathLib::calculate("12.0" , "13.0" , '%'));
         ASSERT_EQUALS("1.3"  , MathLib::calculate("5.3"  , "2.0" , '%'));
         ASSERT_EQUALS("1.7"  , MathLib::calculate("18.5" , "4.2" , '%'));
+        ASSERT_THROW(MathLib::calculate("123", "0", '%'), InternalError); // throw
+        MathLib::calculate("123", "0.0", '%'); // don't throw
     }
 
     void convert() const {

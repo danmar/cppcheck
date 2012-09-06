@@ -235,7 +235,10 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString<bigint>(toLongNumber(first) / toLongNumber(second));
+        bigint b = toLongNumber(second);
+        if (b == 0)
+            throw InternalError(0, "Internal Error: Division by zero");
+        return toString<bigint>(toLongNumber(first) / b);
     }
     return toString<double>(toDoubleNumber(first) / toDoubleNumber(second));
 }
@@ -251,7 +254,10 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
 std::string MathLib::mod(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString<MathLib::bigint>(toLongNumber(first) % toLongNumber(second));
+        bigint b = toLongNumber(second);
+        if (b == 0)
+            throw InternalError(0, "Internal Error: Division by zero");
+        return toString<MathLib::bigint>(toLongNumber(first) % b);
     }
     return toString<double>(fmod(toDoubleNumber(first),toDoubleNumber(second)));
 }
