@@ -743,9 +743,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             if (cop == '&' || cop == '|' || cop == '^')
                 result = MathLib::calculate(tok->str(), tok->strAt(2), cop);
             else if (cop == '<') {
-                if (tok->previous()->str() != "<<") // Ensure that its not a shift operator as used for streams
+                if (tok->previous()->str() != "<<" && rightInt > 0) // Ensure that its not a shift operator as used for streams
                     result = MathLib::toString<MathLib::bigint>(leftInt << rightInt);
-            } else
+            } else if (rightInt > 0)
                 result = MathLib::toString<MathLib::bigint>(leftInt >> rightInt);
 
             if (!result.empty()) {
