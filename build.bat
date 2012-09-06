@@ -27,14 +27,14 @@ REM parse qmakespec to see if it's some msvc
   set MAKE=nmake
 )
 
-if "%2" == "" set TARGET=release
+if "%2" == ""        set TARGET=release
+if "%2" == "debug"   set TARGET=debug
 if "%2" == "release" set TARGET=release
-if "%2" == "debug" set TARGET=debug
 
+if "%1" == "all"      goto cppcheck
 if "%1" == "cppcheck" goto cppcheck
-if "%1" == "gui" goto gui
-if "%1" == "tests" goto tests
-if "%1" == "all" goto cppcheck
+if "%1" == "gui"      goto gui
+if "%1" == "tests"    goto tests
 goto help
 
 :cppcheck
@@ -61,9 +61,9 @@ popd
 goto end
 
 :help
-echo "Syntax: build <target> [debug|release]"
-echo "  where <target> is any of cppcheck/gui/tests/all"
-echo "        debug or release define used configuration"
-echo "  all- target builds both cppcheck and gui.
+echo Syntax: build ^<target^> [debug^|release]
+echo   where ^<target^> is any of cppcheck/gui/tests/all
+echo         debug or release define used configuration
+echo   all- target builds both cppcheck and gui.
 
 :end
