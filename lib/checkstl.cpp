@@ -154,6 +154,11 @@ void CheckStl::iterators()
                 tok2 = tok2->tokAt(2);
             }
 
+            // Passing iterator to function. Iterator might be initialized
+            else if (Token::Match(tok2, "%varid% ,|)", iteratorId)) {
+                validIterator = true;
+            }
+
             // Dereferencing invalid iterator?
             else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId)) {
                 dereferenceErasedError(tok2, tok2->strAt(1));

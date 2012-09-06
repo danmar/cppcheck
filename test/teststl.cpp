@@ -67,6 +67,7 @@ private:
         TEST_CASE(eraseAssign1);
         TEST_CASE(eraseAssign2);
         TEST_CASE(eraseAssign3);
+        TEST_CASE(eraseAssignByFunctionCall);
         TEST_CASE(eraseErase);
         TEST_CASE(eraseByValue);
 
@@ -864,6 +865,15 @@ private:
               "    std::list<std::list<int> >::const_iterator i = l.begin();\n"
               "    std::list<int>::const_iterator j = (*i).begin();\n"
               "    cout << *j << endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void eraseAssignByFunctionCall() {
+        check("void f(std::list<list<int> >& l) {\n"
+              "    std::list<foo>::const_iterator i;\n"
+              "    bar(i);\n"
+              "    cout << *i;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
