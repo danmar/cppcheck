@@ -1,5 +1,5 @@
-
-#include <stdio.h>
+#include <ctime>
+#include <cstdio>
 #include <cstdlib>
 #include <algorithm>
 
