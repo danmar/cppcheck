@@ -145,7 +145,7 @@ void CheckStl::iterators()
             }
 
             // Reassign the iterator
-            else if (Token::Match(tok2, "%varid% = %var%", iteratorId)) {
+            else if (Token::Match(tok2, "%varid% = %any%", iteratorId)) {
                 // Assume that the iterator becomes valid.
                 // TODO: add checking that checks if the iterator becomes valid or not
                 validatingToken = Token::findmatch(tok2->tokAt(2), "[;)]");
