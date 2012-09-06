@@ -868,8 +868,13 @@ void Variable::evaluate()
         setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
     if (_start)
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
-    if (_access == Argument && _name) {
-        tok = _name->next();
+    if (_access == Argument) {
+        tok = _name;
+        if (!tok)
+            tok = _end; // Argument without name
+        if (!tok)
+            return;
+        tok = tok->next();
         while (tok->str() == "[")
             tok = tok->link();
         setFlag(fHasDefault, tok->str() == "=");
