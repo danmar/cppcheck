@@ -271,7 +271,7 @@ void CheckOther::clarifyStatement()
 void CheckOther::clarifyStatementError(const Token *tok, const std::string &expr, const std::string &suggested)
 {
     reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement: '" + expr + "'. Did you intend to write '" + suggested + "'?\n"
-                "A statement like '*expr++;' might not do what you intended. 'operator*' is executed before postfix 'operator++'. "
+                "A statement like '*expr++;' might not do what you intended. Postfix 'operator++' is executed before 'operator*'. "
                 "Thus, the dereference is meaningless. Did you intend to write '(*expr)++;'?");
 }
 
