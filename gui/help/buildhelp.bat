@@ -1,4 +1,5 @@
-del online-help.qhc
-del online-help.qch
+@echo off
+if exist online-help.qhc del online-help.qhc
+if exist online-help.qch del online-help.qch
 
 qcollectiongenerator online-help.qhcp -o online-help.qhc
