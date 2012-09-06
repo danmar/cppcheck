@@ -6587,14 +6587,11 @@ bool Tokenizer::simplifyRedundantParenthesis()
             continue;
         }
 
-        if (Token::Match(tok->previous(), "(|[|,| ( %var% %op% %var% ) ,|]|)") ||
-            Token::Match(tok->previous(), "(|[|,| ( %var% %op% %num% ) ,|]|)")) {
-            // We have "( var %op% var )", remove the parenthesis
+        while (Token::Match(tok->previous(), "[{([,:] ( !!{") && Token::Match(tok->link(), ") [;,])]")) {
+            // We have "( ... )", remove the parenthesis
+            tok->link()->deleteThis();
             tok->deleteThis();
-            tok = tok->tokAt(2);
-            tok->deleteNext();
             ret = true;
-            continue;
         }
 
         if (Token::Match(tok, "( ( %bool% )") ||
