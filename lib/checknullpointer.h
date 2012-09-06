@@ -150,7 +150,7 @@ private:
      * @brief Investigate if function call can make pointer null. If
      * the pointer is passed by value it can't be made a null pointer.
      */
-    bool CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid) const;
+    bool CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid, bool& unknown) const;
 };
 /// @}
 //---------------------------------------------------------------------------

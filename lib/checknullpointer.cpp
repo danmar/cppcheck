@@ -372,34 +372,31 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
 
 
 // check if function can assign pointer
-bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid) const
+bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid, bool& unknown) const
 {
     if (Token::Match(functiontoken, "if|while|for|switch|sizeof|catch"))
         return false;
 
     int argumentNumber = 0;
     for (const Token *arg = functiontoken->tokAt(2); arg; arg = arg->nextArgument()) {
-        ++argumentNumber;
         if (Token::Match(arg, "%varid% [,)]", varid)) {
             const Token *ftok = _tokenizer->getFunctionTokenByName(functiontoken->str().c_str());
-            if (!Token::Match(ftok, "%type% (")) {
-                // assume that the function might assign the pointer
+            const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByToken(ftok);
+            if (!func) { // Unknown function
+                unknown = true;
+                return true; // assume that the function might assign the pointer
+            }
+
+            const Variable* var = func->getArgumentVar(argumentNumber);
+            if (!var) { // Unknown variable
+                unknown = true;
                 return true;
-            }
-
-            ftok = ftok->tokAt(2);
-            while (ftok && argumentNumber > 1) {
-                ftok = ftok->nextArgument();
-                --argumentNumber;
-            }
-
-            // check if it's a pointer parameter..
-            while (ftok && ftok->isName())
-                ftok = ftok->next();
-            if (Token::Match(ftok, "* *| const| %var% [,)]"))
-                // parameter is passed by value
+            } else if (var->isReference()) // Assume every pointer passed by reference is assigned
+                return true;
+            else
                 return false;
         }
+        ++argumentNumber;
     }
 
     // pointer is not passed
@@ -602,13 +599,15 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
         // count { and } using tok2
         const Token* const end2 = tok1->scope()->classEnd;
         for (const Token *tok2 = tok1->tokAt(3); tok2 != end2; tok2 = tok2->next()) {
+            bool unknown = false;
+
             // label / ?:
             if (tok2->str() == ":")
                 break;
 
             // function call..
-            else if (Token::Match(tok2, "[;{}] %var% (") && CanFunctionAssignPointer(tok2->next(), varid1)) {
-                if (!_settings->inconclusive)
+            else if (Token::Match(tok2, "[;{}] %var% (") && CanFunctionAssignPointer(tok2->next(), varid1, unknown)) {
+                if (!_settings->inconclusive || !unknown)
                     break;
                 inconclusive = true;
             }
@@ -726,8 +725,9 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
                     // Passing pointer as parameter..
                     if (Token::Match(tok2->next(), "%type% (")) {
-                        if (CanFunctionAssignPointer(tok2->next(), varid)) {
-                            if (!_settings->inconclusive)
+                        bool unknown = false;
+                        if (CanFunctionAssignPointer(tok2->next(), varid, unknown)) {
+                            if (!_settings->inconclusive || !unknown)
                                 break;
                             inconclusive = true;
                         }

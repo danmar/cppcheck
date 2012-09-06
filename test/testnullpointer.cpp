@@ -2038,6 +2038,16 @@ private:
                   "}");
             ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
+            // function seen (taking reference parameter)
+            check("void foo(int *&p) { }\n"
+                  "\n"
+                  "void f(int *p) {\n"
+                  "    *p = 0;\n"
+                  "    foo(p);\n"
+                  "    if (p) { }\n"
+                  "}", true);
+            ASSERT_EQUALS("", errout.str());
+
             // function implementation not seen
             check("void foo(int *p);\n"
                   "\n"
