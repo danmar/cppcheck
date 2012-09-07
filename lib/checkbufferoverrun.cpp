@@ -274,7 +274,7 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
         }
 
         varid = tok->tokAt(2)->varId();
-        varname = tok->tokAt(2)->str();
+        varname = tok->strAt(2);
         tok = tok->tokAt(6);
     } else
         return 0;

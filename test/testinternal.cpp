@@ -38,6 +38,7 @@ private:
         TEST_CASE(simplePatternAlternatives)
         TEST_CASE(missingPercentCharacter)
         TEST_CASE(unknownPattern)
+        TEST_CASE(redundantNextPrevious)
         TEST_CASE(internalError)
     }
 
@@ -242,6 +243,58 @@ private:
               "    Token::Match(tok, \"%type%\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantNextPrevious() {
+        check("void f() {\n"
+              "    return tok->next()->previous();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::previous()' can be simplified.\n", errout.str());
+
+        check("void f() {\n"
+              "    return tok->tokAt(5)->previous();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::previous()' can be simplified.\n", errout.str());
+
+        check("void f() {\n"
+              "    return tok->previous()->linkAt(5);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::linkAt()' can be simplified.\n", errout.str());
+
+        check("void f() {\n"
+              "    tok->next()->previous(foo);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    return tok->next()->next();\n" // Simplification won't make code much shorter/readable
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    return tok->previous()->previous();\n" // Simplification won't make code much shorter/readable
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    return tok->tokAt(foo+bar)->tokAt();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::tokAt()' can be simplified.\n", errout.str());
+
+        check("void f() {\n"
+              "    return tok->tokAt(foo+bar)->link();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::link()' can be simplified.\n", errout.str());
+
+        check("void f() {\n"
+              "    tok->tokAt(foo+bar)->link(foo);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    return tok->next()->next()->str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n", errout.str());
     }
 
     void internalError() {

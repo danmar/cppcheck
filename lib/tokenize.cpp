@@ -8657,7 +8657,7 @@ void Tokenizer::simplifyNamespaceStd()
         if (_settings->standards.cpp == Standards::CPP11 && Token::simpleMatch(tok, "std :: tr1 ::"))
             Token::eraseTokens(tok, tok->tokAt(3));
 
-        else if (Token::Match(tok, "using namespace std ;")) {
+        else if (Token::simpleMatch(tok, "using namespace std ;")) {
             Token::eraseTokens(tok, tok->tokAt(4));
             tok->deleteThis();
         }

@@ -214,6 +214,30 @@ void CheckInternal::checkUnknownPattern()
     }
 }
 
+void CheckInternal::checkRedundantNextPrevious()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, ". previous ( ) . next|tokAt|strAt|linkAt (") || Token::Match(tok, ". next ( ) . previous|tokAt|strAt|linkAt (") ||
+            (Token::simpleMatch(tok, ". tokAt (") && Token::Match(tok->linkAt(2), ") . previous|next|tokAt|strAt|linkAt|str|link ("))) {
+            const std::string& func1 = tok->strAt(1);
+            const std::string& func2 = tok->linkAt(2)->strAt(2);
+
+            if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->linkAt(2)->strAt(4) != ")")
+                continue;
+
+            redundantNextPreviousError(tok, func1, func2);
+        } else if (Token::Match(tok, ". next|previous ( ) . next|previous ( ) . next|previous|linkAt|strAt|link|str (")) {
+            const std::string& func1 = tok->strAt(1);
+            const std::string& func2 = tok->strAt(9);
+
+            if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->strAt(11) != ")")
+                continue;
+
+            redundantNextPreviousError(tok, func1, func2);
+        }
+    }
+}
+
 void CheckInternal::simplePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::warning, "simplePatternError",
@@ -239,6 +263,12 @@ void CheckInternal::unknownPatternError(const Token* tok, const std::string& pat
 {
     reportError(tok, Severity::error, "unknownPattern",
                 "Unknown pattern used: \"" + pattern + "\"");
+}
+
+void CheckInternal::redundantNextPreviousError(const Token* tok, const std::string& func1, const std::string& func2)
+{
+    reportError(tok, Severity::style, "redundantNextPrevious",
+                "Call to 'Token::" + func1 + "()' followed by 'Token::" + func2 + "()' can be simplified.");
 }
 
 #endif // #ifndef NDEBUG

@@ -849,8 +849,8 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             vartok = tok->next();
         } else if (Token::Match(tok, "( ! ( %var% =")) {
             vartok = tok->tokAt(3);
-            if (Token::simpleMatch(tok->tokAt(2)->link(), ") &&"))
-                checkConditionStart = tok->tokAt(2)->link();
+            if (Token::simpleMatch(tok->linkAt(2), ") &&"))
+                checkConditionStart = tok->linkAt(2);
         } else
             continue;
 

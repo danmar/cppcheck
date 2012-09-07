@@ -2176,7 +2176,7 @@ void CheckOther::checkCCTypeFunctions()
         if (tok->varId() == 0 &&
             Token::Match(tok, "isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|isxdigit ( %num% ,|)") &&
             MathLib::isNegative(tok->strAt(2))) {
-            cctypefunctionCallError(tok, tok->str(), tok->tokAt(2)->str());
+            cctypefunctionCallError(tok, tok->str(), tok->strAt(2));
         }
     }
 }
@@ -2481,12 +2481,12 @@ void CheckOther::checkDoubleFree()
             if (var) {
                 if (Token::Match(tok, "free|g_free")) {
                     if (freedVariables.find(var) != freedVariables.end())
-                        doubleFreeError(tok, tok->tokAt(2)->str());
+                        doubleFreeError(tok, tok->strAt(2));
                     else
                         freedVariables.insert(var);
                 } else if (tok->str() == "closedir") {
                     if (closeDirVariables.find(var) != closeDirVariables.end())
-                        doubleCloseDirError(tok, tok->tokAt(2)->str());
+                        doubleCloseDirError(tok, tok->strAt(2));
                     else
                         closeDirVariables.insert(var);
                 }
@@ -2500,7 +2500,7 @@ void CheckOther::checkDoubleFree()
             unsigned int var = tok->tokAt(varIdx)->varId();
             if (var) {
                 if (freedVariables.find(var) != freedVariables.end())
-                    doubleFreeError(tok, tok->tokAt(varIdx)->str());
+                    doubleFreeError(tok, tok->strAt(varIdx));
                 else
                     freedVariables.insert(var);
             }

@@ -375,7 +375,7 @@ std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(
     for (Token *tok = tokens; tok; tok = tok->next()) {
         // TODO: handle namespaces. Right now we don't instantiate templates that are defined in namespaces.
         if (Token::Match(tok, "namespace %type% {"))
-            tok = tok->tokAt(2)->link();
+            tok = tok->linkAt(2);
 
         if (Token::simpleMatch(tok, "template <")) {
             codeWithTemplates = true;
