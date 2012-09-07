@@ -159,7 +159,7 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
                 "The buffer '" + varname + "' may not be null-terminated after the call to strncpy().\n"
                 "If the source string's size fits or exceeds the given size, strncpy() does not add a "
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
-                "assumes buffer is null-terminated.");
+                "assumes buffer is null-terminated.", true);
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)

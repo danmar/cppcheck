@@ -3375,7 +3375,7 @@ private:
               "    strncpy(baz, bar, sizeof(baz));\n"
               "    bar[99] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
 
         // Test with invalid code that there is no segfault
         check("char baz[100];\n"
@@ -3390,7 +3390,7 @@ private:
               "    foo(baz);\n"
               "    foo(baz);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void terminateStrncpy2() {
@@ -3401,7 +3401,7 @@ private:
               "    bar[99] = 0;\n"
               "    return baz;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void terminateStrncpy3() {
@@ -3416,7 +3416,7 @@ private:
               "void bar(char *p) {\n"
               "    strncpy(p, str, 100);\n"
               "}\n", false);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The buffer 'str' may not be null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'str' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void recursive_long_time() {
