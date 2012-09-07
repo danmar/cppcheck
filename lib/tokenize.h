@@ -481,12 +481,6 @@ public:
     void simplifyComparisonOrder();
 
     /**
-     * simplify "type const" to "const type"
-     * For example:  int const x => const int x
-     */
-    void typeConstToConstType();
-
-    /**
      * Change "int const x;" into "const int x;"
      */
     void simplifyConst();

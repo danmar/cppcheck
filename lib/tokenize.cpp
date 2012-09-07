@@ -1947,9 +1947,6 @@ bool Tokenizer::tokenize(std::istream &code,
         tok = fortok;
     }*/
 
-    // Convert "type const" to "const type"
-    typeConstToConstType();
-
     simplifyConst();
 
     // struct simplification "struct S {} s; => struct S { } ; S s ;
@@ -8084,27 +8081,20 @@ void Tokenizer::simplifyComparisonOrder()
     }
 }
 
-void Tokenizer::typeConstToConstType()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->isStandardType() && Token::simpleMatch(tok->next(), "const")) {
-            tok->next()->str(tok->str());
-            tok->str("const");
-        } else if (Token::Match(tok, "struct %type% const")) {
-            tok->next()->next()->str(tok->next()->str());
-            tok->str("const");
-            tok->next()->str("struct");
-        }
-    }
-}
-
 void Tokenizer::simplifyConst()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%type% const") &&
-            (!tok->previous() || Token::Match(tok->previous(), "[;{}(,]")) &&
-            tok->str().find(":") == std::string::npos &&
-            tok->str() != "operator") {
+        if (tok->isStandardType() && tok->strAt(1) == "const") {
+            tok->next()->str(tok->str());
+            tok->str("const");
+        } else if (Token::Match(tok, "struct %type% const")) {
+            tok->tokAt(2)->str(tok->next()->str());
+            tok->str("const");
+            tok->next()->str("struct");
+        } else if (Token::Match(tok, "%type% const") &&
+                   (!tok->previous() || Token::Match(tok->previous(), "[;{}(,]")) &&
+                   tok->str().find(":") == std::string::npos &&
+                   tok->str() != "operator") {
             tok->next()->str(tok->str());
             tok->str("const");
         }
