@@ -1345,8 +1345,8 @@ void CheckStl::uselessCalls()
                 uselessCallsSubstrError(tok, true);
         } else if (Token::Match(tok, "[{}:;] %var% . empty ( ) ;") && style)
             uselessCallsEmptyError(tok->next());
-        else if (Token::Match(tok, "[{};] std :: remove (") && tok->tokAt(5)->nextArgument())
-            uselessCallsRemoveError(tok->next());
+        else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
+            uselessCallsRemoveError(tok->next(), tok->strAt(3));
     }
 }
 
@@ -1385,9 +1385,9 @@ void CheckStl::uselessCallsEmptyError(const Token *tok)
     reportError(tok, Severity::warning, "uselessCallsEmpty", "Useless call of function 'empty()'. Did you intend to call 'clear()' instead?");
 }
 
-void CheckStl::uselessCallsRemoveError(const Token *tok)
+void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& function)
 {
-    reportError(tok, Severity::warning, "uselessCallsRemove", "Return value of std::remove() ignored. Elements remain in container.\n"
-                "The return value of std::remove() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
+    reportError(tok, Severity::warning, "uselessCallsRemove", "Return value of std::" + function + "() ignored. Elements remain in container.\n"
+                "The return value of std::" + function + "() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
                 "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.");
 }

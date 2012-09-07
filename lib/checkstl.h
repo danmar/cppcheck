@@ -175,7 +175,7 @@ private:
     void uselessCallsSwapError(const Token *tok, const std::string &varname);
     void uselessCallsSubstrError(const Token *tok, bool empty);
     void uselessCallsEmptyError(const Token *tok);
-    void uselessCallsRemoveError(const Token *tok);
+    void uselessCallsRemoveError(const Token *tok, const std::string& function);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckStl c(0, settings, errorLogger);
@@ -202,7 +202,7 @@ private:
         c.uselessCallsSwapError(0, "str");
         c.uselessCallsSubstrError(0, false);
         c.uselessCallsEmptyError(0);
-        c.uselessCallsRemoveError(0);
+        c.uselessCallsRemoveError(0, "remove");
     }
 
     static std::string myName() {
