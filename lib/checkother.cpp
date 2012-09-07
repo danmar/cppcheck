@@ -241,7 +241,7 @@ void CheckOther::clarifyStatement()
         if (Token::Match(tok, "* %var%")) {
             const Token *tok2=tok->previous();
 
-            while (Token::Match(tok2, "*"))
+            while (tok2 && tok2->str() == "*")
                 tok2=tok2->previous();
 
             if (Token::Match(tok2, "[{};]")) {
@@ -649,8 +649,6 @@ void CheckOther::checkRedundantAssignment()
         if (!scope->isExecutable())
             continue;
 
-        ///std::cout << std::endl << "scope: " << i->className << std::endl;
-
         std::map<unsigned int, const Token*> varAssignments;
         std::map<unsigned int, const Token*> memAssignments;
         const Token* writtenArgumentsEnd = 0;
@@ -671,7 +669,6 @@ void CheckOther::checkRedundantAssignment()
             } else if (tok->type() == Token::eVariable) {
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
                 if (tok->next()->isAssignmentOp() && Token::Match(tok->previous(), "[;{}]")) { // Assignment
-                    ///std::cout << "assign: " << tok->varId() << std::endl;
                     if (it != varAssignments.end()) {
                         bool error = true; // Ensure that variable is not used on right side
                         for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
@@ -693,8 +690,7 @@ void CheckOther::checkRedundantAssignment()
                 } else if (tok->next()->type() == Token::eIncDecOp || (tok->previous()->type() == Token::eIncDecOp && !Token::Match(tok->next(), ".|[|("))) { // Variable incremented/decremented
                     varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
-                } else if (!Token::Match(tok->tokAt(-2), "sizeof (")) { // Other usage of variable
-                    ///std::cout << "use: " << tok->varId() << std::endl;
+                } else if (!Token::simpleMatch(tok->tokAt(-2), "sizeof (")) { // Other usage of variable
                     if (it != varAssignments.end())
                         varAssignments.erase(it);
                     if (!writtenArgumentsEnd) // Indicates that we are in the first argument of strcpy/memcpy/... function
@@ -1893,7 +1889,7 @@ void CheckOther::checkConstantFunctionParameter()
         //       const stream parameter).
         if (Token::Match(tok, "std :: string|wstring")) {
             passedByValueError(tok, var->name());
-        } else if (Token::Match(tok, "std :: %type% <") && !Token::Match(tok->linkAt(3), "> ::")) {
+        } else if (Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::")) {
             passedByValueError(tok, var->name());
         } else if (var->type() || symbolDatabase->isClassOrStruct(tok->str())) {  // Check if type is a struct or class.
             passedByValueError(tok, var->name());
@@ -3075,7 +3071,7 @@ void CheckOther::sizeofCalculation()
         if (Token::simpleMatch(tok, "sizeof (")) {
             const Token* const end = tok->linkAt(1);
             for (const Token *tok2 = tok->tokAt(2); tok2 != end; tok2 = tok2->next()) {
-                if (tok2->isOp() && (!tok2->isExpandedMacro() || _settings->inconclusive) && !Token::Match(tok2, ">|<|&") && (Token::Match(tok2->previous(), "%var%") || !Token::Match(tok2, "*"))) {
+                if (tok2->isOp() && (!tok2->isExpandedMacro() || _settings->inconclusive) && !Token::Match(tok2, ">|<|&") && (Token::Match(tok2->previous(), "%var%") || tok2->str() != "*")) {
                     if (!(Token::Match(tok2->previous(), "%type%") || Token::Match(tok2->next(), "%type%"))) {
                         sizeofCalculationError(tok2, tok2->isExpandedMacro());
                         break;
@@ -3370,7 +3366,7 @@ void CheckOther::checkIncompleteArrayFill()
 
             if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
                 unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
-                if ((size != 1 && size != 100 && size != 0) || Token::Match(var->typeEndToken(), "*"))
+                if ((size != 1 && size != 100 && size != 0) || var->typeEndToken()->str() == "*")
                     incompleteArrayFillError(tok, var->name(), tok->str(), false);
                 else if (var->typeStartToken()->str() == "bool" && _settings->isEnabled("portability")) // sizeof(bool) is not 1 on all platforms
                     incompleteArrayFillError(tok, var->name(), tok->str(), true);

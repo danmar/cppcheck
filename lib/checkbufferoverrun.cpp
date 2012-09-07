@@ -833,7 +833,7 @@ void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &
 
             for (const Token *loopTok = tok3->tokAt(2); loopTok->str() != "}" ; loopTok = loopTok->next()) {
                 if (usedInArray && (counter_varid == loopTok->varId())) {
-                    if (Token::Match(loopTok->next(), " ++ ") ||
+                    if (loopTok->strAt(1) == "++" ||
                         (loopTok->previous()->type() == Token::eIncDecOp)) {
                         bufferOverrunError(tok, arrayInfo.varname());
                     }

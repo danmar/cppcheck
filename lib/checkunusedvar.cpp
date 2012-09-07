@@ -760,7 +760,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
-        else if (Token::Match(tok->tokAt(-2), "while|if") && Token::Match(tok->tokAt(1), "=") && tok->varId() && tok->varId() == tok->tokAt(2)->varId()) {
+        else if (Token::Match(tok->tokAt(-2), "while|if") && tok->strAt(1) == "=" && tok->varId() && tok->varId() == tok->tokAt(2)->varId()) {
             variables.use(tok->tokAt(2)->varId(), tok);
         }
         // assignment

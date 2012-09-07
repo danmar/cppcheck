@@ -8654,7 +8654,7 @@ void Tokenizer::simplifyNamespaceStd()
     }
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (_settings->standards.cpp == Standards::CPP11 && Token::Match(tok, "std :: tr1 ::"))
+        if (_settings->standards.cpp == Standards::CPP11 && Token::simpleMatch(tok, "std :: tr1 ::"))
             Token::eraseTokens(tok, tok->tokAt(3));
 
         else if (Token::Match(tok, "using namespace std ;")) {
@@ -9230,12 +9230,12 @@ void Tokenizer::simplifyMathExpressions()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
-        if (Token::Match(tok,"exp ( 0 )") || Token::Match(tok,"cosh ( 0 )") || Token::Match(tok,"cos ( 0 )") || Token::Match(tok,"sqrt ( 1 )")) {
+        if (Token::Match(tok,"exp|cosh|cos ( 0 )") || Token::simpleMatch(tok,"sqrt ( 1 )")) {
             tok->deleteNext(3);
             tok->str("1");
         }
 
-        if (Token::Match(tok,"sinh ( 0 )") || Token::Match(tok,"sin ( 0 )") || Token::Match(tok,"sqrt ( 0 )") || Token::Match(tok,"ln ( 1 )")) {
+        if (Token::Match(tok,"sin|sinh|sqrt ( 0 )") || Token::simpleMatch(tok,"ln ( 1 )")) {
             tok->deleteNext(3);
             tok->str("0");
         }
