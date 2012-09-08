@@ -6840,11 +6840,10 @@ private:
         const char expected[] = "int sum ; sum = "
                                 "sizeof ( int ) + "
                                 "1 + sizeof ( int ) + "
-                                "1 + sizeof ( int ) + 100 + "
-                                "1 + sizeof ( int ) + 100 + 1 + "
-                                "1 + sizeof ( int ) + 100 + 2 + "
-                                "90 + "
-                                "91 ;";
+                                "1 + sizeof ( int ) + 101 + " // 101 = 100 + 1
+                                "sizeof ( int ) + 102 + " // 102 = 100 + 1 + 1
+                                "sizeof ( int ) + 283 " // 283 = 100+2+90+91
+                                ";";
 
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("int sum ; sum = 508 ;", tok(code, true));

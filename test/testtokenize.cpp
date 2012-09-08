@@ -4573,9 +4573,7 @@ private:
 
     void removeParentheses15() {
         ASSERT_EQUALS("a = b ? c : 123 ;", tokenizeAndStringify("a = b ? c : (123);", false));
-        TODO_ASSERT_EQUALS("a = b ? c : 579 ;", 
-                           "a = b ? c : 123 + 456 ;", 
-                           tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
+        ASSERT_EQUALS("a = b ? c : 579 ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
     }
 
     void tokenize_double() {

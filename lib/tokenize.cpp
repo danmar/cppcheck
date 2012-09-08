@@ -1971,6 +1971,8 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Remove redundant parentheses
     simplifyRedundantParenthesis();
+    for (Token *tok = list.front(); tok; tok = tok->next())
+        while (TemplateSimplifier::simplifyNumericCalculations(tok));
 
     // Handle templates..
     simplifyTemplates();
