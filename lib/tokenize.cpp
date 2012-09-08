@@ -6586,6 +6586,18 @@ bool Tokenizer::simplifyRedundantParenthesis()
             continue;
         }
 
+        if (Token::simpleMatch(tok->previous(), "? (") && Token::simpleMatch(tok->link(), ") :")) {
+            const Token *tok2 = tok->next();
+            while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->isBoolean() || tok2->isArithmeticalOp()))
+                tok2 = tok2->next();
+            if (tok2 && tok2->str() == ")") {
+                tok->link()->deleteThis();
+                tok->deleteThis();
+                ret = true;
+                continue;
+            }
+        }
+
         while (Token::Match(tok->previous(), "[{([,:] ( !!{") && Token::Match(tok->link(), ") [;,])]")) {
             // We have "( ... )", remove the parenthesis
             tok->link()->deleteThis();
