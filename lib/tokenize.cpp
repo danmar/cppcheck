@@ -2250,7 +2250,9 @@ void Tokenizer::simplifyRedundantConsecutiveBraces()
 {
     // Remove redundant consecutive braces, i.e. '.. { { .. } } ..' -> '.. { .. } ..'.
     for (Token *tok = list.front(); tok;) {
-        if (Token::simpleMatch(tok, "{ {") && Token::simpleMatch(tok->next()->link(), "} }")) {
+        if (Token::simpleMatch(tok, "= {")) {
+            tok = tok->linkAt(1);
+        } else if (Token::simpleMatch(tok, "{ {") && Token::simpleMatch(tok->next()->link(), "} }")) {
             //remove internal parentheses
             tok->next()->link()->deleteThis();
             tok->deleteNext();
@@ -8254,19 +8256,19 @@ void Tokenizer::simplifyStructDecl()
     unsigned int count = 0;
 
     // Skip simplification of unions in class definition
-    std::list<bool> skip; // true = in function, false = not in function
-    skip.push_back(false);
+    std::stack<bool> skip; // true = in function, false = not in function
+    skip.push(false);
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         Token *restart;
 
         // check for start of scope and determine if it is in a function
         if (tok->str() == "{")
-            skip.push_back(Token::Match(tok->previous(), "const|)"));
+            skip.push(Token::Match(tok->previous(), "const|)"));
 
         // end of scope
         else if (tok->str() == "}" && !skip.empty())
-            skip.pop_back();
+            skip.pop();
 
         // check for named struct/union
         else if (Token::Match(tok, "class|struct|union %type% :|{")) {
@@ -8278,12 +8280,12 @@ void Tokenizer::simplifyStructDecl()
                 next = next->next();
             if (!next)
                 continue;
-            skip.push_back(false);
+            skip.push(false);
             tok = next->link();
             restart = next;
 
             // check for named type
-            if (Token::Match(tok->next(), "*|&| %type% ,|;|[")) {
+            if (Token::Match(tok->next(), "*|&| %type% ,|;|[|=")) {
                 tok->insertToken(";");
                 tok = tok->next();
                 if (isStatic) {
@@ -8299,8 +8301,8 @@ void Tokenizer::simplifyStructDecl()
 
         // check for anonymous struct/union
         else if (Token::Match(tok, "struct|union {")) {
-            bool inFunction = skip.back();
-            skip.push_back(false);
+            bool inFunction = skip.top();
+            skip.push(false);
             Token *tok1 = tok;
 
             restart = tok->next();
@@ -8351,7 +8353,7 @@ void Tokenizer::simplifyStructDecl()
 
                 // don't remove unnamed anonymous unions from a class, struct or union
                 if (!(tok1->str() == "union" && !inFunction)) {
-                    skip.pop_back();
+                    skip.pop();
                     tok1->deleteThis();
                     if (tok1->next() == tok) {
                         tok1->deleteThis();

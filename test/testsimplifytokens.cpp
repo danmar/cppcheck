@@ -380,6 +380,7 @@ private:
         TEST_CASE(simplifyStructDecl3);
         TEST_CASE(simplifyStructDecl4);
         TEST_CASE(simplifyStructDecl5); // ticket #3533 (segmentation fault)
+        TEST_CASE(simplifyStructDecl6); // ticket #3732
 
         // register int var; => int var;
         // inline int foo() {} => int foo() {}
@@ -7566,6 +7567,15 @@ private:
                             "};\n";
         //don't crash
         tok(code, false);
+    }
+
+    void simplifyStructDecl6() {
+        ASSERT_EQUALS("struct A { "
+                      "char integers [ X ] ; "
+                      "} ; A arrays ; arrays = { { 0 } } ;",
+                      tok("struct A {\n"
+                          "    char integers[X];\n"
+                          "} arrays = {{0}};", false));
     }
 
     void removeUnwantedKeywords() {
