@@ -6591,15 +6591,21 @@ bool Tokenizer::simplifyRedundantParenthesis()
             ret = true;
         }
 
-        if (Token::Match(tok, "( ( %bool% )") ||
-            Token::Match(tok, "( ( %num% )")) {
-            tok->deleteNext();
-            tok->next()->deleteNext();
+        if (Token::simpleMatch(tok->previous(), ", (") &&
+            Token::simpleMatch(tok->link(), ") =")) {
+            tok->link()->deleteThis();
+            tok->deleteThis();
             ret = true;
         }
 
-        if (Token::simpleMatch(tok->previous(), ", (") &&
-            Token::simpleMatch(tok->link(), ") =")) {
+        // Simplify "!!operator !!(%var%|)) ( %num%|%bool% ) %op%|;|,|)"
+        if (Token::Match(tok, "( !!) ) %op%|;|,|)") &&
+            !Token::simpleMatch(tok->tokAt(-2), "operator") &&
+            tok->previous() &&
+            !tok->previous()->isName() &&
+            tok->previous()->str() != ")" &&
+            (!isCPP() || tok->previous()->str() != ">") &&
+            (tok->next()->isNumber() || tok->next()->isBoolean())) {
             tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;

@@ -4573,6 +4573,7 @@ private:
 
     void removeParentheses15() {
         ASSERT_EQUALS("a = b ? c : 123 ;", tokenizeAndStringify("a = b ? c : (123);", false));
+        ASSERT_EQUALS("a = b ? c : 123 + 456 ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
     }
 
     void tokenize_double() {
@@ -4805,7 +4806,7 @@ private:
     void vardecl_template_1() {
         // ticket #1046
         const char code1[] = "b<(1<<24),10,24> u, v;";
-        const char res1[]  = "b < ( 16777216 ) , 10 , 24 > u ; b < ( 16777216 ) , 10 , 24 > v ;";
+        const char res1[]  = "b < 16777216 , 10 , 24 > u ; b < 16777216 , 10 , 24 > v ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
         // ticket #3571 (segmentation fault)
         tokenizeAndStringify("template <int i = (3>4) > class X4 {};");
