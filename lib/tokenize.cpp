@@ -3343,6 +3343,8 @@ bool Tokenizer::simplifyTokenList()
                 }
                 tok = tok->next();
             }
+            if (!tok)
+                break;
         }
     }
 

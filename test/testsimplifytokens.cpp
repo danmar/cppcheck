@@ -426,7 +426,8 @@ private:
         TEST_CASE(consecutiveBraces);
 
         TEST_CASE(undefinedSizeArray);
-        TEST_CASE(simplifyCase3304);
+
+        TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -7918,7 +7919,7 @@ private:
         ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
     }
 
-    void simplifyCase3304() { // ticket #3304
+    void simplifyArrayAddress() { // ticket #3304
         const char code[] = "void foo() {\n"
                             "    int a[10];\n"
                             "    memset(&a[4], 0, 20*sizeof(int));\n"
@@ -7927,6 +7928,9 @@ private:
                       " int a [ 10 ] ;"
                       " memset ( a + 4 , 0 , 80 ) ;"
                       " }", tok(code, true));
+
+        // Don't crash
+        tok("int", true);
     }
 };
 
