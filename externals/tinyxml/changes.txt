@@ -286,5 +286,14 @@ Changes in version 2.1.5
 - tibur found a bug in end tag parsing
 
 
-
+2.6.2
+- Switched over to VC 2010
+- Fixed up all the build issues arising from that. (Lots of latent build problems.)
+- Removed the old, now unmaintained and likely not working, build files.
+- Fixed some static analysis issues reported by orbitcowboy from cppcheck. 
+- Bayard 95 sent in analysis from a different analyzer - fixes applied from that as well.
+- Tim Kosse sent a patch fixing an infinite loop.
+- Ma Anguo identified a doc issue.
+- Eddie Cohen identified a missing qualifier resulting in a compilation error on some systems.
+- Fixed a line ending bug. (What year is this? Can we all agree on a format for text files? Please? ...oh well.)
 
