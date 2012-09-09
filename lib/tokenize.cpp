@@ -7049,29 +7049,7 @@ public:
         }
 
         // Simplify calculations..
-        while (Token::Match(start, "%num% %op% %num% %op%") &&
-               start->strAt(1) == start->strAt(3)) {
-            const std::string &op = start->strAt(1);
-            if (op.size() != 1U)
-                break;
-            const std::string &val1 = start->str();
-            const std::string &val2 = start->strAt(2);
-            const std::string result = MathLib::calculate(val1, val2, op[0]);
-            start->str(result);
-            start->deleteNext(2);
-        }
-        if (Token::Match(start, "%num% %op% %num% [,}]")) {
-            const std::string &op = start->strAt(1);
-            if (op.size() == 1U) {
-                const std::string &val1 = start->str();
-                const std::string &val2 = start->strAt(2);
-                const std::string result = MathLib::calculate(val1, val2, op[0]);
-                start->str(result);
-                start->deleteNext(2);
-                value = start;
-                start = end = 0;
-            }
-        }
+        while (start && start->previous() && TemplateSimplifier::simplifyNumericCalculations(start->previous())) { }
     }
 
     Token *name;

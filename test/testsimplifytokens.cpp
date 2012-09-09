@@ -355,6 +355,7 @@ private:
         TEST_CASE(enum31); // ticket #3934 (calculation in first item)
         TEST_CASE(enum32); // ticket #3998 (access violation)
         TEST_CASE(enum33); // ticket #4015 (segmentation fault)
+        TEST_CASE(enum34); // ticket #4141 (division by zero)
         TEST_CASE(enumscope1); // ticket #3949
 
         // remove "std::" on some standard functions
@@ -7150,7 +7151,7 @@ private:
 
     void enum29() {  // #3747 - bitwise or value
         const char code[] = "enum { x=1, y=x|2 }; i = (3==y);";
-        ASSERT_EQUALS("i = 3 == 3 ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("i = 3 == 1 | 2 ;", checkSimplifyEnum(code));
     }
 
     void enum30() { // #3852 - false positive
@@ -7185,6 +7186,11 @@ private:
 
     void enum33() {  // #4015 - segmentation fault
         const char code[] = "enum { A=SOME_VALUE, B=A };";
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
+    }
+
+    void enum34() {  // #4141 - division by zero
+        const char code[] = "enum { A=1/0 };";
         ASSERT_EQUALS(";", checkSimplifyEnum(code));
     }
 
