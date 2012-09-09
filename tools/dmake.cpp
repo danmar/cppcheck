@@ -290,7 +290,7 @@ int main(int argc, char **argv)
     }
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
-         << "    CXXFLAGS += -DHAVE_RULES $(shell pcre-config --cflags)\n"
+         << "    CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell pcre-config --cflags)\n"
          << "    ifdef LIBS\n"
          << "        LIBS += $(shell pcre-config --libs)\n"
          << "    else\n"
