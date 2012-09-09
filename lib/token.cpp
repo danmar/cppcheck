@@ -296,7 +296,7 @@ const Token *Token::linkAt(int index) const
     if (!tok) {
         throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
     }
-    return tok ? tok->link() : 0;
+    return tok->link();
 }
 
 Token *Token::linkAt(int index)
@@ -305,7 +305,7 @@ Token *Token::linkAt(int index)
     if (!tok) {
         throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
     }
-    return tok ? tok->link() : 0;
+    return tok->link();
 }
 
 const std::string &Token::strAt(int index) const
