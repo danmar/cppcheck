@@ -2126,6 +2126,8 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2(">{ x while (y) z int = }"); // #4175 : don't crash
+
         // try
         checkUninitVar2("void f() {\n"
                         "    int i, *p = &i;\n"

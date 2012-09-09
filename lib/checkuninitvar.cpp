@@ -1072,7 +1072,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
 
         bool stdtype = _tokenizer->isC();
         const Token* tok = i->typeStartToken();
-        for (; tok->str() != ";" && tok->str() != "<"; tok = tok->next()) {
+        for (; tok && tok->str() != ";" && tok->str() != "<"; tok = tok->next()) {
             if (tok->isStandardType())
                 stdtype = true;
         }
