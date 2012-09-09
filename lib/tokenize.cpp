@@ -527,6 +527,12 @@ void Tokenizer::simplifyTypedef()
             tok = tok->previous();
         }
 
+        // Skip typedefs inside parentheses (#2453 and #4002)
+        if (tok->str() == "(" && tok->strAt(1) == "typedef") {
+            tok = tok->next();
+            continue;
+        }
+
         if (Token::Match(tok, "class|struct|namespace %any%") &&
             (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
             isNamespace = (tok->str() == "namespace");
@@ -550,12 +556,6 @@ void Tokenizer::simplifyTypedef()
             continue;
         } else if (tok->str() != "typedef")
             continue;
-
-        // check for syntax errors
-        if (tok->previous() && tok->previous()->str() == "(") {
-            syntaxError(tok);
-            continue;
-        }
 
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class

@@ -5382,7 +5382,7 @@ private:
         const char code[] = "void f1(typedef int x) {}\n";
         const std::string expected = "void f1 ( typedef int x ) { }";
         ASSERT_EQUALS(expected, tok(code));
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef77() { // ticket #2554
