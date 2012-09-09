@@ -348,7 +348,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
 
     // NOTE: we use QFileDialog::getOpenFileNames() and
     // QFileDialog::getExistingDirectory() because they show native Windows
-    // selection dialog which is a lot more usable than QT:s own dialog.
+    // selection dialog which is a lot more usable than Qt:s own dialog.
     if (mode == QFileDialog::ExistingFiles) {
         SelectFilesDialog dialog(this);
         if (dialog.exec() == QDialog::Accepted) {

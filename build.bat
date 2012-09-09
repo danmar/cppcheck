@@ -15,7 +15,7 @@ REM  - run tests too
 
 if "%1" == "" goto help
 
-REM QT prompt sets QMAKESPEC
+REM Qt prompt sets QMAKESPEC
 if "%QMAKESPEC%" == "" (
 REM parse qmakespec to see if it's some msvc
   if "%QMAKESPEC:~6,4%" == "msvc" (

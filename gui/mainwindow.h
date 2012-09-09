@@ -324,7 +324,7 @@ protected:
     /**
     * @brief Select files/or directory to check.
     * Helper function to open a dialog to ask user to select files or
-    * directory to check. Use native dialogs instead of QT:s own dialogs.
+    * directory to check. Use native dialogs instead of Qt:s own dialogs.
     *
     * @param mode Dialog open mode (files or directories)
     * @return QStringList of files or directories that were selected to check
