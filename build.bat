@@ -49,6 +49,7 @@ goto end
 pushd gui
 qmake -config %TARGET% HAVE_RULES=%HAVE_RULES%
 %MAKE%
+lupdate -no-obsolete gui.pro
 lrelease gui.pro
 popd
 goto end
