@@ -7042,6 +7042,11 @@ public:
 
         // Simplify calculations..
         while (start && start->previous() && TemplateSimplifier::simplifyNumericCalculations(start->previous())) { }
+
+        if (Token::Match(start, "%num% [,}]")) {
+            value = start;
+            start = end = NULL;
+        }
     }
 
     Token *name;
