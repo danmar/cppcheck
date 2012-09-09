@@ -681,7 +681,7 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
 
 static bool isLowerThanOr(const Token* lower)
 {
-    return lower->isAssignmentOp() || Token::Match(lower, ";|(|[|]|)|,|?|:|%oror%|&&|return|throw|case");
+    return lower->isAssignmentOp() || Token::Match(lower, "}|;|(|[|]|)|,|?|:|%oror%|&&|return|throw|case");
 }
 static bool isLowerThanXor(const Token* lower)
 {

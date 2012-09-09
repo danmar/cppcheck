@@ -7151,7 +7151,7 @@ private:
 
     void enum29() {  // #3747 - bitwise or value
         const char code[] = "enum { x=1, y=x|2 }; i = (3==y);";
-        ASSERT_EQUALS("i = 3 == 1 | 2 ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("i = 3 == 3 ;", checkSimplifyEnum(code));
     }
 
     void enum30() { // #3852 - false positive
@@ -7181,7 +7181,7 @@ private:
 
     void enum32() {  // #3998 - wrong enum simplification => access violation
         const char code[] = "enum { x=(32), y=x, z }; { a, z }";
-        ASSERT_EQUALS("{ a , 32 + 1 }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("{ a , 33 }", checkSimplifyEnum(code));
     }
 
     void enum33() {  // #4015 - segmentation fault
