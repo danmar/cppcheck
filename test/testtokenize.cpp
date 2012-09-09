@@ -5506,6 +5506,24 @@ private:
 
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            const char code[] = "void foo() {\n"
+                                "    nvwa<(x > y)> ERROR_nnn;\n"
+                                "}";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            // nvwa<(x > y)>
+            ASSERT_EQUALS((long long)tok->tokAt(12), (long long)tok->linkAt(6));
+            ASSERT_EQUALS((long long)tok->tokAt(6), (long long)tok->linkAt(12));
+
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void removeExceptionSpecification1() {

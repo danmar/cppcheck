@@ -2981,8 +2981,7 @@ void Tokenizer::createLinks2()
     if (isC())
         return;
 
-    std::stack<const Token*> type;
-    std::stack<Token*> links;
+    std::stack<Token*> type;
     for (Token *token = list.front(); token; token = token->next()) {
         if (token->link()) {
             if (Token::Match(token, "{|[|("))
@@ -2996,41 +2995,34 @@ void Tokenizer::createLinks2()
         }
 
         else if (token->str() == ";")
-            while (!links.empty())
-                links.pop();
-        else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {
+            while (!type.empty() && type.top()->str() == "<")
+                type.pop();
+        else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId())
             type.push(token);
-            links.push(token);
-        } else if (token->str() == ">" || token->str() == ">>") {
-            if (links.empty()) // < and > don't match.
+        else if (token->str() == ">" || token->str() == ">>") {
+            if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
             if (token->next() && !token->next()->isName() && !Token::Match(token->next(), ">|&|*|::|,|(|)"))
                 continue;
 
             // Check type of open link
             if (type.empty() || type.top()->str() != "<" || (token->str() == ">>" && type.size() < 2)) {
-                if (!links.empty())
-                    links.pop();
                 continue;
             }
-            const Token* top = type.top();
+
+            Token* top = type.top();
             type.pop();
             if (token->str() == ">>" && type.top()->str() != "<") {
                 type.push(top);
-                if (!links.empty())
-                    links.pop();
                 continue;
             }
 
             if (token->str() == ">>") { // C++11 right angle bracket
-                if (links.size() < 2)
-                    continue;
                 token->str(">");
                 token->insertToken(">");
             }
 
-            Token::createMutualLinks(links.top(), token);
-            links.pop();
+            Token::createMutualLinks(top, token);
         }
     }
 }
