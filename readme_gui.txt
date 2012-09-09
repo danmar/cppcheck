@@ -1,30 +1,30 @@
-cppcheck GUI
+Cppcheck GUI
 ============
 This is a GUI for cppcheck. It allows selecting folder or set of files to check
 with cppcheck and shows list of found errors.
 
 Running
 -------
-You need QT4 libraries installed in your system. Packages/files to install
+You need Qt4 libraries installed in your system. Packages/files to install
 depends on your operating system:
-- Windows: download QT4 from http://qt.nokia.com/
-- Linux: install QT4 using your package manager, look for packages having QT4
-  in their name, e.g. for Ubuntu install libqt4-core, libqt4-gui and libqt4-xml
+- Windows: download Qt4 from http://qt-project.org/downloads
+- Linux: install Qt4 using your package manager, look for packages having Qt4
+  in their name, e.g. for Ubuntu install libqt4-core and libqt4-gui.
 
 Compiling
 ---------
 Windows:
-- The easy way is to download Qt SDK from http://qt.nokia.com/ and use Qt
-  Creator and/or command line tools to build the GUI.
-- The harder way is to download QT sources and build QT with Visual Studio
-  (Express Edition works). Compiling QT alone may take over 4 hours!
+- The easy way is to download Qt SDK from http://qt-project.org/downloads and
+  use QtCreator and/or command line tools to build the GUI. Be careful to
+  download the correct version of library for your compiler!
+- The harder way is to download Qt sources and build Qt with Visual Studio
+  (Express Edition works). Compiling Qt alone may take over 4 hours!
 
 Linux:
-- Install QT development packages (make sure qmake -tool gets installed!). The
+- Install Qt development packages (make sure qmake -tool gets installed!). The
   names depend on distribution, but e.g. for Ubuntu the needed packages are:
   * libqt4-core
   * libqt4-gui
-  * libqt4-xml
   * libqt4-dev
   * qt4-dev-tools
   * qt4-qmake
@@ -45,4 +45,19 @@ There are tests for the GUI in gui/test -directory. There is test.pro
 builds own binary. Test is run by simple running that binary. The binary also
 has several options to select tests etc. You can get the help by running
 "binaryname -help" -command.
+
+Translations
+------------
+The GUI is translated to several languages. Qt comes with two tools to update
+and compile the translations. lupdate updates translations files from the code
+and lrelease compiles translation files use with the executable.
+
+To update translations:
+- run lupdate gui.pro to update the translation files to match the code. This
+  command updates all the .ts files. Which can be then edited to translate
+  the application.
+
+To compile translations:
+- run lrelease gui.pro to compile .ts files to .qm files which are used by the
+  executable.
 
