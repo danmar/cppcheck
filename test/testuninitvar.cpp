@@ -842,6 +842,39 @@ private:
                        "  { }\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #3098 - False negative uninitialized variable
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char *c1,*c2;\n"
+                       "    if(strcoll(c1,c2))\n"
+                       "    {\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c1\n"
+                      "[test.cpp:4]: (error) Uninitialized variable: c2\n", errout.str());
+
+        checkUninitVar("void f(char *c1, char *c2)\n"
+                       "{\n"
+                       "    if(strcoll(c1,c2))\n"
+                       "    {\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "	char *c1;\n"
+                       "	c1=strcpy(c1,\"test\");\n"
+                       "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c1\n","", errout.str());
+
+        checkUninitVar("void f(char *c1)\n"
+                       "{\n"
+                       "	c1=strcpy(c1,\"test\");\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
 
