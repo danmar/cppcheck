@@ -59,13 +59,13 @@ public:
     void ShowResults(ShowTypes::ShowType type, bool show);
 
     /**
-    * @brief Clear results
-    *
-    */
-    void Clear();
+     * @brief Clear results and statistics and reset progressinfo.
+     * @param results Remove all the results from view?
+     */
+    void Clear(bool results);
 
     /**
-     * @brief Clear results for a specific file
+     * @brief Remove a file from the results.
      */
     void Clear(const QString &filename);
 
