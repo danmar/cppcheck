@@ -23,7 +23,7 @@ HTML_REPORT_BIN = os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 class TestHTMLReport(unittest.TestCase):
 
-    def testError(self):
+    def testReportError(self):
         with runCheck(os.path.join(
                 ROOT_DIR,
                 'samples', 'memleak', 'bad.c')) as (report, output_directory):
@@ -41,7 +41,7 @@ class TestHTMLReport(unittest.TestCase):
                 self.assertIn('<html>', detail_contents)
                 self.assertIn('Memory leak:', detail_contents)
 
-    def testNoError(self):
+    def testReportNoError(self):
         with runCheck(os.path.join(
                 ROOT_DIR,
                 'samples', 'memleak', 'good.c')) as (report, output_directory):
