@@ -872,7 +872,9 @@ private:
         ASSERT_EQUALS("a", a->nameToken()->str());
         ASSERT_EQUALS(2UL, a->dimensions().size());
         ASSERT_EQUALS(0UL, a->dimension(0));
+        ASSERT_EQUALS(false, a->dimensions()[0].known);
         ASSERT_EQUALS(4UL, a->dimension(1));
+        ASSERT_EQUALS(true, a->dimensions()[1].known);
     }
 
     void functionArgs3() {

@@ -473,6 +473,16 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Width 3 given in format string (no. 1) is smaller than destination buffer 'output[5]'.\n"
                       "[test.cpp:7]: (error) Width 5 given in format string (no. 1) is larger than destination buffer 'output[5]', use %4s to prevent overflowing it.\n"
                       "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
+
+        check("void foo() {\n"
+              "    const size_t BUFLENGTH(2048);\n"
+              "    typedef char bufT[BUFLENGTH];\n"
+              "    bufT line= {0};\n"
+              "    bufT projectId= {0};\n"
+              "    const int scanrc=sscanf(line, \"Project(\\\"{%36s}\\\")\", projectId);\n"
+              "    sscanf(input, \"%5s\", output);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testPrintfArgument() {

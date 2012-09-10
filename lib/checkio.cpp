@@ -399,6 +399,7 @@ static bool isKnownType(const Variable* var, const Token* varTypeTok)
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    bool warning = _settings->isEnabled("style");
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isName()) continue;
@@ -492,14 +493,14 @@ void CheckIO::checkWrongPrintfScanfArguments()
                     numFormat++;
 
                     // Perform type checks
-                    if (_settings->isEnabled("style") && argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
+                    if (argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
                         const Variable* variableInfo = symbolDatabase->getVariableFromVarId(argListTok->varId());
                         const Token* varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
                         if (varTypeTok && varTypeTok->str() == "static")
                             varTypeTok = varTypeTok->next();
 
                         if (scan && varTypeTok) {
-                            if ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")
+                            if (warning && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const"))
                                 invalidScanfArgTypeError(tok, tok->str(), numFormat);
 
                             if (*i == 's' && variableInfo && isKnownType(variableInfo, varTypeTok) && variableInfo->isArray() && (variableInfo->dimensions().size() == 1) && variableInfo->dimensions()[0].known) {
@@ -509,7 +510,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         invalidScanfFormatWidthError(tok, numFormat, numWidth, variableInfo);
                                 }
                             }
-                        } else if (!scan) {
+                        } else if (!scan && warning) {
                             switch (*i) {
                             case 's':
                                 if (variableInfo && argListTok->type() != Token::eString && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
@@ -675,5 +676,6 @@ void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFor
     } else
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") doesn't match destination buffer.";
 
-    reportError(tok, severity, "invalidScanfFormatWidth", errmsg.str(), inconclusive);
+    if (severity == Severity::error || _settings->isEnabled("style"))
+        reportError(tok, severity, "invalidScanfFormatWidth", errmsg.str(), inconclusive);
 }
