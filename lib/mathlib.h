@@ -51,6 +51,7 @@ public:
     static bool isNegative(const std::string &str);
     static bool isHex(const std::string& str);
     static bool isOct(const std::string& str);
+    static bool isBin(const std::string& str);
 
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);

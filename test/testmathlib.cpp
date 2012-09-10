@@ -164,6 +164,14 @@ private:
         ASSERT_EQUALS(125 	, MathLib::toLongNumber("+0175"));
         ASSERT_EQUALS(-125 	, MathLib::toLongNumber("-0175"));
 
+        // from binary
+        ASSERT_EQUALS(0 	, MathLib::toLongNumber("0b0"));
+        ASSERT_EQUALS(1 	, MathLib::toLongNumber("0b1"));
+        ASSERT_EQUALS(1 	, MathLib::toLongNumber("+0b1"));
+        ASSERT_EQUALS(-1 	, MathLib::toLongNumber("-0b1"));
+        ASSERT_EQUALS(215 	, MathLib::toLongNumber("0b11010111"));
+        ASSERT_EQUALS(-215 	, MathLib::toLongNumber("-0b11010111"));
+
         // from base 10
         ASSERT_EQUALS(10	, MathLib::toLongNumber("10"));
         ASSERT_EQUALS(10	, MathLib::toLongNumber("10."));

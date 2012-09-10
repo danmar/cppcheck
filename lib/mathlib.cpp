@@ -45,6 +45,19 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
         return ret;
     }
 
+    // binary numbers:
+    if (isBin(str)) {
+        bigint ret = 0;
+        for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+            ret <<= 1;
+            if (str[i] == '1')
+                ret |= 1;
+        }
+        if (str[0] == '-')
+            ret = -ret;
+        return ret;
+    }
+
     if (str.find_first_of("eE") != std::string::npos)
         return static_cast<bigint>(std::atof(str.c_str()));
 
@@ -98,6 +111,12 @@ bool MathLib::isHex(const std::string& str)
 {
     bool sign = str[0]=='-' || str[0]=='+';
     return(str.compare(sign?1:0, 2, "0x") == 0 || str.compare(sign?1:0, 2, "0X") == 0);
+}
+
+bool MathLib::isBin(const std::string& str)
+{
+    bool sign = str[0]=='-' || str[0]=='+';
+    return(str.compare(sign?1:0, 2, "0b") == 0 && str.find_first_not_of("10b", 1) == std::string::npos);
 }
 
 bool MathLib::isInt(const std::string & s)
