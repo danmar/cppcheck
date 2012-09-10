@@ -5997,7 +5997,7 @@ bool Tokenizer::simplifyKnownVariables()
 
             else if (Token::Match(tok2, "strcpy|sprintf ( %var% , %str% ) ;")) {
                 const unsigned int varid(tok2->tokAt(2)->varId());
-                std::string::size_type n = -1;
+                std::string::size_type n = std::string::npos;
                 if (varid == 0)
                     continue;
                 const std::string structname;
