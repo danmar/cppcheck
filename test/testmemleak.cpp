@@ -3916,7 +3916,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -3934,7 +3934,7 @@ private:
               "        delete [] str2;\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
     }
 
     void class2() {
@@ -4211,7 +4211,7 @@ private:
               "};\n"
               "A::A()\n"
               "{ p = new int; }\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -4219,7 +4219,7 @@ private:
               "    int * p;\n"
               "    A() { p = new int; }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
     }
 
     void class11() {
@@ -4230,7 +4230,7 @@ private:
               "    A() : p(new int[10])\n"
               "    { }"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -4240,7 +4240,7 @@ private:
               "};\n"
               "A::A() : p(new int[10])\n"
               "{ }");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
     }
 
     void class12() {
@@ -4262,7 +4262,7 @@ private:
               "\n"
               "void A::cleanup()\n"
               "{ delete [] p; }\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -4276,7 +4276,7 @@ private:
               "    void cleanup()\n"
               "    { delete [] p; }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
     }
 
     void class13() {
@@ -4326,7 +4326,7 @@ private:
               "void A::init()\n"
               "{ p = new int[10]; }\n");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -4336,7 +4336,7 @@ private:
               "    { p = new int[10]; }\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
 
         check("class A\n"
@@ -4349,7 +4349,7 @@ private:
               "void A::init()\n"
               "{ p = new int; }\n");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -4359,7 +4359,7 @@ private:
               "    { p = new int; }\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
 
         check("class A\n"
@@ -4372,7 +4372,7 @@ private:
               "void A::init()\n"
               "{ p = malloc(sizeof(int)*10); }\n");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -4382,7 +4382,7 @@ private:
               "    { p = malloc(sizeof(int)*10); }\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
     }
 
     void class15() {
@@ -4569,8 +4569,8 @@ private:
               "    rp1 = new TRadioButton;\n"
               "    rp2 = new TRadioButton;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Foo::rp1\n"
-                      "[test.cpp:6]: (error) Memory leak: Foo::rp2\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Foo' is unsafe, 'Foo::rp1' can leak by wrong usage.\n"
+                      "[test.cpp:6]: (style) Class 'Foo' is unsafe, 'Foo::rp2' can leak by wrong usage.\n", errout.str());
 
         check("class TRadioButton { };\n"
               "class Foo\n"
@@ -4614,7 +4614,7 @@ private:
               "        }\n"
               "    };\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
 
         check("namespace ns1 {\n"
               "    class Fred\n"
@@ -4638,7 +4638,7 @@ private:
               "        delete [] str2;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
 
         check("namespace ns1 {\n"
               "    class Fred\n"
@@ -4661,7 +4661,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
 
         check("namespace ns1 {\n"
               "    namespace ns2 {\n"
@@ -4686,7 +4686,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
 
         check("namespace ns1 {\n"
               "    namespace ns2 {\n"
@@ -4713,7 +4713,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
     }
 
     void class21() { // ticket #2517
@@ -4730,8 +4730,8 @@ private:
               "public:\n"
               "    A() : b(new B()), c(new C(b)) { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: A::b\n"
-                      "[test.cpp:10]: (error) Memory leak: A::c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
 
         check("struct B { };\n"
               "struct C\n"
@@ -4750,8 +4750,8 @@ private:
               "       c = new C(b);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: A::b\n"
-                      "[test.cpp:10]: (error) Memory leak: A::c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
     }
 
     void class22() { // ticket #3012 - false positive

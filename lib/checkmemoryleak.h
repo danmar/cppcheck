@@ -379,8 +379,13 @@ private:
     void checkPublicFunctions(const Scope *scope, const Token *classtok);
     void publicAllocationError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
-    { }
+    void unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname);
+
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
+        CheckMemoryLeakInClass c(0, settings, e);
+        c.publicAllocationError(0, "varname");
+        c.unsafeClassError(0, "class", "class::varname");
+    }
 
     static std::string myName() {
         return "Memory leaks (class variables)";

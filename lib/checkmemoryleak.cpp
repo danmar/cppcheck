@@ -2440,10 +2440,17 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
     }
 
     if (allocInConstructor && !deallocInDestructor) {
-        memoryLeak(tokVarname, classname + "::" + varname, Alloc);
+        unsafeClassError(tokVarname, classname, classname + "::" + varname /*, Alloc*/);
     } else if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No) {
-        memoryLeak(tokVarname, classname + "::" + varname, Alloc);
+        unsafeClassError(tokVarname, classname, classname + "::" + varname /*, Alloc*/);
     }
+}
+
+void CheckMemoryLeakInClass::unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unsafeClassCanLeak",
+                "Class '" + classname + "' is unsafe, '" + varname + "' can leak by wrong usage.\n"
+                "The class '" + classname + "' is unsafe, wrong usage can cause memory/resource leaks for '" + varname + "'. This can for instance be fixed by adding proper cleanup in the destructor.");
 }
 
 
