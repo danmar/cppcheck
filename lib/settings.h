@@ -149,6 +149,9 @@ public:
      */
     std::string addEnabled(const std::string &str);
 
+    /** @brief Name of the language that is enforced. Empty per default. */
+    std::string enforcedLang;
+
     /** @brief suppress message (--suppressions) */
     Suppressions nomsg;
 

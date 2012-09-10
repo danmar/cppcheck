@@ -125,6 +125,26 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--inconclusive") == 0)
             _settings->inconclusive = true;
 
+        // Enforce language (--language=, -x)
+        else if (strncmp(argv[i], "--language=", 11) == 0) {
+            _settings->enforcedLang = argv[i] + 11;
+            if (_settings->enforcedLang != "c" && _settings->enforcedLang != "c++" && _settings->enforcedLang != "java" && _settings->enforcedLang != "c#") { // Valid values
+                PrintMessage("cppcheck: Unknown language '" + _settings->enforcedLang + "' enforced.");
+                return false;
+            }
+        } else if (strcmp(argv[i], "-x") == 0) {
+            i++;
+            if (i >= argc || argv[i][0] == '-') {
+                PrintMessage("cppcheck: No language given to '-x' option.");
+                return false;
+            }
+            _settings->enforcedLang = argv[i];
+            if (_settings->enforcedLang != "c" && _settings->enforcedLang != "c++" && _settings->enforcedLang != "java" && _settings->enforcedLang != "c#") { // Valid values
+                PrintMessage("cppcheck: Unknown language '" + _settings->enforcedLang + "' enforced.");
+                return false;
+            }
+        }
+
         // Filter errors
         else if (strncmp(argv[i], "--exitcode-suppressions", 23) == 0) {
             std::string filename;
@@ -757,6 +777,9 @@ void CmdLineParser::PrintHelp() const
               "                         more comments, like: '// cppcheck-suppress warningId'\n"
               "                         on the lines before the warning to suppress.\n"
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
+              "    --language=<language>, -x <language>\n"
+              "                         Forces cppcheck to check all files as the given\n"
+              "                         language. Valid values are: c, c++, java, c#\n"
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"

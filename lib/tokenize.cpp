@@ -9334,12 +9334,12 @@ const std::string& Tokenizer::getSourceFilePath() const
 
 bool Tokenizer::isJava() const
 {
-    return Path::isJava(getSourceFilePath());
+    return _settings->enforcedLang == "java" || (_settings->enforcedLang.empty() && Path::isJava(getSourceFilePath()));
 }
 
 bool Tokenizer::isCSharp() const
 {
-    return Path::isCSharp(getSourceFilePath());
+    return _settings->enforcedLang == "c#" || (_settings->enforcedLang.empty() && Path::isCSharp(getSourceFilePath()));
 }
 
 bool Tokenizer::isJavaOrCSharp() const
@@ -9349,12 +9349,12 @@ bool Tokenizer::isJavaOrCSharp() const
 
 bool Tokenizer::isC() const
 {
-    return Path::isC(getSourceFilePath());
+    return _settings->enforcedLang == "c" || (_settings->enforcedLang.empty() && Path::isC(getSourceFilePath()));
 }
 
 bool Tokenizer::isCPP() const
 {
-    return Path::isCPP(getSourceFilePath());
+    return _settings->enforcedLang == "c++" || (_settings->enforcedLang.empty() && Path::isCPP(getSourceFilePath()));
 }
 
 void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const

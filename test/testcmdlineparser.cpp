@@ -52,6 +52,7 @@ private:
         TEST_CASE(defines2);
         TEST_CASE(defines3);
         //TEST_CASE(defines4);
+        TEST_CASE(enforceLanguage);
         TEST_CASE(includesnopath);
         TEST_CASE(includes);
         TEST_CASE(includesslash);
@@ -365,6 +366,70 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT_EQUALS("DEBUG", settings.userDefines);
+    }
+
+    void enforceLanguage() {
+        REDIRECT;
+        {
+            const char *argv[] = {"cppcheck", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(2, argv));
+            ASSERT_EQUALS("", settings.enforcedLang);
+        }
+        {
+            const char *argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(4, argv));
+            ASSERT_EQUALS("c++", settings.enforcedLang);
+        }
+        {
+            const char *argv[] = {"cppcheck", "-x"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(!parser.ParseFromArgs(2, argv));
+        }
+        {
+            const char *argv[] = {"cppcheck", "-x", "--inconclusive", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(!parser.ParseFromArgs(4, argv));
+        }
+        {
+            const char *argv[] = {"cppcheck", "--language=c++", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS("c++", settings.enforcedLang);
+        }
+        {
+            const char *argv[] = {"cppcheck", "--language=c", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS("c", settings.enforcedLang);
+        }
+        {
+            const char *argv[] = {"cppcheck", "--language=c#", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS("c#", settings.enforcedLang);
+        }
+        {
+            const char *argv[] = {"cppcheck", "--language=java", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS("java", settings.enforcedLang);
+        }
+        {
+            const char *argv[] = {"cppcheck", "--language=unknwonLanguage", "file.cpp"};
+            Settings settings;
+            CmdLineParser parser(&settings);
+            ASSERT(!parser.ParseFromArgs(3, argv));
+        }
     }
 
     void includesnopath() {
