@@ -748,11 +748,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         if (_variableList[i] && _variableList[i]->isArray()) {
             // check each array dimension
             for (std::size_t j = 0; j < _variableList[i]->dimensions().size(); j++) {
+                Dimension &dimension = const_cast<Dimension &>(_variableList[i]->dimensions()[j]);
                 // check for a single token dimension that is a variable
-                if (_variableList[i]->dimensions()[j].start &&
-                    (_variableList[i]->dimensions()[j].start == _variableList[i]->dimensions()[j].end) &&
-                    _variableList[i]->dimensions()[j].start->varId()) {
-                    Dimension &dimension = const_cast<Dimension &>(_variableList[i]->dimensions()[j]);
+                if (dimension.num == 0) {
+                    dimension.known = false;
+                    if (!dimension.start || (dimension.start != dimension.end) || !dimension.start->varId())
+                        continue;
 
                     // get maximum size from type
                     // find where this type is defined
@@ -1372,6 +1373,8 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "_dimensions:";
     for (std::size_t i = 0; i < var->dimensions().size(); i++) {
         std::cout << " " << var->dimension(i);
+        if (!var->dimensions()[i].known)
+            std::cout << "?";
     }
     std::cout << std::endl;
 }

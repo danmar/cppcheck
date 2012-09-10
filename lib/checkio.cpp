@@ -502,10 +502,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                             if ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")
                                 invalidScanfArgTypeError(tok, tok->str(), numFormat);
 
-                            if (*i == 's' && variableInfo && isKnownType(variableInfo, varTypeTok) && variableInfo->isArray() && (variableInfo->dimensions().size() == 1)) {
+                            if (*i == 's' && variableInfo && isKnownType(variableInfo, varTypeTok) && variableInfo->isArray() && (variableInfo->dimensions().size() == 1) && variableInfo->dimensions()[0].known) {
                                 if (!width.empty()) {
                                     int numWidth = std::atoi(width.c_str());
-                                    if (numWidth  != (variableInfo->dimension(0) - 1))
+                                    if (numWidth != (variableInfo->dimension(0) - 1))
                                         invalidScanfFormatWidthError(tok, numFormat, numWidth, variableInfo);
                                 }
                             }

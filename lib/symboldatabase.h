@@ -46,11 +46,12 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : start(NULL), end(NULL), num(0) { }
+    Dimension() : start(NULL), end(NULL), num(0), known(true) { }
 
     const Token *start;  // size start token
     const Token *end;    // size end token
-    MathLib::bigint num; // dimension length when size is a number, 0 if not known
+    MathLib::bigint num; // (assumpted) dimension length when size is a number, 0 if not known
+    bool known;          // Known size
 };
 
 /** @brief Information about a member variable. */
