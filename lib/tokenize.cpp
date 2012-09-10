@@ -2528,7 +2528,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             } else if (!hasstruct && variableId.find(tok2->str()) != variableId.end() && tok2->previous()->str() != "::") {
                 ++typeCount;
                 tok2 = tok2->next();
-                if (tok2->str() != "::")
+                if (!tok2 || tok2->str() != "::")
                     break;
             } else {
                 ++typeCount;

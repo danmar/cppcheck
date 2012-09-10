@@ -63,6 +63,7 @@ private:
         TEST_CASE(wrong_syntax3); // #3544
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
+        TEST_CASE(garbageCode);
 
         TEST_CASE(foreach);     // #3690
 
@@ -700,6 +701,10 @@ private:
         const char code[] = "void f() { if MACRO() { } }";
         ASSERT_EQUALS("void f ( ) { if ( MACRO ( ) ) { } }", tokenizeAndStringify(code, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void garbageCode() {
+        tokenizeAndStringify("struct x foo_t; foo_t typedef y;");
     }
 
     void foreach() {
