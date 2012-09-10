@@ -1871,7 +1871,7 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 //---------------------------------------------------------------------------
 void CheckOther::checkConstantFunctionParameter()
 {
-    if (!_settings->isEnabled("performance"))
+    if (!_settings->isEnabled("performance") || _tokenizer->isC())
         return;
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3276,7 +3276,7 @@ In most scenarios, "const A & a = getA()" will be more efficient.
 */
 void CheckOther::checkRedundantCopy()
 {
-    if (!_settings->isEnabled("performance"))
+    if (!_settings->isEnabled("performance") || _tokenizer->isC())
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

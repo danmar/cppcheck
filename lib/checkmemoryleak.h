@@ -363,7 +363,7 @@ public:
 
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) {
         // Don't use these check for Java and C# programs..
-        if (tokenizr->isJavaOrCSharp())
+        if (!tokenizr->isCPP())
             return;
 
         CheckMemoryLeakInClass checkMemoryLeak(tokenizr, settings, errLog);

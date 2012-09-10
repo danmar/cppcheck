@@ -2075,6 +2075,9 @@ bool Tokenizer::hasComplicatedSyntaxErrorsInTemplates()
 
 void Tokenizer::simplifyDefaultAndDeleteInsideClass()
 {
+    if (isC())
+        return;
+
     // Remove "= default|delete" inside class|struct definitions
     // Todo: Remove it if it is used "externally" too.
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -2487,6 +2490,9 @@ void Tokenizer::simplifyLabelsCaseDefault()
 
 void Tokenizer::simplifyTemplates()
 {
+    if (isC())
+        return;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // #2648 - simple fix for sizeof used as template parameter
         // TODO: this is a bit hardcoded. make a bit more generic
@@ -6640,6 +6646,9 @@ bool Tokenizer::simplifyRedundantParenthesis()
 
 void Tokenizer::simplifyReference()
 {
+    if (isC())
+        return;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // starting executable scope..
         if (Token::Match(tok, ") const| {")) {
@@ -7432,6 +7441,9 @@ void Tokenizer::simplifyEnum()
 
 void Tokenizer::simplifyStd()
 {
+    if (isC())
+        return;
+
     std::set<std::string> f;
     f.insert("strcat");
     f.insert("strcpy");
@@ -7946,6 +7958,9 @@ void Tokenizer::simplifyComma()
 
 void Tokenizer::removeExceptionSpecifications()
 {
+    if (isC())
+        return;
+
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, ") const| throw (")) {
             if (tok->next()->str() == "const") {
@@ -9063,6 +9078,9 @@ void Tokenizer::deleteSymbolDatabase()
 
 void Tokenizer::simplifyOperatorName()
 {
+    if (isC())
+        return;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "operator") {
             // operator op
@@ -9117,6 +9135,9 @@ void Tokenizer::simplifyOperatorName()
 // remove unnecessary member qualification..
 void Tokenizer::removeUnnecessaryQualification()
 {
+    if (isC())
+        return;
+
     std::vector<Space> classInfo;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct|namespace %type% :|{") &&

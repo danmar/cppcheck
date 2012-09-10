@@ -53,6 +53,9 @@ public:
 
     /** Checks that uses the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        if (tokenizer->isC())
+            return;
+
         CheckExceptionSafety checkExceptionSafety(tokenizer, settings, errorLogger);
         checkExceptionSafety.destructors();
         checkExceptionSafety.deallocThrow();

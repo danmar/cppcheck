@@ -44,6 +44,9 @@ public:
 
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        if (tokenizer->isC())
+            return;
+
         CheckClass checkClass(tokenizer, settings, errorLogger);
 
         // can't be a simplified check .. the 'sizeof' is used.
@@ -52,6 +55,9 @@ public:
 
     /** @brief Run checks on the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        if (tokenizer->isC())
+            return;
+
         CheckClass checkClass(tokenizer, settings, errorLogger);
 
         // Coding style checks

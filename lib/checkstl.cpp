@@ -1072,9 +1072,6 @@ static bool isLocal(const SymbolDatabase* symbolDatabase, unsigned int varid)
 
 void CheckStl::string_c_str()
 {
-    if (!_tokenizer->isCPP())
-        return;
-
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Find all functions that take std::string as argument
@@ -1238,9 +1235,6 @@ static bool hasArrayEndParen(const Token *tok1)
 //---------------------------------------------------------------------------
 void CheckStl::checkAutoPointer()
 {
-    if (!_tokenizer->isCPP())
-        return;
-
     std::set<unsigned int> autoPtrVarId;
     static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
 

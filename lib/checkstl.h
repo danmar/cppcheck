@@ -45,6 +45,9 @@ public:
 
     /** Simplified checks. The token list is simplified. */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        if (!tokenizer->isCPP())
+            return;
+
         CheckStl checkStl(tokenizer, settings, errorLogger);
 
         checkStl.stlOutOfBounds();
