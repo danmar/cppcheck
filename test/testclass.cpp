@@ -185,18 +185,30 @@ private:
                              "{\n"
                              "   public:\n"
                              "   char *c,*p,*d;\n"
-                             "   F(const F &f) :p(f.p)\n"
+                             "   F(const F &f) : p(f.p), c(f.c)\n"
                              "   {\n"
-                             "     p=(char *)malloc(strlen(f.p)+1);\n"
-                             "     strcpy(p,f.p);\n"
-                             "    }\n"
-                             "    F(char *str)\n"
-                             "    {\n"
+                             "      p=(char *)malloc(strlen(f.p)+1);\n"
+                             "      strcpy(p,f.p);\n"
+                             "   }\n"
+                             "   F(char *str)\n"
+                             "   {\n"
                              "      p=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,str);\n"
-                             "     }\n"
+                             "   }\n"
                              "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n", errout.str());
+
+        checkCopyConstructor("class F {\n"
+                             "   char *p;\n"
+                             "   F(const F &f) {\n"
+                             "      p = f.p;\n"
+                             "   }\n"
+                             "   F(char *str) {\n"
+                             "      p = malloc(strlen(str)+1);\n"
+                             "   }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+                      "[test.cpp:3] -> [test.cpp:7]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n", errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -205,13 +217,14 @@ private:
                              "   F(const F &f) :p(f.p)\n"
                              "   {\n"
                              "   }\n"
-                             "    F(char *str)\n"
-                             "    {\n"
-                             "   p=(char *)malloc(strlen(str)+1);\n"
-                             "   strcpy(p,str);\n"
-                             "    }\n"
+                             "   F(char *str)\n"
+                             "   {\n"
+                             "      p=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(p,str);\n"
+                             "   }\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The copy constructor of class 'F' does not allocate memory for pointer class member and copying pointer values.\n[test.cpp:1]: (style) The copy constructor of class 'F' does not allocate memory for class member p.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+                      "[test.cpp:5] -> [test.cpp:10]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n", errout.str());
 
         checkCopyConstructor("class kalci\n"
                              "{\n"
@@ -219,22 +232,22 @@ private:
                              "   char *c,*p,*d;\n"
                              "   kalci()\n"
                              "   {\n"
-                             "     p=(char *)malloc(100);\n"
-                             "     strcpy(p,\"hello\");\n"
-                             "     c=(char *)malloc(100);\n"
-                             "     strcpy(p,\"hello\");\n"
-                             "     d=(char *)malloc(100);\n"
-                             "     strcpy(p,\"hello\");\n"
-                             "     }\n"
+                             "      p=(char *)malloc(100);\n"
+                             "      strcpy(p,\"hello\");\n"
+                             "      c=(char *)malloc(100);\n"
+                             "      strcpy(p,\"hello\");\n"
+                             "      d=(char *)malloc(100);\n"
+                             "      strcpy(p,\"hello\");\n"
+                             "   }\n"
                              "   kalci(const kalci &f)\n"
                              "   {\n"
-                             "     p=(char *)malloc(strlen(str)+1);\n"
-                             "     strcpy(p,f.p);\n"
-                             "     c=(char *)malloc(strlen(str)+1);\n"
-                             "     strcpy(p,f.p);\n"
-                             "     d=(char *)malloc(strlen(str)+1);\n"
+                             "      p=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,f.p);\n"
-                             "}\n"
+                             "      c=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(p,f.p);\n"
+                             "      d=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(p,f.p);\n"
+                             "   }\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -242,24 +255,48 @@ private:
                              "{\n"
                              "   public:\n"
                              "   char *c,*p,*d;\n"
-                             "F(char *str,char *st,char *string)\n"
-                             "{\n"
-                             "   p=(char *)malloc(100);\n"
-                             "   strcpy(p,str);\n"
-                             "   c=(char *)malloc(100);\n"
-                             "   strcpy(p,st);\n"
-                             "    d=(char *)malloc(100);\n"
-                             "    strcpy(p,string);\n"
-                             "}\n"
-                             "F(const F &f)\n"
-                             "{\n"
-                             "   p=(char *)malloc(strlen(str)+1);\n"
-                             "   strcpy(p,f.p);\n"
-                             "   c=(char *)malloc(strlen(str)+1);\n"
-                             "   strcpy(p,f.p);\n"
-                             "}\n"
+                             "   F(char *str,char *st,char *string)\n"
+                             "   {\n"
+                             "      p=(char *)malloc(100);\n"
+                             "      strcpy(p,str);\n"
+                             "      c=(char *)malloc(100);\n"
+                             "      strcpy(p,st);\n"
+                             "      d=(char *)malloc(100);\n"
+                             "      strcpy(p,string);\n"
+                             "   }\n"
+                             "   F(const F &f)\n"
+                             "   {\n"
+                             "      p=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(p,f.p);\n"
+                             "      c=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(p,f.p);\n"
+                             "   }\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The copy constructor of class 'F' does not allocate memory for class member d.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:14] -> [test.cpp:11]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", errout.str());
+
+        checkCopyConstructor("class F {\n"
+                             "   char *c;\n"
+                             "   F(char *str,char *st,char *string) {\n"
+                             "      p=(char *)malloc(100);\n"
+                             "   }\n"
+                             "   F(const F &f)\n"
+                             "      : p(malloc(size))\n"
+                             "   {\n"
+                             "   }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class F {\n"
+                             "   char *c;\n"
+                             "   F(char *str,char *st,char *string)\n"
+                             "      : p(malloc(size))\n"
+                             "   {\n"
+                             "   }\n"
+                             "   F(const F &f)\n"
+                             "   {\n"
+                             "   }\n"
+                             "};");
+        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", "", errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -267,32 +304,69 @@ private:
                              "   char *c,*p,*d;\n"
                              "   F()\n"
                              "   {\n"
-                             "     p=(char *)malloc(100);\n"
-                             "     c=(char *)malloc(100);\n"
-                             "     d=(char*)malloc(100);\n"
-                             "    }\n"
+                             "      p=(char *)malloc(100);\n"
+                             "      c=(char *)malloc(100);\n"
+                             "      d=(char*)malloc(100);\n"
+                             "   }\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'F' does not have a copy constructor which is required since the class contains a pointer member.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) 'class F' does not have a copy constructor which is required since the class contains a pointer to allocated memory.\n", errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
-                             "  public:\n"
-                             "  char *c;\n"
-                             "  const char *p,*d;\n"
-                             "  F(char *str,char *st,char *string)\n"
-                             "  {\n"
-                             "    p=str;\n"
-                             "    d=st;\n"
-                             "    c=(char *)malloc(strlen(string)+1);\n"
-                             "    strcpy(d,string);\n"
+                             "   public:\n"
+                             "   char *c;\n"
+                             "   const char *p,*d;\n"
+                             "   F(char *str,char *st,char *string)\n"
+                             "   {\n"
+                             "      p=str;\n"
+                             "      d=st;\n"
+                             "      c=(char *)malloc(strlen(string)+1);\n"
+                             "      strcpy(d,string);\n"
                              "   }\n"
-                             "F(const F &f)\n"
+                             "   F(const F &f)\n"
+                             "   {\n"
+                             "      p=f.p;\n"
+                             "      d=f.d;\n"
+                             "      c=(char *)malloc(strlen(str)+1);\n"
+                             "      strcpy(d,f.p);\n"
+                             "   }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class F : E\n"
                              "{\n"
-                             "   p=f.p;\n"
-                             "   d=f.d;\n"
-                             "   c=(char *)malloc(strlen(str)+1);\n"
-                             "   strcpy(d,f.p);\n"
-                             "}\n"
+                             "   char *p;\n"
+                             "   F() {\n"
+                             "      p = malloc(100);\n"
+                             "   }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class E { E(E&); };\n" // non-copyable
+                             "class F : E\n"
+                             "{\n"
+                             "   char *p;\n"
+                             "   F() {\n"
+                             "      p = malloc(100);\n"
+                             "   }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class E {};\n"
+                             "class F : E {\n"
+                             "   char *p;\n"
+                             "   F() {\n"
+                             "      p = malloc(100);\n"
+                             "   }\n"
+                             "};");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) 'class F' does not have a copy constructor which is required since the class contains a pointer to allocated memory.\n", "", errout.str());
+
+        checkCopyConstructor("class F {\n"
+                             "   char *p;\n"
+                             "   F() {\n"
+                             "      p = malloc(100);\n"
+                             "   }\n"
+                             "   F(F& f);\n" // non-copyable
                              "};");
         ASSERT_EQUALS("", errout.str());
     }

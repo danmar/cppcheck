@@ -117,8 +117,8 @@ private:
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
-    void copyConstructorMallocError(const Token *tok, const std::string &classname, bool isStruct, const std::vector<std::string>& var_name);
-    void copyConstructorShallowCopyError(const Token *tok, const std::string &classname, bool isStruct);
+    void copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& var_name);
+    void copyConstructorShallowCopyError(const Token *tok, const std::string& varname);
     void noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
@@ -137,9 +137,8 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
         c.noConstructorError(0, "classname", false);
-        std::vector<std::string> temp;
-        c.copyConstructorMallocError(0, "class", false, temp);
-        c.copyConstructorShallowCopyError(0, "class", false);
+        c.copyConstructorMallocError(0, 0, "var");
+        c.copyConstructorShallowCopyError(0, "var");
         c.noCopyConstructorError(0, "class", false);
         c.uninitVarError(0, "classname", "varname");
         c.operatorEqVarError(0, "classname", "");
