@@ -51,7 +51,6 @@ public:
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
-        checkAutoVariables.returncstr();
     }
 
     /** Check auto variables */
@@ -62,9 +61,6 @@ public:
 
     /** Returning reference to local/temporary variable */
     void returnReference();
-
-    /** Returning c_str to local variable */
-    void returncstr();
 
 private:
     bool isRefPtrArg(unsigned int varId);
@@ -84,7 +80,6 @@ private:
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
-    void errorReturnTempPointer(const Token *tok);
     void errorInvalidDeallocation(const Token *tok);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
 
@@ -95,7 +90,6 @@ private:
         c.errorReturnPointerToLocalArray(0);
         c.errorReturnReference(0);
         c.errorReturnTempReference(0);
-        c.errorReturnTempPointer(0);
         c.errorInvalidDeallocation(0);
         c.errorReturnAddressOfFunctionParameter(0, "parameter");
     }

@@ -54,7 +54,6 @@ private:
         // Check auto variables
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
-        checkAutoVariables.returncstr();
     }
 
     void run() {
@@ -89,9 +88,6 @@ private:
         TEST_CASE(returnReference5);
         TEST_CASE(returnReference6);
         TEST_CASE(returnReference7);
-
-        // return c_str()..
-        TEST_CASE(returncstr);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -455,6 +451,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Reference to temporary returned.\n", errout.str());
 
+        check("std::string hello() {\n"
+              "     return \"foo\";\n"
+              "}\n"
+              "\n"
+              "std::string &f() {\n"
+              "    return hello().substr(1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("class Foo;\n"
               "Foo hello() {\n"
               "     return Foo();\n"
@@ -619,33 +624,6 @@ private:
               "    return a(12);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void returncstr() {
-        check("std::string hello()\n"
-              "{\n"
-              "     return \"hello\";\n"
-              "}\n"
-              "\n"
-              "const char *f()\n"
-              "{\n"
-              "    return hello().c_str();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Pointer to temporary returned.\n", errout.str());
-
-        check("class Fred {\n"
-              "    std::string hello();\n"
-              "    const char *f();\n"
-              "};\n"
-              "std::string Fred::hello()\n"
-              "{\n"
-              "     return \"hello\";\n"
-              "}\n"
-              "const char *Fred::f()\n"
-              "{\n"
-              "    return hello().c_str();\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Pointer to temporary returned.\n", errout.str());
     }
 
 

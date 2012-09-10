@@ -1749,6 +1749,31 @@ private:
               "    return atoi(str.c_str());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string hello()\n"
+              "{\n"
+              "     return \"hello\";\n"
+              "}\n"
+              "\n"
+              "const char *f()\n"
+              "{\n"
+              "    return hello().c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
+
+        check("class Fred {\n"
+              "    std::string hello();\n"
+              "    const char *f();\n"
+              "};\n"
+              "std::string Fred::hello()\n"
+              "{\n"
+              "     return \"hello\";\n"
+              "}\n"
+              "const char *Fred::f()\n"
+              "{\n"
+              "    return hello().c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n", errout.str());
     }
 
     void autoPointer() {

@@ -229,7 +229,7 @@ void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok,
 // return temporary?
 bool CheckAutoVariables::returnTemporary(const Token *tok) const
 {
-    if (!Token::Match(tok, "return %var% ("))
+    if (!Token::Match(tok, "return %var% (") || !Token::simpleMatch(tok->linkAt(2), ") ;"))
         return false;
 
     const std::string &funcname(tok->next()->str());
@@ -351,42 +351,4 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
                 "Deallocation of an auto-variable results in undefined behaviour.\n"
                 "The deallocation of an auto-variable results in undefined behaviour. You should only free memory "
                 "that has been allocated dynamically.");
-}
-
-
-//---------------------------------------------------------------------------
-
-// Return c_str
-void CheckAutoVariables::returncstr()
-{
-    // TODO: Move this to CheckStl::string_c_str
-
-    // locate function that returns a const char *..
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction || !scope->function)
-            continue;
-
-        const Token *tok = scope->function->tokenDef;
-
-        // have we reached a function that returns a const char *
-        if (Token::simpleMatch(tok->tokAt(-3), "const char *")) {
-            for (const Token *tok2 = scope->classStart; tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
-                // return pointer to temporary..
-                if (returnTemporary(tok2)) {
-                    // report error..
-                    errorReturnTempPointer(tok2);
-                }
-            }
-        }
-    }
-}
-
-void CheckAutoVariables::errorReturnTempPointer(const Token *tok)
-{
-    reportError(tok, Severity::error, "returnTempPointer", "Pointer to temporary returned.");
 }
