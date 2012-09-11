@@ -240,23 +240,8 @@ void Variables::readAliases(unsigned int varid, const Token* tok)
 
 void Variables::readAll(unsigned int varid, const Token* tok)
 {
-    VariableUsage *usage = find(varid);
-
-    if (usage) {
-        usage->_read = true;
-        usage->_lastAccess = tok;
-
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
-            VariableUsage *aliased = find(*aliases);
-
-            if (aliased) {
-                aliased->_read = true;
-                aliased->_lastAccess = tok;
-            }
-        }
-    }
+    read(varid, tok);
+    readAliases(varid, tok);
 }
 
 void Variables::write(unsigned int varid, const Token* tok)
@@ -291,23 +276,8 @@ void Variables::writeAliases(unsigned int varid, const Token* tok)
 
 void Variables::writeAll(unsigned int varid, const Token* tok)
 {
-    VariableUsage *usage = find(varid);
-
-    if (usage) {
-        usage->_write = true;
-        usage->_lastAccess = tok;
-
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
-            VariableUsage *aliased = find(*aliases);
-
-            if (aliased) {
-                aliased->_write = true;
-                aliased->_lastAccess = tok;
-            }
-        }
-    }
+    write(varid, tok);
+    writeAliases(varid, tok);
 }
 
 void Variables::use(unsigned int varid, const Token* tok)

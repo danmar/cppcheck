@@ -1372,7 +1372,7 @@ private:
                               "    a = b[c] = 0;\n"
                               "    return a;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
     }
 
     void localvar24() { // ticket #1803
