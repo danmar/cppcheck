@@ -399,7 +399,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
                 name = tok1->next()->str();
             else { // create a unique name
                 static unsigned int count = 0;
-                name = "Unnamed" + MathLib::toString<unsigned int>(count++);
+                name = "Unnamed" + MathLib::longToString(count++);
             }
             tok->next()->insertToken(name);
         } else
@@ -2147,7 +2147,7 @@ void Tokenizer::simplifyLineMacro()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "__LINE__")
-            tok->str(MathLib::toString(tok->linenr()));
+            tok->str(MathLib::longToString(tok->linenr()));
     }
 }
 
@@ -2402,7 +2402,7 @@ void Tokenizer::arraySize()
         if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
             tok = tok->next();
             std::size_t sz = tok->strAt(3).length() - 1;
-            tok->insertToken(MathLib::toString<unsigned int>((unsigned int)sz));
+            tok->insertToken(MathLib::longToString((unsigned int)sz));
             addlength = false;
             tok = tok->tokAt(5);
         }
@@ -2428,7 +2428,7 @@ void Tokenizer::arraySize()
             }
 
             if (sz != 0)
-                tok->insertToken(MathLib::toString<unsigned int>(sz));
+                tok->insertToken(MathLib::longToString(sz));
 
             tok = end->next() ? end->next() : end;
         }
@@ -2500,7 +2500,7 @@ void Tokenizer::simplifyTemplates()
             Token * const tok3 = tok->next();
             const unsigned int sizeOfResult = sizeOfType(tok3->tokAt(3));
             tok3->deleteNext(4);
-            tok3->insertToken(MathLib::toString<unsigned int>(sizeOfResult));
+            tok3->insertToken(MathLib::longToString(sizeOfResult));
         }
     }
 
@@ -3057,7 +3057,7 @@ bool Tokenizer::simplifySizeof()
                     continue;
                 }
 
-                sizeOfVar[varId] = MathLib::toString<unsigned int>(size);
+                sizeOfVar[varId] = MathLib::longToString(size);
             }
 
             else if (Token::Match(tok->tokAt(-3), "[;{}(,] struct %type% %var% [;,)]")) {
@@ -3070,14 +3070,14 @@ bool Tokenizer::simplifySizeof()
                 if (size == 0)
                     continue;
 
-                sizeOfVar[varId] = MathLib::toString<unsigned long>(size * static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(2))));
+                sizeOfVar[varId] = MathLib::longToString(size * static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(2))));
             }
 
             else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [,)]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [,)]")) {
                 Token tempTok(0);
                 tempTok.str("*");
-                sizeOfVar[varId] = MathLib::toString<unsigned long>(sizeOfType(&tempTok));
+                sizeOfVar[varId] = MathLib::longToString(sizeOfType(&tempTok));
             }
 
             else if (Token::Match(tok->previous(), "%type% %var% [ ] = %str% ;")) {
@@ -3085,7 +3085,7 @@ bool Tokenizer::simplifySizeof()
                 if (size == 0)
                     continue;
 
-                sizeOfVar[varId] = MathLib::toString<unsigned int>(size);
+                sizeOfVar[varId] = MathLib::longToString(size);
             }
         }
     }
@@ -3216,7 +3216,7 @@ bool Tokenizer::simplifySizeof()
         }
 
         if (Token::simpleMatch(tok->next(), "( * )")) {
-            tok->str(MathLib::toString<unsigned long>(sizeOfType(tok->tokAt(2))));
+            tok->str(MathLib::longToString(sizeOfType(tok->tokAt(2))));
             tok->deleteNext(3);
             ret = true;
         }
@@ -3238,7 +3238,7 @@ bool Tokenizer::simplifySizeof()
         else if (Token::Match(tok, "sizeof ( %type% )")) {
             unsigned int size = sizeOfType(tok->tokAt(2));
             if (size > 0) {
-                tok->str(MathLib::toString<unsigned int>(size));
+                tok->str(MathLib::longToString(size));
                 tok->deleteNext(3);
                 ret = true;
             }
@@ -3267,7 +3267,7 @@ bool Tokenizer::simplifySizeof()
             }
 
             if (sz > 0) {
-                tok->str(MathLib::toString<size_t>(sz));
+                tok->str(MathLib::longToString(sz));
                 Token::eraseTokens(tok, tok->next()->link()->next());
                 ret = true;
             }
@@ -3885,7 +3885,7 @@ void Tokenizer::removeRedundantFor()
                 // get the correct end value
                 Token *tok2 = tok->next()->link();
                 tok2->insertToken(";");
-                tok2->insertToken(MathLib::toString(num2));
+                tok2->insertToken(MathLib::longToString(num2));
                 tok2->insertToken("=");
                 tok2->insertToken(varname);
                 tok2->next()->varId(varid);
@@ -6058,7 +6058,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
             value = tok2->strAt(6);
             valueVarId = tok2->tokAt(6)->varId();
         } else
-            value = MathLib::toString(MathLib::toLongNumber(tok2->strAt(6)) + 1);
+            value = MathLib::longToString(MathLib::toLongNumber(tok2->strAt(6)) + 1);
 
         // Skip for-body..
         tok3 = tok2->previous()->link()->next()->link()->next();
@@ -7199,7 +7199,7 @@ void Tokenizer::simplifyEnum()
                         enumValueEnd = tok1->next();
                     } else {
                         // value is previous numeric value + 1
-                        tok1->insertToken(MathLib::toString<MathLib::bigint>(lastValue));
+                        tok1->insertToken(MathLib::longToString(lastValue));
                         enumValue = tok1->next();
                     }
                 } else if (Token::Match(tok1->previous(), ",|{ %type% = %num% ,|}")) {
@@ -7816,7 +7816,7 @@ void Tokenizer::simplifyMathFunctions()
             tok->deleteThis();
 
             // Convert string into a number
-            tok->str(MathLib::toString(MathLib::toLongNumber(tok->strValue())));
+            tok->str(MathLib::longToString(MathLib::toLongNumber(tok->strValue())));
 
             // Delete remaining )
             tok->deleteNext();
@@ -8376,7 +8376,7 @@ void Tokenizer::simplifyStructDecl()
             if (Token::Match(tok->next(), "*|&| %type% ,|;|[")) {
                 std::string name;
 
-                name = "Anonymous" + MathLib::toString<unsigned int>(count++);
+                name = "Anonymous" + MathLib::longToString(count++);
 
                 tok1->insertToken(name);
 

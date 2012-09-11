@@ -67,6 +67,13 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
     return ret;
 }
 
+std::string MathLib::longToString(const bigint value)
+{
+    std::ostringstream result;
+    result << value;
+    return result.str();
+}
+
 double MathLib::toDoubleNumber(const std::string &str)
 {
     if (isHex(str))
@@ -79,6 +86,18 @@ double MathLib::toDoubleNumber(const std::string &str)
     double ret;
     istr >> ret;
     return ret;
+}
+
+std::string MathLib::doubleToString(const double value)
+{
+    std::ostringstream result;
+    result.precision(12);
+    result << value;
+    if (result.str() == "-0")
+        return "0.0";
+    if (result.str().find(".") == std::string::npos)
+        return result.str() + ".0";
+    return result.str();
 }
 
 bool MathLib::isFloat(const std::string &s)
@@ -215,25 +234,25 @@ bool MathLib::isInt(const std::string & s)
 std::string MathLib::add(const std::string & first, const std::string & second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString<bigint>(toLongNumber(first) + toLongNumber(second));
+        return longToString(toLongNumber(first) + toLongNumber(second));
     }
 
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);
 
     int count = 0;
-    while (d1 > 100000.0 * d2 && toString<double>(d1+d2)==first && ++count<5)
+    while (d1 > 100000.0 * d2 && doubleToString(d1+d2)==first && ++count<5)
         d2 *= 10.0;
-    while (d2 > 100000.0 * d1 && toString<double>(d1+d2)==second && ++count<5)
+    while (d2 > 100000.0 * d1 && doubleToString(d1+d2)==second && ++count<5)
         d1 *= 10.0;
 
-    return toString<double>(d1 + d2);
+    return doubleToString(d1 + d2);
 }
 
 std::string MathLib::subtract(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString<bigint>(toLongNumber(first) - toLongNumber(second));
+        return longToString(toLongNumber(first) - toLongNumber(second));
     }
 
     if (first == second)
@@ -243,12 +262,12 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     double d2 = toDoubleNumber(second);
 
     int count = 0;
-    while (d1 > 100000.0 * d2 && toString<double>(d1-d2)==first && ++count<5)
+    while (d1 > 100000.0 * d2 && doubleToString(d1-d2)==first && ++count<5)
         d2 *= 10.0;
-    while (d2 > 100000.0 * d1 && toString<double>(d1-d2)==second && ++count<5)
+    while (d2 > 100000.0 * d1 && doubleToString(d1-d2)==second && ++count<5)
         d1 *= 10.0;
 
-    return toString<double>(d1 - d2);
+    return doubleToString(d1 - d2);
 }
 
 std::string MathLib::divide(const std::string &first, const std::string &second)
@@ -257,17 +276,17 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
         bigint b = toLongNumber(second);
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
-        return toString<bigint>(toLongNumber(first) / b);
+        return longToString(toLongNumber(first) / b);
     }
-    return toString<double>(toDoubleNumber(first) / toDoubleNumber(second));
+    return doubleToString(toDoubleNumber(first) / toDoubleNumber(second));
 }
 
 std::string MathLib::multiply(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString<bigint>(toLongNumber(first) * toLongNumber(second));
+        return longToString(toLongNumber(first) * toLongNumber(second));
     }
-    return toString<double>(toDoubleNumber(first) * toDoubleNumber(second));
+    return doubleToString(toDoubleNumber(first) * toDoubleNumber(second));
 }
 
 std::string MathLib::mod(const std::string &first, const std::string &second)
@@ -276,9 +295,9 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
         bigint b = toLongNumber(second);
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
-        return toString<MathLib::bigint>(toLongNumber(first) % b);
+        return longToString(toLongNumber(first) % b);
     }
-    return toString<double>(fmod(toDoubleNumber(first),toDoubleNumber(second)));
+    return doubleToString(fmod(toDoubleNumber(first),toDoubleNumber(second)));
 }
 
 std::string MathLib::calculate(const std::string &first, const std::string &second, char action)
@@ -300,13 +319,13 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         return MathLib::mod(first, second);
 
     case '&':
-        return MathLib::toString(MathLib::toLongNumber(first) & MathLib::toLongNumber(second));
+        return MathLib::longToString(MathLib::toLongNumber(first) & MathLib::toLongNumber(second));
 
     case '|':
-        return MathLib::toString(MathLib::toLongNumber(first) | MathLib::toLongNumber(second));
+        return MathLib::longToString(MathLib::toLongNumber(first) | MathLib::toLongNumber(second));
 
     case '^':
-        return MathLib::toString(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second));
+        return MathLib::longToString(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second));
 
     default:
         throw InternalError(0, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");
@@ -315,31 +334,31 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
 
 std::string MathLib::sin(const std::string &tok)
 {
-    return toString<double>(std::sin(toDoubleNumber(tok)));
+    return doubleToString(std::sin(toDoubleNumber(tok)));
 }
 
 
 std::string MathLib::cos(const std::string &tok)
 {
-    return toString<double>(std::cos(toDoubleNumber(tok)));
+    return doubleToString(std::cos(toDoubleNumber(tok)));
 }
 
 std::string MathLib::tan(const std::string &tok)
 {
-    return toString<double>(std::tan(toDoubleNumber(tok)));
+    return doubleToString(std::tan(toDoubleNumber(tok)));
 }
 
 
 std::string MathLib::abs(const std::string &tok)
 {
-    return toString<double>(std::abs(toDoubleNumber(tok)));
+    return doubleToString(std::abs(toDoubleNumber(tok)));
 }
 
 bool MathLib::isEqual(const std::string &first, const std::string &second)
 {
     // this conversion is needed for formating
     // e.g. if first=0.1 and second=1.0E-1, the direct comparison of the strings whould fail
-    return toString<double>(toDoubleNumber(first)) == toString<double>(toDoubleNumber(second));
+    return doubleToString(toDoubleNumber(first)) == doubleToString(toDoubleNumber(second));
 }
 
 bool MathLib::isNotEqual(const std::string &first, const std::string &second)

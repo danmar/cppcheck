@@ -34,17 +34,9 @@ public:
     typedef long long bigint;
 
     static bigint toLongNumber(const std::string & str);
+    static std::string longToString(const bigint value);
     static double toDoubleNumber(const std::string & str);
-
-    template<typename T>
-    static std::string toString(const T &d) {
-        std::ostringstream result;
-        result.precision(8);
-        result << d;
-        if (isNullValue(result.str()))
-            return std::string("0");
-        return result.str();
-    }
+    static std::string doubleToString(const double value);
 
     static bool isInt(const std::string & str);
     static bool isFloat(const std::string &str);

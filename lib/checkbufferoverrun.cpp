@@ -295,7 +295,7 @@ static bool for_condition(const Token *tok2, unsigned int varid, std::string &mi
         Token::Match(tok2, "%varid% != %num% ; %varid% ++", varid)) {
         maxMinFlipped = false;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->strAt(2));
-        max_value = MathLib::toString<MathLib::bigint>(value - 1);
+        max_value = MathLib::longToString(value - 1);
     } else if (Token::Match(tok2, "%varid% <= %num% ;|&&|%oror%", varid)) {
         maxMinFlipped = false;
         max_value = tok2->strAt(2);
@@ -305,7 +305,7 @@ static bool for_condition(const Token *tok2, unsigned int varid, std::string &mi
         maxMinFlipped = true;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->str());
         max_value = min_value;
-        min_value = MathLib::toString<MathLib::bigint>(value + 1);
+        min_value = MathLib::longToString(value + 1);
     } else if (Token::Match(tok2, "%num% <= %varid% ;|&&|%oror%", varid)) {
         maxMinFlipped = true;
         max_value = min_value;
@@ -351,7 +351,7 @@ static bool for_maxvalue(const Token * const stepvalue, const std::string &min_v
     MathLib::bigint max = MathLib::toLongNumber(max_value);
     const MathLib::bigint min = MathLib::toLongNumber(min_value);
     max = ((max - min) / num) * num + min;
-    max_value = MathLib::toString<MathLib::bigint>(max);
+    max_value = MathLib::longToString(max);
     return true;
 }
 
