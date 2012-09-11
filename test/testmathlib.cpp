@@ -171,6 +171,7 @@ private:
         ASSERT_EQUALS(-1 	, MathLib::toLongNumber("-0b1"));
         ASSERT_EQUALS(215 	, MathLib::toLongNumber("0b11010111"));
         ASSERT_EQUALS(-215 	, MathLib::toLongNumber("-0b11010111"));
+        ASSERT_EQUALS(215 	, MathLib::toLongNumber("0B11010111"));
 
         // from base 10
         ASSERT_EQUALS(10	, MathLib::toLongNumber("10"));
