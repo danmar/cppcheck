@@ -125,12 +125,11 @@ public:
 
     /**
      * @brief Is a typename the name of a class?
-     * @param _tokenizer tokenizer
      * @param tok type token
      * @param varid variable id
      * @return true if the type name is the name of a class
      */
-    bool isclass(const Tokenizer *_tokenizer, const Token *tok, unsigned int varid) const;
+    bool isclass(const Token *tok, unsigned int varid) const;
 
     /**
      * Report that there is a memory leak (new/malloc/etc)
@@ -227,7 +226,7 @@ public:
      * @param endpar   if this is true the "!var" must be followed by ")"
      * @return true if match
      */
-    bool notvar(const Token *tok, unsigned int varid, bool endpar = false) const;
+    static bool notvar(const Token *tok, unsigned int varid, bool endpar = false);
 
     /**
      * Inspect a function call. the call_func and getcode are recursive

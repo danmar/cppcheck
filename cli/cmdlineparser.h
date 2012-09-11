@@ -98,12 +98,12 @@ protected:
     /**
      * Print help text to the console.
      */
-    void PrintHelp() const;
+    static void PrintHelp();
 
     /**
      * Print message (to console?).
      */
-    void PrintMessage(const std::string &message) const;
+    static void PrintMessage(const std::string &message);
 
 private:
     std::vector<std::string> _pathnames;

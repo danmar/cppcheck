@@ -95,7 +95,7 @@ CmdLineParser::CmdLineParser(Settings *settings)
 {
 }
 
-void CmdLineParser::PrintMessage(const std::string &message) const
+void CmdLineParser::PrintMessage(const std::string &message)
 {
     std::cout << message << std::endl;
 }
@@ -705,7 +705,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     return true;
 }
 
-void CmdLineParser::PrintHelp() const
+void CmdLineParser::PrintHelp()
 {
     std::cout <<   "Cppcheck - A tool for static C/C++ code analysis\n"
               "\n"
