@@ -1156,8 +1156,7 @@ void CheckStl::string_c_str()
                            Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;")) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return %var% (") && Token::simpleMatch(tok->linkAt(2), ") . c_str ( ) ;")) {
-                    const Token* fTok = _tokenizer->getFunctionTokenByName(tok->strAt(1).c_str());
-                    const Function* func = symbolDatabase->findFunctionByToken(fTok);
+                    const Function* func =_tokenizer->getSymbolDatabase()->findFunctionByName(tok->strAt(1), tok->scope());;
                     if (func && Token::simpleMatch(func->tokenDef->tokAt(-3), "std :: string"))
                         string_c_strError(tok);
                 } else if (Token::simpleMatch(tok, "return (") &&

@@ -119,7 +119,7 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok, uns
 }
 //---------------------------------------------------------------------------
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, unsigned int varid, std::list<const Token *> *callstack) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, unsigned int varid, std::list<const Function*> *callstack) const
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -208,20 +208,20 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     }
 
     // User function
-    const Token *ftok = tokenizer->getFunctionTokenByName(tok2->str().c_str());
-    if (ftok == NULL)
+    const Function* func = tokenizer->getSymbolDatabase()->findFunctionByName(tok2->str(), tok2->scope());
+    if (func == NULL)
         return No;
 
     // Prevent recursion
-    if (callstack && std::find(callstack->begin(), callstack->end(), ftok) != callstack->end())
+    if (callstack && std::find(callstack->begin(), callstack->end(), func) != callstack->end())
         return No;
 
-    std::list<const Token *> cs;
+    std::list<const Function*> cs;
     if (!callstack)
         callstack = &cs;
 
-    callstack->push_back(ftok);
-    return functionReturnType(ftok, callstack);
+    callstack->push_back(func);
+    return functionReturnType(func, callstack);
 }
 
 
@@ -408,35 +408,15 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
     reportErr(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
 }
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok, std::list<const Token *> *callstack) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* func, std::list<const Function*> *callstack) const
 {
-    if (!tok)
+    if (!func || !func->hasBody)
         return No;
-
-    // Locate start of function
-    while (tok) {
-        if (tok->str() == "{" || tok->str() == "}")
-            return No;
-
-        if (tok->str() == "(") {
-            tok = tok->link();
-            break;
-        }
-
-        tok = tok->next();
-    }
-
-    // Is this the start of a function?
-    if (!Token::Match(tok, ") const| {"))
-        return No;
-
-    while (tok->str() != "{")
-        tok = tok->next();
 
     // Get return pointer..
     unsigned int varid = 0;
     unsigned int indentlevel = 0;
-    for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+    for (const Token *tok2 = func->functionScope->classStart; tok2 != func->functionScope->classEnd; tok2 = tok2->next()) {
         if (tok2->str() == "{")
             ++indentlevel;
         else if (tok2->str() == "}") {
@@ -471,7 +451,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok,
 
     // Check if return pointer is allocated..
     AllocType allocType = No;
-    while (NULL != (tok = tok->next())) {
+    for (const Token* tok = func->functionScope->classStart; tok != func->functionScope->classEnd; tok = tok->next()) {
         if (Token::Match(tok, "%varid% =", varid)) {
             allocType = getAllocationType(tok->tokAt(2), varid, callstack);
         }
@@ -656,20 +636,18 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
     // lock/unlock..
     if (varid == 0) {
-        const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
-        while (ftok && (ftok->str() != "{"))
-            ftok = ftok->next();
-        if (!ftok)
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(funcname, tok->scope());;
+        if (!func || !func->hasBody)
             return 0;
 
-        Token *func = getcode(ftok->next(), callstack, 0, alloctype, dealloctype, false, 1);
-        simplifycode(func);
+        Token *ftok = getcode(func->functionScope->classStart->next(), callstack, 0, alloctype, dealloctype, false, 1);
+        simplifycode(ftok);
         const char *ret = 0;
-        if (Token::simpleMatch(func, "; alloc ; }"))
+        if (Token::simpleMatch(ftok, "; alloc ; }"))
             ret = "alloc";
-        else if (Token::simpleMatch(func, "; dealloc ; }"))
+        else if (Token::simpleMatch(ftok, "; dealloc ; }"))
             ret = "dealloc";
-        TokenList::deleteTokens(func);
+        TokenList::deleteTokens(ftok);
         return ret;
     }
 
@@ -702,16 +680,12 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (dot)
                 return "use";
 
-            const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
-            if (!ftok)
+            const Function* function = _tokenizer->getSymbolDatabase()->findFunctionByName(funcname, tok->scope());;
+            if (!function)
                 return "use";
 
             // how many parameters does the function want?
-            if (numpar != countParameters(ftok))
-                return "recursive";
-
-            const Function* function = _tokenizer->getSymbolDatabase()->findFunctionByToken(ftok);
-            if (!function)
+            if (numpar != function->argCount()) // TODO: Handle default parameters
                 return "recursive";
 
             const Variable* param = function->getArgumentVar(par-1);
@@ -738,10 +712,9 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             return ret;
         }
         if (varid > 0 && Token::Match(tok, "& %varid% [,()]", varid)) {
-            const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
-            if (ftok == 0)
+            const Function *func = _tokenizer->getSymbolDatabase()->findFunctionByName(funcname, tok->scope());;
+            if (func == 0)
                 continue;
-            const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByToken(ftok);
             AllocType a;
             const char *ret = functionArgAlloc(func, par, a);
 

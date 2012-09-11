@@ -713,7 +713,7 @@ void CheckOther::checkRedundantAssignment()
                         }
                     }
                 } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
-                    const Function* func = symbolDatabase->findFunctionByToken(_tokenizer->getFunctionTokenByName(tok->str().c_str()));
+                    const Function* func = symbolDatabase->findFunctionByName(tok->str(), tok->scope());;
                     if (!func || !func->hasBody) {
                         varAssignments.clear();
                         memAssignments.clear();
@@ -3306,8 +3306,8 @@ void CheckOther::checkRedundantCopy()
         const Token *match_end = (tok->next()->link()!=NULL)?tok->next()->link()->next():NULL;
         if (match_end==NULL || !Token::Match(match_end,expect_end_token)) //avoid usage like "const A a = getA()+3"
             break;
-        const Token *fToken = _tokenizer->getFunctionTokenByName(tok->str().c_str());
-        if (fToken &&fToken->previous() && fToken->previous()->str() == "&") {
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(tok->str(), tok->scope());;
+        if (func && func->tokenDef->previous() && func->tokenDef->previous()->str() == "&") {
             redundantCopyError(var_tok,var_tok->str());
         }
     }

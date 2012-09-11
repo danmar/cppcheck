@@ -572,6 +572,8 @@ public:
 
     const Function *findFunctionByToken(const Token *tok) const;
 
+    const Function* findFunctionByName(const std::string& str, const Scope* startScope) const;
+
     const Scope* findScopeByName(const std::string& name) const;
 
     bool isClassOrStruct(const std::string &type) const {

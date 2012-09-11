@@ -21,7 +21,7 @@
 #include "tokenize.h"
 #include "checkmemoryleak.h"
 #include "testsuite.h"
-
+#include "symboldatabase.h"
 #include <sstream>
 
 extern std::ostringstream errout;
@@ -49,7 +49,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        return ((const CheckMemoryLeak *)0)->functionReturnType(tokenizer.tokens());
+        return ((const CheckMemoryLeak *)0)->functionReturnType(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
 
     void testFunctionReturnType() {
@@ -2421,7 +2421,7 @@ private:
 
         check("void foo(char **str)\n"
               "{\n"
-              "   char *a = malloc(20)\n"
+              "   char *a = malloc(20);\n"
               "   *str = a;\n"
               "}\n"
               "\n"

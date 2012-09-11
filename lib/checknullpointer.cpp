@@ -380,8 +380,7 @@ bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsi
     int argumentNumber = 0;
     for (const Token *arg = functiontoken->tokAt(2); arg; arg = arg->nextArgument()) {
         if (Token::Match(arg, "%varid% [,)]", varid)) {
-            const Token *ftok = _tokenizer->getFunctionTokenByName(functiontoken->str().c_str());
-            const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByToken(ftok);
+            const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(functiontoken->str(), functiontoken->scope());
             if (!func) { // Unknown function
                 unknown = true;
                 return true; // assume that the function might assign the pointer

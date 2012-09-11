@@ -596,44 +596,20 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     // Calling a user function?
     // only 1-dimensional arrays can be checked currently
     else if (arrayInfo.num().size() == 1) {
-        const Token *ftok = _tokenizer->getFunctionTokenByName(tok.str().c_str());
-        if (Token::Match(ftok, "%var% (") && Token::Match(ftok->next()->link(), ") const| {")) {
-            // Get varid for the corresponding parameter..
-            const Token *ftok2 = ftok->tokAt(2);
-            for (unsigned int i = 1; i < par; i++)
-                ftok2 = ftok2->nextArgument();
-            unsigned int parameterVarId = 0;
-            for (; ftok2; ftok2 = ftok2->next()) {
-                if (ftok2->str() == "(")
-                    ftok2 = ftok2->link();
-                else if (ftok2->str() == "," || ftok2->str() == ")")
-                    break;
-                else if (Token::Match(ftok2, "%var% ,|)|[")) {
-                    // check type..
-                    const Token *type = ftok2->previous();
-                    while (Token::Match(type, "*|const"))
-                        type = type->previous();
-                    if (type && _tokenizer->sizeOfType(type) == arrayInfo.element_size())
-                        parameterVarId = ftok2->varId();
-                }
-            }
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(tok.str(), tok.scope());;
+        if (func && func->hasBody) {
+            // Get corresponding parameter..
+            const Variable* parameter = func->getArgumentVar(par-1);
 
-            // No parameterVarId => bail out
-            if (parameterVarId == 0)
+            // Ensure that it has a compatible size..
+            if (!parameter || _tokenizer->sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
                 return;
-
-            // Step into the function scope..
-            ftok = ftok->next()->link();
-            if (!Token::Match(ftok, ") const| {"))
-                return;
-            ftok = Token::findsimplematch(ftok, "{");
-            ftok = ftok->next();
 
             // Check the parameter usage in the function scope..
-            for (; ftok; ftok = ftok->next()) {
+            for (const Token* ftok = func->functionScope->classStart; ftok != func->functionScope->classEnd; ftok = ftok->next()) {
                 if (Token::Match(ftok, "if|for|while (")) {
                     // bailout if there is buffer usage..
-                    if (bailoutIfSwitch(ftok, parameterVarId)) {
+                    if (bailoutIfSwitch(ftok, parameter->varId())) {
                         break;
                     }
 
@@ -652,7 +628,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                 if (ftok->str() == "}")
                     break;
 
-                if (ftok->varId() == parameterVarId) {
+                if (ftok->varId() == parameter->varId()) {
                     if (Token::Match(ftok->previous(), "-- %var%") ||
                         Token::Match(ftok, "%var% --"))
                         break;
@@ -674,7 +650,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                 // Calling function..
                 if (Token::Match(ftok, "%var% (")) {
                     ArrayInfo ai(arrayInfo);
-                    ai.varid(parameterVarId);
+                    ai.varid(parameter->varId());
                     checkFunctionCall(ftok, ai, callstack);
                 }
             }

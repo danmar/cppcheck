@@ -501,7 +501,7 @@ private:
         GET_SYMBOL_DB("void func() { }\n")
 
         // 2 scopes: Global and Function
-        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->next());
@@ -509,7 +509,7 @@ private:
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf == 0);
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->next());
+            const Function *function = db->findFunctionByName("func", &db->scopeList.front());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->next());
@@ -522,7 +522,7 @@ private:
         GET_SYMBOL_DB("class Fred { void func() { } };\n")
 
         // 3 scopes: Global, Class, and Function
-        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
@@ -530,7 +530,7 @@ private:
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(4));
+            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
@@ -543,14 +543,14 @@ private:
         GET_SYMBOL_DB("class Fred { void func(); };\n")
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
-        ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
 
             ASSERT(scope == NULL);
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(4));
+            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
@@ -562,7 +562,7 @@ private:
         GET_SYMBOL_DB("class Fred { void func(); }; Fred::func() { }\n")
 
         // 3 scopes: Global, Class, and Function
-        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(12));
@@ -570,7 +570,7 @@ private:
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(12));
+            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(12));
@@ -583,14 +583,14 @@ private:
         GET_SYMBOL_DB("void (*func(int f))(char) { }\n")
 
         // 2 scopes: Global and Function
-        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(3));
 
             ASSERT(scope && scope->className == "func");
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(3));
+            const Function *function = db->findFunctionByName("func", &db->scopeList.front());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(3));
@@ -602,14 +602,14 @@ private:
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char) { } };\n")
 
         // 3 scopes: Global, Class, and Function
-        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
 
             ASSERT(scope && scope->className == "func");
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(6));
+            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
@@ -621,14 +621,14 @@ private:
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char); };\n")
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
-        ASSERT(db && db->scopeList.size() == 2 && !tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
 
             ASSERT(scope == NULL);
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(6));
+            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
@@ -640,14 +640,14 @@ private:
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char); }; void (*Fred::func(int f))(char) { }\n")
 
         // 3 scopes: Global, Class, and Function
-        ASSERT(db && db->scopeList.size() == 3 && tokenizer.getFunctionTokenByName("func"));
+        ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
             const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(23));
 
             ASSERT(scope && scope->className == "func");
 
-            const Function *function = db->findFunctionByToken(tokenizer.tokens()->tokAt(23));
+            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
@@ -659,7 +659,7 @@ private:
         GET_SYMBOL_DB("std::map<int, string> foo() {}")
 
         // 2 scopes: Global and Function
-        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("foo"));
+        ASSERT(db && db->scopeList.size() == 2 && db->findFunctionByName("foo", &db->scopeList.back()));
 
         if (db) {
             const Scope *scope = &db->scopeList.front();
@@ -677,7 +677,7 @@ private:
         GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}")
 
         // 2 scopes: Global and Function
-        ASSERT(db && db->scopeList.size() == 2 && tokenizer.getFunctionTokenByName("foo"));
+        ASSERT(db && db->scopeList.size() == 2 && db->findFunctionByName("foo", &db->scopeList.back()));
 
         if (db) {
             const Scope *scope = &db->scopeList.front();
@@ -725,8 +725,8 @@ private:
         // 3 scopes: Global, function, if
         ASSERT_EQUALS(3, db->scopeList.size());
 
-        ASSERT(tokenizer.getFunctionTokenByName("func") != NULL);
-        ASSERT(tokenizer.getFunctionTokenByName("if") == NULL);
+        ASSERT(db->findFunctionByName("func", &db->scopeList.back()) != NULL);
+        ASSERT(db->findFunctionByName("if", &db->scopeList.back()) == NULL);
     }
 
     void parseFunctionDeclarationCorrect() {

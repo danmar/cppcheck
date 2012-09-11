@@ -480,7 +480,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         continue;
                     }
                 }
-            } else if (scope->type == Scope::eFunction || scope->isLocal()) {
+            } else if (scope->isExecutable()) {
                 if (Token::simpleMatch(tok, "if (") &&
                     Token::simpleMatch(tok->next()->link(), ") {")) {
                     const Token *tok1 = tok->next()->link()->next();
@@ -2120,6 +2120,25 @@ const Function *SymbolDatabase::findFunctionByToken(const Token *tok) const
             if (func->token == tok)
                 return &(*func);
         }
+    }
+    return 0;
+}
+
+const Function* SymbolDatabase::findFunctionByName(const std::string& str, const Scope* startScope) const
+{
+    const Scope* currScope = startScope;
+    while (currScope && currScope->isExecutable()) {
+        if (currScope->functionOf)
+            currScope = currScope->functionOf;
+        else
+            currScope = currScope->nestedIn;
+    }
+    while (currScope) {
+        for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
+            if (i->tokenDef->str() == str)
+                return &*i;
+        }
+        currScope = currScope->nestedIn;
     }
     return 0;
 }
