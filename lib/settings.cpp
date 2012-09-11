@@ -37,6 +37,7 @@ Settings::Settings()
       _exitCode(0),
       _showtime(0),
       _maxConfigs(12),
+      enforcedLang(None),
       reportProgress(false),
       checkConfiguration(false)
 {

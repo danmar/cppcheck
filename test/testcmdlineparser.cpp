@@ -375,14 +375,14 @@ private:
             Settings settings;
             CmdLineParser parser(&settings);
             ASSERT(parser.ParseFromArgs(2, argv));
-            ASSERT_EQUALS("", settings.enforcedLang);
+            ASSERT_EQUALS(Settings::None, settings.enforcedLang);
         }
         {
             const char *argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
             Settings settings;
             CmdLineParser parser(&settings);
             ASSERT(parser.ParseFromArgs(4, argv));
-            ASSERT_EQUALS("c++", settings.enforcedLang);
+            ASSERT_EQUALS(Settings::CPP, settings.enforcedLang);
         }
         {
             const char *argv[] = {"cppcheck", "-x"};
@@ -401,28 +401,28 @@ private:
             Settings settings;
             CmdLineParser parser(&settings);
             ASSERT(parser.ParseFromArgs(3, argv));
-            ASSERT_EQUALS("c++", settings.enforcedLang);
+            ASSERT_EQUALS(Settings::CPP, settings.enforcedLang);
         }
         {
             const char *argv[] = {"cppcheck", "--language=c", "file.cpp"};
             Settings settings;
             CmdLineParser parser(&settings);
             ASSERT(parser.ParseFromArgs(3, argv));
-            ASSERT_EQUALS("c", settings.enforcedLang);
+            ASSERT_EQUALS(Settings::C, settings.enforcedLang);
         }
         {
             const char *argv[] = {"cppcheck", "--language=c#", "file.cpp"};
             Settings settings;
             CmdLineParser parser(&settings);
             ASSERT(parser.ParseFromArgs(3, argv));
-            ASSERT_EQUALS("c#", settings.enforcedLang);
+            ASSERT_EQUALS(Settings::CSharp, settings.enforcedLang);
         }
         {
             const char *argv[] = {"cppcheck", "--language=java", "file.cpp"};
             Settings settings;
             CmdLineParser parser(&settings);
             ASSERT(parser.ParseFromArgs(3, argv));
-            ASSERT_EQUALS("java", settings.enforcedLang);
+            ASSERT_EQUALS(Settings::Java, settings.enforcedLang);
         }
         {
             const char *argv[] = {"cppcheck", "--language=unknwonLanguage", "file.cpp"};

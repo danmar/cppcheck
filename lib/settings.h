@@ -149,8 +149,12 @@ public:
      */
     std::string addEnabled(const std::string &str);
 
+    enum Language {
+        None, C, CPP, CSharp, Java
+    };
+
     /** @brief Name of the language that is enforced. Empty per default. */
-    std::string enforcedLang;
+    Language enforcedLang;
 
     /** @brief suppress message (--suppressions) */
     Suppressions nomsg;

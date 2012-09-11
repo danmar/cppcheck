@@ -126,21 +126,29 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->inconclusive = true;
 
         // Enforce language (--language=, -x)
-        else if (strncmp(argv[i], "--language=", 11) == 0) {
-            _settings->enforcedLang = argv[i] + 11;
-            if (_settings->enforcedLang != "c" && _settings->enforcedLang != "c++" && _settings->enforcedLang != "java" && _settings->enforcedLang != "c#") { // Valid values
-                PrintMessage("cppcheck: Unknown language '" + _settings->enforcedLang + "' enforced.");
-                return false;
+        else if (strncmp(argv[i], "--language=", 11) == 0 || strcmp(argv[i], "-x") == 0) {
+            std::string str;
+            if (argv[i][2]) {
+                str = argv[i]+11;
+            } else {
+                i++;
+                if (i >= argc || argv[i][0] == '-') {
+                    PrintMessage("cppcheck: No language given to '-x' option.");
+                    return false;
+                }
+                str = argv[i];
             }
-        } else if (strcmp(argv[i], "-x") == 0) {
-            i++;
-            if (i >= argc || argv[i][0] == '-') {
-                PrintMessage("cppcheck: No language given to '-x' option.");
-                return false;
-            }
-            _settings->enforcedLang = argv[i];
-            if (_settings->enforcedLang != "c" && _settings->enforcedLang != "c++" && _settings->enforcedLang != "java" && _settings->enforcedLang != "c#") { // Valid values
-                PrintMessage("cppcheck: Unknown language '" + _settings->enforcedLang + "' enforced.");
+
+            if (str == "c")
+                _settings->enforcedLang = Settings::C;
+            else if (str == "c++")
+                _settings->enforcedLang = Settings::CPP;
+            else if (str == "c#")
+                _settings->enforcedLang = Settings::CSharp;
+            else if (str == "java")
+                _settings->enforcedLang = Settings::Java;
+            else {
+                PrintMessage("cppcheck: Unknown language '" + str + "' enforced.");
                 return false;
             }
         }
