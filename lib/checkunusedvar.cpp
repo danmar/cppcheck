@@ -265,7 +265,8 @@ void Variables::write(unsigned int varid, const Token* tok)
 
     if (usage) {
         usage->_write = true;
-        usage->_read = false;
+        if (!usage->_var->isStatic())
+            usage->_read = false;
         usage->_lastAccess = tok;
     }
 }

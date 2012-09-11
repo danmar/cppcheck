@@ -2901,6 +2901,14 @@ private:
                               "    return x ? a : c;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'b' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    static int i = 0;\n"
+                              "    if(i < foo())\n"
+                              "        i += 5;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarextern() {
