@@ -180,15 +180,15 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
 
     while (tok) {
         // skip const
-        if (Token::Match(tok, "const %any%"))
+        if (tok->str() == "const")
             tok = tok->next();
 
         // skip struct/union
-        if (Token::Match(tok, "struct|union %any%"))
+        if (Token::Match(tok, "struct|union"))
             tok = tok->next();
 
         // skip std::
-        if (tok->str() == "::")
+        if (tok && tok->str() == "::")
             tok = tok->next();
         while (Token::Match(tok, "%var% ::"))
             tok = tok->tokAt(2);
@@ -311,9 +311,7 @@ std::set<std::string> TemplateSimplifier::simplifyTemplatesExpandSpecialized(Tok
 
     // Locate specialized templates..
     for (Token *tok = tokens; tok; tok = tok->next()) {
-        if (tok->str() != "template")
-            continue;
-        if (!Token::simpleMatch(tok->next(), "< >"))
+        if (!Token::simpleMatch(tok, "template < >"))
             continue;
 
         // what kind of template is this?
@@ -597,29 +595,9 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
             continue;
 
         int indentlevel = 0;
-        std::stack<Token *> braces;     // holds "{" tokens
-        std::stack<Token *> brackets;   // holds "(" tokens
-        std::stack<Token *> brackets2;  // holds "[" tokens
+        std::stack<Token *> brackets; // holds "(", "[" and "{" tokens
 
         for (; tok3; tok3 = tok3->next()) {
-            if (tok3->str() == "{")
-                ++indentlevel;
-
-            else if (tok3->str() == "}") {
-                if (indentlevel <= 1 && brackets.empty() && brackets2.empty()) {
-                    // there is a bug if indentlevel is 0
-                    // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
-                    // if indentlevel ever becomes 0, cppcheck will write:
-                    // ### Error: Invalid number of character {
-                    tokenlist.addtoken("}", tok3->linenr(), tok3->fileIndex());
-                    Token::createMutualLinks(braces.top(), tokenlist.back());
-                    braces.pop();
-                    break;
-                }
-                --indentlevel;
-            }
-
-
             if (tok3->isName()) {
                 // search for this token in the type vector
                 unsigned int itype = 0;
@@ -652,29 +630,36 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
             }
 
             // link() newly tokens manually
-            if (tok3->str() == "{") {
-                braces.push(tokenlist.back());
-            } else if (tok3->str() == "}") {
-                assert(braces.empty() == false);
-                Token::createMutualLinks(braces.top(), tokenlist.back());
-                braces.pop();
+            else if (tok3->str() == "{") {
+                brackets.push(tokenlist.back());
+                indentlevel++;
             } else if (tok3->str() == "(") {
                 brackets.push(tokenlist.back());
             } else if (tok3->str() == "[") {
-                brackets2.push(tokenlist.back());
+                brackets.push(tokenlist.back());
+            } else if (tok3->str() == "}") {
+                assert(brackets.empty() == false && brackets.top()->str() == "{");
+                Token::createMutualLinks(brackets.top(), tokenlist.back());
+                brackets.pop();
+                if (indentlevel <= 1 && brackets.empty()) {
+                    // there is a bug if indentlevel is 0
+                    // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
+                    // if indentlevel ever becomes 0, cppcheck will write:
+                    // ### Error: Invalid number of character {
+                    break;
+                }
+                --indentlevel;
             } else if (tok3->str() == ")") {
-                assert(brackets.empty() == false);
+                assert(brackets.empty() == false && brackets.top()->str() == "(");
                 Token::createMutualLinks(brackets.top(), tokenlist.back());
                 brackets.pop();
             } else if (tok3->str() == "]") {
-                assert(brackets2.empty() == false);
-                Token::createMutualLinks(brackets2.top(), tokenlist.back());
-                brackets2.pop();
+                assert(brackets.empty() == false && brackets.top()->str() == "[");
+                Token::createMutualLinks(brackets.top(), tokenlist.back());
+                brackets.pop();
             }
-
         }
 
-        assert(braces.empty());
         assert(brackets.empty());
     }
 }
