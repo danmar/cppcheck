@@ -68,26 +68,26 @@ public:
      * Expand specialized templates : "template<>.."
      * @return names of expanded templates
      */
-    static std::set<std::string> simplifyTemplatesExpandSpecialized(Token *tokens);
+    static std::set<std::string> expandSpecialized(Token *tokens);
 
     /**
      * Get template declarations
      * @return list of template declarations
      */
-    static std::list<Token *> simplifyTemplatesGetTemplateDeclarations(Token *tokens, bool &codeWithTemplates);
+    static std::list<Token *> getTemplateDeclarations(Token *tokens, bool &codeWithTemplates);
 
     /**
      * Get template instantiations
      * @return list of template instantiations
      */
-    static std::list<Token *> simplifyTemplatesGetTemplateInstantiations(Token *tokens);
+    static std::list<Token *> getTemplateInstantiations(Token *tokens);
 
     /**
      * simplify template instantiations (use default argument values)
      * @param templates list of template declarations
      * @param templateInstantiations list of template instantiations
      */
-    static void simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
+    static void useDefaultArgumentValues(const std::list<Token *> &templates,
             const std::list<Token *> &templateInstantiations);
 
     /**
@@ -98,7 +98,7 @@ public:
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -106,9 +106,9 @@ public:
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    static int simplifyTemplatesGetTemplateNamePosition(const Token *tok);
+    static int getTemplateNamePosition(const Token *tok);
 
-    static void simplifyTemplatesExpandTemplate(
+    static void expandTemplate(
         TokenList& tokenlist,
         const Token *tok,
         const std::string &name,

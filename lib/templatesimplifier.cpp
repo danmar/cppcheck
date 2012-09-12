@@ -305,7 +305,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
     return false;
 }
 
-std::set<std::string> TemplateSimplifier::simplifyTemplatesExpandSpecialized(Token *tokens)
+std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
 {
     std::set<std::string> expandedtemplates;
 
@@ -367,7 +367,7 @@ std::set<std::string> TemplateSimplifier::simplifyTemplatesExpandSpecialized(Tok
     return expandedtemplates;
 }
 
-std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(Token *tokens, bool &codeWithTemplates)
+std::list<Token *> TemplateSimplifier::getTemplateDeclarations(Token *tokens, bool &codeWithTemplates)
 {
     std::list<Token *> templates;
     for (Token *tok = tokens; tok; tok = tok->next()) {
@@ -395,7 +395,7 @@ std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(
 }
 
 
-std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(Token *tokens)
+std::list<Token *> TemplateSimplifier::getTemplateInstantiations(Token *tokens)
 {
     std::list<Token *> used;
 
@@ -431,7 +431,7 @@ std::list<Token *> TemplateSimplifier::simplifyTemplatesGetTemplateInstantiation
 }
 
 
-void TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(const std::list<Token *> &templates,
+void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &templates,
         const std::list<Token *> &templateInstantiations)
 {
     for (std::list<Token *>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1) {
@@ -526,7 +526,7 @@ void TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(const std::li
     }
 }
 
-bool TemplateSimplifier::simplifyTemplatesInstantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[])
+bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[])
 {
     if (!Token::simpleMatch(instance, (name + " <").c_str()))
         return false;
@@ -544,7 +544,7 @@ bool TemplateSimplifier::simplifyTemplatesInstantiateMatch(const Token *instance
     return true;
 }
 
-int TemplateSimplifier::simplifyTemplatesGetTemplateNamePosition(const Token *tok)
+int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
     // get the position of the template name
     int namepos = 0;
@@ -565,7 +565,7 @@ int TemplateSimplifier::simplifyTemplatesGetTemplateNamePosition(const Token *to
 }
 
 
-void TemplateSimplifier::simplifyTemplatesExpandTemplate(
+void TemplateSimplifier::expandTemplate(
     TokenList& tokenlist,
     const Token *tok,
     const std::string &name,
@@ -584,7 +584,7 @@ void TemplateSimplifier::simplifyTemplatesExpandTemplate(
         }
 
         // member function implemented outside class definition
-        else if (TemplateSimplifier::simplifyTemplatesInstantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
+        else if (TemplateSimplifier::instantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
             tokenlist.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
             while (tok3->str() != "::")
                 tok3 = tok3->next();
@@ -969,7 +969,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
         return false;
 
     // get the position of the template name
-    int namepos = TemplateSimplifier::simplifyTemplatesGetTemplateNamePosition(tok);
+    int namepos = TemplateSimplifier::getTemplateNamePosition(tok);
     if (namepos == -1) {
         // debug message that we bail out..
         if (_settings->debugwarnings) {
@@ -1006,7 +1006,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
             continue;
 
         if (Token::Match(tok2->previous(), "[;{}=]") &&
-            !TemplateSimplifier::simplifyTemplatesInstantiateMatch(*iter2, name, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %var%"))
+            !TemplateSimplifier::instantiateMatch(*iter2, name, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %var%"))
             continue;
 
         // New type..
@@ -1061,7 +1061,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
 
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
-            TemplateSimplifier::simplifyTemplatesExpandTemplate(tokenlist, tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantion,templateInstantiations);
+            TemplateSimplifier::expandTemplate(tokenlist, tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantion,templateInstantiations);
             instantiated = true;
         }
 
@@ -1124,11 +1124,11 @@ void TemplateSimplifier::simplifyTemplates(
 )
 {
 
-    std::set<std::string> expandedtemplates(TemplateSimplifier::simplifyTemplatesExpandSpecialized(tokenlist.front()));
+    std::set<std::string> expandedtemplates(TemplateSimplifier::expandSpecialized(tokenlist.front()));
 
     // Locate templates and set member variable _codeWithTemplates if the code has templates.
     // this info is used by checks
-    std::list<Token *> templates(TemplateSimplifier::simplifyTemplatesGetTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
+    std::list<Token *> templates(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
 
     if (templates.empty())
         return;
@@ -1148,14 +1148,14 @@ void TemplateSimplifier::simplifyTemplates(
     }
 
     // Locate possible instantiations of templates..
-    std::list<Token *> templateInstantiations(TemplateSimplifier::simplifyTemplatesGetTemplateInstantiations(tokenlist.front()));
+    std::list<Token *> templateInstantiations(TemplateSimplifier::getTemplateInstantiations(tokenlist.front()));
 
     // No template instantiations? Then return.
     if (templateInstantiations.empty())
         return;
 
     // Template arguments with default values
-    TemplateSimplifier::simplifyTemplatesUseDefaultArgumentValues(templates, templateInstantiations);
+    TemplateSimplifier::useDefaultArgumentValues(templates, templateInstantiations);
 
     // expand templates
     //bool done = false;
