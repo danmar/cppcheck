@@ -67,6 +67,7 @@ private:
         // Just read the code into a string. Perform simple cleanup of the code
         TEST_CASE(readCode1);
         TEST_CASE(readCode2);
+        TEST_CASE(readCode3);
 
         // reading utf-16 file
         TEST_CASE(utf16);
@@ -298,6 +299,15 @@ private:
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n", codestr);
+    }
+
+    void readCode3() {
+        const char code[] = "func(#errorname)";
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        std::string codestr(preprocessor.read(istr,"test.c"));
+        ASSERT_EQUALS("func(#errorname)", codestr);
     }
 
 
