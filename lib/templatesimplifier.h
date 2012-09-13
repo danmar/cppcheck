@@ -88,7 +88,7 @@ public:
      * @param templateInstantiations list of template instantiations
      */
     static void useDefaultArgumentValues(const std::list<Token *> &templates,
-            const std::list<Token *> &templateInstantiations);
+                                         const std::list<Token *> &templateInstantiations);
 
     /**
      * Match template declaration/instantiation
