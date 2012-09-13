@@ -8025,47 +8025,44 @@ std::string Tokenizer::simplifyString(const std::string &source)
 {
     std::string str = source;
 
-    // true when previous char is a \ .
-    bool escaped = false;
-    for (std::string::size_type i = 0; i + 2 < str.size(); ++i) {
-        if (!escaped) {
-            if (str[i] == '\\')
-                escaped = true;
-
+    for (std::string::size_type i = 0; i + 1U < str.size(); ++i) {
+        if (str[i] != '\\')
             continue;
-        }
 
-        if (str[i] == 'x') {
-            // Hex value
-            if (str[i+1] == '0' && str[i+2] == '0')
-                str.replace(i, 3, "0");
-            else if (i > 0) {
-                // We will replace all other character as 'a'
-                // If that causes problems in the future, this can
-                // be improved. But for now, this should be OK.
-                unsigned int n = 1;
-                while (n < 2 && std::isxdigit(str[i+1+n]))
-                    ++n;
-                --i;
-                n += 2;
-                str.replace(i, n, "a");
+        int c = 'a';   // char
+        unsigned int sz = 0;    // size of stringdata
+        if (str[i+1] == 'x') {
+            sz = 2;
+            while (std::isxdigit(str[i+sz]) && sz < 4)
+                sz++;
+            if (sz > 2) {
+                std::istringstream istr(str.substr(i+2, sz-2));
+                istr >> std::hex >> c;
             }
-        } else if (MathLib::isOctalDigit(str[i])) {
-            if (MathLib::isOctalDigit(str[i+1]) &&
-                MathLib::isOctalDigit(str[i+2])) {
-                if (str[i+1] == '0' && str[i+2] == '0')
-                    str.replace(i, 3, "0");
-                else {
-                    // We will replace all other character as 'a'
-                    // If that causes problems in the future, this can
-                    // be improved. But for now, this should be OK.
-                    --i;
-                    str.replace(i, 4, "a");
-                }
+        } else if (MathLib::isOctalDigit(str[i+1])) {
+            sz = 2;
+            while (MathLib::isOctalDigit(str[i+sz]) && sz < 4)
+                sz++;
+            std::istringstream istr(str.substr(i+1, sz-1));
+            istr >> std::oct >> c;
+            if (sz == 2) {
+                if (c == 0) {
+                    str = str.substr(0,i) + "\"";
+                    continue;
+                } else
+                    str[i+1] = (char)c;
             }
         }
 
-        escaped = false;
+        if (sz <= 2)
+            i++;
+        else if (i+sz < str.size()) {
+            if (c == 0)
+                str = str.substr(0,i) + "\"";
+            else
+                str.replace(i, sz, std::string(1U, (char)c));
+        } else
+            str.replace(i, str.size() - i - 1U, "a");
     }
 
     return str;

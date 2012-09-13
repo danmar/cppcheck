@@ -5630,9 +5630,27 @@ private:
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
-        ASSERT_EQUALS("\"a\"", tokenizer.simplifyString("\"\\x3\""));
-        ASSERT_EQUALS("\"a\"", tokenizer.simplifyString("\"\\x33\""));
-        ASSERT_EQUALS("\"a3\"", tokenizer.simplifyString("\"\\x333\""));
+        ASSERT_EQUALS("\"\n\"", tokenizer.simplifyString("\"\\xa\""));
+        ASSERT_EQUALS("\"3\"", tokenizer.simplifyString("\"\\x33\""));
+        ASSERT_EQUALS("\"33\"", tokenizer.simplifyString("\"\\x333\""));
+
+        ASSERT_EQUALS("\"a\"", tokenizer.simplifyString("\"\\x61\""));
+        ASSERT_EQUALS("\"\n1\"", tokenizer.simplifyString("\"\\0121\""));
+
+        ASSERT_EQUALS("\"3\"", tokenizer.simplifyString("\"\\x33\""));
+        ASSERT_EQUALS("\" 0\"", tokenizer.simplifyString("\"\\0400\""));
+
+        ASSERT_EQUALS("\"\\nhello\"", tokenizer.simplifyString("\"\\nhello\""));
+
+        ASSERT_EQUALS("\"aaa\"", tokenizer.simplifyString("\"\\x61\\x61\\x61\""));
+        ASSERT_EQUALS("\"\n1\n1\n1\"", tokenizer.simplifyString("\"\\0121\\0121\\0121\""));
+
+        ASSERT_EQUALS("\"\\\\x61\"", tokenizer.simplifyString("\"\\\\x61\""));
+        ASSERT_EQUALS("\"b\"", tokenizer.simplifyString("\"\\x62\""));
+        ASSERT_EQUALS("\" 7\"", tokenizer.simplifyString("\"\\0407\""));
+
+        // terminate a string at null character.
+        ASSERT_EQUALS("\"a\"", tokenizer.simplifyString("\"a\\0\""));
     }
 
     void simplifyConst() {

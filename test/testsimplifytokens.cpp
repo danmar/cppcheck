@@ -183,8 +183,6 @@ private:
 
         TEST_CASE(simplifyAtol)
 
-        TEST_CASE(simplifyHexInString)
-
         TEST_CASE(simplifyTypedef1)
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
@@ -3602,28 +3600,6 @@ private:
         ASSERT_EQUALS("a = 0 ;", tok("a = std::atol(\"0\");"));
         ASSERT_EQUALS("a = 10 ;", tok("a = atol(\"0xa\");"));
     }
-
-    void simplifyHexInString() {
-        ASSERT_EQUALS("\"a\"", tok("\"\\x61\""));
-        ASSERT_EQUALS("\"a\"", tok("\"\\141\""));
-
-        ASSERT_EQUALS("\"\\0\"", tok("\"\\x00\""));
-        ASSERT_EQUALS("\"\\0\"", tok("\"\\000\""));
-
-        ASSERT_EQUALS("\"\\nhello\"", tok("\"\\nhello\""));
-
-        ASSERT_EQUALS("\"aaa\"", tok("\"\\x61\\x61\\x61\""));
-        ASSERT_EQUALS("\"aaa\"", tok("\"\\141\\141\\141\""));
-
-        ASSERT_EQUALS("\"\\\\x61\"", tok("\"\\\\x61\""));
-
-        // These tests can fail, if other characters are handled
-        // more correctly. But for now all non null characters should
-        // become 'a'
-        ASSERT_EQUALS("\"a\"", tok("\"\\x62\""));
-        ASSERT_EQUALS("\"a\"", tok("\"\\177\""));
-    }
-
 
     std::string simplifyTypedef(const char code[]) {
         errout.str("");
