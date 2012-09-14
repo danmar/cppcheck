@@ -51,7 +51,7 @@ private:
         TEST_CASE(defines);
         TEST_CASE(defines2);
         TEST_CASE(defines3);
-        //TEST_CASE(defines4);
+        TEST_CASE(defines4);
         TEST_CASE(enforceLanguage);
         TEST_CASE(includesnopath);
         TEST_CASE(includes);
