@@ -66,6 +66,7 @@ private:
     void assignIfError(const Token *tok, bool result);
 
     void comparisonError(const Token *tok,
+                         const std::string &bitop,
                          MathLib::bigint value1,
                          const std::string &op,
                          MathLib::bigint value2,
@@ -76,7 +77,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckAssignIf c(0, settings, errorLogger);
         c.assignIfError(0, false);
-        c.comparisonError(0, 6, "==", 1, false);
+        c.comparisonError(0, "&", 6, "==", 1, false);
         c.multiConditionError(0,1);
     }
 

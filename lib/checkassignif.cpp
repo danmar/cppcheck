@@ -85,10 +85,7 @@ void CheckAssignIf::comparison()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->str() != "&")
-            continue;
-
-        if (Token::Match(tok, "& %num% )| ==|!= %num% &&|%oror%|)")) {
+        if (Token::Match(tok, "&|%or% %num% )| ==|!= %num% &&|%oror%|)")) {
             const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(1));
             if (num1 < 0)
                 continue;
@@ -104,18 +101,19 @@ void CheckAssignIf::comparison()
             if (num2 < 0)
                 continue;
 
-            if ((num1 & num2) != num2) {
+            if ((tok->str() == "&" && (num1 & num2) != num2) ||
+                (tok->str() == "|" && (num1 | num2) != num2)) {
                 const std::string& op(compareToken->str());
-                comparisonError(tok, num1, op, num2, op=="==" ? false : true);
+                comparisonError(tok, tok->str(), num1, op, num2, op=="==" ? false : true);
             }
         }
     }
 }
 
-void CheckAssignIf::comparisonError(const Token *tok, MathLib::bigint value1, const std::string &op, MathLib::bigint value2, bool result)
+void CheckAssignIf::comparisonError(const Token *tok, const std::string &bitop, MathLib::bigint value1, const std::string &op, MathLib::bigint value2, bool result)
 {
     std::ostringstream expression;
-    expression << std::hex << "(X & 0x" << value1 << ") " << op << " 0x" << value2;
+    expression << std::hex << "(X " << bitop << " 0x" << value1 << ") " << op << " 0x" << value2;
 
     const std::string errmsg("Expression '" + expression.str() + "' is always " + (result?"true":"false") + ".\n"
                              "The expression '" + expression.str() + "' is always " + (result?"true":"false") +
