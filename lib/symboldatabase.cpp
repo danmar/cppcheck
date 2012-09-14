@@ -1630,7 +1630,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             // skip default values
             if (tok->str() == "=") {
                 while (tok->str() != "," && tok->str() != ")") {
-                    if (tok->link())
+                    if (tok->link() && Token::Match(tok, "[{[(<]"))
                         tok = tok->link();
                     tok = tok->next();
                 }

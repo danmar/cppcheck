@@ -154,6 +154,8 @@ private:
         TEST_CASE(symboldatabase28);
 
         TEST_CASE(isImplicitlyVirtual);
+
+        TEST_CASE(garbage);
     }
 
     void array() {
@@ -1379,6 +1381,11 @@ private:
                           "};");
             ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual(false)); // Default false, but we saw "virtual" -> true
         }
+    }
+
+    void garbage() {
+        GET_SYMBOL_DB("void f( { u = 1 ; } ) { }");
+        (void)db;
     }
 };
 
