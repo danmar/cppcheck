@@ -324,6 +324,7 @@ private:
         TEST_CASE(vardecl18);
         TEST_CASE(vardecl19);
         TEST_CASE(vardecl20);  // #3700 - register const int H = 0;
+        TEST_CASE(vardecl21);  // #4042 - a::b const *p = 0;
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template_1);
@@ -5094,6 +5095,16 @@ private:
                       "{\n"
                       "const int X = 0 ;\n"
                       "}", tokenizeAndStringify(code));
+    }
+
+    void vardecl21() {  // #4042
+        const char code[] = "void f() {\n"
+                            "    a::b const *p = 0;\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "a :: b const * p ; p = 0 ;\n"
+                      "}"
+                      , tokenizeAndStringify(code));
     }
 
     void volatile_variables() {

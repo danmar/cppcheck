@@ -4997,12 +4997,28 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
         unsigned int typelen = 1;
 
         //check if variable is declared 'const' or 'static' or both
-        while (Token::Match(tok2, "const|static") || Token::Match(tok2, "%type% const|static")) {
+        while (tok2) {
+            if (!Token::Match(tok2, "const|static") && Token::Match(tok2, "%type% const|static")) {
+                tok2 = tok2->next();
+                ++typelen;
+            }
+
             if (tok2->str() == "const")
                 isconst = true;
 
             else if (tok2->str() == "static")
                 isstatic = true;
+
+            else if (Token::Match(tok2, "%type% :: %type%")) {
+                tok2 = tok2->next();
+                ++typelen;
+            }
+
+            else
+                break;
+
+            if (Token::simpleMatch(tok2->next(), "*"))
+                break;
 
             tok2 = tok2->next();
             ++typelen;
