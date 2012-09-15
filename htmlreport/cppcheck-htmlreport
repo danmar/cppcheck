@@ -23,6 +23,14 @@ body.body {
 	margin: 0px;
 }
 
+.error {
+	font-family: Arial;
+	font-size: 13px;
+	background-color: #ffb7b7;
+	padding: 0px;
+	margin: 0px;
+}
+
 #page-header {
 	clear: both;
 	width: 900px;
@@ -301,13 +309,18 @@ if __name__ == '__main__':
     for filename, data in files.items():
         stream.write("<tr><td colspan='4'><a href=\"%s\">%s</a></td></tr>" % (data["htmlfile"], filename))
         for error in data["errors"]:
+            if error['severity'] == 'error':
+                error_class = 'class="error"'
+            else:
+                error_class = ''
+
             if error["id"] == "missingInclude":
                 stream.write("<tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>" %
                              (error["id"], error["severity"], error["msg"]))
             else:
-                stream.write("<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>" %
+                stream.write("<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
                              (data["htmlfile"], error["line"], error["line"], error["id"],
-                              error["severity"], error["msg"]))
+                              error["severity"], error_class, error["msg"]))
     stream.write("</table>")
     stream.write(HTML_FOOTER)
     stream.close()
