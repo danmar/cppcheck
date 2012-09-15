@@ -99,6 +99,7 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+        TEST_CASE(hasSubClassConstructor);
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
 
@@ -654,6 +655,24 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
             ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+        }
+    }
+
+    void hasSubClassConstructor() {
+        GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
+        ASSERT(db);
+
+        if (db) {
+            bool seen_something = false;
+            for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
+                for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                    ASSERT_EQUALS("Sub", func->token->str());
+                    ASSERT_EQUALS(true, func->hasBody);
+                    ASSERT_EQUALS(Function::eConstructor, func->type);
+                    seen_something = true;
+                }
+            }
+            TODO_ASSERT_EQUALS("works", "doesn't work", seen_something ? "works" : "doesn't work");
         }
     }
 
