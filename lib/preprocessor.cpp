@@ -840,7 +840,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         }
 
         processedFile = handleIncludes(processedFile, filename, includePaths, defs);
-        if (_settings->userDefines.empty())
+        if (_settings->userDefines.empty())  // TODO: How can it be empty?
             resultConfigurations = getcfgs(processedFile, filename);
 
     } else {
