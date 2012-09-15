@@ -171,6 +171,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
             msgBox.exec();
         }
         delete report;
+        report = NULL;
     } else {
         QMessageBox msgBox;
         msgBox.setText(tr("Failed to save the report."));
@@ -288,6 +289,7 @@ void ResultsView::ReadErrorsXml(const QString &filename)
             msgBox.exec();
         }
         delete report;
+        report = NULL;
     } else {
         QMessageBox msgBox;
         msgBox.setText(tr("Failed to read the report."));
