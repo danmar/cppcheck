@@ -5,4 +5,4 @@ compiler:
 script:
   - make test
   - $CXX -o cppcheck -O2 cli/*.cpp lib/*.cpp -Ilib
-  - ./cppcheck --error-exitcode=1 -q cli gui lib
+  - ./cppcheck --error-exitcode=1 --enable=style --suppress=duplicateBranch -q cli gui lib -igui/test
