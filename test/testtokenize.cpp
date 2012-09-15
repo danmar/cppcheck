@@ -6110,6 +6110,12 @@ private:
             ASSERT_EQUALS("int x ; x = f ( ) ;", tokenizeAndStringify(code, false));
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            const char code[] = "return doSomething(X), 0;";
+            ASSERT_EQUALS("return doSomething ( X ) , 0 ;", tokenizeAndStringify(code, false));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void bitfields1() {

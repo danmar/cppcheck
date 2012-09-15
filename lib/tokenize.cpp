@@ -5793,6 +5793,9 @@ void Tokenizer::simplifyInitVar()
         if (!tok->isName() || (tok->previous() && !Token::Match(tok->previous(), "[;{}]")))
             continue;
 
+        if (tok->str() == "return")
+            continue;
+
         if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
             Token::Match(tok, "%type% *| %var% ( %type% (")) {
             tok = initVar(tok);
