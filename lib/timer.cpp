@@ -19,36 +19,36 @@
 #include "timer.h"
 
 /*
-	TODO:
-	- handle SHOWTIME_TOP5 in TimerResults
-	- sort list by time
-	- do not sort the results alphabetically
-	- rename "file" to "single"
-	- synchronise map access in multithreaded mode or disable timing
-	- add unit tests
-		- for --showtime (needs input file)
-		- for Timer* classes
+    TODO:
+    - handle SHOWTIME_TOP5 in TimerResults
+    - sort list by time
+    - do not sort the results alphabetically
+    - rename "file" to "single"
+    - synchronise map access in multithreaded mode or disable timing
+    - add unit tests
+        - for --showtime (needs input file)
+        - for Timer* classes
 */
 
 
 void TimerResults::ShowResults() const
 {
-    std::clock_t overallClocks = 0;
+    TimerResultsData overallData;
 
     std::map<std::string, struct TimerResultsData>::const_iterator I = _results.begin();
     const std::map<std::string, struct TimerResultsData>::const_iterator E = _results.end();
 
     while (I != E) {
-        const double sec = (double)I->second._clocks / CLOCKS_PER_SEC;
-        const double secAverage = (double)(I->second._clocks / I->second._numberOfResults) / CLOCKS_PER_SEC;
+        const double sec = I->second.seconds();
+        const double secAverage = sec / (double)(I->second._numberOfResults);
         std::cout << I->first << ": " << sec << "s (avg. " << secAverage << "s - " << I->second._numberOfResults  << " result(s))" << std::endl;
 
-        overallClocks += I->second._clocks;
+        overallData._clocks += I->second._clocks;
 
         ++I;
     }
 
-    const double secOverall = (double)overallClocks / CLOCKS_PER_SEC;
+    const double secOverall = overallData.seconds();
     std::cout << "Overall time: " << secOverall << "s" << std::endl;
 }
 

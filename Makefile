@@ -158,6 +158,7 @@ TESTOBJ =     test/options.o \
               test/testsuppressions.o \
               test/testsymboldatabase.o \
               test/testthreadexecutor.o \
+              test/testtimer.o \
               test/testtoken.o \
               test/testtokenize.o \
               test/testuninitvar.o \
@@ -393,7 +394,7 @@ test/testleakautovar.o: test/testleakautovar.cpp lib/tokenize.h lib/errorlogger.
 test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testmathlib.o test/testmathlib.cpp
 
-test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
+test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testmemleak.o test/testmemleak.cpp
 
 test/testnonreentrantfunctions.o: test/testnonreentrantfunctions.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknonreentrantfunctions.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
@@ -443,6 +444,9 @@ test/testsymboldatabase.o: test/testsymboldatabase.cpp test/testsuite.h lib/erro
 
 test/testthreadexecutor.o: test/testthreadexecutor.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testthreadexecutor.o test/testthreadexecutor.cpp
+
+test/testtimer.o: test/testtimer.cpp lib/timer.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testtimer.o test/testtimer.cpp
 
 test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h test/testutils.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/token.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testtoken.o test/testtoken.cpp

@@ -46,6 +46,11 @@ struct TimerResultsData {
         : _clocks(0)
         , _numberOfResults(0) {
     }
+
+    double seconds() const {
+        double ret = (double)((unsigned long)_clocks) / (double)CLOCKS_PER_SEC;
+        return ret;
+    }
 };
 
 class CPPCHECKLIB TimerResults : public TimerResultsIntf {

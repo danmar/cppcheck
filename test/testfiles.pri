@@ -39,6 +39,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testsuppressions.cpp \
            $${BASEPATH}/testsymboldatabase.cpp \
            $${BASEPATH}/testthreadexecutor.cpp \
+           $${BASEPATH}/testtimer.cpp \
            $${BASEPATH}/testtoken.cpp \
            $${BASEPATH}/testtokenize.cpp \
            $${BASEPATH}/testuninitvar.cpp \
