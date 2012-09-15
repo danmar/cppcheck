@@ -1082,42 +1082,42 @@ Please select the directory where file is located.</source>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.cpp" line="202"/>
+        <location filename="resultsview.cpp" line="201"/>
         <source>%p% (%1 of %2 files checked)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="215"/>
-        <location filename="resultsview.cpp" line="226"/>
+        <location filename="resultsview.cpp" line="214"/>
+        <location filename="resultsview.cpp" line="225"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="216"/>
+        <location filename="resultsview.cpp" line="215"/>
         <source>No errors found.</source>
         <translation>Virheitä ei löytynyt.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="223"/>
+        <location filename="resultsview.cpp" line="222"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Virheitä löytyi, mutta asetuksissa kyseiset virheet on määritelty piilotettavaksi.
 Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valikko.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="269"/>
-        <location filename="resultsview.cpp" line="287"/>
-        <location filename="resultsview.cpp" line="295"/>
+        <location filename="resultsview.cpp" line="268"/>
+        <location filename="resultsview.cpp" line="286"/>
+        <location filename="resultsview.cpp" line="293"/>
         <source>Failed to read the report.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="332"/>
+        <location filename="resultsview.cpp" line="330"/>
         <source>Summary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="333"/>
+        <location filename="resultsview.cpp" line="331"/>
         <source>Message</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1128,7 +1128,7 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     </message>
     <message>
         <location filename="resultsview.cpp" line="169"/>
-        <location filename="resultsview.cpp" line="177"/>
+        <location filename="resultsview.cpp" line="176"/>
         <source>Failed to save the report.</source>
         <translation>Raportin tallentaminen epäonnistui.</translation>
     </message>
