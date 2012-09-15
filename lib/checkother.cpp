@@ -3401,7 +3401,6 @@ void CheckOther::avoidDeadEndInNestedIfs()
 
         if (scope->type == Scope::eIf && toke) {
 
-            int flag = 0;
             const Token *op1Tok, *op2Tok;
             op1Tok = scope->classDef->tokAt(2);
             op2Tok = scope->classDef->tokAt(4);
@@ -3409,6 +3408,8 @@ void CheckOther::avoidDeadEndInNestedIfs()
             if (scope->classDef->strAt(6) == "{") {
 
                 if (scope->classDef->strAt(3) == "==") {
+                    int flag = 0;
+
                     for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
                         if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
                             break;
@@ -3428,6 +3429,8 @@ void CheckOther::avoidDeadEndInNestedIfs()
                         }
                     }
                 } else if (scope->classDef->strAt(3) == "!=") {
+                    int flag = 0;
+
                     for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
                         if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
                             break;
@@ -3447,6 +3450,8 @@ void CheckOther::avoidDeadEndInNestedIfs()
                         }
                     }
                 } else if (scope->classDef->strAt(3) == "<") {
+                    int flag = 0;
+
                     for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
                         if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
                             break;
@@ -3466,6 +3471,8 @@ void CheckOther::avoidDeadEndInNestedIfs()
                         }
                     }
                 } else if (scope->classDef->strAt(3) == "<=") {
+                    int flag = 0;
+
                     for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
                         if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
                             break;
