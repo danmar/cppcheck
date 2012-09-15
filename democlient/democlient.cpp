@@ -7,41 +7,37 @@
 
 static void unencode(const char *src, char *dest)
 {
-    for(; *src; src++, dest++) {
-         if(*src == '+')
-             *dest = ' ';
-         else if(*src == '%') {
-             int code;
-             if (sscanf(src+1, "%2x", &code) != 1)
-                 code = '?';
-             *dest = code;
-             src += 2;
-         }
-         else
-             *dest = *src;
+    for (; *src; src++, dest++) {
+        if (*src == '+')
+            *dest = ' ';
+        else if (*src == '%') {
+            int code;
+            if (sscanf(src+1, "%2x", &code) != 1)
+                code = '?';
+            *dest = code;
+            src += 2;
+        } else
+            *dest = *src;
     }
     *dest = '\0';
 }
 
 
-class CppcheckExecutor : public ErrorLogger
-{
+class CppcheckExecutor : public ErrorLogger {
 private:
     const std::time_t stoptime;
     CppCheck cppcheck;
 
 public:
     CppcheckExecutor()
-    : ErrorLogger()
-    , stoptime(std::time(NULL)+2U)
-    , cppcheck(*this,false)
-    {
+        : ErrorLogger()
+        , stoptime(std::time(NULL)+2U)
+        , cppcheck(*this,false) {
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
     }
 
-    void run(const char code[])
-    {
+    void run(const char code[]) {
         printf("%s\n", ErrorLogger::ErrorMessage::getXMLHeader(2).c_str());
         cppcheck.check("test.c", code);
         printf("%s\n", ErrorLogger::ErrorMessage::getXMLFooter(2).c_str());
@@ -49,19 +45,16 @@ public:
     }
 
     void reportOut(const std::string &outmsg) { }
-    void reportErr(const ErrorLogger::ErrorMessage &msg)
-    {
+    void reportErr(const ErrorLogger::ErrorMessage &msg) {
         const std::string str(msg.toXML(true,2U));
         printf("%s\n", str.c_str());
     }
 
-    void reportProgress(const 
-                std::string &filename, 
-                const char stage[],
-                const unsigned int value)
-    {
-        if (std::time(NULL) >= stoptime) 
-        {
+    void reportProgress(const
+                        std::string &filename,
+                        const char stage[],
+                        const unsigned int value) {
+        if (std::time(NULL) >= stoptime) {
             printf("time to analyse the "
                    "code is more than 1 "
                    "second. terminating."
@@ -89,4 +82,3 @@ int main()
 
     return EXIT_SUCCESS;
 }
-
