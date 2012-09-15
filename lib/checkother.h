@@ -274,7 +274,7 @@ private:
     void warningDeadCode(const Token *tok);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
-    void clarifyStatementError(const Token* tok, const std::string &expr, const std::string &suggested);
+    void clarifyStatementError(const Token* tok);
     void sizeofsizeofError(const Token *tok);
     void sizeofCalculationError(const Token *tok, bool inconclusive);
     void cstyleCastError(const Token *tok);
@@ -377,7 +377,7 @@ private:
         c.memsetZeroBytesError(0, "varname");
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
-        c.clarifyStatementError(0,"* A ++ ;","(* A)++ ;");
+        c.clarifyStatementError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
         c.suspiciousStringCompareError(0, "foo");
         c.incorrectStringBooleanError(0, "\"Hello World\"");

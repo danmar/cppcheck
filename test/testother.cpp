@@ -4046,28 +4046,28 @@ private:
               "    *c++;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* c ++ ;'. Did you intend to write '(* c)++ ;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char* f(char** c) {\n"
               "    *c[5]--;\n"
               "    return *c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* c [ 5 ] -- ;'. Did you intend to write '(* c [ 5 ])-- ;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* f . a ++ ;'. Did you intend to write '(* f . a)++ ;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a[5].v[3]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* f . a [ 5 ] . v [ 3 ] ++ ;'. Did you intend to write '(* f . a [ 5 ] . v [ 3 ])++ ;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a(1, 5).v[x + y]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* f . a ( 1 , 5 ) . v [ x + y ] ++ ;'. Did you intend to write '(* f . a ( 1 , 5 ) . v [ x + y ])++ ;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char* f(char* c) {\n"
               "    (*c)++;\n"
@@ -4084,13 +4084,13 @@ private:
               "    ***c++;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* * * c ++ ;'. Did you intend to write '(* * * c)++ ;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char** f(char*** c) {\n"
               "    **c[5]--;\n"
               "    return **c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement: '* * c [ 5 ] -- ;'. Did you intend to write '(* * c [ 5 ])-- ;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char*** f(char*** c) {\n"
               "    (***c)++;\n"
