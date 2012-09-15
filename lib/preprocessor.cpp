@@ -1797,6 +1797,12 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
  */
 static bool openHeader(std::string &filename, const std::list<std::string> &includePaths, const std::string &filePath, std::ifstream &fin)
 {
+    fin.open((filePath + filename).c_str());
+    if (fin.is_open()) {
+        filename = filePath + filename;
+        return true;
+    }
+
     std::list<std::string> includePaths2(includePaths);
     includePaths2.push_front("");
 
@@ -1808,12 +1814,6 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
             return true;
         }
         fin.clear();
-    }
-
-    fin.open((filePath + filename).c_str());
-    if (fin.is_open()) {
-        filename = filePath + filename;
-        return true;
     }
 
     return false;
