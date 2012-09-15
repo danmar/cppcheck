@@ -474,7 +474,7 @@ private:
                 // variable is assigned like: "( %var% ) .. ="
                 if (Token::Match(tok.previous(), "( %var% )") && tok2 && tok2->str() == "=")
                     ExecutionPath::bailOutVar(checks, tok.varId());
-                else
+                else if (!(tok.strAt(-2) == ">" && tok.tokAt(-2)->link()))
                     use(checks, &tok);
                 //use_array(checks, &tok);
                 return &tok;

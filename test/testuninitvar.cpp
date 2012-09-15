@@ -864,14 +864,14 @@ private:
 
         checkUninitVar("void f()\n"
                        "{\n"
-                       "	char *c1;\n"
-                       "	c1=strcpy(c1,\"test\");\n"
+                       "    char *c1;\n"
+                       "    c1=strcpy(c1,\"test\");\n"
                        "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c1\n","", errout.str());
 
         checkUninitVar("void f(char *c1)\n"
                        "{\n"
-                       "	c1=strcpy(c1,\"test\");\n"
+                       "    c1=strcpy(c1,\"test\");\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1775,6 +1775,12 @@ private:
                        "    (foo.init)(buffer);\n"
                        "    return buffer[0];\n"
                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n" // #3586 - calling template function
+                       "    int i;\n"
+                       "    a::b<int>(i);\n"
+                       "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // using uninitialized function pointer..
