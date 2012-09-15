@@ -495,10 +495,6 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     _errorList.push_back(errmsg);
 
-    if (_settings._verbose) {
-        errmsg += "\n    Defines=\'" + cfg + "\'\n";
-    }
-
     _errorLogger.reportErr(msg);
 }
 
