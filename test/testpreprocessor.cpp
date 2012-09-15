@@ -256,7 +256,8 @@ private:
         // Defines are given: test Preprocessor::handleIncludes
         TEST_CASE(def_handleIncludes);
         TEST_CASE(def_missingInclude);
-        TEST_CASE(def_handleIncludes_ifelse);   // problems in handleIncludes for #else
+        TEST_CASE(def_handleIncludes_ifelse1);   // problems in handleIncludes for #else
+        TEST_CASE(def_handleIncludes_ifelse2);
 
         TEST_CASE(def_valueWithParenthesis); // #3531
 
@@ -3078,6 +3079,7 @@ private:
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(code, "X=123", "test.cpp"));
     }
 
+
     void simplifyCondition() {
         // Ticket #2794
         std::map<std::string, std::string> cfg;
@@ -3279,7 +3281,7 @@ private:
         }
     }
 
-    void def_handleIncludes_ifelse() {
+    void def_handleIncludes_ifelse1() {
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
@@ -3332,6 +3334,29 @@ private:
             std::string actual(preprocessor.handleIncludes(code, filePath, includePaths, defs));
             ASSERT_EQUALS("#define A 1\n#define B A\n\n123\n\n", actual);
         }
+    }
+
+    void def_handleIncludes_ifelse2() { // #3651
+        const char code[] = "#if defined(A)\n"
+                            "\n"
+                            "#if defined(B)\n"
+                            "#endif\n"
+                            "\n"
+                            "#elif defined(C)\n"
+                            "\n"
+                            "#else\n"
+                            "\n"
+                            "123\n"
+                            "\n"
+                            "#endif";
+
+        Preprocessor preprocessor(NULL, this);
+
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        defs["A"] = "1";
+        ASSERT_EQUALS(std::string::npos,  // No "123" in the output
+                      preprocessor.handleIncludes(code, "test.c", includePaths, defs).find("123"));
     }
 
     void def_valueWithParenthesis() {

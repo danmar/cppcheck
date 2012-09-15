@@ -1832,7 +1832,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
     // has there been a true #if condition at the current indentmatch level?
     // then no more #elif or #else can be true before the #endif is seen.
-    bool elseIsTrue = true;
+    std::vector<bool> elseIsTrueStack;
 
     unsigned int linenr = 0;
 
@@ -1844,6 +1844,11 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     bool suppressCurrentCodePath = false;
     while (std::getline(istr,line)) {
         ++linenr;
+
+        // has there been a true #if condition at the current indentmatch level?
+        // then no more #elif or #else can be true before the #endif is seen.
+        elseIsTrueStack.resize(1U + indentmatch, true);
+        std::vector<bool>::reference elseIsTrue = elseIsTrueStack[indentmatch];
 
         if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch) {
