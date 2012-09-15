@@ -619,4 +619,3 @@ private:
 };
 
 #endif
-

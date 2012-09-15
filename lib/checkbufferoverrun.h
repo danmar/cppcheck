@@ -221,7 +221,7 @@ private:
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
     void negativeIndexError(const Token *tok, MathLib::bigint index);
     void cmdLineArgsError(const Token *tok);
-    void pointerOutOfBoundsError(const Token *tok, const std::string &object);	// UB when result of calculation is out of bounds
+    void pointerOutOfBoundsError(const Token *tok, const std::string &object);  // UB when result of calculation is out of bounds
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
@@ -258,6 +258,3 @@ private:
 /// @}
 //---------------------------------------------------------------------------
 #endif
-
-
-
