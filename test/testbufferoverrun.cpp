@@ -563,7 +563,7 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 11, which is out of bounds.\n", "", errout.str());
 
-        // This is out of bounds because it is outside the memory allocated.
+        // This is out of bounds if 'sizeof(ABC)' is 1 (No padding)
         check("struct ABC\n"
               "{\n"
               "    char str[1];\n"
@@ -574,7 +574,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC) + 10);\n"
               "    x->str[11] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[11]' accessed at index 11, which is out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
 
         // This is out of bounds because it is outside the memory allocated
         /** @todo this doesn't work because of a bug in sizeof(struct) */
@@ -591,6 +591,7 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 1, which is out of bounds.\n", "", errout.str());
 
         // This is out of bounds because it is outside the memory allocated
+        // But only if 'sizeof(ABC)' is 1 (No padding)
         check("struct ABC\n"
               "{\n"
               "    char str[1];\n"
@@ -601,7 +602,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC));\n"
               "    x->str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
 
         // This is out of bounds because it is not a variable array
         check("struct ABC\n"
@@ -2791,6 +2792,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
+        // This is out of bounds if 'sizeof(ABC)' is 1 (No padding)
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
               "{\n"
@@ -2798,7 +2800,7 @@ private:
               "  sprintf(x.a, \"aa\");\n"
               "  free(x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
@@ -2883,6 +2885,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size 1.\n", errout.str());
 
+        // This is out of bounds if 'sizeof(ABC)' is 1 (No padding)
         check("struct Foo { char a[1]; };\n"
               "void f()\n"
               "{\n"
@@ -2890,7 +2893,7 @@ private:
               "  snprintf(x.a, 2, \"aa\");\n"
               "  free(x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size 1.\n", errout.str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f()\n"

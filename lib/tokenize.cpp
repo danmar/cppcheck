@@ -3035,14 +3035,6 @@ void Tokenizer::createLinks2()
 
 bool Tokenizer::simplifySizeof()
 {
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "class|struct %var%")) {
-            // we assume that the size of structs and classes are always
-            // 100 bytes.
-            _typeSize[tok->next()->str()] = 100;
-        }
-    }
-
     // Locate variable declarations and calculate the size
     std::map<unsigned int, std::string> sizeOfVar;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -3058,10 +3050,6 @@ bool Tokenizer::simplifySizeof()
                 }
 
                 sizeOfVar[varId] = MathLib::longToString(size);
-            }
-
-            else if (Token::Match(tok->tokAt(-3), "[;{}(,] struct %type% %var% [;,)]")) {
-                sizeOfVar[varId] = "100";
             }
 
             else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [;=]") ||

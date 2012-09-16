@@ -65,7 +65,6 @@ private:
         TEST_CASE(elseif1);
         TEST_CASE(ifa_ifa);     // "if (a) { if (a) .." => "if (a) { if (1) .."
 
-        TEST_CASE(sizeof1);
         TEST_CASE(sizeof2);
         TEST_CASE(sizeof3);
         TEST_CASE(sizeof4);
@@ -88,7 +87,6 @@ private:
         TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
         TEST_CASE(sizeof22);    // #2599
         TEST_CASE(sizeof23);    // #2604
-        TEST_CASE(sizeof24);    // struct variable
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -973,10 +971,6 @@ private:
         return tokenizer.sizeOfType(&tok1);
     }
 
-    void sizeof1() {
-        ASSERT_EQUALS("struct ABC * abc ; abc = malloc ( 100 ) ;", tok("struct ABC *abc = malloc(sizeof(*abc));"));
-        ASSERT_EQUALS("struct ABC * abc ; abc = malloc ( 100 ) ;", tok("struct ABC *abc = malloc(sizeof *abc );"));
-    }
 
 
     void sizeof2() {
@@ -1505,7 +1499,7 @@ private:
         ASSERT_EQUALS("struct struct_a { char a [ 20 ] ; } ; "
                       "void foo ( ) {"
                       " struct_a a ;"
-                      " append ( 100 ) . append ( ) ; "
+                      " append ( sizeof ( a ) ) . append ( ) ; "
                       "}", tok(code));
     }
 
@@ -1542,11 +1536,6 @@ private:
 
         // don't segfault
         tok(code);
-    }
-
-    void sizeof24() {
-        const char code[] = "; struct AB ab; sizeof(ab)";
-        ASSERT_EQUALS("; struct AB ab ; 100", tok(code));
     }
 
 
