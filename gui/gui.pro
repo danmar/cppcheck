@@ -38,6 +38,7 @@ TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
                 cppcheck_fi.ts \
                 cppcheck_fr.ts \
+                cppcheck_it.ts \
                 cppcheck_ja.ts \
                 cppcheck_ko.ts \
                 cppcheck_nl.ts \
