@@ -69,6 +69,7 @@
     <ClCompile Include="testsuppressions.cpp" />
     <ClCompile Include="testsymboldatabase.cpp" />
     <ClCompile Include="testthreadexecutor.cpp" />
+    <ClCompile Include="testtimer.cpp" />
     <ClCompile Include="testtoken.cpp" />
     <ClCompile Include="testtokenize.cpp" />
     <ClCompile Include="testuninitvar.cpp" />
