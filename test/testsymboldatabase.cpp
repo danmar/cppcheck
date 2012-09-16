@@ -660,7 +660,7 @@ private:
 
     void hasSubClassConstructor() {
         GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
-        ASSERT(db);
+        ASSERT(db != 0);
 
         if (db) {
             bool seen_something = false;
