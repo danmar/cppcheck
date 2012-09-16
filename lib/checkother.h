@@ -279,7 +279,7 @@ private:
     void sizeofCalculationError(const Token *tok, bool inconclusive);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
-    void dangerousUsageStrtolError(const Token *tok);
+    void dangerousUsageStrtolError(const Token *tok, const std::string& funcname);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname);
@@ -306,7 +306,7 @@ private:
     void sizeofForArrayParameterError(const Token *tok);
     void sizeofForPointerError(const Token *tok, const std::string &varname);
     void sizeofForNumericParameterError(const Token *tok);
-    void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string, const std::string &len);
+    void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void incrementBooleanError(const Token *tok);
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
@@ -358,7 +358,7 @@ private:
         // style/warning
         c.warningDeadCode(0);
         c.cstyleCastError(0);
-        c.dangerousUsageStrtolError(0);
+        c.dangerousUsageStrtolError(0, "strtol");
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");
         c.charArrayIndexError(0);
@@ -378,7 +378,7 @@ private:
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
         c.clarifyStatementError(0);
-        c.incorrectStringCompareError(0, "substr", "\"Hello World\"", "12");
+        c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
         c.suspiciousStringCompareError(0, "foo");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
         c.incrementBooleanError(0);

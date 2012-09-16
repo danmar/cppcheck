@@ -77,7 +77,7 @@ private:
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Using char type as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("int buf[256];\n"
               "void foo()\n"
@@ -85,14 +85,14 @@ private:
               "    signed char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Using char type as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("int buf[256];\n"
               "void foo(char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Using char type as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("void foo(const char str[])\n"
               "{\n"
@@ -120,7 +120,7 @@ private:
               "void bar(char c) {\n"
               "    buf[c] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Using char type as array index\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("char buf[0x80];\n"
               "void bar(char c) {\n"
@@ -141,7 +141,7 @@ private:
               "    char ch;\n"
               "    result = a | ch;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
     void bitop2() {
@@ -157,7 +157,7 @@ private:
         check("void f(int& i, char& c) {\n"
               "    i &= c;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
     void return1() {
@@ -195,7 +195,7 @@ private:
               "    ret |= *p;\n"
               "    return ret;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) When using char variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
 
         // fixed code
         check("void f(char *p) {\n"
