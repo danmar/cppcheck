@@ -377,7 +377,7 @@ bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsi
     if (Token::Match(functiontoken, "if|while|for|switch|sizeof|catch"))
         return false;
 
-    int argumentNumber = 0;
+    unsigned int argumentNumber = 0;
     for (const Token *arg = functiontoken->tokAt(2); arg; arg = arg->nextArgument()) {
         if (Token::Match(arg, "%varid% [,)]", varid)) {
             const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(functiontoken->str(), functiontoken->scope());
