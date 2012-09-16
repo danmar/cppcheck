@@ -1090,47 +1090,47 @@ Por favor selecciona la carpeta donde se encuentra.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="169"/>
-        <location filename="resultsview.cpp" line="176"/>
+        <location filename="resultsview.cpp" line="177"/>
         <source>Failed to save the report.</source>
         <translation>Error al guardar el informe.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="201"/>
+        <location filename="resultsview.cpp" line="202"/>
         <source>%p% (%1 of %2 files checked)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="214"/>
-        <location filename="resultsview.cpp" line="225"/>
+        <location filename="resultsview.cpp" line="215"/>
+        <location filename="resultsview.cpp" line="226"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="215"/>
+        <location filename="resultsview.cpp" line="216"/>
         <source>No errors found.</source>
         <translation>No se han encontrado errores.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="222"/>
+        <location filename="resultsview.cpp" line="223"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Se han encontrado errores, pero están configurados para que no se muestren.
 Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="268"/>
-        <location filename="resultsview.cpp" line="286"/>
-        <location filename="resultsview.cpp" line="293"/>
+        <location filename="resultsview.cpp" line="269"/>
+        <location filename="resultsview.cpp" line="287"/>
+        <location filename="resultsview.cpp" line="295"/>
         <source>Failed to read the report.</source>
         <translation>Error al leer el informe.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="330"/>
+        <location filename="resultsview.cpp" line="332"/>
         <source>Summary</source>
         <translation>Resumen</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="331"/>
+        <location filename="resultsview.cpp" line="333"/>
         <source>Message</source>
         <translation>Mensaje</translation>
     </message>
