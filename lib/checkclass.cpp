@@ -153,98 +153,6 @@ void CheckClass::constructors()
     }
 }
 
-void CheckClass::copyconstructors()
-{
-    if (!_settings->isEnabled("style"))
-        return;
-
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isClassOrStruct()) // scope is class or structure
-            continue;
-
-        std::map<unsigned int, const Token*> allocatedVars;
-
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eConstructor && func->functionScope) {
-                for (const Token* tok = func->functionScope->classStart; tok!=func->functionScope->classEnd; tok=tok->next()) {
-                    if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
-                        const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-                        if (var && var->isPointer() && var->scope() == &*scope)
-                            allocatedVars[tok->varId()] = tok;
-                    }
-                }
-            }
-        }
-
-        std::set<const Token*> copiedVars;
-        const Token* copyCtor = 0;
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eCopyConstructor) {
-                copyCtor = func->tokenDef;
-                if (func->functionScope) {
-                    const Token* tok = func->tokenDef->linkAt(1)->next();
-                    if (tok->str()==":") {
-                        tok=tok->next();
-                        while (Token::Match(tok, "%var% (")) {
-                            if (allocatedVars.find(tok->varId()) != allocatedVars.end()) {
-                                if (tok->varId() && Token::Match(tok->tokAt(2), "%var% . %var% )"))
-                                    copiedVars.insert(tok);
-                                else if (!Token::Match(tok->tokAt(2), "%any% )"))
-                                    allocatedVars.erase(tok->varId()); // Assume memory is allocated
-                            }
-                            tok = tok->linkAt(1)->tokAt(2);
-                        }
-                    }
-                    for (tok=func->functionScope->classStart; tok!=func->functionScope->classEnd; tok=tok->next()) {
-                        if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
-                            allocatedVars.erase(tok->varId());
-                        } else if (Token::Match(tok, "%var% = %var% . %var% ;") && allocatedVars.find(tok->varId()) != allocatedVars.end()) {
-                            copiedVars.insert(tok);
-                        }
-                    }
-                } else // non-copyable or implementation not seen
-                    allocatedVars.clear();
-                break;
-            }
-        }
-        if (!copyCtor) {
-            if (!allocatedVars.empty() && scope->derivedFrom.empty()) // TODO: Check if base class is non-copyable
-                noCopyConstructorError(scope->classDef, scope->className, scope->type == Scope::eStruct);
-        } else {
-            if (!copiedVars.empty()) {
-                for (std::set<const Token*>::const_iterator i = copiedVars.begin(); i != copiedVars.end(); ++i) {
-                    copyConstructorShallowCopyError(*i, (*i)->str());
-                }
-            }
-            // throw error if count mismatch
-            for (std::map<unsigned int, const Token*>::const_iterator i = allocatedVars.begin(); i != allocatedVars.end(); ++i) {
-                copyConstructorMallocError(copyCtor, i->second, i->second->str());
-            }
-        }
-    }
-}
-
-void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& varname)
-{
-    std::list<const Token*> callstack;
-    callstack.push_back(cctor);
-    callstack.push_back(alloc);
-    reportError(callstack, Severity::warning, "copyCtorNoAllocation", "Copy constructor does not allocate memory for member '" + varname + "' although memory has been allocated in other constructors.");
-}
-
-void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
-{
-    reportError(tok, Severity::style, "copyCtorPointerCopying", "Value of pointer '" + varname + "', which points to allocated memory, is copied in copy constructor instead of allocating new memory.");
-}
-
-void CheckClass::noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct)
-{
-    // The constructor might be intentionally missing. Therefore this is not a "warning"
-    reportError(tok, Severity::style, "noCopyConstructor",
-                "'" + std::string(isStruct ? "struct" : "class") + " " + classname +
-                "' does not have a copy constructor which is required since the class contains a pointer to allocated memory.");
-}
-
 bool CheckClass::canNotCopy(const Scope *scope)
 {
     std::list<Function>::const_iterator func;
@@ -827,7 +735,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     std::list<Variable>::const_iterator var;
 
     for (var = type->varlist.begin(); var != type->varlist.end(); ++var) {
-        // don't warn if variable static or const, pointer or reference
+        // don't warn if variable static or const, pointer or referece
         if (!var->isStatic() && !var->isConst() && !var->isPointer() && !var->isReference()) {
             const Token *tok1 = var->typeStartToken();
 
@@ -1263,7 +1171,7 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
-    // This is an inconclusive check. False positives: #3322.
+    // This is an inconclusive check. False positives: #2340, #3322.
     if (!_settings->inconclusive)
         return;
 
