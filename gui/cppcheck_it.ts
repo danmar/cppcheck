@@ -495,7 +495,7 @@ Parametri: -l(line) (file)
     <message>
         <location filename="main.ui" line="424"/>
         <source>Open P&amp;roject File...</source>
-        <translation>Pr&amp;ojektdatei öffnen...</translation>
+        <translation>Apri file di p&amp;rogetto...</translation>
     </message>
     <message>
         <location filename="main.ui" line="429"/>
