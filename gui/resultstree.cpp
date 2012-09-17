@@ -540,10 +540,10 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
-            QAction *copyfilename 	= new QAction(tr("Copy filename"), &menu);
-            QAction *copypath 		= new QAction(tr("Copy full path"), &menu);
-            QAction *copymessage 	= new QAction(tr("Copy message"), &menu);
-            QAction *hide        	= new QAction(tr("Hide"), &menu);
+            QAction *copyfilename = new QAction(tr("Copy filename"), &menu);
+            QAction *copypath     = new QAction(tr("Copy full path"), &menu);
+            QAction *copymessage  = new QAction(tr("Copy message"), &menu);
+            QAction *hide         = new QAction(tr("Hide"), &menu);
 
             if (multipleSelection) {
                 copyfilename->setDisabled(true);

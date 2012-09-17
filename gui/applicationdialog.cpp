@@ -94,4 +94,3 @@ void ApplicationDialog::Ok()
         accept();
     }
 }
-
