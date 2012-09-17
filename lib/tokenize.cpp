@@ -5042,11 +5042,17 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 if (tok3->str() == "<" && !parens) {
                     ++indentlevel;
                 } else if (tok3->str() == ">" && !parens) {
-                    if (!indentlevel) {
+                    if (indentlevel == 0) {
                         tok2 = tok3->next();
                         break;
                     }
                     --indentlevel;
+                } else if (tok3->str() == ">>" && !parens) {
+                    if (indentlevel <= 1U) {
+                        tok2 = tok3->next();
+                        break;
+                    }
+                    indentlevel -= 2;
                 } else if (tok3->str() == "(") {
                     ++parens;
                 } else if (tok3->str() == ")") {

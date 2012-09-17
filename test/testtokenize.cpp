@@ -325,6 +325,7 @@ private:
         TEST_CASE(vardecl19);
         TEST_CASE(vardecl20);  // #3700 - register const int H = 0;
         TEST_CASE(vardecl21);  // #4042 - a::b const *p = 0;
+        TEST_CASE(vardecl22);  // #4211 - segmentation fault
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template_1);
@@ -5105,6 +5106,10 @@ private:
                       "a :: b const * p ; p = 0 ;\n"
                       "}"
                       , tokenizeAndStringify(code));
+    }
+
+    void vardecl22() {  // #4211 - segmentation fault
+        tokenizeAndStringify("A<B<C<int>> >* p = 0;");
     }
 
     void volatile_variables() {
