@@ -9,4 +9,3 @@ int main()
     int *c;
     foo(&c);
 }
-

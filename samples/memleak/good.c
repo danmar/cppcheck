@@ -8,4 +8,3 @@ int main()
     free(a);
     return result;
 }
-

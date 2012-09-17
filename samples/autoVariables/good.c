@@ -10,4 +10,3 @@ int main()
     int *c = &b;
     foo(&c);
 }
-

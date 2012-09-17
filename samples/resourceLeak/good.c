@@ -7,4 +7,3 @@ int main()
     fclose(a);
     return 0;
 }
-

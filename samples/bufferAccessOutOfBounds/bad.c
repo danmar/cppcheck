@@ -6,4 +6,3 @@ int main()
         a[i] = 0;
     return a[0];
 }
-
