@@ -732,17 +732,22 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation>フランス語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="37"/>
+        <source>Italian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Korean</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Spanish</source>
         <translation>スペイン語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>Swedish</source>
         <translation>スウェーデン語</translation>
     </message>
@@ -752,18 +757,18 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation>ドイツ語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="40"/>
         <source>Russian</source>
         <translation>ロシア語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Japanese</source>
         <oldsource>Japanease</oldsource>
         <translation>日本語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="41"/>
         <source>Serbian</source>
         <translation>セルビア語</translation>
     </message>
@@ -921,17 +926,17 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="76"/>
+        <location filename="translationhandler.cpp" line="77"/>
         <source>Unknown language specified!</source>
         <translation>指定された未知の言語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="88"/>
+        <location filename="translationhandler.cpp" line="89"/>
         <source>Language file %1 not found!</source>
         <translation>言語ファイル %1 が見つかりません!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="94"/>
+        <location filename="translationhandler.cpp" line="95"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished"></translation>
     </message>

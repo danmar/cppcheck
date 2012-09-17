@@ -34,6 +34,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Finnish"), "cppcheck_fi");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "French"), "cppcheck_fr");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "German"), "cppcheck_de");
+    AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Italian"), "cppcheck_it");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Japanese"), "cppcheck_ja");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Korean"), "cppcheck_ko");
     AddTranslation(QT_TRANSLATE_NOOP("MainWindow", "Russian"), "cppcheck_ru");
