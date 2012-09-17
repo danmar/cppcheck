@@ -72,6 +72,7 @@ public:
 
         checkClass.virtualDestructor();
         checkClass.checkConst();
+        checkClass.copyconstructors();
     }
 
 
@@ -115,11 +116,16 @@ public:
 
     void initializationListUsage();
 
+    void copyconstructors();
+
 private:
     const SymbolDatabase *symbolDatabase;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
+    void copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& var_name);
+    void copyConstructorShallowCopyError(const Token *tok, const std::string& varname);
+    void noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
@@ -137,6 +143,9 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
         c.noConstructorError(0, "classname", false);
+        c.copyConstructorMallocError(0, 0, "var");
+        c.copyConstructorShallowCopyError(0, "var");
+        c.noCopyConstructorError(0, "class", false);
         c.uninitVarError(0, "classname", "varname");
         c.operatorEqVarError(0, "classname", "");
         c.unusedPrivateFunctionError(0, "classname", "funcname");
@@ -158,7 +167,8 @@ private:
 
     std::string classInfo() const {
         return "Check the code for each class.\n"
-               "* Missing constructors\n"
+               "* Missing constructors and copy constructors\n"
+               "* Missing allocation of memory in copy constructor\n"
                "* Are all variables initialized by the constructors?\n"
                "* Are all variables assigned by 'operator='?\n"
                "* Warn if memset, memcpy etc are used on a class\n"
