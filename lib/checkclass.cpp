@@ -217,13 +217,16 @@ void CheckClass::copyconstructors()
                 }
             }
             // throw error if count mismatch
+            /* FIXME: This doesn't work. See #4154
             for (std::map<unsigned int, const Token*>::const_iterator i = allocatedVars.begin(); i != allocatedVars.end(); ++i) {
                 copyConstructorMallocError(copyCtor, i->second, i->second->str());
             }
+            */
         }
     }
 }
 
+/* This doesn't work. See #4154
 void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& varname)
 {
     std::list<const Token*> callstack;
@@ -231,6 +234,7 @@ void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *all
     callstack.push_back(alloc);
     reportError(callstack, Severity::warning, "copyCtorNoAllocation", "Copy constructor does not allocate memory for member '" + varname + "' although memory has been allocated in other constructors.");
 }
+*/
 
 void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
 {
