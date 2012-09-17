@@ -206,5 +206,3 @@ private:
 };
 
 REGISTER_TEST(TestIncompleteStatement)
-
-

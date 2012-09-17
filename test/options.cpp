@@ -43,4 +43,3 @@ const std::string& options::which_test() const
 {
     return _which_test;
 }
-

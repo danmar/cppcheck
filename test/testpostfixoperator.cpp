@@ -348,5 +348,3 @@ private:
 };
 
 REGISTER_TEST(TestPostfixOperator)
-
-

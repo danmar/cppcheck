@@ -659,4 +659,3 @@ private:
 };
 
 REGISTER_TEST(TestUnusedPrivateFunction)
-

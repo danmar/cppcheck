@@ -169,4 +169,3 @@ private:
 };
 
 REGISTER_TEST(Test64BitPortability)
-

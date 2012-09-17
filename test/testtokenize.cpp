@@ -2481,7 +2481,7 @@ private:
                                 "for ( int i = 0 ; i < 10 ; ++ i ) { }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("", errout.str()); // debug warnings
+        ASSERT_EQUALS("", errout.str());    // debug warnings
     }
 
     void simplifyKnownVariablesBailOutFor2() {
@@ -2494,7 +2494,7 @@ private:
                                 "while ( i < 10 ) { ++ i ; }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("", errout.str()); // debug warnings
+        ASSERT_EQUALS("", errout.str());    // debug warnings
     }
 
     void simplifyKnownVariablesBailOutFor3() {
@@ -2507,7 +2507,7 @@ private:
                                 "{ }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("", errout.str()); // debug warnings
+        ASSERT_EQUALS("", errout.str());    // debug warnings
     }
 
     void simplifyKnownVariablesBailOutMemberFunction() {
@@ -2531,7 +2531,7 @@ private:
                             "    return a;\n"
                             "}\n";
         tokenizeAndStringify(code,true);
-        ASSERT_EQUALS("", errout.str()); // no debug warnings
+        ASSERT_EQUALS("", errout.str());     // no debug warnings
     }
 
     void simplifyKnownVariablesBailOutSwitchBreak() {
@@ -2590,17 +2590,17 @@ private:
             const char code[] = "void a(int x);"  // <- x is passed by value
                                 "void b() {"
                                 "    int x = 123;"
-                                "    a(x);"   // <- replace with a(123);
+                                "    a(x);"       // <- replace with a(123);
                                 "}";
             const char expected[] = "void a ( int x ) ; void b ( ) { a ( 123 ) ; }";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
         }
 
         {
-            const char code[] = "void a(int &x);"  // <- x is passed by reference
+            const char code[] = "void a(int &x);" // <- x is passed by reference
                                 "void b() {"
                                 "    int x = 123;"
-                                "    a(x);"   // <- don't replace with a(123);
+                                "    a(x);"       // <- don't replace with a(123);
                                 "}";
             const char expected[] = "void a ( int & x ) ; void b ( ) { int x ; x = 123 ; a ( x ) ; }";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));

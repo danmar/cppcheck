@@ -566,4 +566,3 @@ private:
 };
 
 REGISTER_TEST(TestLeakAutoVar)
-

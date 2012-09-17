@@ -1409,4 +1409,3 @@ private:
 };
 
 REGISTER_TEST(TestSymbolDatabase)
-

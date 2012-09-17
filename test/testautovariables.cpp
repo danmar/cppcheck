@@ -667,5 +667,3 @@ private:
 };
 
 REGISTER_TEST(TestAutoVariables)
-
-

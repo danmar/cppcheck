@@ -188,7 +188,7 @@ private:
         // -----------------
         // to double number:
         // -----------------
-        ASSERT_EQUALS_DOUBLE(10.0   , MathLib::toDoubleNumber("10"));
+        ASSERT_EQUALS_DOUBLE(10.0  , MathLib::toDoubleNumber("10"));
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"));
         ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"));
         ASSERT_EQUALS_DOUBLE(-100.0, MathLib::toDoubleNumber("-1.0E+2"));
@@ -239,18 +239,18 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("-1E-1"));
         ASSERT_EQUALS(false, MathLib::isInt("-1E-10000"));
 
-        ASSERT_EQUALS(true, MathLib::isInt("0xff"));
-        ASSERT_EQUALS(true, MathLib::isInt("0xa"));
-        ASSERT_EQUALS(true, MathLib::isInt("0l"));
-        ASSERT_EQUALS(true, MathLib::isInt("0L"));
-        ASSERT_EQUALS(true, MathLib::isInt("0ul"));
-        ASSERT_EQUALS(true, MathLib::isInt("0ull"));
-        ASSERT_EQUALS(true, MathLib::isInt("0llu"));
-        ASSERT_EQUALS(true, MathLib::isInt("333L"));
-        ASSERT_EQUALS(true, MathLib::isInt("330L"));
-        ASSERT_EQUALS(true, MathLib::isInt("330llu"));
-        ASSERT_EQUALS(true, MathLib::isInt("07"));
-        ASSERT_EQUALS(true, MathLib::isInt("0123"));
+        ASSERT_EQUALS(true , MathLib::isInt("0xff"));
+        ASSERT_EQUALS(true , MathLib::isInt("0xa"));
+        ASSERT_EQUALS(true , MathLib::isInt("0l"));
+        ASSERT_EQUALS(true , MathLib::isInt("0L"));
+        ASSERT_EQUALS(true , MathLib::isInt("0ul"));
+        ASSERT_EQUALS(true , MathLib::isInt("0ull"));
+        ASSERT_EQUALS(true , MathLib::isInt("0llu"));
+        ASSERT_EQUALS(true , MathLib::isInt("333L"));
+        ASSERT_EQUALS(true , MathLib::isInt("330L"));
+        ASSERT_EQUALS(true , MathLib::isInt("330llu"));
+        ASSERT_EQUALS(true , MathLib::isInt("07"));
+        ASSERT_EQUALS(true , MathLib::isInt("0123"));
         ASSERT_EQUALS(false, MathLib::isInt("0.4"));
         ASSERT_EQUALS(false, MathLib::isInt("2352.3f"));
         ASSERT_EQUALS(false, MathLib::isInt("0.00004"));
@@ -293,11 +293,11 @@ private:
     }
 
     void isnegative() const {
-        ASSERT_EQUALS(true, MathLib::isNegative("-1"));
-        ASSERT_EQUALS(true, MathLib::isNegative("-1."));
-        ASSERT_EQUALS(true, MathLib::isNegative("-1.0"));
-        ASSERT_EQUALS(true, MathLib::isNegative("-1.0E+2"));
-        ASSERT_EQUALS(true, MathLib::isNegative("-1.0E-2"));
+        ASSERT_EQUALS(true , MathLib::isNegative("-1"));
+        ASSERT_EQUALS(true , MathLib::isNegative("-1."));
+        ASSERT_EQUALS(true , MathLib::isNegative("-1.0"));
+        ASSERT_EQUALS(true , MathLib::isNegative("-1.0E+2"));
+        ASSERT_EQUALS(true , MathLib::isNegative("-1.0E-2"));
 
         ASSERT_EQUALS(false, MathLib::isNegative("+1"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1."));
@@ -342,5 +342,3 @@ private:
 };
 
 REGISTER_TEST(TestMathLib)
-
-

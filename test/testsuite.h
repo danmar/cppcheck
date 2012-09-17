@@ -78,4 +78,3 @@ public:
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
 #endif
-

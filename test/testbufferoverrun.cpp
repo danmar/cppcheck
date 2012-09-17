@@ -117,18 +117,18 @@ private:
         TEST_CASE(array_index_for_in_for);   // FP: #2634
         TEST_CASE(array_index_calculation);
         TEST_CASE(array_index_negative1);
-        TEST_CASE(array_index_negative2); // ticket #3063
+        TEST_CASE(array_index_negative2);    // ticket #3063
         TEST_CASE(array_index_for_decr);
-        TEST_CASE(array_index_varnames);   // FP: struct member. #1576
-        TEST_CASE(array_index_for_break);  // FP: for,break
+        TEST_CASE(array_index_varnames);     // FP: struct member. #1576
+        TEST_CASE(array_index_for_break);    // FP: for,break
         TEST_CASE(array_index_for_continue); // for,continue
-        TEST_CASE(array_index_for);        // FN: for,if
-        TEST_CASE(array_index_for_neq);    // #2211: Using != in condition
-        TEST_CASE(array_index_for_question);  // #2561: for, ?:
+        TEST_CASE(array_index_for);          // FN: for,if
+        TEST_CASE(array_index_for_neq);      // #2211: Using != in condition
+        TEST_CASE(array_index_for_question); // #2561: for, ?:
         TEST_CASE(array_index_for_andand_oror);  // FN: using && or || in the for loop condition
-        TEST_CASE(array_index_vla_for);    // #3221: access VLA inside for
-        TEST_CASE(array_index_extern);      // FP when using 'extern'. #1684
-        TEST_CASE(array_index_cast);       // FP after cast. #2841
+        TEST_CASE(array_index_vla_for);      // #3221: access VLA inside for
+        TEST_CASE(array_index_extern);       // FP when using 'extern'. #1684
+        TEST_CASE(array_index_cast);         // FP after cast. #2841
         TEST_CASE(array_index_string_literal);
 
         TEST_CASE(buffer_overrun_1);
@@ -1401,9 +1401,9 @@ private:
 
         check("int f( ) \n"
               "{\n"
-              "   struct {\n"
-              "     int arr[ 3 ];\n"
-              "   } var[ 1 ];\n"
+              "  struct {\n"
+              "    int arr[ 3 ];\n"
+              "  } var[ 1 ];\n"
               "   int y;\n"
               "   var[ 0 ].arr[ 0 ] = 0;\n"
               "   var[ 0 ].arr[ 1 ] = 1;\n"
@@ -1415,9 +1415,9 @@ private:
 
         check("int f( ) \n"
               "{\n"
-              "   struct {\n"
-              "     int arr[ 3 ];\n"
-              "   } var[ 1 ];\n"
+              "  struct {\n"
+              "    int arr[ 3 ];\n"
+              "  } var[ 1 ];\n"
               "   int y;\n"
               "   var[ 0 ].arr[ 0 ] = 0;\n"
               "   var[ 0 ].arr[ 1 ] = 1;\n"
