@@ -260,13 +260,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (!Token::Match(tok, "[;{}]") || Token::Match(tok->next(), "[;{}]"))
             continue;
         tok = tok->next();
-        if (tok == endToken)
+        if (!tok || tok == endToken)
             break;
 
         // parse statement
 
         // assignment..
-        if (tok && tok->varId() && Token::Match(tok, "%var% =")) {
+        if (tok->varId() && Token::Match(tok, "%var% =")) {
             // taking address of another variable..
             if (Token::Match(tok->next(), "= %var% [+;]")) {
                 if (tok->tokAt(2)->varId() != tok->varId()) {

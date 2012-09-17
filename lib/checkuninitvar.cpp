@@ -1232,7 +1232,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             return true;
 
         // variable is seen..
-        if (tok && tok->varId() == var.varId()) {
+        if (tok->varId() == var.varId()) {
             // Use variable
             if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
                 uninitvarError(tok, tok->str());

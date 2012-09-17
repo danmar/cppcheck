@@ -332,9 +332,6 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
     int level = 0;
 
     for (; ftok != func.functionScope->classEnd; ftok = ftok->next()) {
-        if (!ftok->next())
-            break;
-
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
         if (initList) {

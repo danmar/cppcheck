@@ -800,7 +800,7 @@ void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &
     }
 
     if (max_value > size) {
-        if (tok3->strAt(1) == ")") {
+        if (tok3 && tok3->strAt(1) == ")") {
             bool usedInArray = false;
             for (const Token *loopTok = tok3->tokAt(2); loopTok->str() != "}" ; loopTok = loopTok->next()) {
                 if (loopTok->varId() == arrayInfo.varid() && loopTok->tokAt(2)->varId() == counter_varid)
@@ -834,7 +834,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
     const unsigned char varc = static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U);
 
-    if (tok && tok->str() == "return") {
+    if (tok->str() == "return") {
         tok = tok->next();
         if (!tok)
             return;
@@ -989,7 +989,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             std::size_t charactersAppend = 0;
             const Token *tok2 = tok;
 
-            while (tok2 && Token::Match(tok2, strcatPattern.c_str(), varid)) {
+            while (Token::Match(tok2, strcatPattern.c_str(), varid)) {
                 charactersAppend += Token::getStrLength(tok2->tokAt(4 + varc));
                 if (charactersAppend >= static_cast<std::size_t>(total_size)) {
                     bufferOverrunError(tok2);
@@ -1718,8 +1718,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 {
-    const char pattern[] = "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc";
-    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern)) {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         unsigned int dstVarId;
         unsigned int srcVarId;
 
@@ -1754,9 +1753,9 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
                        tok->strAt(4).find("%s") != std::string::npos) {
                 bufferOverrunError(tok);
             }
-
         }
-
+        if (!tok)
+            return;
     }
 }
 

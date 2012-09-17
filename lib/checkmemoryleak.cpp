@@ -2095,7 +2095,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         noerr |= Token::simpleMatch(first, "alloc ; if return ; dealloc; }");
 
         // Unhandled case..
-        if (! noerr) {
+        if (!noerr && tok) {
             std::ostringstream errmsg;
             errmsg << "inconclusive leak of " << varname << ": ";
             errmsg << tok->stringifyList(false, false, false, false, false, 0, 0);
@@ -2282,7 +2282,7 @@ void CheckMemoryLeakInClass::check()
                     const Token *tok = var->typeStartToken();
                     if (tok->str() == "const")
                         tok = tok->next();
-                    if (tok && tok->isStandardType()) {
+                    if (tok->isStandardType()) {
                         if (var->isPrivate())
                             checkPublicFunctions(&(*scope), var->nameToken());
 

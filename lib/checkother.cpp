@@ -246,7 +246,7 @@ void CheckOther::clarifyStatement()
 
             if (Token::Match(tok2, "[{};]")) {
                 tok = tok->tokAt(2);
-                while (tok) {
+                for (;;) {
                     if (tok->str() == "[")
                         tok = tok->link()->next();
 
