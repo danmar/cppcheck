@@ -1,3 +1,62 @@
+<?php
+  $isCodePosted = isset($_POST['code']) && !empty($_POST['code']);
+  $isXmlOutput = isset($_POST['xml']) && $_POST['xml'] == '1';
+  
+  /**
+   * ...
+   * @param string $code Source code
+   * @return string Output lines
+   */
+  function get_democlient_output($code) {
+    $postdata = http_build_query(
+      array(
+        'code' => $code
+      )
+    );
+    
+    $opts = array('http' =>
+      array(
+        'method'  => 'POST',
+        'header'  => 'Content-type: application/x-www-form-urlencoded',
+        'content' => $postdata
+      )
+    );
+    
+    $context = stream_context_create($opts);
+    
+    return @file_get_contents('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
+  }
+  
+  function cut_string($string, $length = 1024) {
+    if (strlen($string) > $length) {
+      return substr($string, 0, $length);
+    }
+    return $string;
+  }
+  
+  //--------------------------------------------------------------------------------
+  // XML output...
+  //--------------------------------------------------------------------------------
+  if ($isXmlOutput) { //if XML output...
+    header('Content-Type: text/xml');
+    
+    if (!$isCodePosted) { //if NO code posted...
+      echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results></results>\n";
+      exit;
+    }
+    
+    $output = get_democlient_output(cut_string($_POST['code']));
+    
+    if ($output === false) { //if NO demo client output...
+      echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results></results>\n";
+      exit;
+    }
+    
+    echo $output;
+    exit;
+  }
+  //--------------------------------------------------------------------------------
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
@@ -39,33 +98,6 @@
   <div class="wrap">
 <h2>Online Demo Report</h2>
 <?php
-  $isCodePosted = isset($_POST['code']) && !empty($_POST['code']);
-  
-  /**
-   * ...
-   * @param string $code Source code
-   * @return string Output lines
-   */
-  function get_democlient_output($code) {
-    $postdata = http_build_query(
-      array(
-        'code' => $code
-      )
-    );
-    
-    $opts = array('http' =>
-      array(
-        'method'  => 'POST',
-        'header'  => 'Content-type: application/x-www-form-urlencoded',
-        'content' => $postdata
-      )
-    );
-    
-    $context = stream_context_create($opts);
-    
-    return @file_get_contents('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
-  }
-  
   /**
    * ...
    * @param string $output Output lines
@@ -88,13 +120,6 @@
     catch (Exception $ex) {
       return array();
     }
-  }
-  
-  function cut_string($string, $length = 1024) {
-    if (strlen($string) > $length) {
-      return substr($string, 0, $length);
-    }
-    return $string;
   }
   
   if ($isCodePosted) { //if code posted...

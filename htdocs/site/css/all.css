@@ -182,6 +182,13 @@ pre.cmd {
   text-align: center;
 }
 
+/* Max characters */
+.maxChars {
+  margin-left: 2em;
+  color: #888;
+  font-size: smaller;
+}
+
 /* Printing */
 @media print {
   #header { color: black; border-bottom: 1px solid black; }

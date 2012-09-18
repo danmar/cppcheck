@@ -40,7 +40,7 @@
   <div class="wrap">
 <h2>Online Demo</h2>
 <form action="/demo/report/" name="f" onsubmit="return checkCodeLength();" method="post" target="_blank">
-<p><label for="code">Enter code:</label><br />
+<p><label for="code">Enter code:</label> <i class="maxChars">(max 1024 characters)</i><br />
 <textarea id="code" name="code" rows="20" cols="80">
 void f()
 {
@@ -48,7 +48,8 @@ void f()
     *p = 0;
 }
 </textarea><br />
-<input type="submit" value="Check" /> (max 1024 characters)</p>
+<input type="submit" value="Check" />
+<label><input type="checkbox" name="xml" value="1" />XML output</label></p>
 </form>
 <h3>Examples</h3>
 <p>This code can be copy and pasted in the edit box above.</p>
