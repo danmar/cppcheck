@@ -109,7 +109,7 @@ private:
     /** if variable is allocated then there is a leak */
     void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);
 
-    void leakError(const Token* tok, const std::string &varname);
+    void leakError(const Token* tok, const std::string &varname, const std::string &type);
     void mismatchError(const Token* tok, const std::string &varname);
     void deallocUseError(const Token *tok, const std::string &varname);
     void deallocReturnError(const Token *tok, const std::string &varname);

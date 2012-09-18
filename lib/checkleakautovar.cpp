@@ -64,11 +64,14 @@ void VarInfo::possibleUsageAll(const std::string &functionName)
 }
 
 
-void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname)
+void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, const std::string &type)
 {
     const Standards standards;
     CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, standards);
-    checkmemleak.memleakError(tok, varname);
+    if (type == "fopen")
+        checkmemleak.resourceLeakError(tok, varname);
+    else
+        checkmemleak.memleakError(tok, varname);
     //reportError(tok, Severity::error, "newleak", "New memory leak: " + varname);
 }
 
@@ -523,7 +526,7 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     if (var != alloctype.end() && var->second != "dealloc") {
         const std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(vartok->varId());
         if (use == possibleUsage.end()) {
-            leakError(vartok, vartok->str());
+            leakError(vartok, vartok->str(), var->second);
         } else {
             configurationInfo(vartok, use->second);
         }
@@ -566,7 +569,7 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
 
                 const std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(varid);
                 if (use == possibleUsage.end()) {
-                    leakError(tok, var->name());
+                    leakError(tok, var->name(), it->second);
                 } else {
                     configurationInfo(tok, use->second);
                 }
