@@ -63,7 +63,7 @@
     
     $context = stream_context_create($opts);
     
-    return file_get_contents('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
+    return @file_get_contents('http://cppcheck.sourceforge.net/cgi-bin/democlient.cgi', false, $context);
   }
   
   /**
@@ -114,25 +114,31 @@
     echo "<h3>Output</h3>\n";
     
     $output = get_democlient_output($code);
-    $results = parse_democlient_output($output);
     
-    if (!empty($results)) {
-      echo "<table id=\"resultsTable\">\n";
-      echo "<thead>\n";
-      echo "  <tr><th class=\"center\" filter-type=\"ddl\">Line</th><th class=\"center\" filter-type=\"ddl\">Severity</th><th>Message</th></tr>\n";
-      echo "</thead>\n";
-      echo "<tbody>\n";
-      foreach ($results as $result) { //for each result...
-        echo "  <tr><td class=\"center\">" . htmlspecialchars($result['line']) . "</td><td class=\"center\">" . htmlspecialchars($result['severity']) . "</td><td>" . htmlspecialchars($result['msg']) . "</td></tr>\n";
+    if (!$output === false) {
+      $results = parse_democlient_output($output);
+      
+      if (!empty($results)) {
+        echo "<table id=\"resultsTable\">\n";
+        echo "<thead>\n";
+        echo "  <tr><th class=\"center\" filter-type=\"ddl\">Line</th><th class=\"center\" filter-type=\"ddl\">Severity</th><th>Message</th></tr>\n";
+        echo "</thead>\n";
+        echo "<tbody>\n";
+        foreach ($results as $result) { //for each result...
+          echo "  <tr><td class=\"center\">" . htmlspecialchars($result['line']) . "</td><td class=\"center\">" . htmlspecialchars($result['severity']) . "</td><td>" . htmlspecialchars($result['msg']) . "</td></tr>\n";
+        }
+        echo "</tbody>\n";
+        echo "</table>\n";
       }
-      echo "</tbody>\n";
-      echo "</table>\n";
+      else {
+        echo "<p>No errors found.</p>\n";
+      }
     }
     else {
-      echo "<p>No errors found.</p>\n";
+      echo "<p>Problem with demo client. Please try again.</p>\n";
     }
   }
-  else {
+  else { //if NO code posted...
     echo "<p>Use the <a href=\"/demo/\">online demo</a> page to create the report.</p>\n";
   }
 ?>
