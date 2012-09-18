@@ -20,6 +20,9 @@ AddType image/vnd.microsoft.icon .ico
   BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
 </IfModule>
 
+#Redirect "democlient.html" to the new place...
+Redirect permanent /democlient.html http://cppcheck.sourceforge.net/demo/
+
 #Redirect "devinfo.html" to the new place...
 Redirect permanent /devinfo.html http://cppcheck.sourceforge.net/devinfo/
 
