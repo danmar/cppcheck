@@ -509,6 +509,10 @@ private:
 
         // no simplification as the cast may be important here. see #2897 for example
         ASSERT_EQUALS("; * ( ( char * ) p + 1 ) = 0 ;", tok("; *((char *)p + 1) = 0;"));
+
+        ASSERT_EQUALS("if ( true )", tok("if ((unsigned char)1)")); // #4164
+        ASSERT_EQUALS("f ( 200 )", tok("f((unsigned char)200)"));
+        ASSERT_EQUALS("f ( ( char ) 1234 )", tok("f((char)1234)")); // dont simplify downcast
     }
 
 

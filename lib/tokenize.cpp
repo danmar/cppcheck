@@ -4591,6 +4591,18 @@ void Tokenizer::simplifyCasts()
             tok = tok->linkAt(2);
             continue;
         }
+        // #4164 : ((unsigned char)1) => (1)
+        if (Token::Match(tok->next(), "( unsigned| %type% ) %num%") && tok->next()->link()->previous()->isStandardType()) {
+            const MathLib::bigint value = MathLib::toLongNumber(tok->next()->link()->next()->str());
+            unsigned int bits = 8 * _typeSize[tok->next()->link()->previous()->str()];
+            if (!tok->tokAt(2)->isUnsigned())
+                bits--;
+            if (bits < 31 && value >= 0 && value < (1 << bits)) {
+                Token::eraseTokens(tok, tok->next()->link()->next());
+            }
+            continue;
+        }
+
         while ((Token::Match(tok->next(), "( %type% *| *| *| ) *|&| %var%") && (tok->str() != ")" || tok->tokAt(2)->isStandardType())) ||
                Token::Match(tok->next(), "( %type% %type% *| *| *| ) *|&| %var%") ||
                (!tok->isName() && (Token::Match(tok->next(), "( %type% * *| *| ) (") ||
