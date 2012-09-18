@@ -949,6 +949,14 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 break;
             }
 
+            // Bailout for "if".
+            if (tok2->str() == "if") {
+                if (_settings->inconclusive)
+                    inconclusive = true;
+                else
+                    break;
+            }
+
             if (Token::Match(tok2, "goto|continue|break|switch|for"))
                 break;
 

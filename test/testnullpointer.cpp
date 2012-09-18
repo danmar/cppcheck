@@ -1475,6 +1475,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #4118 - second if
+        check("void f(char *p) {\n"
+              "    int x = 1;\n"
+              "    if (!p) x = 0;\n"
+              "    if (x) *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #2582 - segmentation fault
         check("if()");
 
