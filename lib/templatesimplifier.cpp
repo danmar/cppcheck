@@ -187,6 +187,10 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (Token::Match(tok, "struct|union"))
             tok = tok->next();
 
+        // Skip '&'
+        if (Token::Match(tok, "& %var% [,>]"))
+            tok = tok->next();
+
         // skip std::
         if (tok && tok->str() == "::")
             tok = tok->next();
