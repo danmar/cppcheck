@@ -134,6 +134,7 @@ private:
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
+        TEST_CASE(templateParameters1);  // #4169 - segmentation fault
 
         TEST_CASE(namespaces);
 
@@ -2384,6 +2385,12 @@ private:
         ASSERT_EQUALS(1U, templateParameters("<const struct C> x;"));
     }
 
+    void templateParameters1() {
+        // #4169 - semgentation fault (invalid code)
+        const char code[] = "volatile true , test < test < #ifdef __ppc__ true ,";
+        // do not crash on invalid code
+        ASSERT_EQUALS(0, templateParameters(code));
+    }
 
     void namespaces() {
         {
