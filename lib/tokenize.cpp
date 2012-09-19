@@ -142,7 +142,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
     std::list<const Token*> locationList;
     locationList.push_back(tok1);
     locationList.push_back(tok2);
-    const std::string tok2_str = tok2 ? tok2->str():std::string("name");
+    const std::string tok2_str = tok2 ? tok2->str() : std::string("name");
 
     reportError(locationList, Severity::style, "variableHidingTypedef",
                 std::string("The " + type + " '" + tok2_str + "' hides a typedef with the same name."), true);
@@ -156,7 +156,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
     std::list<const Token*> locationList;
     locationList.push_back(tok1);
     locationList.push_back(tok2);
-    const std::string tok2_str = tok2 ? tok2->str():std::string("name");
+    const std::string tok2_str = tok2 ? tok2->str() : std::string("name");
 
     reportError(locationList, Severity::style, "unnecessaryForwardDeclaration",
                 std::string("The " + type + " '" + tok2_str + "' forward declaration is unnecessary. Type " + type + " is already declared earlier."));
@@ -1080,9 +1080,7 @@ void Tokenizer::simplifyTypedef()
                         if (tok2->strAt(-1) == "::") {
                             // Don't replace this typename if it's preceded by "::" unless it's a namespace
                             if (!spaceInfo.empty() && (tok2->strAt(-2) == spaceInfo[0].className) && spaceInfo[0].isNamespace) {
-                                tok2 = tok2->tokAt(-3);
-                                tok2->deleteNext(2);
-                                tok2 = tok2->next();
+                                tok2->tokAt(-3)->deleteNext(2);
                                 simplifyType = true;
                             }
                         } else if (Token::Match(tok2->previous(), "case %type% :")) {
@@ -3336,6 +3334,7 @@ bool Tokenizer::simplifyTokenList()
     std::set<unsigned int> pod;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isStandardType()) {
+            tok = tok->next();
             while (tok && (tok->str() == "*" || tok->isName())) {
                 if (tok->varId() > 0) {
                     pod.insert(tok->varId());
@@ -4197,7 +4196,7 @@ void Tokenizer::simplifyCompoundAssignment()
 void Tokenizer::simplifyConditionOperator()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok,"return|= ( true|false ) ?")) {
+        if (Token::Match(tok,"return|= ( %bool% ) ?")) {
             Token *tok2 = tok->tokAt(5);
             while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->isArithmeticalOp()))
                 tok2 = tok2->next();
@@ -6041,9 +6040,7 @@ bool Tokenizer::simplifyKnownVariables()
                 }
                 const unsigned int valueVarId(0);
                 const bool valueIsPointer(false);
-                Token *tok3 = tok2;
-                for (int i = 0; i < 6; ++i)
-                    tok3 = tok3->next();
+                Token *tok3 = tok2->tokAt(6);
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
             }
         }
@@ -6696,7 +6693,7 @@ void Tokenizer::simplifyReference()
                         }
                     }
 
-                    tok2->deleteNext(6+(tok->strAt(6)==")"));
+                    tok2->deleteNext(6+(tok->strAt(6)==")" ? 1 : 0));
                 }
             }
         }
@@ -6947,7 +6944,7 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
     std::list<const Token*> locationList;
     locationList.push_back(tok1);
     locationList.push_back(tok2);
-    const std::string tok2_str = tok2 ? tok2->str():std::string("name");
+    const std::string tok2_str = tok2 ? tok2->str() : std::string("name");
 
     reportError(locationList, Severity::style, "variableHidingEnum",
                 std::string(type + " '" + tok2_str + "' hides enumerator with same name"));
@@ -7849,7 +7846,7 @@ void Tokenizer::simplifyComma()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "for (") ||
-            Token::Match(tok, "=|enum {")) {
+            Token::simpleMatch(tok, "= {")) {
             tok = tok->next()->link();
 
             continue;
@@ -8649,10 +8646,10 @@ void Tokenizer::simplifyBitfields()
             }
         } else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %any% ;") &&
                    tok->next()->str() != "default") {
-            unsigned char offset = (tok->next()->str() == "const") ? 1 : 0;
+            bool offset = (tok->next()->str() == "const");
 
-            if (tok->strAt(3 + offset) != "{") {
-                tok->deleteNext(4+offset);
+            if (tok->strAt(3 + (offset ? 1 : 0)) != "{") {
+                tok->deleteNext(4 + (offset ? 1 : 0));
                 goback = true;
             }
         }
