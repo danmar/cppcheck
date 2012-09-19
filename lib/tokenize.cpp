@@ -7282,6 +7282,9 @@ void Tokenizer::simplifyEnum()
                 bool simplify = false;
                 bool hasClass = false;
                 EnumValue *ev = NULL;
+
+                if (!tok1)
+                    return;
                 for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "}") {
                         --level;

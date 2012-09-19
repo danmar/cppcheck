@@ -56,6 +56,7 @@ private:
         TEST_CASE(tokenize21);  // tokenize 0x0E-7
         TEST_CASE(tokenize22);  // special marker $ from preprocessor
         TEST_CASE(tokenize23);  // tokenize "return - __LINE__;"
+        TEST_CASE(tokenize24);  // #4195 (segmentation fault)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -639,6 +640,11 @@ private:
 
     void tokenize23() { // tokenize 'return - __LINE__' correctly
         ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
+    }
+
+    // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
+    void tokenize24() {
+        tokenizeAndStringify("enum { int f ( ) { return = } r = f ( ) ; }");
     }
 
     void wrong_syntax1() {
