@@ -7,7 +7,7 @@
  *  - Jack Lloyd (lloyd@randombit.net)
  *  - Michael Mol (mikemol@gmail.com)
  * Copyright: (c) 2004 Nigel McNie (http://qbnz.com/highlighter/)
- * Release Version: 1.0.8.10
+ * Release Version: 1.0.8.11
  * Date Started: 2004/06/04
  *
  * C language file for GeSHi.

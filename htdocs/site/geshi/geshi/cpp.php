@@ -7,7 +7,7 @@
  *  - M. Uli Kusterer (witness.of.teachtext@gmx.net)
  *  - Jack Lloyd (lloyd@randombit.net)
  * Copyright: (c) 2004 Dennis Bayer, Nigel McNie (http://qbnz.com/highlighter)
- * Release Version: 1.0.8.10
+ * Release Version: 1.0.8.11
  * Date Started: 2004/09/27
  *
  * C++ language file for GeSHi.
