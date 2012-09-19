@@ -354,6 +354,7 @@ private:
         TEST_CASE(enum33); // ticket #4015 (segmentation fault)
         TEST_CASE(enum34); // ticket #4141 (division by zero)
         TEST_CASE(enumscope1); // ticket #3949
+        TEST_CASE(duplicateDefinition); // ticket #3565
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -7174,6 +7175,15 @@ private:
         const char code[] = "void foo() { enum { A = 0, B = 1 }; }\n"
                             "void bar() { int a = A; }";
         ASSERT_EQUALS("void foo ( ) { } void bar ( ) { int a ; a = A ; }", checkSimplifyEnum(code));
+    }
+
+    void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
+        const Settings settings;
+        Tokenizer tokenizer(&settings, NULL);
+        std::istringstream istr("x ; return a not_eq x;");
+        tokenizer.tokenize(istr, "test.c");
+        Token *tok = (Token *)(tokenizer.tokens()->tokAt(5));
+        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&tok, tokenizer.tokens()));
     }
 
     void removestd() {

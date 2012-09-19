@@ -7018,12 +7018,18 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
                     }
                 }
             } else {
-                // look backwards
-                if (Token::Match(tok->previous(), "enum|,") ||
-                    (Token::Match(tok->previous(), "%type%") &&
-                     tok->previous()->str() != "return")) {
+                if (Token::Match(tok->previous(), "enum|,")) {
                     duplicateEnumError(*tokPtr, name, "Variable");
                     return true;
+                } else if (Token::Match(tok->previous(), "%type%")) {
+                    // look backwards
+                    const Token *back = tok;
+                    while (back && back->isName())
+                        back = back->previous();
+                    if (!back || Token::Match(back, "[(,;{}] !!return")) {
+                        duplicateEnumError(*tokPtr, name, "Variable");
+                        return true;
+                    }
                 }
             }
         }
