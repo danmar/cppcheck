@@ -2697,6 +2697,18 @@ private:
                                      "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "int foo ()\n"
+                                "{\n"
+                                "    return doSomething(), 0;\n"
+                                "}\n";
+            const char expected[]  = "int foo ( ) "
+                                     "{"
+                                     " doSomething ( ) ; return 0 ; "
+                                     "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void conditionOperator() {

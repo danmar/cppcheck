@@ -7845,14 +7845,9 @@ void Tokenizer::simplifyMathFunctions()
 void Tokenizer::simplifyComma()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "for (") ||
-            Token::simpleMatch(tok, "= {")) {
-            tok = tok->next()->link();
 
-            continue;
-        }
-
-        if (tok->str() == "(" || tok->str() == "[") {
+        if (tok->str() == "(" || tok->str() == "[" ||
+            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "=")) {
             tok = tok->link();
             continue;
         }
@@ -7865,8 +7860,7 @@ void Tokenizer::simplifyComma()
                 tok = tok2;
         }
 
-        // If token after the comma is a constant number, simplification is not required.
-        if (!tok->next() || tok->str() != "," || tok->next()->isNumber())
+        if (!tok->next() || tok->str() != ",")
             continue;
 
         // We must not accept just any keyword, e.g. accepting int
@@ -7901,17 +7895,21 @@ void Tokenizer::simplifyComma()
         }
 
         bool inReturn = false;
-        Token *startFrom = NULL;    // next tokean after "; return"
-        Token *endAt = NULL;        // first ";" token after "; return"
+        Token *startFrom = NULL;    // "[;{}]" token before "return"
+        Token *endAt = NULL;        // first ";" token after "[;{}] return"
 
         // find "; return" pattern before comma
-        for (Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
+        for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
             if (Token::Match(tok2, "[;{}]")) {
                 break;
 
+            } else if (tok2->str() == ")" || tok2->str() == "]" ||
+                       (tok2->str() == "}" && tok2->link()->previous() && tok2->link()->previous()->str() == "=")) {
+                tok2 = tok2->link();
+
             } else if (tok2->str() == "return" && Token::Match(tok2->previous(), "[;{}]")) {
                 inReturn = true;
-                startFrom = tok2->next();
+                startFrom = tok2->previous();
                 break;
             }
         }
@@ -7919,39 +7917,39 @@ void Tokenizer::simplifyComma()
         // find token where return ends and also count commas
         if (inReturn) {
             std::size_t commaCounter = 0;
-            std::size_t indentlevel = 0;
 
-            for (Token *tok2 = startFrom; tok2; tok2 = tok2->next()) {
+            for (Token *tok2 = startFrom->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";") {
                     endAt = tok2;
                     break;
 
-                } else if (tok2->str() == "(") {
-                    ++indentlevel;
+                } else if (tok2->str() == "(" || tok2->str() == "[" ||
+                           (tok2->str() == "{" && tok2->previous() && tok2->previous()->str() == "=")) {
+                    tok2 = tok2->link();
 
-                } else if (tok2->str() == ")") {
-                    --indentlevel;
-
-                } else if (tok2->str() == "," && indentlevel == 0) {
+                } else if (tok2->str() == ",") {
                     ++commaCounter;
                 }
             }
 
-            if (commaCounter) {
-                indentlevel = 0;
+            if (!endAt)
+                //probably a syntax error
+                return;
 
+            if (commaCounter) {
                 // change tokens:
                 // "; return a ( ) , b ( ) , c ;"
                 // to
-                // "; return a ( ) ; b ( ) ; c ;"
-                for (Token *tok2 = startFrom; tok2 != endAt; tok2 = tok2->next()) {
-                    if (tok2->str() == "(") {
-                        ++indentlevel;
+                // "; a ( ) ; b ( ) ; return c ;"
 
-                    } else if (tok2->str() == ")") {
-                        --indentlevel;
+                // remove "return"
+                startFrom->deleteNext();
+                for (Token *tok2 = startFrom->next(); tok2 != endAt; tok2 = tok2->next()) {
+                    if (tok2->str() == "(" || tok2->str() == "[" ||
+                        (tok2->str() == "{" && tok2->previous() && tok2->previous()->str() == "=")) {
+                        tok2 = tok2->link();
 
-                    } else if (tok2->str() == "," && indentlevel == 0) {
+                    } else if (tok2->str() == ",") {
                         tok2->str(";");
                         --commaCounter;
                         if (commaCounter == 0) {
@@ -7959,17 +7957,9 @@ void Tokenizer::simplifyComma()
                         }
                     }
                 }
-
-                // delete old "return"
-                startFrom->previous()->deleteThis();
-                startFrom = 0;   // give dead pointer a value
-
                 tok = endAt;
-                if (!tok)
-                    return;
             }
         }
-
     }
 }
 
