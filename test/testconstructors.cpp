@@ -77,6 +77,7 @@ private:
         TEST_CASE(initvar_nested_constructor); // ticket #1375
         TEST_CASE(initvar_nocopy1);            // ticket #2474
         TEST_CASE(initvar_nocopy2);            // ticket #2484
+        TEST_CASE(initvar_nocopy3);            // ticket #3611
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
 
@@ -677,7 +678,7 @@ private:
               "    Fred() { };\n"
               "    Fred(const Fred &) { };\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("class Fred\n"
               "{\n"
@@ -689,7 +690,29 @@ private:
               "};\n"
               "Fred::Fred() { };\n"
               "Fred::Fred(const Fred &) { };\n");
-        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    std::string var;\n"
+              "public:\n"
+              "    Fred() { };\n"
+              "    Fred(const Fred &) { };\n"
+              "};", true);
+        ASSERT_EQUALS("[test.cpp:7]: (warning, inconclusive) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    std::string var;\n"
+              "public:\n"
+              "    Fred();\n"
+              "    Fred(const Fred &);\n"
+              "};\n"
+              "Fred::Fred() { };\n"
+              "Fred::Fred(const Fred &) { };\n", true);
+        ASSERT_EQUALS("[test.cpp:10]: (warning, inconclusive) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
     }
 
     void initvar_nested_constructor() { // ticket #1375
@@ -823,8 +846,7 @@ private:
               "    A(const A&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
-                      "[test.cpp:7]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_nocopy2() { // ticket #2484
@@ -868,6 +890,13 @@ private:
               "    A(const A& rhs) {}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    B b;\n"
+              "    A() {}\n"
+              "    A(const A& rhs) {}\n"
+              "};", true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Member variable 'A::b' is not initialized in the constructor.\n", errout.str());
     }
 
     void initvar_destructor() {
@@ -897,7 +926,7 @@ private:
               "\n"
               "void Fred::operator=(const Fred &f)\n"
               "{ }", true);
-        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (warning, inconclusive) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='.\n", errout.str());
     }
 
     void uninitVar1() {

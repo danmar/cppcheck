@@ -107,6 +107,8 @@ void CheckClass::constructors()
             std::list<Variable>::const_iterator var;
             unsigned int count = 0;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
+                bool inconclusive = false;
+
                 if (usage[count].assign || usage[count].init || var->isStatic())
                     continue;
 
@@ -131,12 +133,18 @@ void CheckClass::constructors()
 
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
-                if (!var->isPointer() && !var->isClass() && (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
+                if (!var->isPointer() &&
+                    !(var->type() && var->type()->needInitialization != Scope::True) &&
+                    (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
                     bool stdtype = false;
                     for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next())
                         stdtype |= type->isStandardType();
-                    if (!stdtype)
-                        continue;
+                    if (!stdtype) {
+                        if (_settings->inconclusive)
+                            inconclusive = true;
+                        else
+                            continue;
+                    }
                 }
 
                 // It's non-static and it's not initialized => error
@@ -152,11 +160,11 @@ void CheckClass::constructors()
                     }
 
                     if (classNameUsed)
-                        operatorEqVarError(func->token, scope->className, var->name());
+                        operatorEqVarError(func->token, scope->className, var->name(), inconclusive);
                 } else if (func->access != Private) {
                     const Scope *varType = var->type();
                     if (!varType || varType->type != Scope::eUnion)
-                        uninitVarError(func->token, scope->className, var->name());
+                        uninitVarError(func->token, scope->className, var->name(), inconclusive);
                 }
             }
         }
@@ -593,14 +601,14 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
                 "instanciated. That may cause bugs or undefined behavior.");
 }
 
-void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
+void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.");
+    reportError(tok, Severity::warning, "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.", inconclusive);
 }
 
-void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
+void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator='.");
+    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator='.", inconclusive);
 }
 
 //---------------------------------------------------------------------------
