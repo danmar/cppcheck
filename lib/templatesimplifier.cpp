@@ -844,9 +844,12 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok->deleteNext();
                     tok->deleteThis();
                     ret = true;
-                } else if (Token::Match(tok->previous(), "[=[(,] 0 * %any% ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 0 * %any% ,|:|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 0 && %any% ,|:|;|=|%op%")) {
+                } else if (Token::Match(tok->previous(), "[=[(,] 0 * %var% ,|]|)|;|=|%op%") ||
+                           Token::Match(tok->previous(), "[=[(,] 0 * %num% ,|]|)|;|=|%op%") ||
+                           Token::Match(tok->previous(), "[=[(,] 0 * ( ,|]|)|;|=|%op%") ||
+                           Token::Match(tok->previous(), "return|case 0 *|&& %var% ,|:|;|=|%op%") ||
+                           Token::Match(tok->previous(), "return|case 0 *|&& %num% ,|:|;|=|%op%") ||
+                           Token::Match(tok->previous(), "return|case 0 *|&& ( ,|:|;|=|%op%")) {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
                         Token::eraseTokens(tok, tok->next()->link());

@@ -6638,6 +6638,9 @@ private:
 
         // ticket #3964 - simplify numeric calculations in tokenization
         ASSERT_EQUALS("char a [ 10 ] ;", tokenizeAndStringify("char a[9+1];"));
+
+        // #3953 (valgrind errors on garbage code)
+        ASSERT_EQUALS("void f ( 0 * ) ;", tokenizeAndStringify("void f ( 0 * ) ;"));
     }
 
     void simplifyCompoundAssignment() {
