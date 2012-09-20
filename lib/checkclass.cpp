@@ -129,6 +129,17 @@ void CheckClass::constructors()
                 if (!var->isPointer() && var->type() && canNotCopy(var->type()))
                     continue;
 
+                // Don't warn about unknown types in copy constructors since we
+                // don't know if they can be copied or not..
+                if (!var->isPointer() && !var->isClass() && (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
+                    bool stdtype = false;
+                    for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next()) {
+                        stdtype |= type->isStandardType();
+                    }
+                    if (!stdtype)
+                        continue;
+                }
+
                 // It's non-static and it's not initialized => error
                 if (func->type == Function::eOperatorEqual) {
                     const Token *operStart = func->arg;

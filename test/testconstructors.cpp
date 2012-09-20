@@ -861,6 +861,15 @@ private:
                       "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
     }
 
+    void initvar_nocopy3() { // #3611 - unknown type is non-copyable
+        check("struct A {\n"
+              "    B b;\n"
+              "    A() {}\n"
+              "    A(const A& rhs) {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void initvar_destructor() {
         check("class Fred\n"
               "{\n"
