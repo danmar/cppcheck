@@ -133,9 +133,8 @@ void CheckClass::constructors()
                 // don't know if they can be copied or not..
                 if (!var->isPointer() && !var->isClass() && (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
                     bool stdtype = false;
-                    for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next()) {
+                    for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next())
                         stdtype |= type->isStandardType();
-                    }
                     if (!stdtype)
                         continue;
                 }
