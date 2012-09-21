@@ -353,6 +353,7 @@ private:
         TEST_CASE(enum32); // ticket #3998 (access violation)
         TEST_CASE(enum33); // ticket #4015 (segmentation fault)
         TEST_CASE(enum34); // ticket #4141 (division by zero)
+        TEST_CASE(enum35); // ticket #3953 (avoid simplification of type)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -6847,7 +6848,7 @@ private:
 
     void enum6() {
         const char code[] = "enum { a = MAC(A, B, C) }; void f(a) { }";
-        const char expected[] = "void f ( MAC ( A , B , C ) ) { }";
+        const char expected[] = "void f ( a ) { }";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
@@ -7090,8 +7091,7 @@ private:
                             "    x+=1;\n"
                             "}\n";
         checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
-                      "[test.cpp:6] -> [test.cpp:1]: (style) Function parameter 'x' hides enumerator with same name\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n", errout.str());
     }
 
     void enum23() { // ticket #2804
@@ -7183,6 +7183,11 @@ private:
         ASSERT_EQUALS(";", checkSimplifyEnum(code));
     }
 
+    void enum35() {  // #3953 - avoid simplification of type
+        ASSERT_EQUALS("void f ( A * a ) ;", checkSimplifyEnum("enum { A }; void f(A * a) ;"));
+        ASSERT_EQUALS("void f ( A * a ) { }", checkSimplifyEnum("enum { A }; void f(A * a) { }"));
+    }
+
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
         const char code[] = "void foo() { enum { A = 0, B = 1 }; }\n"
                             "void bar() { int a = A; }";
@@ -7194,8 +7199,8 @@ private:
         Tokenizer tokenizer(&settings, NULL);
         std::istringstream istr("x ; return a not_eq x;");
         tokenizer.tokenize(istr, "test.c");
-        Token *tok = (Token *)(tokenizer.tokens()->tokAt(5));
-        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&tok, tokenizer.tokens()));
+        Token *x_token = (Token *)(tokenizer.tokens()->tokAt(5));
+        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token, tokenizer.tokens()));
     }
 
     void removestd() {

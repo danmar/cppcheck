@@ -7318,6 +7318,18 @@ void Tokenizer::simplifyEnum()
                             if (!shadowId.empty())
                                 shadowId.push(shadowId.top());
                         }
+                        // Function head
+                    } else if (Token::Match(tok2, "%var% (")) {
+                        const Token *prev = tok2->previous();
+                        bool type = false;
+                        while (prev && (prev->isName() || Token::Match(prev, "*|&|::"))) {
+                            type |= Token::Match(prev, "%type% !!::");
+                            prev = prev->previous();
+                        }
+                        if (type && (!prev || Token::Match(prev, "[;{}]"))) {
+                            // skip ( .. )
+                            tok2 = tok2->next()->link();
+                        }
                     } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()) && enumValues.find(tok2->strAt(2)) != enumValues.end()) {
                         simplify = true;
                         hasClass = true;
