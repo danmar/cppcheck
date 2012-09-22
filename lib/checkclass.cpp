@@ -270,17 +270,20 @@ void CheckClass::noCopyConstructorError(const Token *tok, const std::string &cla
 bool CheckClass::canNotCopy(const Scope *scope)
 {
     std::list<Function>::const_iterator func;
-    bool privateAssign = false;
-    bool privateCopy = false;
+    bool constructor = false;
+    bool publicAssign = false;
+    bool publicCopy = false;
 
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        if (func->type == Function::eCopyConstructor && func->access == Private)
-            privateCopy = true;
-        else if (func->type == Function::eOperatorEqual && func->access == Private)
-            privateAssign = true;
+        if (func->type == Function::eConstructor || func->type == Function::eCopyConstructor)
+            constructor = true;
+        if (func->type == Function::eCopyConstructor && func->access == Public)
+            publicCopy = true;
+        else if (func->type == Function::eOperatorEqual && func->access == Public)
+            publicAssign = true;
     }
 
-    return privateAssign && privateCopy;
+    return constructor && !(publicAssign | publicCopy);
 }
 
 void CheckClass::assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage)

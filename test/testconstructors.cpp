@@ -739,8 +739,9 @@ private:
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
               "A::B::C::D::D(int z){}\n");
+        // Note that the example code is not compilable. The A constructor must
+        // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
-                      "[test.cpp:20]: (warning) Member variable 'A::b' is not initialized in the constructor.\n"
                       "[test.cpp:21]: (warning) Member variable 'B::b' is not initialized in the constructor.\n"
                       "[test.cpp:22]: (warning) Member variable 'C::c' is not initialized in the constructor.\n"
                       "[test.cpp:23]: (warning) Member variable 'D::d' is not initialized in the constructor.\n", errout.str());
@@ -768,8 +769,9 @@ private:
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
               "A::B::C::D::D(const A::B::C::D & d){}\n");
+        // Note that the example code is not compilable. The A constructor must
+        // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
-                      "[test.cpp:20]: (warning) Member variable 'A::b' is not initialized in the constructor.\n"
                       "[test.cpp:21]: (warning) Member variable 'B::b' is not initialized in the constructor.\n"
                       "[test.cpp:22]: (warning) Member variable 'C::c' is not initialized in the constructor.\n"
                       "[test.cpp:23]: (warning) Member variable 'D::d' is not initialized in the constructor.\n", errout.str());
@@ -798,8 +800,9 @@ private:
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
               "A::B::C::D::D(const A::B::C::D::E & e){}\n");
+        // Note that the example code is not compilable. The A constructor must
+        // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:21]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
-                      "[test.cpp:21]: (warning) Member variable 'A::b' is not initialized in the constructor.\n"
                       "[test.cpp:22]: (warning) Member variable 'B::b' is not initialized in the constructor.\n"
                       "[test.cpp:23]: (warning) Member variable 'C::c' is not initialized in the constructor.\n"
                       "[test.cpp:24]: (warning) Member variable 'D::d' is not initialized in the constructor.\n", errout.str());
@@ -1430,20 +1433,6 @@ private:
               "    Altren value;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
-
-        check("struct Altren\n"
-              "{\n"
-              "    explicit Altren(int _a) : value(0) { }\n"
-              "    int value;\n"
-              "};\n"
-              "class A\n"
-              "{\n"
-              "public:\n"
-              "    A() { }\n"
-              "private:\n"
-              "    Altren value;\n"
-              "};");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'A::value' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVar19() { // ticket #2792
