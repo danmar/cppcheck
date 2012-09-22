@@ -60,6 +60,10 @@ void CheckClass::constructors()
         if (!scope->isClassOrStruct())
             continue;
 
+        // don't check uninstantiated template classes
+        if (scope->classDef->strAt(-1) == ">")
+            continue;
+
         // There are no constructors.
         if (scope->numConstructors == 0) {
             // If there is a private variable, there should be a constructor..

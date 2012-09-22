@@ -58,6 +58,7 @@ private:
         TEST_CASE(simple3);
         TEST_CASE(simple4);
         TEST_CASE(simple5); // ticket #2560
+        TEST_CASE(simple6); // ticket #4085 - uninstantiated template class
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -264,6 +265,15 @@ private:
               "    }\n"
               "private:\n"
               "    int mValue;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple6() { // ticket #4085 - uninstantiated template class
+        check("template <class T> struct A {\n"
+              "    A<T>() { x = 0; }\n"
+              "private:\n"
+              "    int x;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
