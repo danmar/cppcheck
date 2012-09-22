@@ -398,6 +398,12 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             break;
         }
 
+        // Using swap to assign all variables..
+        if (func.type == Function::eOperatorEqual && Token::Match(ftok, "[;{}] %var% (") && Token::Match(ftok->linkAt(2), ") . %var% ( *| this ) ;")) {
+            assignAllVar(usage);
+            break;
+        }
+
         // Calling member variable function?
         if (Token::Match(ftok->next(), "%var% . %var% (")) {
             std::list<Variable>::const_iterator var;

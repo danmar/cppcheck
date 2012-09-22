@@ -65,6 +65,7 @@ private:
         TEST_CASE(initvar_operator_eq2);     // BUG 2190376
         TEST_CASE(initvar_operator_eq3);
         TEST_CASE(initvar_operator_eq4);     // ticket #2204
+        TEST_CASE(initvar_operator_eq5);     // ticket #4119
         TEST_CASE(initvar_same_classname);      // BUG 2208157
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
@@ -417,6 +418,21 @@ private:
               "        {\n"
               "        }\n"
               "        return *this\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initvar_operator_eq5() { // #4119 - false positive when using swap to assign variables
+        check("class Fred {\n"
+              "    int i;\n"
+              "public:\n"
+              "    Fred() : i(5) { }\n"
+              "    ~Fred() { }\n"
+              "    Fred(const Fred &fred) : i(fred.i) { }\n"
+              "    Fred & operator=(const Fred &rhs) {\n"
+              "        Fred(rhs).swap(*this);\n"
+              "        return *this;\n"
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
