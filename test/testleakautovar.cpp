@@ -90,6 +90,9 @@ private:
         TEST_CASE(test2);
         TEST_CASE(test3);  // #3954 - reference pointer
 
+        // Execution reaches a 'throw'
+        TEST_CASE(throw1);
+
         // Possible leak => Further configuration is needed for complete analysis
         TEST_CASE(configuration1);
         TEST_CASE(configuration2);
@@ -506,6 +509,24 @@ private:
               "    char *&p = x();\n"
               "    p = malloc(10);\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void throw1() { // 3987 - Execution reach a 'throw'
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    throw 123;\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void f() {\n"
+              "    char *p;\n"
+              "    try {\n"
+              "        p = malloc(10);\n"
+              "        throw 123;\n"
+              "    } catch (...) { }\n"
+              "    free(p);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -462,8 +462,14 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // return
-        else if (tok->str() == "return" || tok->str() == "throw") {
+        else if (tok->str() == "return") {
             ret(tok, *varInfo);
+            varInfo->clear();
+        }
+
+        // throw
+        // TODO: if the execution leave the function then treat it as return
+        else if (tok->str() == "throw") {
             varInfo->clear();
         }
     }
