@@ -112,6 +112,7 @@ private:
         TEST_CASE(array_index_42);
         TEST_CASE(array_index_43); // struct with array
         TEST_CASE(array_index_44); // #3979
+        TEST_CASE(array_index_45); // #4207 - calling function with variable number of parameters (...)
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1448,6 +1449,18 @@ private:
               "    {\n"
               "        buf[i] = 2.;\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_45() { // #4207 - handling of function with variable number of parameters
+        check("void f(const char *format, ...) {\n"
+              "    va_args args;\n"
+              "    va_start(args, format);\n"
+              "}\n"
+              "void test() {\n"
+              "    CHAR buffer[1024];\n"
+              "    f(\"%s\", buffer);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

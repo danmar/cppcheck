@@ -605,6 +605,10 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
             if (!parameter || _tokenizer->sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
                 return;
 
+            // Variable function arguments..
+            if (Token::simpleMatch(parameter->typeStartToken(), ". . ."))
+                return;
+
             // Check the parameter usage in the function scope..
             for (const Token* ftok = func->functionScope->classStart; ftok != func->functionScope->classEnd; ftok = ftok->next()) {
                 if (Token::Match(ftok, "if|for|while (")) {
