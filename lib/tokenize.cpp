@@ -1979,6 +1979,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
 
+    // x = ({ 123; });  =>   { x = 123; }
+    simplifyAssignmentBlock();
+
     simplifyVariableMultipleAssign();
 
     // Remove redundant parentheses
@@ -8554,6 +8557,36 @@ void Tokenizer::simplifyAssignmentInFunctionCall()
 
                     Token::eraseTokens(tok, vartok);
                     break;
+                }
+            }
+        }
+    }
+}
+
+void Tokenizer::simplifyAssignmentBlock()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[;{}] %var% = ( {")) {
+            // goto the "} )"
+            unsigned int indentlevel = 0;
+            Token *tok2 = tok;
+            while (NULL != (tok2 = tok2->next())) {
+                if (tok2->str() == "(" || tok2->str() == "{")
+                    ++indentlevel;
+                else if (tok2->str() == ")" || tok2->str() == "}") {
+                    if (indentlevel <= 2)
+                        break;
+                    --indentlevel;
+                }
+            }
+            if (indentlevel == 2 && Token::simpleMatch(tok2, "} )")) {
+                tok2 = tok2->tokAt(-3);
+                if (Token::Match(tok2, "[;{}] %any% ;") && (tok2->next()->isName() || tok2->next()->isNumber())) {
+                    tok2->insertToken("=");
+                    tok2->insertToken(tok->next()->str());
+                    tok2->next()->varId(tok->next()->varId());
+                    tok->deleteNext(3);
+                    tok2->tokAt(5)->deleteNext();
                 }
             }
         }

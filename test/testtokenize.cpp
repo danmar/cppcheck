@@ -418,6 +418,9 @@ private:
         // "x += .." => "x = x + .."
         TEST_CASE(simplifyCompoundAssignment);
 
+        // x = ({ 123; });  =>  { x = 123; }
+        TEST_CASE(simplifyAssignmentBlock);
+
         // Tokenize C#
         TEST_CASE(cs);
 
@@ -6706,6 +6709,11 @@ private:
 
     void simplifyAssignmentInFunctionCall() {
         ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tokenizeAndStringify(";f(x=g());"));
+    }
+
+    void simplifyAssignmentBlock() {
+        ASSERT_EQUALS("; { x = 123 ; } ;", tokenizeAndStringify(";x=({123;});"));
+        ASSERT_EQUALS("; { x = y ; } ;", tokenizeAndStringify(";x=({y;});"));
     }
 
     void cs() {
