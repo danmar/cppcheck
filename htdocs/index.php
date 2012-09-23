@@ -84,7 +84,7 @@ add Cppcheck as an external tool.</p>
 
 <h2><a id="news">News</a></h2>
 <?php
-  require './site/simplepie/simplepie.inc';
+  require './site/simplepie/simplepie.php';
 
   $feed = new SimplePie();
   $feed->set_feed_url('http://sourceforge.net/export/rss2_projnews.php?group_id=195752');

@@ -65,7 +65,7 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
 <p><a href="https://github.com/danmar/cppcheck/commits/master">View all commits&hellip;</a></p>
 <h2><a id="trac-timeline">Trac Timeline</a></h2>
 <?php
-  require '../site/simplepie/simplepie.inc';
+  require '../site/simplepie/simplepie.php';
 
   $feed = new SimplePie();
   $feed->set_feed_url('http://sourceforge.net/apps/trac/cppcheck/timeline?changeset=on&ticket=on&milestone=on&wiki=on&max=10&daysback=90&format=rss');
