@@ -536,6 +536,18 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                     callstack.push_back(ftok->str());
                     initializeVarList(*it, callstack, scope, usage);
                     callstack.pop_back();
+
+                    // Assume that variables that are passed to it are initialized..
+                    for (const Token *tok2 = ftok; tok2; tok2 = tok2->next()) {
+                        if (Token::Match(tok2, "[;{}]"))
+                            break;
+                        if (Token::Match(tok2, "[(,] &| %var% [,)]")) {
+                            tok2 = tok2->next();
+                            if (tok2->str() == "&")
+                                tok2 = tok2->next();
+                            assignVar(tok2->str(), scope, usage);
+                        }
+                    }
                 }
 
                 // there is a called member function, but it has no implementation, so we assume it initializes everything

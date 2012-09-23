@@ -139,6 +139,7 @@ private:
         TEST_CASE(uninitFunction2);        // No FP when initialized in function
         TEST_CASE(uninitFunction3);        // No FP when initialized in function
         TEST_CASE(uninitFunction4);
+        TEST_CASE(uninitFunction5);
         TEST_CASE(uninitSameClassName);    // No FP when two classes have the same name
         TEST_CASE(uninitFunctionOverload); // No FP when there are overloaded functions
         TEST_CASE(uninitJava);             // Java: no FP when variable is initialized in declaration
@@ -2205,6 +2206,20 @@ private:
               "    double d;\n"
               "};");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::d' is not initialized in the constructor.\n", "", errout.str());
+    }
+
+    void uninitFunction5() { // #4072 - FP about struct that is initialized in function
+        check("struct Structure {\n"
+              "    int C;\n"
+              "};\n"
+              "\n"
+              "class A {\n"
+              "    Structure B;\n"
+              "public:\n"
+              "    A() { Init( B ); };\n"
+              "    void Init( Structure& S ) { S.C = 0; };\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitSameClassName() {
