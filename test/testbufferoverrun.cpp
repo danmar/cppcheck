@@ -1453,7 +1453,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void array_index_45() { // #4207 - handling of function with variable number of parameters
+    void array_index_45() { // #4207 - handling of function with variable number of parameters / unnamed arguments
+        // Variable number of arguments
         check("void f(const char *format, ...) {\n"
               "    va_args args;\n"
               "    va_start(args, format);\n"
@@ -1461,6 +1462,16 @@ private:
               "void test() {\n"
               "    CHAR buffer[1024];\n"
               "    f(\"%s\", buffer);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unnamed argument
+        check("void f(char *) {\n"
+              "    dostuff();\n"
+              "}\n"
+              "void test() {\n"
+              "    char buffer[1024];\n"
+              "    f(buffer);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

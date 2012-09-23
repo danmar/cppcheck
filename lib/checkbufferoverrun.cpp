@@ -605,8 +605,10 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
             if (!parameter || _tokenizer->sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
                 return;
 
-            // Variable function arguments..
-            if (Token::simpleMatch(parameter->typeStartToken(), ". . ."))
+            // No variable id occur for instance when:
+            // - Variable function arguments: "void f(...)"
+            // - Unnamed parameter: "void f(char *)"
+            if (parameter->varId() == 0)
                 return;
 
             // Check the parameter usage in the function scope..
