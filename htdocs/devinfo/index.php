@@ -69,7 +69,7 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
 
   $feed = new SimplePie();
   $feed->set_feed_url('http://sourceforge.net/apps/trac/cppcheck/timeline?changeset=on&ticket=on&milestone=on&wiki=on&max=10&daysback=90&format=rss');
-  $feed->set_cache_location('./site/simplepie/cache');
+  $feed->set_cache_location('../site/simplepie/cache');
   $feed->init();
   print("<ul class=\"rssfeeditems\">\n");
   foreach ($feed->get_items() as $item) { //for the last timeline items...
