@@ -127,6 +127,7 @@ private:
         TEST_CASE(array_index_for_neq);      // #2211: Using != in condition
         TEST_CASE(array_index_for_question); // #2561: for, ?:
         TEST_CASE(array_index_for_andand_oror);  // FN: using && or || in the for loop condition
+        TEST_CASE(array_index_for_varid0);   // #4228: No varid for counter variable
         TEST_CASE(array_index_vla_for);      // #3221: access VLA inside for
         TEST_CASE(array_index_extern);       // FP when using 'extern'. #1684
         TEST_CASE(array_index_cast);         // FP after cast. #2841
@@ -1870,6 +1871,14 @@ private:
               "        i == 0 ? 0 : a[i-1];\n"
               "    }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_for_varid0() { // #4228: No varid for counter variable
+        check("void f() {\n"
+              "   char a[10];\n"
+              "   for (i=0; i<10; i++);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

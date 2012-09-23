@@ -248,7 +248,8 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
  * \param varid [out] varid of counter variable
  * \param varname [out] name of counter variable
  * \param init_value [out] init value of counter variable
- * \return success => pointer to the for loop condition. fail => 0
+ * \return success => pointer to the for loop condition. fail => 0. If 0 is returned and varname has been set then there is
+ * a missing varid for the counter variable
  */
 static const Token *for_init(const Token *tok, unsigned int &varid, std::string &varname, std::string &init_value)
 {
@@ -260,6 +261,9 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
         varid = tok->varId();
         varname = tok->str();
         tok = tok->tokAt(4);
+
+        if (varid == 0)
+            return 0;  // failed
     } else if (Token::Match(tok, "%type% %var% = %any% ;")) {
         if (tok->tokAt(3)->isNumber()) {
             init_value = tok->strAt(3);
@@ -719,6 +723,8 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     std::string counter_init_value;
 
     tok2 = for_init(tok2, counter_varid, counter_name, counter_init_value);
+    if (tok2 == 0 && !counter_name.empty())
+        _tokenizer->getSymbolDatabase()->debugMessage(tok, "for loop variable \'" + counter_name + "\' has varid 0.");
     if (tok2 == 0 || counter_varid == 0)
         return;
 
@@ -787,6 +793,10 @@ void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &
     std::string counter_init_value;
 
     tok3 = for_init(tok3, counter_varid, counter_name, counter_init_value);
+    if (tok3 == 0 && !counter_name.empty())
+        _tokenizer->getSymbolDatabase()->debugMessage(tok, "for loop variable \'" + counter_name + "\' has varid 0.");
+    if (tok3 == 0 || counter_varid == 0)
+        return;
 
     bool maxMinFlipped = false;
     std::string min_counter_value = counter_init_value;
