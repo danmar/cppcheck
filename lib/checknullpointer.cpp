@@ -1268,7 +1268,6 @@ private:
                     return tok2;
                 }
             }
-            return tok2;
         }
 
         return &tok;

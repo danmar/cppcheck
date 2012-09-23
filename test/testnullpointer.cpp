@@ -54,6 +54,7 @@ private:
         TEST_CASE(nullpointer18); // #1927
         TEST_CASE(nullpointer19); // #3811
         TEST_CASE(nullpointer20); // #3807 (fp: return p ? (p->x() || p->y()) : z)
+        TEST_CASE(nullpointer21); // #4038 (fp: if (x) p=q; else return;)
         TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
@@ -1278,6 +1279,16 @@ private:
               "    if (y ? p->x : p->y) { }\n"
               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+    }
+
+    void nullpointer21() {  // #4038 - fp: if (x) p=q; else return;
+        check("void f(int x) {\n"
+              "    int *p = 0;\n"
+              "    if (x) p = q;\n"
+              "    else return;\n"
+              "    *p = 0;\n" // <- p is not NULL
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_castToVoid() {  // #3771
