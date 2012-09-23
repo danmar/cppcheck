@@ -41,6 +41,8 @@ private:
         TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsMultiFile);
+
+        TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
     }
 
     void suppressionsBadId1() {
@@ -311,6 +313,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void inlinesuppress_unusedFunction() { // #4210 - wrong report of "unmatchedSuppression" for "unusedFunction"
+        Suppressions suppressions;
+        suppressions.addSuppression("unusedFunction", "test.c", 3U);
+        ASSERT_EQUALS(true, suppressions.getUnmatchedLocalSuppressions("test.c").empty());
+        ASSERT_EQUALS(false, suppressions.getUnmatchedGlobalSuppressions().empty());
+    }
 };
 
 REGISTER_TEST(TestSuppressions)
