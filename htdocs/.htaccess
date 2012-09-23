@@ -1,36 +1,94 @@
-#Add mime type for *.ico files...
+# Add mime type for *.ico files...
 AddType image/vnd.microsoft.icon .ico
 
-#Compression...
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/plain text/html text/css application/javascript application/x-javascript
-
-  # Netscape 4.x has some problems...
-  BrowserMatch ^Mozilla/4 gzip-only-text/html
-
-  # Netscape 4.06-4.08 have some more problems
-  BrowserMatch ^Mozilla/4\.0[678] no-gzip
-
-  # MSIE masquerades as Netscape, but it is fine
-  # BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
-
-  # NOTE: Due to a bug in mod_setenvif up to Apache 2.0.48
-  # the above regex won't work. You can use the following
-  # workaround to get the desired effect:
-  BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
-</IfModule>
-
-#Redirect "democlient.html" to the new place...
+# Redirect "democlient.html" to the new place...
 Redirect permanent /democlient.html http://cppcheck.sourceforge.net/demo/
 
-#Redirect "devinfo.html" to the new place...
+# Redirect "devinfo.html" to the new place...
 Redirect permanent /devinfo.html http://cppcheck.sourceforge.net/devinfo/
 
-#Redirect doxyoutput, coverage- and cpd report to the new place...
+# Redirect doxyoutput, coverage- and cpd report to the new place...
 Redirect permanent /doxyoutput/ http://cppcheck.sourceforge.net/devinfo/doxyoutput/
 Redirect permanent /doxygen-errors.txt http://cppcheck.sourceforge.net/devinfo/doxygen-errors.txt
 Redirect permanent /coverage_report/ http://cppcheck.sourceforge.net/devinfo/coverage_report/
 Redirect permanent /cpd.txt http://cppcheck.sourceforge.net/devinfo/cpd.txt
+
+# ----------------------------------------------------------------------
+# ETag removal
+# ----------------------------------------------------------------------
+
+# FileETag None is not enough for every server.
+<IfModule mod_headers.c>
+  Header unset ETag
+</IfModule>
+
+# Since we're sending far-future expires, we don't need ETags for static content.
+# developer.yahoo.com/performance/rules.html#etags
+FileETag None
+
+
+# ----------------------------------------------------------------------
+# Gzip compression
+# ----------------------------------------------------------------------
+
+<IfModule mod_deflate.c>
+
+  # Force deflate for mangled headers developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/
+  <IfModule mod_setenvif.c>
+    <IfModule mod_headers.c>
+      SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
+      RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+    </IfModule>
+  </IfModule>
+
+  # HTML, TXT, CSS, JavaScript, JSON, XML, HTC:
+  <IfModule filter_module>
+    FilterDeclare  COMPRESS
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/atom+xml
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/javascript
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/json
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/rss+xml
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/vnd.ms-fontobject
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/x-font-ttf
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/xhtml+xml
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/x-javascript
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $application/xml
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $font/opentype
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $image/svg+xml
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $image/vnd.microsoft.icon
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $image/x-icon
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $text/css
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $text/html
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $text/plain
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $text/x-component
+    FilterProvider COMPRESS DEFLATE resp=Content-Type $text/xml
+    FilterChain    COMPRESS
+    FilterProtocol COMPRESS DEFLATE change=yes;byteranges=no
+  </IfModule>
+
+  <IfModule !mod_filter.c>
+    # Legacy versions of Apache
+    AddOutputFilterByType DEFLATE application/atom+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+    AddOutputFilterByType DEFLATE image/vnd.microsoft.icon
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/x-component
+    AddOutputFilterByType DEFLATE text/xml
+  </IfModule>
+
+</IfModule>
 
 # ----------------------------------------------------------------------
 # Expires headers (for better cache control)
