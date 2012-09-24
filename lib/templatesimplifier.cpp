@@ -200,7 +200,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // num/type ..
-        if (!tok->isNumber() && !tok->isName())
+        if (!tok->isNumber() && tok->type() != Token::eChar && !tok->isName())
             return 0;
         tok = tok->next();
         if (!tok)
