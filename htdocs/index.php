@@ -115,7 +115,7 @@ add Cppcheck as an external tool.</p>
 <p>You are welcome to contribute. Help is needed.</p>
 <dl>
   <dt>Testing</dt>
-  <dd>Pick a project and test it's source with latest version. Write tickets to 
+  <dd>Pick a project and test it's source with latest version. Write tickets to
   <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> about issues you
   find from Cppcheck. If you test open source projects and write bug reports to
   them, check the issues in the “<a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Found_bugs">Found bugs</a>”
