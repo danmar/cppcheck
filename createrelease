@@ -59,7 +59,7 @@
 #
 # compile new democlient:
 # ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net
-# ./build.sh 1.23
+# ./build.sh 1.43
 
 # Tag to use
 tag=$1
