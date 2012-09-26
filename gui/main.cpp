@@ -23,6 +23,7 @@
 #include <QTranslator>
 #include <QMetaType>
 #include <QStringList>
+#include <QMessageBox>  // currently used only on _WIN32
 #include <iostream>
 #include "mainwindow.h"
 #include "erroritem.h"
@@ -67,10 +68,21 @@ bool CheckArgs(const QStringList &args)
 
 void ShowUsage()
 {
-    std::cout << "Cppcheck GUI.\n\n";
-    std::cout << "Syntax:\n";
-    std::cout << "    cppcheck-gui [OPTIONS] [files or paths]\n\n";
-    std::cout << "Options:\n";
-    std::cout << "    -h, --help    Print this help\n";
-    std::cout << "    -p <file>     Open given project file and start checking it\n";
+    const char helpMessage[] =
+        "Cppcheck GUI.\n\n"
+        "Syntax:\n"
+        "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
+        "Options:\n"
+        "    -h, --help    Print this help\n"
+        "    -p <file>     Open given project file and start checking it\n";
+#if defined(_WIN32)
+    QMessageBox msgBox(QMessageBox::Information,
+                       "Cppcheck GUI",
+                       helpMessage,
+                       QMessageBox::Ok
+                      );
+    (void)msgBox.exec();
+#else
+    std::cout << helpMessage;
+#endif
 }
