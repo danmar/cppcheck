@@ -54,13 +54,17 @@ void CheckAssignIf::assignIf()
             for (const Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "}" || tok2->str() == "=")
                     break;
-                if (Token::Match(tok2,"if ( %varid% %any% %num% &&|%oror%|)", varid)) {
-                    const std::string& op(tok2->strAt(3));
-                    const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
+                if (Token::Match(tok2,"if ( (| %varid% %any% %num% &&|%oror%|)", varid)) {
+                    const Token *vartok = tok2->tokAt(tok2->strAt(2)=="(" ? 3 : 2);
+                    const std::string& op(vartok->strAt(1));
+                    const MathLib::bigint num2 = MathLib::toLongNumber(vartok->strAt(2));
+                    std::string condition;
+                    if (Token::simpleMatch(tok2, "if ( ("))
+                        condition = "'" + vartok->str() + op + vartok->strAt(2) + "'";
                     if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
-                        assignIfError(tok2, false);
+                        assignIfError(tok2, condition, false);
                     else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
-                        assignIfError(tok2, true);
+                        assignIfError(tok2, condition, true);
                     break;
                 }
             }
@@ -68,11 +72,11 @@ void CheckAssignIf::assignIf()
     }
 }
 
-void CheckAssignIf::assignIfError(const Token *tok, bool result)
+void CheckAssignIf::assignIfError(const Token *tok, const std::string &condition, bool result)
 {
     reportError(tok, Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison is always " + std::string(result ? "true" : "false") + ".");
+                "Mismatching assignment and comparison, comparison " + condition + (condition.empty()?"":" ") + "is always " + std::string(result ? "true" : "false") + ".");
 }
 
 
