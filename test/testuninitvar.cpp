@@ -2002,12 +2002,6 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
-        checkUninitVar2("void f() {\n" // #4165 - fp when & is used as address-of in condition
-                        "    int x;\n"
-                        "    if (&x < p) { }\n"
-                        "}");
-        ASSERT_EQUALS("", errout.str());
-
         // ?:
         checkUninitVar2("int f(int *ptr) {\n"
                         "    int a;\n"

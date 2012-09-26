@@ -1325,7 +1325,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
         return false;
     }
 
-    if (Token::Match(vartok->next(), "++|--|%op%") && !Token::simpleMatch(vartok->tokAt(-2), "( &"))
+    if (Token::Match(vartok->next(), "++|--|%op%"))
         return true;
 
     if (vartok->strAt(1) == "]")
