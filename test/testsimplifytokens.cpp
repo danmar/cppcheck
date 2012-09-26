@@ -2220,7 +2220,7 @@ private:
 
     void template35() { // #4074 - "A<'x'> a;" is not recognized as template instantiation
         const char code[] = "template <char c> class A {};\n"
-                             "A<'x'> a;";
+                            "A<'x'> a;";
         ASSERT_EQUALS("A<'x'> a ; class A<'x'> { }", tok(code));
     }
 
