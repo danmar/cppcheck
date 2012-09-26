@@ -2239,6 +2239,126 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
                 "unusedScopedObject", "Instance of '" + varname + "' object is destroyed immediately.");
 }
 
+//-------------------------------------------------------------------------------
+// Comparing functions which are returning value of type bool
+//-------------------------------------------------------------------------------
+
+void CheckOther::checkComparisonOfFuncReturningBool()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    if (!_tokenizer->isCPP())
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
+            const Token *first_token;
+            bool first_token_func_of_type_bool = false;
+            bool second_token_func_of_type_bool = false;
+            if (Token::simpleMatch(tok->previous(), ")")) {
+                first_token = tok->previous()->link()->previous();
+            } else {
+                first_token = tok->previous();
+            }
+
+            std::string const first_token_name = first_token->str();
+            if (first_token->isName()&& isFunction(first_token->str(), _tokenizer->tokens())) {
+                const Token *fToken = _tokenizer->getFunctionTokenByName(first_token_name.c_str());
+                if (fToken &&fToken->previous() && fToken->previous()->str() == "bool") {
+                    first_token_func_of_type_bool = true;
+                }
+            }
+
+            Token *second_token = tok->next();
+            while (second_token->str()=="!") {
+                second_token = second_token->next();
+            }
+            std::string const second_token_name = second_token->str();
+            if (second_token->isName()&& isFunction(second_token->str(), _tokenizer->tokens())) {
+                const Token *fToken = _tokenizer->getFunctionTokenByName(second_token_name.c_str());
+                if (fToken &&fToken->previous() && fToken->previous()->str() == "bool") {
+                    second_token_func_of_type_bool = true;
+                }
+            }
+            if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == true)) {
+                comparisonOfTwoFuncsReturningBoolError(first_token->next(), first_token->str(), second_token->str());
+            }
+            if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == false)) {
+                comparisonOfFuncReturningBoolError(first_token->next(), first_token->str());
+            }
+            if ((first_token_func_of_type_bool == false) && (second_token_func_of_type_bool == true)) {
+                comparisonOfFuncReturningBoolError(second_token->previous(), second_token->str());
+            }
+        }
+    }
+}
+
+void CheckOther::comparisonOfFuncReturningBoolError(const Token *tok, const std::string &expression)
+{
+    reportError(tok, Severity::style, "comparisonOfFuncReturningBoolError",
+                "Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n"
+                "The return type of function '" + expression + "' is 'bool' "
+                "and result is of type 'bool'. Comparing 'bool' value using relational (<, >, <= or >=)"
+                " operator could cause unexpected results.");
+}
+
+void CheckOther::comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2)
+{
+    reportError(tok, Severity::style, "comparisonOfTwoFuncsReturningBoolError",
+                "Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
+                "The return type of function '" + expression1 + "' and function '" + expression2 + "' is 'bool' "
+                "and result is of type 'bool'. Comparing 'bool' value using relational (<, >, <= or >=)"
+                " operator could cause unexpected results.");
+}
+
+//-------------------------------------------------------------------------------
+// Comparison of bool with bool
+//-------------------------------------------------------------------------------
+
+void CheckOther::checkComparisonOfBoolWithBool()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    if (!_tokenizer->isCPP())
+        return;
+
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
+            bool first_token_bool = false;
+            bool second_token_bool = false;
+
+            const Token *first_token = tok->previous();
+            if (first_token->varId()) {
+                if (isBool(symbolDatabase->getVariableFromVarId(first_token->varId()))) {
+                    first_token_bool = true;
+                }
+            }
+            const Token *second_token = tok->next();
+            if (second_token->varId()) {
+                if (isBool(symbolDatabase->getVariableFromVarId(second_token->varId()))) {
+                    second_token_bool = true;
+                }
+            }
+            if ((first_token_bool == true) && (second_token_bool == true)) {
+                comparisonOfBoolWithBoolError(first_token->next(), first_token->str());
+            }
+        }
+    }
+}
+
+void CheckOther::comparisonOfBoolWithBoolError(const Token *tok, const std::string &expression)
+{
+    reportError(tok, Severity::style, "comparisonOfBoolWithBoolError",
+                "Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n"
+                "The variable '" + expression + "' is of type 'bool' "
+                "and comparing 'bool' value using relational (<, >, <= or >=)"
+                " operator could cause unexpected results.");
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckOther::checkIncorrectStringCompare()

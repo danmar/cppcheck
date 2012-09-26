@@ -143,6 +143,14 @@ private:
         TEST_CASE(comparisonOfBoolWithInt4);
         TEST_CASE(comparisonOfBoolWithInt5);
 
+        TEST_CASE(checkComparisonOfFuncReturningBool1);
+        TEST_CASE(checkComparisonOfFuncReturningBool2);
+        TEST_CASE(checkComparisonOfFuncReturningBool3);
+        TEST_CASE(checkComparisonOfFuncReturningBool4);
+        TEST_CASE(checkComparisonOfFuncReturningBool5);
+
+        TEST_CASE(checkComparisonOfBoolWithBool);
+
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateIf1); // ticket 3689
         TEST_CASE(duplicateBranch);
@@ -3961,6 +3969,140 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    void checkComparisonOfFuncReturningBool1() {
+        check("void f(){\n"
+              "     int temp = 4;\n"
+              "     if(compare1() > compare2()){\n"
+              "         printf(\"foo\");\n"
+              "     }\n"
+              "}\n"
+              "bool compare1(int temp){\n"
+              "     if(temp==4){\n"
+              "         return true;\n"
+              "     }\n"
+              "     else\n"
+              "         return false;\n"
+              "}\n"
+              "bool compare2(int temp){\n"
+              "     if(temp==4){\n"
+              "         return false;\n"
+              "     }\n"
+              "     else\n"
+              "         return true;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBool2() {
+        check("void f(){\n"
+              "	int temp = 4;\n"
+              "	bool a = true;\n"
+              "	if(compare(temp) > a){\n"
+              "		printf(\"foo\");\n"
+              "	}\n"
+              "}\n"
+              "bool compare(int temp){\n"
+              "	 if(temp==4){\n"
+              "		return true;\n"
+              "	 }\n"
+              "    else\n"
+              "		return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBool3() {
+        check("void f(){\n"
+              "	int temp = 4;\n"
+              "	if(compare(temp) > temp){\n"
+              " 		printf(\"foo\");\n"
+              "   }\n"
+              "}\n"
+              "bool compare(int temp){\n"
+              "   if(temp==4){\n"
+              "		return true;\n"
+              "   }\n"
+              "	else\n"
+              "		return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBool4() {
+        check("void f(){\n"
+              "   int temp = 4;\n"
+              "	bool b = compare2(6);\n"
+              "	if(compare1(temp)> b){\n"
+              " 		printf(\"foo\");\n"
+              "	}\n"
+              "}\n"
+              "bool compare1(int temp){\n"
+              "	if(temp==4){\n"
+              "		return true;\n"
+              " 	}\n"
+              "	else\n"
+              "		return false;\n"
+              "}\n"
+              "bool compare2(int temp){\n"
+              "	if(temp == 5){\n"
+              "		return true;\n"
+              "	}\n"
+              "	else\n"
+              "		return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBool5() {
+        check("void f(){\n"
+              "     int temp = 4;\n"
+              "     if(compare1() > !compare2()){\n"
+              "         printf(\"foo\");\n"
+              "     }\n"
+              "}\n"
+              "bool compare1(int temp){\n"
+              "     if(temp==4){\n"
+              "         return true;\n"
+              "     }\n"
+              "     else\n"
+              "         return false;\n"
+              "}\n"
+              "bool compare2(int temp){\n"
+              "     if(temp==4){\n"
+              "         return false;\n"
+              "     }\n"
+              "     else\n"
+              "         return true;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+    }
+
+    void checkComparisonOfBoolWithBool() {
+        check("void f(){\n"
+              "    int temp = 4;\n"
+              "    bool b = compare2(6);\n"
+              "    bool a = compare1(4);\n"
+              "    if(b > a){\n"
+              "        printf(\"foo\");\n"
+              "    }\n"
+              "}\n"
+              "bool compare1(int temp){\n"
+              "    if(temp==4){\n"
+              "        return true;\n"
+              "    }\n"
+              "    else\n"
+              "        return false;\n"
+              "}\n"
+              "bool compare2(int temp){\n"
+              "    if(temp == 5){\n"
+              "        return true;\n"
+              "    }\n"
+              "    else\n"
+              "        return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
     void sizeofForNumericParameter() {

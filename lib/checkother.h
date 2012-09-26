@@ -97,6 +97,8 @@ public:
 
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
+        checkOther.checkComparisonOfFuncReturningBool();
+        checkOther.checkComparisonOfBoolWithBool();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
@@ -194,6 +196,12 @@ public:
 
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
+
+    /** @brief %Check for comparison of function returning bool*/
+    void checkComparisonOfFuncReturningBool();
+
+    /** @brief %Check for comparison of variable of type bool*/
+    void checkComparisonOfBoolWithBool();
 
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
@@ -302,6 +310,9 @@ private:
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
     void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
+    void comparisonOfFuncReturningBoolError(const Token *tok, const std::string &expression);
+    void comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2);
+    void comparisonOfBoolWithBoolError(const Token *tok, const std::string &expression);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
     void sizeofForPointerError(const Token *tok, const std::string &varname);
@@ -343,6 +354,9 @@ private:
         c.zerodivError(0);
         c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
+        c.comparisonOfFuncReturningBoolError(0, "func_name");
+        c.comparisonOfTwoFuncsReturningBoolError(0, "func_name1", "func_name2");
+        c.comparisonOfBoolWithBoolError(0, "var_name");
         c.sizeofForArrayParameterError(0);
         c.sizeofForPointerError(0, "varname");
         c.sizeofForNumericParameterError(0);
@@ -451,6 +465,8 @@ private:
                "* using increment on boolean\n"
                "* comparison of a boolean with a non-zero integer\n"
                "* comparison of a boolean expression with an integer other than 0 or 1\n"
+               "* comparison of a function returning boolean value using relational operator\n"
+               "* comparison of a boolean value with boolean value using relational operator\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
                "* suspicious condition (string literals as boolean)\n"

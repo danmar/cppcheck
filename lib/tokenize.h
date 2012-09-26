@@ -143,6 +143,14 @@ public:
     unsigned int sizeOfType(const Token *type) const;
 
     /**
+     * Get function token by function name
+     * @todo better handling of overloaded functions
+     * @todo only scan parent scopes
+     * @param funcname function name
+     */
+    const Token *getFunctionTokenByName(const char funcname[]) const;
+
+    /**
      * Try to determine if function parameter is passed by value by looking
      * at the function declaration.
      * @param fpar token for function parameter in the function call
