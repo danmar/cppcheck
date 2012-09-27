@@ -184,29 +184,31 @@ class CppCheckHandler(XmlContentHandler):
     errors = []
 
     def startElement(self, name, attributes):
-        if name != "error":
-            return
-
-        if attributes["id"] == "missingInclude":
-            self.errors.append(
-                {
-                    "file" : "",
-                    "line" : 0,
-                    "id" : attributes["id"],
-                    "severity" : attributes["severity"],
-                    "msg" : attributes["msg"]
-                })
-        else:
+        if name == "error":
+            if attributes["id"] == "missingInclude":
+                self.errors.append(
+                    {
+                        "file" : "",
+                        "line" : 0,
+                        "id" : attributes["id"],
+                        "severity" : attributes["severity"],
+                        "msg" : attributes["msg"]
+                    })
+            else:
+                self.errors.append(
+                    {
+                        "file" : "",
+                        "line" : 0,
+                        "id" : attributes["id"],
+                        "severity" : attributes["severity"],
+                        "msg" : attributes["msg"]
+                    })
+        elif name == "location":
             if attributes["file"] == "":
                 sys.stderr.write("ERROR: cppcheck error reported without a file name.\n")
-            self.errors.append(
-                {
-                    "file" : attributes["file"],
-                    "line" : int(attributes["line"]),
-                    "id" : attributes["id"],
-                    "severity" : attributes["severity"],
-                    "msg" : attributes["msg"]
-                })
+            self.errors[-1]["file"] = attributes["file"]
+            self.errors[-1]["line"] = int(attributes["line"])
+
 
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
