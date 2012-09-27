@@ -31,3 +31,66 @@ Redirect permanent /doxyoutput/ http://cppcheck.sourceforge.net/devinfo/doxyoutp
 Redirect permanent /doxygen-errors.txt http://cppcheck.sourceforge.net/devinfo/doxygen-errors.txt
 Redirect permanent /coverage_report/ http://cppcheck.sourceforge.net/devinfo/coverage_report/
 Redirect permanent /cpd.txt http://cppcheck.sourceforge.net/devinfo/cpd.txt
+
+# ----------------------------------------------------------------------
+# Expires headers (for better cache control)
+# ----------------------------------------------------------------------
+
+# These are pretty far-future expires headers.
+# They assume you control versioning with filename-based cache busting
+# Additionally, consider that outdated proxies may miscache
+#   www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/
+
+# If you don't use filenames to version, lower the CSS and JS to something like
+#   "access plus 1 week" or so.
+
+<IfModule mod_expires.c>
+  ExpiresActive on
+
+  # Perhaps better to whitelist expires rules? Perhaps.
+  ExpiresDefault                          "access plus 1 month"
+
+  # cache.appcache needs re-requests in FF 3.6 (thanks Remy ~Introducing HTML5)
+  ExpiresByType text/cache-manifest       "access plus 0 seconds"
+
+  # Your document html
+  ExpiresByType text/html                 "access plus 0 seconds"
+
+  # Data
+  ExpiresByType text/xml                  "access plus 0 seconds"
+  ExpiresByType application/xml           "access plus 0 seconds"
+  ExpiresByType application/json          "access plus 0 seconds"
+
+  # Feed
+  ExpiresByType application/rss+xml       "access plus 1 hour"
+  ExpiresByType application/atom+xml      "access plus 1 hour"
+
+  # Favicon (cannot be renamed)
+  ExpiresByType image/x-icon              "access plus 1 week"
+  ExpiresByType image/vnd.microsoft.icon  "access plus 1 week"
+
+  # Media: images, video, audio
+  ExpiresByType image/gif                 "access plus 1 month"
+  ExpiresByType image/png                 "access plus 1 month"
+  ExpiresByType image/jpeg                "access plus 1 month"
+  ExpiresByType video/ogg                 "access plus 1 month"
+  ExpiresByType audio/ogg                 "access plus 1 month"
+  ExpiresByType video/mp4                 "access plus 1 month"
+  ExpiresByType video/webm                "access plus 1 month"
+
+  # HTC files  (css3pie)
+  ExpiresByType text/x-component          "access plus 1 month"
+
+  # Webfonts
+  ExpiresByType application/x-font-ttf    "access plus 1 month"
+  ExpiresByType font/opentype             "access plus 1 month"
+  ExpiresByType application/x-font-woff   "access plus 1 month"
+  ExpiresByType image/svg+xml             "access plus 1 month"
+  ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
+
+  # CSS and JavaScript
+  ExpiresByType text/css                  "access plus 1 week"
+  ExpiresByType application/javascript    "access plus 1 week"
+  ExpiresByType application/x-javascript  "access plus 1 week"
+
+</IfModule>
