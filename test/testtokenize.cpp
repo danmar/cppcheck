@@ -57,6 +57,7 @@ private:
         TEST_CASE(tokenize22);  // special marker $ from preprocessor
         TEST_CASE(tokenize23);  // tokenize "return - __LINE__;"
         TEST_CASE(tokenize24);  // #4195 (segmentation fault)
+        TEST_CASE(tokenize25);  // #4239 (segmentation fault)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -649,6 +650,11 @@ private:
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
     void tokenize24() {
         tokenizeAndStringify("enum { int f ( ) { return = } r = f ( ) ; }");
+    }
+
+    // #4239 - segfault for "f ( struct { int typedef T x ; } ) { }"
+    void tokenize25() {
+        tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }");
     }
 
     void wrong_syntax1() {

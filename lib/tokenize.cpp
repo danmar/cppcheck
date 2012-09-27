@@ -1016,17 +1016,19 @@ void Tokenizer::simplifyTypedef()
                     if (!func)
                         continue;
 
-                    /** @todo add support for multi-token operators */
-                    if (func->previous()->str() == "operator")
-                        func = func->previous();
+                    if (func->previous()) { // Ticket #4239
+                        /** @todo add support for multi-token operators */
+                        if (func->previous()->str() == "operator")
+                            func = func->previous();
 
-                    // check for qualifier
-                    if (func->previous()->str() == "::") {
-                        // check for available and matching class name
-                        if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
-                            func->strAt(-2) == spaceInfo[classLevel].className) {
-                            memberScope = 0;
-                            inMemberFunc = true;
+                        // check for qualifier
+                        if (func->previous()->str() == "::") {
+                            // check for available and matching class name
+                            if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
+                                func->strAt(-2) == spaceInfo[classLevel].className) {
+                                memberScope = 0;
+                                inMemberFunc = true;
+                            }
                         }
                     }
                 }
