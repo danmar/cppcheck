@@ -65,31 +65,44 @@ private:
               "    int y = x & 4;\n"
               "    if (y == 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    int y = x & 4;\n"
               "    if (y != 3);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Mismatching assignment and comparison, comparison is always true.\n", errout.str());
-
-        check("void foo(int x) {\n"
-              "    int y = x & 4;\n"
-              "    if ((y == 3) && (z == 1));\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y!=3' is always true.\n", errout.str());
 
         // |
         check("void foo(int x) {\n"
               "    int y = x | 0x14;\n"
               "    if (y == 0x710);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Mismatching assignment and comparison, comparison is always false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==1808' is always false.\n", errout.str());
 
         check("void foo(int x) {\n"
               "    int y = x | 0x14;\n"
               "    if (y == 0x71f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // multiple conditions
+        check("void foo(int x) {\n"
+              "    int y = x & 4;\n"
+              "    if ((y == 3) && (z == 1));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n", errout.str());
+
+        check("void foo(int x) {\n"
+              "    int y = x & 4;\n"
+              "    if ((x==123) || ((y == 3) && (z == 1)));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    int y = x & 7;\n"
+              "    if (setvalue(&y) && y != 8);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

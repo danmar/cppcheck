@@ -54,29 +54,39 @@ void CheckAssignIf::assignIf()
             for (const Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(" || tok2->str() == "}" || tok2->str() == "=")
                     break;
-                if (Token::Match(tok2,"if ( (| %varid% %any% %num% &&|%oror%|)", varid)) {
-                    const Token *vartok = tok2->tokAt(tok2->strAt(2)=="(" ? 3 : 2);
-                    const std::string& op(vartok->strAt(1));
-                    const MathLib::bigint num2 = MathLib::toLongNumber(vartok->strAt(2));
-                    std::string condition;
-                    if (Token::simpleMatch(tok2, "if ( ("))
-                        condition = "'" + vartok->str() + op + vartok->strAt(2) + "'";
-                    if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
-                        assignIfError(tok2, condition, false);
-                    else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
-                        assignIfError(tok2, condition, true);
-                    break;
+                if (Token::Match(tok2, "if|while|for (")) {
+                    // parse condition
+                    const Token * const end = tok2->next()->link();
+                    for (; tok2 != end; tok2 = tok2->next()) {
+                        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
+                            break;
+                        if (Token::Match(tok2,"&&|%oror%|( %varid% %any% %num% &&|%oror%|)", varid)) {
+                            const Token *vartok = tok2->next();
+                            const std::string& op(vartok->strAt(1));
+                            const MathLib::bigint num2 = MathLib::toLongNumber(vartok->strAt(2));
+                            const std::string condition(vartok->str() + op + vartok->strAt(2));
+                            if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
+                                assignIfError(tok, tok2, condition, false);
+                            else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
+                                assignIfError(tok, tok2, condition, true);
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-void CheckAssignIf::assignIfError(const Token *tok, const std::string &condition, bool result)
+void CheckAssignIf::assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result)
 {
-    reportError(tok, Severity::style,
+    std::list<const Token *> locations;
+    locations.push_back(tok1);
+    locations.push_back(tok2);
+
+    reportError(locations,
+                Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison " + condition + (condition.empty()?"":" ") + "is always " + std::string(result ? "true" : "false") + ".");
+                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(result ? "true" : "false") + ".");
 }
 
 

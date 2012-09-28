@@ -63,7 +63,7 @@ public:
 
 private:
 
-    void assignIfError(const Token *tok, const std::string &condition, bool result);
+    void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
 
     void comparisonError(const Token *tok,
                          const std::string &bitop,
@@ -76,7 +76,7 @@ private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckAssignIf c(0, settings, errorLogger);
-        c.assignIfError(0, "", false);
+        c.assignIfError(0, 0, "", false);
         c.comparisonError(0, "&", 6, "==", 1, false);
         c.multiConditionError(0,1);
     }
