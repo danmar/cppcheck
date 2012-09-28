@@ -4080,29 +4080,32 @@ private:
     }
 
     void checkComparisonOfBoolWithBool() {
-        check("void f(){\n"
-              "    int temp = 4;\n"
-              "    bool b = compare2(6);\n"
-              "    bool a = compare1(4);\n"
-              "    if(b > a){\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}\n"
-              "bool compare1(int temp){\n"
-              "    if(temp==4){\n"
-              "        return true;\n"
-              "    }\n"
-              "    else\n"
-              "        return false;\n"
-              "}\n"
-              "bool compare2(int temp){\n"
-              "    if(temp == 5){\n"
-              "        return true;\n"
-              "    }\n"
-              "    else\n"
-              "        return false;\n"
-              "}\n");
+        const char code[] = "void f(){\n"
+                            "    int temp = 4;\n"
+                            "    bool b = compare2(6);\n"
+                            "    bool a = compare1(4);\n"
+                            "    if(b > a){\n"
+                            "        printf(\"foo\");\n"
+                            "    }\n"
+                            "}\n"
+                            "bool compare1(int temp){\n"
+                            "    if(temp==4){\n"
+                            "        return true;\n"
+                            "    }\n"
+                            "    else\n"
+                            "        return false;\n"
+                            "}\n"
+                            "bool compare2(int temp){\n"
+                            "    if(temp == 5){\n"
+                            "        return true;\n"
+                            "    }\n"
+                            "    else\n"
+                            "        return false;\n"
+                            "}\n";
+        check(code, "test.cpp", true);
         ASSERT_EQUALS("[test.cpp:5]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        check(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeofForNumericParameter() {

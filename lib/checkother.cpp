@@ -2323,6 +2323,11 @@ void CheckOther::comparisonOfTwoFuncsReturningBoolError(const Token *tok, const 
 
 void CheckOther::checkComparisonOfBoolWithBool()
 {
+    // FIXME: This checking is "experimental" because of the false positives
+    //        when self checking lib/tokenize.cpp (#2617)
+    if (!_settings->experimental)
+        return;
+
     if (!_settings->isEnabled("style"))
         return;
 
