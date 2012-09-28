@@ -55,4 +55,3 @@ Install pcre:
 Ensure /path/to/pcre.h is in CXXFLAGS, e.g:
 
     export CXXFLAGS=${CXXFLAGS}:/opt/local/include
-

@@ -16,104 +16,104 @@ with syntax highlighted source code.
 
 STYLE_FILE = """
 body.body {
-	font-family: Arial;
-	font-size: 13px;
-	background-color: black;
-	padding: 0px;
-	margin: 0px;
+    font-family: Arial;
+    font-size: 13px;
+    background-color: black;
+    padding: 0px;
+    margin: 0px;
 }
 
 .error {
-	font-family: Arial;
-	font-size: 13px;
-	background-color: #ffb7b7;
-	padding: 0px;
-	margin: 0px;
+    font-family: Arial;
+    font-size: 13px;
+    background-color: #ffb7b7;
+    padding: 0px;
+    margin: 0px;
 }
 
 #page-header {
-	clear: both;
-	width: 900px;
-	margin: 20px auto 0px auto;
-	height: 10px;
+    clear: both;
+    width: 900px;
+    margin: 20px auto 0px auto;
+    height: 10px;
         border-bottom-width: 2px;
         border-bottom-style: solid;
         border-bottom-color: #aaaaaa;
 }
 
 #page {
-	width: 860px;
-	margin: auto;
+    width: 860px;
+    margin: auto;
         border-left-width: 2px;
         border-left-style: solid;
         border-left-color: #aaaaaa;
         border-right-width: 2px;
         border-right-style: solid;
         border-right-color: #aaaaaa;
-	background-color: White;
-	padding: 20px;
+    background-color: White;
+    padding: 20px;
 }
 
 #page-footer {
-	clear: both;
-	width: 900px;
-	margin: auto;
-	height: 10px;
+    clear: both;
+    width: 900px;
+    margin: auto;
+    height: 10px;
         border-top-width: 2px;
         border-top-style: solid;
         border-top-color: #aaaaaa;
 }
 
 #header {
-	width: 100%;
-	height: 70px;
-	background-image: url(logo.png);
-	background-repeat: no-repeat;
-	background-position: left top;
+    width: 100%;
+    height: 70px;
+    background-image: url(logo.png);
+    background-repeat: no-repeat;
+    background-position: left top;
 
-	border-bottom-style: solid;
-	border-bottom-width: thin;
-	border-bottom-color: #aaaaaa;
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+    border-bottom-color: #aaaaaa;
 }
 
 #menu {
-	margin-top: 5px;
-	text-align: left;
-	float: left;
-	width: 100px;
-	height: 300px;
+    margin-top: 5px;
+    text-align: left;
+    float: left;
+    width: 100px;
+    height: 300px;
 }
 
 #menu > a {
-	margin-left: 10px;
-	display: block;
+    margin-left: 10px;
+    display: block;
 }
 
 #content {
-	float: left;
-	width: 720px;
+    float: left;
+    width: 720px;
 
-	margin: 5px;
-	padding: 0px 10px 10px 10px;
+    margin: 5px;
+    padding: 0px 10px 10px 10px;
 
-	border-left-style: solid;
-	border-left-width: thin;
-	border-left-color: #aaaaaa;
+    border-left-style: solid;
+    border-left-width: thin;
+    border-left-color: #aaaaaa;
 }
 
 #footer {
-	padding-bottom: 5px;
-	padding-top: 5px;
-	border-top-style: solid;
-	border-top-width: thin;
-	border-top-color: #aaaaaa;
-	clear: both;
-	font-size: 10px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-top-style: solid;
+    border-top-width: thin;
+    border-top-color: #aaaaaa;
+    clear: both;
+    font-size: 10px;
 }
 
 #footer > div {
-	float: left;
-	width: 33%;
+    float: left;
+    width: 33%;
 }
 """
 

@@ -60,4 +60,3 @@ To update translations:
 To compile translations:
 - run lrelease gui.pro to compile .ts files to .qm files which are used by the
   executable.
-
