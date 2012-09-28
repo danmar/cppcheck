@@ -2245,6 +2245,11 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
 
 void CheckOther::checkComparisonOfFuncReturningBool()
 {
+    // FIXME: This checking is "experimental" because of the false positives
+    //        when self checking lib/preprocessor.cpp (#2617)
+    if (!_settings->experimental)
+        return;
+
     if (!_settings->isEnabled("style"))
         return;
 
@@ -2264,7 +2269,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
 
             std::string const first_token_name = first_token->str();
             if (first_token->isName()&& isFunction(first_token->str(), _tokenizer->tokens())) {
-                const Token *fToken = _tokenizer->getFunctionTokenByName(first_token_name.c_str());
+                const Token *fToken = NULL; // TODO: locate function token
                 if (fToken &&fToken->previous() && fToken->previous()->str() == "bool") {
                     first_token_func_of_type_bool = true;
                 }
@@ -2276,7 +2281,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
             }
             std::string const second_token_name = second_token->str();
             if (second_token->isName()&& isFunction(second_token->str(), _tokenizer->tokens())) {
-                const Token *fToken = _tokenizer->getFunctionTokenByName(second_token_name.c_str());
+                const Token *fToken = NULL; // TODO: locate function token
                 if (fToken &&fToken->previous() && fToken->previous()->str() == "bool") {
                     second_token_func_of_type_bool = true;
                 }

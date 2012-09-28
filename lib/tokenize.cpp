@@ -7555,19 +7555,6 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown)
 
 //---------------------------------------------------------------------------
 
-const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
-{
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = _symbolDatabase->scopeList.begin(); scope != _symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type == Scope::eFunction) {
-            if (scope->classDef->str() == funcname)
-                return scope->classDef;
-        }
-    }
-    return NULL;
-}
-
 bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
 {
     // TODO: If symbol database is available, use it.
