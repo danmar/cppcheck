@@ -2252,7 +2252,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
+        if (tok->previous() && tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
             const Token *first_token;
             bool first_token_func_of_type_bool = false;
             bool second_token_func_of_type_bool = false;
@@ -2327,7 +2327,7 @@ void CheckOther::checkComparisonOfBoolWithBool()
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
+        if (tok->previous() && tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
             bool first_token_bool = false;
             bool second_token_bool = false;
 
