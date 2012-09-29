@@ -36,6 +36,8 @@ void CheckAssignIf::assignIf()
     if (!_settings->isEnabled("style"))
         return;
 
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "=")
             continue;
@@ -51,7 +53,12 @@ void CheckAssignIf::assignIf()
             if (num < 0)
                 continue;
 
-            assignIfParseScope(tok, tok->tokAt(4), varid, bitop, num);
+            bool islocal = false;
+            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+            if (var && var->isLocal())
+                islocal = true;
+
+            assignIfParseScope(tok, tok->tokAt(4), varid, islocal, bitop, num);
         }
     }
 }
@@ -60,6 +67,7 @@ void CheckAssignIf::assignIf()
 bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                                        const Token * const startTok,
                                        const unsigned int varid,
+                                       const bool islocal,
                                        const char bitop,
                                        const MathLib::bigint num)
 {
@@ -68,7 +76,10 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
             return true;
         if (tok2->str() == "}")
             return false;
-        if (Token::Match(tok2, "if (")) {
+        if (Token::Match(tok2, "if|while (")) {
+            if (!islocal && tok2->str() == "while")
+                continue;
+
             // parse condition
             const Token * const end = tok2->next()->link();
             for (; tok2 != end; tok2 = tok2->next()) {
@@ -87,10 +98,10 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                 }
             }
 
-            bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, bitop, num);
+            bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);
             bool ret2 = false;
             if (Token::simpleMatch(end->next()->link(), "} else {"))
-                ret2 = assignIfParseScope(assignTok, end->next()->link()->tokAt(3), varid, bitop, num);
+                ret2 = assignIfParseScope(assignTok, end->next()->link()->tokAt(3), varid, islocal, bitop, num);
             if (ret1 || ret2)
                 return true;
         }

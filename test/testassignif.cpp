@@ -119,7 +119,7 @@ private:
               "    int y = x & 7;\n"
               "    while (y==8);\n" // local variable => always false
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
 
         check("void f(int x) {\n"
               "    extern int y; y = x & 7;\n"

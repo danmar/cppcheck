@@ -59,6 +59,7 @@ public:
     bool assignIfParseScope(const Token * const assignTok,
                             const Token * const startTok,
                             const unsigned int varid,
+                            const bool islocal,
                             const char bitop,
                             const MathLib::bigint num);
 
