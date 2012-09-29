@@ -1,5 +1,5 @@
 @echo off
 cleancss -o css/all.min.css css/all.css && ^
-cleancss -o css/geshi.min.css css/geshi.css && ^
+cleancss -o css/demo.min.css css/demo.css && ^
 uglifyjs -o js/github.min.js js/github.js && ^
 uglifyjs -o js/picnet.table.filter.min.pack.js js/picnet.table.filter.min.js
