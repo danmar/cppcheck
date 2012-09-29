@@ -7206,7 +7206,7 @@ private:
         Tokenizer tokenizer(&settings, NULL);
         std::istringstream istr("x ; return a not_eq x;");
         tokenizer.tokenize(istr, "test.c");
-        Token *x_token = const_cast<Token *>(tokenizer.tokens()->tokAt(5));
+        Token *x_token = tokenizer.list.front()->tokAt(5);
         ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token, tokenizer.tokens()));
     }
 

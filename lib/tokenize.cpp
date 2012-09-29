@@ -178,13 +178,9 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 return false;
 
             // find end of definition
-            int level = 0;
-            while (end && end->next() && (!Token::Match(end->next(), ";|)|>") ||
-                                          (end->next()->str() == ")" && level == 0))) {
+            while (end && end->next() && !Token::Match(end->next(), ";|)|>")) {
                 if (end->next()->str() == "(")
-                    ++level;
-                else if (end->next()->str() == ")")
-                    --level;
+                    end = end->linkAt(1);
 
                 end = end->next();
             }
@@ -249,8 +245,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                      (!Token::Match(tok->previous(), "return|new|const|friend|public|private|protected|throw|extern") &&
                       !Token::simpleMatch(tok->tokAt(-2), "friend class")))) {
                     // scan backwards for the end of the previous statement
-                    int level = (tok->previous()->str() == "}") ? 1 : 0;
-                    while (tok && tok->previous() && (!Token::Match(tok->previous(), ";|{") || (level != 0))) {
+                    while (tok && tok->previous() && !Token::Match(tok->previous(), ";|{")) {
                         if (tok->previous()->str() == "}") {
                             tok = tok->previous()->link();
                         } else if (tok->previous()->str() == "typedef") {
@@ -299,8 +294,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 duplicateDeclarationError(*tokPtr, name, "class");
                                 return false;
                             }
-                        } else if (tok->previous()->str() == "{")
-                            --level;
+                        }
 
                         tok = tok->previous();
                     }
@@ -426,7 +420,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
     tok1->insertToken(";");
     tok1 = tok1->next();
 
-    if (tok1->next() && tok1->next()->str() == ";" && tok1 && tok1->previous()->str() == "}") {
+    if (tok1->next() && tok1->next()->str() == ";" && tok1->previous()->str() == "}") {
         tok->deleteThis();
         tok1->deleteThis();
         return NULL;
@@ -4601,7 +4595,7 @@ void Tokenizer::simplifyCasts()
             unsigned int bits = 8 * _typeSize[tok->next()->link()->previous()->str()];
             if (!tok->tokAt(2)->isUnsigned())
                 bits--;
-            if (bits < 31 && value >= 0 && value < (1 << bits)) {
+            if (bits < 31 && value >= 0 && value < (1LL << bits)) {
                 Token::eraseTokens(tok, tok->next()->link()->next());
             }
             continue;
