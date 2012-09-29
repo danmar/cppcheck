@@ -76,6 +76,8 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
             return true;
         if (tok2->str() == "}")
             return false;
+        if (!islocal && Token::Match(tok2, "%var% (") && !Token::simpleMatch(tok2->next()->link(), ") {"))
+            return true;
         if (Token::Match(tok2, "if|while (")) {
             if (!islocal && tok2->str() == "while")
                 continue;
