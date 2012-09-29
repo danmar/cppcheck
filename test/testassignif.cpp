@@ -105,6 +105,14 @@ private:
               "    if (setvalue(&y) && y != 8);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // recursive checking into scopes
+        check("void f(int x) {\n"
+              "    int y = x & 7;\n"
+              "    if (z) y=0;\n"
+              "    else if (y==8);\n" // always false
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
     }
 
     void compare() {

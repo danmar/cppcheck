@@ -51,30 +51,51 @@ void CheckAssignIf::assignIf()
             if (num < 0)
                 continue;
 
-            for (const Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(" || tok2->str() == "}" || tok2->str() == "=")
-                    break;
-                if (Token::Match(tok2, "if|while|for (")) {
-                    // parse condition
-                    const Token * const end = tok2->next()->link();
-                    for (; tok2 != end; tok2 = tok2->next()) {
-                        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
-                            break;
-                        if (Token::Match(tok2,"&&|%oror%|( %varid% %any% %num% &&|%oror%|)", varid)) {
-                            const Token *vartok = tok2->next();
-                            const std::string& op(vartok->strAt(1));
-                            const MathLib::bigint num2 = MathLib::toLongNumber(vartok->strAt(2));
-                            const std::string condition(vartok->str() + op + vartok->strAt(2));
-                            if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
-                                assignIfError(tok, tok2, condition, false);
-                            else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
-                                assignIfError(tok, tok2, condition, true);
-                        }
-                    }
-                }
-            }
+            assignIfParseScope(tok, tok->tokAt(4), varid, bitop, num);
         }
     }
+}
+
+/** parse scopes recursively */
+bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
+                                       const Token * const startTok,
+                                       const unsigned int varid,
+                                       const char bitop,
+                                       const MathLib::bigint num)
+{
+    for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "[(,] &| %varid% [,)]"))
+            return true;
+        if (tok2->str() == "}")
+            return false;
+        if (Token::Match(tok2, "if (")) {
+            // parse condition
+            const Token * const end = tok2->next()->link();
+            for (; tok2 != end; tok2 = tok2->next()) {
+                if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
+                    return true;
+                }
+                if (Token::Match(tok2,"&&|%oror%|( %varid% %any% %num% &&|%oror%|)", varid)) {
+                    const Token *vartok = tok2->next();
+                    const std::string& op(vartok->strAt(1));
+                    const MathLib::bigint num2 = MathLib::toLongNumber(vartok->strAt(2));
+                    const std::string condition(vartok->str() + op + vartok->strAt(2));
+                    if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
+                        assignIfError(assignTok, tok2, condition, false);
+                    else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
+                        assignIfError(assignTok, tok2, condition, true);
+                }
+            }
+
+            bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, bitop, num);
+            bool ret2 = false;
+            if (Token::simpleMatch(end->next()->link(), "} else {"))
+                ret2 = assignIfParseScope(assignTok, end->next()->link()->tokAt(3), varid, bitop, num);
+            if (ret1 || ret2)
+                return true;
+        }
+    }
+    return false;
 }
 
 void CheckAssignIf::assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result)

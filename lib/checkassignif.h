@@ -55,6 +55,13 @@ public:
     /** mismatching assignment / comparison */
     void assignIf();
 
+    /** parse scopes recursively */
+    bool assignIfParseScope(const Token * const assignTok,
+                            const Token * const startTok,
+                            const unsigned int varid,
+                            const char bitop,
+                            const MathLib::bigint num);
+
     /** mismatching lhs and rhs in comparison */
     void comparison();
 
