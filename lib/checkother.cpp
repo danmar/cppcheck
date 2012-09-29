@@ -2184,28 +2184,6 @@ void CheckOther::cctypefunctionCallError(const Token *tok, const std::string &fu
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-/** Is there a function with given name? */
-static bool isFunction(const std::string &name, const Token *startToken)
-{
-    const std::string pattern1(name + " (");
-    for (const Token *tok = startToken; tok; tok = tok->next()) {
-        // skip executable scopes etc
-        if (tok->str() == "(") {
-            tok = tok->link();
-            if (Token::simpleMatch(tok, ") {"))
-                tok = tok->next()->link();
-            else if (Token::simpleMatch(tok, ") const {"))
-                tok = tok->linkAt(2);
-        }
-
-        // function declaration/implementation found
-        if ((tok->str() == "*" || (tok->isName() && tok->str().find(":") ==std::string::npos))
-            && Token::simpleMatch(tok->next(), pattern1.c_str()))
-            return true;
-    }
-    return false;
-}
-
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
@@ -2224,7 +2202,7 @@ void CheckOther::checkMisusedScopedObject()
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::simpleMatch(tok->linkAt(2), ") ;")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
-                && !isFunction(tok->next()->str(), _tokenizer->tokens())) {
+                && !symbolDatabase->findFunctionByName(tok->strAt(1), tok->scope())) {
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
                 tok = tok->next();
