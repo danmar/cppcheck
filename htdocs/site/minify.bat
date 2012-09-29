@@ -1,4 +1,6 @@
 @echo off
+pushd %~dp0
+
 cleancss -o css/all.min.css css/all.css && ^
 cleancss -o css/demo.min.css css/demo.css && ^
 uglifyjs -o js/github.min.js js/github.js && ^

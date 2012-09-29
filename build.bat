@@ -13,6 +13,8 @@ REM
 REM TODO:
 REM  - run tests too
 
+pushd %~dp0
+
 if "%1" == "" goto help
 
 REM Qt prompt sets QMAKESPEC
