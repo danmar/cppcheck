@@ -2245,54 +2245,47 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
 
 void CheckOther::checkComparisonOfFuncReturningBool()
 {
-    // FIXME: This checking is "experimental" because of the false positives
-    //        when self checking lib/preprocessor.cpp (#2617)
-    if (!_settings->experimental)
-        return;
-
     if (!_settings->isEnabled("style"))
         return;
 
     if (!_tokenizer->isCPP())
         return;
 
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->previous() && tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
             const Token *first_token;
             bool first_token_func_of_type_bool = false;
-            bool second_token_func_of_type_bool = false;
             if (Token::simpleMatch(tok->previous(), ")")) {
                 first_token = tok->previous()->link()->previous();
             } else {
                 first_token = tok->previous();
             }
-
-            std::string const first_token_name = first_token->str();
-            if (first_token->isName()&& isFunction(first_token->str(), _tokenizer->tokens())) {
-                const Token *fToken = NULL; // TODO: locate function token
-                if (fToken &&fToken->previous() && fToken->previous()->str() == "bool") {
+            if (Token::Match(first_token, "%var% (") && !Token::Match(first_token->previous(), "::|.")) {
+                const Function* func = symbolDatabase->findFunctionByName(first_token->str(), first_token->scope());
+                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
                     first_token_func_of_type_bool = true;
                 }
             }
 
             Token *second_token = tok->next();
+            bool second_token_func_of_type_bool = false;
             while (second_token->str()=="!") {
                 second_token = second_token->next();
             }
-            std::string const second_token_name = second_token->str();
-            if (second_token->isName()&& isFunction(second_token->str(), _tokenizer->tokens())) {
-                const Token *fToken = NULL; // TODO: locate function token
-                if (fToken &&fToken->previous() && fToken->previous()->str() == "bool") {
+            if (Token::Match(second_token, "%var% (") && !Token::Match(second_token->previous(), "::|.")) {
+                const Function* func = symbolDatabase->findFunctionByName(second_token->str(), second_token->scope());
+                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
                     second_token_func_of_type_bool = true;
                 }
             }
+
             if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == true)) {
                 comparisonOfTwoFuncsReturningBoolError(first_token->next(), first_token->str(), second_token->str());
-            }
-            if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == false)) {
+            } else if (first_token_func_of_type_bool == true) {
                 comparisonOfFuncReturningBoolError(first_token->next(), first_token->str());
-            }
-            if ((first_token_func_of_type_bool == false) && (second_token_func_of_type_bool == true)) {
+            } else if (second_token_func_of_type_bool == true) {
                 comparisonOfFuncReturningBoolError(second_token->previous(), second_token->str());
             }
         }
