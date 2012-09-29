@@ -64,7 +64,7 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                                        const MathLib::bigint num)
 {
     for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "[(,] &| %varid% [,)]"))
+        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
             return true;
         if (tok2->str() == "}")
             return false;
