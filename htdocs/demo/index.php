@@ -55,40 +55,40 @@ void f()
 <h3>Examples</h3>
 <p>This code can be copy and pasted in the edit box above.</p>
 <h4>NULL pointers</h4>
-<pre class="code">void f1(struct fred_t *p)
-{
-    <em>// dereference p and then check if it's NULL</em>
-    int x = p-&gt;x;
-    if (p)
-        do_something(x);
-}
+<pre class="cpp geshicode"><span class="kw4">void</span> f1<span class="br0">(</span><span class="kw4">struct</span> fred_t <span class="sy2">*</span>p<span class="br0">)</span>
+<span class="br0">{</span>
+    <span class="co1">// dereference p and then check if it's NULL</span>
+    <span class="kw4">int</span> x <span class="sy1">=</span> p<span class="sy2">-</span><span class="sy1">&gt;</span>x<span class="sy4">;</span>
+    <span class="kw1">if</span> <span class="br0">(</span>p<span class="br0">)</span>
+        do_something<span class="br0">(</span>x<span class="br0">)</span><span class="sy4">;</span>
+<span class="br0">}</span>
 
-void f2()
-{
-    const char *p = NULL;
-    for (int i = 0; str[i] != '\0'; i++)
-    {
-        if (str[i] == ' ')
-        {
-            p = str + i;
-            break;
-        }
-    }
+<span class="kw4">void</span> f2<span class="br0">(</span><span class="br0">)</span>
+<span class="br0">{</span>
+    <span class="kw4">const</span> <span class="kw4">char</span> <span class="sy2">*</span>p <span class="sy1">=</span> <span class="kw2">NULL</span><span class="sy4">;</span>
+    <span class="kw1">for</span> <span class="br0">(</span><span class="kw4">int</span> i <span class="sy1">=</span> <span class="nu0">0</span><span class="sy4">;</span> str<span class="br0">[</span>i<span class="br0">]</span> <span class="sy3">!</span><span class="sy1">=</span> <span class="st0">'<span class="es5">\0</span>'</span><span class="sy4">;</span> i<span class="sy2">++</span><span class="br0">)</span>
+    <span class="br0">{</span>
+        <span class="kw1">if</span> <span class="br0">(</span>str<span class="br0">[</span>i<span class="br0">]</span> <span class="sy1">==</span> <span class="st0">' '</span><span class="br0">)</span>
+        <span class="br0">{</span>
+            p <span class="sy1">=</span> str <span class="sy2">+</span> i<span class="sy4">;</span>
+            <span class="kw1">break</span><span class="sy4">;</span>
+        <span class="br0">}</span>
+    <span class="br0">}</span>
 
-    <em>// p is NULL if str doesn't have a space. If str always has a</em>
-    <em>// a space then the condition (str[i] != '\0') would be redundant</em>
-    return p[1];
-}
+    <span class="co1">// p is NULL if str doesn't have a space. If str always has a</span>
+    <span class="co1">// a space then the condition (str[i] != '\0') would be redundant</span>
+    <span class="kw1">return</span> p<span class="br0">[</span><span class="nu0">1</span><span class="br0">]</span><span class="sy4">;</span>
+<span class="br0">}</span>
 
-void f3(int a)
-{
-    struct fred_t *p = NULL;
-    if (a == 1)
-        p = fred1;
+<span class="kw4">void</span> f3<span class="br0">(</span><span class="kw4">int</span> a<span class="br0">)</span>
+<span class="br0">{</span>
+    <span class="kw4">struct</span> fred_t <span class="sy2">*</span>p <span class="sy1">=</span> <span class="kw2">NULL</span><span class="sy4">;</span>
+    <span class="kw1">if</span> <span class="br0">(</span>a <span class="sy1">==</span> <span class="nu0">1</span><span class="br0">)</span>
+        p <span class="sy1">=</span> fred1<span class="sy4">;</span>
 
-    <em>// if a is not 1 then p is NULL</em>
-    p-&gt;x = 0;
-}</pre>
+    <span class="co1">// if a is not 1 then p is NULL</span>
+    p<span class="sy2">-</span><span class="sy1">&gt;</span>x <span class="sy1">=</span> <span class="nu0">0</span><span class="sy4">;</span>
+<span class="br0">}</span></pre>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
 </body>
