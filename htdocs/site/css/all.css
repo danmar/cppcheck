@@ -140,53 +140,12 @@ a.downloadnow em {
   font-style: normal;
 }
 
-/* Source Code */
-pre.code {
-  padding: .5em;
-  background: #f7f7f7;
-  border: 1px solid #e2e2e2;
-}
-pre.code em {
-  color: green;
-}
-.geshicode {
-  padding: .5em;
-  background: #f7f7f7;
-  border: 1px solid #e2e2e2;
-}
-
 /* Command */
 pre.cmd {
   padding: .5em;
   background: #f7f7f7;
   border: 1px solid #c0c0c0;
   border-left: 10px solid #c0c0c0;
-}
-
-/* Results table */
-#resultsTable {
-  border-collapse: collapse;
-}
-#resultsTable th {
-  padding: .25em;
-  text-align: left;
-  background: #e2e2e2;
-  border: 1px solid #e2e2e2;
-}
-#resultsTable td {
-  padding: .25em;
-  background: #f7f7f7;
-  border: 1px solid #e2e2e2;
-}
-#resultsTable .center {
-  text-align: center;
-}
-
-/* Max characters */
-.maxChars {
-  margin-left: 2em;
-  color: #888;
-  font-size: smaller;
 }
 
 /* Printing */

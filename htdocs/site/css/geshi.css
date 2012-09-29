@@ -1,3 +1,44 @@
+/* Source Code */
+pre.code {
+  padding: .5em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
+pre.code em {
+  color: green;
+}
+.geshicode {
+  padding: .5em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
+
+/* Results table */
+#resultsTable {
+  border-collapse: collapse;
+}
+#resultsTable th {
+  padding: .25em;
+  text-align: left;
+  background: #e2e2e2;
+  border: 1px solid #e2e2e2;
+}
+#resultsTable td {
+  padding: .25em;
+  background: #f7f7f7;
+  border: 1px solid #e2e2e2;
+}
+#resultsTable .center {
+  text-align: center;
+}
+
+/* Max characters */
+.maxChars {
+  margin-left: 2em;
+  color: #888;
+  font-size: smaller;
+}
+
 /**
  * GeSHi (C) 2004 - 2007 Nigel McNie, 2007 - 2008 Benny Baumann
  * (http://qbnz.com/highlighter/ and http://geshi.org/)
