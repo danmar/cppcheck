@@ -287,7 +287,7 @@ bool CheckClass::canNotCopy(const Scope *scope)
             publicAssign = true;
     }
 
-    return constructor && !(publicAssign | publicCopy);
+    return constructor && !(publicAssign || publicCopy);
 }
 
 void CheckClass::assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage)
