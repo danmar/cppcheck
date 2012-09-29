@@ -9,7 +9,7 @@
       Comments='$(var.ProductDescription)' Manufacturer='$(var.ProductManufacturer)'
       InstallerVersion='300' Languages='1033' Compressed='yes' SummaryCodepage='1252'/>
 
-    <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' DiskPrompt='CD-ROM 1' />
+    <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' CompressionLevel='high' DiskPrompt='CD-ROM 1' />
     <Property Id='DiskPrompt' Value='Cppcheck installation [1]' />
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
