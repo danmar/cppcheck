@@ -17,7 +17,6 @@
         <Directory Id='INSTALLDIR' Name='$(var.ProductNameShort)'>
           <Component Id='cppcheck.exe' Guid='$(var.cppcheckGUID)'>
             <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
-            <Environment Id='UpdatePath' Name='PATH' Action='set' System='yes' Part='last' Value='[INSTALLDIR]' />
           </Component>
           <Component Id='RegistryEntries' Guid='$(var.registrykeysGUID)'>
             <RegistryKey Root="HKCU" Key="SOFTWARE\$(var.ProductNameShort)" Action="createAndRemoveOnUninstall">
