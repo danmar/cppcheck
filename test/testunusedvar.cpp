@@ -144,6 +144,7 @@ private:
         TEST_CASE(localvarIfNOT);    // #3104 - if ( NOT var )
         TEST_CASE(localvarAnd);      // #3672
         TEST_CASE(localvarSwitch);   // #3744 - false positive when localvar is used in switch
+        TEST_CASE(localvarNULL);     // #4203 - Setting NULL value is not redundant - it is safe
 
         TEST_CASE(crash1);
     }
@@ -3314,6 +3315,16 @@ private:
                               "}");
 
         // Don't write an error that "a" is not used
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarNULL() { // #4203 - Setting NULL value is not redundant - it is safe
+        functionVariableUsage("void f() {\n"
+                              "    char *p = malloc(100);\n"
+                              "    foo(p);\n"
+                              "    free(p);\n"
+                              "    p = NULL;\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
