@@ -4226,6 +4226,14 @@ void Tokenizer::simplifyConditionOperator()
 
         if (Token::Match(tok, "[{};] *| %var% = %any% ? %any% : %any% ;") ||
             Token::Match(tok, "[{};] return %any% ? %any% : %any% ;")) {
+
+            // backup varids so they can be set properly
+            std::map<std::string, unsigned int> varid;
+            for (const Token *tok2 = tok->next(); tok2->str() != ";"; tok2 = tok2->next()) {
+                if (tok2->varId())
+                    varid[tok2->str()] = tok2->varId();
+            }
+
             std::string var(tok->next()->str());
             bool isPointer = false;
             bool isReturn = false;
@@ -4299,6 +4307,10 @@ void Tokenizer::simplifyConditionOperator()
                     tok->str(value1);
                 else if (tok->str() == "value2")
                     tok->str(value2);
+
+                // set varid.
+                if (varid.find(tok->str()) != varid.end())
+                    tok->varId(varid[tok->str()]);
             }
         }
     }

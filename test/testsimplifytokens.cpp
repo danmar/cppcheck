@@ -162,7 +162,7 @@ private:
         TEST_CASE(remove_comma);
 
         // Simplify "?:"
-        TEST_CASE(conditionOperator);
+        TEST_CASE(simplifyConditionOperator);
 
         // Simplify calculations
         TEST_CASE(calculations);
@@ -2719,7 +2719,7 @@ private:
         }
     }
 
-    void conditionOperator() {
+    void simplifyConditionOperator() {
         {
             const char code[] = "; x = a ? b : c;";
             ASSERT_EQUALS("; if ( a ) { x = b ; } else { x = c ; }", tok(code));
@@ -2832,6 +2832,11 @@ private:
             ASSERT_EQUALS("; x = * b ;", tok("; x = (false)?*a:*b;"));
             ASSERT_EQUALS("void f ( ) { return 1 ; }", tok("void f() { char *p=0; return (p==0)?1:2; }"));
         }
+
+        // 4225 - varid gets lost
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: int a@1 ; int b@2 ; int c@3 ; int d@4 ; if ( b@2 ) { a@1 = c@3 ; } else { a@1 = d@4 ; }\n",
+                      tokenizeDebugListing("int a, b, c, d; a = b ? (int *)c : d;", true));
     }
 
     void calculations() {
