@@ -74,6 +74,7 @@
             <RemoveFile Id="qtsql4dll" On="install" Name="qtsql4.dll" />
           </Component>
         </Directory>
+        <!-- <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" /> -->
       </Directory>
 
       <Directory Id='ProgramMenuFolder' Name='Programs' >
