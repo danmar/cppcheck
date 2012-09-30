@@ -446,6 +446,19 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                         suppressionIDs.push_back(word);
                 }
             }
+        } else if ((i==0 || std::isspace(str[i-1])) && str.compare(i,5,"__asm",0,5) == 0) {
+            while (i < str.size() && !std::isspace(str[i]))
+                code << str[i++];
+            while (i < str.size() && std::isspace(str[i]))
+                code << str[i++];
+            if (str[i] == '{') {
+                while (i < str.size() && str[i] != '}') {
+                    if (str[i] == ';')
+                        i = str.find("\n", i);
+                    code << str[i++];
+                }
+                code << '}';
+            }
         } else if (ch == '#' && previous == '\n') {
             code << ch;
             previous = ch;

@@ -126,8 +126,6 @@ public:
 
     void handleUndef(std::list<std::string> &configurations) const;
 
-protected:
-
     /**
      * report error
      * @param fileName name of file that the error was found in

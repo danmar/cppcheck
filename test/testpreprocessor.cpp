@@ -72,6 +72,9 @@ private:
         // reading utf-16 file
         TEST_CASE(utf16);
 
+        // remove comments
+        TEST_CASE(removeComments);
+
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);
 
@@ -362,6 +365,24 @@ private:
             std::istringstream istr(s);
             ASSERT_EQUALS("\n", preprocessor.read(istr, "test.c"));
         }
+    }
+
+
+    void removeComments() {
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+
+        // #3837 - asm comments
+        const char code[] = "void test(void) {\n"
+                            "   __asm\n"
+                            "   {\n"
+                            "      ;---- тест\n"
+                            "   }\n"
+                            "}\n";
+        ASSERT_EQUALS(true, std::string::npos == preprocessor.removeComments(code, "3837.c").find("----"));
+
+        ASSERT_EQUALS(" __asm123", preprocessor.removeComments(" __asm123", "3837.cpp"));
+        ASSERT_EQUALS("\" __asm { ; } \"", preprocessor.removeComments("\" __asm { ; } \"", "3837.cpp"));
     }
 
 
