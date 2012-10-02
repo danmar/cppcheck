@@ -44,6 +44,9 @@ gui/*.qm
 doxyoutput/
 # qmake generated
 
+htmlreport/.tox/
+htmlreport/MANIFEST
+
 # Backup files and stuff from patches
 *.orig
 *.rej
