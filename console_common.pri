@@ -19,5 +19,5 @@ contains(QMAKE_CXX, cl) {
 }
 
 CONFIG(release, debug|release) {
-	DEFINES += NDEBUG
+    DEFINES += NDEBUG
 }

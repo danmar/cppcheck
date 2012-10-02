@@ -137,5 +137,3 @@ win32 {
     HEADERS += ../cli/resource.h
     LIBS += -lshlwapi
 }
-
-

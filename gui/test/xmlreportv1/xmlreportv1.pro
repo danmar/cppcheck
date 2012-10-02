@@ -5,9 +5,9 @@ INCLUDEPATH += .
 OBJECTS_DIR = ../build
 MOC_DIR = ../build
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
-
 include(../common.pri)
+
+DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 # tests
 SOURCES += testxmlreportv1.cpp

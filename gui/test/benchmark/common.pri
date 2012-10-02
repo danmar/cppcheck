@@ -7,4 +7,3 @@ INCLUDEPATH += ../../../externals
 
 BASEPATH = ../../../../lib/
 include($$PWD/../../../lib/lib.pri)
-

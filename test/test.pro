@@ -1,4 +1,3 @@
-
 TEMPLATE = app
 TARGET = testrunner
 DEPENDPATH += .

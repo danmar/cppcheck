@@ -1,4 +1,3 @@
-
 HEADERS += $${BASEPATH}tinystr.h \
            $${BASEPATH}tinyxml.h
 SOURCES += $${BASEPATH}tinystr.cpp \
