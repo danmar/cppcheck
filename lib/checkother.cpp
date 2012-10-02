@@ -2235,40 +2235,40 @@ void CheckOther::checkComparisonOfFuncReturningBool()
         if (!scope->isExecutable())
             continue;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->previous() && tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
-                const Token *first_token;
-                bool first_token_func_of_type_bool = false;
-                if (Token::simpleMatch(tok->previous(), ")")) {
-                    first_token = tok->previous()->link()->previous();
-                } else {
-                    first_token = tok->previous();
+            if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
+                continue;
+            const Token *first_token;
+            bool first_token_func_of_type_bool = false;
+            if (Token::simpleMatch(tok->previous(), ")")) {
+                first_token = tok->previous()->link()->previous();
+            } else {
+                first_token = tok->previous();
+            }
+            if (Token::Match(first_token, "%var% (") && !Token::Match(first_token->previous(), "::|.")) {
+                const Function* func = symbolDatabase->findFunctionByName(first_token->str(), first_token->scope());
+                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
+                    first_token_func_of_type_bool = true;
                 }
-                if (Token::Match(first_token, "%var% (") && !Token::Match(first_token->previous(), "::|.")) {
-                    const Function* func = symbolDatabase->findFunctionByName(first_token->str(), first_token->scope());
-                    if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
-                        first_token_func_of_type_bool = true;
-                    }
-                }
+            }
 
-                Token *second_token = tok->next();
-                bool second_token_func_of_type_bool = false;
-                while (second_token->str()=="!") {
-                    second_token = second_token->next();
+            Token *second_token = tok->next();
+            bool second_token_func_of_type_bool = false;
+            while (second_token->str()=="!") {
+                second_token = second_token->next();
+            }
+            if (Token::Match(second_token, "%var% (") && !Token::Match(second_token->previous(), "::|.")) {
+                const Function* func = symbolDatabase->findFunctionByName(second_token->str(), second_token->scope());
+                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
+                    second_token_func_of_type_bool = true;
                 }
-                if (Token::Match(second_token, "%var% (") && !Token::Match(second_token->previous(), "::|.")) {
-                    const Function* func = symbolDatabase->findFunctionByName(second_token->str(), second_token->scope());
-                    if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
-                        second_token_func_of_type_bool = true;
-                    }
-                }
+            }
 
-                if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == true)) {
-                    comparisonOfTwoFuncsReturningBoolError(first_token->next(), first_token->str(), second_token->str());
-                } else if (first_token_func_of_type_bool == true) {
-                    comparisonOfFuncReturningBoolError(first_token->next(), first_token->str());
-                } else if (second_token_func_of_type_bool == true) {
-                    comparisonOfFuncReturningBoolError(second_token->previous(), second_token->str());
-                }
+            if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == true)) {
+                comparisonOfTwoFuncsReturningBoolError(first_token->next(), first_token->str(), second_token->str());
+            } else if (first_token_func_of_type_bool == true) {
+                comparisonOfFuncReturningBoolError(first_token->next(), first_token->str());
+            } else if (second_token_func_of_type_bool == true) {
+                comparisonOfFuncReturningBoolError(second_token->previous(), second_token->str());
             }
         }
     }
@@ -2315,25 +2315,25 @@ void CheckOther::checkComparisonOfBoolWithBool()
         if (!scope->isExecutable())
             continue;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->previous() && tok->type() == Token::eComparisonOp && tok->str() != "==" && tok->str() != "!=") {
-                bool first_token_bool = false;
-                bool second_token_bool = false;
+            if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
+                continue;
+            bool first_token_bool = false;
+            bool second_token_bool = false;
 
-                const Token *first_token = tok->previous();
-                if (first_token->varId()) {
-                    if (isBool(symbolDatabase->getVariableFromVarId(first_token->varId()))) {
-                        first_token_bool = true;
-                    }
+            const Token *first_token = tok->previous();
+            if (first_token->varId()) {
+                if (isBool(symbolDatabase->getVariableFromVarId(first_token->varId()))) {
+                    first_token_bool = true;
                 }
-                const Token *second_token = tok->next();
-                if (second_token->varId()) {
-                    if (isBool(symbolDatabase->getVariableFromVarId(second_token->varId()))) {
-                        second_token_bool = true;
-                    }
+            }
+            const Token *second_token = tok->next();
+            if (second_token->varId()) {
+                if (isBool(symbolDatabase->getVariableFromVarId(second_token->varId()))) {
+                    second_token_bool = true;
                 }
-                if ((first_token_bool == true) && (second_token_bool == true)) {
-                    comparisonOfBoolWithBoolError(first_token->next(), first_token->str());
-                }
+            }
+            if ((first_token_bool == true) && (second_token_bool == true)) {
+                comparisonOfBoolWithBoolError(first_token->next(), first_token->str());
             }
         }
     }
