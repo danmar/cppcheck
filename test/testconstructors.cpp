@@ -142,7 +142,6 @@ private:
         TEST_CASE(uninitFunction5);
         TEST_CASE(uninitSameClassName);    // No FP when two classes have the same name
         TEST_CASE(uninitFunctionOverload); // No FP when there are overloaded functions
-        TEST_CASE(uninitJava);             // Java: no FP when variable is initialized in declaration
         TEST_CASE(uninitVarOperatorEqual); // ticket #2415
         TEST_CASE(uninitVarPointer);       // ticket #3801
         TEST_CASE(uninitConstVar);
@@ -2469,32 +2468,6 @@ private:
               "    const int a;\n"
               "    B& operator=(const B& r) { }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void checkJava(const char code[]) {
-        // Clear the error log
-        errout.str("");
-
-        Settings settings;
-        settings.addEnabled("style");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.java");
-        tokenizer.simplifyTokenList();
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.constructors();
-    }
-
-    void uninitJava() {
-        checkJava("class A {\n"
-                  "    private: int i = 0;\n"
-                  "    public: A() { }\n"
-                  "};");
         ASSERT_EQUALS("", errout.str());
     }
 };

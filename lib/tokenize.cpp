@@ -1640,10 +1640,6 @@ bool Tokenizer::tokenize(std::istream &code,
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     simplifySQL();
 
-    // Simplify JAVA/C# code
-    if (isJavaOrCSharp())
-        simplifyJavaAndCSharp();
-
     // Concatenate double sharp: 'a ## b' -> 'ab'
     concatenateDoubleSharp();
 
@@ -2317,68 +2313,6 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
             }
 
             break;
-        }
-    }
-}
-
-void Tokenizer::simplifyJavaAndCSharp()
-{
-    // better don't call isJava in the loop
-    const bool isJava_ = isJava();
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "private")
-            tok->str("private:");
-        else if (tok->str() == "protected")
-            tok->str("protected:");
-        else if (tok->str() == "public")
-            tok->str("public:");
-
-        else if (isJava_) {
-            if (Token::Match(tok, ") throws %var% {"))
-                tok->deleteNext(2);
-        } else {
-            //remove 'using var;' from code
-            if (Token::Match(tok, "using %var% ;") &&
-                (!tok->previous() || Token::Match(tok->previous(), "[,;{}]"))) {
-                tok->deleteNext(2);
-                tok->deleteThis();
-            }
-
-            //simplify C# arrays of arrays and multidimension arrays
-            while (Token::Match(tok, "%type% [ ,|]") &&
-                   (!tok->previous() || Token::Match(tok->previous(), "[,;{}]"))) {
-                Token *tok2 = tok->tokAt(2);
-                unsigned int count = 1;
-                while (tok2 && tok2->str() == ",") {
-                    ++count;
-                    tok2 = tok2->next();
-                }
-                if (!tok2 || tok2->str() != "]")
-                    break;
-                tok2 = tok2->next();
-                while (Token::Match(tok2, "[ ,|]")) {
-                    tok2 = tok2->next();
-                    while (tok2 && tok2->str() == ",") {
-                        ++count;
-                        tok2 = tok2->next();
-                    }
-                    if (!tok2 || tok2->str() != "]")
-                        break;
-                    ++count;
-                    tok2 = tok2->next();
-                }
-                if (!tok2)
-                    break;
-                else if (Token::Match(tok2, "%var% [;,=]")) {
-                    Token::eraseTokens(tok, tok2);
-                    do {
-                        tok->insertToken("*");
-                    } while (--count);
-                    tok = tok2->tokAt(2);
-                }
-            }
-            if (!tok)
-                break;
         }
     }
 }
@@ -7105,10 +7039,6 @@ public:
 
 void Tokenizer::simplifyEnum()
 {
-    // Don't simplify enums in java files
-    if (isJavaOrCSharp())
-        return;
-
     std::string className;
     int classLevel = 0;
     bool goback = false;
@@ -9409,21 +9339,6 @@ const std::string& Tokenizer::getSourceFilePath() const
         return empty;
     }
     return list.getFiles()[0];
-}
-
-bool Tokenizer::isJava() const
-{
-    return _settings->enforcedLang == Settings::Java || (_settings->enforcedLang == Settings::None && Path::isJava(getSourceFilePath()));
-}
-
-bool Tokenizer::isCSharp() const
-{
-    return _settings->enforcedLang == Settings::CSharp || (_settings->enforcedLang == Settings::None && Path::isCSharp(getSourceFilePath()));
-}
-
-bool Tokenizer::isJavaOrCSharp() const
-{
-    return isJava() || isCSharp();
 }
 
 bool Tokenizer::isC() const

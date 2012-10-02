@@ -199,10 +199,6 @@ public:
 
     /** @brief run all simplified checks */
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) {
-        // Don't use these check for Java and C# programs..
-        if (tokenizr->isJavaOrCSharp())
-            return;
-
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.checkReallocUsage();
         checkMemoryLeak.check();

@@ -422,12 +422,6 @@ private:
         // x = ({ 123; });  =>  { x = 123; }
         TEST_CASE(simplifyAssignmentBlock);
 
-        // Tokenize C#
-        TEST_CASE(cs);
-
-        // Tokenize JAVA
-        TEST_CASE(java);
-
         TEST_CASE(simplifyOperatorName1);
         TEST_CASE(simplifyOperatorName2);
         TEST_CASE(simplifyOperatorName3);
@@ -6720,38 +6714,6 @@ private:
     void simplifyAssignmentBlock() {
         ASSERT_EQUALS("; { x = 123 ; } ;", tokenizeAndStringify(";x=({123;});"));
         ASSERT_EQUALS("; { x = y ; } ;", tokenizeAndStringify(";x=({y;});"));
-    }
-
-    void cs() {
-        bool simplify = false;
-        bool expand = true;
-        Settings::PlatformType platform = Settings::Unspecified;
-        const char filename[] = "test.cs";
-        ASSERT_EQUALS("int * x ;", tokenizeAndStringify("int [] x;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * x , int * y ;", tokenizeAndStringify("; int [] x, int [] y;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * * x ;", tokenizeAndStringify("; int [][] x;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * * * x ;", tokenizeAndStringify("; int [][][] x;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * * x ;", tokenizeAndStringify("; int [,] x;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * * * * x ;", tokenizeAndStringify("; int [][,][] x;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * * * x ;", tokenizeAndStringify("; int [,,] x;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * * * * * * x ;", tokenizeAndStringify("; int [,][,,][] x;", simplify, expand, platform, filename));
-        ASSERT_EQUALS("; int * * * * x ;", tokenizeAndStringify("; int [,,,] x;", simplify, expand, platform, filename));
-    }
-
-    std::string javatest(const char javacode[]) {
-        errout.str("");
-        Settings settings;
-        // tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(javacode);
-        tokenizer.tokenize(istr, "test.java");
-
-        return tokenizer.tokens()->stringifyList(0, false);
-    }
-
-
-    void java() {
-        ASSERT_EQUALS("void f ( ) { }", javatest("void f() throws Exception { }"));
     }
 
     void simplifyOperatorName1() {

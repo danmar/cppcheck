@@ -51,15 +51,6 @@ public:
     /** Returns the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
-    /** Is the code JAVA. Used for bailouts */
-    bool isJava() const;
-
-    /** Is the code C#. Used for bailouts */
-    bool isCSharp() const;
-
-    /** Is the code JAVA/C#. Used for bailouts */
-    bool isJavaOrCSharp() const;
-
     /** Is the code C. Used for bailouts */
     bool isC() const;
 
@@ -168,9 +159,6 @@ public:
      *         false if no modifications are done.
      */
     bool simplifyCalculations();
-
-    /** Simplify Java and C# syntax */
-    void simplifyJavaAndCSharp();
 
     /** Insert array size where it isn't given */
     void arraySize();

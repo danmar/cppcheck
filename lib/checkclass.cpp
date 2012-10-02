@@ -1317,11 +1317,6 @@ void CheckClass::checkConst()
     if (!_settings->isEnabled("style"))
         return;
 
-    // Don't check C# and JAVA classes
-    if (_tokenizer->isJavaOrCSharp()) {
-        return;
-    }
-
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {

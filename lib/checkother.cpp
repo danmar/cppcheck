@@ -2045,11 +2045,6 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 
 void CheckOther::strPlusChar()
 {
-    // Don't use this check for Java and C# programs..
-    if (_tokenizer->isJavaOrCSharp()) {
-        return;
-    }
-
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {

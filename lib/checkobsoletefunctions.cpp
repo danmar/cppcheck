@@ -36,10 +36,6 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     if (!_settings->isEnabled("style"))
         return;
 
-    // Don't check C# and Java code
-    if (_tokenizer->isJavaOrCSharp())
-        return;
-
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
