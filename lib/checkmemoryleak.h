@@ -357,7 +357,6 @@ public:
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) {
-        // Don't use these check for Java and C# programs..
         if (!tokenizr->isCPP())
             return;
 

@@ -133,8 +133,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
 {
     exitcode = 0;
 
-    // only show debug warnings for C/C++ source files (don't fix
-    // debug warnings for java/c#/etc files)
+    // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
         _settings.debugwarnings = false;
 
