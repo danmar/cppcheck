@@ -192,18 +192,6 @@ bool Path::isCPP(const std::string &path)
     return(getFilenameExtension(path) == ".C");
 }
 
-bool Path::isJava(const std::string &path)
-{
-    const std::string extension = getFilenameExtensionInLowerCase(path);
-    return(extension == ".java");
-}
-
-bool Path::isCSharp(const std::string &path)
-{
-    const std::string extension = getFilenameExtensionInLowerCase(path);
-    return(extension == ".cs");
-}
-
 bool Path::acceptFile(const std::string &filename)
 {
     return(Path::isCPP(filename) || Path::isC(filename));

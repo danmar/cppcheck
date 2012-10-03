@@ -115,20 +115,6 @@ public:
      * @return true if extension is meant for C++ files
      */
     static bool isCPP(const std::string &extensionInLowerCase);
-
-    /**
-     * @brief Identify language based on file extension.
-     * @param extensionInLowerCase e.g. ".java"
-     * @return true if extension is meant for Java files
-     */
-    static bool isJava(const std::string &extensionInLowerCase);
-
-    /**
-     * @brief Identify language based on file extension.
-     * @param extensionInLowerCase e.g. ".cs"
-     * @return true if extension is meant for C# files
-     */
-    static bool isCSharp(const std::string &extensionInLowerCase);
 };
 
 /// @}

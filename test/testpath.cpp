@@ -33,8 +33,6 @@ private:
         TEST_CASE(getRelative);
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
-        TEST_CASE(is_java);
-        TEST_CASE(is_csharp);
     }
 
     void simplify_path() const {
@@ -118,20 +116,6 @@ private:
         ASSERT(Path::isCPP("index.cpp"));
         ASSERT(Path::isCPP("C:\\foo\\index.cpp"));
         ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));
-    }
-
-    void is_java() const {
-        ASSERT(Path::isJava("index.cpp")==false);
-        ASSERT(Path::isJava("index.java"));
-        ASSERT(Path::isJava("C:\\foo\\index.java"));
-        ASSERT(Path::isJava("C:\\foo\\index.Java"));
-    }
-
-    void is_csharp() const {
-        ASSERT(Path::isCSharp("index.cpp")==false);
-        ASSERT(Path::isCSharp("index.cs"));
-        ASSERT(Path::isCSharp("C:\\foo\\index.cs"));
-        ASSERT(Path::isCSharp("C:\\foo\\index.Cs"));
     }
 };
 
