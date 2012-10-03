@@ -143,10 +143,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->enforcedLang = Settings::C;
             else if (str == "c++")
                 _settings->enforcedLang = Settings::CPP;
-            else if (str == "c#")
-                _settings->enforcedLang = Settings::CSharp;
-            else if (str == "java")
-                _settings->enforcedLang = Settings::Java;
             else {
                 PrintMessage("cppcheck: Unknown language '" + str + "' enforced.");
                 return false;
@@ -791,7 +787,7 @@ void CmdLineParser::PrintHelp()
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
               "    --language=<language>, -x <language>\n"
               "                         Forces cppcheck to check all files as the given\n"
-              "                         language. Valid values are: c, c++, java, c#\n"
+              "                         language. Valid values are: c, c++\n"
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"

@@ -411,20 +411,6 @@ private:
             ASSERT_EQUALS(Settings::C, settings.enforcedLang);
         }
         {
-            const char *argv[] = {"cppcheck", "--language=c#", "file.cpp"};
-            Settings settings;
-            CmdLineParser parser(&settings);
-            ASSERT(parser.ParseFromArgs(3, argv));
-            ASSERT_EQUALS(Settings::CSharp, settings.enforcedLang);
-        }
-        {
-            const char *argv[] = {"cppcheck", "--language=java", "file.cpp"};
-            Settings settings;
-            CmdLineParser parser(&settings);
-            ASSERT(parser.ParseFromArgs(3, argv));
-            ASSERT_EQUALS(Settings::Java, settings.enforcedLang);
-        }
-        {
             const char *argv[] = {"cppcheck", "--language=unknwonLanguage", "file.cpp"};
             Settings settings;
             CmdLineParser parser(&settings);

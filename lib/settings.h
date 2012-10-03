@@ -150,7 +150,7 @@ public:
     std::string addEnabled(const std::string &str);
 
     enum Language {
-        None, C, CPP, CSharp, Java
+        None, C, CPP
     };
 
     /** @brief Name of the language that is enforced. Empty per default. */
