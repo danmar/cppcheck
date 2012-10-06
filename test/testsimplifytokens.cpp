@@ -144,6 +144,7 @@ private:
         TEST_CASE(ifAssignWithCast);
         TEST_CASE(whileAssign1);
         TEST_CASE(whileAssign2);
+        TEST_CASE(whileAssign3); // varid
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
@@ -2505,6 +2506,19 @@ private:
             "    ;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void whileAssign3() {
+        // #4254 - Variable id
+        const char code[] = "void f() {\n"
+                            "  int a;\n"
+                            "  while (a = x());\n"
+                            "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void f ( ) {\n"
+                      "2: int a@1 ;\n"
+                      "3: a@1 = x ( ) ; while ( a@1 ) { ; a@1 = x ( ) ; }\n"
+                      "4: }\n", tokenizeDebugListing(code, true, "test.c"));
     }
 
 

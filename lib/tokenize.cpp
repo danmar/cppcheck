@@ -5491,6 +5491,7 @@ void Tokenizer::simplifyIfAssign()
 
                 for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous()) {
                     tok3->insertToken(tok2->str());
+                    tok3->next()->varId(tok2->varId());
 
                     Token *newTok = tok3->next();
                     newTok->fileIndex(tok2->fileIndex());
