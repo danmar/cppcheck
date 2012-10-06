@@ -5716,6 +5716,9 @@ private:
         //ticket #3227
         ASSERT_EQUALS("void foo ( ) { switch ( n ) { label : ; case 1 : ; label1 : ; label2 : ; break ; } }",
                       tokenizeAndStringify("void foo(){ switch (n){ label: case 1: label1: label2: break; }}"));
+        //ticket #4234
+        ASSERT_EQUALS("( ) { switch break ; { switch ( x ) { case } y break ; : } }",
+                      tokenizeAndStringify("( ) { switch break ; { switch ( x ) { case } y break ; : } }"));
     }
 
     void simplifyPointerToStandardType() {

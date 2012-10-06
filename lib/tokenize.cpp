@@ -2400,7 +2400,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
 
         if (Token::Match(tok, "[;{}] case")) {
             while (NULL != (tok = tok->next())) {
-                if (tok->str() == ":")
+                if (Token::Match(tok,"[:{};]"))
                     break;
             }
             if (!tok)
