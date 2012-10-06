@@ -14,11 +14,14 @@ depends on your operating system:
 Compiling
 ---------
 Windows:
-- The easy way is to download Qt SDK from http://qt-project.org/downloads and
-  use QtCreator and/or command line tools to build the GUI. Be careful to
-  download the correct version of library for your compiler!
-- The harder way is to download Qt sources and build Qt with Visual Studio
-  (Express Edition works). Compiling Qt alone may take over 4 hours!
+- The easy ways are:
+-- download Qt SDK from http://qt-project.org/downloads and use
+   QtCreator to build the GUI.
+-- Download precompiled libaries for your platform and use your preferred
+   IDE/environment to build GUI. Be careful to download the correct version of
+   library for your compiler!
+- The harder way is to download Qt sources and build Qt. Compiling Qt alone may
+  take over 4 hours!
 
 Linux:
 - Install Qt development packages (make sure qmake -tool gets installed!). The
@@ -33,6 +36,9 @@ After you have needed libraries and tools installed, open command
 prompt/console, go to gui directory and run command:
 - qmake (in Linux and in Windows if build with MinGW/gcc or nmake)
 - qmake -tp vc (to generate Visual Studio project file)
+
+On Windows, you have to either call qtvars.bat in Qt folder or use the Qt command
+line prompt shortcut added in the start menu by Qt installation.
 
 These commands generate makefiles to actually build the software. After that
 the actual building is done in IDE or command line as usual. Note that you
