@@ -709,10 +709,10 @@ private:
     }
 
     void wrong_syntax_if_macro() {
-        // #2518 and #4171
-        const char code[] = "void f() { if MACRO() { } }";
-        ASSERT_EQUALS("void f ( ) { if ( MACRO ( ) ) { } }", tokenizeAndStringify(code, false));
-        ASSERT_EQUALS("", errout.str());
+        // #2518
+        const std::string code("void f() { if MACRO(); }");
+        tokenizeAndStringify(code.c_str(), false);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void garbageCode() {

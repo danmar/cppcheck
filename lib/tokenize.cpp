@@ -1592,22 +1592,8 @@ bool Tokenizer::tokenize(std::istream &code,
                 // 'for each ( )' -> 'for ( )'
                 tok->deleteNext();
             else {
-                // locate the ')' parenthesis (the Token::link is not set yet)
-                // Then replace 'if MACRO(X)' with 'if (MACRO(X))'
-                unsigned int parlevel = 0;
-                for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        ++parlevel;
-                    else if (tok2->str() == ")") {
-                        if (parlevel == 1) {
-                            tok->insertToken("(");
-                            tok2->insertToken(")");
-                        }
-                        if (parlevel <= 1)
-                            break;
-                        --parlevel;
-                    }
-                }
+                syntaxError(tok);
+                return false;
             }
         }
     }
