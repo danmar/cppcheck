@@ -5,6 +5,10 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
+contains(LINKCORE, [yY][eE][sS]) {
+    LIBS += -l../bin/cppcheck-core
+    DEFINES += CPPCHECKLIB_IMPORT
+}
 LIBS += -L../externals
 
 DESTDIR = .
@@ -15,11 +19,19 @@ UI_DIR = temp
 
 win32 {
    CONFIG += windows
-   DESTDIR = ../Build/gui
-   RCC_DIR = ../BuildTmp/gui
-   MOC_DIR = ../BuildTmp/gui
-   OBJECTS_DIR = ../BuildTmp/gui
-   UI_DIR = ../BuildTmp/gui
+   contains(LINKCORE, [yY][eE][sS]) {
+      DESTDIR = ../bin
+      RCC_DIR = temp/generated
+      MOC_DIR = temp/generated
+      OBJECTS_DIR = temp/generated
+      UI_DIR = temp/generated
+   } else {
+      DESTDIR = ../Build/gui
+      RCC_DIR = ../BuildTmp/gui
+      MOC_DIR = ../BuildTmp/gui
+      OBJECTS_DIR = ../BuildTmp/gui
+      UI_DIR = ../BuildTmp/gui
+   }
 }
 
 RESOURCES = gui.qrc
@@ -49,8 +61,11 @@ TRANSLATIONS =  cppcheck_de.ts \
 # Windows-specific options
 CONFIG += embed_manifest_exe
 
-BASEPATH = ../lib/
-include($$PWD/../lib/lib.pri)
+contains(LINKCORE, [yY][eE][sS]) {
+} else {
+    BASEPATH = ../lib/
+    include($$PWD/../lib/lib.pri)
+}
 
 HEADERS += aboutdialog.h \
            application.h \
