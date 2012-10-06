@@ -23,8 +23,11 @@
 #include <QTranslator>
 #include <QMetaType>
 #include <QStringList>
-#include <QMessageBox>  // currently used only on _WIN32
+#ifdef _WIN32
+#include <QMessageBox>
+#else
 #include <iostream>
+#endif
 #include "mainwindow.h"
 #include "erroritem.h"
 
