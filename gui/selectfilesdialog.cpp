@@ -20,8 +20,6 @@
 #include "ui_selectfilesdialog.h"
 #include "filelist.h"
 
-#include <QTreeView>
-#include <QVBoxLayout>
 #include <QFileSystemModel>
 #include <QStringList>
 #include <QPushButton>

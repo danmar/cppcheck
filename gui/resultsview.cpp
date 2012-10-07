@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QDebug>
-#include <QFile>
 #include <QMessageBox>
 #include <QStandardItemModel>
 #include <QStandardItem>
@@ -28,7 +26,6 @@
 #include "common.h"
 #include "erroritem.h"
 #include "resultsview.h"
-#include "resultstree.h"
 #include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"

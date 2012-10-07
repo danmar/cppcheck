@@ -19,7 +19,6 @@
 #include <QObject>
 #include <QString>
 #include <QDir>
-#include <QFile>
 #include <QTextStream>
 #include "report.h"
 #include "csvreport.h"

@@ -19,7 +19,6 @@
 #include <QApplication>
 #include <QWidget>
 #include <QStandardItem>
-#include <QModelIndex>
 #include <QDebug>
 #include <QString>
 #include <QStringList>
@@ -37,13 +36,11 @@
 #include <QClipboard>
 #include <QContextMenuEvent>
 #include <QModelIndex>
-#include <QItemSelectionModel>
+#include "common.h"
 #include "erroritem.h"
-#include "settings.h"
 #include "applicationlist.h"
 #include "resultstree.h"
 #include "report.h"
-#include "xmlreport.h"
 #include "application.h"
 #include "showtypes.h"
 

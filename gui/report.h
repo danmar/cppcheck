@@ -21,7 +21,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QStringList>
 #include <QFile>
 #include "erroritem.h"
 

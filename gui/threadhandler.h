@@ -24,11 +24,12 @@
 #include <QStringList>
 #include <QDateTime>
 #include <set>
-#include "settings.h"
-#include "cppcheck.h"
 #include "threadresult.h"
-#include "checkthread.h"
-#include "resultsview.h"
+
+class ResultsView;
+class CheckThread;
+class QSettings;
+class Settings;
 
 /// @addtogroup GUI
 /// @{

@@ -20,7 +20,6 @@
 #include <QWidget>
 #include <QDialog>
 #include <QFileDialog>
-#include <QDebug>
 #include <QMessageBox>
 #include "applicationdialog.h"
 #include "application.h"

@@ -18,12 +18,7 @@
 
 #include <QApplication>
 #include <QDebug>
-#include <QMenu>
-#include <QDirIterator>
-#include <QMenuBar>
 #include <QMessageBox>
-#include <QToolBar>
-#include <QKeySequence>
 #include <QFileInfo>
 #include <QDir>
 #include <QDesktopServices>
@@ -31,13 +26,18 @@
 #include <QAction>
 #include <QActionGroup>
 #include "mainwindow.h"
+#include "cppcheck.h"
+#include "applicationlist.h"
 #include "aboutdialog.h"
+#include "common.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
 #include "projectfile.h"
 #include "project.h"
 #include "report.h"
 #include "statsdialog.h"
+#include "settingsdialog.h"
+#include "translationhandler.h"
 #include "logview.h"
 #include "filelist.h"
 #include "showtypes.h"

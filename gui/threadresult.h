@@ -23,7 +23,6 @@
 #include <QMutex>
 #include <QObject>
 #include <QStringList>
-#include <QVariant>
 #include "errorlogger.h"
 
 class ErrorItem;

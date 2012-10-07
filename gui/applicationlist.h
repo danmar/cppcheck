@@ -20,7 +20,6 @@
 #define APPLICATIONLIST_H
 
 #include <QObject>
-#include <QSettings>
 #include "application.h"
 
 /// @addtogroup GUI

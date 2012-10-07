@@ -22,26 +22,20 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QFileDialog>
-#include <QSignalMapper>
 #include <QActionGroup>
 #include <QTimer>
-#include <QToolBar>
 #include <QStringList>
 
-#include "resultsview.h"
-#include "settingsdialog.h"
-#include "translationhandler.h"
 #include "settings.h"
 #include "platforms.h"
 #include "ui_main.h"
 
 class ThreadHandler;
+class TranslationHandler;
 class LogView;
 class Project;
 class ErrorItem;
-class StatsDialog;
 class QAction;
-class QActionGroup;
 
 /// @addtogroup GUI
 /// @{

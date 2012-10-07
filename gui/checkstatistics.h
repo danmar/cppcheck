@@ -20,7 +20,6 @@
 #define CHECKSTATISTICS_H
 
 #include <QObject>
-#include "common.h"
 #include "showtypes.h"
 
 /// @addtogroup GUI

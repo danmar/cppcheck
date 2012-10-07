@@ -22,7 +22,6 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QLineEdit>
 #include <QDir>
 #include <QSettings>
 #include "common.h"

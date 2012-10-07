@@ -21,8 +21,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QStringList>
-#include <QFile>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include "xmlreport.h"

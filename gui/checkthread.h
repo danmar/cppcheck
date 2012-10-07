@@ -22,8 +22,9 @@
 
 #include <QThread>
 #include "cppcheck.h"
-#include "settings.h"
 #include "threadresult.h"
+
+class Settings;
 
 /// @addtogroup GUI
 /// @{

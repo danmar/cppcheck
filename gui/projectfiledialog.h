@@ -25,9 +25,7 @@
 
 #include "ui_projectfile.h"
 
-class ProjectFile;
 class QWidget;
-class QLineEdit;
 
 /// @addtogroup GUI
 /// @{

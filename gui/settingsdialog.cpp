@@ -19,11 +19,8 @@
 
 #include <QDialog>
 #include <QWidget>
-#include <QLabel>
 #include <QList>
-#include <QDebug>
 #include <QListWidgetItem>
-#include <QTabWidget>
 #include <QSettings>
 #include <QFileDialog>
 #include <QThread>

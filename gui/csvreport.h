@@ -21,8 +21,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QStringList>
-#include <QFile>
 #include <QTextStream>
 #include "report.h"
 

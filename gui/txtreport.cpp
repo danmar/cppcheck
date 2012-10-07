@@ -17,8 +17,6 @@
  */
 
 #include <QDir>
-#include <QFile>
-#include <QTextStream>
 #include "txtreport.h"
 
 TxtReport::TxtReport(const QString &filename, QObject * parent) :

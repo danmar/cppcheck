@@ -25,12 +25,10 @@
 #include <QStandardItem>
 #include <QSettings>
 #include <QContextMenuEvent>
-#include <QTextStream>
-#include "common.h"
-#include "applicationlist.h"
 #include "errorlogger.h" // Severity
 #include "showtypes.h"
 
+class ApplicationList;
 class Report;
 class ErrorItem;
 class ErrorLine;

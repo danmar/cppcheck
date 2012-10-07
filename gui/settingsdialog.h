@@ -21,7 +21,6 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
-#include <QKeyEvent>
 #include "ui_settings.h"
 
 class QSettings;

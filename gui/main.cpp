@@ -20,7 +20,6 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QTextCodec>
-#include <QTranslator>
 #include <QMetaType>
 #include <QStringList>
 #ifdef _WIN32

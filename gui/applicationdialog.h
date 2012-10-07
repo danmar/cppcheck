@@ -20,7 +20,6 @@
 #define APPLICATIONDIALOG_H
 
 #include <QDialog>
-#include <QLineEdit>
 #include <QString>
 #include "application.h"
 #include "ui_application.h"

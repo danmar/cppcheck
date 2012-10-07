@@ -21,7 +21,6 @@
 #include <QString>
 #include <QClipboard>
 #include <QMimeData>
-#include "common.h"
 #include "project.h"
 #include "projectfile.h"
 #include "statsdialog.h"

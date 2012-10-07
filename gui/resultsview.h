@@ -22,8 +22,6 @@
 
 
 #include <QWidget>
-#include "errorlogger.h"
-#include "common.h"
 #include "report.h"
 #include "showtypes.h"
 #include "ui_resultsview.h"

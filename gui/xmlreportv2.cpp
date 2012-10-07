@@ -20,7 +20,6 @@
 #include <QString>
 #include <QList>
 #include <QDir>
-#include <QFile>
 #include <QXmlStreamWriter>
 #include <QDebug>
 #include "report.h"

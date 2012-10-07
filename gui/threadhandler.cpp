@@ -20,7 +20,9 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QDebug>
+#include "common.h"
 #include "settings.h"
+#include "checkthread.h"
 #include "threadhandler.h"
 #include "resultsview.h"
 
