@@ -55,6 +55,7 @@ private:
         TEST_CASE(nullpointer19); // #3811
         TEST_CASE(nullpointer20); // #3807 (fp: return p ? (p->x() || p->y()) : z)
         TEST_CASE(nullpointer21); // #4038 (fp: if (x) p=q; else return;)
+        TEST_CASE(nullpointer22); // #4007 (fp: (uri != NULL) && (*uri == 0))
         TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
@@ -1287,6 +1288,14 @@ private:
               "    if (x) p = q;\n"
               "    else return;\n"
               "    *p = 0;\n" // <- p is not NULL
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer22() {  // #4007 - fp: (x != NULL) && (*x == 0)
+        check("void f() {\n"
+              "    int *p = 0;\n"
+              "    int result = (p != NULL) && (*p == 0);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
