@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+#include "checknullpointer.h"   // CheckNullPointer::isPointerDeRef()
 #include "mathlib.h"
 #include "symboldatabase.h"
 
@@ -3107,8 +3108,12 @@ void CheckOther::checkSuspiciousStringCompare()
                 std::swap(varTok, litTok);
 
             const Variable* var = symbolDatabase->getVariableFromVarId(varTok->varId());
-            if (var && var->isPointer())
-                suspiciousStringCompareError(tok, var->name());
+            if (var) {
+                bool unknown=false;
+                if (_tokenizer->isC() ||
+                    (var->isPointer() && !CheckNullPointer::isPointerDeRef(tok, unknown, symbolDatabase)))
+                    suspiciousStringCompareError(tok, var->name());
+            }
         }
     }
 }

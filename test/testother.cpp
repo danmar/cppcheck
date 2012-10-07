@@ -5170,6 +5170,34 @@ private:
               "    return \"x\" == c;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #4257
+        check("bool foo() {\n"
+              "MyString *str=Getter();\n"
+              "return *str==\"bug\"; }\n", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable 'str'. Did you intend to use strcmp() instead?\n", errout.str());
+
+        // Ticket #4257
+        check("bool foo() {\n"
+              "MyString *str=Getter();\n"
+              "return *str==\"bug\"; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #4257
+        check("bool foo() {\n"
+              "MyString **str=OtherGetter();\n"
+              "return *str==\"bug\"; }\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n",
+        		"",
+        		errout.str());
+
+        // Ticket #4257
+        check("bool foo() {\n"
+              "MyString str=OtherGetter2();\n"
+              "return &str==\"bug\"; }\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n",
+        		"",
+        		errout.str());
     }
 
     void checkPointerSizeof() {
