@@ -84,6 +84,7 @@ private:
         TEST_CASE(removeCast9);
         TEST_CASE(removeCast10);
         TEST_CASE(removeCast11);
+        TEST_CASE(removeCast12);
 
         TEST_CASE(inlineasm);
 
@@ -830,6 +831,11 @@ private:
 
     void removeCast11() {
         ASSERT_EQUALS("; x = 0 ;", tokenizeAndStringify("; *(int *)&x = 0;", true));
+    }
+
+    void removeCast12() {
+        // #3935 - don't remove this cast
+        ASSERT_EQUALS("; ( ( short * ) data ) [ 5 ] = 0 ;", tokenizeAndStringify("; ((short*)data)[5] = 0;", true));
     }
 
     void inlineasm() {

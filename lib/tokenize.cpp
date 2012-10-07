@@ -4521,6 +4521,12 @@ void Tokenizer::simplifyCasts()
             tok = tok->linkAt(2);
             continue;
         }
+        // #3935 : don't remove cast in such cases:
+        // ((char *)a)[1] = 0;
+        if (tok->str() == "(" && Token::simpleMatch(tok->link(), ") [")) {
+            tok = tok->link();
+            continue;
+        }
         // #4164 : ((unsigned char)1) => (1)
         if (Token::Match(tok->next(), "( unsigned| %type% ) %num%") && tok->next()->link()->previous()->isStandardType()) {
             const MathLib::bigint value = MathLib::toLongNumber(tok->next()->link()->next()->str());
