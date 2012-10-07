@@ -720,14 +720,18 @@ static bool if_findCompare(const Token * const tokBack)
     const Token *tok = tokBack;
     while (tok && tok->str() == ")") {
         tok = tok->next();
-        if (Token::Match(tok,",|==|!="))
-            return true;
+
         if (Token::Match(tok, ") !!{") &&
             tok->link()->previous() &&
             (Token::Match(tok->link()->previous(),",|==|!=") ||
              tok->link()->previous()->isName()))
             return true;
     }
+
+    if (Token::Match(tok,",|==|!="))
+        return true;
+    if (tok->isArithmeticalOp()) // result is used in some calculation
+        return true;  // TODO: check if there is a comparison of the result somewhere
     return false;
 }
 

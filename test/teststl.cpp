@@ -1372,6 +1372,12 @@ private:
               "    if ((!s1.empty()) && (0 == s1.find(s2))) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find in condition; string::compare would be faster.\n", errout.str());
+
+        // #4102
+        check("void f(const std::string &define) {\n"
+              "    if (define.find(\"=\") + 1U == define.size());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
