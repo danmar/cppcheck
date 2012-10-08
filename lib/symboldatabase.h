@@ -560,6 +560,9 @@ public:
     /** @brief Information about all namespaces/classes/structrues */
     std::list<Scope> scopeList;
 
+    /** @brief Fast access to function scopes */
+    std::vector<Scope *> functionScopeList;
+
     /**
      * @brief find a variable type if it's a user defined type
      * @param start scope to start looking in

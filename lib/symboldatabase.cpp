@@ -623,6 +623,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
+    // fill in function list
+    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+        if (it->type == Scope::eFunction)
+            functionScopeList.push_back(&*it);
+    }
+
     // determine if user defined type needs initialization
     unsigned int unknowns = 0; // stop checking when there are no unknowns
     unsigned int retry = 0;    // bail if we don't resolve all the variable types for some reason

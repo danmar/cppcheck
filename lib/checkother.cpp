@@ -2227,9 +2227,9 @@ void CheckOther::checkComparisonOfFuncReturningBool()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isExecutable())
-            continue;
+    size_t functions = symbolDatabase->functionScopeList.size();
+    for (size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopeList[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
                 continue;
@@ -2307,9 +2307,9 @@ void CheckOther::checkComparisonOfBoolWithBool()
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isExecutable())
-            continue;
+    size_t functions = symbolDatabase->functionScopeList.size();
+    for (size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopeList[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
                 continue;
