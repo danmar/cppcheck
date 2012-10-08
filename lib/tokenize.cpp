@@ -5134,8 +5134,8 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                     const Token *VarTok = type0->tokAt((int)typelen);
                     while (Token::Match(VarTok, "*|&|const"))
                         VarTok = VarTok->next();
-		    if (!VarTok)
-		      break; // ticket 4245 - invalid code probably
+                    if (!VarTok)
+                        break; // ticket 4245 - invalid code probably
                     list.insertTokens(eq, VarTok, 2);
                     eq->str(";");
 

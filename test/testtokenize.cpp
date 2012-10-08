@@ -652,7 +652,7 @@ private:
     void tokenize25() {
         tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }");
     }
-    
+
     // #4245 - segfault
     void tokenize26() {
         tokenizeAndStringify("class x { protected : template < int y = } ;");
