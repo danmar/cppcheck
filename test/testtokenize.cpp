@@ -58,6 +58,7 @@ private:
         TEST_CASE(tokenize23);  // tokenize "return - __LINE__;"
         TEST_CASE(tokenize24);  // #4195 (segmentation fault)
         TEST_CASE(tokenize25);  // #4239 (segmentation fault)
+        TEST_CASE(tokenize26);  // #4245 (segmentation fault)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -650,6 +651,11 @@ private:
     // #4239 - segfault for "f ( struct { int typedef T x ; } ) { }"
     void tokenize25() {
         tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }");
+    }
+    
+    // #4245 - segfault
+    void tokenize26() {
+        tokenizeAndStringify("class x { protected : template < int y = } ;");
     }
 
     void wrong_syntax1() {
