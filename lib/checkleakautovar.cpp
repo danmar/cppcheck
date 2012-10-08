@@ -467,6 +467,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             varInfo->clear();
         }
 
+        // goto => weird execution path
+        else if (tok->str() == "goto") {
+            varInfo->clear();
+        }
+
         // throw
         // TODO: if the execution leave the function then treat it as return
         else if (tok->str() == "throw") {

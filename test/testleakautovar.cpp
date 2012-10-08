@@ -61,6 +61,7 @@ private:
 
         // goto
         TEST_CASE(goto1);
+        TEST_CASE(goto2);
 
         // if/else
         TEST_CASE(ifelse1);
@@ -320,6 +321,19 @@ private:
               "    if (err) {\n"
               "        free(reg);\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void goto2() { // #4231
+        check("static char * f() {\n"
+              "x:\n"
+              "    char *p = malloc(100);\n"
+              "    if (err) {\n"
+              "        free(p);\n"
+              "        goto x;\n"
+              "    }\n"
+              "    return p;\n"  // no error since there is a goto
               "}");
         ASSERT_EQUALS("", errout.str());
     }
