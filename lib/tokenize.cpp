@@ -1736,7 +1736,8 @@ bool Tokenizer::tokenize(std::istream &code,
     arraySize();
 
     // simplify labels and 'case|default'-like syntaxes
-    simplifyLabelsCaseDefault();
+    if (!simplifyLabelsCaseDefault())
+        return false;
 
     // simplify '[;{}] * & ( %any% ) =' to '%any% ='
     simplifyMulAndParens();
@@ -2354,7 +2355,7 @@ void Tokenizer::arraySize()
 
 /** simplify labels and case|default in the code: add a ";" if not already in.*/
 
-void Tokenizer::simplifyLabelsCaseDefault()
+bool Tokenizer::simplifyLabelsCaseDefault()
 {
     bool executablescope = false;
     unsigned int indentlevel = 0;
@@ -2389,15 +2390,19 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 if (Token::Match(tok->next(),"[:{};]"))
                     break;
             }
-            if (tok->next()->str() == ":" && tok->strAt(2) != ";") {
+            if (tok->str() != "case" && tok->next()->str() == ":" && tok->strAt(2) != ";") {
                 tok = tok->next();
                 tok->insertToken(";");
+            } else {
+                syntaxError(tok);
+                return false;
             }
         } else if (Token::Match(tok, "[;{}] %var% : !!;")) {
             tok = tok->tokAt(2);
             tok->insertToken(";");
         }
     }
+    return true;
 }
 
 

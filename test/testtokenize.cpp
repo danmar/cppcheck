@@ -66,6 +66,7 @@ private:
         TEST_CASE(wrong_syntax3); // #3544
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
+        TEST_CASE(wrong_syntax_case_default);
         TEST_CASE(garbageCode);
 
         TEST_CASE(foreach);     // #3690
@@ -720,6 +721,20 @@ private:
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void wrong_syntax_case_default() {
+        {
+            //ticket #4234
+            tokenizeAndStringify("( ) { switch break ; { switch ( x ) { case } y break ; : } }");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        }
+
+        {
+            //ticket #4267
+            tokenizeAndStringify("f ( ) { switch break; { switch ( x ) { case } case break; -6: ( ) ; } }");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        }
     }
 
     void garbageCode() {

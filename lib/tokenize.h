@@ -163,8 +163,11 @@ public:
     /** Insert array size where it isn't given */
     void arraySize();
 
-    /** Simplify labels and 'case|default' syntaxes */
-    void simplifyLabelsCaseDefault();
+    /** Simplify labels and 'case|default' syntaxes.
+      * @return true if found nothing or the syntax is correct.
+      *         false if syntax is found to be wrong.
+      */
+    bool simplifyLabelsCaseDefault();
 
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
