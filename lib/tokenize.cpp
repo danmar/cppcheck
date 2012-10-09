@@ -2386,10 +2386,11 @@ void Tokenizer::simplifyLabelsCaseDefault()
 
         if (Token::Match(tok, "[;{}] case")) {
             while (NULL != (tok = tok->next())) {
-                if (Token::Match(tok,"[:{};]"))
+                if (Token::Match(tok->next(),"[:{};]"))
                     break;
             }
-            if (tok->str() == ":" && tok->next()->str() != ";") {
+            if (tok->next()->str() == ":" && tok->strAt(2) != ";") {
+                tok = tok->next();
                 tok->insertToken(";");
             }
         } else if (Token::Match(tok, "[;{}] %var% : !!;")) {
