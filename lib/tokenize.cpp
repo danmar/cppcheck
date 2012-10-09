@@ -2362,7 +2362,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
         // Simplify labels in the executable scope..
         if (Token::Match(tok, ") const| {")) {
             tok = tok->next();
-            if (tok->str() == "const")
+            if (tok->str() != "{")
                 tok = tok->next();
             executablescope = true;
         }
@@ -2389,10 +2389,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 if (Token::Match(tok,"[:{};]"))
                     break;
             }
-            if (!tok)
-                break;
-            else if (tok->str() == ":" &&
-                     (!tok->next() || tok->next()->str() != ";")) {
+            if (tok->str() == ":" && tok->next()->str() != ";") {
                 tok->insertToken(";");
             }
         } else if (Token::Match(tok, "[;{}] %var% : !!;")) {
