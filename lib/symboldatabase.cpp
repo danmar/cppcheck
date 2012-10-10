@@ -623,10 +623,16 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
-    // fill in function list
+    // fill in function scopes
     for (it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->type == Scope::eFunction)
-            functionScopeList.push_back(&*it);
+            functionScopes.push_back(&*it);
+    }
+
+    // fill in class and struct scopes
+    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+        if (it->isClassOrStruct())
+            classAndStructScopes.push_back(&*it);
     }
 
     // determine if user defined type needs initialization

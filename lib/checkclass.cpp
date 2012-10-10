@@ -53,12 +53,9 @@ void CheckClass::constructors()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check classes and structures
-        if (!scope->isClassOrStruct())
-            continue;
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
         // don't check uninstantiated template classes
         if (scope->classDef->strAt(-1) == ">")
@@ -180,10 +177,9 @@ void CheckClass::copyconstructors()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isClassOrStruct()) // scope is class or structure
-            continue;
-
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::map<unsigned int, const Token*> allocatedVars;
 
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
@@ -234,8 +230,8 @@ void CheckClass::copyconstructors()
                 noCopyConstructorError(scope->classDef, scope->className, scope->type == Scope::eStruct);
         } else {
             if (!copiedVars.empty()) {
-                for (std::set<const Token*>::const_iterator i = copiedVars.begin(); i != copiedVars.end(); ++i) {
-                    copyConstructorShallowCopyError(*i, (*i)->str());
+                for (std::set<const Token*>::const_iterator it = copiedVars.begin(); it != copiedVars.end(); ++it) {
+                    copyConstructorShallowCopyError(*it, (*it)->str());
                 }
             }
             // throw error if count mismatch
@@ -719,10 +715,9 @@ void CheckClass::privateFunctions()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check classes and structures
-        if (!scope->isClassOrStruct())
-            continue;
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
         // dont check borland classes with properties..
         if (Token::findsimplematch(scope->classStart, "; __property ;", scope->classEnd))
@@ -758,11 +753,11 @@ void CheckClass::privateFunctions()
         // Bailout for overriden virtual functions of base classes
         if (!scope->derivedFrom.empty()) {
             // Check virtual functions
-            for (std::list<const Function*>::iterator i = FuncList.begin(); i != FuncList.end();) {
-                if ((*i)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
-                    FuncList.erase(i++);
+            for (std::list<const Function*>::iterator it = FuncList.begin(); it != FuncList.end();) {
+                if ((*it)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
+                    FuncList.erase(it++);
                 else
-                    ++i;
+                    ++it;
             }
         }
 
@@ -771,8 +766,8 @@ void CheckClass::privateFunctions()
             // Check that all private functions are used
             bool used = checkFunctionUsage(funcName, &*scope); // Usage in this class
             // Check in friend classes
-            for (std::list<Scope::FriendInfo>::const_iterator i = scope->friendList.begin(); !used && i != scope->friendList.end(); ++i)
-                used = checkFunctionUsage(funcName, i->scope);
+            for (std::list<Scope::FriendInfo>::const_iterator it = scope->friendList.begin(); !used && it != scope->friendList.end(); ++it)
+                used = checkFunctionUsage(funcName, it->scope);
 
             if (!used) {
                 // Final check; check if the function pointer is used somewhere..
@@ -808,48 +803,45 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 
 void CheckClass::noMemset()
 {
-    std::list<Scope>::const_iterator scope;
+    std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "memset|memcpy|memmove ( %any%"))
+                continue;
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type == Scope::eFunction) {
-            // Locate all 'memset' tokens..
-            for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-                if (!Token::Match(tok, "memset|memcpy|memmove ( %any%"))
-                    continue;
-
-                const Token* arg1 = tok->tokAt(2);
-                const Token* arg3 = arg1;
+            const Token* arg1 = tok->tokAt(2);
+            const Token* arg3 = arg1;
+            arg3 = arg3->nextArgument();
+            if (arg3)
                 arg3 = arg3->nextArgument();
-                if (arg3)
-                    arg3 = arg3->nextArgument();
 
-                const Token *typeTok = 0;
-                if (Token::Match(arg3, "sizeof ( %type% ) )"))
-                    typeTok = arg3->tokAt(2);
-                else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
-                    typeTok = arg3->tokAt(4);
-                else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
-                    typeTok = arg3->tokAt(3);
-                else if (Token::Match(arg1, "&| %var% ,")) {
-                    unsigned int varid = arg1->str() == "&" ? arg1->next()->varId() : arg1->varId();
-                    const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-                    if (var && (var->typeStartToken() == var->typeEndToken() ||
-                                Token::Match(var->typeStartToken(), "%type% :: %type%")))
-                        typeTok = var->typeEndToken();
-                }
-
-                // No type defined => The tokens didn't match
-                if (!typeTok)
-                    continue;
-
-                if (typeTok->str() == "(")
-                    typeTok = typeTok->next();
-
-                const Scope *type = symbolDatabase->findVariableType(&(*scope), typeTok);
-
-                if (type)
-                    checkMemsetType(&(*scope), tok, type);
+            const Token *typeTok = 0;
+            if (Token::Match(arg3, "sizeof ( %type% ) )"))
+                typeTok = arg3->tokAt(2);
+            else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
+                typeTok = arg3->tokAt(4);
+            else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
+                typeTok = arg3->tokAt(3);
+            else if (Token::Match(arg1, "&| %var% ,")) {
+                unsigned int varid = arg1->str() == "&" ? arg1->next()->varId() : arg1->varId();
+                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                if (var && (var->typeStartToken() == var->typeEndToken() ||
+                            Token::Match(var->typeStartToken(), "%type% :: %type%")))
+                    typeTok = var->typeEndToken();
             }
+
+            // No type defined => The tokens didn't match
+            if (!typeTok)
+                continue;
+
+            if (typeTok->str() == "(")
+                typeTok = typeTok->next();
+
+            const Scope *type = symbolDatabase->findVariableType(&(*scope), typeTok);
+
+            if (type)
+                checkMemsetType(&(*scope), tok, type);
         }
     }
 }
@@ -903,12 +895,9 @@ void CheckClass::operatorEq()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isClassOrStruct())
-            continue;
-
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
@@ -945,21 +934,18 @@ void CheckClass::operatorEqRetRefThis()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::list<Scope>::const_iterator scope;
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+        std::list<Function>::const_iterator func;
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check classes and structures
-        if (scope->isClassOrStruct()) {
-            std::list<Function>::const_iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (func->type == Function::eOperatorEqual && func->hasBody) {
+                // make sure return signature is correct
+                if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private:|virtual %type% &") &&
+                    func->tokenDef->strAt(-2) == scope->className) {
 
-            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-                if (func->type == Function::eOperatorEqual && func->hasBody) {
-                    // make sure return signature is correct
-                    if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private:|virtual %type% &") &&
-                        func->tokenDef->strAt(-2) == scope->className) {
-
-                        checkReturnPtrThis(&(*scope), &(*func), func->functionScope->classStart, func->functionScope->classEnd);
-                    }
+                    checkReturnPtrThis(&(*scope), &(*func), func->functionScope->classStart, func->functionScope->classEnd);
                 }
             }
         }
@@ -1044,12 +1030,9 @@ void CheckClass::operatorEqToSelf()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isClassOrStruct())
-            continue;
-
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
 
         // skip classes with multiple inheritance
@@ -1317,13 +1300,9 @@ void CheckClass::checkConst()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check classes and structures
-        if (!scope->isClassOrStruct())
-            continue;
-
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
@@ -1716,13 +1695,9 @@ void CheckClass::initializerListOrder()
     if (!_settings->inconclusive)
         return;
 
-    std::list<Scope>::const_iterator info;
-
-    // iterate through all scopes looking for classes and structures
-    for (info = symbolDatabase->scopeList.begin(); info != symbolDatabase->scopeList.end(); ++info) {
-        if (!info->isClassOrStruct())
-            continue;
-
+    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * info = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
 
         // iterate through all member functions looking for constructors
@@ -1755,10 +1730,10 @@ void CheckClass::initializerListOrder()
                     }
 
                     // need at least 2 members to have out of order initialization
-                    for (unsigned int i = 1; i < vars.size(); i++) {
+                    for (std::size_t j = 1; j < vars.size(); j++) {
                         // check for out of order initialization
-                        if (vars[i].var->index() < vars[i - 1].var->index())
-                            initializerListError(vars[i].tok,vars[i].var->nameToken(), info->className, vars[i].var->name());
+                        if (vars[j].var->index() < vars[j - 1].var->index())
+                            initializerListError(vars[j].tok,vars[j].var->nameToken(), info->className, vars[j].var->name());
                     }
                 }
             }
