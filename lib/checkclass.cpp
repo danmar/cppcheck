@@ -53,7 +53,7 @@ void CheckClass::constructors()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
@@ -177,7 +177,7 @@ void CheckClass::copyconstructors()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::map<unsigned int, const Token*> allocatedVars;
@@ -641,9 +641,12 @@ void CheckClass::initializationListUsage()
     if (!_settings->isEnabled("performance"))
         return;
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+
         // Check every constructor
-        if (scope->type != Scope::eFunction || !scope->function || (scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor))
+        if (!scope->function || (scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor))
             continue;
 
         Scope* owner = scope->functionOf;
@@ -715,7 +718,7 @@ void CheckClass::privateFunctions()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
@@ -803,7 +806,7 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 
 void CheckClass::noMemset()
 {
-    std::size_t functions = symbolDatabase->functionScopes.size();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
@@ -895,7 +898,7 @@ void CheckClass::operatorEq()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
@@ -934,7 +937,7 @@ void CheckClass::operatorEqRetRefThis()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
@@ -1030,7 +1033,7 @@ void CheckClass::operatorEqToSelf()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
@@ -1145,10 +1148,11 @@ void CheckClass::virtualDestructor()
     // * derived class has non-empty destructor
     // * base class is deleted
 
-    std::list<Scope>::const_iterator scope;
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // Skip base classes and namespaces
+        // Skip base classes
         if (scope->derivedFrom.empty())
             continue;
 
@@ -1300,7 +1304,7 @@ void CheckClass::checkConst()
     if (!_settings->isEnabled("style"))
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
@@ -1695,7 +1699,7 @@ void CheckClass::initializerListOrder()
     if (!_settings->inconclusive)
         return;
 
-    std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * info = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;

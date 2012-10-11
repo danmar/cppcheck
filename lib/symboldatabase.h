@@ -561,10 +561,10 @@ public:
     std::list<Scope> scopeList;
 
     /** @brief Fast access to function scopes */
-    std::vector<Scope *> functionScopes;
+    std::vector<const Scope *> functionScopes;
 
     /** @brief Fast access to class and struct scopes */
-    std::vector<Scope *> classAndStructScopes;
+    std::vector<const Scope *> classAndStructScopes;
 
     /**
      * @brief find a variable type if it's a user defined type
