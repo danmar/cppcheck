@@ -2390,9 +2390,10 @@ bool Tokenizer::simplifyLabelsCaseDefault()
                 if (Token::Match(tok->next(),"[:{};]"))
                     break;
             }
-            if (tok->str() != "case" && tok->next()->str() == ":" && tok->strAt(2) != ";") {
+            if (tok->str() != "case" && tok->next()->str() == ":") {
                 tok = tok->next();
-                tok->insertToken(";");
+                if (tok->next()->str() != ";")
+                    tok->insertToken(";");
             } else {
                 syntaxError(tok);
                 return false;
