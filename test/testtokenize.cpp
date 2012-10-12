@@ -66,7 +66,7 @@ private:
         TEST_CASE(wrong_syntax3); // #3544
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
-        TEST_CASE(wrong_syntax_case_default);
+        TEST_CASE(syntax_case_default);
         TEST_CASE(garbageCode);
 
         TEST_CASE(foreach);     // #3690
@@ -723,14 +723,51 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
-    void wrong_syntax_case_default() {
+    void syntax_case_default() {
+        //correct syntax
         {
+            tokenizeAndStringify("void f() {switch (n) { case 0: z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
+            tokenizeAndStringify("void f() {switch (n) { case 0:; break;}}");
+            ASSERT_EQUALS("", errout.str());
+
+            //'b' can be or a macro or an undefined enum
+            tokenizeAndStringify("void f() {switch (n) { case b: z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
+            //valid, when there's this declaration: 'constexpr int g() { return 2; }'
+            tokenizeAndStringify("void f() {switch (n) { case g(): z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
+            //valid, when there's also this declaration: 'constexpr int g[1] = {0};'
+            tokenizeAndStringify("void f() {switch (n) { case g[0]: z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
+            //valid, similar to above case
+            tokenizeAndStringify("void f() {switch (n) { case *g: z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
+            //valid, when 'x' and 'y' are constexpr.
+            tokenizeAndStringify("void f() {switch (n) { case sqrt(x+y): z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        //wrong syntax
+        {
+            tokenizeAndStringify("void f() {switch (n) { case: z(); break;}}");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+            tokenizeAndStringify("void f() {switch (n) { case;: z(); break;}}");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+            tokenizeAndStringify("void f() {switch (n) { case {}: z(); break;}}");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
             //ticket #4234
             tokenizeAndStringify("( ) { switch break ; { switch ( x ) { case } y break ; : } }");
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
-        }
 
-        {
             //ticket #4267
             tokenizeAndStringify("f ( ) { switch break; { switch ( x ) { case } case break; -6: ( ) ; } }");
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
@@ -5743,9 +5780,6 @@ private:
         //ticket #3227
         ASSERT_EQUALS("void foo ( ) { switch ( n ) { label : ; case 1 : ; label1 : ; label2 : ; break ; } }",
                       tokenizeAndStringify("void foo(){ switch (n){ label: case 1: label1: label2: break; }}"));
-        //ticket #4234
-        ASSERT_EQUALS("( ) { switch break ; { switch ( x ) { case } y break ; : } }",
-                      tokenizeAndStringify("( ) { switch break ; { switch ( x ) { case } y break ; : } }"));
     }
 
     void simplifyPointerToStandardType() {
