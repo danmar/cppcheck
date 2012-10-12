@@ -92,7 +92,7 @@ void Check64BitPortability::pointerassignment()
                     // some trivial addition => warning
                     if (Token::Match(tok->tokAt(4), "+ %any% !!;"))
                         continue;
-    
+
                     assignmentAddressToIntegerError(tok->next());
                 }
             }
