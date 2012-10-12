@@ -50,8 +50,10 @@ void Check64BitPortability::pointerassignment()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Check return values
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eFunction || scope->function == 0 || !scope->function->hasBody) // We only look for functions with a body
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        if (scope->function == 0 || !scope->function->hasBody) // We only look for functions with a body
             continue;
 
         bool retPointer = false;
@@ -62,7 +64,7 @@ void Check64BitPortability::pointerassignment()
         else
             continue;
 
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "return %var% [;+]")) {
                 const Variable *var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                 if (retPointer && isint(var))
@@ -74,22 +76,25 @@ void Check64BitPortability::pointerassignment()
     }
 
     // Check assignements
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] %var% = %var% [;+]")) {
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "[;{}] %var% = %var% [;+]")) {
 
-            const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
-            const Variable *var2(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()));
+                const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
+                const Variable *var2(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()));
 
-            if (isaddr(var1) && isint(var2) && tok->strAt(4) != "+")
-                assignmentIntegerToAddressError(tok->next());
+                if (isaddr(var1) && isint(var2) && tok->strAt(4) != "+")
+                    assignmentIntegerToAddressError(tok->next());
 
-            else if (isint(var1) && isaddr(var2) && !tok->tokAt(3)->isPointerCompare()) {
-                // assigning address => warning
-                // some trivial addition => warning
-                if (Token::Match(tok->tokAt(4), "+ %any% !!;"))
-                    continue;
-
-                assignmentAddressToIntegerError(tok->next());
+                else if (isint(var1) && isaddr(var2) && !tok->tokAt(3)->isPointerCompare()) {
+                    // assigning address => warning
+                    // some trivial addition => warning
+                    if (Token::Match(tok->tokAt(4), "+ %any% !!;"))
+                        continue;
+    
+                    assignmentAddressToIntegerError(tok->next());
+                }
             }
         }
     }
