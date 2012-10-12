@@ -184,36 +184,37 @@ void ApplicationList::Clear()
 
 bool ApplicationList::FindDefaultWindowsEditor()
 {
+    bool foundOne = false;
     const QString appPath(getenv("ProgramFiles"));
     const QString notepadppPath = appPath + "\\Notepad++\\notepad++.exe";
-    if (QFileInfo(notepadppPath).isExecutable()) {
+    if (QFileInfo(notepadppPath).exists() && QFileInfo(notepadppPath).isExecutable()) {
         Application app;
         app.setName("Notepad++");
         app.setPath("\"" + notepadppPath + "\"");
         app.setParameters("-n(line) (file)");
         AddApplication(app);
-        return true;
+        foundOne = true;
     }
 
     const QString notepadTwoPath = appPath + "\\Notepad2\\Notepad2.exe";
-    if (QFileInfo(notepadTwoPath).isExecutable()) {
+    if (QFileInfo(notepadTwoPath).exists() && QFileInfo(notepadTwoPath).isExecutable()) {
         Application app;
         app.setName("Notepad2");
         app.setPath("\"" + notepadTwoPath + "\"");
         app.setParameters("/g (line) (file)");
         AddApplication(app);
-        return true;
+        foundOne = true;
     }
 
     const QString windowsPath(getenv("windir"));
     const QString notepadPath = windowsPath + "\\system32\\notepad.exe";
-    if (QFileInfo(notepadPath).isExecutable()) {
+    if (QFileInfo(notepadPath).exists() && QFileInfo(notepadPath).isExecutable()) {
         Application app;
         app.setName("Notepad");
         app.setPath(notepadPath);
         app.setParameters("(file)");
         AddApplication(app);
-        return true;
+        foundOne = true;
     }
-    return false;
+    return foundOne;
 }
