@@ -56,32 +56,30 @@ bool ApplicationList::LoadSettings()
     }
 
     if (names.empty() && paths.empty() && params.empty()) {
-        do {
-            // use as default for gnome environments
-            if (QFileInfo("/usr/bin/gedit").isExecutable()) {
-                Application app;
-                app.setName("gedit");
-                app.setPath("/usr/bin/gedit");
-                app.setParameters("+(line) (file)");
-                AddApplication(app);
-                defapp = 0;
-                break;
-            }
-            // use as default for kde environments
-            if (QFileInfo("/usr/bin/kate").isExecutable()) {
-                Application app;
-                app.setName("kate");
-                app.setPath("/usr/bin/kate");
-                app.setParameters("-l(line) (file)");
-                AddApplication(app);
-                defapp = 0;
-                break;
-            }
-            if (FindDefaultWindowsEditor()) {
-                defapp = 0;
-                break;
-            }
-        } while (0);
+#ifndef _WIN32
+        // use as default for gnome environments
+        if (QFileInfo("/usr/bin/gedit").isExecutable()) {
+            Application app;
+            app.setName("gedit");
+            app.setPath("/usr/bin/gedit");
+            app.setParameters("+(line) (file)");
+            AddApplication(app);
+            defapp = 0;
+        }
+        // use as default for kde environments
+        if (QFileInfo("/usr/bin/kate").isExecutable()) {
+            Application app;
+            app.setName("kate");
+            app.setPath("/usr/bin/kate");
+            app.setParameters("-l(line) (file)");
+            AddApplication(app);
+            defapp = 0;
+        }
+#else
+        if (FindDefaultWindowsEditor()) {
+            defapp = 0;
+        }
+#endif
     }
 
     if (names.size() > 0 && (names.size() == paths.size())) {
