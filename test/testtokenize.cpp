@@ -732,6 +732,12 @@ private:
             tokenizeAndStringify("void f() {switch (n) { case 0:; break;}}");
             ASSERT_EQUALS("", errout.str());
 
+            tokenizeAndStringify("void f() {switch (n) { case 0?1:2 : z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
+            tokenizeAndStringify("void f() {switch (n) { case 0?(1?3:4):2 : z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
             //'b' can be or a macro or an undefined enum
             tokenizeAndStringify("void f() {switch (n) { case b: z(); break;}}");
             ASSERT_EQUALS("", errout.str());
@@ -762,6 +768,15 @@ private:
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
 
             tokenizeAndStringify("void f() {switch (n) { case {}: z(); break;}}");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+            tokenizeAndStringify("void f() {switch (n) { case 0?{1}:{2} : z(); break;}}");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+            tokenizeAndStringify("void f() {switch (n) { case 0?1;:{2} : z(); break;}}");
+            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+            tokenizeAndStringify("void f() {switch (n) { case 0?(1?{3:4}):2 : z(); break;}}");
             ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
 
             //ticket #4234

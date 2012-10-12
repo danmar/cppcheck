@@ -2353,6 +2353,29 @@ void Tokenizer::arraySize()
     }
 }
 
+static Token *skipTernaryOp(Token *);
+
+static Token *skipTernaryOp(Token *tok)
+{
+    if (!tok || tok->str() != "?")
+        return tok;
+    unsigned int colonlevel = 1;
+    while (NULL != (tok = tok->next())) {
+        if (tok->str() == "?") {
+            ++colonlevel;
+        } else if (tok->str() == ":") {
+            --colonlevel;
+            if (colonlevel == 0) {
+                tok = tok->next();
+                break;
+            }
+        }
+        if (Token::Match(tok->next(), "[{};]"))
+            break;
+    }
+    return tok;
+}
+
 /** simplify labels and case|default in the code: add a ";" if not already in.*/
 
 bool Tokenizer::simplifyLabelsCaseDefault()
@@ -2389,6 +2412,8 @@ bool Tokenizer::simplifyLabelsCaseDefault()
             while (NULL != (tok = tok->next())) {
                 if (tok->str() == "(" || tok->str() == "[") {
                     tok = tok->link();
+                } else if (tok->str() == "?") {
+                    tok = skipTernaryOp(tok);
                 }
                 if (Token::Match(tok->next(),"[:{};]"))
                     break;
