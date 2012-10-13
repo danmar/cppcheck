@@ -738,6 +738,10 @@ private:
             tokenizeAndStringify("void f() {switch (n) { case 0?(1?3:4):2 : z(); break;}}");
             ASSERT_EQUALS("", errout.str());
 
+            //allow GCC '({ %var%|%num%|%bool% ; })' statement expression extension
+            tokenizeAndStringify("void f() {switch (n) { case 0?({0;}):1: z(); break;}}");
+            ASSERT_EQUALS("", errout.str());
+
             //'b' can be or a macro or an undefined enum
             tokenizeAndStringify("void f() {switch (n) { case b: z(); break;}}");
             ASSERT_EQUALS("", errout.str());

@@ -2370,6 +2370,11 @@ static Token *skipTernaryOp(Token *tok)
                 break;
             }
         }
+        //allow GCC '({ %var%|%num% ; })' statement expression extension
+        if (Token::Match(tok, "( { %any% ; } )") &&
+            (tok->tokAt(2)->isNumber() || tok->tokAt(2)->isName())) {
+            tok = tok->link();
+        }
         if (Token::Match(tok->next(), "[{};]"))
             break;
     }
@@ -4426,7 +4431,7 @@ bool Tokenizer::simplifyQuestionMark()
         if (!tok->tokAt(-2))
             continue;
 
-        if (!Token::Match(tok->tokAt(-2), "[=,(]"))
+        if (!Token::Match(tok->tokAt(-2), "=|,|(|case"))
             continue;
 
         if (!tok->previous()->isBoolean() &&
@@ -4434,19 +4439,10 @@ bool Tokenizer::simplifyQuestionMark()
             continue;
 
         // Find the ":" token..
-        Token *semicolon = 0;
-        for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(" || tok2->str() == "[")
-                tok2 = tok2->link();
-            else if (tok2->str() == ")" || tok2->str() == "]")
-                break;
-            else if (tok2->str() == ":") {
-                semicolon = tok2;
-                break;
-            }
-        }
-        if (!semicolon || !semicolon->next())
+        Token *semicolon = skipTernaryOp(tok);
+        if (!semicolon || semicolon->previous()->str() != ":" || !semicolon->next())
             continue;
+        semicolon = semicolon->previous();
 
         if (tok->previous()->str() == "false" ||
             tok->previous()->str() == "0") {
@@ -4480,24 +4476,18 @@ bool Tokenizer::simplifyQuestionMark()
                 continue;
             }
 
-            int ind = 0;
-            for (const Token *endTok = semicolon; endTok; endTok = endTok->next()) {
-                if (endTok->str() == ";") {
-                    //we can remove the semicolon if after it there's at least another token
-                    if (endTok->next())
-                        endTok = endTok->next();
-                    Token::eraseTokens(semicolon->previous(), endTok);
-                    ret = true;
-                    break;
+            unsigned int colonlevel = 0;
+            for (const Token *endTok = semicolon->next(); endTok; endTok = endTok->next()) {
+                if (endTok->str() == "(" || endTok->str() == "[" || endTok->str() == "{") {
+                    endTok = endTok->link();
                 }
 
-                else if (Token::Match(endTok, "[({[]")) {
-                    ++ind;
-                }
-
-                else if (Token::Match(endTok, "[)}]]")) {
-                    --ind;
-                    if (ind < 0) {
+                else if (endTok->str() == "?")
+                    ++colonlevel;
+                else if (Token::Match(endTok, ")|}|]|;|:")) {
+                    if (endTok->str() == ":" && colonlevel)
+                        --colonlevel;
+                    else {
                         Token::eraseTokens(semicolon->previous(), endTok);
                         ret = true;
                         break;

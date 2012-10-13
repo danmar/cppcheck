@@ -2760,6 +2760,21 @@ private:
         }
 
         {
+            const char code[] = "void f () { switch(n) { case 1?0:foo(): break; }}";
+            ASSERT_EQUALS("void f ( ) { switch ( n ) { case 0 : ; break ; } }", tok(code));
+        }
+
+        {
+            const char code[] = "void f () { switch(n) { case 1?0?1:0:foo(): break; }}";
+            ASSERT_EQUALS("void f ( ) { switch ( n ) { case 0 : ; break ; } }", tok(code));
+        }
+
+        {
+            const char code[] = "void f () { switch(n) { case 0?foo():1: break; }}";
+            ASSERT_EQUALS("void f ( ) { switch ( n ) { case 1 : ; break ; } }", tok(code));
+        }
+
+        {
             const char code[] = "( true ? a ( ) : b ( ) )";
             ASSERT_EQUALS("( a ( ) )", tok(code));
         }
