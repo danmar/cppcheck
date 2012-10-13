@@ -2185,6 +2185,12 @@ void Tokenizer::simplifyRoundCurlyParenthesis()
             tok->linkAt(2)->previous()->deleteNext(3);
             tok->deleteNext(2);
         }
+        if (Token::Match(tok, "( { %any% ; } )") &&
+            (tok->tokAt(2)->isNumber() || tok->tokAt(2)->isName())) {
+            tok->deleteNext();
+            tok->deleteThis();
+            tok->deleteNext(3);
+        }
     }
 }
 
@@ -2369,11 +2375,6 @@ static Token *skipTernaryOp(Token *tok)
                 tok = tok->next();
                 break;
             }
-        }
-        //allow GCC '({ %var%|%num% ; })' statement expression extension
-        if (Token::Match(tok, "( { %any% ; } )") &&
-            (tok->tokAt(2)->isNumber() || tok->tokAt(2)->isName())) {
-            tok = tok->link();
         }
         if (Token::Match(tok->next(), "[{};]"))
             break;
@@ -3674,7 +3675,7 @@ void Tokenizer::simplifyFlowControl()
                 eraseDeadCode(tok, 0);
 
             } else if (Token::Match(tok,"return|goto") ||
-                       (Token::Match(tok,"exit|abort")) ||
+                       Token::Match(tok,"exit|abort") ||
                        (tok->str() == "throw" && !isC())) {
                 //TODO: ensure that we exclude user-defined 'exit|abort|throw', except for 'noreturn'
                 //catch the first ';'

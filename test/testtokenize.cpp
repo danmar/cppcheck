@@ -6795,8 +6795,8 @@ private:
     }
 
     void simplifyAssignmentBlock() {
-        ASSERT_EQUALS("; { x = 123 ; } ;", tokenizeAndStringify(";x=({123;});"));
-        ASSERT_EQUALS("; { x = y ; } ;", tokenizeAndStringify(";x=({y;});"));
+        ASSERT_EQUALS("; x = 123 ;", tokenizeAndStringify(";x=({123;});"));
+        ASSERT_EQUALS("; x = y ;", tokenizeAndStringify(";x=({y;});"));
     }
 
     void simplifyOperatorName1() {
