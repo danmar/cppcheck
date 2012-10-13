@@ -1326,11 +1326,10 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         }
     }
 
-    // find all dynamically allocated arrays next by parsing the token stream
-    // Count { and } when parsing all tokens
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eFunction)
-            continue;
+    // find all dynamically allocated arrays next
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
 
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             // if the previous token exists, it must be either a variable name or "[;{}]"
@@ -1423,13 +1422,10 @@ void CheckBufferOverrun::checkStructVariable()
 {
     const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
     // find every class and struct
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check classes and structures
-        if (!scope->isClassOrStruct())
-            continue;
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
         // check all variables to see if they are arrays
         std::list<Variable>::const_iterator var;
@@ -1439,13 +1435,10 @@ void CheckBufferOverrun::checkStructVariable()
                 // create ArrayInfo from the array variable
                 ArrayInfo arrayInfo(&*var, _tokenizer);
 
-                std::list<Scope>::const_iterator func_scope;
-
                 // find every function
-                for (func_scope = symbolDatabase->scopeList.begin(); func_scope != symbolDatabase->scopeList.end(); ++func_scope) {
-                    // only check functions
-                    if (func_scope->type != Scope::eFunction)
-                        continue;
+                const std::size_t functions = symbolDatabase->functionScopes.size();
+                for (std::size_t j = 0; j < functions; ++j) {
+                    const Scope * func_scope = symbolDatabase->functionScopes[j];
 
                     // If struct is declared in a function then check
                     // if scope_func matches
@@ -1570,8 +1563,8 @@ void CheckBufferOverrun::checkStructVariable()
                         ArrayInfo temp = arrayInfo;
                         temp.varid(0); // do variable lookup by variable and member names rather than varid
                         std::string varnames; // use class and member name for messages
-                        for (unsigned int i = 0; i < varname.size(); ++i)
-                            varnames += (i == 0 ? "" : ".") + varname[i];
+                        for (unsigned int k = 0; k < varname.size(); ++k)
+                            varnames += (k == 0 ? "" : ".") + varname[k];
                         temp.varname(varnames);
                         checkScope(CheckTok, varname, temp);
                     }
@@ -1734,44 +1727,50 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        unsigned int dstVarId;
-        unsigned int srcVarId;
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-        // Look for allocation of a buffer based on the size of a string
-        if (Token::Match(tok, "%var% = malloc|g_malloc|g_try_malloc ( strlen ( %var% ) )")) {
-            dstVarId = tok->varId();
-            srcVarId = tok->tokAt(6)->varId();
-            tok      = tok->tokAt(8);
-        } else if (Token::Match(tok, "%var% = new char [ strlen ( %var% ) ]")) {
-            dstVarId = tok->varId();
-            srcVarId = tok->tokAt(7)->varId();
-            tok      = tok->tokAt(9);
-        } else if (Token::Match(tok, "%var% = realloc|g_realloc|g_try_realloc ( %var% , strlen ( %var% ) )")) {
-            dstVarId = tok->varId();
-            srcVarId = tok->tokAt(8)->varId();
-            tok      = tok->tokAt(10);
-        } else
-            continue;
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token *tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
+            unsigned int dstVarId;
+            unsigned int srcVarId;
 
-        // To avoid false positives and added complexity, we will only look for
-        // improper usage of the buffer within the block that it was allocated
-        for (const Token* const end = tok->scope()->classEnd; tok && tok->next() && tok != end; tok = tok->next()) {
-            // If the buffers are modified, we can't be sure of their sizes
-            if (tok->varId() == srcVarId || tok->varId() == dstVarId)
-                break;
+            // Look for allocation of a buffer based on the size of a string
+            if (Token::Match(tok, "%var% = malloc|g_malloc|g_try_malloc ( strlen ( %var% ) )")) {
+                dstVarId = tok->varId();
+                srcVarId = tok->tokAt(6)->varId();
+                tok      = tok->tokAt(8);
+            } else if (Token::Match(tok, "%var% = new char [ strlen ( %var% ) ]")) {
+                dstVarId = tok->varId();
+                srcVarId = tok->tokAt(7)->varId();
+                tok      = tok->tokAt(9);
+            } else if (Token::Match(tok, "%var% = realloc|g_realloc|g_try_realloc ( %var% , strlen ( %var% ) )")) {
+                dstVarId = tok->varId();
+                srcVarId = tok->tokAt(8)->varId();
+                tok      = tok->tokAt(10);
+            } else
+                continue;
 
-            if (Token::Match(tok, "strcpy ( %varid% , %var% )", dstVarId) &&
-                tok->tokAt(4)->varId() == srcVarId) {
-                bufferOverrunError(tok);
-            } else if (Token::Match(tok, "sprintf ( %varid% , %str% , %var% )", dstVarId) &&
-                       tok->tokAt(6)->varId() == srcVarId &&
-                       tok->strAt(4).find("%s") != std::string::npos) {
-                bufferOverrunError(tok);
+            // To avoid false positives and added complexity, we will only look for
+            // improper usage of the buffer within the block that it was allocated
+            for (const Token* const end = tok->scope()->classEnd; tok && tok->next() && tok != end; tok = tok->next()) {
+                // If the buffers are modified, we can't be sure of their sizes
+                if (tok->varId() == srcVarId || tok->varId() == dstVarId)
+                    break;
+
+                if (Token::Match(tok, "strcpy ( %varid% , %var% )", dstVarId) &&
+                    tok->tokAt(4)->varId() == srcVarId) {
+                    bufferOverrunError(tok);
+                } else if (Token::Match(tok, "sprintf ( %varid% , %str% , %var% )", dstVarId) &&
+                           tok->tokAt(6)->varId() == srcVarId &&
+                           tok->strAt(4).find("%s") != std::string::npos) {
+                    bufferOverrunError(tok);
+                }
             }
+            if (!tok)
+                return;
         }
-        if (!tok)
-            return;
     }
 }
 
@@ -1790,8 +1789,11 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        for (std::list<Function>::const_iterator j = i->functionList.begin(); j != i->functionList.end(); ++j) {
+    std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        Function * j = scope->function;
+        if (j) {
             const Token* tok = j->token;
 
             // Get the name of the argv variable
@@ -1829,7 +1831,6 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                            tok->strAt(4).find("%s") != std::string::npos) {
                     cmdLineArgsError(tok);
                 }
-
             }
         }
     }
@@ -2087,26 +2088,32 @@ void CheckBufferOverrun::arrayIndexThenCheck()
 {
     if (!_settings->isEnabled("style"))
         return;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%var% [ %var% ]")) {
-            const std::string& indexName(tok->strAt(2));
 
-            // skip array index..
-            tok = tok->tokAt(4);
-            while (tok && tok->str() == "[")
-                tok = tok->link()->next();
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%var% [ %var% ]")) {
+                const std::string& indexName(tok->strAt(2));
 
-            // syntax error
-            if (!tok)
-                return;
+                // skip array index..
+                tok = tok->tokAt(4);
+                while (tok && tok->str() == "[")
+                    tok = tok->link()->next();
 
-            // skip comparison
-            if (tok->type() == Token::eComparisonOp && tok->strAt(2) == "&&")
-                tok = tok->tokAt(2);
+                // syntax error
+                if (!tok)
+                    return;
 
-            // check if array index is ok
-            if (Token::Match(tok, ("&& " + indexName + " <|<=").c_str()))
-                arrayIndexThenCheckError(tok, indexName);
+                // skip comparison
+                if (tok->type() == Token::eComparisonOp && tok->strAt(2) == "&&")
+                    tok = tok->tokAt(2);
+
+                // check if array index is ok
+                if (Token::Match(tok, ("&& " + indexName + " <|<=").c_str()))
+                    arrayIndexThenCheckError(tok, indexName);
+            }
         }
     }
 }
