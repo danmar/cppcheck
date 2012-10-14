@@ -580,6 +580,14 @@ public:
 
     const Function* findFunctionByName(const std::string& str, const Scope* startScope) const;
 
+    /**
+     * @brief find a function by name and arguments
+     * @param tok token of function call
+     * @param startScope scope to start looking in
+     * @return pointer to function if found or NULL if not found
+     */
+    const Function* findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const;
+
     const Scope* findScopeByName(const std::string& name) const;
 
     bool isClassOrStruct(const std::string &type) const {

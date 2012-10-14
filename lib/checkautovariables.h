@@ -73,7 +73,7 @@ private:
      * @param tok pointing at the "return" token
      * @return true if a temporary object is returned
      */
-    bool returnTemporary(const Token *tok) const;
+    bool returnTemporary(const Token *tok, const Scope *scope) const;
 
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnPointerToLocalArray(const Token *tok);

@@ -982,9 +982,10 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 {
     Function* function = 0;
     for (std::list<Function>::iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
-        if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef, argStart, "", 0))
+        if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef->next(), argStart->next(), "", 0))
             function = &*i;
     }
+
     if (!function)
         function = addGlobalFunctionDecl(scope, argStart, funcStart);
 
@@ -2149,6 +2150,48 @@ const Function* SymbolDatabase::findFunctionByName(const std::string& str, const
         for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
             if (i->tokenDef->str() == str)
                 return &*i;
+        }
+        currScope = currScope->nestedIn;
+    }
+    return 0;
+}
+
+/** @todo This function only counts the number of arguments in the function call.
+    It does not take into account functions with default arguments.
+    It does not take into account argument types.  This can be difficult because of promotion and conversion operators and casts and because the argument can also be a function call.
+ */
+const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const
+{
+    const Scope* currScope = startScope;
+    while (currScope && currScope->isExecutable()) {
+        if (currScope->functionOf)
+            currScope = currScope->functionOf;
+        else
+            currScope = currScope->nestedIn;
+    }
+    while (currScope) {
+        for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
+            if (i->tokenDef->str() == tok->str()) {
+                const Function *func = &*i;
+                if (tok->strAt(1) == "(" && tok->tokAt(2)) {
+                    // check if function has no arguments
+                    /** @todo check for default arguments */
+                    if (tok->strAt(2) == ")" && func->argCount() == 0)
+                        return func;
+
+                    // check the arguments
+                    unsigned int args = 0;
+                    const Token *arg = tok->tokAt(2);
+                    while (arg) {
+                        /** @todo check argument type for match */
+                        args++;
+                        arg = arg->nextArgument();
+                    }
+
+                    if (args == func->argCount())
+                        return func;
+                }
+            }
         }
         currScope = currScope->nestedIn;
     }

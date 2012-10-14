@@ -442,6 +442,17 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Reference to temporary returned.\n", errout.str());
 
+        // make sure scope is used in function lookup
+        check("class Fred {\n"
+              "    std::string hello() {\n"
+              "        return std::string();\n"
+              "    }\n"
+              "};\n"
+              "std::string &f() {\n"
+              "    return hello();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("std::string hello() {\n"
               "     return std::string();\n"
               "}\n"
@@ -469,6 +480,21 @@ private:
               "    return hello();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Reference to temporary returned.\n", errout.str());
+
+        // make sure function overloads are handled properly
+        check("class Foo;\n"
+              "Foo & hello(bool) {\n"
+              "     static Foo foo;\n"
+              "     return foo;\n"
+              "}\n"
+              "Foo hello() {\n"
+              "     return Foo();\n"
+              "}\n"
+              "\n"
+              "Foo& f() {\n"
+              "    return hello(true);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("Foo hello() {\n"
               "     return Foo();\n"
@@ -620,6 +646,13 @@ private:
     void returnReference7() {  // 3791 - false positive for overloaded function
         check("std::string a();\n"
               "std::string &a(int);\n"
+              "std::string &b() {\n"
+              "    return a(12);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string &a(int);\n"
+              "std::string a();\n"
               "std::string &b() {\n"
               "    return a(12);\n"
               "}");

@@ -222,55 +222,44 @@ void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok,
 //---------------------------------------------------------------------------
 
 // return temporary?
-bool CheckAutoVariables::returnTemporary(const Token *tok) const
+bool CheckAutoVariables::returnTemporary(const Token *tok, const Scope *startScope) const
 {
-    if (!Token::Match(tok, "return %var% (") || !Token::simpleMatch(tok->linkAt(2), ") ;"))
-        return false;
-
-    const std::string &funcname(tok->next()->str());
-
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    std::list<Scope>::const_iterator scope;
 
     bool func = false;     // Might it be a function call?
     bool retref = false;   // is there such a function that returns a reference?
     bool retvalue = false; // is there such a function that returns a value?
 
-    for (scope = symbolDatabase->scopeList.begin(); !retref && scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type == Scope::eFunction && scope->function && scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor) {
-            if (scope->className == funcname) {
-                retref = scope->classDef->strAt(-1) == "&";
-                if (!retref) {
-                    const Token* start = scope->classDef;
-                    while (start->previous() && !Token::Match(start->previous(), ";|}|{|public:|private:|protected:")) {
-                        if ((start->str() == ")" || start->str() == ">") && start->link())
-                            start = start->link();
-                        start = start->previous();
-                    }
-                    if (start->str() == "const")
-                        start = start->next();
-                    if (start->str() == "::")
-                        start = start->next();
+    const Function *function = symbolDatabase->findFunctionByNameAndArgs(tok, startScope);
+    if (function) {
+        retref = function->tokenDef->strAt(-1) == "&";
+        if (!retref) {
+            const Token *start = function->tokenDef;
+            while (start->previous() && !Token::Match(start->previous(), ";|}|{|public:|private:|protected:")) {
+                if ((start->str() == ")" || start->str() == ">") && start->link())
+                    start = start->link();
+                start = start->previous();
+            }
+            if (start->str() == "const")
+                start = start->next();
+            if (start->str() == "::")
+                start = start->next();
 
-                    if (Token::simpleMatch(start, "std ::")) {
-                        if (start->strAt(3) != "<" || !Token::simpleMatch(start->linkAt(3), "> ::"))
-                            retvalue = true;
-                        else
-                            retref = true; // Assume that a reference is returned
-                    } else {
-                        if (symbolDatabase->isClassOrStruct(start->str()))
-                            retvalue = true;
-                        else
-                            retref = true;
-                    }
-
-                }
-                func = true;
+            if (Token::simpleMatch(start, "std ::")) {
+                if (start->strAt(3) != "<" || !Token::simpleMatch(start->linkAt(3), "> ::"))
+                    retvalue = true;
+                else
+                    retref = true; // Assume that a reference is returned
+            } else {
+                if (symbolDatabase->isClassOrStruct(start->str()))
+                    retvalue = true;
+                else
+                    retref = true;
             }
         }
+        func = true;
     }
-    if (!func && symbolDatabase->isClassOrStruct(funcname))
+    if (!func && symbolDatabase->isClassOrStruct(tok->str()))
         return true;
 
     return bool(!retref && retvalue);
@@ -318,9 +307,12 @@ void CheckAutoVariables::returnReference()
                 }
 
                 // return reference to temporary..
-                else if (returnTemporary(tok2)) {
-                    // report error..
-                    errorReturnTempReference(tok2);
+                else if (Token::Match(tok2, "return %var% (") &&
+                         Token::simpleMatch(tok2->linkAt(2), ") ;")) {
+                    if (returnTemporary(tok2->next(), scope)) {
+                        // report error..
+                        errorReturnTempReference(tok2);
+                    }
                 }
             }
         }
