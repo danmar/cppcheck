@@ -1039,7 +1039,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
             }
             if (tok3->str() == "<" && templateParameters(tok3) > 0)
                 ++indentlevel;
-            else if (indentlevel > 0 && Token::simpleMatch(tok3, "> [,>]"))
+            else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
                 --indentlevel;
             templateMatchPattern += tok3->str();
             templateMatchPattern += " ";
@@ -1084,19 +1084,26 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
                 Token * tok5 = tok4->tokAt(2);
                 unsigned int typeCountInInstantion = 1U; // There is always atleast one type
                 const Token *typetok = (!typesUsedInTemplateInstantion.empty()) ? typesUsedInTemplateInstantion[0] : 0;
-                while (tok5 && tok5->str() != ">") {
-                    if (tok5->str() != ",") {
-                        if (!typetok ||
-                            tok5->isUnsigned() != typetok->isUnsigned() ||
-                            tok5->isSigned() != typetok->isSigned() ||
-                            tok5->isLong() != typetok->isLong()) {
-                            break;
-                        }
+                unsigned int indentlevel5 = 0;  // indentlevel for tok5
+                while (tok5 && (indentlevel5 > 0 || tok5->str() != ">")) {
+                    if (tok5->str() == "<" && templateParameters(tok5) > 0)
+                        ++indentlevel5;
+                    else if (indentlevel5 > 0 && Token::Match(tok5, "> [,>]"))
+                        --indentlevel5;
+                    else if (indentlevel5 == 0) {
+                        if (tok5->str() != ",") {
+                            if (!typetok ||
+                                tok5->isUnsigned() != typetok->isUnsigned() ||
+                                tok5->isSigned() != typetok->isSigned() ||
+                                tok5->isLong() != typetok->isLong()) {
+                                break;
+                            }
 
-                        typetok = typetok ? typetok->next() : 0;
-                    } else {
-                        typetok = (typeCountInInstantion < typesUsedInTemplateInstantion.size()) ? typesUsedInTemplateInstantion[typeCountInInstantion] : 0;
-                        ++typeCountInInstantion;
+                            typetok = typetok ? typetok->next() : 0;
+                        } else {
+                            typetok = (typeCountInInstantion < typesUsedInTemplateInstantion.size()) ? typesUsedInTemplateInstantion[typeCountInInstantion] : 0;
+                            ++typeCountInInstantion;
+                        }
                     }
                     tok5 = tok5->next();
                 }

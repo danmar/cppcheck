@@ -2201,10 +2201,10 @@ private:
                             "template<class T> struct B { };\n"
                             "template<class T> struct C { A<B<X<T> > > ab; };\n"
                             "C<int> c;";
-        ASSERT_EQUALS("template < class T > struct A { } ; "
-                      "template < class T > struct B { } ; "
-                      "C<int> c ; "
-                      "struct C<int> { A < B < X < int > > > ab ; }", tok(code));
+        ASSERT_EQUALS("C<int> c ; "
+                      "struct C<int> { A<B<X<int>>> ab ; } "
+                      "struct B<X<int>> { } "  // <- redundant.. but nevermind
+                      "struct A<B<X<int>>> { }", tok(code));
     }
 
     void template34() {
