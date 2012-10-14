@@ -89,7 +89,7 @@
          <item>
           <widget class="QLabel" name="mLblIdealThreads">
            <property name="text">
-            <string>TextLabel</string>
+            <string notr="true">TextLabel</string>
            </property>
           </widget>
          </item>

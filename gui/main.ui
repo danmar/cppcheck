@@ -549,7 +549,7 @@
   </action>
   <action name="mActionProjectMRU">
    <property name="text">
-    <string>Project MRU placeholder</string>
+    <string notr="true">Project MRU placeholder</string>
    </property>
    <property name="visible">
     <bool>true</bool>

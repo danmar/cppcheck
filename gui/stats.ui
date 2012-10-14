@@ -294,7 +294,7 @@
          <item>
           <widget class="QLabel" name="mLblPortability">
            <property name="text">
-            <string>TextLabel</string>
+            <string notr="true">TextLabel</string>
            </property>
           </widget>
          </item>
@@ -330,7 +330,7 @@
          <item>
           <widget class="QLabel" name="mLblInformation">
            <property name="text">
-            <string>TextLabel</string>
+            <string notr="true">TextLabel</string>
            </property>
           </widget>
          </item>
