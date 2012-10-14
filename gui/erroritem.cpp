@@ -24,29 +24,16 @@ ErrorItem::ErrorItem()
 {
 }
 
-ErrorItem::ErrorItem(const ErrorItem &item)
-{
-    file = item.file;
-    file0 = item.file0;
-    files = item.files;
-    lines = item.lines;
-    errorId = item.errorId;
-    inconclusive = item.inconclusive;
-    severity = item.severity;
-    summary = item.summary;
-    message = item.message;
-}
-
 ErrorItem::ErrorItem(const ErrorLine &line)
+    : file(line.file)
+    , files(line.file)
+    , errorId(line.errorId)
+    , severity(line.severity)
+    , inconclusive(line.inconclusive)
+    , summary(line.summary)
+    , message(line.message)
 {
-    file = line.file;
-    files.append(line.file);
     lines.append(line.line);
-    errorId = line.errorId;
-    inconclusive = line.inconclusive;
-    severity = line.severity;
-    summary = line.summary;
-    message = line.message;
 }
 
 QString ErrorItem::ToString() const
