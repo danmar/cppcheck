@@ -912,8 +912,13 @@ void MainWindow::LoadProjectFile(const QString &filePath)
 
 void MainWindow::CheckProject(Project *project)
 {
-    if (!project->IsOpen())
-        project->Open();
+    if (!project->IsOpen()) {
+        if (!project->Open()) {
+            delete mProject;
+            mProject = 0;
+            return;
+        }
+    }
 
     QFileInfo inf(project->Filename());
     const QString rootpath = project->GetProjectFile()->GetRootPath();
