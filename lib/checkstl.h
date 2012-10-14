@@ -91,7 +91,6 @@ public:
      * it is bad to dereference it after the erase.
      */
     void erase();
-    void eraseError(const Token *tok);
 
 
     /**
@@ -136,6 +135,12 @@ public:
     void uselessCalls();
 
 
+    /**
+     * Dereferencing an erased iterator
+     * @param tok token where error occurs
+     * @param itername iterator name
+     */
+    void dereferenceErasedError(const Token* erase, const Token* deref, const std::string &itername);
 
 private:
 
@@ -145,13 +150,6 @@ private:
      * @param it iterator token
      */
     void eraseCheckLoop(const Token *it);
-
-    /**
-     * Dereferencing an erased iterator
-     * @param tok token where error occurs
-     * @param itername iterator name
-     */
-    void dereferenceErasedError(const Token *tok, const std::string &itername);
 
     void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
     void string_c_strThrowError(const Token *tok);
@@ -164,7 +162,7 @@ private:
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
     void mismatchingContainersError(const Token *tok);
     void invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name);
-    void invalidPointerError(const Token *tok, const std::string &pointer_name);
+    void invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name);
     void stlBoundriesError(const Token *tok, const std::string &container_name);
     void if_findError(const Token *tok, bool str);
     void sizeError(const Token *tok);
@@ -185,11 +183,10 @@ private:
         c.invalidIteratorError(0, "iterator");
         c.iteratorsError(0, "container1", "container2");
         c.mismatchingContainersError(0);
-        c.dereferenceErasedError(0, "iter");
+        c.dereferenceErasedError(0, 0, "iter");
         c.stlOutOfBoundsError(0, "i", "foo", false);
-        c.eraseError(0);
         c.invalidIteratorError(0, "push_back|push_front|insert", "iterator");
-        c.invalidPointerError(0, "pointer");
+        c.invalidPointerError(0, "push_back", "pointer");
         c.stlBoundriesError(0, "container");
         c.if_findError(0, false);
         c.if_findError(0, true);
@@ -197,6 +194,7 @@ private:
         c.string_c_strReturn(0);
         c.string_c_strParam(0, 0);
         c.sizeError(0);
+        c.missingComparisonError(0, 0);
         c.redundantIfRemoveError(0);
         c.autoPointerError(0);
         c.autoPointerContainerError(0);

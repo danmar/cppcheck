@@ -35,13 +35,26 @@ void CheckStl::invalidIteratorError(const Token *tok, const std::string &iterato
 
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
 {
-    reportError(tok, Severity::error, "iterators", "Same iterator is used with both " + container1 + " and " + container2);
+    reportError(tok, Severity::error, "iterators", "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.");
 }
 
 // Error message used when dereferencing an iterator that has been erased..
-void CheckStl::dereferenceErasedError(const Token *tok, const std::string &itername)
+void CheckStl::dereferenceErasedError(const Token *erase, const Token* deref, const std::string &itername)
 {
-    reportError(tok, Severity::error, "eraseDereference", "Dereferenced iterator '" + itername + "' has been erased");
+    if (erase) {
+        std::list<const Token*> callstack;
+        callstack.push_back(deref);
+        callstack.push_back(erase);
+        reportError(callstack, Severity::error, "eraseDereference",
+                    "Iterator '" + itername + "' used after element has been erased.\n"
+                    "The iterator '" + itername + "' is invalid after the element it pointed to has been erased. "
+                    "Dereferencing or comparing it with another iterator is invalid operation.");
+    } else {
+        reportError(deref, Severity::error, "eraseDereference",
+                    "Invalid iterator '" + itername + "' used.\n"
+                    "The iterator '" + itername + "' is invalid before being assigned. "
+                    "Dereferencing or comparing it with another iterator is invalid operation.");
+    }
 }
 
 void CheckStl::iterators()
@@ -67,6 +80,8 @@ void CheckStl::iterators()
 
         // When "validatingToken" is reached the validIterator is set to true
         const Token* validatingToken = 0;
+
+        const Token* eraseToken = 0;
 
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
@@ -119,6 +134,7 @@ void CheckStl::iterators()
                 // invalidate the iterator if it is erased
                 else if (tok2->strAt(2) == std::string("erase")) {
                     validIterator = false;
+                    eraseToken = tok2;
                     invalidationScope = tok2->scope();
                 }
 
@@ -161,10 +177,10 @@ void CheckStl::iterators()
 
             // Dereferencing invalid iterator?
             else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId)) {
-                dereferenceErasedError(tok2, tok2->strAt(1));
+                dereferenceErasedError(eraseToken, tok2, tok2->strAt(1));
                 tok2 = tok2->next();
             } else if (!validIterator && Token::Match(tok2, "%varid% . %var%", iteratorId)) {
-                dereferenceErasedError(tok2, tok2->str());
+                dereferenceErasedError(eraseToken, tok2, tok2->str());
                 tok2 = tok2->tokAt(2);
             }
 
@@ -187,7 +203,7 @@ void CheckStl::iterators()
 // Error message for bad iterator usage..
 void CheckStl::mismatchingContainersError(const Token *tok)
 {
-    reportError(tok, Severity::error, "mismatchingContainers", "Iterators of mismatching containers are used together.");
+    reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.");
 }
 
 void CheckStl::mismatchingContainers()
@@ -302,9 +318,9 @@ void CheckStl::stlOutOfBounds()
 void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var, bool at)
 {
     if (at)
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + ".at(" + num + ") is out of bounds");
+        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + ".at(" + num + ") is out of bounds.");
     else
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds");
+        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds.");
 }
 
 
@@ -331,7 +347,7 @@ public:
         if (! Token::simpleMatch(tok, ") {"))
             return;
 
-        EraseCheckLoop c(checkStl, it->varId());
+        EraseCheckLoop c(checkStl, it->varId(), it);
         std::list<ExecutionPath *> checks;
         checks.push_back(c.copy());
         ExecutionPath::checkScope(tok->tokAt(2), checks);
@@ -346,12 +362,15 @@ public:
 
 private:
     /** Startup constructor */
-    EraseCheckLoop(Check *o, unsigned int varid)
-        : ExecutionPath(o, varid), eraseToken(0) {
+    EraseCheckLoop(Check *o, unsigned int varid, const Token* usetoken)
+        : ExecutionPath(o, varid), eraseToken(0), useToken(usetoken) {
     }
 
     /** @brief token where iterator is erased (non-zero => the iterator is invalid) */
     const Token *eraseToken;
+
+    /** @brief name of the iterator */
+    const Token* useToken;
 
     /** @brief Copy this check. Called from the ExecutionPath baseclass. */
     ExecutionPath *copy() {
@@ -436,7 +455,7 @@ private:
             if (c && c->eraseToken) {
                 CheckStl *checkStl = dynamic_cast<CheckStl *>(c->owner);
                 if (checkStl) {
-                    checkStl->eraseError(c->eraseToken);
+                    checkStl->dereferenceErasedError(c->eraseToken, c->useToken, c->useToken->str());
                 }
             }
         }
@@ -488,14 +507,6 @@ void CheckStl::erase()
     }
 }
 
-// Error message for bad iterator usage..
-void CheckStl::eraseError(const Token *tok)
-{
-    reportError(tok, Severity::error, "erase",
-                "Dangerous iterator usage after erase()-method.\n"
-                "The iterator is invalid after it has been used in erase() function. "
-                "Dereferencing or comparing it with another iterator is invalid operation.");
-}
 
 void CheckStl::pushback()
 {
@@ -514,6 +525,7 @@ void CheckStl::pushback()
             // Count { , } and parentheses for tok2
             int indent = 0;
             bool invalidPointer = false;
+            std::string function;
             for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "{" || tok2->str() == "(")
                     ++indent;
@@ -525,15 +537,17 @@ void CheckStl::pushback()
                 }
 
                 // push_back on vector..
-                if (Token::Match(tok2, "%varid% . push_front|push_back|resize|reserve", containerId))
+                if (Token::Match(tok2, "%varid% . push_front|push_back|resize|reserve", containerId)) {
                     invalidPointer = true;
+                    function = tok2->strAt(2);
+                }
 
                 // Using invalid pointer..
                 if (invalidPointer && tok2->varId() == pointerId) {
                     if (tok2->previous()->str() == "*")
-                        invalidPointerError(tok2, tok2->str());
+                        invalidPointerError(tok2, function, tok2->str());
                     else if (tok2->next()->str() == ".")
-                        invalidPointerError(tok2, tok2->str());
+                        invalidPointerError(tok2, function, tok2->str());
                     break;
                 }
             }
@@ -655,14 +669,14 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
-    reportError(tok, Severity::error, "invalidIterator2", "After " + func + ", the iterator '" + iterator_name + "' may be invalid");
+    reportError(tok, Severity::error, "invalidIterator2", "After " + func + "(), the iterator '" + iterator_name + "' may be invalid.");
 }
 
 
 // Error message for bad iterator usage..
-void CheckStl::invalidPointerError(const Token *tok, const std::string &pointer_name)
+void CheckStl::invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name)
 {
-    reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after push_back / push_front");
+    reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after " + func + "().");
 }
 
 
@@ -708,11 +722,10 @@ void CheckStl::stlBoundries()
 void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_name)
 {
     reportError(tok, Severity::error, "stlBoundries",
-                "Dangerous container iterator compare using < operator for " + container_name + "\n"
-                "Container '" + container_name + "' iterator compared with < operator. "
-                "Using < operator with container type iterators is dangerous since the order of "
-                "the items is not guaranteed. One should use != operator instead when comparing "
-                "iterators in the container.");
+                "Dangerous iterator comparison using operator< on 'std::" + container_name + "'.\n"
+                "Iterator of container 'std::" + container_name + "' compared with operator<. "
+                "This is dangerous since the order of items in the container is not guaranteed. "
+                "One should use operator!= instead to compare iterators.");
 }
 
 static bool if_findCompare(const Token * const tokBack)
@@ -854,13 +867,13 @@ void CheckStl::if_findError(const Token *tok, bool str)
 {
     if (str)
         reportError(tok, Severity::performance, "stlIfStrFind",
-                    "Inefficient usage of string::find in condition; string::compare would be faster.\n"
-                    "Either inefficent or wrong usage of string::find. string::compare will be faster if "
+                    "Inefficient usage of string::find() in condition; string::compare() would be faster.\n"
+                    "Either inefficent or wrong usage of string::find(). string::compare() will be faster if "
                     "string::find's result is compared with 0, because it will not scan the whole "
                     "string. If your intention is to check that there are no findings in the string, "
-                    "you should compare with string::npos.");
+                    "you should compare with std::string::npos.");
     else
-        reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find is an iterator, but it is not properly checked.");
+        reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find() is an iterator, but it is not properly checked.");
 }
 
 
@@ -991,9 +1004,9 @@ void CheckStl::redundantCondition()
 void CheckStl::redundantIfRemoveError(const Token *tok)
 {
     reportError(tok, Severity::style, "redundantIfRemove",
-                "Redundant checking of STL container element.\n"
+                "Redundant checking of STL container element existence before removing it.\n"
                 "Redundant checking of STL container element existence before removing it. "
-                "The remove method in the STL will not do anything if element doesn't exist");
+                "It is safe to call the remove method on a non-existing element.");
 }
 
 void CheckStl::missingComparison()
@@ -1056,15 +1069,23 @@ void CheckStl::missingComparison()
 
 void CheckStl::missingComparisonError(const Token *incrementToken1, const Token *incrementToken2)
 {
+    std::list<const Token*> callstack;
+    callstack.push_back(incrementToken1);
+    callstack.push_back(incrementToken2);
+
     std::ostringstream errmsg;
     errmsg << "Missing bounds check for extra iterator increment in loop.\n"
-           << "The iterator incrementing is suspicious - it is incremented at line "
-           << incrementToken1->linenr() << " and then at line " << incrementToken2->linenr()
-           << " The loop might unintentionally skip an element in the container. "
+           << "The iterator incrementing is suspicious - it is incremented at line ";
+    if (incrementToken1)
+        errmsg << incrementToken1->linenr();
+    errmsg << " and then at line ";
+    if (incrementToken2)
+        errmsg << incrementToken2->linenr();
+    errmsg << ". The loop might unintentionally skip an element in the container. "
            << "There is no comparison between these increments to prevent that the iterator is "
            << "incremented beyond the end.";
 
-    reportError(incrementToken1, Severity::warning, "StlMissingComparison", errmsg.str());
+    reportError(callstack, Severity::warning, "StlMissingComparison", errmsg.str());
 }
 
 
@@ -1196,27 +1217,27 @@ void CheckStl::string_c_str()
 
 void CheckStl::string_c_strThrowError(const Token* tok)
 {
-    reportError(tok, Severity::error, "stlcstrthrow", "Dangerous usage of c_str(). The returned value by c_str() is invalid after throw call.\n"
+    reportError(tok, Severity::error, "stlcstrthrow", "Dangerous usage of c_str(). The value returned by c_str() is invalid after throwing exception.\n"
                 "Dangerous usage of c_str(). The string is destroyed after the c_str() call so the thrown pointer is invalid.");
 }
 
 void CheckStl::string_c_strError(const Token* tok)
 {
-    reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str(). The returned value by c_str() is invalid after this call.\n"
+    reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n"
                 "Dangerous usage of c_str(). The c_str() return value is only valid until its string is deleted.");
 }
 
 void CheckStl::string_c_strReturn(const Token* tok)
 {
     reportError(tok, Severity::performance, "stlcstrReturn", "Returning the result of c_str() in a function that returns std::string is slow and redundant.\n"
-                "The conversion from const char* as returned by c_str to std::string creates an unnecessary string copy. Solve that by directly returning the string.");
+                "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.");
 }
 
 void CheckStl::string_c_strParam(const Token* tok, unsigned int number)
 {
     std::ostringstream oss;
-    oss << "Passing the result of c_str() to a function that takes std::string as argument " << number << " is slow and redundant.\n"
-        "The conversion from const char* as returned by c_str to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
+    oss << "Passing the result of c_str() to a function that takes std::string as argument no. " << number << " is slow and redundant.\n"
+        "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrParam", oss.str());
 }
 
@@ -1300,15 +1321,15 @@ void CheckStl::checkAutoPointer()
 void CheckStl::autoPointerError(const Token *tok)
 {
     reportError(tok, Severity::style, "useAutoPointerCopy",
-                "Copy 'auto_ptr' pointer to another do not create two equal objects since one has lost its ownership of the pointer.\n"
-                "The auto_ptr has semantics of strict ownership, meaning that the auto_ptr instance is the sole entity responsible for the object's lifetime. If an auto_ptr is copied, the source loses the reference."
+                "Copying 'auto_ptr' pointer to another does not create two equal objects since one has lost its ownership of the pointer.\n"
+                "'std::auto_ptr' has semantics of strict ownership, meaning that the 'auto_ptr' instance is the sole entity responsible for the object's lifetime. If an 'auto_ptr' is copied, the source looses the reference."
                );
 }
 
 void CheckStl::autoPointerContainerError(const Token *tok)
 {
     reportError(tok, Severity::error, "useAutoPointerContainer",
-                "You can randomly lose access to pointers if you store 'auto_ptr' pointers in a container because the copy-semantics of 'auto_ptr' are not compatible with containers.\n"
+                "You can randomly lose access to pointers if you store 'auto_ptr' pointers in an STL container.\n"
                 "An element of container must be able to be copied but 'auto_ptr' does not fulfill this requirement. You should consider to use 'shared_ptr' or 'unique_ptr'. It is suitable for use in containers, because they no longer copy their values, they move them."
                );
 }
@@ -1357,10 +1378,10 @@ void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string 
 {
     std::ostringstream errmsg;
     errmsg << "It is inefficient to call '" << varname << "." << function << "(" << varname << ")' as it always returns 0.\n"
-           << "The 'std::string::" << function << "()' returns zero when given itself as parameter "
+           << "'std::string::" << function << "()' returns zero when given itself as parameter "
            << "(" << varname << "." << function << "(" << varname << ")). As it is currently the "
-           << "code is inefficient. It is also possible either the string searched ('"
-           << varname << "') or searched for ('" << varname << "') is wrong/mixed in the code?";
+           << "code is inefficient. It is possible either the string searched ('"
+           << varname << "') or searched for ('" << varname << "') is wrong.";
     reportError(tok, Severity::warning, "uselessCallsCompare", errmsg.str());
 }
 
@@ -1370,21 +1391,21 @@ void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varnam
     errmsg << "It is inefficient to swap a object with itself by calling '" << varname << ".swap(" << varname << ")'\n"
            << "The 'swap()' function has no logical effect when given itself as parameter "
            << "(" << varname << ".swap(" << varname << ")). As it is currently the "
-           << "code is inefficient. It is possible either the object or the parameter is wrong/mixed in the code?";
+           << "code is inefficient. Is the object or the parameter wrong here?";
     reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str());
 }
 
 void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
 {
     if (empty)
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Useless call of function 'substr' because it returns an empty string.");
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns an empty string.");
     else
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Useless call of function 'substr' because it returns a copy of the object. Use operator= instead.");
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns a copy of the object. Use operator= instead.");
 }
 
 void CheckStl::uselessCallsEmptyError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "uselessCallsEmpty", "Useless call of function 'empty()'. Did you intend to call 'clear()' instead?");
+    reportError(tok, Severity::warning, "uselessCallsEmpty", "Ineffective call of function 'empty()'. Did you intend to call 'clear()' instead?");
 }
 
 void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& function)
