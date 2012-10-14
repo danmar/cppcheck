@@ -69,11 +69,13 @@ void TxtReport::WriteError(const ErrorItem &error)
             line += ": ";
         }
     }
-    line += QString("(%1) ").arg(GuiSeverity::toString(error.severity));
+    QString temp = "(%1";
     if (error.inconclusive) {
-        line += tr("inconclusive");
-        line += " ";
+        temp += ", ";
+        temp += tr("inconclusive");
     }
+    temp += ") ";
+    line += temp.arg(GuiSeverity::toString(error.severity));
     line += error.summary;
 
     mTxtWriter << line << endl;
