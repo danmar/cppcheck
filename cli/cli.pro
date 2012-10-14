@@ -27,8 +27,8 @@ HEADERS += cppcheckexecutor.h \
            threadexecutor.h
 
 win32 {
-    RC_FILE = cppcheck.rc
-    HEADERS += resource.h
+    RC_FILE = version.rc
+    HEADERS += ../lib/version.h
 }
 
 # Enable STL checking in GCC debug builds

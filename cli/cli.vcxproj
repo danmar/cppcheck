@@ -354,7 +354,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ResourceCompile Include="cppcheck.rc" />
+    <ResourceCompile Include="version.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\externals\tinyxml\tinystr.h" />
@@ -364,7 +364,6 @@
     <ClInclude Include="cppcheckexecutor.h" />
     <ClInclude Include="filelister.h" />
     <ClInclude Include="pathmatch.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="threadexecutor.h" />
   </ItemGroup>
   <ItemGroup>
