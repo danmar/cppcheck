@@ -80,21 +80,20 @@ bool ApplicationList::LoadSettings()
             defapp = 0;
         }
 #endif
-    }
-
-    if (names.size() > 0 && (names.size() == paths.size())) {
+    } else if (names.size() == paths.size()) {
         for (int i = 0; i < names.size(); i++) {
             const Application app(names[i], paths[i], params[i]);
             AddApplication(app);
         }
-
-        if (defapp == -1)
-            mDefaultApplicationIndex = 0;
-        else if (defapp < names.size())
-            mDefaultApplicationIndex = defapp;
-        else
-            mDefaultApplicationIndex = 0;
     }
+
+    if (defapp == -1)
+        mDefaultApplicationIndex = 0;
+    else if (defapp < names.size())
+        mDefaultApplicationIndex = defapp;
+    else
+        mDefaultApplicationIndex = 0;
+
     return succeeded;
 }
 
