@@ -379,6 +379,7 @@ public:
           arg(NULL),
           functionScope(NULL),
           nestedIn(NULL),
+          initArgCount(0),
           type(eFunction),
           access(Public),
           hasBody(false),
@@ -397,7 +398,9 @@ public:
         return argumentList.size();
     }
     const Variable* getArgumentVar(unsigned int num) const;
-    unsigned int initializedArgCount() const;
+    unsigned int initializedArgCount() const {
+        return initArgCount;
+    }
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
@@ -409,6 +412,7 @@ public:
     Scope *functionScope;  // scope of function body
     Scope* nestedIn;       // Scope the function is declared in
     std::list<Variable> argumentList; // argument list
+    unsigned int initArgCount; // number of args with default values
     Type type;             // constructor, destructor, ...
     AccessControl access;  // public/protected/private
     bool hasBody;          // has implementation

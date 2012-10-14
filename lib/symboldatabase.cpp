@@ -1569,19 +1569,6 @@ void SymbolDatabase::printOut(const char *title) const
 
 //---------------------------------------------------------------------------
 
-unsigned int Function::initializedArgCount() const
-{
-    unsigned int count = 0;
-    std::list<Variable>::const_iterator var;
-
-    for (var = argumentList.begin(); var != argumentList.end(); ++var) {
-        if (var->hasDefault())
-            ++count;
-    }
-
-    return count;
-}
-
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
@@ -1642,6 +1629,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             // skip default values
             if (tok->str() == "=") {
+                initArgCount++;
                 while (tok->str() != "," && tok->str() != ")") {
                     if (tok->link() && Token::Match(tok, "[{[(<]"))
                         tok = tok->link();
@@ -2175,8 +2163,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
                 const Function *func = &*i;
                 if (tok->strAt(1) == "(" && tok->tokAt(2)) {
                     // check if function has no arguments
-                    /** @todo check for default arguments */
-                    if (tok->strAt(2) == ")" && func->argCount() == 0)
+                    if (tok->strAt(2) == ")" && (func->argCount() == 0 || func->argCount() == func->initializedArgCount()))
                         return func;
 
                     // check the arguments
@@ -2184,6 +2171,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
                     const Token *arg = tok->tokAt(2);
                     while (arg) {
                         /** @todo check argument type for match */
+                        /** @todo check for default arguments */
                         args++;
                         arg = arg->nextArgument();
                     }
