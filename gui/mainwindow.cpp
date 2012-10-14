@@ -965,10 +965,10 @@ void MainWindow::NewProjectFile()
     delete mProject;
     mProject = new Project(filepath, this);
     mProject->Create();
-    mProject->Edit();
-
-    AddProjectMRU(filepath);
-    CheckProject(mProject);
+    if (mProject->Edit()) {
+        AddProjectMRU(filepath);
+        CheckProject(mProject);
+    }
 }
 
 void MainWindow::CloseProjectFile()

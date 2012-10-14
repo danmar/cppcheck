@@ -82,7 +82,7 @@ bool Project::Open()
     return false;
 }
 
-void Project::Edit()
+bool Project::Edit()
 {
     ProjectFileDialog dlg(mFilename, mParentWidget);
     QString root = mPFile->GetRootPath();
@@ -118,7 +118,9 @@ void Project::Edit()
                             mParentWidget);
             msg.exec();
         }
+        return writeSuccess;
     }
+    return false;
 }
 
 void Project::Create()

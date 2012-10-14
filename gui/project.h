@@ -66,8 +66,9 @@ public:
 
     /**
     * @brief Edit the project file.
+    * @return true if editing was successful.
     */
-    void Edit();
+    bool Edit();
 
     /**
     * @brief Create new project file.
