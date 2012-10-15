@@ -520,10 +520,6 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Project MRU placeholder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Quick Filter:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -955,10 +951,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Force checking all #ifdef configurations</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1082,10 +1074,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Portability warnings:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

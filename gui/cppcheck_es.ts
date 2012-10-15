@@ -174,8 +174,8 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="707"/>
         <location filename="mainwindow.cpp" line="826"/>
         <location filename="mainwindow.cpp" line="846"/>
-        <location filename="mainwindow.cpp" line="987"/>
-        <location filename="mainwindow.cpp" line="1068"/>
+        <location filename="mainwindow.cpp" line="992"/>
+        <location filename="mainwindow.cpp" line="1073"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -367,11 +367,6 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="547"/>
         <source>Filter results</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="main.ui" line="552"/>
-        <source>Project MRU placeholder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -674,7 +669,7 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     </message>
     <message>
         <location filename="mainwindow.cpp" line="884"/>
-        <location filename="mainwindow.cpp" line="951"/>
+        <location filename="mainwindow.cpp" line="956"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Ficheros de proyecto (*.cppcheck;;Todos los ficheros (*.*)</translation>
     </message>
@@ -685,22 +680,22 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     </message>
     <message>
         <location filename="mainwindow.cpp" line="903"/>
-        <location filename="mainwindow.cpp" line="963"/>
+        <location filename="mainwindow.cpp" line="968"/>
         <source>Project:</source>
         <translation type="unfinished">Proyecto:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="953"/>
+        <location filename="mainwindow.cpp" line="958"/>
         <source>Select Project Filename</source>
         <translation>Selecciona el nombre del proyecto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="988"/>
+        <location filename="mainwindow.cpp" line="993"/>
         <source>No project file loaded</source>
         <translation>No hay ningún proyecto cargado</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1063"/>
+        <location filename="mainwindow.cpp" line="1068"/>
         <source>The project file
 
 %1
@@ -836,64 +831,64 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished">Proyecto</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="51"/>
+        <location filename="projectfile.ui" line="49"/>
         <source>Root:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="70"/>
-        <location filename="projectfile.ui" line="221"/>
+        <location filename="projectfile.ui" line="68"/>
+        <location filename="projectfile.ui" line="217"/>
         <source>Paths:</source>
         <translation>Rutas:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="97"/>
-        <location filename="projectfile.ui" line="162"/>
-        <location filename="projectfile.ui" line="235"/>
+        <location filename="projectfile.ui" line="95"/>
+        <location filename="projectfile.ui" line="158"/>
+        <location filename="projectfile.ui" line="231"/>
         <source>Add...</source>
         <translation type="unfinished">Añadir...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="104"/>
-        <location filename="projectfile.ui" line="169"/>
-        <location filename="projectfile.ui" line="242"/>
+        <location filename="projectfile.ui" line="102"/>
+        <location filename="projectfile.ui" line="165"/>
+        <location filename="projectfile.ui" line="238"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="111"/>
-        <location filename="projectfile.ui" line="176"/>
-        <location filename="projectfile.ui" line="249"/>
+        <location filename="projectfile.ui" line="109"/>
+        <location filename="projectfile.ui" line="172"/>
+        <location filename="projectfile.ui" line="245"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="138"/>
+        <location filename="projectfile.ui" line="134"/>
         <source>Includes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="144"/>
+        <location filename="projectfile.ui" line="140"/>
         <source>Include directories:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="196"/>
+        <location filename="projectfile.ui" line="192"/>
         <source>Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="203"/>
+        <location filename="projectfile.ui" line="199"/>
         <source>Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="215"/>
+        <location filename="projectfile.ui" line="211"/>
         <source>Exclude</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="34"/>
+        <location filename="projectfile.ui" line="32"/>
         <source>Defines:</source>
         <translation>Definiciones:</translation>
     </message>
@@ -1171,11 +1166,6 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="92"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="114"/>
         <source>Force checking all #ifdef configurations</source>
         <translation type="unfinished"></translation>
@@ -1383,12 +1373,6 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="stats.ui" line="297"/>
-        <location filename="stats.ui" line="333"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="stats.ui" line="308"/>
         <source>Performance issues:</source>
         <translation>Problemas de rendimiento:</translation>
@@ -1399,7 +1383,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="stats.ui" line="362"/>
+        <location filename="stats.ui" line="365"/>
         <source>Copy to Clipboard</source>
         <translation>Copiar al portapapeles</translation>
     </message>
@@ -1530,7 +1514,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
 <context>
     <name>TxtReport</name>
     <message>
-        <location filename="txtreport.cpp" line="74"/>
+        <location filename="txtreport.cpp" line="75"/>
         <source>inconclusive</source>
         <translation type="unfinished"></translation>
     </message>

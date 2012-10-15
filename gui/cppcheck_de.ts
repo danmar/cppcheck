@@ -185,8 +185,8 @@ Parameter: -l(line) (file)
         <location filename="mainwindow.cpp" line="707"/>
         <location filename="mainwindow.cpp" line="826"/>
         <location filename="mainwindow.cpp" line="846"/>
-        <location filename="mainwindow.cpp" line="987"/>
-        <location filename="mainwindow.cpp" line="1068"/>
+        <location filename="mainwindow.cpp" line="992"/>
+        <location filename="mainwindow.cpp" line="1073"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -384,11 +384,6 @@ Parameter: -l(line) (file)
     <message>
         <location filename="main.ui" line="547"/>
         <source>Filter results</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="main.ui" line="552"/>
-        <source>Project MRU placeholder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -697,7 +692,7 @@ Die Sprache wurde auf Englisch zurückgesetzt. Öffnen Sie den Einstellungen-Dia
     </message>
     <message>
         <location filename="mainwindow.cpp" line="884"/>
-        <location filename="mainwindow.cpp" line="951"/>
+        <location filename="mainwindow.cpp" line="956"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Projektdateien (*.cppcheck);;Alle Dateien(*.*)</translation>
     </message>
@@ -708,22 +703,22 @@ Die Sprache wurde auf Englisch zurückgesetzt. Öffnen Sie den Einstellungen-Dia
     </message>
     <message>
         <location filename="mainwindow.cpp" line="903"/>
-        <location filename="mainwindow.cpp" line="963"/>
+        <location filename="mainwindow.cpp" line="968"/>
         <source>Project:</source>
         <translation>Projekt:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="953"/>
+        <location filename="mainwindow.cpp" line="958"/>
         <source>Select Project Filename</source>
         <translation>Projektnamen auswählen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="988"/>
+        <location filename="mainwindow.cpp" line="993"/>
         <source>No project file loaded</source>
         <translation>Keine Projektdatei geladen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1063"/>
+        <location filename="mainwindow.cpp" line="1068"/>
         <source>The project file
 
 %1
@@ -865,64 +860,64 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
         <translation>Projekt</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="51"/>
+        <location filename="projectfile.ui" line="49"/>
         <source>Root:</source>
         <translation>Wurzel:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="70"/>
-        <location filename="projectfile.ui" line="221"/>
+        <location filename="projectfile.ui" line="68"/>
+        <location filename="projectfile.ui" line="217"/>
         <source>Paths:</source>
         <translation>Pfade:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="97"/>
-        <location filename="projectfile.ui" line="162"/>
-        <location filename="projectfile.ui" line="235"/>
+        <location filename="projectfile.ui" line="95"/>
+        <location filename="projectfile.ui" line="158"/>
+        <location filename="projectfile.ui" line="231"/>
         <source>Add...</source>
         <translation>Hinzufügen...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="104"/>
-        <location filename="projectfile.ui" line="169"/>
-        <location filename="projectfile.ui" line="242"/>
+        <location filename="projectfile.ui" line="102"/>
+        <location filename="projectfile.ui" line="165"/>
+        <location filename="projectfile.ui" line="238"/>
         <source>Edit</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="111"/>
-        <location filename="projectfile.ui" line="176"/>
-        <location filename="projectfile.ui" line="249"/>
+        <location filename="projectfile.ui" line="109"/>
+        <location filename="projectfile.ui" line="172"/>
+        <location filename="projectfile.ui" line="245"/>
         <source>Remove</source>
         <translation>Entfernen</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="138"/>
+        <location filename="projectfile.ui" line="134"/>
         <source>Includes</source>
         <translation>Includes</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="144"/>
+        <location filename="projectfile.ui" line="140"/>
         <source>Include directories:</source>
         <translation>Include-Verzeichnisse:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="196"/>
+        <location filename="projectfile.ui" line="192"/>
         <source>Up</source>
         <translation>Auf</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="203"/>
+        <location filename="projectfile.ui" line="199"/>
         <source>Down</source>
         <translation>Ab</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="215"/>
+        <location filename="projectfile.ui" line="211"/>
         <source>Exclude</source>
         <translation>Ausschließen</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="34"/>
+        <location filename="projectfile.ui" line="32"/>
         <source>Defines:</source>
         <translation>Definitionen:</translation>
     </message>
@@ -1219,11 +1214,6 @@ Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden 
         <translation>Ideale Anzahl:</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="92"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="114"/>
         <source>Force checking all #ifdef configurations</source>
         <translation>Erzwinge Prüfung aller #ifdef-Konfigurationen</translation>
@@ -1415,12 +1405,6 @@ Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden 
         <translation>Portabilitätswarnungen:</translation>
     </message>
     <message>
-        <location filename="stats.ui" line="297"/>
-        <location filename="stats.ui" line="333"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="stats.ui" line="308"/>
         <source>Performance issues:</source>
         <translation>Performance-Probleme:</translation>
@@ -1431,7 +1415,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden 
         <translation>Informationsmeldungen:</translation>
     </message>
     <message>
-        <location filename="stats.ui" line="362"/>
+        <location filename="stats.ui" line="365"/>
         <source>Copy to Clipboard</source>
         <translation>In die Zwischenablage kopieren</translation>
     </message>
@@ -1562,7 +1546,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden 
 <context>
     <name>TxtReport</name>
     <message>
-        <location filename="txtreport.cpp" line="74"/>
+        <location filename="txtreport.cpp" line="75"/>
         <source>inconclusive</source>
         <translation>unklar</translation>
     </message>

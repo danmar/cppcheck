@@ -403,7 +403,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Project MRU placeholder</source>
-        <translation>최근 사용된 프로젝트 표시</translation>
+        <translation type="obsolete">최근 사용된 프로젝트 표시</translation>
     </message>
     <message>
         <source>Windows 32-bit ANSI</source>
@@ -958,7 +958,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>TextLabel</source>
-        <translation>TextLabel</translation>
+        <translation type="obsolete">TextLabel</translation>
     </message>
     <message>
         <source>Force checking all #ifdef configurations</source>
@@ -1120,7 +1120,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>TextLabel</source>
-        <translation>TextLabel</translation>
+        <translation type="obsolete">TextLabel</translation>
     </message>
     <message>
         <source>Performance issues:</source>
