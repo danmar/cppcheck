@@ -4955,6 +4955,11 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
         Token *tok2 = type0;
         unsigned int typelen = 1;
 
+        if (tok2->str() == "::") {
+            tok2 = tok2->next();
+            typelen++;
+        }
+
         //check if variable is declared 'const' or 'static' or both
         while (tok2) {
             if (!Token::Match(tok2, "const|static") && Token::Match(tok2, "%type% const|static")) {

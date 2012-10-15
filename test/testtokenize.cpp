@@ -5197,14 +5197,24 @@ private:
                       "}", tokenizeAndStringify(code));
     }
 
-    void vardecl21() {  // #4042
-        const char code[] = "void f() {\n"
-                            "    a::b const *p = 0;\n"
-                            "}\n";
+    void vardecl21() { // type in namespace
+        // #4042 - a::b const *p = 0;
+        const char code1[] = "void f() {\n"
+                             "    a::b const *p = 0;\n"
+                             "}\n";
         ASSERT_EQUALS("void f ( ) {\n"
                       "a :: b const * p ; p = 0 ;\n"
                       "}"
-                      , tokenizeAndStringify(code));
+                      , tokenizeAndStringify(code1));
+
+        // #4226 - ::a::b const *p = 0;
+        const char code2[] = "void f() {\n"
+                             "    ::a::b const *p = 0;\n"
+                             "}\n";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      ":: a :: b const * p ; p = 0 ;\n"
+                      "}"
+                      , tokenizeAndStringify(code2));
     }
 
     void vardecl22() {  // #4211 - segmentation fault
