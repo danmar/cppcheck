@@ -52,16 +52,32 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // find all scopes
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate next class
-        if (Token::Match(tok, "class|struct|union|namespace %var% [{:]")) {
-            scopeList.push_back(Scope(this, tok, scope));
+        if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::")) {
+            const Token *tok2;
+            std::list<std::string> names;
 
-            Scope *new_scope = &scopeList.back();
+            if (tok->strAt(1) == "::") {
+                names.push_front(tok->strAt(2));
+                tok2 = tok->tokAt(3);
+            } else {
+                tok2 = tok->tokAt(2);
+                names.push_front(tok->strAt(1));
+            }
+
+            while (tok2 && tok2->str() == "::") {
+                names.push_front(tok2->strAt(1));
+                tok2 = tok2->tokAt(2);
+            }
+
+            // make sure we have valid code
+            if (!tok2)
+                break;
+
+            Scope *new_scope = getScope(names, tok, scope);
             if (tok->str() == "class")
                 access[new_scope] = Private;
             else if (tok->str() == "struct")
                 access[new_scope] = Public;
-
-            const Token *tok2 = tok->tokAt(2);
 
             // only create base list for classes and structures
             if (new_scope->isClassOrStruct()) {
@@ -89,8 +105,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 classAndStructTypes.insert(new_scope->className);
 
             // make the new scope the current scope
-            scope = &scopeList.back();
-            scope->nestedIn->nestedList.push_back(scope);
+            scope = applyScope(new_scope);
 
             tok = tok2;
         }
@@ -124,13 +139,30 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
 
         // forward declaration
-        else if (Token::Match(tok, "class|struct %var% ;")) {
+        else if (Token::Match(tok, "class|struct %var% ;") &&
+                 tok->strAt(-1) != "friend") {
             // fill the classAndStructTypes set..
             classAndStructTypes.insert(tok->next()->str());
 
-            /** @todo save forward declarations in database someday */
+            scopeList.push_back(Scope(this, tok, scope));
+
+            Scope *new_scope = &scopeList.back();
+            if (tok->str() == "class")
+                access[new_scope] = Private;
+            else if (tok->str() == "struct")
+                access[new_scope] = Public;
+
+            // make the new scope the current scope
+            scope = &scopeList.back();
+            scope->nestedIn->nestedList.push_back(scope);
+
+            // save the forward declaration
+            _forwardDecls.push_back(scope);
+
+            // leave the scope
+            scope = scope->nestedIn;
+
             tok = tok->tokAt(2);
-            continue;
         }
 
         // using namespace
@@ -205,7 +237,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         else {
             // check for end of scope
             if (tok == scope->classEnd) {
-                scope = scope->nestedIn;
+                if (!_back.empty() && _back.top().forward == scope) {
+                    scope = _back.top().back;
+                    _back.pop();
+                } else
+                    scope = scope->nestedIn;
                 continue;
             }
 
@@ -815,6 +851,68 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
+
+Scope * SymbolDatabase::getScope(const std::list<std::string> &names, const Token *tok, Scope *scope)
+{
+    // check for forward declarations
+    if (_forwardDecls.empty()) {
+        // none so just return end of scope list
+        scopeList.push_back(Scope(this, tok, scope));
+
+        return &scopeList.back();
+    }
+
+    // got forward declarations so check for possible match
+    std::list<Scope *>::iterator decls;
+    for (decls = _forwardDecls.begin(); decls != _forwardDecls.end(); ++decls) {
+        Scope * decl = *decls;
+        Scope * next = decl;
+        std::list<std::string>::const_iterator it;
+        for (it = names.begin(); next && it != names.end(); ++it) {
+            if (next->className == *it)
+                next = next->nestedIn;
+            else
+                break;
+        }
+
+        // fully qualified name match
+        if (it == names.end()) {
+            _back.push(Back(decl, scope));
+            decl->classDef = tok;
+            for (std::list<Scope *>::iterator nli = decl->nestedIn->nestedList.begin();
+                 nli != decl->nestedIn->nestedList.end(); ++nli) {
+                Scope *b = *nli;
+                if (b == decl) {
+                    // remove forward declration
+                    _forwardDecls.erase(decls);
+                    break;
+                }
+            }
+            return decl;
+        }
+    }
+
+    // no forward declaration found so just return end of scope list
+    scopeList.push_back(Scope(this, tok, scope));
+
+    return &scopeList.back();
+}
+
+Scope * SymbolDatabase::applyScope(Scope * scope)
+{
+    // check if there was a forward declaration
+    std::list<Scope *>::iterator it;
+    for (it = scope->nestedIn->nestedList.begin(); it != scope->nestedIn->nestedList.end(); ++it) {
+        if ((*it) == scope)
+            break;
+    }
+
+    // add it if there was no forward declaration
+    if (it == scope->nestedIn->nestedList.end())
+        scope->nestedIn->nestedList.push_back(scope);
+
+    return scope;
 }
 
 bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart)
@@ -1522,7 +1620,7 @@ void SymbolDatabase::printOut(const char *title) const
 
         count = scope->nestedList.size();
         for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
-            std::cout << " " << &(*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
+            std::cout << " " << (*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
             if (count-- > 1)
                 std::cout << ",";
         }
@@ -1752,11 +1850,20 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
         type = Scope::eGlobal;
     } else if (classDef->str() == "class") {
         type = Scope::eClass;
-        className = classDef->next()->str();
+        const Token * tok = classDef->next();
+        while (tok->strAt(1) == "::")
+            tok = tok->tokAt(2);
+        className = tok->str();
     } else if (classDef->str() == "struct") {
         type = Scope::eStruct;
+        if (classDef->next()->str() == "::") {
+            const Token * tok = classDef->next();
+            while (tok->strAt(1) == "::")
+                tok = tok->tokAt(2);
+            className = tok->str();
+        }
         // anonymous and unnamed structs don't have a name
-        if (classDef->next()->str() != "{")
+        else if (classDef->next()->str() != "{")
             className = classDef->next()->str();
     } else if (classDef->str() == "union") {
         type = Scope::eUnion;
