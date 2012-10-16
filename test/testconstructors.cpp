@@ -107,7 +107,6 @@ private:
         TEST_CASE(uninitVar20); // ticket #2867
         TEST_CASE(uninitVar21); // ticket #2947
         TEST_CASE(uninitVar22); // ticket #3043
-        TEST_CASE(uninitVar23); // ticket #3190
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1560,24 +1559,6 @@ private:
               "    return *this;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::x' is not assigned a value in 'Fred::operator='.\n", errout.str());
-    }
-
-    void uninitVar23() { // ticket #3190
-        check("class Foo { class Sub; };\n"
-              "class Bar { class Sub; };\n"
-              "class Bar::Sub {\n"
-              "public:\n"
-              "    Sub() { }\n"
-              "    int n;\n"
-              "};\n"
-              "class ::Foo::Sub {\n"
-              "public:\n"
-              "    Sub() { }\n"
-              "    int n;\n"
-              "};");
-
-        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Sub::n' is not initialized in the constructor.\n"
-                      "[test.cpp:5]: (warning) Member variable 'Sub::n' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {

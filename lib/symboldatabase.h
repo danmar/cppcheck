@@ -25,7 +25,6 @@
 #include <list>
 #include <vector>
 #include <set>
-#include <stack>
 
 #include "config.h"
 #include "token.h"
@@ -491,10 +490,6 @@ public:
                 type == eTry || type == eCatch);
     }
 
-    bool isForwardDeclaration() const {
-        return isClassOrStruct() && classStart == NULL;
-    }
-
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
@@ -630,9 +625,6 @@ private:
     void addNewFunction(Scope **info, const Token **tok);
     static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
 
-    Scope * getScope(const std::list<std::string> &names, const Token *tok, Scope *scope);
-    Scope * applyScope(Scope * scope);
-
     /** class/struct types */
     std::set<std::string> classAndStructTypes;
 
@@ -642,19 +634,6 @@ private:
 
     /** variable symbol table */
     std::vector<const Variable *> _variableList;
-
-    /** Forward declarations list for fast searching.
-        Forward declarations are removed if implementation is found. */
-    std::list<Scope *> _forwardDecls;
-
-    /** Scope to jump back to when forward declaration implementation found.
-        Implementation information updates forward declaration. */
-    struct Back {
-        Scope * forward;    // forward declaration
-        Scope * back;       // scope to jump back to
-        Back(Scope * f, Scope * b) : forward(f), back(b) { }
-    };
-    std::stack<Back> _back;
 };
 
 #endif
