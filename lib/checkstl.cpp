@@ -39,12 +39,12 @@ void CheckStl::iteratorsError(const Token *tok, const std::string &container1, c
 }
 
 // Error message used when dereferencing an iterator that has been erased..
-void CheckStl::dereferenceErasedError(const Token *erase, const Token* deref, const std::string &itername)
+void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, const std::string &itername)
 {
-    if (erase) {
+    if (erased) {
         std::list<const Token*> callstack;
         callstack.push_back(deref);
-        callstack.push_back(erase);
+        callstack.push_back(erased);
         reportError(callstack, Severity::error, "eraseDereference",
                     "Iterator '" + itername + "' used after element has been erased.\n"
                     "The iterator '" + itername + "' is invalid after the element it pointed to has been erased. "

@@ -140,7 +140,7 @@ public:
      * @param tok token where error occurs
      * @param itername iterator name
      */
-    void dereferenceErasedError(const Token* erase, const Token* deref, const std::string &itername);
+    void dereferenceErasedError(const Token* erased, const Token* deref, const std::string &itername);
 
 private:
 
