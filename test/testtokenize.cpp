@@ -307,6 +307,7 @@ private:
         TEST_CASE(simplify_constants);
         TEST_CASE(simplify_constants2);
         TEST_CASE(simplify_constants3);
+        TEST_CASE(simplify_constants4);
         TEST_CASE(simplify_null);
         TEST_CASE(simplifyMulAndParens);    // Ticket #2784 + #3184
 
@@ -4789,6 +4790,14 @@ private:
         const char expected[] =
             "const static char str [ 5 ] = \"abcd\" ;\n\nvoid f ( ) {\na = 5 ;\n}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+    }
+
+    void simplify_constants4() {
+        const char code[] = "static const int bSize = 4;\n"
+                            "static const int aSize = 50;\n"
+                            "const int x = bSize;\n"
+                            "const int y = aSize;\n";
+        ASSERT_EQUALS("const int x = 4 ;\nconst int y = 50 ;", tokenizeAndStringify(code,true));
     }
 
     void simplify_null() {

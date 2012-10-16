@@ -5848,7 +5848,12 @@ bool Tokenizer::simplifyKnownVariables()
     // constants..
     {
         std::map<unsigned int, std::string> constantValues;
+        bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (goback) {
+                tok = tok->previous();
+                goback = false;
+            }
             if (tok->isName() && Token::Match(tok, "static| const| static| %type% const| %var% = %any% ;")) {
                 bool isconst = false;
                 for (const Token *tok2 = tok; tok2->str() != "="; tok2 = tok2->next()) {
@@ -5878,10 +5883,12 @@ bool Tokenizer::simplifyKnownVariables()
                     constantValues[vartok->varId()] = valuetok->str();
 
                     // remove statement
-                    while (tok1->str() != ";")
-                        tok1->deleteThis();
+                    while (tok1->next()->str() != ";")
+                        tok1->deleteNext();
+                    tok1->deleteNext();
                     tok1->deleteThis();
                     tok = tok1;
+                    goback = true;
                 }
             }
 
