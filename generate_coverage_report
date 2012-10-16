@@ -7,9 +7,13 @@ gcov lib/*.cpp -o lib/
 lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
 lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
 genhtml lcov.info -o coverage_report
+rm cli/*.gcda
+rm cli/*.gcno
 rm lib/*.gcda
 rm lib/*.gcno
 rm test/*.gcda
 rm test/*.gcno
+rm externals/tinyxml/*.gcda
+rm externals/tinyxml/*.gcno
 rm lcov.info lcov_tmp.info
 make clean
