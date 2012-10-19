@@ -66,7 +66,7 @@ private:
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
 private:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='3'};
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', CHILD_END='4'};
 
     /**
      * Read from the pipe, parse and handle what ever is in there.

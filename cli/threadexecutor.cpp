@@ -69,7 +69,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         return -1;
     }
 
-    if (type != REPORT_OUT && type != REPORT_ERROR && type != CHILD_END) {
+    if (type != REPORT_OUT && type != REPORT_ERROR && type != REPORT_INFO && type != CHILD_END) {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
     }
@@ -88,7 +88,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 
     if (type == REPORT_OUT) {
         _errorLogger.reportOut(buf);
-    } else if (type == REPORT_ERROR) {
+    } else if (type == REPORT_ERROR || type == REPORT_INFO) {
         ErrorLogger::ErrorMessage msg;
         msg.deserialize(buf);
 
@@ -292,7 +292,7 @@ void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 
 void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 {
-    writeToPipe(REPORT_OUT, msg.serialize());
+    writeToPipe(REPORT_INFO, msg.serialize());
 }
 
 #else
