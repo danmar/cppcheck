@@ -65,30 +65,22 @@ void CheckStatistics::Clear()
 
 unsigned CheckStatistics::GetCount(ShowTypes::ShowType type) const
 {
-    unsigned count = 0;
     switch (type) {
     case ShowTypes::ShowStyle:
-        count = mStyle;
-        break;
+        return mStyle;
     case ShowTypes::ShowWarnings:
-        count = mWarning;
-        break;
+        return mWarning;
     case ShowTypes::ShowPerformance:
-        count = mPerformance;
-        break;
+        return mPerformance;
     case ShowTypes::ShowPortability:
-        count = mPortability;
-        break;
+        return mPortability;
     case ShowTypes::ShowErrors:
-        count = mError;
-        break;
+        return mError;
     case ShowTypes::ShowInformation:
-        count = mInformation;
-        break;
+        return mInformation;
     case ShowTypes::ShowNone:
     default:
         qDebug() << "Unknown error type - returning zero statistics.";
-        break;
+        return 0;
     }
-    return count;
 }

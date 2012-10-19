@@ -51,8 +51,6 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severit
     default:
         return ShowTypes::ShowNone;
     }
-
-    return ShowTypes::ShowNone;
 }
 
 Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
@@ -60,34 +58,26 @@ Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
     switch (type) {
     case ShowTypes::ShowStyle:
         return Severity::style;
-        break;
 
     case ShowTypes::ShowErrors:
         return Severity::error;
-        break;
 
     case ShowTypes::ShowWarnings:
         return Severity::warning;
-        break;
 
     case ShowTypes::ShowPerformance:
         return Severity::performance;
-        break;
 
     case ShowTypes::ShowPortability:
         return Severity::portability;
-        break;
 
     case ShowTypes::ShowInformation:
         return Severity::information;
-        break;
 
     case ShowTypes::ShowNone:
+    default:
         return Severity::none;
-        break;
     }
-
-    return Severity::none;
 }
 
 ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant &data)
