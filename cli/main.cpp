@@ -58,7 +58,7 @@ void CheckOther::checkZeroDivision()
  * @section embedding_sec Embedding Cppcheck
  * Cppcheck is designed to be easily embeddable into other programs.
  *
- * The "src/main.cpp" and "src/cppcheckexecutor.*" files illustrate how cppcheck
+ * This file and "cppcheckexecutor.*" illustrate how cppcheck
  * can be embedded into an application.
  *
  *
