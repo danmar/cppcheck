@@ -250,6 +250,7 @@ private:
         TEST_CASE(varid_in_class6);     // #3755
         TEST_CASE(varid_in_class7);     // set variable id for struct members
         TEST_CASE(varid_in_class8);     // unknown macro in class
+        TEST_CASE(varid_in_class9);     // #4291 - id for variables accessed through 'this'
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -3886,6 +3887,27 @@ private:
                       "3: private:\n"
                       "4: int x@1 ;\n"
                       "5: } ;\n",
+                      tokenizeDebugListing(code));
+    }
+
+    void varid_in_class9() {  // #4291 - id for variables accessed through 'this'
+        const char code[] = "class A {\n"
+                            "  int var;\n"
+                            "public:\n"
+                            "  void setVar();\n"
+                            "};\n"
+                            "void A::setVar() {\n"
+                            "  this->var = var;\n"
+                            "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: int var@1 ;\n"
+                      "3: public:\n"
+                      "4: void setVar ( ) ;\n"
+                      "5: } ;\n"
+                      "6: void A :: setVar ( ) {\n"
+                      "7: this . var@1 = var@1 ;\n"
+                      "8: }\n",
                       tokenizeDebugListing(code));
     }
 
