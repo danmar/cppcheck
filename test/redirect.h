@@ -64,7 +64,7 @@ public:
 private:
     std::ostringstream _out;
     std::ostringstream _err;
-    std::streambuf* _oldCout;
+    std::streambuf *_oldCout;
     std::streambuf *_oldCerr;
 };
 

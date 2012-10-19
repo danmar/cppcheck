@@ -1834,7 +1834,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
             // use; if| use; => use;
             while (Token::Match(tok2, "[;{}] use ; if| use ;")) {
                 Token *t = tok2->tokAt(2);
-                t->deleteNext(2+(t->str()=="if"));
+                t->deleteNext(2+(t->str()=="if" ? 1 : 0));
                 done = false;
             }
 

@@ -4040,16 +4040,11 @@ void Tokenizer::simplifyCompoundAssignment()
     // Simplify compound assignments:
     // "a+=b" => "a = a + b"
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] (") || Token::Match(tok, "[;{}:] *| (| %var%")) {
-            if (tok->str() == ":") {
-                if (tok->strAt(-2) != "case")
-                    continue;
-            }
-
+        if (Token::Match(tok, "[;{}] (| *| (| %var%")) {
             // backup current token..
             Token * const tok1 = tok;
 
-            if (tok->next() && tok->next()->str() == "*")
+            if (tok->next()->str() == "*")
                 tok = tok->next();
 
             if (tok->next() && tok->next()->str() == "(") {
@@ -4177,10 +4172,9 @@ void Tokenizer::simplifyConditionOperator()
             }
         }
 
-        if (tok->str() == "(")
+        if (tok->str() == "(" || tok->str() == "[" ||
+            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "="))
             tok = tok->link();
-        else if (tok->str() == ")")
-            break;
 
         if (Token::Match(tok, "[{};] *| %var% = %any% ? %any% : %any% ;") ||
             Token::Match(tok, "[{};] return %any% ? %any% : %any% ;")) {
@@ -4429,14 +4423,10 @@ bool Tokenizer::simplifyQuestionMark()
         if (tok->str() != "?")
             continue;
 
-        if (!tok->tokAt(-2))
+        if (!Token::Match(tok->tokAt(-2), "=|,|(|[|{|}|;|case|return"))
             continue;
 
-        if (!Token::Match(tok->tokAt(-2), "=|,|(|case"))
-            continue;
-
-        if (!tok->previous()->isBoolean() &&
-            !tok->previous()->isNumber())
+        if (!tok->previous()->isBoolean() && !tok->previous()->isNumber())
             continue;
 
         // Find the ":" token..
@@ -8649,7 +8639,7 @@ void Tokenizer::simplifyBitfields()
             }
         } else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %any% ;") &&
                    tok->next()->str() != "default") {
-            bool offset = (tok->next()->str() == "const");
+            const bool offset = (tok->next()->str() == "const");
 
             if (tok->strAt(3 + (offset ? 1 : 0)) != "{") {
                 tok->deleteNext(4 + (offset ? 1 : 0));

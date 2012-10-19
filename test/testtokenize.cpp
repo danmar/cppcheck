@@ -6797,7 +6797,7 @@ private:
         ASSERT_EQUALS("; ( * p ) = ( * p ) + y ;", tokenizeAndStringify("; (*p) += y;"));
         ASSERT_EQUALS("; * ( p [ 0 ] ) = * ( p [ 0 ] ) + y ;", tokenizeAndStringify("; *(p[0]) += y;"));
 
-        ASSERT_EQUALS("case 0 : x = x + y ; break ;", tokenizeAndStringify("case 0: x += y; break;"));
+        ASSERT_EQUALS("void foo ( ) { switch ( n ) { case 0 : ; x = x + y ; break ; } }", tokenizeAndStringify("void foo() { switch (n) { case 0: x += y; break; } }"));
 
         ASSERT_EQUALS("; x . y = x . y + 1 ;", tokenizeAndStringify("; x.y += 1;"));
 
