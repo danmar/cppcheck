@@ -161,6 +161,8 @@ private:
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
+
+        TEST_CASE(forwardDeclaration); // ticket #4290/#3190
     }
 
     void checkCopyConstructor(const char code[]) {
@@ -5397,6 +5399,22 @@ private:
                                      "    Fred() { a = foo(); }\n"
                                      "};");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+    }
+
+    // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
+    // ticket #3190 "SymbolDatabase: Parse of sub class constructor fails"
+    void forwardDeclaration() {
+        checkConst("class foo;\n"
+                   "int bar;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class foo;\n"
+                   "class foo;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class foo{};\n"
+                   "class foo;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
