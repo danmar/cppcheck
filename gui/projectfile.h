@@ -108,13 +108,13 @@ public:
 
     /**
     * @brief Set list of paths to check.
-    * @param defines List of paths.
+    * @param paths List of paths.
     */
     void SetCheckPaths(const QStringList &paths);
 
     /**
     * @brief Set list of paths to exclude from the check.
-    * @param defines List of paths.
+    * @param paths List of paths.
     */
     void SetExcludedPaths(const QStringList &paths);
 

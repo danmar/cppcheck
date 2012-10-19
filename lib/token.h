@@ -393,7 +393,7 @@ public:
 
     /**
      * Associate this token with given scope
-     * @param scope Scope to be associated
+     * @param s Scope to be associated
      */
     void scope(Scope* s) {
         _scope = s;

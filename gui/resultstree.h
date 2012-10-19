@@ -155,7 +155,7 @@ signals:
     /**
     * @brief Signal for selection change in result tree.
     *
-    * @param index Model index to specify new selected item.
+    * @param current Model index to specify new selected item.
     */
     void SelectionChanged(const QModelIndex &current);
 
@@ -201,8 +201,8 @@ protected slots:
     /**
     * @brief Slot for selection change in the results tree.
     *
-    * @param index Model index to specify new selected item.
-    * @param index Model index to specify previous selected item.
+    * @param current Model index to specify new selected item.
+    * @param previous Model index to specify previous selected item.
     */
     virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
@@ -293,7 +293,7 @@ protected:
 
     /**
     * @brief Convert Severity to translated string for GUI.
-    * @param type Severity to convert
+    * @param severity Severity to convert
     * @return Severity as translated string
     */
     QString SeverityToTranslatedString(Severity::SeverityType severity);
@@ -324,7 +324,7 @@ protected:
     * @brief Create new line number item.
     *
     * Line number item has right align and text set as tooltip.
-    * @param name name for the item
+    * @param linenumber name for the item
     * @return new QStandardItem
     */
     QStandardItem *CreateLineNumberItem(const QString &linenumber);
