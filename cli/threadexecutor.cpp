@@ -104,7 +104,10 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
             std::string errmsg = msg.toString(_settings._verbose);
             if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end()) {
                 _errorList.push_back(errmsg);
-                _errorLogger.reportErr(msg);
+                if (type == REPORT_ERROR)
+                    _errorLogger.reportErr(msg);
+                else
+                    _errorLogger.reportInfo(msg);
             }
         }
     } else if (type == CHILD_END) {
