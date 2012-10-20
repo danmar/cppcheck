@@ -58,7 +58,6 @@ MainWindow::MainWindow() :
     mUI.mResults->Initialize(mSettings, mApplications);
 
     mThread = new ThreadHandler(this);
-    mLogView = new LogView;
 
     // Filter timer to delay filtering results slightly while typing
     mFilterTimer = new QTimer(this);
