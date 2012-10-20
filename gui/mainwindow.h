@@ -32,6 +32,7 @@
 
 class ThreadHandler;
 class TranslationHandler;
+class ScratchPad;
 class LogView;
 class Project;
 class ErrorItem;
@@ -188,6 +189,12 @@ public slots:
     void OpenProjectFile();
 
     /**
+    * @brief Slot to open project file and start checking contained paths.
+    *
+    */
+    void ShowScratchpad();
+
+    /**
     * @brief Slot to close open project file.
     *
     */
@@ -210,6 +217,14 @@ public slots:
     *
     */
     void ShowStatistics();
+
+    /**
+    * @brief Checks given code
+    *
+    * @param code Content of the (virtual) file to be checked
+    * @param filename Name of the (virtual) file to be checked - determines language.
+    */
+    void CheckCode(const QString& code, const QString& filename);
 
 protected slots:
 
@@ -452,6 +467,11 @@ protected:
     * @brief Log view.
     */
     LogView *mLogView;
+
+    /**
+    * @brief Scratchpad.
+    */
+    ScratchPad* mScratchPad;
 
     /**
     * @brief Project (file).

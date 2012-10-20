@@ -35,8 +35,10 @@
 #include "projectfile.h"
 #include "project.h"
 #include "report.h"
+#include "scratchpad.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
+#include "threadresult.h"
 #include "translationhandler.h"
 #include "logview.h"
 #include "filelist.h"
@@ -50,6 +52,7 @@ MainWindow::MainWindow() :
     mApplications(new ApplicationList(this)),
     mTranslation(new TranslationHandler(this)),
     mLogView(NULL),
+    mScratchPad(NULL),
     mProject(NULL),
     mPlatformActions(new QActionGroup(this)),
     mExiting(false)
@@ -116,6 +119,7 @@ MainWindow::MainWindow() :
     // File menu
     connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
     connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
+    connect(mUI.mActionShowScratchpad, SIGNAL(triggered()), this, SLOT(ShowScratchpad()));
     connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(CloseProjectFile()));
     connect(mUI.mActionEditProjectFile, SIGNAL(triggered()), this, SLOT(EditProjectFile()));
 
@@ -182,6 +186,7 @@ MainWindow::~MainWindow()
 {
     delete mLogView;
     delete mProject;
+    delete mScratchPad;
 }
 
 void MainWindow::HandleCLIParams(const QStringList &params)
@@ -329,6 +334,32 @@ void MainWindow::DoCheckFiles(const QStringList &files)
         qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
 
     mThread->Check(checkSettings, false);
+}
+
+void MainWindow::CheckCode(const QString& code, const QString& filename)
+{
+    // Initialize dummy ThreadResult as ErrorLogger
+    ThreadResult result;
+    result.SetFiles(QStringList(filename));
+    connect(&result, SIGNAL(Progress(int, const QString&)),
+            mUI.mResults, SLOT(Progress(int, const QString&)));
+    connect(&result, SIGNAL(Error(const ErrorItem &)),
+            mUI.mResults, SLOT(Error(const ErrorItem &)));
+    connect(&result, SIGNAL(Log(const QString &)),
+            this, SLOT(Log(const QString &)));
+    connect(&result, SIGNAL(DebugError(const ErrorItem &)),
+            this, SLOT(DebugError(const ErrorItem &)));
+
+    // Create CppCheck instance
+    CppCheck cppcheck(result, true);
+    cppcheck.settings() = GetCppcheckSettings();
+
+    // Check
+    CheckLockDownUI();
+    ClearResults();
+    mUI.mResults->CheckingStarted(1);
+    cppcheck.check(filename.toStdString(), code.toStdString());
+    CheckDone();
 }
 
 QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
@@ -531,7 +562,8 @@ void MainWindow::CheckDone()
     mUI.mActionCplusplus11->setEnabled(true);
     mUI.mActionC99->setEnabled(true);
     mUI.mActionPosix->setEnabled(true);
-
+    if (mScratchPad)
+        mScratchPad->setEnabled(true);
 
     if (mUI.mResults->HasResults()) {
         mUI.mActionClearResults->setEnabled(true);
@@ -558,6 +590,8 @@ void MainWindow::CheckLockDownUI()
     mUI.mActionCplusplus11->setEnabled(false);
     mUI.mActionC99->setEnabled(false);
     mUI.mActionPosix->setEnabled(false);
+    if (mScratchPad)
+        mScratchPad->setEnabled(false);
 
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
         if (mRecentProjectActs[i] != NULL)
@@ -893,6 +927,17 @@ void MainWindow::OpenProjectFile()
             LoadProjectFile(filepath);
         }
     }
+}
+
+void MainWindow::ShowScratchpad()
+{
+    if (!mScratchPad)
+        mScratchPad = new ScratchPad(*this);
+
+    mScratchPad->show();
+
+    if (!mScratchPad->isActiveWindow())
+        mScratchPad->activateWindow();
 }
 
 void MainWindow::LoadProjectFile(const QString &filePath)

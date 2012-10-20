@@ -42,6 +42,7 @@ FORMS = about.ui \
         main.ui \
         projectfile.ui \
         resultsview.ui \
+        scratchpad.ui \
         settings.ui \
         stats.ui \
         selectfilesdialog.ui
@@ -87,6 +88,7 @@ HEADERS += aboutdialog.h \
            report.h \
            resultstree.h \
            resultsview.h \
+           scratchpad.h \
            settingsdialog.h \
            showtypes.h \
            statsdialog.h \
@@ -119,6 +121,7 @@ SOURCES += aboutdialog.cpp \
            report.cpp \
            resultstree.cpp \
            resultsview.cpp \
+           scratchpad.cpp \
            settingsdialog.cpp \
            showtypes.cpp \
            statsdialog.cpp \

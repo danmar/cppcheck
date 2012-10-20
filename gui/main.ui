@@ -112,6 +112,7 @@
     <addaction name="separator"/>
     <addaction name="mActionShowHidden"/>
     <addaction name="separator"/>
+    <addaction name="mActionShowScratchpad"/>
     <addaction name="mActionViewLog"/>
     <addaction name="mActionViewStats"/>
    </widget>
@@ -165,6 +166,7 @@
    </attribute>
    <addaction name="mActionCheckDirectory"/>
    <addaction name="mActionOpenProjectFile"/>
+   <addaction name="mActionShowScratchpad"/>
    <addaction name="mActionSave"/>
    <addaction name="mActionRecheck"/>
    <addaction name="mActionStop"/>
@@ -423,6 +425,16 @@
    <property name="text">
     <string>Open P&amp;roject File...</string>
    </property>
+  </action>
+  <action name="mActionShowScratchpad">
+    <property name="icon">
+      <iconset resource="gui.qrc">
+        <normaloff>:/images/scratchpad.png</normaloff>:/images/scratchpad.png
+      </iconset>
+    </property>
+    <property name="text">
+      <string>Show S&amp;cratchpad...</string>
+    </property>
   </action>
   <action name="mActionNewProjectFile">
    <property name="text">
