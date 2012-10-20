@@ -4995,6 +4995,10 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 
         //skip combinations of templates and namespaces
         while (Token::Match(tok2, "%type% <") || Token::Match(tok2, "%type% ::")) {
+            if (tok2->next()->str() == "<" && !TemplateSimplifier::templateParameters(tok2->next())) {
+                tok2 = NULL;
+                break;
+            }
             typelen += 2;
             tok2 = tok2->tokAt(2);
             if (tok2 && tok2->previous()->str() == "::")
