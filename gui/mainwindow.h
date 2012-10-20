@@ -62,6 +62,14 @@ public:
       */
     Platforms mPlatforms;
 
+    /**
+    * @brief Checks given code
+    *
+    * @param code Content of the (virtual) file to be checked
+    * @param filename Name of the (virtual) file to be checked - determines language.
+    */
+    void CheckCode(const QString& code, const QString& filename);
+
 public slots:
 
     /**
@@ -171,12 +179,6 @@ public slots:
     void Save();
 
     /**
-      * @brief Check the project.
-      * @param project Pointer to the project to check.
-      */
-    void CheckProject(Project *project);
-
-    /**
     * @brief Slot to create new project file..
     *
     */
@@ -217,14 +219,6 @@ public slots:
     *
     */
     void ShowStatistics();
-
-    /**
-    * @brief Checks given code
-    *
-    * @param code Content of the (virtual) file to be checked
-    * @param filename Name of the (virtual) file to be checked - determines language.
-    */
-    void CheckCode(const QString& code, const QString& filename);
 
 protected slots:
 
@@ -305,7 +299,13 @@ protected slots:
     */
     void SelectPlatform();
 
-protected:
+private:
+
+    /**
+      * @brief Check the project.
+      * @param project Pointer to the project to check.
+      */
+    void CheckProject(Project *project);
 
     /**
     * @brief Set current language
@@ -492,8 +492,6 @@ protected:
     * @brief GUI actions for selecting the checked platform.
     */
     QActionGroup *mPlatformActions;
-
-private:
 
     /**
     * @brief Are we exiting the cppcheck?
