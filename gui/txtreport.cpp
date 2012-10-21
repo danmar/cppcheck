@@ -26,17 +26,15 @@ TxtReport::TxtReport(const QString &filename, QObject * parent) :
 
 TxtReport::~TxtReport()
 {
-    Close();
 }
 
 bool TxtReport::Create()
 {
-    bool success = false;
     if (Report::Create()) {
         mTxtWriter.setDevice(Report::GetFile());
-        success = true;
+        return true;
     }
-    return success;
+    return false;
 }
 
 void TxtReport::WriteHeader()

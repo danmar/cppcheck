@@ -30,17 +30,15 @@ CsvReport::CsvReport(const QString &filename, QObject * parent) :
 
 CsvReport::~CsvReport()
 {
-    Close();
 }
 
 bool CsvReport::Create()
 {
-    bool success = false;
     if (Report::Create()) {
         mTxtWriter.setDevice(Report::GetFile());
-        success = true;
+        return true;
     }
-    return success;
+    return false;
 }
 
 void CsvReport::WriteHeader()
@@ -60,9 +58,8 @@ void CsvReport::WriteError(const ErrorItem &error)
     gui/test.cpp,23,error,Mismatching allocation and deallocation: k
     */
 
-    QString line;
     const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
-    line += QString("%1,%2,").arg(file).arg(error.lines[error.lines.size() - 1]);
+    QString line = QString("%1,%2,").arg(file).arg(error.lines[error.lines.size() - 1]);
     line += QString("%1,%2").arg(GuiSeverity::toString(error.severity)).arg(error.summary);
 
     mTxtWriter << line << endl;

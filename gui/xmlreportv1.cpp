@@ -46,27 +46,24 @@ XmlReportV1::~XmlReportV1()
 {
     delete mXmlReader;
     delete mXmlWriter;
-    Close();
 }
 
 bool XmlReportV1::Create()
 {
-    bool success = false;
     if (Report::Create()) {
         mXmlWriter = new QXmlStreamWriter(Report::GetFile());
-        success = true;
+        return true;
     }
-    return success;
+    return false;
 }
 
 bool XmlReportV1::Open()
 {
-    bool success = false;
     if (Report::Open()) {
         mXmlReader = new QXmlStreamReader(Report::GetFile());
-        success = true;
+        return true;
     }
-    return success;
+    return false;
 }
 
 void XmlReportV1::WriteHeader()

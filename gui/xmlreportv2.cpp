@@ -52,27 +52,24 @@ XmlReportV2::~XmlReportV2()
 {
     delete mXmlReader;
     delete mXmlWriter;
-    Close();
 }
 
 bool XmlReportV2::Create()
 {
-    bool success = false;
     if (Report::Create()) {
         mXmlWriter = new QXmlStreamWriter(Report::GetFile());
-        success = true;
+        return true;
     }
-    return success;
+    return false;
 }
 
 bool XmlReportV2::Open()
 {
-    bool success = false;
     if (Report::Open()) {
         mXmlReader = new QXmlStreamReader(Report::GetFile());
-        success = true;
+        return true;
     }
-    return success;
+    return false;
 }
 
 void XmlReportV2::WriteHeader()
