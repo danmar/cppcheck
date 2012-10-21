@@ -195,8 +195,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     // Ensure shown path is with native separators
     const QString file = QDir::toNativeSeparators(item.file);
     list << CreateNormalItem(file);
-    const QString severity = GuiSeverity::toString(item.severity);
-    list << CreateNormalItem(severity.toLatin1());
+    const QString severity = SeverityToTranslatedString(item.severity);
+    list << CreateNormalItem(severity);
     list << CreateLineNumberItem(QString("%1").arg(item.line));
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
@@ -253,38 +253,29 @@ QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
     switch (severity) {
     case Severity::style:
         return tr("style");
-        break;
 
     case Severity::error:
         return tr("error");
-        break;
 
     case Severity::warning:
         return tr("warning");
-        break;
 
     case Severity::performance:
         return tr("performance");
-        break;
 
     case Severity::portability:
         return tr("portability");
-        break;
 
     case Severity::information:
         return tr("information");
-        break;
 
     case Severity::debug:
         return tr("debug");
-        break;
 
     case Severity::none:
+    default:
         return "";
-        break;
     }
-
-    return "";
 }
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
@@ -805,7 +796,6 @@ QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
     default:
         return "";
     }
-    return "";
 }
 
 void ResultsTree::SaveResults(Report *report)
