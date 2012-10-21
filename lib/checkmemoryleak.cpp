@@ -541,12 +541,10 @@ void CheckMemoryLeakInFunction::parse_noreturn()
         noreturn.insert("pthread_exit");
     }
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
+    // only check functions
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
 
         // parse this function to check if it contains an "exit" call..
         bool isNoreturn = false;
@@ -2125,12 +2123,10 @@ static bool isNoArgument(const SymbolDatabase* symbolDatabase, unsigned int vari
 
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
+    // only check functions
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
 
         // Search for the "var = realloc(var, 100" pattern within this function
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
@@ -2200,10 +2196,9 @@ void CheckMemoryLeakInFunction::check()
     parse_noreturn();
 
     // Check locking/unlocking of global resources..
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
 
         checkScope(scope->classStart->next(), "", 0, scope->functionOf != NULL, 1);
     }
@@ -2270,34 +2265,32 @@ void CheckMemoryLeakInClass::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
+    // only check classes and structures
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+        std::list<Variable>::const_iterator var;
+        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+            if (!var->isStatic() && var->isPointer()) {
+                // allocation but no deallocation of private variables in public function..
+                const Token *tok = var->typeStartToken();
+                if (tok->str() == "const")
+                    tok = tok->next();
+                if (tok->isStandardType()) {
+                    if (var->isPrivate())
+                        checkPublicFunctions(&(*scope), var->nameToken());
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check classes and structures
-        if (scope->isClassOrStruct()) {
-            std::list<Variable>::const_iterator var;
-            for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                if (!var->isStatic() && var->isPointer()) {
-                    // allocation but no deallocation of private variables in public function..
-                    const Token *tok = var->typeStartToken();
-                    if (tok->str() == "const")
-                        tok = tok->next();
-                    if (tok->isStandardType()) {
+                    variable(&(*scope), var->nameToken());
+                }
+
+                // known class?
+                else if (var->type()) {
+                    // not derived?
+                    if (var->type()->derivedFrom.empty()) {
                         if (var->isPrivate())
                             checkPublicFunctions(&(*scope), var->nameToken());
 
                         variable(&(*scope), var->nameToken());
-                    }
-
-                    // known class?
-                    else if (var->type()) {
-                        // not derived?
-                        if (var->type()->derivedFrom.empty()) {
-                            if (var->isPrivate())
-                                checkPublicFunctions(&(*scope), var->nameToken());
-
-                            variable(&(*scope), var->nameToken());
-                        }
                     }
                 }
             }
@@ -2687,12 +2680,10 @@ void CheckMemoryLeakNoVar::check()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
+    // only check functions
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
 
         // goto the "}" that ends the executable scope..
         const Token *tok = scope->classEnd;
