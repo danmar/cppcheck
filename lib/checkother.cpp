@@ -3495,9 +3495,10 @@ void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& b
 }
 
 
-void CheckOther::avoidDeadEndInNestedIfs()
+void CheckOther::oppositeInnerCondition()
 {
-    if (!_settings->isEnabled("style"))
+    // FIXME: This check is experimental because of #4170 and #4186. Fix those tickets and remove the "experimental".
+    if (!_settings->isEnabled("style") || !_settings->inconclusive || !_settings->experimental)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3532,7 +3533,7 @@ void CheckOther::avoidDeadEndInNestedIfs()
                             }
                         } else if (Token::Match(tok, "if ( %any% !=|<|>|<=|>= %any% )")) {
                             if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                                warningDeadCode(toke);
+                                oppositeInnerConditionError(toke);
                         }
                     }
                 } else if (scope->classDef->strAt(3) == "!=") {
@@ -3553,7 +3554,7 @@ void CheckOther::avoidDeadEndInNestedIfs()
                             }
                         } else if (Token::Match(tok, "if ( %any% ==|>=|<= %any% )")) {
                             if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                                warningDeadCode(toke);
+                                oppositeInnerConditionError(toke);
                         }
                     }
                 } else if (scope->classDef->strAt(3) == "<") {
@@ -3574,7 +3575,7 @@ void CheckOther::avoidDeadEndInNestedIfs()
                             }
                         } else if (Token::Match(tok, "if ( %any% <|<=|>|>=|== %any% )")) {
                             if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                                warningDeadCode(toke);
+                                oppositeInnerConditionError(toke);
                         }
                     }
                 } else if (scope->classDef->strAt(3) == "<=") {
@@ -3595,17 +3596,16 @@ void CheckOther::avoidDeadEndInNestedIfs()
                             }
                         } else if (Token::Match(tok, "if ( %any% <|<=|>|>= %any% )")) {
                             if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                                warningDeadCode(toke);
+                                oppositeInnerConditionError(toke);
                         }
                     }
                 }
             }
         }
-
     }
 }
 
-void CheckOther::warningDeadCode(const Token *tok)
+void CheckOther::oppositeInnerConditionError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "redundantOperationIn", "Opposite conditions in nested 'if' blocks lead to a dead code block.", true);
+    reportError(tok, Severity::warning, "oppositeInnerCondition", "Opposite conditions in nested 'if' blocks lead to a dead code block.", true);
 }

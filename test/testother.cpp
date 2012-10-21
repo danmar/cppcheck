@@ -33,7 +33,7 @@ private:
 
 
     void run() {
-        TEST_CASE(avoidDeadEndInNestedIfs);
+        TEST_CASE(oppositeInnerCondition);
         TEST_CASE(assignBoolToPointer);
 
         TEST_CASE(zeroDiv1);
@@ -262,13 +262,13 @@ private:
     }
 
 
-    void avoidDeadEndInNestedIfs() {
+    void oppositeInnerCondition() {
         check("void foo(int a, int b)\n"
               "{\n"
               "    if(a==b)\n"
               "        if(a!=b)\n"
               "            cout << a;\n"
-              "}");
+              "}", "test.cpp", true, true);
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
 
         check("void foo(int i) \n"
@@ -279,7 +279,7 @@ private:
               "           cout << a;  \n"
               "       }\n"
               "    }\n"
-              "}");
+              "}", "test.cpp", true, true);
         ASSERT_EQUALS("", errout.str());
 
 
@@ -294,7 +294,7 @@ private:
               "        if(i<5){\n"
               "        }\n"
               "    }\n"
-              "}");
+              "}", "test.cpp", true, true);
         ASSERT_EQUALS("", errout.str());
     }
 

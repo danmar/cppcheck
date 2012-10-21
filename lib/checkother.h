@@ -84,7 +84,7 @@ public:
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
-        checkOther.avoidDeadEndInNestedIfs();
+        checkOther.oppositeInnerCondition();
         checkOther.clarifyCalculation();
         checkOther.clarifyStatement();
         checkOther.checkConstantFunctionParameter();
@@ -116,7 +116,7 @@ public:
     }
 
     /** To check the dead code in a program, which is unaccessible due to the counter-conditions check in nested-if statements **/
-    void avoidDeadEndInNestedIfs();
+    void oppositeInnerCondition();
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
@@ -279,7 +279,7 @@ public:
 
 private:
     // Error messages..
-    void warningDeadCode(const Token *tok);
+    void oppositeInnerConditionError(const Token *tok);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void clarifyStatementError(const Token* tok);
@@ -370,7 +370,7 @@ private:
         c.redundantAssignmentError(0, 0, "var");
 
         // style/warning
-        c.warningDeadCode(0);
+        c.oppositeInnerConditionError(0);
         c.cstyleCastError(0);
         c.dangerousUsageStrtolError(0, "strtol");
         c.passedByValueError(0, "parametername");
