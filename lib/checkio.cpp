@@ -560,6 +560,35 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                 else if (argListTok->type() == Token::eString)
                                     invalidPrintfArgTypeError_float(tok, numFormat, *i);
                                 break;
+                            case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
+                            case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
+                                // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
+                                if (i != formatString.end() && *(i+1) == *i) {
+                                    if (i+1 != formatString.end() && !isalpha(*(i+2))) {
+                                        std::string modifier;
+                                        modifier += *i;
+                                        modifier += *(i+1);
+                                        invalidLengthModifierError(tok, numFormat, modifier);
+                                    }
+                                } else {
+                                    if (i != formatString.end() && !isalpha(*(i+1))) {
+                                        std::string modifier;
+                                        modifier += *i;
+                                        invalidLengthModifierError(tok, numFormat, modifier);
+                                    }
+                                }
+                                break;
+                            case 'j': // intmax_t or uintmax_t
+                            case 'z': // size_t
+                            case 't': // ptrdiff_t
+                            case 'L': // long double
+                                // Expect an alphabetical character after these specifiers
+                                if (i != formatString.end() && !isalpha(*(i+1))) {
+                                    std::string modifier;
+                                    modifier += *i;
+                                    invalidLengthModifierError(tok, numFormat, modifier);
+                                }
+                                break;
                             default:
                                 break;
                             }
@@ -654,6 +683,13 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int num
     errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
 }
+void CheckIO::invalidLengthModifierError(const Token* tok, unsigned int numFormat, std::string& modifier)
+{
+    std::ostringstream errmsg;
+    errmsg << "'" << modifier << "' in format string (no. " << numFormat << ") is a length modifier and cannot be used without a conversion specifier.";
+    reportError(tok, Severity::warning, "invalidLengthModifierError", errmsg.str());
+}
+
 void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var)
 {
     std::ostringstream errmsg;

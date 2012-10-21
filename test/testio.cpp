@@ -640,6 +640,48 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 1) requires an integer given in the argument list.\n"
                            "[test.cpp:4]: (warning) %f in format string (no. 1) requires an integer given in the argument list.\n"
                            "[test.cpp:5]: (warning) %p in format string (no. 1) requires an integer given in the argument list.\n", "", errout.str());
+
+        // Ticket #4189 (Improve check (printf("%l") not detected)) tests (according to C99 7.19.6.1.7)
+        // False positive tests
+        check("void foo(signed char sc, unsigned char uc, short int si, unsigned short int usi) {\n"
+              "  printf(\"%hhx %hhd\", sc, uc);\n"
+              "  printf(\"%hd %hi\", si, usi);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(long long int lli, unsigned long long int ulli, long int li, unsigned long int uli) {\n"
+              "  printf(\"%llo %llx\", lli, ulli);\n"
+              "  printf(\"%ld %lu\", li, uli);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(intmax_t im, uintmax_t uim, size_t s, ptrdiff_t p, long double ld) {\n"
+              "  printf(\"%jd %jo\", im, uim);\n"
+              "  printf(\"%zx\", s);\n"
+              "  printf(\"%ti\", p);\n"
+              "  printf(\"%La\", ld);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // False negative test
+        check("void foo(unsigned int i) {\n"
+              "  printf(\"%h\", i);\n"
+              "  printf(\"%hh\", i);\n"
+              "  printf(\"%l\", i);\n"
+              "  printf(\"%ll\", i);\n"
+              "  printf(\"%j\", i);\n"
+              "  printf(\"%z\", i);\n"
+              "  printf(\"%t\", i);\n"
+              "  printf(\"%L\", i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) 'h' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:3]: (warning) 'hh' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:4]: (warning) 'l' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:5]: (warning) 'll' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:6]: (warning) 'j' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:7]: (warning) 'z' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:8]: (warning) 't' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:9]: (warning) 'L' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
     }
 };
 
