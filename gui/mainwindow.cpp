@@ -192,12 +192,9 @@ MainWindow::~MainWindow()
 void MainWindow::HandleCLIParams(const QStringList &params)
 {
     if (params.contains("-p")) {
-        QString projFile;
         const int ind = params.indexOf("-p");
         if ((ind + 1) < params.length())
-            projFile = params[ind + 1];
-
-        LoadProjectFile(projFile);
+            LoadProjectFile(params[ind + 1]);
     } else
         DoCheckFiles(params);
 }
