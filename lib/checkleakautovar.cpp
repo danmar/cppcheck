@@ -188,32 +188,32 @@ void CheckLeakAutoVar::check()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Check function scopes
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type == Scope::eFunction) {
-            // Empty variable info
-            VarInfo varInfo;
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        // Empty variable info
+        VarInfo varInfo;
 
-            // Local variables that are known to be non-zero.
-            const std::set<unsigned int> notzero;
+        // Local variables that are known to be non-zero.
+        const std::set<unsigned int> notzero;
 
-            checkScope(i->classStart, &varInfo, notzero);
+        checkScope(scope->classStart, &varInfo, notzero);
 
-            varInfo.conditionalAlloc.clear();
+        varInfo.conditionalAlloc.clear();
 
-            // Clear reference arguments from varInfo..
-            std::map<unsigned int, std::string>::iterator it = varInfo.alloctype.begin();
-            while (it != varInfo.alloctype.end()) {
-                const Variable *var = symbolDatabase->getVariableFromVarId(it->first);
-                if (!var ||
-                    (var->isArgument() && var->isReference()) ||
-                    (!var->isArgument() && !var->isLocal()))
-                    varInfo.alloctype.erase(it++);
-                else
-                    ++it;
-            }
-
-            ret(i->classEnd, varInfo);
+        // Clear reference arguments from varInfo..
+        std::map<unsigned int, std::string>::iterator it = varInfo.alloctype.begin();
+        while (it != varInfo.alloctype.end()) {
+            const Variable *var = symbolDatabase->getVariableFromVarId(it->first);
+            if (!var ||
+                (var->isArgument() && var->isReference()) ||
+                (!var->isArgument() && !var->isLocal()))
+                varInfo.alloctype.erase(it++);
+            else
+                ++it;
         }
+
+        ret(scope->classEnd, varInfo);
     }
 }
 
