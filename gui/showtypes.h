@@ -89,9 +89,9 @@ public:
     /**
      * @brief Show/hide the showtype.
      * @param category Showtype whose visibility to set.
-     * @return true if the severity is set visible.
+     * @param showing true if the severity is set visible.
      */
-    void show(ShowTypes::ShowType category, bool show);
+    void show(ShowTypes::ShowType category, bool showing);
 
     /**
      * @brief Convert severity string to ShowTypes value

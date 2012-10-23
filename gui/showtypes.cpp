@@ -121,7 +121,7 @@ bool ShowTypes::isShown(Severity::SeverityType severity) const
     return isShown(ShowTypes::SeverityToShowType(severity));
 }
 
-void ShowTypes::show(ShowTypes::ShowType category, bool show)
+void ShowTypes::show(ShowTypes::ShowType category, bool showing)
 {
-    mVisible[category] = show;
+    mVisible[category] = showing;
 }

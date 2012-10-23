@@ -1805,6 +1805,7 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
  * Try to open header
  * @param filename header name (in/out)
  * @param includePaths paths where to look for the file
+ * @param filePath path to the header file
  * @param fin file input stream (in/out)
  * @return if file is opened then true is returned
  */

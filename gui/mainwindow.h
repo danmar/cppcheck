@@ -179,7 +179,7 @@ public slots:
     void Save();
 
     /**
-    * @brief Slot to create new project file..
+    * @brief Slot to create new project file
     *
     */
     void NewProjectFile();

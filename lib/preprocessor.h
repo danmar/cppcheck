@@ -94,7 +94,7 @@ public:
 
     /**
      * Get preprocessed code for a given configuration
-     * @param filedata file data including #if, #define, etc
+     * @param filedata file data including preprocessing 'if', 'define', etc
      * @param cfg configuration to read out
      * @param filename name of source file
      * @param validate true => perform validation that empty configuration macros are not used in the code

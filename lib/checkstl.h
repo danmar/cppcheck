@@ -137,7 +137,8 @@ public:
 
     /**
      * Dereferencing an erased iterator
-     * @param tok token where error occurs
+     * @param erased token where the erase occurs
+     * @param deref token where the dereference occurs
      * @param itername iterator name
      */
     void dereferenceErasedError(const Token* erased, const Token* deref, const std::string &itername);
