@@ -635,6 +635,10 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <source>Italian</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Show S&amp;cratchpad...</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -925,6 +929,21 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <source>Message</source>
         <translation>내용</translation>
+    </message>
+</context>
+<context>
+    <name>ScratchPad</name>
+    <message>
+        <source>Scratchpad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation type="unfinished">검사</translation>
     </message>
 </context>
 <context>

@@ -603,6 +603,10 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <source>Italian</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Show S&amp;cratchpad...</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -886,6 +890,21 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>%p% (%1 of %2 files checked)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ScratchPad</name>
+    <message>
+        <source>Scratchpad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
