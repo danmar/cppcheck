@@ -340,7 +340,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         {
             std::ostringstream ostr;
             const Token *tok3 = tok2;
-            for (tok3 = tok2; tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
+            for (; tok3 && tok3->str() == ">"; tok3 = tok3->next()) {
                 if (tok3 != tok2)
                     ostr << " ";
                 ostr << tok3->str();
@@ -812,7 +812,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 Token::Match(tok->previous(), "[(=,] 1 ||")) {
                 unsigned int par = 0;
                 const Token *tok2 = tok;
-                for (tok2 = tok; tok2; tok2 = tok2->next()) {
+                for (; tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(")
                         ++par;
                     else if (tok2->str() == ")") {

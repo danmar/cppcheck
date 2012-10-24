@@ -5491,7 +5491,7 @@ void Tokenizer::simplifyIfAssign()
         if (iswhile) {
             unsigned int indentlevel = 0;
             Token *tok3 = tok2;
-            for (tok3 = tok2; tok3; tok3 = tok3->next()) {
+            for (; tok3; tok3 = tok3->next()) {
                 if (tok3->str() == "{")
                     ++indentlevel;
                 else if (tok3->str() == "}") {
@@ -6024,7 +6024,7 @@ bool Tokenizer::simplifyKnownVariables()
 bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2, Token **_tok3, std::string &value, unsigned int &valueVarId, bool &valueIsPointer, bool floatvar)
 {
     Token *tok2 = *_tok2;
-    Token *tok3 = *_tok3;
+    Token *tok3 = NULL;
 
     if (Token::simpleMatch(tok2->tokAt(-2), "for (")) {
         // only specific for loops is handled
