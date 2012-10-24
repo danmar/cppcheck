@@ -1107,7 +1107,7 @@ void Tokenizer::simplifyTypedef()
                                         tok2->next()->str() == "operator")) {
                         simplifyType = false;
                         tok2 = tok2->next();
-                        break;
+                        continue;
                     }
 
                     // There are 2 categories of typedef substitutions:
