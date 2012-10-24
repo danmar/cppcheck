@@ -340,7 +340,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         {
             std::ostringstream ostr;
             const Token *tok3 = tok2;
-            for (; tok3 && tok3->str() == ">"; tok3 = tok3->next()) {
+            for (; tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
                 if (tok3 != tok2)
                     ostr << " ";
                 ostr << tok3->str();
