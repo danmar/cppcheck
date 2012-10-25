@@ -866,7 +866,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 } else {
                     alloc = getAllocationType(tok->tokAt(2), varid);
                 }
-                bool realloc = false;
+                //bool realloc = false;
 
                 if (sz > 1 &&
                     Token::Match(tok->tokAt(2), "malloc ( %num% )") &&
@@ -880,7 +880,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         addtoken(&rettail, tok, "realloc");
                         addtoken(&rettail, tok, ";");
                         //TODO: this assignment is redundant, should be fixed
-                        /*realloc = true;*/
+                        //realloc = true;
                         tok = tok->tokAt(2);
                         if (Token::Match(tok, "%var% ("))
                             tok = tok->next()->link();
@@ -912,8 +912,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
 
                 if (alloc != No) {
-                    if (! realloc)
-                        addtoken(&rettail, tok, "alloc");
+                    //if (! realloc)
+                    addtoken(&rettail, tok, "alloc");
 
                     if (alloctype != No && alloctype != alloc)
                         alloc = Many;
