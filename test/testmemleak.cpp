@@ -281,6 +281,7 @@ private:
         // free a free'd pointer
         TEST_CASE(freefree1);
         TEST_CASE(freefree2);
+        TEST_CASE(freefree3); // #4236 - FP. bar(&p)
         TEST_CASE(strcpy_result_assignment);
         TEST_CASE(strcat_result_assignment);
 
@@ -3016,6 +3017,17 @@ private:
               "    FILE *fd = fopen(\"test.txt\", \"wb\");\n"
               "    fprintf(fd, \"test\");\n"
               "    fclose(fd);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void freefree3() {
+        check("void foo()\n"
+              "{\n"
+              "    char *p = malloc(10);\n"
+              "    free(p);\n"
+              "    bar(&p);\n"
+              "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

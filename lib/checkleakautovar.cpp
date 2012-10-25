@@ -506,6 +506,8 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
                 if (dealloc.empty()) {
                     // possible usage
                     possibleUsage[arg->varId()] = tok->str();
+                    if (var->second == "dealloc" && arg->previous()->str() == "&")
+                        varInfo->erase(arg->varId());
                 } else if (var->second == "dealloc") {
                     CheckOther checkOther(_tokenizer, _settings, _errorLogger);
                     checkOther.doubleFreeError(tok, arg->str());

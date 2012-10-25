@@ -2013,6 +2013,8 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
     Token *tok = getcode(Tok1, callstack, varid, alloctype, dealloctype, classmember, sz);
     //tok->printOut((std::string("Checkmemoryleak: getcode result for: ") + varname).c_str());
 
+    const bool use_addr = bool(Token::findsimplematch(tok, "&use") != NULL);
+
     // Simplify the code and check if freed memory is used..
     for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
         while (Token::Match(tok2, "[;{}] ;"))
@@ -2071,7 +2073,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         memoryLeak(result, varname, alloctype);
     }
 
-    else if ((result = Token::findsimplematch(tok, "dealloc ; dealloc ;")) != NULL) {
+    else if (!use_addr && (result = Token::findsimplematch(tok, "dealloc ; dealloc ;")) != NULL) {
         deallocDeallocError(result->tokAt(2), varname);
     }
 
