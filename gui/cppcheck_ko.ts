@@ -402,10 +402,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>필터링 결과</translation>
     </message>
     <message>
-        <source>Project MRU placeholder</source>
-        <translation type="obsolete">최근 사용된 프로젝트 표시</translation>
-    </message>
-    <message>
         <source>Windows 32-bit ANSI</source>
         <translation>Windows 32-bit ANSI</translation>
     </message>
@@ -976,10 +972,6 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>최적 값:</translation>
     </message>
     <message>
-        <source>TextLabel</source>
-        <translation type="obsolete">TextLabel</translation>
-    </message>
-    <message>
         <source>Force checking all #ifdef configurations</source>
         <translation>모든 #ifdef 설정을 강제로 검사</translation>
     </message>
@@ -1136,10 +1128,6 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <source>Portability warnings:</source>
         <translation>이식성 경고:</translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
-        <translation type="obsolete">TextLabel</translation>
     </message>
     <message>
         <source>Performance issues:</source>

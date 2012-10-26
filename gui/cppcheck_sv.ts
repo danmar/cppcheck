@@ -1229,10 +1229,6 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
         <translation>Optimalt värde:</translation>
     </message>
     <message>
-        <source>TextLabel</source>
-        <translation type="obsolete">TextLabel</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="114"/>
         <source>Force checking all #ifdef configurations</source>
         <oldsource>Check all #ifdef configurations</oldsource>
@@ -1423,10 +1419,6 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
         <location filename="stats.ui" line="290"/>
         <source>Portability warnings:</source>
         <translation>Portabilitets varningar:</translation>
-    </message>
-    <message>
-        <source>TextLabel</source>
-        <translation type="obsolete">TextLabel</translation>
     </message>
     <message>
         <location filename="stats.ui" line="308"/>

@@ -332,7 +332,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="main.ui" line="436"/>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeige Schmierzettel</translation>
     </message>
     <message>
         <location filename="main.ui" line="486"/>
@@ -389,7 +389,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="main.ui" line="559"/>
         <source>Filter results</source>
-        <translation type="unfinished"></translation>
+        <translation>Filterergebnisse</translation>
     </message>
     <message>
         <location filename="main.ui" line="575"/>
@@ -762,7 +762,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
     <message>
         <location filename="translationhandler.cpp" line="37"/>
         <source>Italian</source>
-        <translation type="unfinished"></translation>
+        <translation>Italienisch</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="39"/>
@@ -805,7 +805,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
     <message>
         <location filename="platforms.cpp" line="37"/>
         <source>Build-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Build-In</translation>
     </message>
     <message>
         <location filename="platforms.cpp" line="38"/>
@@ -1177,17 +1177,17 @@ Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden 
     <message>
         <location filename="scratchpad.ui" line="14"/>
         <source>Scratchpad</source>
-        <translation type="unfinished"></translation>
+        <translation>Schmierzettel</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="48"/>
         <source>filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Dateiname</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="55"/>
         <source>Check</source>
-        <translation type="unfinished">Prüfe</translation>
+        <translation>Prüfe</translation>
     </message>
 </context>
 <context>
