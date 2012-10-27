@@ -68,7 +68,7 @@ public:
     * @brief Save settings
     * @param settings QSettings to save settings to
     */
-    void SaveSettings(QSettings &settings);
+    void SaveSettings(QSettings &settings) const;
 
     /**
     * @brief Clear all files from cppcheck

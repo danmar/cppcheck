@@ -82,7 +82,7 @@ public:
     * @brief Get filename for the project file.
     * @return file name.
     */
-    QString GetFilename() {
+    QString GetFilename() const {
         return mFilename;
     }
 

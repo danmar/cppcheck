@@ -97,7 +97,7 @@ bool ApplicationList::LoadSettings()
     return succeeded;
 }
 
-void ApplicationList::SaveSettings()
+void ApplicationList::SaveSettings() const
 {
     QSettings settings;
     QStringList names;

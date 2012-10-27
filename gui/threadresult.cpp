@@ -123,7 +123,7 @@ void ThreadResult::ClearFiles()
     mTotalFiles = 0;
 }
 
-int ThreadResult::GetFileCount()
+int ThreadResult::GetFileCount() const
 {
     QMutexLocker locker(&mutex);
     return mFiles.size();

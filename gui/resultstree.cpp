@@ -47,8 +47,8 @@
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mContextItem(0),
-    mVisibleErrors(false),
     mShowErrorId(false),
+    mVisibleErrors(false),
     mSelectionModel(0)
 {
     setModel(&mModel);
@@ -278,7 +278,7 @@ QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
     }
 }
 
-QStandardItem *ResultsTree::FindFileItem(const QString &name)
+QStandardItem *ResultsTree::FindFileItem(const QString &name) const
 {
     QList<QStandardItem *> list = mModel.findItems(name);
     if (list.size() > 0) {
@@ -325,7 +325,7 @@ void ResultsTree::LoadSettings()
     ShowIdColumn(mSettings->value(SETTINGS_SHOW_ERROR_ID, false).toBool());
 }
 
-void ResultsTree::SaveSettings()
+void ResultsTree::SaveSettings() const
 {
     for (int i = 0; i < mModel.columnCount(); i++) {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
@@ -799,7 +799,7 @@ QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
     }
 }
 
-void ResultsTree::SaveResults(Report *report)
+void ResultsTree::SaveResults(Report *report) const
 {
     report->WriteHeader();
 
@@ -812,7 +812,7 @@ void ResultsTree::SaveResults(Report *report)
     report->WriteFooter();
 }
 
-void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
+void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
 {
     if (!item) {
         return;
@@ -886,7 +886,7 @@ void ResultsTree::SetCheckDirectory(const QString &dir)
     mCheckPath = dir;
 }
 
-QString ResultsTree::StripPath(const QString &path, bool saving)
+QString ResultsTree::StripPath(const QString &path, bool saving) const
 {
     if ((!saving && mShowFullPath) || (saving && mSaveFullPath)) {
         return QString(path);

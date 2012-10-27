@@ -65,7 +65,7 @@ void ProjectFileDialog::LoadSettings()
            settings.value(SETTINGS_PROJECT_DIALOG_HEIGHT, 330).toInt());
 }
 
-void ProjectFileDialog::SaveSettings()
+void ProjectFileDialog::SaveSettings() const
 {
     QSettings settings;
     settings.setValue(SETTINGS_PROJECT_DIALOG_WIDTH, size().width());

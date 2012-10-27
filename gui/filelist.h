@@ -80,7 +80,7 @@ protected:
     * @brief Test if filename matches the filename extensions filtering.
     * @return true if filename matches filtering.
     */
-    bool FilterMatches(const QFileInfo &inf);
+    static bool FilterMatches(const QFileInfo &inf);
 
     /**
     * @brief Get filtered list of paths.

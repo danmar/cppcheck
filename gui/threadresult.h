@@ -62,7 +62,7 @@ public:
     * @brief Get the number of files to check
     *
     */
-    int GetFileCount();
+    int GetFileCount() const;
 
     /**
     * ErrorLogger methods

@@ -100,7 +100,7 @@ void ShowTypes::load()
     mVisible[ShowInformation] = settings.value(SETTINGS_SHOW_INFORMATION, true).toBool();
 }
 
-void ShowTypes::save()
+void ShowTypes::save() const
 {
     QSettings settings;
     settings.setValue(SETTINGS_SHOW_STYLE, mVisible[ShowStyle]);

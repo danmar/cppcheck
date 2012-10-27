@@ -150,7 +150,6 @@ void ThreadHandler::Stop()
 
 void ThreadHandler::Initialize(ResultsView *view)
 {
-
     connect(&mResults, SIGNAL(Progress(int, const QString&)),
             view, SLOT(Progress(int, const QString&)));
 
@@ -169,7 +168,7 @@ void ThreadHandler::LoadSettings(QSettings &settings)
     SetThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }
 
-void ThreadHandler::SaveSettings(QSettings &settings)
+void ThreadHandler::SaveSettings(QSettings &settings) const
 {
     settings.setValue(SETTINGS_CHECK_THREADS, mThreads.size());
 }

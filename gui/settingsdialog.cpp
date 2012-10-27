@@ -125,7 +125,7 @@ void SettingsDialog::InitTranslationsList()
     }
 }
 
-Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
+Qt::CheckState SettingsDialog::BoolToCheckState(bool yes)
 {
     if (yes) {
         return Qt::Checked;
@@ -133,7 +133,7 @@ Qt::CheckState SettingsDialog::BoolToCheckState(bool yes) const
     return Qt::Unchecked;
 }
 
-bool SettingsDialog::CheckStateToBool(Qt::CheckState state) const
+bool SettingsDialog::CheckStateToBool(Qt::CheckState state)
 {
     if (state == Qt::Checked) {
         return true;
@@ -149,14 +149,14 @@ void SettingsDialog::LoadSettings()
            settings.value(SETTINGS_CHECK_DIALOG_HEIGHT, 600).toInt());
 }
 
-void SettingsDialog::SaveSettings()
+void SettingsDialog::SaveSettings() const
 {
     QSettings settings;
     settings.setValue(SETTINGS_CHECK_DIALOG_WIDTH, size().width());
     settings.setValue(SETTINGS_CHECK_DIALOG_HEIGHT, size().height());
 }
 
-void SettingsDialog::SaveSettingValues()
+void SettingsDialog::SaveSettingValues() const
 {
     int jobs = mUI.mJobs->text().toInt();
     if (jobs <= 0) {
@@ -281,27 +281,27 @@ void SettingsDialog::Ok()
     accept();
 }
 
-bool SettingsDialog::ShowFullPath()
+bool SettingsDialog::ShowFullPath() const
 {
     return CheckStateToBool(mUI.mShowFullPath->checkState());
 }
 
-bool SettingsDialog::SaveFullPath()
+bool SettingsDialog::SaveFullPath() const
 {
     return CheckStateToBool(mUI.mSaveFullPath->checkState());
 }
 
-bool SettingsDialog::SaveAllErrors()
+bool SettingsDialog::SaveAllErrors() const
 {
     return CheckStateToBool(mUI.mSaveAllErrors->checkState());
 }
 
-bool SettingsDialog::ShowNoErrorsMessage()
+bool SettingsDialog::ShowNoErrorsMessage() const
 {
     return CheckStateToBool(mUI.mShowNoErrorsMessage->checkState());
 }
 
-bool SettingsDialog::ShowErrorId()
+bool SettingsDialog::ShowErrorId() const
 {
     return CheckStateToBool(mUI.mShowErrorId->checkState());
 }

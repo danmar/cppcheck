@@ -48,7 +48,7 @@ public:
     /**
     * @brief Save all applications
     */
-    void SaveSettings();
+    void SaveSettings() const;
 
     /**
     * @brief Get the amount of applications in the list

@@ -70,7 +70,7 @@ public:
     /**
      * @brief Save visibility settings to the platform's settings storage.
      */
-    void save();
+    void save() const;
 
     /**
      * @brief Is the showtype visible in the GUI?

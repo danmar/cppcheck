@@ -47,21 +47,21 @@ public:
     * @brief Save all values to QSettings
     *
     */
-    void SaveSettingValues();
+    void SaveSettingValues() const;
 
     /**
     * @brief Get checkbox value for mShowFullPath
     *
     * @return should full path of errors be shown in the tree
     */
-    bool ShowFullPath();
+    bool ShowFullPath() const;
 
     /**
     * @brief Get checkbox value for mSaveFullPath
     *
     * @return should full path of files be saved when creating a report
     */
-    bool SaveFullPath();
+    bool SaveFullPath() const;
 
 
     /**
@@ -69,21 +69,21 @@ public:
     *
     * @return Should "no errors message" be hidden
     */
-    bool ShowNoErrorsMessage();
+    bool ShowNoErrorsMessage() const;
 
     /**
     * @brief Get checkbox value for mShowIdColumn
     *
     * @return Should error id column be displayed
     */
-    bool ShowErrorId();
+    bool ShowErrorId() const;
 
     /**
     * @brief Get checkbox value for mSaveAllErrors
     *
     * @return should all errors be saved to report
     */
-    bool SaveAllErrors();
+    bool SaveAllErrors() const;
 
 protected slots:
     /**
@@ -154,7 +154,7 @@ protected:
     * Loads dialog size and column widths.
     *
     */
-    void SaveSettings();
+    void SaveSettings() const;
 
     /**
     * @brief Save settings
@@ -170,7 +170,7 @@ protected:
      * @param box checkbox to save
      * @param name name for QSettings to store the value
      */
-    void SaveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
+    static void SaveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
 
     /**
     * @brief Convert bool to Qt::CheckState
@@ -178,7 +178,7 @@ protected:
     * @param yes value to convert
     * @return value converted to Qt::CheckState
     */
-    Qt::CheckState BoolToCheckState(bool yes) const;
+    static Qt::CheckState BoolToCheckState(bool yes);
 
     /**
     * @brief Converts Qt::CheckState to bool
@@ -186,7 +186,7 @@ protected:
     * @param state Qt::CheckState to convert
     * @return converted value
     */
-    bool CheckStateToBool(Qt::CheckState state) const;
+    static bool CheckStateToBool(Qt::CheckState state);
 
     /**
     * @brief Populate the include paths-list.

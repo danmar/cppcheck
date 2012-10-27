@@ -167,7 +167,7 @@ protected:
     /**
      * @brief Load dialog settings.
      */
-    void SaveSettings();
+    void SaveSettings() const;
 
     /**
     * @brief Add new indlude directory.

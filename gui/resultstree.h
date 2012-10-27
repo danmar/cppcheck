@@ -95,7 +95,7 @@ public:
     * @brief Save results to a text stream
     *
     */
-    void SaveResults(Report *report);
+    void SaveResults(Report *report) const;
 
     /**
     * @brief Update tree settings
@@ -131,7 +131,7 @@ public:
     * @brief Save all settings
     * Column widths
     */
-    void SaveSettings();
+    void SaveSettings() const;
 
     /**
     * @brief Change all visible texts language
@@ -241,7 +241,7 @@ protected:
     * @param saving are we saving? Check mSaveFullPath instead
     * @return Path that has checking directory removed
     */
-    QString StripPath(const QString &path, bool saving);
+    QString StripPath(const QString &path, bool saving) const;
 
 
     /**
@@ -249,7 +249,7 @@ protected:
     * @param report Report that errors are saved to
     * @param item Item whose errors to save
     */
-    void SaveErrors(Report *report, QStandardItem *item);
+    void SaveErrors(Report *report, QStandardItem *item) const;
 
     /**
     * @brief Convert a severity string to a icon filename
@@ -309,7 +309,7 @@ protected:
     * @param severity Severity to convert
     * @return Severity as translated string
     */
-    QString SeverityToTranslatedString(Severity::SeverityType severity);
+    static QString SeverityToTranslatedString(Severity::SeverityType severity);
 
     /**
     * @brief Load all settings
@@ -331,7 +331,7 @@ protected:
     * @param name name for the item
     * @return new QStandardItem
     */
-    QStandardItem *CreateNormalItem(const QString &name);
+    static QStandardItem *CreateNormalItem(const QString &name);
 
     /**
     * @brief Create new line number item.
@@ -340,7 +340,7 @@ protected:
     * @param linenumber name for the item
     * @return new QStandardItem
     */
-    QStandardItem *CreateLineNumberItem(const QString &linenumber);
+    static QStandardItem *CreateLineNumberItem(const QString &linenumber);
 
     /**
     * @brief Finds a file item
@@ -348,7 +348,7 @@ protected:
     * @param name name of the file item to find
     * @return pointer to file item or null if none found
     */
-    QStandardItem *FindFileItem(const QString &name);
+    QStandardItem *FindFileItem(const QString &name) const;
 
 
     /**
