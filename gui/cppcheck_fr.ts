@@ -847,6 +847,10 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -890,6 +894,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>%p% (%1 of %2 files checked)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1011,6 +1019,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>S&amp;how internal warnings in log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display error Id in column &quot;Id&quot;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -881,6 +881,10 @@ Please select the directory where file is located.</source>
         <source>Select Directory</source>
         <translation>디렉토리 선택</translation>
     </message>
+    <message>
+        <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -925,6 +929,10 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <source>Message</source>
         <translation>내용</translation>
+    </message>
+    <message>
+        <source>Id</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1046,6 +1054,10 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <source>S&amp;how internal warnings in log</source>
         <translation>로그에 내부 경고 표시(&amp;H)</translation>
+    </message>
+    <message>
+        <source>Display error Id in column &quot;Id&quot;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
