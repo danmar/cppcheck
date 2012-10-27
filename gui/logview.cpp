@@ -25,8 +25,8 @@
 #include "logview.h"
 
 LogView::LogView(QWidget *parent)
+    : QWidget(parent)
 {
-    Q_UNUSED(parent);
     mUI.setupUi(this);
     setWindowFlags(Qt::Tool);
 
