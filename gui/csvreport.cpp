@@ -23,8 +23,8 @@
 #include "report.h"
 #include "csvreport.h"
 
-CsvReport::CsvReport(const QString &filename, QObject * parent) :
-    Report(filename, parent)
+CsvReport::CsvReport(const QString &filename) :
+    Report(filename)
 {
 }
 

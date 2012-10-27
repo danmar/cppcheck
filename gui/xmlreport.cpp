@@ -26,8 +26,8 @@
 static const char ResultElementName[] = "results";
 static const char VersionAttribute[] = "version";
 
-XmlReport::XmlReport(const QString &filename, QObject * parent) :
-    Report(filename, parent)
+XmlReport::XmlReport(const QString &filename) :
+    Report(filename)
 {
 }
 

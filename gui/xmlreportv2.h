@@ -36,7 +36,7 @@
 */
 class XmlReportV2 : public XmlReport {
 public:
-    XmlReportV2(const QString &filename, QObject * parent = 0);
+    XmlReportV2(const QString &filename);
     virtual ~XmlReportV2();
 
     /**

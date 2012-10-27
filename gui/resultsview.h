@@ -73,7 +73,7 @@ public:
     * @param filename Filename to save results to
     * @param type Type of the report.
     */
-    void Save(const QString &filename, Report::Type type);
+    void Save(const QString &filename, Report::Type type) const;
 
     /**
     * @brief Update tree settings

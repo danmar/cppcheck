@@ -132,7 +132,7 @@ void ResultsView::FilterResults(const QString& filter)
     mUI.mTree->FilterResults(filter);
 }
 
-void ResultsView::Save(const QString &filename, Report::Type type)
+void ResultsView::Save(const QString &filename, Report::Type type) const
 {
     if (!mErrorsFound) {
         QMessageBox msgBox;
@@ -145,16 +145,16 @@ void ResultsView::Save(const QString &filename, Report::Type type)
 
     switch (type) {
     case Report::CSV:
-        report = new CsvReport(filename, this);
+        report = new CsvReport(filename);
         break;
     case Report::TXT:
-        report = new TxtReport(filename, this);
+        report = new TxtReport(filename);
         break;
     case Report::XML:
-        report = new XmlReportV1(filename, this);
+        report = new XmlReportV1(filename);
         break;
     case Report::XMLV2:
-        report = new XmlReportV2(filename, this);
+        report = new XmlReportV2(filename);
         break;
     }
 
@@ -272,9 +272,9 @@ void ResultsView::ReadErrorsXml(const QString &filename)
 
     XmlReport *report = NULL;
     if (version == 1)
-        report = new XmlReportV1(filename, this);
+        report = new XmlReportV1(filename);
     else if (version == 2)
-        report = new XmlReportV2(filename, this);
+        report = new XmlReportV2(filename);
 
     QList<ErrorItem> errors;
     if (report) {

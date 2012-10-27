@@ -41,8 +41,8 @@ static const char MsgAttribute[] = "msg";
 static const char VersionAttribute[] = "version";
 static const char VerboseAttribute[] = "verbose";
 
-XmlReportV2::XmlReportV2(const QString &filename, QObject * parent) :
-    XmlReport(filename, parent),
+XmlReportV2::XmlReportV2(const QString &filename) :
+    XmlReport(filename),
     mXmlReader(NULL),
     mXmlWriter(NULL)
 {

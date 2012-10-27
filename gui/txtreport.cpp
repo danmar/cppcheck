@@ -19,8 +19,8 @@
 #include <QDir>
 #include "txtreport.h"
 
-TxtReport::TxtReport(const QString &filename, QObject * parent) :
-    Report(filename, parent)
+TxtReport::TxtReport(const QString &filename) :
+    Report(filename)
 {
 }
 

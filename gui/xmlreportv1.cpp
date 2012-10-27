@@ -35,8 +35,8 @@ static const char IdAttribute[] = "id";
 static const char SeverityAttribute[] = "severity";
 static const char MsgAttribute[] = "msg";
 
-XmlReportV1::XmlReportV1(const QString &filename, QObject * parent) :
-    XmlReport(filename, parent),
+XmlReportV1::XmlReportV1(const QString &filename) :
+    XmlReport(filename),
     mXmlReader(NULL),
     mXmlWriter(NULL)
 {

@@ -19,7 +19,6 @@
 #ifndef XML_REPORTV1_H
 #define XML_REPORTV1_H
 
-#include <QObject>
 #include <QString>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
@@ -36,7 +35,7 @@
 */
 class XmlReportV1 : public XmlReport {
 public:
-    XmlReportV1(const QString &filename, QObject * parent = 0);
+    XmlReportV1(const QString &filename);
     virtual ~XmlReportV1();
 
     /**

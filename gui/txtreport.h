@@ -19,7 +19,6 @@
 #ifndef TXT_REPORT_H
 #define TXT_REPORT_H
 
-#include <QObject>
 #include <QString>
 #include <QTextStream>
 #include "report.h"
@@ -36,7 +35,7 @@ class TxtReport : public Report {
     Q_OBJECT
 
 public:
-    TxtReport(const QString &filename, QObject * parent = 0);
+    TxtReport(const QString &filename);
     virtual ~TxtReport();
 
     /**

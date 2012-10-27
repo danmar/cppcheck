@@ -19,7 +19,6 @@
 #ifndef CSV_REPORT_H
 #define CSV_REPORT_H
 
-#include <QObject>
 #include <QString>
 #include <QTextStream>
 #include "report.h"
@@ -36,7 +35,7 @@
 */
 class CsvReport : public Report {
 public:
-    CsvReport(const QString &filename, QObject * parent = 0);
+    CsvReport(const QString &filename);
     virtual ~CsvReport();
 
     /**

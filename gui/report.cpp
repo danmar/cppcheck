@@ -21,8 +21,7 @@
 #include <QFile>
 #include "report.h"
 
-Report::Report(const QString &filename, QObject * parent) :
-    QObject(parent),
+Report::Report(const QString &filename) :
     mFilename(filename)
 {
 }
