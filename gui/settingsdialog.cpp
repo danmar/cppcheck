@@ -201,7 +201,6 @@ void SettingsDialog::AddApplication()
     ApplicationDialog dialog(tr("Add a new application"), app, this);
 
     if (dialog.exec() == QDialog::Accepted) {
-        const Application app = dialog.GetApplication();
         mTempApplications->AddApplication(app);
         mUI.mListWidget->addItem(app.getName());
     }
@@ -231,13 +230,11 @@ void SettingsDialog::EditApplication()
     QListWidgetItem *item = 0;
     foreach(item, selected) {
         int row = mUI.mListWidget->row(item);
-        const Application app = mTempApplications->GetApplication(row);
+        Application& app = mTempApplications->GetApplication(row);
         ApplicationDialog dialog(tr("Modify an application"), app, this);
 
         if (dialog.exec() == QDialog::Accepted) {
-            const Application app2 = dialog.GetApplication();
-            mTempApplications->SetApplication(row, app2);
-            item->setText(app2.getName());
+            item->setText(app.getName());
         }
     }
 }
@@ -257,7 +254,7 @@ void SettingsDialog::PopulateApplicationList()
 {
     const int defapp = mTempApplications->GetDefaultApplication();
     for (int i = 0; i < mTempApplications->GetApplicationCount(); i++) {
-        Application app = mTempApplications->GetApplication(i);
+        const Application& app = mTempApplications->GetApplication(i);
         QString name = app.getName();
         if (i == defapp) {
             name += " ";

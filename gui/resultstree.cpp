@@ -503,7 +503,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             //Go through all applications and add them to the context menu
             for (int i = 0; i < mApplications->GetApplicationCount(); i++) {
                 //Create an action for the application
-                const Application app = mApplications->GetApplication(i);
+                const Application& app = mApplications->GetApplication(i);
                 QAction *start = new QAction(app.getName(), &menu);
                 if (multipleSelection)
                     start->setDisabled(true);
@@ -642,7 +642,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             file.append("\"");
         }
 
-        const Application app = mApplications->GetApplication(application);
+        const Application& app = mApplications->GetApplication(application);
         QString params = app.getParameters();
         params.replace("(file)", file, Qt::CaseInsensitive);
 

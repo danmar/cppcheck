@@ -62,7 +62,8 @@ public:
     * @param index Index of the application whose name to get
     * @return Name of the application
     */
-    Application GetApplication(const int index) const;
+    const Application& GetApplication(const int index) const;
+    Application& GetApplication(const int index);
 
     /**
     * @brief Return the default application.
@@ -71,14 +72,6 @@ public:
     int GetDefaultApplication() const {
         return mDefaultApplicationIndex;
     }
-
-    /**
-    * @brief Modify an application
-    *
-    * @param index Index of the application to modify
-    * @param app Application with new data.
-    */
-    void SetApplication(int index, const Application &app);
 
     /**
     * @brief Add a new application

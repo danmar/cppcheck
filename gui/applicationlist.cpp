@@ -105,7 +105,7 @@ void ApplicationList::SaveSettings()
     QStringList params;
 
     for (int i = 0; i < GetApplicationCount(); i++) {
-        Application app = GetApplication(i);
+        const Application& app = GetApplication(i);
         names << app.getName();
         paths << app.getPath();
         params << app.getParameters();
@@ -115,7 +115,6 @@ void ApplicationList::SaveSettings()
     settings.setValue(SETTINGS_APPLICATION_PATHS, paths);
     settings.setValue(SETTINGS_APPLICATION_PARAMS, params);
     settings.setValue(SETTINGS_APPLICATION_DEFAULT, mDefaultApplicationIndex);
-
 }
 
 int ApplicationList::GetApplicationCount() const
@@ -123,20 +122,24 @@ int ApplicationList::GetApplicationCount() const
     return mApplications.size();
 }
 
-Application ApplicationList::GetApplication(const int index) const
+Application& ApplicationList::GetApplication(const int index)
 {
     if (index >= 0 && index < mApplications.size()) {
         return mApplications[index];
     }
 
-    return Application(QString(), QString(), QString());
+    static Application dummy; // TODO: Throw exception instead?
+    return dummy;
 }
 
-void ApplicationList::SetApplication(int index, const Application &app)
+const Application& ApplicationList::GetApplication(const int index) const
 {
     if (index >= 0 && index < mApplications.size()) {
-        mApplications.replace(index, app);
+        return mApplications[index];
     }
+
+    static const Application dummy; // TODO: Throw exception instead?
+    return dummy;
 }
 
 void ApplicationList::AddApplication(const Application &app)
@@ -167,7 +170,7 @@ void ApplicationList::Copy(const ApplicationList *list)
 
     Clear();
     for (int i = 0; i < list->GetApplicationCount(); i++) {
-        const Application app = list->GetApplication(i);
+        const Application& app = list->GetApplication(i);
         AddApplication(app);
     }
     mDefaultApplicationIndex = list->GetDefaultApplication();

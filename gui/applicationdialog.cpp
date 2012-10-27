@@ -26,9 +26,10 @@
 
 
 ApplicationDialog::ApplicationDialog(const QString &title,
-                                     const Application &app,
+                                     Application &app,
                                      QWidget *parent) :
-    QDialog(parent)
+    QDialog(parent),
+    mApplication(app)
 {
     mUI.setupUi(this);
 
@@ -67,15 +68,6 @@ void ApplicationDialog::Browse()
     }
 }
 
-Application ApplicationDialog::GetApplication() const
-{
-    Application app;
-    app.setName(mUI.mName->text());
-    app.setPath(mUI.mPath->text());
-    app.setParameters(mUI.mParameters->text());
-    return app;
-}
-
 void ApplicationDialog::Ok()
 {
     if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty() ||
@@ -90,7 +82,9 @@ void ApplicationDialog::Ok()
 
     } else {
         // Convert possible native (Windows) path to internal presentation format
-        mUI.mPath->setText(QDir::fromNativeSeparators(mUI.mPath->text()));
+        mApplication.setName(mUI.mName->text());
+        mApplication.setPath(QDir::fromNativeSeparators(mUI.mPath->text()));
+        mApplication.setParameters(mUI.mParameters->text());
         accept();
     }
 }

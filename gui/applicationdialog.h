@@ -45,15 +45,9 @@ public:
     * @param app Application definition.
     * @param parent Parent widget.
     */
-    ApplicationDialog(const QString &title, const Application &app,
+    ApplicationDialog(const QString &title, Application &app,
                       QWidget *parent = 0);
     virtual ~ApplicationDialog();
-
-    /**
-    * @brief Get modified application
-    * @return Modified name
-    */
-    Application GetApplication() const;
 
 protected slots:
 
@@ -72,6 +66,13 @@ protected:
     *
     */
     Ui::ApplicationDialog mUI;
+
+private:
+
+    /**
+    * @brief Underlying Application
+    */
+    Application& mApplication;
 };
 /// @}
 #endif // APPLICATIONDIALOG_H
