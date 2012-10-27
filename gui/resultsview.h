@@ -82,11 +82,13 @@ public:
     * @param saveFullPath Save full path of files in reports
     * @param saveAllErrors Save all visible errors
     * @param showNoErrorsMessage Show "no errors"?
+    * @param showErrorId Show error id?
     */
     void UpdateSettings(bool showFullPath,
                         bool saveFullPath,
                         bool saveAllErrors,
-                        bool showNoErrorsMessage);
+                        bool showNoErrorsMessage,
+                        bool showErrorId);
 
     /**
     * @brief Set the directory we are checking

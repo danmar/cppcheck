@@ -103,8 +103,9 @@ public:
     * @param showFullPath Show full path of files in the tree
     * @param saveFullPath Save full path of files in reports
     * @param saveAllErrors Save all visible errors
+    * @param showErrorId Show error id
     */
-    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors);
+    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors, bool showErrorId);
 
     /**
     * @brief Set the directory we are checking
@@ -137,6 +138,18 @@ public:
     *
     */
     void Translate();
+
+    /**
+    * @brief Show optional column "Id"
+    */
+    void ShowIdColumn(bool show);
+
+    /**
+    * @brief Returns true if column "Id" is shown
+    */
+    bool ShowIdColumn() const {
+        return mShowErrorId;
+    }
 
     /**
      * @brief GUI severities.
@@ -402,6 +415,12 @@ protected:
     *
     */
     bool mSaveAllErrors;
+
+    /**
+    * @brief true if optional column "Id" is shown
+    *
+    */
+    bool mShowErrorId;
 
     /**
     * @brief Path we are currently checking

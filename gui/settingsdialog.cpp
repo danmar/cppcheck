@@ -51,6 +51,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mSaveFullPath->setCheckState(BoolToCheckState(settings.value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
     mUI.mInlineSuppressions->setCheckState(BoolToCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
     mUI.mEnableInconclusive->setCheckState(BoolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
+    mUI.mShowErrorId->setCheckState(BoolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
@@ -172,6 +173,7 @@ void SettingsDialog::SaveSettingValues()
     SaveCheckboxValue(&settings, mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
     SaveCheckboxValue(&settings, mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
     SaveCheckboxValue(&settings, mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
+    SaveCheckboxValue(&settings, mUI.mShowErrorId, SETTINGS_SHOW_ERROR_ID);
 
     QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     const QString langcode = currentLang->data(LangCodeRole).toString();
@@ -300,6 +302,11 @@ bool SettingsDialog::SaveAllErrors()
 bool SettingsDialog::ShowNoErrorsMessage()
 {
     return CheckStateToBool(mUI.mShowNoErrorsMessage->checkState());
+}
+
+bool SettingsDialog::ShowErrorId()
+{
+    return CheckStateToBool(mUI.mShowErrorId->checkState());
 }
 
 void SettingsDialog::AddIncludePath()

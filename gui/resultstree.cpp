@@ -48,12 +48,11 @@ ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mContextItem(0),
     mVisibleErrors(false),
+    mShowErrorId(false),
     mSelectionModel(0)
 {
     setModel(&mModel);
-    QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary");
-    mModel.setHorizontalHeaderLabels(labels);
+    Translate(); // Adds columns to grid
     setExpandsOnDoubleClick(false);
     setSortingEnabled(true);
 
@@ -198,6 +197,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     const QString severity = SeverityToTranslatedString(item.severity);
     list << CreateNormalItem(severity);
     list << CreateLineNumberItem(QString("%1").arg(item.line));
+    list << CreateNormalItem(item.errorId);
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
     QString summary;
@@ -314,14 +314,15 @@ void ResultsTree::Clear(const QString &filename)
 void ResultsTree::LoadSettings()
 {
     for (int i = 0; i < mModel.columnCount(); i++) {
-        //mFileTree.columnWidth(i);
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
-        setColumnWidth(i, mSettings->value(temp, 800 / mModel.columnCount()).toInt());
+        setColumnWidth(i, qMax(20, mSettings->value(temp, 800 / mModel.columnCount()).toInt()));
     }
 
     mSaveFullPath = mSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool();
     mSaveAllErrors = mSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool();
     mShowFullPath = mSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool();
+
+    ShowIdColumn(mSettings->value(SETTINGS_SHOW_ERROR_ID, false).toBool());
 }
 
 void ResultsTree::SaveSettings()
@@ -866,7 +867,8 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 
 void ResultsTree::UpdateSettings(bool showFullPath,
                                  bool saveFullPath,
-                                 bool saveAllErrors)
+                                 bool saveAllErrors,
+                                 bool showErrorId)
 {
     if (mShowFullPath != showFullPath) {
         mShowFullPath = showFullPath;
@@ -875,6 +877,8 @@ void ResultsTree::UpdateSettings(bool showFullPath,
 
     mSaveFullPath = saveFullPath;
     mSaveAllErrors = saveAllErrors;
+
+    ShowIdColumn(showErrorId);
 }
 
 void ResultsTree::SetCheckDirectory(const QString &dir)
@@ -974,9 +978,18 @@ bool ResultsTree::HasResults() const
 void ResultsTree::Translate()
 {
     QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Summary");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Id") << tr("Summary");
     mModel.setHorizontalHeaderLabels(labels);
     //TODO go through all the errors in the tree and translate severity and message
+}
+
+void ResultsTree::ShowIdColumn(bool show)
+{
+    mShowErrorId = show;
+    if (show)
+        showColumn(3);
+    else
+        hideColumn(3);
 }
 
 void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &previous)

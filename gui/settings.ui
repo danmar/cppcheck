@@ -130,6 +130,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mShowErrorId">
+         <property name="text">
+          <string>Display error Id in column &quot;Id&quot;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="mInlineSuppressions">
          <property name="text">
           <string>Enable inline suppressions</string>

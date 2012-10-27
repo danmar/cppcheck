@@ -72,6 +72,13 @@ public:
     bool ShowNoErrorsMessage();
 
     /**
+    * @brief Get checkbox value for mShowIdColumn
+    *
+    * @return Should error id column be displayed
+    */
+    bool ShowErrorId();
+
+    /**
     * @brief Get checkbox value for mSaveAllErrors
     *
     * @return should all errors be saved to report

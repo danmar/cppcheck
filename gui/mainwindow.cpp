@@ -604,7 +604,8 @@ void MainWindow::ProgramSettings()
         mUI.mResults->UpdateSettings(dialog.ShowFullPath(),
                                      dialog.SaveFullPath(),
                                      dialog.SaveAllErrors(),
-                                     dialog.ShowNoErrorsMessage());
+                                     dialog.ShowNoErrorsMessage(),
+                                     dialog.ShowErrorId());
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         SetLanguage(newLang);
     }

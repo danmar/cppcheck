@@ -180,9 +180,10 @@ void ResultsView::Save(const QString &filename, Report::Type type)
 void ResultsView::UpdateSettings(bool showFullPath,
                                  bool saveFullPath,
                                  bool saveAllErrors,
-                                 bool showNoErrorsMessage)
+                                 bool showNoErrorsMessage,
+                                 bool showErrorId)
 {
-    mUI.mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors);
+    mUI.mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors, showErrorId);
     mShowNoErrorsMessage = showNoErrorsMessage;
 }
 
@@ -325,8 +326,10 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
 
     const QString summary = data["summary"].toString();
     const QString message = data["message"].toString();
-    const QString formattedMsg = QString("%1: %2\n%3: %4")
-                                 .arg(tr("Summary")).arg(summary)
-                                 .arg(tr("Message")).arg(message);
+    QString formattedMsg = QString("%1: %2\n%3: %4")
+                           .arg(tr("Summary")).arg(summary)
+                           .arg(tr("Message")).arg(message);
+    if (mUI.mTree->ShowIdColumn())
+        formattedMsg.prepend(tr("Id") + ": " + data["id"].toString() + "\n");
     mUI.mDetails->setText(formattedMsg);
 }
