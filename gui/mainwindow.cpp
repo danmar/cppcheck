@@ -256,11 +256,8 @@ void MainWindow::LoadSettings()
 
 }
 
-void MainWindow::SaveSettings()
+void MainWindow::SaveSettings() const
 {
-    //Force toolbar checkbox value to be updated
-    AboutToShowViewMenu();
-
     // Window/dialog sizes
     mSettings->setValue(SETTINGS_WINDOW_WIDTH, size().width());
     mSettings->setValue(SETTINGS_WINDOW_HEIGHT, size().height());

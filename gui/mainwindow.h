@@ -364,7 +364,7 @@ private:
     * @brief Save program settings
     *
     */
-    void SaveSettings();
+    void SaveSettings() const;
 
     /**
     * @brief Format main window title.
