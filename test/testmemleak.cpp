@@ -506,6 +506,9 @@ private:
         // non-use..
         ASSERT_EQUALS(";;", getcode("char *s; s = s + 1;", "s"));
 
+        // reference
+        ASSERT_EQUALS(";", getcode("char *p; char * & ref = p; p = malloc(10);", "p"));
+
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
         ASSERT_EQUALS(";;returnuse;", getcode("char *s; return s;", "s"));

@@ -250,6 +250,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 } else if (Token::simpleMatch(tok->previous(), "=")) {
                     varInfo->erase(tok->varId());
                 }
+            } else if (Token::Match(tok->previous(), "& %var% = %var% ;")) {
+                varInfo->referenced.insert(tok->tokAt(2)->varId());
             }
         }
 
@@ -555,6 +557,10 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
     for (std::map<unsigned int, std::string>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
         // don't warn if variable is conditionally allocated
         if (it->second != "dealloc" && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
+            continue;
+
+        // don't warn if there is a reference of the variable
+        if (varInfo.referenced.find(it->first) != varInfo.referenced.end())
             continue;
 
         const unsigned int varid = it->first;

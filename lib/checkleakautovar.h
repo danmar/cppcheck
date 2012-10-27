@@ -31,11 +31,13 @@ public:
     std::map<unsigned int, std::string> alloctype;
     std::map<unsigned int, std::string> possibleUsage;
     std::set<unsigned int> conditionalAlloc;
+    std::set<unsigned int> referenced;
 
     void clear() {
         alloctype.clear();
         possibleUsage.clear();
         conditionalAlloc.clear();
+        referenced.clear();
     }
 
     void erase(unsigned int varid) {
@@ -48,6 +50,7 @@ public:
         alloctype.swap(other.alloctype);
         possibleUsage.swap(other.possibleUsage);
         conditionalAlloc.swap(other.conditionalAlloc);
+        referenced.swap(other.referenced);
     }
 
     /** set possible usage for all variables */

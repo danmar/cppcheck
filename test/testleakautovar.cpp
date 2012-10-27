@@ -45,6 +45,7 @@ private:
         TEST_CASE(assign10);
         TEST_CASE(assign11); // #3942: x = a(b(p));
         TEST_CASE(assign12); // #4236: FP. bar(&x);
+        TEST_CASE(assign13); // #4237: FP. char*&ref=p; p=malloc(10); free(ref);
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -224,6 +225,16 @@ private:
               "    free(p);\n"
               "    bar(&p);\n"
               "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign13() { // #4237: FP. char *&ref=p; p=malloc(10); free(ref);
+        check("void f() {\n"
+              "    char *p;\n"
+              "    char * &ref = p;\n"
+              "    p = malloc(10);\n"
+              "    free(ref);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

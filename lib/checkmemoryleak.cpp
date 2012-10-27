@@ -1246,6 +1246,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
+            if (Token::Match(tok, "& %var% = %varid% ;", varid)) {
+                while (rethead->next())
+                    rethead->deleteNext();
+                return rethead;
+            }
             if (Token::Match(tok, "[)=] %varid% [+;)]", varid) ||
                 Token::Match(tok, "%var% + %varid%", varid) ||
                 Token::Match(tok, "%varid% +=|-=", varid) ||
