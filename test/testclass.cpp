@@ -315,7 +315,7 @@ private:
                              "      d=(char*)malloc(100);\n"
                              "   }\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) 'class F' does not have a copy constructor which is required since the class contains a pointer to allocated memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) 'class F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
