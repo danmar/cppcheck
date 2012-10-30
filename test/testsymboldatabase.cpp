@@ -19,6 +19,7 @@
 #include "testsuite.h"
 #include "testutils.h"
 #include "symboldatabase.h"
+#include <sstream>
 
 #define GET_SYMBOL_DB(code) \
     errout.str(""); \
@@ -157,6 +158,8 @@ private:
         TEST_CASE(isImplicitlyVirtual);
 
         TEST_CASE(garbage);
+
+        TEST_CASE(findFunction1);
     }
 
     void array() {
@@ -1405,6 +1408,38 @@ private:
     void garbage() {
         GET_SYMBOL_DB("void f( { u = 1 ; } ) { }");
         (void)db;
+    }
+
+    void findFunction1() {
+        GET_SYMBOL_DB("int foo(int x);\n" /* 1 */
+                      "void foo();\n"     /* 2 */
+                      "void bar() {\n"    /* 3 */
+                      "    foo();\n"      /* 4 */
+                      "    foo(1);\n"     /* 5 */
+                      "}");               /* 6 */
+        ASSERT_EQUALS("", errout.str());
+        if (db) {
+            const Scope * bar = db->findScopeByName("bar");
+            ASSERT(bar);
+            if (bar) {
+                unsigned int linenrs[] = { 2, 1 };
+                unsigned int index = 0;
+                for (const Token * tok = bar->classStart->next(); tok != bar->classEnd; tok = tok->next()) {
+                    if (Token::Match(tok, "%var% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
+                        const Function * function = db->findFunctionByNameAndArgs(tok, bar);
+                        ASSERT(function);
+                        if (function) {
+                            std::stringstream expected;
+                            expected << "Function call on line " << tok->linenr() << " calls function on line " << linenrs[index] << std::endl;
+                            std::stringstream actual;
+                            actual << "Function call on line " << tok->linenr() << " calls function on line " << function->tokenDef->linenr() << std::endl;
+                            ASSERT_EQUALS(expected.str().c_str(), actual.str().c_str());
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
     }
 };
 

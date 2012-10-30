@@ -451,8 +451,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     else if (Token::simpleMatch(argStart->link(), ") ;")) {
                         bool newFunc = true; // Is this function already in the database?
                         for (std::list<Function>::const_iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
-                            if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef, argStart, "", 0))
+                            if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef->next(), argStart->next(), "", 0)) {
                                 newFunc = false;
+                                break;
+                            }
                         }
                         // save function prototype in database
                         if (newFunc)
@@ -1572,10 +1574,11 @@ void SymbolDatabase::printOut(const char *title) const
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
-    if (arg && arg->link() != arg->next() && !Token::simpleMatch(arg, "( void )")) {
+    const Token * start = arg ? arg : argDef;
+    if (start && start->link() != start->next() && !Token::simpleMatch(start, "( void )")) {
         unsigned int count = 0;
 
-        for (const Token* tok = arg->next(); tok; tok = tok->next()) {
+        for (const Token* tok = start->next(); tok; tok = tok->next()) {
             const Token* startTok = tok;
             const Token* endTok   = NULL;
             const Token* nameTok  = NULL;
@@ -2169,7 +2172,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
                     // check the arguments
                     unsigned int args = 0;
                     const Token *arg = tok->tokAt(2);
-                    while (arg) {
+                    while (arg && arg->str() != ")") {
                         /** @todo check argument type for match */
                         /** @todo check for default arguments */
                         args++;

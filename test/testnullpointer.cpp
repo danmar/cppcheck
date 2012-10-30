@@ -2084,7 +2084,7 @@ private:
                   "    foo(p);\n"
                   "    if (p) { }\n"
                   "}");
-            TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", "", errout.str());
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
             // inconclusive
             check("void f(int *p) {\n"
@@ -2123,7 +2123,7 @@ private:
                   "    foo(abc);\n"
                   "    if (abc) { }\n"
                   "}");
-            TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", "", errout.str());
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", errout.str());
 
             // inconclusive
             check("void f(struct ABC *abc) {\n"
