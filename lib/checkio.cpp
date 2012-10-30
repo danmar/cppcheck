@@ -40,19 +40,24 @@ namespace {
 //---------------------------------------------------------------------------
 void CheckIO::checkCoutCerrMisusage()
 {
-    bool firstCout = false;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->str() == "(")
-            tok = tok->link();
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
+    std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        bool firstCout = false;
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() == "(")
+                tok = tok->link();
 
-        if (Token::Match(tok, "std :: cout|cerr")) {
-            if (firstCout && tok->strAt(-1) == "<<" && tok->strAt(3) != ".") {
-                coutCerrMisusageError(tok, tok->strAt(2));
+            if (Token::Match(tok, "std :: cout|cerr")) {
+                if (firstCout && tok->strAt(-1) == "<<" && tok->strAt(3) != ".") {
+                    coutCerrMisusageError(tok, tok->strAt(2));
+                    firstCout = false;
+                } else if (tok->strAt(3) == "<<")
+                    firstCout = true;
+            } else if (firstCout && tok->str() == ";")
                 firstCout = false;
-            } else if (tok->strAt(3) == "<<")
-                firstCout = true;
-        } else if (firstCout && tok->str() == ";")
-            firstCout = false;
+        }
     }
 }
 
@@ -116,134 +121,138 @@ void CheckIO::checkFileUsage()
         }
     }
 
-    unsigned int indent = 0;
-    for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "{")
-            indent++;
-        else if (tok->str() == "}") {
-            indent--;
-            for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
-                if (indent < i->second.mode_indent) {
-                    i->second.mode_indent = 0;
-                    i->second.mode = UNKNOWN;
-                }
-                if (indent < i->second.op_indent) {
-                    i->second.op_indent = 0;
-                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
-                }
-            }
-        } else if (tok->varId() && Token::Match(tok, "%var% =") && (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile")) {
-            std::map<unsigned int, Filepointer>::iterator i = filepointers.find(tok->varId());
-            if (i != filepointers.end()) {
-                i->second.mode = UNKNOWN;
-                i->second.lastOperation = Filepointer::UNKNOWN_OP;
-            }
-        } else if (Token::Match(tok, "%var% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
-            std::string mode;
-            const Token* fileTok = 0;
-            Filepointer::Operation operation = Filepointer::NONE;
-
-            if ((tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile") && tok->strAt(-1) == "=") {
-                if (tok->str() != "tmpfile") {
-                    const Token* modeTok = tok->tokAt(2)->nextArgument();
-                    if (modeTok && modeTok->type() == Token::eString)
-                        mode = modeTok->strValue();
-                } else
-                    mode = "wb+";
-                fileTok = tok->tokAt(-2);
-                operation = Filepointer::OPEN;
-            } else if (tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") {
-                if (Token::simpleMatch(tok, "fflush ( stdin )"))
-                    fflushOnInputStreamError(tok, tok->strAt(2));
-                else {
-                    fileTok = tok->tokAt(2);
-                    operation = Filepointer::POSITIONING;
-                }
-            } else if (tok->str() == "fgetc" || tok->str() == "fgets" || tok->str() == "fread" || tok->str() == "fscanf" || tok->str() == "getc") {
-                if (tok->str() == "fscanf")
-                    fileTok = tok->tokAt(2);
-                else
-                    fileTok = tok->linkAt(1)->previous();
-                operation = Filepointer::READ;
-            } else if (tok->str() == "fputc" || tok->str() == "fputs" || tok->str() == "fwrite" || tok->str() == "fprintf" || tok->str() == "putcc") {
-                if (tok->str() == "fprintf")
-                    fileTok = tok->tokAt(2);
-                else
-                    fileTok = tok->linkAt(1)->previous();
-                operation = Filepointer::WRITE;
-            } else if (tok->str() == "fclose") {
-                fileTok = tok->tokAt(2);
-                operation = Filepointer::CLOSE;
-            } else if (whitelist.find(tok->str()) != whitelist.end()) {
-                fileTok = tok->tokAt(2);
-                if (tok->str() == "ungetc" && fileTok)
-                    fileTok = fileTok->nextArgument();
-                operation = Filepointer::UNIMPORTANT;
-            } else if (!Token::Match(tok, "if|for|while|catch|return")) {
-                const Token* const end2 = tok->linkAt(1);
-                for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
-                    if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {
-                        fileTok = tok2;
-                        operation = Filepointer::UNKNOWN_OP; // Assume that repositioning was last operation and that the file is opened now
-                        break;
+    std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t j = 0; j < functions; ++j) {
+        const Scope * scope = symbolDatabase->functionScopes[j];
+        unsigned int indent = 0;
+        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() == "{")
+                indent++;
+            else if (tok->str() == "}") {
+                indent--;
+                for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
+                    if (indent < i->second.mode_indent) {
+                        i->second.mode_indent = 0;
+                        i->second.mode = UNKNOWN;
+                    }
+                    if (indent < i->second.op_indent) {
+                        i->second.op_indent = 0;
+                        i->second.lastOperation = Filepointer::UNKNOWN_OP;
                     }
                 }
-            }
+            } else if (tok->varId() && Token::Match(tok, "%var% =") && (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile")) {
+                std::map<unsigned int, Filepointer>::iterator i = filepointers.find(tok->varId());
+                if (i != filepointers.end()) {
+                    i->second.mode = UNKNOWN;
+                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                }
+            } else if (Token::Match(tok, "%var% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
+                std::string mode;
+                const Token* fileTok = 0;
+                Filepointer::Operation operation = Filepointer::NONE;
 
-            if (!fileTok || !fileTok->varId())
-                continue;
+                if ((tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile") && tok->strAt(-1) == "=") {
+                    if (tok->str() != "tmpfile") {
+                        const Token* modeTok = tok->tokAt(2)->nextArgument();
+                        if (modeTok && modeTok->type() == Token::eString)
+                            mode = modeTok->strValue();
+                    } else
+                        mode = "wb+";
+                    fileTok = tok->tokAt(-2);
+                    operation = Filepointer::OPEN;
+                } else if (tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") {
+                    if (Token::simpleMatch(tok, "fflush ( stdin )"))
+                        fflushOnInputStreamError(tok, tok->strAt(2));
+                    else {
+                        fileTok = tok->tokAt(2);
+                        operation = Filepointer::POSITIONING;
+                    }
+                } else if (tok->str() == "fgetc" || tok->str() == "fgets" || tok->str() == "fread" || tok->str() == "fscanf" || tok->str() == "getc") {
+                    if (tok->str() == "fscanf")
+                        fileTok = tok->tokAt(2);
+                    else
+                        fileTok = tok->linkAt(1)->previous();
+                    operation = Filepointer::READ;
+                } else if (tok->str() == "fputc" || tok->str() == "fputs" || tok->str() == "fwrite" || tok->str() == "fprintf" || tok->str() == "putcc") {
+                    if (tok->str() == "fprintf")
+                        fileTok = tok->tokAt(2);
+                    else
+                        fileTok = tok->linkAt(1)->previous();
+                    operation = Filepointer::WRITE;
+                } else if (tok->str() == "fclose") {
+                    fileTok = tok->tokAt(2);
+                    operation = Filepointer::CLOSE;
+                } else if (whitelist.find(tok->str()) != whitelist.end()) {
+                    fileTok = tok->tokAt(2);
+                    if (tok->str() == "ungetc" && fileTok)
+                        fileTok = fileTok->nextArgument();
+                    operation = Filepointer::UNIMPORTANT;
+                } else if (!Token::Match(tok, "if|for|while|catch|return")) {
+                    const Token* const end2 = tok->linkAt(1);
+                    for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
+                        if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {
+                            fileTok = tok2;
+                            operation = Filepointer::UNKNOWN_OP; // Assume that repositioning was last operation and that the file is opened now
+                            break;
+                        }
+                    }
+                }
 
-            if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
-                filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(UNKNOWN)));
-            }
-            Filepointer& f = filepointers[fileTok->varId()];
+                if (!fileTok || !fileTok->varId())
+                    continue;
 
-            switch (operation) {
-            case Filepointer::OPEN:
-                f.mode = getMode(mode);
-                f.mode_indent = indent;
-                break;
-            case Filepointer::POSITIONING:
-                if (f.mode == CLOSED)
-                    useClosedFileError(tok);
-                break;
-            case Filepointer::READ:
-                if (f.mode == CLOSED)
-                    useClosedFileError(tok);
-                else if (f.mode == WRITE_MODE)
-                    readWriteOnlyFileError(tok);
-                else if (f.lastOperation == Filepointer::WRITE)
-                    ioWithoutPositioningError(tok);
-                break;
-            case Filepointer::WRITE:
-                if (f.mode == CLOSED)
-                    useClosedFileError(tok);
-                else if (f.mode == READ_MODE)
-                    writeReadOnlyFileError(tok);
-                else if (f.lastOperation == Filepointer::READ)
-                    ioWithoutPositioningError(tok);
-                break;
-            case Filepointer::CLOSE:
-                if (f.mode == CLOSED)
-                    useClosedFileError(tok);
-                else
-                    f.mode = CLOSED;
-                f.mode_indent = indent;
-                break;
-            case Filepointer::UNIMPORTANT:
-                if (f.mode == CLOSED)
-                    useClosedFileError(tok);
-                break;
-            case Filepointer::UNKNOWN_OP:
-                f.mode = UNKNOWN;
-                f.mode_indent = 0;
-                break;
-            default:
-                break;
-            }
-            if (operation != Filepointer::NONE && operation != Filepointer::UNIMPORTANT) {
-                f.op_indent = indent;
-                f.lastOperation = operation;
+                if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
+                    filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(UNKNOWN)));
+                }
+                Filepointer& f = filepointers[fileTok->varId()];
+
+                switch (operation) {
+                case Filepointer::OPEN:
+                    f.mode = getMode(mode);
+                    f.mode_indent = indent;
+                    break;
+                case Filepointer::POSITIONING:
+                    if (f.mode == CLOSED)
+                        useClosedFileError(tok);
+                    break;
+                case Filepointer::READ:
+                    if (f.mode == CLOSED)
+                        useClosedFileError(tok);
+                    else if (f.mode == WRITE_MODE)
+                        readWriteOnlyFileError(tok);
+                    else if (f.lastOperation == Filepointer::WRITE)
+                        ioWithoutPositioningError(tok);
+                    break;
+                case Filepointer::WRITE:
+                    if (f.mode == CLOSED)
+                        useClosedFileError(tok);
+                    else if (f.mode == READ_MODE)
+                        writeReadOnlyFileError(tok);
+                    else if (f.lastOperation == Filepointer::READ)
+                        ioWithoutPositioningError(tok);
+                    break;
+                case Filepointer::CLOSE:
+                    if (f.mode == CLOSED)
+                        useClosedFileError(tok);
+                    else
+                        f.mode = CLOSED;
+                    f.mode_indent = indent;
+                    break;
+                case Filepointer::UNIMPORTANT:
+                    if (f.mode == CLOSED)
+                        useClosedFileError(tok);
+                    break;
+                case Filepointer::UNKNOWN_OP:
+                    f.mode = UNKNOWN;
+                    f.mode_indent = 0;
+                    break;
+                default:
+                    break;
+                }
+                if (operation != Filepointer::NONE && operation != Filepointer::UNIMPORTANT) {
+                    f.op_indent = indent;
+                    f.lastOperation = operation;
+                }
             }
         }
     }
@@ -289,40 +298,45 @@ void CheckIO::invalidScanf()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        const Token *formatToken = 0;
-        if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
-            formatToken = tok->tokAt(2);
-        else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
-            const Token* nextArg = tok->tokAt(2)->nextArgument();
-            if (nextArg && nextArg->type() == Token::eString)
-                formatToken = nextArg;
-            else
-                continue;
-        } else
-            continue;
-
-        bool format = false;
-
-        // scan the string backwards, so we dont need to keep states
-        const std::string &formatstr(formatToken->str());
-        for (unsigned int i = 1; i < formatstr.length(); i++) {
-            if (formatstr[i] == '%')
-                format = !format;
-
-            else if (!format)
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
+    std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t j = 0; j < functions; ++j) {
+        const Scope * scope = symbolDatabase->functionScopes[j];
+        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            const Token *formatToken = 0;
+            if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
+                formatToken = tok->tokAt(2);
+            else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
+                const Token* nextArg = tok->tokAt(2)->nextArgument();
+                if (nextArg && nextArg->type() == Token::eString)
+                    formatToken = nextArg;
+                else
+                    continue;
+            } else
                 continue;
 
-            else if (std::isdigit(formatstr[i]) || formatstr[i] == '*') {
-                format = false;
-            }
+            bool format = false;
 
-            else if (std::isalpha(formatstr[i]) || formatstr[i] == '[') {
-                if (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's'))  // #3490 - field width limits are only necessary for string input
-                    invalidScanfError(tok, false);
-                else if (formatstr[i] != 'n' && formatstr[i] != 'c' && _settings->platformType != Settings::Win32A && _settings->platformType != Settings::Win32W && _settings->platformType != Settings::Win64 && _settings->isEnabled("portability"))
-                    invalidScanfError(tok, true); // Warn about libc bug in versions prior to 2.13-25
-                format = false;
+            // scan the string backwards, so we dont need to keep states
+            const std::string &formatstr(formatToken->str());
+            for (unsigned int i = 1; i < formatstr.length(); i++) {
+                if (formatstr[i] == '%')
+                    format = !format;
+
+                else if (!format)
+                    continue;
+
+                else if (std::isdigit(formatstr[i]) || formatstr[i] == '*') {
+                    format = false;
+                }
+
+                else if (std::isalpha(formatstr[i]) || formatstr[i] == '[') {
+                    if (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's'))  // #3490 - field width limits are only necessary for string input
+                        invalidScanfError(tok, false);
+                    else if (formatstr[i] != 'n' && formatstr[i] != 'c' && _settings->platformType != Settings::Win32A && _settings->platformType != Settings::Win32W && _settings->platformType != Settings::Win64 && _settings->isEnabled("portability"))
+                        invalidScanfError(tok, true); // Warn about libc bug in versions prior to 2.13-25
+                    format = false;
+                }
             }
         }
     }
@@ -401,216 +415,220 @@ void CheckIO::checkWrongPrintfScanfArguments()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     bool warning = _settings->isEnabled("style");
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!tok->isName()) continue;
+    std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t j = 0; j < functions; ++j) {
+        const Scope * scope = symbolDatabase->functionScopes[j];
+        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!tok->isName()) continue;
 
-        const Token* argListTok = 0; // Points to first va_list argument
-        std::string formatString;
+            const Token* argListTok = 0; // Points to first va_list argument
+            std::string formatString;
 
-        if (Token::Match(tok, "printf|scanf ( %str%")) {
-            formatString = tok->strAt(2);
-            if (tok->strAt(3) == ",") {
-                argListTok = tok->tokAt(4);
-            } else if (tok->strAt(3) == ")") {
-                argListTok = 0;
-            } else {
-                continue;
-            }
-        } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf ( %any%")) {
-            const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
-            if (Token::Match(formatStringTok, "%str% ,")) {
-                argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
-                formatString = formatStringTok->str();
-            } else if (Token::Match(formatStringTok, "%str% )")) {
-                argListTok = 0; // Find third parameter (first argument of va_args)
-                formatString = formatStringTok->str();
-            } else {
-                continue;
-            }
-        } else if (Token::Match(tok, "snprintf|fnprintf (")) {
-            const Token* formatStringTok = tok->tokAt(2);
-            for (int i = 0; i < 2 && formatStringTok; i++) {
-                formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
-            }
-            if (Token::Match(formatStringTok, "%str% ,")) {
-                argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
-                formatString = formatStringTok->str();
-            } else if (Token::Match(formatStringTok, "%str% )")) {
-                argListTok = 0; // Find fourth parameter (first argument of va_args)
-                formatString = formatStringTok->str();
-            } else {
-                continue;
-            }
-        } else {
-            continue;
-        }
-
-        // Count format string parameters..
-        bool scan = Token::Match(tok, "sscanf|fscanf|scanf");
-        unsigned int numFormat = 0;
-        bool percent = false;
-        const Token* argListTok2 = argListTok;
-        for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
-            if (*i == '%') {
-                percent = !percent;
-            } else if (percent && *i == '[') {
-                while (i != formatString.end()) {
-                    if (*i == ']') {
-                        numFormat++;
-                        if (argListTok)
-                            argListTok = argListTok->nextArgument();
-                        percent = false;
-                        break;
-                    }
-                    ++i;
+            if (Token::Match(tok, "printf|scanf ( %str%")) {
+                formatString = tok->strAt(2);
+                if (tok->strAt(3) == ",") {
+                    argListTok = tok->tokAt(4);
+                } else if (tok->strAt(3) == ")") {
+                    argListTok = 0;
+                } else {
+                    continue;
                 }
-                if (i == formatString.end())
-                    break;
-            } else if (percent) {
-                percent = false;
+            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf ( %any%")) {
+                const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
+                if (Token::Match(formatStringTok, "%str% ,")) {
+                    argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
+                    formatString = formatStringTok->str();
+                } else if (Token::Match(formatStringTok, "%str% )")) {
+                    argListTok = 0; // Find third parameter (first argument of va_args)
+                    formatString = formatStringTok->str();
+                } else {
+                    continue;
+                }
+            } else if (Token::Match(tok, "snprintf|fnprintf (")) {
+                const Token* formatStringTok = tok->tokAt(2);
+                for (int i = 0; i < 2 && formatStringTok; i++) {
+                    formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
+                }
+                if (Token::Match(formatStringTok, "%str% ,")) {
+                    argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
+                    formatString = formatStringTok->str();
+                } else if (Token::Match(formatStringTok, "%str% )")) {
+                    argListTok = 0; // Find fourth parameter (first argument of va_args)
+                    formatString = formatStringTok->str();
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
 
-                bool _continue = false;
-                std::string width;
-                while (i != formatString.end() && *i != ']' && !std::isalpha(*i)) {
-                    if (*i == '*') {
-                        if (scan)
-                            _continue = true;
-                        else {
+            // Count format string parameters..
+            bool scan = Token::Match(tok, "sscanf|fscanf|scanf");
+            unsigned int numFormat = 0;
+            bool percent = false;
+            const Token* argListTok2 = argListTok;
+            for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
+                if (*i == '%') {
+                    percent = !percent;
+                } else if (percent && *i == '[') {
+                    while (i != formatString.end()) {
+                        if (*i == ']') {
                             numFormat++;
                             if (argListTok)
                                 argListTok = argListTok->nextArgument();
+                            percent = false;
+                            break;
                         }
-                    } else if (std::isdigit(*i))
-                        width += *i;
-                    ++i;
-                }
-                if (i == formatString.end())
-                    break;
-                if (_continue)
-                    continue;
+                        ++i;
+                    }
+                    if (i == formatString.end())
+                        break;
+                } else if (percent) {
+                    percent = false;
 
-                if (scan || *i != 'm') { // %m is a non-standard extension that requires no parameter on print functions.
-                    numFormat++;
-
-                    // Perform type checks
-                    if (argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
-                        const Variable* variableInfo = symbolDatabase->getVariableFromVarId(argListTok->varId());
-                        const Token* varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
-                        if (varTypeTok && varTypeTok->str() == "static")
-                            varTypeTok = varTypeTok->next();
-
-                        if (scan && varTypeTok) {
-                            if (warning && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const"))
-                                invalidScanfArgTypeError(tok, tok->str(), numFormat);
-
-                            if (*i == 's' && variableInfo && isKnownType(variableInfo, varTypeTok) && variableInfo->isArray() && (variableInfo->dimensions().size() == 1) && variableInfo->dimensions()[0].known) {
-                                if (!width.empty()) {
-                                    int numWidth = std::atoi(width.c_str());
-                                    if (numWidth != (variableInfo->dimension(0) - 1))
-                                        invalidScanfFormatWidthError(tok, numFormat, numWidth, variableInfo);
-                                }
+                    bool _continue = false;
+                    std::string width;
+                    while (i != formatString.end() && *i != ']' && !std::isalpha(*i)) {
+                        if (*i == '*') {
+                            if (scan)
+                                _continue = true;
+                            else {
+                                numFormat++;
+                                if (argListTok)
+                                    argListTok = argListTok->nextArgument();
                             }
-                        } else if (!scan && warning) {
-                            switch (*i) {
-                            case 's':
-                                if (variableInfo && argListTok->type() != Token::eString && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
-                                    invalidPrintfArgTypeError_s(tok, numFormat);
-                                break;
-                            case 'n':
-                                if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")) || argListTok->type() == Token::eString)
-                                    invalidPrintfArgTypeError_n(tok, numFormat);
-                                break;
-                            case 'c':
-                            case 'x':
-                            case 'X':
-                            case 'o':
-                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "bool|short|long|int|char|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
-                                    invalidPrintfArgTypeError_int(tok, numFormat, *i);
-                                else if (argListTok->type() == Token::eString)
-                                    invalidPrintfArgTypeError_int(tok, numFormat, *i);
-                                break;
-                            case 'd':
-                            case 'i':
-                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
-                                    if ((varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "bool|short|long|int")) && varTypeTok->str() != "char")
-                                        invalidPrintfArgTypeError_sint(tok, numFormat, *i);
-                                } else if (argListTok->type() == Token::eString)
-                                    invalidPrintfArgTypeError_sint(tok, numFormat, *i);
-                                break;
-                            case 'u':
-                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
-                                    if ((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "char|short|long|int|size_t")) && varTypeTok->str() != "bool")
-                                        invalidPrintfArgTypeError_uint(tok, numFormat, *i);
-                                } else if (argListTok->type() == Token::eString)
-                                    invalidPrintfArgTypeError_uint(tok, numFormat, *i);
-                                break;
-                            case 'p':
-                                if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "short|long|int|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
-                                    invalidPrintfArgTypeError_p(tok, numFormat);
-                                else if (argListTok->type() == Token::eString)
-                                    invalidPrintfArgTypeError_p(tok, numFormat);
-                                break;
-                            case 'e':
-                            case 'E':
-                            case 'f':
-                            case 'g':
-                            case 'G':
-                                if (varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray()))
-                                    invalidPrintfArgTypeError_float(tok, numFormat, *i);
-                                else if (argListTok->type() == Token::eString)
-                                    invalidPrintfArgTypeError_float(tok, numFormat, *i);
-                                break;
-                            case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
-                            case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
-                                // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
-                                if (i != formatString.end() && *(i+1) == *i) {
-                                    if (i+1 != formatString.end() && !isalpha(*(i+2))) {
-                                        std::string modifier;
-                                        modifier += *i;
-                                        modifier += *(i+1);
-                                        invalidLengthModifierError(tok, numFormat, modifier);
+                        } else if (std::isdigit(*i))
+                            width += *i;
+                        ++i;
+                    }
+                    if (i == formatString.end())
+                        break;
+                    if (_continue)
+                        continue;
+
+                    if (scan || *i != 'm') { // %m is a non-standard extension that requires no parameter on print functions.
+                        numFormat++;
+
+                        // Perform type checks
+                        if (argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
+                            const Variable* variableInfo = symbolDatabase->getVariableFromVarId(argListTok->varId());
+                            const Token* varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
+                            if (varTypeTok && varTypeTok->str() == "static")
+                                varTypeTok = varTypeTok->next();
+
+                            if (scan && varTypeTok) {
+                                if (warning && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const"))
+                                    invalidScanfArgTypeError(tok, tok->str(), numFormat);
+
+                                if (*i == 's' && variableInfo && isKnownType(variableInfo, varTypeTok) && variableInfo->isArray() && (variableInfo->dimensions().size() == 1) && variableInfo->dimensions()[0].known) {
+                                    if (!width.empty()) {
+                                        int numWidth = std::atoi(width.c_str());
+                                        if (numWidth != (variableInfo->dimension(0) - 1))
+                                            invalidScanfFormatWidthError(tok, numFormat, numWidth, variableInfo);
                                     }
-                                } else {
+                                }
+                            } else if (!scan && warning) {
+                                switch (*i) {
+                                case 's':
+                                    if (variableInfo && argListTok->type() != Token::eString && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
+                                        invalidPrintfArgTypeError_s(tok, numFormat);
+                                    break;
+                                case 'n':
+                                    if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")) || argListTok->type() == Token::eString)
+                                        invalidPrintfArgTypeError_n(tok, numFormat);
+                                    break;
+                                case 'c':
+                                case 'x':
+                                case 'X':
+                                case 'o':
+                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "bool|short|long|int|char|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
+                                        invalidPrintfArgTypeError_int(tok, numFormat, *i);
+                                    else if (argListTok->type() == Token::eString)
+                                        invalidPrintfArgTypeError_int(tok, numFormat, *i);
+                                    break;
+                                case 'd':
+                                case 'i':
+                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
+                                        if ((varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "bool|short|long|int")) && varTypeTok->str() != "char")
+                                            invalidPrintfArgTypeError_sint(tok, numFormat, *i);
+                                    } else if (argListTok->type() == Token::eString)
+                                        invalidPrintfArgTypeError_sint(tok, numFormat, *i);
+                                    break;
+                                case 'u':
+                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
+                                        if ((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "char|short|long|int|size_t")) && varTypeTok->str() != "bool")
+                                            invalidPrintfArgTypeError_uint(tok, numFormat, *i);
+                                    } else if (argListTok->type() == Token::eString)
+                                        invalidPrintfArgTypeError_uint(tok, numFormat, *i);
+                                    break;
+                                case 'p':
+                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "short|long|int|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
+                                        invalidPrintfArgTypeError_p(tok, numFormat);
+                                    else if (argListTok->type() == Token::eString)
+                                        invalidPrintfArgTypeError_p(tok, numFormat);
+                                    break;
+                                case 'e':
+                                case 'E':
+                                case 'f':
+                                case 'g':
+                                case 'G':
+                                    if (varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray()))
+                                        invalidPrintfArgTypeError_float(tok, numFormat, *i);
+                                    else if (argListTok->type() == Token::eString)
+                                        invalidPrintfArgTypeError_float(tok, numFormat, *i);
+                                    break;
+                                case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
+                                case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
+                                    // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
+                                    if (i != formatString.end() && *(i+1) == *i) {
+                                        if (i+1 != formatString.end() && !isalpha(*(i+2))) {
+                                            std::string modifier;
+                                            modifier += *i;
+                                            modifier += *(i+1);
+                                            invalidLengthModifierError(tok, numFormat, modifier);
+                                        }
+                                    } else {
+                                        if (i != formatString.end() && !isalpha(*(i+1))) {
+                                            std::string modifier;
+                                            modifier += *i;
+                                            invalidLengthModifierError(tok, numFormat, modifier);
+                                        }
+                                    }
+                                    break;
+                                case 'j': // intmax_t or uintmax_t
+                                case 'z': // size_t
+                                case 't': // ptrdiff_t
+                                case 'L': // long double
+                                    // Expect an alphabetical character after these specifiers
                                     if (i != formatString.end() && !isalpha(*(i+1))) {
                                         std::string modifier;
                                         modifier += *i;
                                         invalidLengthModifierError(tok, numFormat, modifier);
                                     }
+                                    break;
+                                default:
+                                    break;
                                 }
-                                break;
-                            case 'j': // intmax_t or uintmax_t
-                            case 'z': // size_t
-                            case 't': // ptrdiff_t
-                            case 'L': // long double
-                                // Expect an alphabetical character after these specifiers
-                                if (i != formatString.end() && !isalpha(*(i+1))) {
-                                    std::string modifier;
-                                    modifier += *i;
-                                    invalidLengthModifierError(tok, numFormat, modifier);
-                                }
-                                break;
-                            default:
-                                break;
                             }
                         }
-                    }
 
-                    if (argListTok)
-                        argListTok = argListTok->nextArgument(); // Find next argument
+                        if (argListTok)
+                            argListTok = argListTok->nextArgument(); // Find next argument
+                    }
                 }
             }
-        }
 
-        // Count printf/scanf parameters..
-        unsigned int numFunction = 0;
-        while (argListTok2) {
-            numFunction++;
-            argListTok2 = argListTok2->nextArgument(); // Find next argument
-        }
+            // Count printf/scanf parameters..
+            unsigned int numFunction = 0;
+            while (argListTok2) {
+                numFunction++;
+                argListTok2 = argListTok2->nextArgument(); // Find next argument
+            }
 
-        // Mismatching number of parameters => warning
-        if (numFormat != numFunction)
-            wrongPrintfScanfArgumentsError(tok, tok->str(), numFormat, numFunction);
+            // Mismatching number of parameters => warning
+            if (numFormat != numFunction)
+                wrongPrintfScanfArgumentsError(tok, tok->str(), numFormat, numFunction);
+        }
     }
 }
 
