@@ -1026,17 +1026,17 @@ void CheckUnusedVar::unusedVariableError(const Token *tok, const std::string &va
 
 void CheckUnusedVar::allocatedButUnusedVariableError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "unusedAllocatedMemory", "Variable '" + varname + "' is allocated memory that is never used");
+    reportError(tok, Severity::style, "unusedAllocatedMemory", "Variable '" + varname + "' is allocated memory that is never used.");
 }
 
 void CheckUnusedVar::unreadVariableError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "unreadVariable", "Variable '" + varname + "' is assigned a value that is never used");
+    reportError(tok, Severity::style, "unreadVariable", "Variable '" + varname + "' is assigned a value that is never used.");
 }
 
 void CheckUnusedVar::unassignedVariableError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "unassignedVariable", "Variable '" + varname + "' is not assigned a value");
+    reportError(tok, Severity::style, "unassignedVariable", "Variable '" + varname + "' is not assigned a value.");
 }
 
 //---------------------------------------------------------------------------
@@ -1129,5 +1129,5 @@ void CheckUnusedVar::checkStructMemberUsage()
 
 void CheckUnusedVar::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
 {
-    reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used");
+    reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used.");
 }

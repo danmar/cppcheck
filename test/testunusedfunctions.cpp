@@ -177,19 +177,19 @@ private:
     void unusedError() {
         check("void foo() {}\n"
               "int main()\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() const {}\n"
               "int main()\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() const throw() {}\n"
               "int main()\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() throw() {}\n"
               "int main()\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
 
     void unusedMain() {
@@ -217,7 +217,7 @@ private:
 
     void returnRef() {
         check("int& foo() {return x;}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
 
     void multipleFiles() {
@@ -247,15 +247,15 @@ private:
         // Check for unused functions..
         c.check(this);
 
-        ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used\n",errout.str());
+        ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }
 
     void lineNumber() {
         check("void foo() {}\n"
               "void bar() {}\n"
               "int main()\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used\n"
-                      "[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used.\n"
+                      "[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
 };
 

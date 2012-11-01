@@ -1337,12 +1337,12 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
 
 void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
 {
-    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always 0-terminate it)" : " (not 0-terminated)"));
+    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always 0-terminate it)." : " (not 0-terminated)."));
 }
 
 void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "uninitdata", "Data is allocated but not initialized: " + varname);
+    reportError(tok, Severity::error, "uninitdata", "Memory is allocated but not initialized: " + varname);
 }
 
 void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname)

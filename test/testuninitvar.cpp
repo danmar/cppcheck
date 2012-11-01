@@ -483,7 +483,7 @@ private:
                        "    char *s = malloc(100);\n"
                        "    *s += 10;\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
@@ -1257,7 +1257,7 @@ private:
                        "   strcpy(strMsg,buffer);\n"
                        "   free(buffer);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: buffer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: buffer\n", errout.str());
 
         // #3845
         checkUninitVar("int foo() {\n"
@@ -1292,42 +1292,42 @@ private:
                        "    char *s = malloc(100);\n"
                        "    strcat(s, \"abc\");\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char *s = malloc(100);\n"
                        "    perror(s);\n"
                        "};");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char *s1 = new char[10];\n"
                        "    char *s2 = new char[strlen(s1)];\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s1\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char *p = malloc(64);\n"
                        "    int x = p[0];\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: p\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char *p = malloc(64);\n"
                        "    if (p[0]) { }\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: p\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char *p = malloc(64);\n"
                        "    return p[0];\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: p\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
@@ -1407,7 +1407,7 @@ private:
                        "        return;\n"
                        "    char c = *s;\n"
                        "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Data is allocated but not initialized: s\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory is allocated but not initialized: s\n", errout.str());
 
         // #3708 - false positive when using ptr typedef
         checkUninitVar("void f() {\n"
@@ -1572,7 +1572,7 @@ private:
                        "    strncpy(a, s, 20);\n"
                        "    strncat(a, s, 20);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it).\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
@@ -1580,7 +1580,7 @@ private:
                        "    strncpy(a, \"hello\", 3);\n"
                        "    strncat(a, \"world\", 20);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it).\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
@@ -1623,7 +1623,7 @@ private:
                        "    memset(a, 'a', 20);\n"
                        "    strcat(a, s);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of 'a' (not 0-terminated)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of 'a' (not 0-terminated).\n", errout.str());
     }
 
     std::string analyseFunctions(const char code[]) {
