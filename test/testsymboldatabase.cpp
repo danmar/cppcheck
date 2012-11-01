@@ -1420,14 +1420,14 @@ private:
         ASSERT_EQUALS("", errout.str());
         if (db) {
             const Scope * bar = db->findScopeByName("bar");
-            ASSERT(bar);
+            ASSERT(bar != 0);
             if (bar) {
                 unsigned int linenrs[] = { 2, 1 };
                 unsigned int index = 0;
                 for (const Token * tok = bar->classStart->next(); tok != bar->classEnd; tok = tok->next()) {
                     if (Token::Match(tok, "%var% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
                         const Function * function = db->findFunctionByNameAndArgs(tok, bar);
-                        ASSERT(function);
+                        ASSERT(function != 0);
                         if (function) {
                             std::stringstream expected;
                             expected << "Function call on line " << tok->linenr() << " calls function on line " << linenrs[index] << std::endl;
