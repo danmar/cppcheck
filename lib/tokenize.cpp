@@ -3366,7 +3366,7 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyKnownVariables();
         modified |= removeRedundantConditions();
         modified |= simplifyRedundantParenthesis();
-        modified |= simplifyQuestionMark();
+        modified |= simplifyConstTernaryOp();
         modified |= simplifyCalculations();
     }
 
@@ -4416,7 +4416,7 @@ bool Tokenizer::simplifyConditions()
     return ret;
 }
 
-bool Tokenizer::simplifyQuestionMark()
+bool Tokenizer::simplifyConstTernaryOp()
 {
     bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {

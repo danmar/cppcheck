@@ -215,12 +215,12 @@ public:
     void simplifyStdType();
 
     /**
-     * Simplify question mark - colon operator
+     * Simplify easy constant '?:' operation
      * Example: 0 ? (2/0) : 0 => 0
      * @return true if something is modified
      *         false if nothing is done.
      */
-    bool simplifyQuestionMark();
+    bool simplifyConstTernaryOp();
 
     /**
      * Simplify compound assignments
