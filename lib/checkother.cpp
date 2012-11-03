@@ -1033,7 +1033,7 @@ void CheckOther::checkSelfAssignment()
     const char selfAssignmentPattern[] = "%var% = %var% ;|=|)";
     const Token *tok = Token::findmatch(_tokenizer->tokens(), selfAssignmentPattern);
     while (tok) {
-        if (Token::Match(tok->previous(), "[;{}.]") &&
+        if (Token::Match(tok->previous(), "[;{}]") &&
             tok->varId() && tok->varId() == tok->tokAt(2)->varId() &&
             isTypeWithoutSideEffects(_tokenizer, symbolDatabase->getVariableFromVarId(tok->varId()))) {
             bool err = true;
