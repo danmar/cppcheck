@@ -250,6 +250,8 @@ private:
         TEST_CASE(varid_in_class6);     // #3755
         TEST_CASE(varid_in_class7);     // set variable id for struct members
         TEST_CASE(varid_in_class8);     // unknown macro in class
+        TEST_CASE(varid_in_class9);     // #4291 - id for variables accessed through 'this'
+        TEST_CASE(varid_in_class10);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -3889,6 +3891,72 @@ private:
                       "5: } ;\n",
                       tokenizeDebugListing(code));
     }
+
+    void varid_in_class9() {  // #4291 - id for variables accessed through 'this'
+        const char code1[] = "class A {\n"
+                             "  int var;\n"
+                             "public:\n"
+                             "  void setVar();\n"
+                             "};\n"
+                             "void A::setVar() {\n"
+                             "  this->var = var;\n"
+                             "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: int var@1 ;\n"
+                      "3: public:\n"
+                      "4: void setVar ( ) ;\n"
+                      "5: } ;\n"
+                      "6: void A :: setVar ( ) {\n"
+                      "7: this . var@1 = var@1 ;\n"
+                      "8: }\n",
+                      tokenizeDebugListing(code1));
+
+        const char code2[] = "class Foo : public FooBase {\n"
+                             "    void Clone(FooBase& g);\n"
+                             "    short m_bar;\n"
+                             "};\n"
+                             "void Foo::Clone(FooBase& g) {\n"
+                             "    g->m_bar = m_bar;\n"
+                             "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo : public FooBase {\n"
+                      "2: void Clone ( FooBase & g@1 ) ;\n"
+                      "3: short m_bar@2 ;\n"
+                      "4: } ;\n"
+                      "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
+                      "6: g@3 . m_bar@4 = m_bar@2 ;\n"
+                      "7: }\n",
+                      tokenizeDebugListing(code2)); // #4311
+    }
+
+    void varid_in_class10() {
+        const char code[] = "class Foo : public FooBase {\n"
+                            "    void Clone(FooBase& g);\n"
+                            "    short m_bar;\n"
+                            "};\n"
+                            "void Foo::Clone(FooBase& g) {\n"
+                            "    ((FooBase)g)->m_bar = m_bar;\n"
+                            "}";
+        TODO_ASSERT_EQUALS("\n\n##file 0\n"
+                           "1: class Foo : public FooBase {\n"
+                           "2: void Clone ( FooBase & g@1 ) ;\n"
+                           "3: short m_bar@2 ;\n"
+                           "4: } ;\n"
+                           "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
+                           "6: ( ( FooBase ) g@3 ) . m_bar@4 = m_bar@2 ;\n"
+                           "7: }\n",
+                           "\n\n##file 0\n"
+                           "1: class Foo : public FooBase {\n"
+                           "2: void Clone ( FooBase & g@1 ) ;\n"
+                           "3: short m_bar@2 ;\n"
+                           "4: } ;\n"
+                           "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
+                           "6: ( ( FooBase ) g@3 ) . m_bar = m_bar@2 ;\n"
+                           "7: }\n",
+                           tokenizeDebugListing(code));
+    }
+
 
     void varid_initList() {
         const char code[] = "class A {\n"

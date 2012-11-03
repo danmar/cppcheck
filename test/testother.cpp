@@ -2791,6 +2791,16 @@ private:
               "    i = i;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'i' to itself.\n", errout.str());
+
+        // #4291 - id for variables accessed through 'this'
+        check("class Foo {\n"
+              "    int var;\n"
+              "    void func();\n"
+              "};\n"
+              "void Foo::func() {\n"
+              "    this->var = var;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'var' to itself.\n", errout.str());
     }
 
     void trac1132() {

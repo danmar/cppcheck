@@ -2624,7 +2624,7 @@ static void setVarIdClassFunction(Token * const startToken,
                                   unsigned int *_varId)
 {
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
-        if (tok2->varId() == 0 && tok2->previous()->str() != ".") {
+        if (tok2->varId() == 0 && (tok2->previous()->str() != "." || tok2->strAt(-2) == "this")) {
             const std::map<std::string,unsigned int>::const_iterator it = varlist.find(tok2->str());
             if (it != varlist.end()) {
                 tok2->varId(it->second);
