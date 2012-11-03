@@ -333,7 +333,7 @@ Parametri: -l(line) (file)
     <message>
         <location filename="main.ui" line="436"/>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostra il blocchetto per appunti...</translation>
     </message>
     <message>
         <location filename="main.ui" line="486"/>
@@ -763,12 +763,12 @@ Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation
     <message>
         <location filename="translationhandler.cpp" line="37"/>
         <source>Italian</source>
-        <translation type="unfinished"></translation>
+        <translation>Italian</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="39"/>
         <source>Korean</source>
-        <translation type="unfinished"></translation>
+        <translation>Korean</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="42"/>
@@ -806,7 +806,7 @@ Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation
     <message>
         <location filename="platforms.cpp" line="37"/>
         <source>Built-in</source>
-        <translation type="unfinished"></translation>
+        <translation>Built-in</translation>
     </message>
     <message>
         <location filename="platforms.cpp" line="38"/>
@@ -1025,7 +1025,7 @@ Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation
     <message>
         <location filename="resultstree.cpp" line="538"/>
         <source>Copy message id</source>
-        <translation type="unfinished"></translation>
+        <translation>Copia id del messaggio</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="539"/>
@@ -1087,7 +1087,7 @@ Per favore selezioa la cartella dove il file è posizionato.</translation>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="255"/>
@@ -1143,7 +1143,7 @@ Per favore selezioa la cartella dove il file è posizionato.</translation>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Sono stati trovati errori, ma sono stati configurati per essere nascosti.
-Per ottenere che tipo di errori sono mostrati, apri il menu Visualizza.</translation>
+Per vedere il tipo di errori che sono mostrati, apri il menu Visualizza.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="267"/>
@@ -1165,7 +1165,7 @@ Per ottenere che tipo di errori sono mostrati, apri il menu Visualizza.</transla
     <message>
         <location filename="resultsview.cpp" line="333"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="139"/>
@@ -1189,17 +1189,17 @@ Per ottenere che tipo di errori sono mostrati, apri il menu Visualizza.</transla
     <message>
         <location filename="scratchpad.ui" line="14"/>
         <source>Scratchpad</source>
-        <translation type="unfinished"></translation>
+        <translation>Blocchetto per appunti</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="48"/>
         <source>filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Nome file</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="55"/>
         <source>Check</source>
-        <translation type="unfinished">Scansiona</translation>
+        <translation>Scansiona</translation>
     </message>
 </context>
 <context>
@@ -1266,7 +1266,7 @@ Per ottenere che tipo di errori sono mostrati, apri il menu Visualizza.</transla
     <message>
         <location filename="settings.ui" line="135"/>
         <source>Display error Id in column &quot;Id&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostra l&apos;id dell&apos;errore nella colonna &quot;Id&quot;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="142"/>
@@ -1345,7 +1345,7 @@ Per ottenere che tipo di errori sono mostrati, apri il menu Visualizza.</transla
     <message>
         <location filename="settingsdialog.cpp" line="82"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>N/A</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="201"/>

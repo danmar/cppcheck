@@ -1265,7 +1265,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="135"/>
         <source>Display error Id in column &quot;Id&quot;</source>
-        <translation>Zeige Meldungs-Id in Spalte "Id"</translation>
+        <translation>Zeige Meldungs-Id in Spalte &quot;Id&quot;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="142"/>
