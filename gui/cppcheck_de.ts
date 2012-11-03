@@ -1024,7 +1024,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
     <message>
         <location filename="resultstree.cpp" line="538"/>
         <source>Copy message id</source>
-        <translation type="unfinished"></translation>
+        <translation>Meldungs-Id kopieren</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="539"/>
@@ -1086,7 +1086,7 @@ Bitte wählen Sie das Verzeichnis, in dem sich die Datei befindet.</translation>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="255"/>
@@ -1164,7 +1164,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="resultsview.cpp" line="333"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="139"/>
@@ -1265,7 +1265,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="135"/>
         <source>Display error Id in column &quot;Id&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeige Meldungs-Id in Spalte "Id"</translation>
     </message>
     <message>
         <location filename="settings.ui" line="142"/>
