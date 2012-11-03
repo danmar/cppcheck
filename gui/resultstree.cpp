@@ -532,25 +532,29 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
-            QAction *copyfilename = new QAction(tr("Copy filename"), &menu);
-            QAction *copypath     = new QAction(tr("Copy full path"), &menu);
-            QAction *copymessage  = new QAction(tr("Copy message"), &menu);
-            QAction *hide         = new QAction(tr("Hide"), &menu);
+            QAction *copyfilename   = new QAction(tr("Copy filename"), &menu);
+            QAction *copypath       = new QAction(tr("Copy full path"), &menu);
+            QAction *copymessage    = new QAction(tr("Copy message"), &menu);
+            QAction *copymessageid  = new QAction(tr("Copy message id"), &menu);
+            QAction *hide           = new QAction(tr("Hide"), &menu);
 
             if (multipleSelection) {
                 copyfilename->setDisabled(true);
                 copypath->setDisabled(true);
                 copymessage->setDisabled(true);
+                copymessageid->setDisabled(true);
             }
 
             menu.addAction(copyfilename);
             menu.addAction(copypath);
             menu.addAction(copymessage);
+            menu.addAction(copymessageid);
             menu.addAction(hide);
 
             connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
             connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
             connect(copymessage, SIGNAL(triggered()), this, SLOT(CopyMessage()));
+            connect(copymessageid, SIGNAL(triggered()), this, SLOT(CopyMessageId()));
             connect(hide, SIGNAL(triggered()), this, SLOT(HideResult()));
         }
 
@@ -724,6 +728,21 @@ void ResultsTree::CopyMessage()
 
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(message);
+    }
+}
+
+void ResultsTree::CopyMessageId()
+{
+    if (mContextItem) {
+        // Make sure we are working with the first column
+        if (mContextItem->column() != 0)
+            mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
+        QVariantMap data = mContextItem->data().toMap();
+
+        QString messageId = data["id"].toString();
+
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(messageId);
     }
 }
 
