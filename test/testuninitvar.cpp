@@ -43,8 +43,8 @@ private:
         TEST_CASE(uninitvar_switch);    // handling switch
         TEST_CASE(uninitvar_references); // references
         TEST_CASE(uninitvar_return);    // return
-        TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always 0-terminate
-        TEST_CASE(uninitvar_memset);    // not 0-terminated
+        TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always null-terminate
+        TEST_CASE(uninitvar_memset);    // not null-terminated
         TEST_CASE(uninitvar_func);      // analyse functions
         TEST_CASE(func_uninit_var);     // analyse function calls for: 'int a(int x) { return x+x; }'
         TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
@@ -1564,7 +1564,7 @@ private:
 
     }
 
-    // strncpy doesn't always 0-terminate..
+    // strncpy doesn't always null-terminate..
     void uninitvar_strncpy() {
         checkUninitVar("void f()\n"
                        "{\n"
@@ -1572,7 +1572,7 @@ private:
                        "    strncpy(a, s, 20);\n"
                        "    strncat(a, s, 20);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always null-terminate it).\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
@@ -1580,7 +1580,7 @@ private:
                        "    strncpy(a, \"hello\", 3);\n"
                        "    strncat(a, \"world\", 20);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always null-terminate it).\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"
@@ -1623,7 +1623,7 @@ private:
                        "    memset(a, 'a', 20);\n"
                        "    strcat(a, s);\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of 'a' (not 0-terminated).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of 'a' (not null-terminated).\n", errout.str());
     }
 
     std::string analyseFunctions(const char code[]) {

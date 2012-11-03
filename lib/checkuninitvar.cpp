@@ -256,7 +256,7 @@ private:
                     continue;
 
                 // mode 2 : reading array data with mem.. function. It's ok if the
-                //          array is not 0-terminated
+                //          array is not null-terminated
                 if (mode == 2 && c->strncpy_)
                     continue;
 
@@ -311,7 +311,7 @@ private:
     }
 
     /**
-     * Reading array elements with a "mem.." function. It's ok if the array is not 0-terminated.
+     * Reading array elements with a "mem.." function. It's ok if the array is not null-terminated.
      * @param checks all available checks
      * @param tok variable token
      */
@@ -640,7 +640,7 @@ private:
                 }
             }
 
-            // strncpy doesn't 0-terminate first parameter
+            // strncpy doesn't null-terminate first parameter
             if (Token::Match(&tok, "strncpy ( %var% ,")) {
                 if (Token::Match(tok.tokAt(4), "%str% ,")) {
                     if (Token::Match(tok.tokAt(6), "%num% )")) {
@@ -1337,7 +1337,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
 
 void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
 {
-    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always 0-terminate it)." : " (not 0-terminated)."));
+    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always null-terminate it)." : " (not null-terminated)."));
 }
 
 void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varname)
