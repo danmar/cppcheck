@@ -171,7 +171,6 @@ public:
     /** @brief --report-progress */
     bool reportProgress;
 
-#ifdef HAVE_RULES
     /** Rule */
     class CPPCHECKLIB Rule {
     public:
@@ -190,7 +189,6 @@ public:
      * @brief Extra rules
      */
     std::list<Rule> rules;
-#endif
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;

@@ -174,7 +174,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level4</WarningLevel>
@@ -266,7 +266,7 @@
       <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level4</WarningLevel>
