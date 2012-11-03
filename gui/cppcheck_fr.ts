@@ -611,10 +611,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 <context>
     <name>Platforms</name>
     <message>
-        <source>Build-in</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Unix 32-bit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -632,6 +628,10 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     </message>
     <message>
         <source>Windows 64-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Built-in</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -849,6 +849,10 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy message id</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

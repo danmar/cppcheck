@@ -639,10 +639,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 <context>
     <name>Platforms</name>
     <message>
-        <source>Build-in</source>
-        <translation>내장 방식</translation>
-    </message>
-    <message>
         <source>Unix 32-bit</source>
         <translation>Unix 32-bit</translation>
     </message>
@@ -661,6 +657,10 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     <message>
         <source>Windows 64-bit</source>
         <translation>Windows 64-bit</translation>
+    </message>
+    <message>
+        <source>Built-in</source>
+        <translation>내장 방식</translation>
     </message>
 </context>
 <context>
@@ -883,6 +883,10 @@ Please select the directory where file is located.</source>
     </message>
     <message>
         <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy message id</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
