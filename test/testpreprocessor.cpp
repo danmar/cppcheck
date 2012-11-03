@@ -3676,6 +3676,15 @@ private:
         ASSERT_EQUALS(true, preprocessor.validateCfg("\"\\\"DEBUG()\"", "DEBUG"));
         ASSERT_EQUALS(false, preprocessor.validateCfg("\"DEBUG()\" DEBUG", "DEBUG"));
         ASSERT_EQUALS(true, preprocessor.validateCfg("#undef DEBUG", "DEBUG"));
+
+        // #4301:
+        // #ifdef A
+        // int a = A;  // <- using macro. must use -D so "A" will get a proper value
+        errout.str("");
+        settings.addEnabled("all");
+        preprocessor.setFile0("test.c");
+        ASSERT_EQUALS(false, preprocessor.validateCfg("int a=A;", "A"));
+        ASSERT_EQUALS("[test.c:1]: (information) Skipping configuration 'A' because it seems to be invalid. Use -D if you want to check it.\n", errout.str());
     }
 
     void if_sizeof() { // #4071

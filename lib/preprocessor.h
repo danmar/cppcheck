@@ -239,6 +239,10 @@ public:
      */
     std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes = std::list<std::string>());
 
+    void setFile0(const std::string &f) {
+        file0 = f;
+    }
+
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader);
 

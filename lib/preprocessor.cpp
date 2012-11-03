@@ -2666,10 +2666,12 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
 void Preprocessor::validateCfgError(const std::string &cfg)
 {
     const std::string id = "ConfigurationNotChecked";
-    const std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    const Severity::SeverityType severity = Severity::information;
-    ErrorLogger::ErrorMessage errmsg(locationList, severity, "Skipping configuration '" + cfg + "' because it seems to be invalid. Use -D if you want to check it.", id, false);
-    errmsg.file0 = file0;
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = 1;
+    loc.setfile(file0);
+    locationList.push_back(loc);
+    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' because it seems to be invalid. Use -D if you want to check it.", id, false);
     _errorLogger->reportInfo(errmsg);
 }
 
