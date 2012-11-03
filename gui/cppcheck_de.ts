@@ -58,7 +58,7 @@ Executable: kate
 Parameters: -l(line) (file)</source>
         <translation>Hier können Sie Anwendungen hinzufügen, die Codedateien öffnen können. Geben Sie den Namen der Anwendung, deren ausführbare Datei und Kommandozeilenparameter für die Ausführung an.
 
-Die folgenden Texte in Paramtern werden durch die passenden Werte ersetzt, wenn die Anwendung ausgeführt wird:
+Die folgenden Texte in Parametern werden durch die passenden Werte ersetzt, wenn die Anwendung ausgeführt wird:
 (file) - Name der Datei, die den Fehler enthält
 (line) - Zeile, die den Fehler enthält
 (message) - Fehlermeldung
@@ -419,7 +419,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="main.ui" line="615"/>
         <source>Platforms</source>
-        <translation>Platformen</translation>
+        <translation>Plattformen</translation>
     </message>
     <message>
         <location filename="main.ui" line="626"/>
@@ -641,7 +641,7 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
 Opening a new XML file will clear current results.Do you want to proceed?</source>
         <translation>Aktuelle Ergebnisse werden gelöscht.
 
-          Das Einlesen einer XML Datei löscht die aktuellen Ergebnisse. Fortfahren?</translation>
+          Das Einlesen einer XML-Datei löscht die aktuellen Ergebnisse. Fortfahren?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="662"/>
@@ -947,7 +947,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
     <message>
         <location filename="projectfiledialog.cpp" line="272"/>
         <source>Select directory to ignore</source>
-        <translation>Wähle zu ingorierendes Verzeichnis</translation>
+        <translation>Wähle zu ignorierendes Verzeichnis</translation>
     </message>
 </context>
 <context>
@@ -1137,7 +1137,7 @@ Bitte wählen Sie das Verzeichnis, in dem sich die Datei befindet.</translation>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Es wurden Fehler gefunden, aber sie sind so konfiguriert, ausgeblendet zu werden.
-Legen Sie unter dem Menü Ansicht fest, welche Art von Fehlern angezeigt werden sollen.</translation>
+Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werden sollen.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="267"/>
