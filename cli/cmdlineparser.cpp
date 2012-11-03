@@ -545,7 +545,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             std::ostringstream doc;
             // Get documentation..
             for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-                const std::string name((*it)->name());
+                const std::string& name((*it)->name());
                 const std::string info((*it)->classInfo());
                 if (!name.empty() && !info.empty())
                     doc << "===" << name << "===\n"
