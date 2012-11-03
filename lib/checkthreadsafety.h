@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckNonReentrantFunctionsH
-#define CheckNonReentrantFunctionsH
+#ifndef CheckThreadSafetyH
+#define CheckThreadSafetyH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -32,32 +32,41 @@
 /// @{
 
 /**
- * @brief Using non reentrant functions that can be replaced by their reentrant versions
+ * @brief
+ * - Using non reentrant functions that can be replaced by their reentrant versions
+ * - Check that within a function each mutex which is locked is also
+ *   unlocked before returning from the function.
+ *   The code checks the above for pthread mutexes (i.e. functions  pthread_mutex_lock
+ *   and pthread_mutex_unlock)
  */
 
-class CPPCHECKLIB CheckNonReentrantFunctions : public Check {
+class CPPCHECKLIB CheckThreadSafety : public Check {
 public:
-    /** This constructor is used when registering the CheckNonReentrantFunctions */
-    CheckNonReentrantFunctions() : Check(myName()) {
+    /** This constructor is used when registering the CheckThreadSafety */
+    CheckThreadSafety() : Check(myName()) {
         initNonReentrantFunctions();
     }
 
     /** This constructor is used when running checks. */
-    CheckNonReentrantFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckThreadSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {
         initNonReentrantFunctions();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
-        CheckNonReentrantFunctions checkNonReentrantFunctions(tokenizer, settings, errorLogger);
-        checkNonReentrantFunctions.nonReentrantFunctions();
+        CheckThreadSafety checkThreadSafety(tokenizer, settings, errorLogger);
+        checkThreadSafety.nonReentrantFunctions();
+        checkThreadSafety.checkMutexUsage();
     }
 
     /** Check for non reentrant functions */
     void nonReentrantFunctions();
 
-private:
+    /** @brief %Check usage of pthread_mutex_lock and pthread_mutex_unlock */
+    void checkMutexUsage();
 
+private:
+    
     /* function name / error message */
     std::map<std::string,std::string> _nonReentrantFunctions;
 
@@ -84,26 +93,41 @@ private:
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckNonReentrantFunctions c(0, settings, errorLogger);
+        CheckThreadSafety c(0, settings, errorLogger);
 
         std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
         for (; it!=itend; ++it) {
             c.reportError(0, Severity::portability, "nonreentrantFunctions"+it->first, it->second);
         }
     }
+    //void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    //    CheckMutex c(0, settings, errorLogger);
+    //}
 
     static std::string myName() {
-        return "Non reentrant functions";
+        return "Thread Safety";
     }
 
     std::string classInfo() const {
-        std::string info = "Warn if any of these non reentrant functions are used:\n";
+        std::string info = "Warn if a mutex locked in a method remains locked when control exists the method.\n";
+         info += "Check pthread_mutex locking.\n"
+                 "* Each pthread_mutex_lock call should have a corresponding pthread_mutex_unlock call\n"
+                 "  before returning from method\n";
+        info += "Warn if any of these non reentrant functions are used:\n";
         std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
         for (; it!=itend; ++it) {
             info += "* " + it->first + "\n";
         }
         return info;
     }
+
+    void checkFunction(const Token* tok);
+    std::string getMutexVariable(const Token * tok4);
+    void setAllMutexState(std::map<std::string, bool>& mutexToState, bool value);
+    void checkMutexState(std::map<std::string, bool>& mutexToState, 
+            const Token * locationTok, Token *functionName); 
+    // Reporting errors..
+    void checkMutexUsageError(const Token* tok, std::string, const std::string& functionName);
 };
 /// @}
 //---------------------------------------------------------------------------
