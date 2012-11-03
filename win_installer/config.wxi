@@ -4,10 +4,10 @@
     <?define Platform = "x86" ?>
   <?endif ?>
 
-  <?define CliBuildDir = "..\cli\release" ?>
-  <?define GuiBuildDir = "..\Build\gui" ?>
+  <?define CliBuildDir = "..\bin" ?>
+  <?define GuiBuildDir = "..\bin" ?>
   <?define TranslationsDir = "..\gui" ?>
   <?define HelpDir = "..\gui\help" ?>
-  <?define QtDllDir = "..\..\runtimes" ?>
-  <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC90_CRT_x86.msm" ?>
+  <?define QtDllDir = "..\bin" ?>
+  <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC100_CRT_x86.msm" ?>
 </Include>

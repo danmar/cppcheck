@@ -2,19 +2,24 @@
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <?include productInfo.wxi ?>
   <?include config.wxi ?>
+
   <Product Name='$(var.ProductName)' Id='*' UpgradeCode='$(var.ProductUpgradeCode)'
     Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='$(var.ProductManufacturer)'>
 
     <Package Id='*' Keywords='Installer' Description="$(var.ProductName) Setup"
       Comments='$(var.ProductDescription)' Manufacturer='$(var.ProductManufacturer)'
-      InstallerVersion='300' Languages='1033' Compressed='yes' SummaryCodepage='1252'/>
+      InstallerVersion='300' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine'/>
 
     <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' CompressionLevel='high' DiskPrompt='CD-ROM 1' />
     <Property Id='DiskPrompt' Value='Cppcheck installation [1]' />
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='SystemFolder' FileSource='SystemFolder' />
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id='INSTALLDIR' Name='$(var.ProductNameShort)'>
+          <Component Id='cppcheckcore.dll' Guid='$(var.cppcheckcoreGUID)'>
+            <File Id='cppcheckcore.dll' Name='cppcheck-core.dll' DiskId='1' Source='$(var.CliBuildDir)\cppcheck-core.dll' KeyPath='yes' />
+          </Component>
           <Component Id='cppcheck.exe' Guid='$(var.cppcheckGUID)'>
             <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
           </Component>
@@ -29,18 +34,15 @@
               <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name='$(var.ProductNameShort)'
                   WorkingDirectory='INSTALLDIR' Icon="cppcheckgui.exe" IconIndex="0" Advertise="yes" />
             </File>
-            <File Id='libgcc_s_dw2_1_dll' Name='libgcc_s_dw2-1.dll' Source='libgcc_s_dw2-1.dll' />
-            <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' />
-            <File Id='libpcre0dll' Name='libpcre-0.dll' Source='libpcre-0.dll' />
             <File Id='qtcore4dll' Name='qtcore4.dll' Source='$(var.QtDllDir)\qtcore4.dll' />
             <File Id='qtgui4dll' Name='qtgui4.dll' Source='$(var.QtDllDir)\qtgui4.dll' />
-            <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
           </Component>
           <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
             <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.TranslationsDir)\cppcheck_de.qm' />
             <File Id='cppcheck_es.qm' Name='cppcheck_es.qm' Source='$(var.TranslationsDir)\cppcheck_es.qm' />
             <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.TranslationsDir)\cppcheck_fi.qm' />
             <File Id='cppcheck_fr.qm' Name='cppcheck_fr.qm' Source='$(var.TranslationsDir)\cppcheck_fr.qm' />
+            <File Id='cppcheck_it.qm' Name='cppcheck_it.qm' Source='$(var.TranslationsDir)\cppcheck_it.qm' />
             <File Id='cppcheck_ja.qm' Name='cppcheck_ja.qm' Source='$(var.TranslationsDir)\cppcheck_ja.qm' />
             <File Id='cppcheck_ko.qm' Name='cppcheck_ko.qm' Source='$(var.TranslationsDir)\cppcheck_ko.qm' />
             <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.TranslationsDir)\cppcheck_nl.qm' />
@@ -64,17 +66,22 @@
             <RemoveFile Id="msvcp90.dll" On="install" Name="msvcp90.dll" />
             <RemoveFile Id="msvcr90.dll" On="install" Name="msvcr90.dll" />
             <RemoveFile Id="Microsoft.VC90.CRT.manifest" On="install" Name="Microsoft.VC90.CRT.manifest" />
+            <RemoveFile Id='libgcc_s_dw2_1_dll' On='install' Name='libgcc_s_dw2-1.dll' />
+            <RemoveFile Id='mingwm10dll' On='install' Name='mingwm10.dll' />
+            <RemoveFile Id='libpcre0dll' On='install' Name='libpcre-0.dll' />
             <RemoveFile Id="gui.exe" On="install" Name="gui.exe" />
             <RemoveFile Id="cppcheck_se.qm" On="install" Name="cppcheck_se.qm" />
             <RemoveFile Id="cppcheck_en.qm" On="install" Name="cppcheck_en.qm" />
+            <RemoveFile Id="cppcheck_pl.qm" On="install" Name="cppcheck_pl.qm" />
             <RemoveFile Id="onlinehelp.qhc" On="install" Name="onlinehelp.qhc" />
             <RemoveFile Id="qtclucene4dll" On="install" Name="qtclucene4.dll" />
             <RemoveFile Id="qthelp4dll" On="install" Name="qthelp4.dll" />
             <RemoveFile Id="qtnetwork4dll" On="install" Name="qtnetwork4.dll" />
             <RemoveFile Id="qtsql4dll" On="install" Name="qtsql4.dll" />
+            <RemoveFile Id='qtxml4dll' On='install' Name='qtxml4.dll' />
           </Component>
         </Directory>
-        <!-- <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" /> -->
+        <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
       </Directory>
 
       <Directory Id='ProgramMenuFolder' Name='Programs' >
@@ -88,27 +95,47 @@
     </Directory>
 
     <Feature Id='Complete' Title='$(var.ProductName)' Description='The complete package.'
-      Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR' >
-      <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
-        <ComponentRef Id='cppcheck.exe' />
+      Display='expand' Level='1' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR' >
+      <Feature Id='CppcheckCore' Display='hidden' AllowAdvertise='no' Title='Cppcheck-Core' Description='Cppcheck core components' Level='1'>
+        <ComponentRef Id='cppcheckcore.dll' />
         <ComponentRef Id='RegistryEntries' />
-        <ComponentRef Id='GuiExecutable' />
-        <ComponentRef Id='GuiTranslations' />
         <ComponentRef Id='BaseDocs' />
-        <ComponentRef Id='ProgramMenuDir' />
         <ComponentRef Id='InnoSetupCleanup' />
       </Feature>
-      <!--
-      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2008 Runtime Components ">
+      <Feature Id='CLI' Title='Command line interface' AllowAdvertise='no' Description='Command line tool' Level='1'>
+        <ComponentRef Id='cppcheck.exe' />
+      </Feature>
+      <Feature Id='GUI' Title='Graphical interface' AllowAdvertise='no' Description='GUI for cppcheck' Level='1'>
+        <ComponentRef Id='RegistryEntries' />
+        <ComponentRef Id='GuiExecutable' />
+        <Feature Id='Translations' Title='GUI Translations' AllowAdvertise='no' Description='Translations for cppcheck GUI' Level='1'>
+          <ComponentRef Id='GuiTranslations' />
+        </Feature>
+        <ComponentRef Id='BaseDocs' />
+        <ComponentRef Id='ProgramMenuDir' />
+      </Feature>
+      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2010 Runtime Components ">
         <MergeRef Id="CRT"/>
       </Feature>
-      -->
     </Feature>
 
     <MajorUpgrade DowngradeErrorMessage='Downgrade is not allowed'/>
+    <!--Remove pre 1.57 versions which can't be upgraded with MajorUpgrade-->
+    <InstallExecuteSequence>
+      <Custom Action='UninstallOld152' After='InstallFinalize'>NOT Installed</Custom>
+      <Custom Action='UninstallOld153' After='InstallFinalize'>NOT Installed</Custom>
+      <Custom Action='UninstallOld154' After='InstallFinalize'>NOT Installed</Custom>
+      <Custom Action='UninstallOld155' After='InstallFinalize'>NOT Installed</Custom>
+      <Custom Action='UninstallOld156' After='InstallFinalize'>NOT Installed</Custom>
+    </InstallExecuteSequence>
+    <CustomAction Id='UninstallOld152' Directory='SystemFolder' ExeCommand="msiexec.exe /X {836AF028-6EE2-457C-B242-19D61701BAA3} /qn" Execute="immediate" Return="asyncNoWait"/>
+    <CustomAction Id='UninstallOld153' Directory='SystemFolder' ExeCommand="msiexec.exe /X {42850B7E-CD5F-449A-B6DA-C423156D2ACF} /qn" Execute="immediate" Return="asyncNoWait"/>
+    <CustomAction Id='UninstallOld154' Directory='SystemFolder' ExeCommand="msiexec.exe /X {7722557B-4B10-4E8F-918A-78FBAEFB09B1} /qn" Execute="immediate" Return="asyncNoWait"/>
+    <CustomAction Id='UninstallOld155' Directory='SystemFolder' ExeCommand="msiexec.exe /X {211B2B89-3FE0-4F49-88CC-27E283BEC010} /qn" Execute="immediate" Return="asyncNoWait"/>
+    <CustomAction Id='UninstallOld156' Directory='SystemFolder' ExeCommand="msiexec.exe /X {1CC8C271-A877-4DF0-B1DE-C1B7D83521BC} /qn" Execute="immediate" Return="asyncNoWait"/>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-    <UIRef Id="WixUI_InstallDir"/>
+    <UIRef Id="WixUI_FeatureTree"/>
 
     <Icon Id='cppcheckgui.exe' SourceFile='$(var.GuiBuildDir)\cppcheck-gui.exe' />
 

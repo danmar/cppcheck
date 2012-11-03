@@ -1,33 +1,40 @@
-<Project DefaultTargets="All" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="All" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <DefineSolutionProperties>false</DefineSolutionProperties>
-
-    <WixToolPath Condition="'$(WixToolPath)' == ''">$(PROGRAMFILES)\Windows Installer XML v3.5\bin\</WixToolPath>
+    <WixToolPath Condition="'$(WixToolPath)' == ''">$(PROGRAMFILES)\WiX Toolset v3.6\bin\</WixToolPath>
     <WixTargetsPath Condition="'$(WixTargetsPath)' == ''">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
 
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
 
-    <OutputName Condition=" '$(ProductVersion)' != '' ">cppcheck-$(ProductVersion)-$(Platform)-Setup</OutputName>
-    <OutputPath>..\Build\</OutputPath>
-    <IntermediateOutputPath>..\BuildTmp\Wix\$(Platform)\</IntermediateOutputPath>
+    <OutputName>cppcheck-$(ProductVersion)-$(Platform)-Setup</OutputName>
+    <OutputPath>Build\</OutputPath>
+    <IntermediateOutputPath>BuildTmp\Wix\$(Platform)\</IntermediateOutputPath>
     <OutputType>package</OutputType>
+
+    <ProjectGuid>{3b772885-4980-4a76-8407-4dabf8f7757c}</ProjectGuid>
   </PropertyGroup>
 
   <ItemGroup>
-    <WixExtension Include="$(WixToolPath)WixUIExtension.dll" />
-    <Compile Include="cppcheck.wxs"/>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>C:\Programme\WiX Toolset v3.6\bin\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+    <Compile Include="cppcheck.wxs" />
   </ItemGroup>
-
-  <Import Project="$(WixTargetsPath)"/>
-
-  <Target Name="All" DependsOnTargets="Clean;Validate;Build"/>
-
+  <ItemGroup>
+    <Content Include="config.wxi" />
+    <Content Include="productInfo.wxi" />
+    <Content Include="readme.txt" />
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" />
+  <Target Name="All" DependsOnTargets="Clean;Validate;Build" />
   <Target Name="Clean">
-    <RemoveDir Directories="..\buildtmp\wix" />
+    <RemoveDir Directories="BuildTmp\Wix" />
   </Target>
 
   <Target Name="Validate">
-    <Exec Command="..\cli\release\cppcheck --rule=. --version"/>
+    <Exec Command="..\bin\cppcheck --rule=. --version" />
   </Target>
 </Project>
