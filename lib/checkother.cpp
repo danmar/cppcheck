@@ -19,7 +19,6 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
-#include "checknullpointer.h"   // CheckNullPointer::isPointerDeRef()
 #include "mathlib.h"
 #include "symboldatabase.h"
 
@@ -3109,9 +3108,8 @@ void CheckOther::checkSuspiciousStringCompare()
 
             const Variable* var = symbolDatabase->getVariableFromVarId(varTok->varId());
             if (var) {
-                bool unknown=false;
                 if (_tokenizer->isC() ||
-                    (var->isPointer() && !CheckNullPointer::isPointerDeRef(tok, unknown, symbolDatabase)))
+                    (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]")))
                     suspiciousStringCompareError(tok, var->name());
             }
         }

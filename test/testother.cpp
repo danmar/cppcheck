@@ -5181,6 +5181,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("bool foo(const Foo* c) {\n"
+              "    return \"x\" == c->bar();\n" // #4314
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Ticket #4257
         check("bool foo() {\n"
               "MyString *str=Getter();\n"
