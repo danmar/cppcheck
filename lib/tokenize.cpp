@@ -3022,14 +3022,6 @@ bool Tokenizer::simplifySizeof()
                 tempTok.str("*");
                 sizeOfVar[varId] = MathLib::longToString(sizeOfType(&tempTok));
             }
-
-            else if (Token::Match(tok->previous(), "%type% %var% [ ] = %str% ;")) {
-                const unsigned int size = sizeOfType(tok->tokAt(4));
-                if (size == 0)
-                    continue;
-
-                sizeOfVar[varId] = MathLib::longToString(size);
-            }
         }
     }
 
