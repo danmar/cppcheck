@@ -2410,6 +2410,12 @@ private:
         }
 
         {
+            const char code[] = "; namespace std { }";
+
+            ASSERT_EQUALS(";", tok(code));
+        }
+
+        {
             const char code[] = "using namespace std; namespace a{ namespace b{ void f(){} } }";
 
             const std::string expected("namespace a { namespace b { void f ( ) { } } }");
