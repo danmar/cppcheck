@@ -13,14 +13,11 @@
 # xmllint --noout errlist.xml
 #
 # Update version numbers in:
-# - lib/cppcheck.cpp
 # - cli/main.cpp
-# - cli/cppcheck.rc
+# - lib/cppcheck.cpp
+# - lib/version.h
 # - man/manual.docbook
 # - win_installer/productInfo.wxs
-#
-# Make sure versions are set:
-# grep 'VERSION ' cli/cppcheck.rc
 #
 # Update the Changelog..
 # wget http://josefsson.org/git2cl/git2cl
