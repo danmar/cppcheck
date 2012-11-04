@@ -657,7 +657,7 @@ void CheckClass::initializationListUsage()
                 break;
             if (tok->varId() && Token::Match(tok, "%var% = %any%")) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-                if (var && var->scope() == owner) {
+                if (var && var->scope() == owner && !var->isStatic()) {
                     bool allowed = true;
                     for (const Token* tok2 = tok->tokAt(2); tok2->str() != ";"; tok2 = tok2->next()) {
                         if (tok2->varId()) {

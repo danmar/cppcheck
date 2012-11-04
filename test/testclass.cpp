@@ -5399,6 +5399,12 @@ private:
                                      "    Fred() { a = foo(); }\n"
                                      "};");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class Fred {\n" // #4332
+                                     "    static std::string s;\n"
+                                     "    Fred() { s = \"foo\"; }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
