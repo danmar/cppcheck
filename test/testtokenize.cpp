@@ -4710,8 +4710,15 @@ private:
 
     // "!(abc.a)" => "!abc.a"
     void removeParentheses6() {
-        const char code[] = "(!(abc.a))";
-        ASSERT_EQUALS("( ! abc . a )", tokenizeAndStringify(code));
+        {
+            const char code[] = "(!(abc.a))";
+            ASSERT_EQUALS("( ! abc . a )", tokenizeAndStringify(code));
+        }
+        //handle more complex member selections
+        {
+            const char code[] = "(!(a.b.c.d));";
+            ASSERT_EQUALS("( ! a . b . c . d ) ;", tokenizeAndStringify(code));
+        }
     }
 
     void removeParentheses7() {
