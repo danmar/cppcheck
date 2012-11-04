@@ -3059,7 +3059,7 @@ bool Tokenizer::simplifySizeof()
         }
 
         // sizeof('x')
-        if (Token::Match(tok, "sizeof ( %any% )") && tok->strAt(2)[0] == '\'') {
+        if (Token::Match(tok, "sizeof ( %char% )")) {
             tok->deleteNext();
             tok->deleteThis();
             tok->deleteNext();
