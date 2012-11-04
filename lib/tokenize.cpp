@@ -4148,30 +4148,6 @@ void Tokenizer::simplifyCompoundAssignment()
 void Tokenizer::simplifyConditionOperator()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok,"return|= ( %bool% ) ?")) {
-            Token *tok2 = tok->tokAt(5);
-            while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->isArithmeticalOp()))
-                tok2 = tok2->next();
-            if (tok2 && tok2->str() == ":") {
-                if (tok->strAt(2) == "false") {
-                    Token::eraseTokens(tok,tok2->next());
-                } else {
-                    Token *tok3 = tok2->next();
-                    while (tok3 && (tok3->isName() || tok3->isNumber() || tok3->isArithmeticalOp()))
-                        tok3 = tok3->next();
-
-                    if (tok3 && tok3->str() == ";") {
-                        tok->deleteNext(4);
-                        tok = tok2;
-                        while (tok && tok->str() != ";")
-                            tok->deleteThis();
-                        if (!tok)
-                            break;
-                    }
-                }
-            }
-        }
-
         if (tok->str() == "(" || tok->str() == "[" ||
             (tok->str() == "{" && tok->previous() && tok->previous()->str() == "="))
             tok = tok->link();
@@ -4423,23 +4399,32 @@ bool Tokenizer::simplifyConstTernaryOp()
         if (tok->str() != "?")
             continue;
 
-        if (!Token::Match(tok->tokAt(-2), "=|,|(|[|{|}|;|case|return"))
+        if (!Token::Match(tok->tokAt(-2), "=|,|(|[|{|}|;|case|return %any%") &&
+            !Token::Match(tok->tokAt(-4), "=|,|(|[|{|}|;|case|return ( %any% )"))
             continue;
 
-        if (!tok->previous()->isBoolean() && !tok->previous()->isNumber())
+        const unsigned int offset = (tok->previous()->str() == ")") ? 2 : 1;
+
+        if (!tok->tokAt(-offset)->isBoolean() && !tok->tokAt(-offset)->isNumber())
             continue;
 
-        // Find the ":" token..
+        // Find the token ":" then go to the next token
         Token *semicolon = skipTernaryOp(tok);
         if (!semicolon || semicolon->previous()->str() != ":" || !semicolon->next())
             continue;
-        semicolon = semicolon->previous();
 
-        if (tok->previous()->str() == "false" ||
-            tok->previous()->str() == "0") {
-            // Use code after semicolon, remove code before it.
-            semicolon = semicolon->next();
+        // go back before the condition, if possible
+        tok = tok->tokAt(-2);
+        if (offset == 2) {
+            // go further back before the "("
             tok = tok->tokAt(-2);
+            //simplify the parenthesis
+            tok->deleteNext();
+            tok->next()->deleteNext();
+        }
+
+        if (tok->next()->str() == "false" || tok->next()->str() == "0") {
+            // Use code after semicolon, remove code before it.
             Token::eraseTokens(tok, semicolon);
 
             tok = tok->next();
@@ -4448,38 +4433,22 @@ bool Tokenizer::simplifyConstTernaryOp()
 
         // The condition is true. Delete the operator after the ":"..
         else {
-            const Token *end = 0;
-
-            // check the operator after the :
-            if (Token::simpleMatch(semicolon, ": (")) {
-                end = semicolon->next()->link();
-                if (!Token::Match(end, ") !!."))
-                    continue;
-            }
-
             // delete the condition token and the "?"
-            tok = tok->tokAt(-2);
             tok->deleteNext(2);
 
-            // delete operator after the :
-            if (end) {
-                Token::eraseTokens(semicolon->previous(), end->next());
-                continue;
-            }
-
-            unsigned int colonlevel = 0;
-            for (const Token *endTok = semicolon->next(); endTok; endTok = endTok->next()) {
+            unsigned int ternaryOplevel = 0;
+            for (const Token *endTok = semicolon; endTok; endTok = endTok->next()) {
                 if (endTok->str() == "(" || endTok->str() == "[" || endTok->str() == "{") {
                     endTok = endTok->link();
                 }
 
                 else if (endTok->str() == "?")
-                    ++colonlevel;
-                else if (Token::Match(endTok, ")|}|]|;|:")) {
-                    if (endTok->str() == ":" && colonlevel)
-                        --colonlevel;
+                    ++ternaryOplevel;
+                else if (Token::Match(endTok, ")|}|]|;|,|:")) {
+                    if (endTok->str() == ":" && ternaryOplevel)
+                        --ternaryOplevel;
                     else {
-                        Token::eraseTokens(semicolon->previous(), endTok);
+                        Token::eraseTokens(semicolon->tokAt(-2), endTok);
                         ret = true;
                         break;
                     }
