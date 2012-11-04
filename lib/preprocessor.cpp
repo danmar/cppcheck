@@ -458,7 +458,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     code << str[i++];
                 }
                 code << '}';
-            }
+            } else
+                --i;
         } else if (ch == '#' && previous == '\n') {
             code << ch;
             previous = ch;

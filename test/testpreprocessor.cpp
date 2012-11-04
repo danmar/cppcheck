@@ -383,6 +383,7 @@ private:
 
         ASSERT_EQUALS(" __asm123", preprocessor.removeComments(" __asm123", "3837.cpp"));
         ASSERT_EQUALS("\" __asm { ; } \"", preprocessor.removeComments("\" __asm { ; } \"", "3837.cpp"));
+        ASSERT_EQUALS("__asm__ volatile { \"\" }", preprocessor.removeComments("__asm__ volatile { \"\" }", "3837.cpp"));
     }
 
 
