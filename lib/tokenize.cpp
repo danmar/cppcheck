@@ -205,12 +205,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 duplicateTypedefError(*tokPtr, name, "template instantiation");
                 *tokPtr = end->link();
                 return true;
-            } else if (Token::Match(tok->previous(), "%type%")) {
-                if (end->link()->next()->str() == "{") {
-                    duplicateTypedefError(*tokPtr, name, "function");
-                    *tokPtr = end->link()->next()->link();
-                    return true;
-                }
             }
         }
 
