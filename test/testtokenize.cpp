@@ -7332,9 +7332,11 @@ private:
                             "HRESULT R;"
                             "LONG_PTR S;"
                             "HANDLE T;"
+                            "PHANDLE U;"
                             "SSIZE_T _ssize_t;"
                             "UINT_PTR uint_ptr;"
                             "WPARAM wparam;"
+                            "HALF_PTR half_ptr;"
                             "INT_PTR int_ptr;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
@@ -7362,11 +7364,12 @@ private:
                                 "long R ; "
                                 "long long S ; "
                                 "void * T ; "
+                                "void * * U ; "
                                 "long long _ssize_t ; "
                                 "unsigned long long uint_ptr ; "
                                 "unsigned long long wparam ; "
-                                "long long int_ptr ;"
-                                ;
+                                "int half_ptr ; "
+                                "long long int_ptr ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win64));
     }
