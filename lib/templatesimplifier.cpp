@@ -188,7 +188,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->next();
 
         // Skip '&'
-        if (Token::Match(tok, "& %var% [,>]"))
+        if (Token::Match(tok, "& ::| %var%"))
             tok = tok->next();
 
         // skip std::

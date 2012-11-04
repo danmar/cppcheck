@@ -260,6 +260,7 @@ private:
         TEST_CASE(varid_catch);
         TEST_CASE(varid_functionPrototypeTemplate);
         TEST_CASE(varid_templatePtr); // #4319
+        TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4061,6 +4062,11 @@ private:
     void varid_templatePtr() {
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: std :: map < int , FooTemplate < int > * > dummy_member@1 [ 1 ] ;\n", tokenizeDebugListing("std::map<int, FooTemplate<int>*> dummy_member[1];"));
+    }
+
+    void varid_templateNamespaceFuncPtr() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: KeyListT < float , & NIFFile :: getFloat > mKeyList@1 [ 4 ] ;\n", tokenizeDebugListing("KeyListT<float, &NIFFile::getFloat> mKeyList[4];"));
     }
 
     void varidclass1() {
