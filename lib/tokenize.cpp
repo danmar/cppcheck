@@ -6511,7 +6511,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
             ret = true;
         }
 
-        while (Token::Match(tok->previous(), "[,;{}(] ( %var% (") &&
+        if (Token::Match(tok->previous(), "[(,;{}] ( %var% (") &&
                tok->link()->previous() == tok->linkAt(2)) {
             // We have "( func ( *something* ))", remove the outer
             // parenthesis
@@ -6520,18 +6520,10 @@ bool Tokenizer::simplifyRedundantParenthesis()
             ret = true;
         }
 
-        while (Token::Match(tok->previous(), "[;{] ( delete %var% ) ;")) {
-            // We have "( delete var )", remove the outer
+        if (Token::Match(tok->previous(), "[,;{}] ( delete [| ]| %var% ) ;")) {
+            // We have "( delete [| ]| var )", remove the outer
             // parenthesis
-            tok->tokAt(3)->deleteThis();
-            tok->deleteThis();
-            ret = true;
-        }
-
-        while (Token::Match(tok->previous(), "[;{] ( delete [ ] %var% ) ;")) {
-            // We have "( delete [] var )", remove the outer
-            // parenthesis
-            tok->tokAt(5)->deleteThis();
+            tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;
         }
@@ -6550,7 +6542,6 @@ bool Tokenizer::simplifyRedundantParenthesis()
             tok->deleteThis();
             tok->deleteNext();
             ret = true;
-            continue;
         }
 
         if (Token::Match(tok->previous(), "[(,!] ( %var% . %var% )")) {
