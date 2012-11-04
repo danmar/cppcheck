@@ -621,6 +621,15 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 patternUnderstood = true;
             }
             break;
+            case 'c':
+                // Character (%char%)
+            {
+                if (tok->_type != eChar)
+                    return false;
+                p += 6;
+                patternUnderstood = true;
+            }
+            break;
             case 's':
                 // String (%str%)
             {

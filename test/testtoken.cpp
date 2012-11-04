@@ -56,6 +56,7 @@ private:
         TEST_CASE(matchSingleChar);
         TEST_CASE(matchNothingOrAnyNotElse);
         TEST_CASE(matchType);
+        TEST_CASE(matchChar);
         TEST_CASE(matchStr);
         TEST_CASE(matchVarid);
         TEST_CASE(matchNumeric);
@@ -274,6 +275,17 @@ private:
 
         givenACodeSampleToTokenize noType("delete", true);
         ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
+    }
+
+    void matchChar() {
+        givenACodeSampleToTokenize chr1("'a'", true);
+        ASSERT_EQUALS(true, Token::Match(chr1.tokens(), "%char%"));
+
+        givenACodeSampleToTokenize chr2("'1'", true);
+        ASSERT_EQUALS(true, Token::Match(chr2.tokens(), "%char%"));
+
+        givenACodeSampleToTokenize noChr("\"10\"", true);
+        ASSERT_EQUALS(false, Token::Match(noChr.tokens(), "%char%"));
     }
 
     void matchStr() {

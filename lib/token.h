@@ -123,6 +123,7 @@ public:
      * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
      * - "%num%" Any numeric token, e.g. "23"
      * - "%bool%" true or false
+     * - "%char%" Any token enclosed in &apos;-character.
      * - "%str%" Any token starting with &quot;-character (C-string).
      * - "%varid%" Match with parameter varid
      * - "%or%" A bitwise-or operator '|'
