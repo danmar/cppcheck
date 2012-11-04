@@ -225,6 +225,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
 
         if (!tok)
             return 0;
+
         // ,/>
         while (tok->str() == ">" || tok->str() == ">>") {
             if (level == 0)
@@ -236,9 +237,15 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 --level;
             }
             tok = tok->next();
+
+            // * / &
+            while (Token::Match(tok, "[*&]"))
+                tok = tok->next();
+
             if (!tok)
                 return 0;
         }
+
         if (tok->str() != ",")
             continue;
         if (level == 0)

@@ -259,6 +259,7 @@ private:
         TEST_CASE(varid_using);  // ticket #3648
         TEST_CASE(varid_catch);
         TEST_CASE(varid_functionPrototypeTemplate);
+        TEST_CASE(varid_templatePtr); // #4319
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4055,6 +4056,11 @@ private:
     void varid_functionPrototypeTemplate() {
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: function < void ( ) > fptr@1 ;\n", tokenizeDebugListing("function<void(void)> fptr;"));
+    }
+
+    void varid_templatePtr() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: std :: map < int , FooTemplate < int > * > dummy_member@1 [ 1 ] ;\n", tokenizeDebugListing("std::map<int, FooTemplate<int>*> dummy_member[1];"));
     }
 
     void varidclass1() {
