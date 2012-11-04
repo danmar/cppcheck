@@ -5076,24 +5076,8 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 
         if (tok2->str() == ",") {
             tok2->str(";");
+            //TODO: should we have to add also template '<>' links?
             list.insertTokens(tok2, type0, typelen);
-            std::stack<Token *> link1;
-            std::stack<Token *> link2;
-            while (((typelen--) > 0) && (NULL != (tok2 = tok2->next()))) {
-                if (tok2->str() == "(")
-                    link1.push(tok2);
-                else if (tok2->str() == ")" && !link1.empty()) {
-                    Token::createMutualLinks(tok2, link1.top());
-                    link1.pop();
-                }
-
-                else if (tok2->str() == "[")
-                    link2.push(tok2);
-                else if (tok2->str() == "]" && !link2.empty()) {
-                    Token::createMutualLinks(tok2, link2.top());
-                    link2.pop();
-                }
-            }
         }
 
         else {
