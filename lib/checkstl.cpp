@@ -954,6 +954,13 @@ void CheckStl::size()
                         sizeError(tok1);
                 }
 
+                // check for comparison to one
+                if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1")) ||
+                    (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>"))) {
+                    if (isStlContainer(varid))
+                        sizeError(tok1);
+                }
+
                 // check for using as boolean expression
                 else if ((Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
                          (tok->previous()->type() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {

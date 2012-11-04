@@ -1444,6 +1444,34 @@ private:
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
+              "    if (x.size() >= 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (x.size() < 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (1 <= x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (1 > x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
               "    if (x.size()) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
