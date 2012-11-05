@@ -126,6 +126,7 @@ void CheckInternal::checkMissingPercentCharacter()
         magics.insert("%type%");
         magics.insert("%num%");
         magics.insert("%bool%");
+        magics.insert("%char%");
         magics.insert("%str%");
         magics.insert("%varid%");
         magics.insert("%or%");
@@ -178,6 +179,7 @@ void CheckInternal::checkUnknownPattern()
         knownPatterns.insert("%type%");
         knownPatterns.insert("%num%");
         knownPatterns.insert("%bool%");
+        knownPatterns.insert("%char%");
         knownPatterns.insert("%str%");
         knownPatterns.insert("%varid%");
         knownPatterns.insert("%or%");
