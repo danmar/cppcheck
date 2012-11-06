@@ -790,7 +790,7 @@ void CheckStl::if_find()
                     // stl container
                     if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
                         if_findError(tok, false);
-                    else if (Token::Match(decl, "std :: string &| %varid%", varid))
+                    else if (Token::Match(decl, "std :: string|wstring &| %varid%", varid))
                         if_findError(tok, true);
                 }
             }
@@ -839,7 +839,7 @@ void CheckStl::if_find()
                                 if_findError(tok, false);
                         }
 
-                        else if (Token::Match(decl, "std :: string > &| %varid%", varid))
+                        else if (Token::Match(decl, "std :: string|wstring > &| %varid%", varid))
                             if_findError(tok, true);
                     }
 
@@ -1133,11 +1133,11 @@ void CheckStl::string_c_str()
             continue;
 
         enum {charPtr, stdString, stdStringConstRef, Other} returnType = Other;
-        if (Token::simpleMatch(scope->function->tokenDef->tokAt(-2), "char *"))
+        if (Token::Match(scope->function->tokenDef->tokAt(-2), "char|wchar_t *"))
             returnType = charPtr;
-        else if (Token::simpleMatch(scope->function->tokenDef->tokAt(-5), "const std :: string &"))
+        else if (Token::Match(scope->function->tokenDef->tokAt(-5), "const std :: string|wstring &"))
             returnType = stdStringConstRef;
-        else if (Token::Match(scope->function->tokenDef->tokAt(-3), "std :: string !!&"))
+        else if (Token::Match(scope->function->tokenDef->tokAt(-3), "std :: string|wstring !!&"))
             returnType = stdString;
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
@@ -1150,7 +1150,7 @@ void CheckStl::string_c_str()
                     string_c_strError(tok);
             } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
                        Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;") &&
-                       Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->strAt(3) + " (").c_str())) {
+                       Token::findmatch(_tokenizer->tokens(), ("std :: string|wstring " + tok->strAt(3) + " (").c_str())) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                 if (var && var->isPointer())
                     string_c_strError(tok);
@@ -1184,12 +1184,12 @@ void CheckStl::string_c_str()
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") && isLocal(symbolDatabase, tok->next()->varId())) {
                     string_c_strError(tok);
-                } else if (Token::simpleMatch(tok, "return std :: string (") &&
+                } else if (Token::Match(tok, "return std :: string|wstring (") &&
                            Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;")) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return %var% (") && Token::simpleMatch(tok->linkAt(2), ") . c_str ( ) ;")) {
                     const Function* func =_tokenizer->getSymbolDatabase()->findFunctionByName(tok->strAt(1), tok->scope());;
-                    if (func && Token::simpleMatch(func->tokenDef->tokAt(-3), "std :: string"))
+                    if (func && Token::Match(func->tokenDef->tokAt(-3), "std :: string|wstring"))
                         string_c_strError(tok);
                 } else if (Token::simpleMatch(tok, "return (") &&
                            Token::simpleMatch(tok->next()->link(), ") . c_str ( ) ;")) {
@@ -1200,7 +1200,7 @@ void CheckStl::string_c_str()
                         if (Token::Match(search_tok, "+ %var%") && isLocal(symbolDatabase, search_tok->next()->varId())) {
                             is_implicit_std_string = true;
                             break;
-                        } else if (Token::simpleMatch(search_tok, "+ std :: string (")) {
+                        } else if (Token::Match(search_tok, "+ std :: string|wstring (")) {
                             is_implicit_std_string = true;
                             break;
                         }

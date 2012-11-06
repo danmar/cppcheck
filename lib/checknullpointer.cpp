@@ -51,9 +51,20 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("atof");
         functionNames1_all.insert("atol");
         functionNames1_all.insert("qsort");
+        functionNames1_all.insert("strtof");
         functionNames1_all.insert("strtod");
         functionNames1_all.insert("strtol");
         functionNames1_all.insert("strtoul");
+        functionNames1_all.insert("strtold");
+        functionNames1_all.insert("strtoll");
+        functionNames1_all.insert("strtoull");
+        functionNames1_all.insert("wcstof");
+        functionNames1_all.insert("wcstod");
+        functionNames1_all.insert("wcstol");
+        functionNames1_all.insert("wcstoul");
+        functionNames1_all.insert("wcstold");
+        functionNames1_all.insert("wcstoll");
+        functionNames1_all.insert("wcstoull");
         // cstring
         functionNames1_all.insert("memchr");
         functionNames1_all.insert("memcmp");
@@ -71,6 +82,20 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("strlen");
         functionNames1_all.insert("strspn");
         functionNames1_all.insert("strstr");
+        functionNames1_all.insert("wcscat");
+        functionNames1_all.insert("wcsncat");
+        functionNames1_all.insert("wcscoll");
+        functionNames1_all.insert("wcschr");
+        functionNames1_all.insert("wcsrchr");
+        functionNames1_all.insert("wcscmp");
+        functionNames1_all.insert("wcsncmp");
+        functionNames1_all.insert("wcscspn");
+        functionNames1_all.insert("wcsdup");
+        functionNames1_all.insert("wcsndup");
+        functionNames1_all.insert("wcspbrk");
+        functionNames1_all.insert("wcslen");
+        functionNames1_all.insert("wcsspn");
+        functionNames1_all.insert("wcsstr");
         // cstdio
         functionNames1_all.insert("fclose");
         functionNames1_all.insert("feof");
@@ -78,19 +103,27 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("fseek");
         functionNames1_all.insert("ftell");
         functionNames1_all.insert("fputs");
+        functionNames1_all.insert("fputws");
         functionNames1_all.insert("ferror");
         functionNames1_all.insert("fgetc");
+        functionNames1_all.insert("fgetwc");
         functionNames1_all.insert("fgetpos");
         functionNames1_all.insert("fsetpos");
         functionNames1_all.insert("freopen");
         functionNames1_all.insert("fscanf");
         functionNames1_all.insert("fprintf");
+        functionNames1_all.insert("fwscanf");
+        functionNames1_all.insert("fwprintf");
         functionNames1_all.insert("fopen");
         functionNames1_all.insert("rewind");
         functionNames1_all.insert("printf");
+        functionNames1_all.insert("wprintf");
         functionNames1_all.insert("scanf");
+        functionNames1_all.insert("wscanf");
         functionNames1_all.insert("fscanf");
         functionNames1_all.insert("sscanf");
+        functionNames1_all.insert("fwscanf");
+        functionNames1_all.insert("swscanf");
         functionNames1_all.insert("setbuf");
         functionNames1_all.insert("setvbuf");
         functionNames1_all.insert("rename");
@@ -113,6 +146,12 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_nullptr.insert("vprintf");
         functionNames1_nullptr.insert("fprintf");
         functionNames1_nullptr.insert("vfprintf");
+        functionNames1_nullptr.insert("wcscpy");
+        functionNames1_nullptr.insert("swprintf");
+        functionNames1_nullptr.insert("vswprintf");
+        functionNames1_nullptr.insert("vwprintf");
+        functionNames1_nullptr.insert("fwprintf");
+        functionNames1_nullptr.insert("vfwprintf");
         functionNames1_nullptr.insert("fread");
         functionNames1_nullptr.insert("gets");
         functionNames1_nullptr.insert("gmtime");
@@ -144,15 +183,35 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames2_all.insert("strspn");
         functionNames2_all.insert("strstr");
         functionNames2_all.insert("strxfrm");
+        functionNames2_all.insert("wcscat");
+        functionNames2_all.insert("wcsncat");
+        functionNames2_all.insert("wcscmp");
+        functionNames2_all.insert("wcsncmp");
+        functionNames2_all.insert("wcscoll");
+        functionNames2_all.insert("wcscpy");
+        functionNames2_all.insert("wcscspn");
+        functionNames2_all.insert("wcsncpy");
+        functionNames2_all.insert("wcspbrk");
+        functionNames2_all.insert("wcsspn");
+        functionNames2_all.insert("wcsstr");
+        functionNames2_all.insert("wcsxfrm");
         functionNames2_all.insert("sprintf");
         functionNames2_all.insert("fprintf");
         functionNames2_all.insert("fscanf");
         functionNames2_all.insert("sscanf");
+        functionNames2_all.insert("swprintf");
+        functionNames2_all.insert("fwprintf");
+        functionNames2_all.insert("fwscanf");
+        functionNames2_all.insert("swscanf");
         functionNames2_all.insert("fputs");
         functionNames2_all.insert("fputc");
         functionNames2_all.insert("ungetc");
+        functionNames2_all.insert("fputws");
+        functionNames2_all.insert("fputwc");
+        functionNames2_all.insert("ungetwc");
         functionNames2_all.insert("rename");
         functionNames2_all.insert("putc");
+        functionNames2_all.insert("putwc");
         functionNames2_all.insert("freopen");
 
         functionNames2_nullptr.insert("frexp");
@@ -187,21 +246,21 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(secondParam);
     }
 
-    if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf")) {
+    if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf|wprintf|swprintf|fwprintf|wscanf|swscanf|fwscanf")) {
         const Token* argListTok = 0; // Points to first va_list argument
         std::string formatString;
-        bool scan = Token::Match(&tok, "scanf|sscanf|fscanf");
+        bool scan = Token::Match(&tok, "scanf|sscanf|fscanf|wscanf|swscanf|fwscanf");
 
-        if (Token::Match(&tok, "printf|scanf ( %str%")) {
+        if (Token::Match(&tok, "printf|scanf|wprintf|wscanf ( %str%")) {
             formatString = firstParam->strValue();
             argListTok = secondParam;
-        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf")) {
+        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf|fwprintf|fwscanf|swscanf")) {
             const Token* formatStringTok = secondParam; // Find second parameter (format string)
             if (formatStringTok && formatStringTok->type() == Token::eString) {
                 argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
                 formatString = formatStringTok->strValue();
             }
-        } else if (Token::Match(&tok, "snprintf|fnprintf") && secondParam) {
+        } else if (Token::Match(&tok, "snprintf|fnprintf|swprintf") && secondParam) {
             const Token* formatStringTok = secondParam->nextArgument(); // Find third parameter (format string)
             if (formatStringTok && formatStringTok->type() == Token::eString) {
                 argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
@@ -309,7 +368,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
                 return true;
             if (tok2 && tok2->varId() != 0) {
                 const Variable* var2 = symbolDatabase->getVariableFromVarId(tok2->varId());
-                if (var2 && Token::Match(var2->typeStartToken(), "std :: istream|ifstream|istringstream|ostream|ofstream|ostringstream|stringstream|fstream|iostream"))
+                if (var2 && Token::Match(var2->typeStartToken(), "std :: istream|ifstream|istringstream|wistringstream|ostream|ofstream|ostringstream|wostringstream|stringstream|wstringstream|fstream|iostream"))
                     return true;
             }
         }
@@ -324,7 +383,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
         ovarid = tok->tokAt(-2)->varId();
     if (ovarid) {
         const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
-        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
+        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
             return true;
     }
 
@@ -1060,7 +1119,7 @@ void CheckNullPointer::nullConstantDereference()
             else if (Token::Match(tok->previous(), "!!. %var% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
                 if (Token::simpleMatch(tok->tokAt(2), "0 )") && tok->varId()) { // constructor call
                     const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-                    if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
+                    if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
                         nullPointerError(tok);
                 } else { // function call
                     std::list<const Token *> var;
@@ -1073,7 +1132,7 @@ void CheckNullPointer::nullConstantDereference()
                         }
                     }
                 }
-            } else if (Token::simpleMatch(tok, "std :: string ( 0 )"))
+            } else if (Token::Match(tok, "std :: string|wstring ( 0 )"))
                 nullPointerError(tok);
 
             else if (Token::simpleMatch(tok->previous(), ">> 0")) { // Only checking input stream operations is safe here, because otherwise 0 can be an integer as well
@@ -1086,7 +1145,7 @@ void CheckNullPointer::nullConstantDereference()
                     nullPointerError(tok);
                 if (tok2 && tok2->varId() != 0) {
                     const Variable* var = symbolDatabase->getVariableFromVarId(tok2->varId());
-                    if (var && Token::Match(var->typeStartToken(), "std :: istream|ifstream|istringstream|stringstream|fstream|iostream"))
+                    if (var && Token::Match(var->typeStartToken(), "std :: istream|ifstream|istringstream|wistringstream|stringstream|wstringstream|fstream|iostream"))
                         nullPointerError(tok);
                 }
             }
@@ -1100,7 +1159,7 @@ void CheckNullPointer::nullConstantDereference()
                 ovarid = tok->varId();
             if (ovarid) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
-                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
+                if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
                     nullPointerError(tok);
             }
         }

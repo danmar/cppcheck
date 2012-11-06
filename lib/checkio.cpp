@@ -424,7 +424,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
             const Token* argListTok = 0; // Points to first va_list argument
             std::string formatString;
 
-            if (Token::Match(tok, "printf|scanf ( %str%")) {
+            if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%")) {
                 formatString = tok->strAt(2);
                 if (tok->strAt(3) == ",") {
                     argListTok = tok->tokAt(4);
@@ -433,7 +433,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
-            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf ( %any%")) {
+            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%")) {
                 const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
                 if (Token::Match(formatStringTok, "%str% ,")) {
                     argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
@@ -444,7 +444,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
-            } else if (Token::Match(tok, "snprintf|fnprintf (")) {
+            } else if (Token::Match(tok, "snprintf|fnprintf|swprintf (")) {
                 const Token* formatStringTok = tok->tokAt(2);
                 for (int i = 0; i < 2 && formatStringTok; i++) {
                     formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
@@ -463,7 +463,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
             }
 
             // Count format string parameters..
-            bool scan = Token::Match(tok, "sscanf|fscanf|scanf");
+            bool scan = Token::Match(tok, "sscanf|fscanf|scanf|swscanf|fwscanf|wscanf");
             unsigned int numFormat = 0;
             bool percent = false;
             const Token* argListTok2 = argListTok;

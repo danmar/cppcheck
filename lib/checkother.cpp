@@ -692,11 +692,11 @@ void CheckOther::checkRedundantAssignment()
                         memAssignments.erase(tok->varId());
                 }
             } else if (Token::Match(tok, "%var% (")) { // Function call. Global variables might be used. Reset their status
-                bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat");
+                bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
                 if (memfunc) {
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
-                    if (param1->varId() && param1->strAt(1) == "," && tok->str() != "strcat" && tok->str() != "strncat") {
+                    if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat")) {
                         std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
                         if (it == memAssignments.end())
                             memAssignments[param1->varId()] = tok;
@@ -1390,7 +1390,7 @@ void CheckOther::invalidFunctionUsage()
 {
     // strtol and strtoul..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "strtol|strtoul ("))
+        if (!Token::Match(tok, "strtol|strtoul|strtoll|strtoull|wcstol|wcstoul|wcstoll|wcstoull ("))
             continue;
 
         const std::string& funcname = tok->str();
@@ -1413,10 +1413,10 @@ void CheckOther::invalidFunctionUsage()
         // Get variable id of target buffer..
         unsigned int varid = 0;
 
-        if (Token::Match(tok, "sprintf|snprintf ( %var% ,"))
+        if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% ,"))
             varid = tok->tokAt(2)->varId();
 
-        else if (Token::Match(tok, "sprintf|snprintf ( %var% . %var% ,"))
+        else if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% . %var% ,"))
             varid = tok->tokAt(4)->varId();
 
         if (varid == 0)
@@ -1429,7 +1429,7 @@ void CheckOther::invalidFunctionUsage()
 
         tok2 = tok2->next(); // Jump behind ","
 
-        if (tok->str() == "snprintf") { // Jump over second parameter for snprintf
+        if (tok->str() == "snprintf" || tok->str() == "swprintf") { // Jump over second parameter for snprintf and swprintf
             tok2 = tok2->nextArgument();
             if (!tok2)
                 continue;
@@ -2653,7 +2653,7 @@ void CheckOther::checkDoubleFree()
         }
 
         // If a variable is passed to a function, remove it from the set of previously freed variables
-        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf")) {
+        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf|wprintf|swprintf|fwprintf")) {
 
             // If this is a new function definition, clear all variables
             if (Token::simpleMatch(tok->next()->link(), ") {")) {
@@ -2749,7 +2749,7 @@ namespace {
                         v = symbolDatabase->getVariableFromVarId(scope->varId());
                     }
                     // hard coded list of safe, no-side-effect functions
-                    if (v == 0 && Token::Match(prev, "strcmp|strncmp|strlen|memcmp|strcasecmp|strncasecmp"))
+                    if (v == 0 && Token::Match(prev, "strcmp|strncmp|strlen|wcscmp|wcsncmp|wcslen|memcmp|strcasecmp|strncasecmp"))
                         return false;
                     std::list<const Function*>::const_iterator it = std::find_if(constFunctions.begin(),
                             constFunctions.end(),
@@ -3039,9 +3039,9 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     if (!_settings->isEnabled("style"))
         return;
 
-    const char pattern1[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %str% , %str% ";
+    const char pattern1[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ";
     const char pattern2[] = "QString :: compare ( %str% , %str% )";
-    const char pattern3[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp ( %var% , %var% ";
+    const char pattern3[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ";
 
     const Token *tok = _tokenizer->tokens();
     while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL) {
