@@ -6183,15 +6183,6 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
 
-
-        check(
-            "void foo(char *p) {\n"
-            "  char *a = new char;\n"
-            "  a = a - 10;\n"
-            "  delete (a + 10);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
         check(
             "void foo(char *p) {\n"
             "  char *a = new char;\n"
@@ -6227,6 +6218,23 @@ private:
             "  delete (a + 10);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Invalid memory address freed.\n", errout.str());
+
+        check(
+            "void foo(size_t xx) {\n"
+            "  char *ptr = malloc(42);\n"
+            "  ptr += xx;\n"
+            "  free(ptr - xx - 1);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Invalid memory address freed.\n", errout.str());
+
+        check(
+            "void foo(size_t xx) {\n"
+            "  char *ptr = malloc(42);\n"
+            "  std::cout << ptr;\n"
+            "  ptr = otherPtr;\n"
+            "  free(ptr - xx - 1);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void check_redundant_copy(const char code[]) {

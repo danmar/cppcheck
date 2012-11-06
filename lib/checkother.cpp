@@ -2526,17 +2526,29 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
 //-----------------------------------------------------------------------------
 void CheckOther::checkInvalidFree()
 {
-    std::set<unsigned int> allocatedVariables;
+    std::map<unsigned int, bool> allocatedVariables;
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
         // Keep track of which variables were assigned addresses to newly-allocated memory
         if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
-            allocatedVariables.insert(tok->varId());
+            allocatedVariables.insert(std::make_pair(tok->varId(), false));
         }
 
-        // If these variables assigned new values before being used to free the memory, we can't
-        // say anything about whether the resulting expression is valid
-        else if (Token::Match(tok, "%var% =")) {
+        // If a previously-allocated pointer is incremented or decremented, any subsequent
+        // free involving pointer arithmetic may or may not be invalid, so we should only
+        // report an inconclusive result.
+        else if (Token::Match(tok, "%var% = %var% +|-") &&
+                 tok->varId() == tok->tokAt(2)->varId() &&
+                 allocatedVariables.find(tok->varId()) != allocatedVariables.end()) {
+            if (_settings->inconclusive)
+                allocatedVariables[tok->varId()] = true;
+            else
+                allocatedVariables.erase(tok->varId());
+        }
+
+        // If a previously-allocated pointer is assigned a completely new value,
+        // we can't know if any subsequent free() on that pointer is valid or not.
+        else if (Token::Match(tok, "%var% = ")) {
             allocatedVariables.erase(tok->varId());
         }
 
@@ -2546,13 +2558,16 @@ void CheckOther::checkInvalidFree()
                  Token::Match(tok, "delete [ ] ( %any% +|- %any%") ||
                  Token::Match(tok, "delete %any% +|- %any%")) {
 
-            int varIdx = tok->strAt(1) == "(" ? 2 :
-                         tok->strAt(3) == "(" ? 4 : 1;
-            unsigned int var1 = tok->tokAt(varIdx)->varId();
-            unsigned int var2 = tok->tokAt(varIdx + 2)->varId();
-            if (allocatedVariables.find(var1) != allocatedVariables.end() ||
-                allocatedVariables.find(var2) != allocatedVariables.end()) {
-                invalidFreeError(tok);
+            const int varIdx = tok->strAt(1) == "(" ? 2 :
+                               tok->strAt(3) == "(" ? 4 : 1;
+            const unsigned int var1 = tok->tokAt(varIdx)->varId();
+            const unsigned int var2 = tok->tokAt(varIdx + 2)->varId();
+            const std::map<unsigned int, bool>::iterator alloc1 = allocatedVariables.find(var1);
+            const std::map<unsigned int, bool>::iterator alloc2 = allocatedVariables.find(var2);
+            if (alloc1 != allocatedVariables.end()) {
+                invalidFreeError(tok, alloc1->second);
+            } else if (alloc2 != allocatedVariables.end()) {
+                invalidFreeError(tok, alloc2->second);
             }
         }
 
@@ -2569,9 +2584,9 @@ void CheckOther::checkInvalidFree()
     }
 }
 
-void CheckOther::invalidFreeError(const Token *tok)
+void CheckOther::invalidFreeError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::error, "invalidFree", "Invalid memory address freed.");
+    reportError(tok, Severity::error, "invalidFree", "Invalid memory address freed.", inconclusive);
 }
 
 

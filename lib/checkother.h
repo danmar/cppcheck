@@ -262,7 +262,7 @@ public:
 
     /** @brief %Check for free() operations on invalid memory locations */
     void checkInvalidFree();
-    void invalidFreeError(const Token *tok);
+    void invalidFreeError(const Token *tok, bool inconclusive);
 
     /** @brief %Check for double free or double close operations */
     void checkDoubleFree();
