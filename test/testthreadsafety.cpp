@@ -18,16 +18,16 @@
 
 
 #include "tokenize.h"
-#include "checknonreentrantfunctions.h"
+#include "checkthreadsafety.h"
 #include "testsuite.h"
 
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestNonReentrantFunctions : public TestFixture {
+class TestThreadSafety : public TestFixture {
 public:
-    TestNonReentrantFunctions() : TestFixture("TestNonReentrantFunctions")
+    TestThreadSafety() : TestFixture("TestThreadSafety")
     { }
 
 private:
@@ -35,6 +35,10 @@ private:
     void run() {
         TEST_CASE(test_crypt);
         TEST_CASE(test_namespace_handling);
+        TEST_CASE(MutexSimplePass)
+        TEST_CASE(MutexSimpleFail)
+        TEST_CASE(MutexComplexPass)
+        TEST_CASE(MutexComplexFail)
     }
 
     void check(const char code[]) {
@@ -52,8 +56,9 @@ private:
         tokenizer.simplifyTokenList();
 
         // Check for non reentrant functions..
-        CheckNonReentrantFunctions checkNonReentrantFunctions(&tokenizer, &settings, this);
-        checkNonReentrantFunctions.nonReentrantFunctions();
+        CheckThreadSafety checkThreadSafety(&tokenizer, &settings, this);
+        checkThreadSafety.nonReentrantFunctions();
+        checkThreadSafety.checkMutexUsage();
     }
 
     void test_crypt() {
@@ -131,6 +136,52 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void MutexSimplePass() {
+        check("void f() {\n"
+              "    pthread_mutex_lock(m);\n"
+              "    functionCall() ;\n" 
+              "    pthread_mutex_unlock(m) ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+    void MutexSimpleFail() {
+        check("void f() {\n"
+              "    pthread_mutex_lock(m);\n"
+              "    functionCall() ;\n"
+              "    return ;\n" 
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) A pthread_mutex_lock call on mutex m doesn't have a related unlock call in function f.\n",
+           errout.str());
+    }
+    void MutexComplexPass() {
+        check("int f() {\n"
+              "    pthread_mutex_lock(m);\n"
+              "    if (n) {\n"
+              "      functionCall() ;" 
+              "      pthread_mutex_unlock(m) ;\n"
+              "      return 10; }  \n"
+              "    pthread_mutex_unlock(m)\n"
+              "    return 23;  \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+    void MutexComplexFail() {
+        check("void f() {\n"
+              "    pthread_mutex_lock(m);\n"
+              "    if (m) { \n" 
+              "       functionCall1() ; \n"
+              "       pthread_mutex_unlock(m);\n"
+              "       return ; \n"
+              "    } else { \n" 
+              "       functionCall2(); \n"
+              "    }\n" 
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (error) A pthread_mutex_lock call on mutex m doesn't have a related unlock call in function f.\n",
+           errout.str());
+    }
+
 };
 
-REGISTER_TEST(TestNonReentrantFunctions)
+REGISTER_TEST(TestThreadSafety)
+

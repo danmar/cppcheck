@@ -90,7 +90,7 @@ LIBOBJ =      lib/check64bit.o \
               lib/checkio.o \
               lib/checkleakautovar.o \
               lib/checkmemoryleak.o \
-              lib/checknonreentrantfunctions.o \
+              lib/checkthreadsafety.o \
               lib/checknullpointer.o \
               lib/checkobsoletefunctions.o \
               lib/checkother.o \
@@ -142,7 +142,7 @@ TESTOBJ =     test/options.o \
               test/testleakautovar.o \
               test/testmathlib.o \
               test/testmemleak.o \
-              test/testnonreentrantfunctions.o \
+              test/testthreadsafety.o \
               test/testnullpointer.o \
               test/testobsoletefunctions.o \
               test/testoptions.o \
@@ -247,8 +247,8 @@ lib/checkleakautovar.o: lib/checkleakautovar.cpp lib/checkleakautovar.h lib/conf
 lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h lib/checkuninitvar.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkmemoryleak.o lib/checkmemoryleak.cpp
 
-lib/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/checknonreentrantfunctions.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checknonreentrantfunctions.o lib/checknonreentrantfunctions.cpp
+lib/checkthreadsafety.o: lib/checkthreadsafety.cpp lib/checkthreadsafety.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checkthreadsafety.o lib/checkthreadsafety.cpp
 
 lib/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/executionpath.h lib/mathlib.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o lib/checknullpointer.o lib/checknullpointer.cpp
@@ -397,8 +397,8 @@ test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h lib/config.h test/testsui
 test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testmemleak.o test/testmemleak.cpp
 
-test/testnonreentrantfunctions.o: test/testnonreentrantfunctions.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknonreentrantfunctions.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testnonreentrantfunctions.o test/testnonreentrantfunctions.cpp
+test/testthreadsafety.o: test/testthreadsafety.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkthreadsafety.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testthreadsafety.o test/testthreadsafety.cpp
 
 test/testnullpointer.o: test/testnullpointer.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknullpointer.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testnullpointer.o test/testnullpointer.cpp
