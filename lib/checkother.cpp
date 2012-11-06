@@ -3195,7 +3195,8 @@ void CheckOther::sizeofCalculation()
                         sizeofCalculationError(tok2, tok2->isExpandedMacro());
                         break;
                     }
-                }
+                } else if (tok2->type() == Token::eIncDecOp)
+                    sizeofCalculationError(tok2, tok2->isExpandedMacro());
             }
         }
     }
