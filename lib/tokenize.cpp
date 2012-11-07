@@ -5653,7 +5653,7 @@ bool Tokenizer::simplifyLogicalOperators()
         } else if (Token::Match(tok, "&& not|compl %var%")) {
             tok->next()->str(tok->next()->str() == "not" ? "!" : "~");
             ret = true;
-        } else if (Token::Match(tok, "|| not|compl %var%")) {
+        } else if (Token::Match(tok, "%oror% not|compl %var%")) {
             tok->next()->str(tok->next()->str() == "not" ? "!" : "~");
             ret = true;
         }

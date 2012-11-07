@@ -816,7 +816,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         if (tok->isNumber()) {
             // Remove redundant conditions (0&&x) (1||x)
             if (Token::Match(tok->previous(), "[(=,] 0 &&") ||
-                Token::Match(tok->previous(), "[(=,] 1 ||")) {
+                Token::Match(tok->previous(), "[(=,] 1 %oror%")) {
                 unsigned int par = 0;
                 const Token *tok2 = tok;
                 for (; tok2; tok2 = tok2->next()) {
