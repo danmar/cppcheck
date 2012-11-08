@@ -2122,7 +2122,7 @@ private:
 
         const char actual[] = "template < int n > struct B { int a [ n ] ; } ; "
                               "bitset<1> z ; "
-                              "class bitset<1> : B < ( ) > { }";
+                              "class bitset<1> : B < 4 > { }";
 
         const char expected[] = "bitset<1> z ; "
                                 "class bitset<1> : B<4> { } "
@@ -2812,6 +2812,12 @@ private:
         {
             const char code[] = "= 1 ? 0 : ({ 0; });";
             ASSERT_EQUALS("= 0 ;", tok(code));
+        }
+
+        //GNU extension: "x ?: y" <-> "x ? x : y"
+        {
+            const char code[] = "; a = 1 ? : x; b = 0 ? : 2;";
+            ASSERT_EQUALS("; a = 1 ; b = 2 ;", tok(code));
         }
 
         {

@@ -4399,6 +4399,10 @@ bool Tokenizer::simplifyConstTernaryOp()
         if (!semicolon || semicolon->previous()->str() != ":" || !semicolon->next())
             continue;
 
+        //handle the GNU extension: "x ? : y" <-> "x ? x : y"
+        if (semicolon->previous() == tok->next())
+            tok->insertToken(tok->strAt(-offset));
+
         // go back before the condition, if possible
         tok = tok->tokAt(-2);
         if (offset == 2) {
