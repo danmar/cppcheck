@@ -8404,21 +8404,20 @@ void Tokenizer::simplifyAttribute()
     }
 }
 
-// Remove "volatile", "inline", "register", and "restrict"
+// Remove "volatile", "inline", "register", "restrict", "override", "final" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
 //   - Not in C++ standard yet
 void Tokenizer::simplifyKeyword()
 {
-    const char *pattern;
-
+    std::string pattern = "volatile|inline|__inline|__forceinline|register|__restrict|__restrict__";
     if (_settings->standards.c >= Standards::C99)
-        pattern = "volatile|inline|__inline|__forceinline|register|restrict|__restrict|__restrict__";
-    else
-        pattern = "volatile|inline|__inline|__forceinline|register|__restrict|__restrict__";
+        pattern += "|restrict";
+    if (_settings->standards.cpp >= Standards::CPP11)
+        pattern += "|constexpr|override|final";
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, pattern)) {
+        while (Token::Match(tok, pattern.c_str())) {
             tok->deleteThis();
         }
     }

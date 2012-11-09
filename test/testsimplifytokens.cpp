@@ -5478,7 +5478,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
 
         checkSimplifyTypedef("typedef constexpr\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef82() { // ticket #2403
@@ -7671,6 +7671,9 @@ private:
         ASSERT_EQUALS("int foo ( ) { }", tok("inline int foo ( ) { }", true));
         ASSERT_EQUALS("int foo ( ) { }", tok("__inline int foo ( ) { }", true));
         ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
+        ASSERT_EQUALS("int foo ( ) { }", tok("constexpr int foo() { }", true));
+		ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() override ; };", true));
+		ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() final ; };", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
         ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", "test.c"));
