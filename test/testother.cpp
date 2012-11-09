@@ -119,6 +119,8 @@ private:
         TEST_CASE(sizeofForArrayParameter);
         TEST_CASE(sizeofForNumericParameter);
 
+        TEST_CASE(suspiciousSizeofCalculation);
+
         TEST_CASE(clarifyCalculation);
         TEST_CASE(clarifyStatement);
 
@@ -4209,8 +4211,37 @@ private:
               NULL, true
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
+    }
+
+    void suspiciousSizeofCalculation() {
+        check("int* p;\n"
+              "return sizeof(p)/5;");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
+
+        check("unknown p;\n"
+              "return sizeof(p)/5;");
+        ASSERT_EQUALS("", errout.str());
+
+        check("return sizeof(unknown)/5;");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int p;\n"
+              "return sizeof(p)/5;");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* p[5];\n"
+              "return sizeof(p)/5;");
+        ASSERT_EQUALS("", errout.str());
 
 
+        check("return sizeof(foo)*sizeof(bar);");
+        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Multiplying sizeof() with sizeof() indicates a logic error.\n", errout.str());
+
+        check("return (foo)*sizeof(bar);");
+        ASSERT_EQUALS("", errout.str());
+
+        check("return sizeof(foo)*bar;");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void clarifyCalculation() {

@@ -59,6 +59,7 @@ public:
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
         checkOther.sizeofCalculation();
+        checkOther.suspiciousSizeofCalculation();
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkAssignmentInAssert();
@@ -176,6 +177,9 @@ public:
     /** @brief %Check for calculations inside sizeof */
     void sizeofCalculation();
 
+    /** @brief %Check for suspicious calculations with sizeof results */
+    void suspiciousSizeofCalculation();
+
     /** @brief copying to memory or assigning to a variablen twice */
     void checkRedundantAssignment();
 
@@ -285,6 +289,8 @@ private:
     void clarifyStatementError(const Token* tok);
     void sizeofsizeofError(const Token *tok);
     void sizeofCalculationError(const Token *tok, bool inconclusive);
+    void multiplySizeofError(const Token *tok);
+    void divideSizeofError(const Token *tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void dangerousUsageStrtolError(const Token *tok, const std::string& funcname);
@@ -381,6 +387,8 @@ private:
         c.strPlusCharError(0);
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0, false);
+        c.multiplySizeofError(0);
+        c.divideSizeofError(0);
         c.redundantAssignmentInSwitchError(0, 0, "var");
         c.redundantCopyInSwitchError(0, 0, "var");
         c.switchCaseFallThrough(0);
@@ -459,6 +467,7 @@ private:
                "* redundant strcpy in a switch statement\n"
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
+               "* look for suspicious calculations with sizeof()\n"
                "* assignment of a variable to itself\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* Clarify calculation with parentheses\n"

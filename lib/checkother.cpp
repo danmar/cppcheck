@@ -3209,6 +3209,43 @@ void CheckOther::sizeofCalculationError(const Token *tok, bool inconclusive)
 }
 
 //-----------------------------------------------------------------------------
+// Check for code like sizeof()*sizeof() or sizeof(ptr)/value
+//-----------------------------------------------------------------------------
+void CheckOther::suspiciousSizeofCalculation()
+{
+    if (!_settings->isEnabled("style") || !_settings->inconclusive)
+        return;
+
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof (")) {
+            const Token* const end = tok->linkAt(1);
+            const Variable* var = symbolDatabase->getVariableFromVarId(end->previous()->varId());
+            if (end->strAt(-1) == "*" || (var && var->isPointer() && !var->isArray())) {
+                if (end->strAt(1) == "/")
+                    divideSizeofError(tok);
+            } else if (Token::simpleMatch(end, ") * sizeof"))
+                multiplySizeofError(tok);
+        }
+    }
+}
+
+void CheckOther::multiplySizeofError(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "multiplySizeof", "Multiplying sizeof() with sizeof() indicates a logic error.", true);
+}
+
+void CheckOther::divideSizeofError(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "divideSizeof", "Division of result of sizeof() on pointer type.\n"
+                "Division of result of sizeof() on pointer type. sizeof() returns the size of the pointer, "
+                "not the size of the memory area it points to.", true);
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CheckOther::checkAssignBoolToPointer()
 {
