@@ -1120,7 +1120,7 @@ void CheckStl::string_c_str()
                 c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar)); // Insert function as dummy, to indicate that there is at least one function with that name
                 for (const Token* tok = func->argDef->next(); tok != 0; tok = tok->nextArgument()) {
                     numpar++;
-                    if (Token::Match(tok, "std :: string !!&") || Token::simpleMatch(tok, "const std :: string"))
+                    if (Token::Match(tok, "std :: string|wstring !!&") || Token::Match(tok, "const std :: string|wstring"))
                         c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar));
                 }
             }
