@@ -82,6 +82,7 @@ private:
         TEST_CASE(pushback9);
         TEST_CASE(pushback10);
         TEST_CASE(pushback11);
+        TEST_CASE(pushback12);
 
         TEST_CASE(insert1);
         TEST_CASE(insert2);
@@ -1097,6 +1098,23 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void pushback12() {
+        // #4197
+        check("void foo(double s)\n"
+              "{\n"
+              "    std::vector<double> vec;\n"
+              "    for( std::vector<double>::iterator it = vec.begin(); it != vec.end(); ++it )\n"
+              "    {\n"
+              "        vec.insert( it, s );\n"
+              "        for(unsigned int i = 0; i < 42; i++)\n"
+              "        {}\n"
+              "        *it;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) After insert(), the iterator 'it' may be invalid.\n"
+                      "[test.cpp:9]: (error) After insert(), the iterator 'it' may be invalid.\n", errout.str());
     }
 
     void insert1() {

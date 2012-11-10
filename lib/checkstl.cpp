@@ -602,6 +602,7 @@ void CheckStl::pushback()
             // Using push_back or push_front inside a loop..
             if (Token::simpleMatch(tok2, "for (")) {
                 tok2 = tok2->tokAt(2);
+                ++indent;
             }
 
             if (Token::Match(tok2, "%varid% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %varid% != %var% . end|rend|cend|crend ( ) ; ++| %varid% ++| ) {", iteratorid)) {
