@@ -2043,6 +2043,12 @@ private:
               "    return ret;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* i) {\n"
+              "    if(i) return;\n"
+              "    std::cout << i;\n" // Its no char* (#4240)
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls

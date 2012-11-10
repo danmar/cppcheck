@@ -347,18 +347,18 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
         return true;
 
     // std::string dereferences nullpointers
-    if (Token::Match(tok->tokAt(-4), "std :: string ( %var% )"))
+    if (Token::Match(tok->tokAt(-4), "std :: string|wstring ( %var% )"))
         return true;
     if (Token::Match(tok->tokAt(-2), "%var% ( %var% )")) {
         const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(-2)->varId());
-        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string !!::"))
+        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
             return true;
     }
 
     // streams dereference nullpointers
     if (Token::Match(tok->previous(), "<<|>> %var%")) {
         const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-        if (var && var->isPointer() && var->typeStartToken()->str() == "char") { // Only outputing or reading to char* can cause problems
+        if (var && var->isPointer() && Token::Match(var->typeStartToken(), "char|wchar_t")) { // Only outputing or reading to char* can cause problems
             const Token* tok2 = tok->previous(); // Find start of statement
             for (; tok2; tok2 = tok2->previous()) {
                 if (Token::Match(tok2->previous(), ";|{|}|:"))
@@ -419,6 +419,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
 
         // (void)var
         if (Token::Match(tok->previous(), "[{;}] %var% ;"))
+            return false;
+
+        // Shift pointer (e.g. to cout, but its no char* (see above))
+        if (Token::Match(tok->previous(), "<<|>> %var%"))
             return false;
 
         // unknown if it's a dereference
