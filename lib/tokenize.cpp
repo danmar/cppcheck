@@ -5228,6 +5228,9 @@ void Tokenizer::simplifyPlatformTypes()
             } else if (Token::Match(tok, "LPSTR|PSTR|PCHAR")) {
                 tok->str("char");
                 tok->insertToken("*");
+            } else if (Token::Match(tok, "PWSTR|PWCHAR")) {
+                tok->str("wchar_t");
+                tok->insertToken("*");
             } else if (Token::Match(tok, "LPVOID|PVOID|HANDLE|HBITMAP|HBRUSH|HCOLORSPACE|HCURSOR|HDC|HFONT|HGDIOBJ|HGLOBAL|HICON|HINSTANCE|HKEY|HLOCAL|HMENU|HMETAFILE|HMODULE|HPALETTE|HPEN|HRGN|HRSRC|HWND|SERVICE_STATUS_HANDLE|SC_LOCK|SC_HANDLE|HACCEL|HCONV|HCONVLIST|HDDEDATA|HDESK|HDROP|HDWP|HENHMETAFILE|HHOOK|HKL|HMONITOR|HSZ|HWINSTA")) {
                 tok->str("void");
                 tok->insertToken("*");
@@ -5235,7 +5238,7 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->str("void");
                 tok->insertToken("*");
                 tok->insertToken("*");
-            } else if (Token::Match(tok, "LPWORD|PWORD|PWSTR|PWCHAR|PUSHORT")) {
+            } else if (Token::Match(tok, "LPWORD|PWORD|PUSHORT")) {
                 tok->str("unsigned");
                 tok->insertToken("*");
                 tok->insertToken("short");
@@ -5274,9 +5277,8 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->str("char");
                     tok->insertToken("*");
                 } else {
-                    tok->str("unsigned");
+                    tok->str("wchar_t");
                     tok->insertToken("*");
-                    tok->insertToken("short");
                 }
             } else if (Token::Match(tok, "PCTSTR|LPCTSTR")) {
                 tok->str("const");
@@ -5285,8 +5287,7 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->insertToken("char");
                 } else {
                     tok->insertToken("*");
-                    tok->insertToken("short");
-                    tok->insertToken("unsigned");
+                    tok->insertToken("wchar_t");
                 }
             } else if (Token::Match(tok, "ULONG64|DWORD64")) {
                 tok->str("unsigned");
@@ -5303,11 +5304,13 @@ void Tokenizer::simplifyPlatformTypes()
                 } else {
                     tok->str("int");
                 }
+            } else if (tok->str() == "LPWSTR") {
+                tok->str("wchar_t");
+                tok->insertToken("*");
             } else if (tok->str() == "LPCWSTR") {
                 tok->str("const");
                 tok->insertToken("*");
-                tok->insertToken("short");
-                tok->insertToken("unsigned");
+                tok->insertToken("wchar_t");
             }
         }
     }

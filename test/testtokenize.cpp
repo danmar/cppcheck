@@ -7012,7 +7012,6 @@ private:
     }
 
     void platformWin32() {
-        // WIN32A
         const char code[] = "unsigned int sizeof_short = sizeof(short);"
                             "unsigned int sizeof_unsigned_short = sizeof(unsigned short);"
                             "unsigned int sizeof_int = sizeof(int);"
@@ -7110,6 +7109,7 @@ private:
                             "ULONG64 ulong64;"
                             "HALF_PTR half_ptr;"
                             "INT_PTR int_ptr;"
+                            "LPWSTR lpcwstr;"
                             "LPCWSTR lpcwstr;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
@@ -7200,7 +7200,7 @@ private:
                                 "void * hmonitor ; "
                                 "void * hsz ; "
                                 "void * hwinsta ; "
-                                "unsigned short * pwchar ; "
+                                "wchar_t * pwchar ; "
                                 "unsigned short * pushort ; "
                                 "unsigned int uint_ptr ; "
                                 "unsigned int wparam ; "
@@ -7209,9 +7209,13 @@ private:
                                 "unsigned long ulong64 ; "
                                 "short half_ptr ; "
                                 "int int_ptr ; "
-                                "const unsigned short * lpcwstr ;";
+                                "wchar_t * lpcwstr ; "
+                                "const wchar_t * lpcwstr ;";
 
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32A));
+        // These types should be defined the same on all Win32 platforms
+        std::string win32A = tokenizeAndStringify(code, true, true, Settings::Win32A);
+        ASSERT_EQUALS(expected, win32A);
+        ASSERT_EQUALS(win32A, tokenizeAndStringify(code, true, true, Settings::Win32W));
     }
 
     void platformWin32A() {
@@ -7284,10 +7288,10 @@ private:
                             "}";
         const char expected[] = "wchar_t wc ; "
                                 "wchar_t c ; "
-                                "unsigned short * ptstr ; "
-                                "unsigned short * lptstr ; "
-                                "const unsigned short * pctstr ; "
-                                "const unsigned short * lpctstr ; "
+                                "wchar_t * ptstr ; "
+                                "wchar_t * lptstr ; "
+                                "const wchar_t * pctstr ; "
+                                "const wchar_t * lpctstr ; "
                                 "unsigned char tbyte ; "
                                 "void foo ( ) { "
                                 "wchar_t tc ; tc = \'c\' ; "
@@ -7296,7 +7300,7 @@ private:
                                 "wcscpy ( dst , src ) ; "
                                 "dst [ 0 ] = 0 ; "
                                 "wcscat ( dst , src ) ; "
-                                "unsigned short * d ; d = wcsdup ( str ) ; "
+                                "wchar_t * d ; d = wcsdup ( str ) ; "
                                 "wprintf ( \"Hello world!\n\" ) ; "
                                 "swprintf ( dst , \"Hello!\n\" ) ; "
                                 "snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , \"Hello world!\n\" ) ; "
