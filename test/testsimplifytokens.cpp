@@ -3712,7 +3712,7 @@ private:
             "a . foo ( ) ; "
             "wchar_t c ; c = 0 ; "
             "}";
-        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void simplifyTypedef2() {
