@@ -5252,7 +5252,7 @@ void Tokenizer::simplifyPlatformTypes()
                 } else {
                     tok->insertToken("int");
                 }
-            } else if (Token::Match(tok, "USHORT|WORD|WCHAR|ATOM|wchar_t|LANGID")) {
+            } else if (Token::Match(tok, "USHORT|WORD|ATOM|LANGID")) {
                 tok->str("unsigned");
                 tok->insertToken("short");
             } else if (tok->str() == "VOID")
@@ -5261,8 +5261,7 @@ void Tokenizer::simplifyPlatformTypes()
                 if (_settings->platformType == Settings::Win32A)
                     tok->str("char");
                 else {
-                    tok->str("unsigned");
-                    tok->insertToken("short");
+                    tok->str("wchar_t");
                 }
             } else if (tok->str() == "TBYTE") {
                 tok->str("unsigned");
