@@ -1142,6 +1142,21 @@ private:
               "    ints.insert(iter, 2);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) After insert(), the iterator 'iter' may be invalid.\n", errout.str());
+
+        check("void* f(const std::vector<Bar>& bars) {\n"
+              "    std::vector<Bar>::iterator i = bars.begin();\n"
+              "    bars.insert(Bar());\n"
+              "    void* v = &i->foo;\n"
+              "    return v;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
+
+        check("Foo f(const std::vector<Bar>& bars) {\n"
+              "    std::vector<Bar>::iterator i = bars.begin();\n"
+              "    bars.insert(Bar());\n"
+              "    return i->foo;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
     }
 
     void insert2() {
