@@ -205,6 +205,7 @@ public:
     unsigned int sizeof_float;
     unsigned int sizeof_double;
     unsigned int sizeof_long_double;
+    unsigned int sizeof_wchar_t;
     unsigned int sizeof_size_t;
     unsigned int sizeof_pointer;
 

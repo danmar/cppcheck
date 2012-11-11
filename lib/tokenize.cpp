@@ -1569,6 +1569,7 @@ bool Tokenizer::tokenize(std::istream &code,
     _typeSize["long"] = _settings->sizeof_long;
     _typeSize["float"] = _settings->sizeof_float;
     _typeSize["double"] = _settings->sizeof_double;
+    _typeSize["wchar_t"] = _settings->sizeof_wchar_t;
     _typeSize["size_t"] = _settings->sizeof_size_t;
     _typeSize["*"] = _settings->sizeof_pointer;
 

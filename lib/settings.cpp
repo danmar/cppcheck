@@ -147,6 +147,7 @@ bool Settings::platform(PlatformType type)
         sizeof_float = sizeof(float);
         sizeof_double = sizeof(double);
         sizeof_long_double = sizeof(long double);
+        sizeof_wchar_t = sizeof(wchar_t);
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
         return true;
@@ -161,6 +162,7 @@ bool Settings::platform(PlatformType type)
         sizeof_float = 4;
         sizeof_double = 8;
         sizeof_long_double = 8;
+        sizeof_wchar_t = 2;
         sizeof_size_t = 4;
         sizeof_pointer = 4;
         return true;
@@ -174,6 +176,7 @@ bool Settings::platform(PlatformType type)
         sizeof_float = 4;
         sizeof_double = 8;
         sizeof_long_double = 8;
+        sizeof_wchar_t = 2;
         sizeof_size_t = 8;
         sizeof_pointer = 8;
         return true;
@@ -187,6 +190,7 @@ bool Settings::platform(PlatformType type)
         sizeof_float = 4;
         sizeof_double = 8;
         sizeof_long_double = 12;
+        sizeof_wchar_t = 4;
         sizeof_size_t = 4;
         sizeof_pointer = 4;
         return true;
@@ -200,6 +204,7 @@ bool Settings::platform(PlatformType type)
         sizeof_float = 4;
         sizeof_double = 8;
         sizeof_long_double = 16;
+        sizeof_wchar_t = 4;
         sizeof_size_t = 8;
         sizeof_pointer = 8;
         return true;
