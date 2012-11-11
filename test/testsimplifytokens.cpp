@@ -7672,8 +7672,8 @@ private:
         ASSERT_EQUALS("int foo ( ) { }", tok("__inline int foo ( ) { }", true));
         ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
         ASSERT_EQUALS("int foo ( ) { }", tok("constexpr int foo() { }", true));
-		ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() override ; };", true));
-		ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() final ; };", true));
+        ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() override ; };", true));
+        ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() final ; };", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
         ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", "test.c"));

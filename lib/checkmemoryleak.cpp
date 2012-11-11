@@ -491,8 +491,6 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
     if (!arg->isPointer())
         return "";
     const Token* tok = arg->typeEndToken();
-    if (tok->str() == "const")
-        tok = tok->previous();
     tok = tok->previous();
     if (tok->str() != "*")
         return "";
@@ -2283,8 +2281,6 @@ void CheckMemoryLeakInClass::check()
             if (!var->isStatic() && var->isPointer()) {
                 // allocation but no deallocation of private variables in public function..
                 const Token *tok = var->typeStartToken();
-                if (tok->str() == "const")
-                    tok = tok->next();
                 if (tok->isStandardType()) {
                     if (var->isPrivate())
                         checkPublicFunctions(&(*scope), var->nameToken());

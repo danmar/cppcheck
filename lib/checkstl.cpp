@@ -120,7 +120,7 @@ void CheckStl::iterators()
                     const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
                     const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
 
-                    if (Token::Match(decltok, "const| std :: set"))
+                    if (Token::simpleMatch(decltok, "std :: set"))
                         continue; // No warning
 
                     // skip error message if the iterator is erased/inserted by value
@@ -795,8 +795,6 @@ void CheckStl::if_find()
                     // Is the variable a std::string or STL container?
                     const Token * decl = var->typeStartToken();
 
-                    if (decl->str() == "const")
-                        decl = decl->next();
                     // stl container
                     if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
                         if_findError(tok, false);
@@ -826,9 +824,6 @@ void CheckStl::if_find()
                     // Is the variable a std::string or STL container?
                     const Token * decl = var->typeStartToken();
 
-                    //jump next to 'const'
-                    if (decl->str() == "const")
-                        decl = decl->next();
                     //pretty bad limitation.. but it is there in order to avoid
                     //own implementations of 'find' or any container
                     if (!Token::simpleMatch(decl, "std ::"))
@@ -900,10 +895,6 @@ bool CheckStl::isStlContainer(unsigned int varid)
 
         // find where this tokens type starts
         const Token *type = var->typeStartToken();
-
-        // ignore "const"
-        if (type->str() == "const")
-            type = type->next();
 
         // discard namespace if supplied
         if (Token::simpleMatch(type, "std ::"))
