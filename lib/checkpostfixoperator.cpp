@@ -37,45 +37,44 @@ void CheckPostfixOperator::postfixOperator()
     if (!_settings->isEnabled("performance"))
         return;
 
-    const Token *tok = _tokenizer->tokens();
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    // prevent crash if first token is ++ or --
-    if (Token::Match(tok, "++|--"))
-        tok = tok->next();
-
-    for (; tok; tok = tok->next()) {
-        bool result = false;
-        if (Token::Match(tok, "++|--")) {
-            if (Token::Match(tok->tokAt(-2), ";|{|}") && Token::Match(tok->next(), ";|)|,")) {
-                result = true;
-            } else if (tok->strAt(-2) == ",") {
-                int i(1);
-                while (tok->strAt(i) != ")" && tok->tokAt(i) != 0) {
-                    if (tok->strAt(i) == ";") {
-                        result = true;
-                        break;
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->type() == Token::eIncDecOp) {
+                bool result = false;
+                if (Token::Match(tok->tokAt(-2), ";|{|}") && Token::Match(tok->next(), ";|)|,")) {
+                    result = true;
+                } else if (tok->strAt(-2) == ",") {
+                    int ii(1);
+                    while (tok->strAt(ii) != ")" && tok->tokAt(ii) != 0) {
+                        if (tok->strAt(ii) == ";") {
+                            result = true;
+                            break;
+                        }
+                        ++ii;
                     }
-                    ++i;
+                } else if (tok->strAt(-2) == "<<" && tok->strAt(1) == "<<") {
+                    result = true;
                 }
-            } else if (tok->strAt(-2) == "<<" && tok->strAt(1) == "<<") {
-                result = true;
-            }
-        }
 
-        if (result && tok->previous()->varId()) {
-            const Variable *var = symbolDatabase->getVariableFromVarId(tok->previous()->varId());
-            if (!var || var->isPointer() || var->isArray() || var->isReference())
-                continue;
+                if (result && tok->previous()->varId()) {
+                    const Variable *var = symbolDatabase->getVariableFromVarId(tok->previous()->varId());
+                    if (!var || var->isPointer() || var->isArray() || var->isReference())
+                        continue;
 
-            const Token *decltok = var->nameToken();
+                    const Token *decltok = var->nameToken();
 
-            if (Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator")) {
-                // the variable is an iterator
-                postfixOperatorError(tok);
-            } else if (var->type()) {
-                // the variable is an instance of class
-                postfixOperatorError(tok);
+                    if (Token::Match(decltok->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator")) {
+                        // the variable is an iterator
+                        postfixOperatorError(tok);
+                    } else if (var->type()) {
+                        // the variable is an instance of class
+                        postfixOperatorError(tok);
+                    }
+                }
             }
         }
     }
