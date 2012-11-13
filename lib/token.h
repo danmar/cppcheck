@@ -190,6 +190,9 @@ public:
         return isOp() ||
                _type == eExtendedOp;
     }
+    bool isComparisonOp() const {
+        return _type == eComparisonOp;
+    }
     bool isAssignmentOp() const {
         return _type == eAssignmentOp;
     }
