@@ -9,17 +9,20 @@
 #resultsTable {
   border-collapse: collapse;
 }
+
 #resultsTable th {
   padding: .25em;
   text-align: left;
   background: #e2e2e2;
   border: 1px solid #e2e2e2;
 }
+
 #resultsTable td {
   padding: .25em;
   background: #f7f7f7;
   border: 1px solid #e2e2e2;
 }
+
 #resultsTable .center {
   text-align: center;
 }
