@@ -4578,11 +4578,11 @@ private:
 
     void incrementBoolean() {
         check("bool bValue = true;\n"
-              "bValue++;\n");
+              "void f() { bValue++; }\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
 
         check("_Bool bValue = true;\n"
-              "bValue++;\n");
+              "void f() { bValue++; }\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
 
         check("void f(bool test){\n"
@@ -5253,154 +5253,182 @@ private:
     }
 
     void checkPointerSizeof() {
-        check(
-            "char *x = malloc(10);\n"
-            "free(x);");
+        check("void f() {\n"
+              "    char *x = malloc(10);\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(*x));\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(*x));\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(int));\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int));\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(x));\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = malloc(sizeof(&x));\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = malloc(100 * sizeof(x));\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = malloc(sizeof(x) * 100);\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = malloc(sizeof *x);\n"
-            "free(x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int *x = malloc(sizeof x);\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = malloc(100 * sizeof x);\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = calloc(1, sizeof(*x));\n"
-            "free(x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int *x = calloc(1, sizeof *x);\n"
-            "free(x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int *x = calloc(1, sizeof(x));\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = calloc(1, sizeof x);\n"
-            "free(x);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int *x = calloc(1, sizeof(int));\n"
-            "free(x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "char x[10];\n"
-            "memset(x, 0, sizeof(x));");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "char* x[10];\n"
-            "memset(x, 0, sizeof(x));");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "char x[10];\n"
-            "memset(x, 0, sizeof x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int *x = malloc(sizeof(int));\n"
-            "memset(x, 0, sizeof(int));\n"
-            "free(x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int *x = malloc(sizeof(int));\n"
-            "memset(x, 0, sizeof(*x));\n"
-            "free(x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int *x = malloc(sizeof(int));\n"
-            "memset(x, 0, sizeof *x);\n"
-            "free(x);");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int *x = malloc(sizeof(int));\n"
-            "memset(x, 0, sizeof x);\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(x));\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(int));\n"
-            "memset(x, 0, sizeof(x));\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(&x));\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(int) * 10);\n"
-            "memset(x, 0, sizeof(x) * 10);\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(100 * sizeof(x));\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(int) * 10);\n"
-            "memset(x, 0, sizeof x * 10);\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(x) * 100);\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(int) * 10);\n"
-            "memset(x, 0, sizeof(*x) * 10);\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(sizeof *x);\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(int) * 10);\n"
-            "memset(x, 0, sizeof *x * 10);\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = malloc(sizeof x);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(100 * sizeof x);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = calloc(1, sizeof(*x));\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check(
-            "int *x = malloc(sizeof(int) * 10);\n"
-            "memset(x, 0, sizeof(int) * 10);\n"
-            "free(x);");
+        check("void f() {\n"
+              "    int *x = calloc(1, sizeof *x);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int *x = calloc(1, sizeof(x));\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = calloc(1, sizeof x);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = calloc(1, sizeof(int));\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char x[10];\n"
+              "    memset(x, 0, sizeof(x));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char* x[10];\n"
+              "    memset(x, 0, sizeof(x));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char x[10];\n"
+              "    memset(x, 0, sizeof x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int));\n"
+              "    memset(x, 0, sizeof(int));\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int));\n"
+              "    memset(x, 0, sizeof(*x));\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int));\n"
+              "    memset(x, 0, sizeof *x);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int));\n"
+              "    memset(x, 0, sizeof x);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int));\n"
+              "    memset(x, 0, sizeof(x));\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int) * 10);\n"
+              "    memset(x, 0, sizeof(x) * 10);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int) * 10);\n"
+              "    memset(x, 0, sizeof x * 10);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int) * 10);\n"
+              "    memset(x, 0, sizeof(*x) * 10);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int) * 10);\n"
+              "    memset(x, 0, sizeof *x * 10);\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int *x = malloc(sizeof(int) * 10);\n"
+              "    memset(x, 0, sizeof(int) * 10);\n"
+              "    free(x);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check(

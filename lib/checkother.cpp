@@ -40,14 +40,17 @@ void CheckOther::checkIncrementBoolean()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%var% ++")) {
+                if (tok->varId()) {
+                    const Variable *var = symbolDatabase->getVariableFromVarId(tok->varId());
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%var% ++")) {
-            if (tok->varId()) {
-                const Variable *var = symbolDatabase->getVariableFromVarId(tok->varId());
-
-                if (var && var->typeEndToken()->str() == "bool")
-                    incrementBooleanError(tok);
+                    if (var && var->typeEndToken()->str() == "bool")
+                        incrementBooleanError(tok);
+                }
             }
         }
     }
@@ -71,49 +74,54 @@ void CheckOther::clarifyCalculation()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->str() == "?" && tok->previous()) {
-            // condition
-            const Token *cond = tok->previous();
-            if (cond->isName() || cond->isNumber())
-                cond = cond->previous();
-            else if (cond->str() == ")")
-                cond = cond->link()->previous();
-            else
-                continue;
-
-            if (cond && cond->str() == "!")
-                cond = cond->previous();
-
-            if (!cond)
-                continue;
-
-            // calculation
-            if (!cond->isArithmeticalOp())
-                continue;
-
-            const std::string &op = cond->str();
-            cond = cond->previous();
-
-            // skip previous multiplications..
-            while (cond && cond->previous()) {
-                if ((cond->isName() || cond->isNumber()) && cond->previous()->str() == "*")
-                    cond = cond->tokAt(-2);
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() == "?") {
+                // condition
+                const Token *cond = tok->previous();
+                if (cond->isName() || cond->isNumber())
+                    cond = cond->previous();
                 else if (cond->str() == ")")
                     cond = cond->link()->previous();
                 else
-                    break;
-            }
+                    continue;
 
-            if (!cond)
-                continue;
+                if (cond && cond->str() == "!")
+                    cond = cond->previous();
 
-            // first multiplication operand
-            if (cond->str() == ")") {
-                clarifyCalculationError(cond, op);
-            } else if (cond->isName() || cond->isNumber()) {
-                if (Token::Match(cond->previous(),"return|=|+|-|,|(") || cond->strAt(-1) == op)
+                if (!cond)
+                    continue;
+
+                // calculation
+                if (!cond->isArithmeticalOp())
+                    continue;
+
+                const std::string &op = cond->str();
+                cond = cond->previous();
+
+                // skip previous multiplications..
+                while (cond && cond->previous()) {
+                    if ((cond->isName() || cond->isNumber()) && cond->previous()->str() == "*")
+                        cond = cond->tokAt(-2);
+                    else if (cond->str() == ")")
+                        cond = cond->link()->previous();
+                    else
+                        break;
+                }
+
+                if (!cond)
+                    continue;
+
+                // first multiplication operand
+                if (cond->str() == ")") {
                     clarifyCalculationError(cond, op);
+                } else if (cond->isName() || cond->isNumber()) {
+                    if (Token::Match(cond->previous(),"return|=|+|-|,|(") || cond->strAt(-1) == op)
+                        clarifyCalculationError(cond, op);
+                }
             }
         }
     }
@@ -149,59 +157,67 @@ void CheckOther::clarifyCondition()
 
     const bool isC = _tokenizer->isC();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "( %var% [=&|^]")) {
-            for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(" || tok2->str() == "[")
-                    tok2 = tok2->link();
-                else if (tok2->type() == Token::eComparisonOp) {
-                    // This might be a template
-                    if (!isC && tok2->link())
-                        break;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "( %var% [=&|^]")) {
+                for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(" || tok2->str() == "[")
+                        tok2 = tok2->link();
+                    else if (tok2->type() == Token::eComparisonOp) {
+                        // This might be a template
+                        if (!isC && tok2->link())
+                            break;
 
-                    clarifyConditionError(tok, tok->strAt(2) == "=", false);
-                    break;
-                } else if (!tok2->isName() && !tok2->isNumber() && tok2->str() != ".")
-                    break;
+                        clarifyConditionError(tok, tok->strAt(2) == "=", false);
+                        break;
+                    } else if (!tok2->isName() && !tok2->isNumber() && tok2->str() != ".")
+                        break;
+                }
             }
         }
     }
 
     // using boolean result in bitwise operation ! x [&|^]
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "!|<|<=|==|!=|>|>=")) {
-            if (tok->link()) // don't write false positives when templates are used
-                continue;
-
-            const Token *tok2 = tok->next();
-
-            // Todo: There are false positives if '(' if encountered. It
-            // is assumed there is something like '(char *)&..' and therefore
-            // it bails out.
-            if (Token::Match(tok2, "(|&"))
-                continue;
-
-            while (tok2 && (tok2->isName() || tok2->isNumber() || Token::Match(tok2,".|(|["))) {
-                if (Token::Match(tok2, "(|["))
-                    tok2 = tok2->link();
-                tok2 = tok2->next();
-            }
-
-            if (Token::Match(tok2, "[&|^]")) {
-                // don't write false positives when templates are used
-                if (Token::Match(tok2, "&|* ,|>") || Token::simpleMatch(tok2->previous(), "const &"))
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "!|<|<=|==|!=|>|>=")) {
+                if (tok->link()) // don't write false positives when templates are used
                     continue;
 
-                // #3609 - CWinTraits<WS_CHILD|WS_VISIBLE>::..
-                if (!isC && Token::Match(tok->previous(), "%var% <")) {
-                    const Token *tok3 = tok2;
-                    while (Token::Match(tok3, "[&|^] %var%"))
-                        tok3 = tok3->tokAt(2);
-                    if (Token::Match(tok3, ",|>"))
-                        continue;
+                const Token *tok2 = tok->next();
+
+                // Todo: There are false positives if '(' if encountered. It
+                // is assumed there is something like '(char *)&..' and therefore
+                // it bails out.
+                if (Token::Match(tok2, "(|&"))
+                    continue;
+
+                while (tok2 && (tok2->isName() || tok2->isNumber() || Token::Match(tok2,".|(|["))) {
+                    if (Token::Match(tok2, "(|["))
+                        tok2 = tok2->link();
+                    tok2 = tok2->next();
                 }
 
-                clarifyConditionError(tok,false,true);
+                if (Token::Match(tok2, "[&|^]")) {
+                    // don't write false positives when templates are used
+                    if (Token::Match(tok2, "&|* ,|>") || Token::simpleMatch(tok2->previous(), "const &"))
+                        continue;
+
+                    // #3609 - CWinTraits<WS_CHILD|WS_VISIBLE>::..
+                    if (!isC && Token::Match(tok->previous(), "%var% <")) {
+                        const Token *tok3 = tok2;
+                        while (Token::Match(tok3, "[&|^] %var%"))
+                            tok3 = tok3->tokAt(2);
+                        if (Token::Match(tok3, ",|>"))
+                            continue;
+                    }
+
+                    clarifyConditionError(tok,false,true);
+                }
             }
         }
     }
@@ -237,29 +253,34 @@ void CheckOther::clarifyStatement()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "* %var%")) {
-            const Token *tok2=tok->previous();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "* %var%")) {
+                const Token *tok2=tok->previous();
 
-            while (tok2 && tok2->str() == "*")
-                tok2=tok2->previous();
+                while (tok2 && tok2->str() == "*")
+                    tok2=tok2->previous();
 
-            if (Token::Match(tok2, "[{};]")) {
-                tok = tok->tokAt(2);
-                for (;;) {
-                    if (tok->str() == "[")
-                        tok = tok->link()->next();
+                if (Token::Match(tok2, "[{};]")) {
+                    tok = tok->tokAt(2);
+                    for (;;) {
+                        if (tok->str() == "[")
+                            tok = tok->link()->next();
 
-                    if (Token::Match(tok, ".|:: %var%")) {
-                        if (tok->strAt(2) == "(")
-                            tok = tok->linkAt(2)->next();
-                        else
-                            tok = tok->tokAt(2);
-                    } else
-                        break;
+                        if (Token::Match(tok, ".|:: %var%")) {
+                            if (tok->strAt(2) == "(")
+                                tok = tok->linkAt(2)->next();
+                            else
+                                tok = tok->tokAt(2);
+                        } else
+                            break;
+                    }
+                    if (Token::Match(tok, "++|-- [;,]"))
+                        clarifyStatementError(tok);
                 }
-                if (Token::Match(tok, "++|-- [;,]"))
-                    clarifyStatementError(tok);
             }
         }
     }
@@ -286,18 +307,23 @@ void CheckOther::checkBitwiseOnBoolean()
     if (!_settings->inconclusive)
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "(|.|return|&&|%oror%|throw|, %var% [&|]")) {
-            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->next()->varId());
-            if (var && var->typeEndToken()->str() == "bool") {
-                bitwiseOnBooleanError(tok->next(), var->name(), tok->strAt(2) == "&" ? "&&" : "||");
-                tok = tok->tokAt(2);
-            }
-        } else if (Token::Match(tok, "[&|] %var% )|.|return|&&|%oror%|throw|,") && (!tok->previous() || !tok->previous()->isExtendedOp() || tok->strAt(-1) == ")")) {
-            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->next()->varId());
-            if (var && var->typeEndToken()->str() == "bool") {
-                bitwiseOnBooleanError(tok->next(), var->name(), tok->str() == "&" ? "&&" : "||");
-                tok = tok->tokAt(2);
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "(|.|return|&&|%oror%|throw|, %var% [&|]")) {
+                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->next()->varId());
+                if (var && var->typeEndToken()->str() == "bool") {
+                    bitwiseOnBooleanError(tok->next(), var->name(), tok->strAt(2) == "&" ? "&&" : "||");
+                    tok = tok->tokAt(2);
+                }
+            } else if (Token::Match(tok, "[&|] %var% )|.|return|&&|%oror%|throw|,") && (!tok->previous() || !tok->previous()->isExtendedOp() || tok->strAt(-1) == ")")) {
+                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->next()->varId());
+                if (var && var->typeEndToken()->str() == "bool") {
+                    bitwiseOnBooleanError(tok->next(), var->name(), tok->str() == "&" ? "&&" : "||");
+                    tok = tok->tokAt(2);
+                }
             }
         }
     }
@@ -393,63 +419,68 @@ void CheckOther::invalidPointerCast()
     if (!_settings->isEnabled("style") && !_settings->isEnabled("portability"))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        const Token* toTok = 0;
-        const Token* nextTok = 0;
-        // Find cast
-        if (Token::Match(tok, "( const| %type% const| * )") || Token::Match(tok, "( const| %type% %type% const| * )")) {
-            toTok = tok->next();
-            nextTok = tok->link()->next();
-            if (nextTok && nextTok->str() == "(")
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            const Token* toTok = 0;
+            const Token* nextTok = 0;
+            // Find cast
+            if (Token::Match(tok, "( const| %type% const| * )") ||
+                Token::Match(tok, "( const| %type% %type% const| * )")) {
+                toTok = tok->next();
+                nextTok = tok->link()->next();
+                if (nextTok && nextTok->str() == "(")
+                    nextTok = nextTok->next();
+            } else if (Token::Match(tok, "reinterpret_cast < const| %type% const| * > (") ||
+                       Token::Match(tok, "reinterpret_cast < const| %type% %type% const| * > (")) {
+                nextTok = tok->tokAt(5);
+                while (nextTok->str() != "(")
+                    nextTok = nextTok->next();
                 nextTok = nextTok->next();
-        } else if (Token::Match(tok, "reinterpret_cast < const| %type% const| * > (") || Token::Match(tok, "reinterpret_cast < const| %type% %type% const| * > (")) {
-            nextTok = tok->tokAt(5);
-            while (nextTok->str() != "(")
-                nextTok = nextTok->next();
-            nextTok = nextTok->next();
-            toTok = tok->tokAt(2);
-        }
-        if (toTok && toTok->str() == "const")
-            toTok = toTok->next();
+                toTok = tok->tokAt(2);
+            }
+            if (toTok && toTok->str() == "const")
+                toTok = toTok->next();
 
-        if (!nextTok || !toTok || !toTok->isStandardType())
-            continue;
-
-        // Find casted variable
-        unsigned int varid = 0;
-        bool allocation = false;
-        bool ref = false;
-        if (Token::Match(nextTok, "new %type%"))
-            allocation = true;
-        else if (Token::Match(nextTok, "%var% !!["))
-            varid = nextTok->varId();
-        else if (Token::Match(nextTok, "& %var%") && !Token::Match(nextTok->tokAt(2), "(|[")) {
-            varid = nextTok->next()->varId();
-            ref = true;
-        }
-
-        const Token* fromTok = 0;
-
-        if (allocation) {
-            fromTok = nextTok->next();
-        } else {
-            const Variable* var = symbolDatabase->getVariableFromVarId(varid);
-            if (!var || (!ref && !var->isPointer() && !var->isArray()) || (ref && (var->isPointer() || var->isArray())))
+            if (!nextTok || !toTok || !toTok->isStandardType())
                 continue;
-            fromTok = var->typeStartToken();
+
+            // Find casted variable
+            unsigned int varid = 0;
+            bool allocation = false;
+            bool ref = false;
+            if (Token::Match(nextTok, "new %type%"))
+                allocation = true;
+            else if (Token::Match(nextTok, "%var% !!["))
+                varid = nextTok->varId();
+            else if (Token::Match(nextTok, "& %var%") && !Token::Match(nextTok->tokAt(2), "(|[")) {
+                varid = nextTok->next()->varId();
+                ref = true;
+            }
+
+            const Token* fromTok = 0;
+
+            if (allocation) {
+                fromTok = nextTok->next();
+            } else {
+                const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+                if (!var || (!ref && !var->isPointer() && !var->isArray()) || (ref && (var->isPointer() || var->isArray())))
+                    continue;
+                fromTok = var->typeStartToken();
+            }
+
+            while (Token::Match(fromTok, "static|const"))
+                fromTok = fromTok->next();
+            if (!fromTok->isStandardType())
+                continue;
+
+            std::string fromType = analyzeType(fromTok);
+            std::string toType = analyzeType(toTok);
+            if (fromType != toType && !fromType.empty() && !toType.empty() && (toType != "integer" || _settings->isEnabled("portability")) && (toTok->str() != "char" || _settings->inconclusive))
+                invalidPointerCastError(tok, fromType, toType, toTok->str() == "char");
         }
-
-        while (Token::Match(fromTok, "static|const"))
-            fromTok = fromTok->next();
-        if (!fromTok->isStandardType())
-            continue;
-
-        std::string fromType = analyzeType(fromTok);
-        std::string toType = analyzeType(toTok);
-        if (fromType != toType && !fromType.empty() && !toType.empty() && (toType != "integer" || _settings->isEnabled("portability")) && (toTok->str() != "char" || _settings->inconclusive))
-            invalidPointerCastError(tok, fromType, toType, toTok->str() == "char");
     }
 }
 
@@ -471,11 +502,15 @@ void CheckOther::checkSizeofForNumericParameter()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof ( %num% )")
-            || Token::Match(tok, "sizeof %num%")
-           ) {
-            sizeofForNumericParameterError(tok);
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "sizeof ( %num% )") ||
+                Token::Match(tok, "sizeof %num%")) {
+                sizeofForNumericParameterError(tok);
+            }
         }
     }
 }
@@ -494,17 +529,21 @@ void CheckOther::sizeofForNumericParameterError(const Token *tok)
 void CheckOther::checkSizeofForArrayParameter()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof ( %var% )") || Token::Match(tok, "sizeof %var% !![")) {
-            const Token* varTok = tok->next();
-            if (varTok->str() == "(") {
-                varTok = varTok->next();
-            }
-            if (varTok->varId() > 0) {
-                const Variable *var = symbolDatabase->getVariableFromVarId(varTok->varId());
-                if (var && var->isArray() && var->isArgument()) {
-                    sizeofForArrayParameterError(tok);
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "sizeof ( %var% )") ||
+                Token::Match(tok, "sizeof %var% !![")) {
+                const Token* varTok = tok->next();
+                if (varTok->str() == "(") {
+                    varTok = varTok->next();
+                }
+                if (varTok->varId() > 0) {
+                    const Variable *var = symbolDatabase->getVariableFromVarId(varTok->varId());
+                    if (var && var->isArray() && var->isArgument()) {
+                        sizeofForArrayParameterError(tok);
+                    }
                 }
             }
         }
@@ -529,80 +568,83 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
 
 void CheckOther::checkSizeofForPointerSize()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        const Token *tokVar;
-        const Token *variable;
-        const Token *variable2 = 0;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            const Token *tokVar;
+            const Token *variable;
+            const Token *variable2 = 0;
 
-        // Find any function that may use sizeof on a pointer
-        // Once leaving those tests, it is mandatory to have:
-        // - variable matching the used pointer
-        // - tokVar pointing on the argument where sizeof may be used
-        if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (")) {
-            variable = tok->next();
-            tokVar = tok->tokAt(5);
+            // Find any function that may use sizeof on a pointer
+            // Once leaving those tests, it is mandatory to have:
+            // - variable matching the used pointer
+            // - tokVar pointing on the argument where sizeof may be used
+            if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (")) {
+                variable = tok->next();
+                tokVar = tok->tokAt(5);
 
-        } else if (Token::Match(tok, "[*;{}] %var% = calloc (")) {
-            variable = tok->next();
-            tokVar = tok->tokAt(5)->nextArgument();
+            } else if (Token::Match(tok, "[*;{}] %var% = calloc (")) {
+                variable = tok->next();
+                tokVar = tok->tokAt(5)->nextArgument();
 
-        } else if (Token::simpleMatch(tok, "memset (")) {
-            variable = tok->tokAt(2);
-            tokVar = variable->tokAt(2)->nextArgument();
+            } else if (Token::simpleMatch(tok, "memset (")) {
+                variable = tok->tokAt(2);
+                tokVar = variable->tokAt(2)->nextArgument();
 
-            // The following tests can be inconclusive in case the variable in sizeof
-            // is constant string by intention
-        } else if (!_settings->inconclusive) {
-            continue;
+                // The following tests can be inconclusive in case the variable in sizeof
+                // is constant string by intention
+            } else if (!_settings->inconclusive) {
+                continue;
 
-        } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
-            variable = tok->tokAt(2);
-            variable2 = variable->nextArgument();
-            tokVar = variable2->nextArgument();
+            } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
+                variable = tok->tokAt(2);
+                variable2 = variable->nextArgument();
+                tokVar = variable2->nextArgument();
 
-        } else {
-            continue;
-        }
-
-        // Ensure the variables are in the symbol database
-        // Also ensure the variables are pointers
-        // Only keep variables which are pointers
-        const Variable *var = symbolDatabase->getVariableFromVarId(variable->varId());
-        if (!var || !var->isPointer() || var->isArray()) {
-            variable = 0;
-        }
-
-        if (variable2) {
-            var = symbolDatabase->getVariableFromVarId(variable2->varId());
-            if (!var || !var->isPointer() || var->isArray()) {
-                variable2 = 0;
+            } else {
+                continue;
             }
-        }
 
-        // If there are no pointer variable at this point, there is
-        // no need to continue
-        if (variable == 0 && variable2 == 0) {
-            continue;
-        }
+            // Ensure the variables are in the symbol database
+            // Also ensure the variables are pointers
+            // Only keep variables which are pointers
+            const Variable *var = symbolDatabase->getVariableFromVarId(variable->varId());
+            if (!var || !var->isPointer() || var->isArray()) {
+                variable = 0;
+            }
 
-        // Jump to the next sizeof token in the function and in the parameter
-        // This is to allow generic operations with sizeof
-        for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()) {}
+            if (variable2) {
+                var = symbolDatabase->getVariableFromVarId(variable2->varId());
+                if (!var || !var->isPointer() || var->isArray()) {
+                    variable2 = 0;
+                }
+            }
 
-        // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
-        // looks suspicious
-        // Do it for first variable
-        if (variable && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable->varId()) ||
-                         Token::Match(tokVar, "sizeof &| %varid%", variable->varId()))) {
-            sizeofForPointerError(variable, variable->str());
-        } else if (variable2 && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable2->varId()) ||
-                                 Token::Match(tokVar, "sizeof &| %varid%", variable2->varId()))) {
-            sizeofForPointerError(variable2, variable2->str());
+            // If there are no pointer variable at this point, there is
+            // no need to continue
+            if (variable == 0 && variable2 == 0) {
+                continue;
+            }
+
+            // Jump to the next sizeof token in the function and in the parameter
+            // This is to allow generic operations with sizeof
+            for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()) {}
+
+            // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
+            // looks suspicious
+            // Do it for first variable
+            if (variable && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable->varId()) ||
+                             Token::Match(tokVar, "sizeof &| %varid%", variable->varId()))) {
+                sizeofForPointerError(variable, variable->str());
+            } else if (variable2 && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable2->varId()) ||
+                                     Token::Match(tokVar, "sizeof &| %varid%", variable2->varId()))) {
+                sizeofForPointerError(variable2, variable2->str());
+            }
         }
     }
 }
