@@ -1532,43 +1532,46 @@ void CheckOther::checkComparisonOfBoolWithInt()
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->next() && tok->next()->type() == Token::eComparisonOp && (!tok->previous() || !tok->previous()->isArithmeticalOp()) && (!tok->tokAt(3) || !tok->tokAt(3)->isArithmeticalOp())) {
-            const Token* const right = tok->tokAt(2);
-            if ((tok->varId() && right->isNumber()) || (tok->isNumber() && right->varId())) { // Comparing variable with number
-                const Token* varTok = tok;
-                const Token* numTok = right;
-                if (tok->isNumber() && right->varId()) // num with var
-                    std::swap(varTok, numTok);
-                if (isBool(symbolDatabase->getVariableFromVarId(varTok->varId())) && // Variable has to be a boolean
-                    ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
-                     (MathLib::toLongNumber(numTok->str()) != 0 && MathLib::toLongNumber(numTok->str()) != 1))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
-                    comparisonOfBoolWithIntError(varTok, numTok->str(), tok->strAt(1) == "==" || tok->strAt(1) == "!=");
-                }
-            } else if (tok->isBoolean() && right->varId()) { // Comparing boolean constant with variable
-                if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(right->varId()))) { // Variable has to be of non-boolean standard type
-                    comparisonOfBoolWithIntError(right, tok->str(), false);
-                } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
-                    comparisonOfBoolWithInvalidComparator(right, tok->str());
-                }
-            } else if (tok->varId() && right->isBoolean()) { // Comparing variable with boolean constant
-                if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(tok->varId()))) { // Variable has to be of non-boolean standard type
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->next() && tok->next()->type() == Token::eComparisonOp && (!tok->previous() || !tok->previous()->isArithmeticalOp()) && (!tok->tokAt(3) || !tok->tokAt(3)->isArithmeticalOp())) {
+                const Token* const right = tok->tokAt(2);
+                if ((tok->varId() && right->isNumber()) || (tok->isNumber() && right->varId())) { // Comparing variable with number
+                    const Token* varTok = tok;
+                    const Token* numTok = right;
+                    if (tok->isNumber() && right->varId()) // num with var
+                        std::swap(varTok, numTok);
+                    if (isBool(symbolDatabase->getVariableFromVarId(varTok->varId())) && // Variable has to be a boolean
+                        ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
+                         (MathLib::toLongNumber(numTok->str()) != 0 && MathLib::toLongNumber(numTok->str()) != 1))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
+                        comparisonOfBoolWithIntError(varTok, numTok->str(), tok->strAt(1) == "==" || tok->strAt(1) == "!=");
+                    }
+                } else if (tok->isBoolean() && right->varId()) { // Comparing boolean constant with variable
+                    if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(right->varId()))) { // Variable has to be of non-boolean standard type
+                        comparisonOfBoolWithIntError(right, tok->str(), false);
+                    } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
+                        comparisonOfBoolWithInvalidComparator(right, tok->str());
+                    }
+                } else if (tok->varId() && right->isBoolean()) { // Comparing variable with boolean constant
+                    if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(tok->varId()))) { // Variable has to be of non-boolean standard type
+                        comparisonOfBoolWithIntError(tok, right->str(), false);
+                    } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
+                        comparisonOfBoolWithInvalidComparator(right, tok->str());
+                    }
+                } else if (tok->isNumber() && right->isBoolean()) { // number constant with boolean constant
                     comparisonOfBoolWithIntError(tok, right->str(), false);
-                } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
-                    comparisonOfBoolWithInvalidComparator(right, tok->str());
+                } else if (tok->isBoolean() && right->isNumber()) { // number constant with boolean constant
+                    comparisonOfBoolWithIntError(tok, tok->str(), false);
+                } else if (tok->varId() && right->varId()) { // Comparing two variables, one of them boolean, one of them integer
+                    const Variable* var1 = symbolDatabase->getVariableFromVarId(right->varId());
+                    const Variable* var2 = symbolDatabase->getVariableFromVarId(tok->varId());
+                    if (isBool(var1) && isNonBoolStdType(var2)) // Comparing boolean with non-bool standard type
+                        comparisonOfBoolWithIntError(tok, var1->name(), false);
+                    else if (isNonBoolStdType(var1) && isBool(var2)) // Comparing non-bool standard type with boolean
+                        comparisonOfBoolWithIntError(tok, var2->name(), false);
                 }
-            } else if (tok->isNumber() && right->isBoolean()) { // number constant with boolean constant
-                comparisonOfBoolWithIntError(tok, right->str(), false);
-            } else if (tok->isBoolean() && right->isNumber()) { // number constant with boolean constant
-                comparisonOfBoolWithIntError(tok, tok->str(), false);
-            } else if (tok->varId() && right->varId()) { // Comparing two variables, one of them boolean, one of them integer
-                const Variable* var1 = symbolDatabase->getVariableFromVarId(right->varId());
-                const Variable* var2 = symbolDatabase->getVariableFromVarId(tok->varId());
-                if (isBool(var1) && isNonBoolStdType(var2)) // Comparing boolean with non-bool standard type
-                    comparisonOfBoolWithIntError(tok, var1->name(), false);
-                else if (isNonBoolStdType(var1) && isBool(var2)) // Comparing non-bool standard type with boolean
-                    comparisonOfBoolWithIntError(tok, var2->name(), false);
             }
         }
     }
@@ -1700,33 +1703,38 @@ static bool isSigned(const Variable* var)
 
 void CheckOther::checkUnsignedDivision()
 {
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     bool style = _settings->isEnabled("style");
 
-    const Token* ifTok = 0;
-    // Check for "ivar / uvar" and "uvar / ivar"
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[).]")) // Don't check members or casted variables
-            continue;
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        const Token* ifTok = 0;
+        // Check for "ivar / uvar" and "uvar / ivar"
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
 
-        if (Token::Match(tok->next(), "%var% / %num%")) {
-            if (tok->strAt(3)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->next()->varId()))) {
-                udivError(tok->next(), false);
-            }
-        } else if (Token::Match(tok->next(), "%num% / %var%")) {
-            if (tok->strAt(1)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()))) {
-                udivError(tok->next(), false);
-            }
-        } else if (Token::Match(tok->next(), "%var% / %var%") && _settings->inconclusive && style && !ifTok) {
-            const Variable* var1 = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            const Variable* var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
-            if ((isUnsigned(var1) && isSigned(var2)) || (isUnsigned(var2) && isSigned(var1))) {
-                udivError(tok->next(), true);
-            }
-        } else if (!ifTok && Token::simpleMatch(tok, "if ("))
-            ifTok = tok->next()->link()->next()->link();
-        else if (ifTok == tok)
-            ifTok = 0;
+            if (Token::Match(tok, "[).]")) // Don't check members or casted variables
+                continue;
+
+            if (Token::Match(tok->next(), "%var% / %num%")) {
+                if (tok->strAt(3)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->next()->varId()))) {
+                    udivError(tok->next(), false);
+                }
+            } else if (Token::Match(tok->next(), "%num% / %var%")) {
+                if (tok->strAt(1)[0] == '-' && isUnsigned(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId()))) {
+                    udivError(tok->next(), false);
+                }
+            } else if (Token::Match(tok->next(), "%var% / %var%") && _settings->inconclusive && style && !ifTok) {
+                const Variable* var1 = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                const Variable* var2 = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                if ((isUnsigned(var1) && isSigned(var2)) || (isUnsigned(var2) && isSigned(var1))) {
+                    udivError(tok->next(), true);
+                }
+            } else if (!ifTok && Token::simpleMatch(tok, "if ("))
+                ifTok = tok->next()->link()->next()->link();
+            else if (ifTok == tok)
+                ifTok = 0;
+        }
     }
 }
 
@@ -1746,11 +1754,16 @@ void CheckOther::checkMemsetZeroBytes()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "memset (")) {
-            const Token* lastParamTok = tok->next()->link()->previous();
-            if (lastParamTok->str() == "0")
-                memsetZeroBytesError(tok, tok->strAt(2));
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "memset (")) {
+                const Token* lastParamTok = tok->next()->link()->previous();
+                if (lastParamTok->str() == "0")
+                    memsetZeroBytesError(tok, tok->strAt(2));
+            }
         }
     }
 }
@@ -1974,48 +1987,51 @@ void CheckOther::checkCharVariable()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if ((tok->str() != ".") && Token::Match(tok->next(), "%var% [ %var% ]")) {
-            const Variable* arrayvar = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            const Variable* indexvar = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
-            const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
-            if (isSignedChar(indexvar) && arraysize > 0x80)
-                charArrayIndexError(tok->next());
-        }
-
-        else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] %any% ;")) {
-            // is a char variable used in the calculation?
-            if (!isSignedChar(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId())) &&
-                !isSignedChar(symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId())))
-                continue;
-
-            // it's ok with a bitwise and where the other operand is 0xff or less..
-            if (tok->strAt(4) == "&") {
-                if (tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))
-                    continue;
-                if (tok->tokAt(5)->isNumber() && MathLib::isGreater("0x100", tok->strAt(5)))
-                    continue;
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if ((tok->str() != ".") && Token::Match(tok->next(), "%var% [ %var% ]")) {
+                const Variable* arrayvar = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                const Variable* indexvar = symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId());
+                const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
+                if (isSignedChar(indexvar) && arraysize > 0x80)
+                    charArrayIndexError(tok->next());
             }
 
-            // is the result stored in a short|int|long?
-            const Variable *var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
-                charBitOpError(tok->tokAt(4)); // This is an error..
-        }
+            else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] %any% ;")) {
+                // is a char variable used in the calculation?
+                if (!isSignedChar(symbolDatabase->getVariableFromVarId(tok->tokAt(3)->varId())) &&
+                    !isSignedChar(symbolDatabase->getVariableFromVarId(tok->tokAt(5)->varId())))
+                    continue;
 
-        else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] ( * %var% ) ;")) {
-            const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(7)->varId());
-            if (!var || !var->isPointer() || var->typeStartToken()->str() != "char" || var->typeStartToken()->isUnsigned())
-                continue;
-            // it's ok with a bitwise and where the other operand is 0xff or less..
-            if (tok->strAt(4) == "&" && tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))
-                continue;
+                // it's ok with a bitwise and where the other operand is 0xff or less..
+                if (tok->strAt(4) == "&") {
+                    if (tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))
+                        continue;
+                    if (tok->tokAt(5)->isNumber() && MathLib::isGreater("0x100", tok->strAt(5)))
+                        continue;
+                }
 
-            // is the result stored in a short|int|long?
-            var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
-            if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
-                charBitOpError(tok->tokAt(4)); // This is an error..
+                // is the result stored in a short|int|long?
+                const Variable *var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
+                    charBitOpError(tok->tokAt(4)); // This is an error..
+            }
+
+            else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] ( * %var% ) ;")) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(7)->varId());
+                if (!var || !var->isPointer() || var->typeStartToken()->str() != "char" || var->typeStartToken()->isUnsigned())
+                    continue;
+                // it's ok with a bitwise and where the other operand is 0xff or less..
+                if (tok->strAt(4) == "&" && tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))
+                    continue;
+
+                // is the result stored in a short|int|long?
+                var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
+                    charBitOpError(tok->tokAt(4)); // This is an error..
+            }
         }
     }
 }
@@ -2099,17 +2115,20 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 void CheckOther::strPlusChar()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "[=(] %str% + %any%")) {
+                // char constant..
+                if (tok->tokAt(3)->type() == Token::eChar)
+                    strPlusCharError(tok->next());
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[=(] %str% + %any%")) {
-            // char constant..
-            if (tok->tokAt(3)->type() == Token::eChar)
-                strPlusCharError(tok->next());
-
-            // char variable..
-            unsigned int varid = tok->tokAt(3)->varId();
-            if (isChar(symbolDatabase->getVariableFromVarId(varid)))
-                strPlusCharError(tok->next());
+                // char variable..
+                unsigned int varid = tok->tokAt(3)->varId();
+                if (isChar(symbolDatabase->getVariableFromVarId(varid)))
+                    strPlusCharError(tok->next());
+            }
         }
     }
 }
@@ -2145,14 +2164,11 @@ void CheckOther::zerodivError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkMathFunctions()
 {
-    const SymbolDatabase *db = _tokenizer->getSymbolDatabase();
-
-    std::list<Scope>::const_iterator scope;
-    for (scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eFunction)
-            continue;
-
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
             if (Token::Match(tok, "log|log10 ( %num% )")) {
@@ -2240,12 +2256,9 @@ void CheckOther::checkMisusedScopedObject()
     }
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
-
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::simpleMatch(tok->linkAt(2), ") ;")
@@ -2403,29 +2416,34 @@ void CheckOther::checkIncorrectStringCompare()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
-            MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(5));
-            std::size_t slen = Token::getStrLength(tok->tokAt(8));
-            if (clen != (int)slen) {
-                incorrectStringCompareError(tok->next(), "substr", tok->strAt(8));
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
+                MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(5));
+                std::size_t slen = Token::getStrLength(tok->tokAt(8));
+                if (clen != (int)slen) {
+                    incorrectStringCompareError(tok->next(), "substr", tok->strAt(8));
+                }
+            } else if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
+                MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(8));
+                std::size_t slen = Token::getStrLength(tok);
+                if (clen != (int)slen) {
+                    incorrectStringCompareError(tok->next(), "substr", tok->str());
+                }
+            } else if (Token::Match(tok, "&&|%oror% %str% &&|%oror%|)")) {
+                // assert(condition && "debug message") would be considered a fp.
+                if (tok->str() == "&&" && tok->strAt(2) == ")" && tok->linkAt(2)->previous()->str() == "assert")
+                    continue;
+                incorrectStringBooleanError(tok->next(), tok->strAt(1));
+            } else if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
+                // assert("debug message" && condition) would be considered a fp.
+                if (tok->strAt(3) == "&&" && tok->str() == "assert")
+                    continue;
+                incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
             }
-        } else if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
-            MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(8));
-            std::size_t slen = Token::getStrLength(tok);
-            if (clen != (int)slen) {
-                incorrectStringCompareError(tok->next(), "substr", tok->str());
-            }
-        } else if (Token::Match(tok, "&&|%oror% %str% &&|%oror%|)")) {
-            // assert(condition && "debug message") would be considered a fp.
-            if (tok->str() == "&&" && tok->strAt(2) == ")" && tok->linkAt(2)->previous()->str() == "assert")
-                continue;
-            incorrectStringBooleanError(tok->next(), tok->strAt(1));
-        } else if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
-            // assert("debug message" && condition) would be considered a fp.
-            if (tok->strAt(3) == "&&" && tok->str() == "assert")
-                continue;
-            incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
         }
     }
 }
@@ -3195,10 +3213,16 @@ void CheckOther::suspiciousStringCompareError(const Token* tok, const std::strin
 //-----------------------------------------------------------------------------
 void CheckOther::checkModuloAlwaysTrueFalse()
 {
-    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "% %num% ==|!=|<=|<|>|>= %num%") && (!tok->tokAt(4) || !tok->tokAt(4)->isArithmeticalOp())) {
-            if (MathLib::isLessEqual(tok->strAt(1), tok->strAt(3)))
-                moduloAlwaysTrueFalseError(tok, tok->strAt(1));
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if ((Token::Match(tok, "% %num% %op% %num%") && tok->tokAt(2)->isComparisonOp()) &&
+                (!tok->tokAt(4) || !tok->tokAt(4)->isArithmeticalOp())) {
+                if (MathLib::isLessEqual(tok->strAt(1), tok->strAt(3)))
+                    moduloAlwaysTrueFalseError(tok, tok->strAt(1));
+            }
         }
     }
 }
@@ -3302,15 +3326,18 @@ void CheckOther::divideSizeofError(const Token *tok)
 //-----------------------------------------------------------------------------
 void CheckOther::checkAssignBoolToPointer()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "!!* %var% = %bool% ;")) {
-            const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "!!* %var% = %bool% ;")) {
+                const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
 
-            const Variable *var1(symbolDatabase->getVariableFromVarId(tok->next()->varId()));
-
-            // Is variable a pointer?
-            if (var1 && var1->isPointer())
-                assignBoolToPointerError(tok->next());
+                // Is variable a pointer?
+                if (var1 && var1->isPointer())
+                    assignBoolToPointerError(tok->next());
+            }
         }
     }
 }
@@ -3330,46 +3357,50 @@ void CheckOther::checkComparisonOfBoolExpressionWithInt()
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Skip template parameters
-        if (tok->str() == "<" && tok->link()) {
-            tok = tok->link();
-            continue;
-        }
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            // Skip template parameters
+            if (tok->str() == "<" && tok->link()) {
+                tok = tok->link();
+                continue;
+            }
 
-        const Token* numTok = 0;
-        const Token* opTok = 0;
-        char op = 0;
-        if (Token::Match(tok, "&&|%oror% %any% ) >|>=|==|!=|<=|< %any%")) {
-            numTok = tok->tokAt(4);
-            opTok = tok->tokAt(3);
-            if (Token::Match(opTok, "<|>"))
-                op = opTok->str()[0];
-        } else if (Token::Match(tok, "%any% >|>=|==|!=|<=|< ( %any% &&|%oror%")) {
-            numTok = tok;
-            opTok = tok->next();
-            if (Token::Match(opTok, "<|>"))
-                op = opTok->str()[0]=='>'?'<':'>';
-        }
+            const Token* numTok = 0;
+            const Token* opTok = 0;
+            char op = 0;
+            if (Token::Match(tok, "&&|%oror% %any% ) %op% %any%") && tok->tokAt(3)->isComparisonOp()) {
+                numTok = tok->tokAt(4);
+                opTok = tok->tokAt(3);
+                if (Token::Match(opTok, "<|>"))
+                    op = opTok->str()[0];
+            } else if (Token::Match(tok, "%any% %op% ( %any% &&|%oror%") && tok->next()->isComparisonOp()) {
+                numTok = tok;
+                opTok = tok->next();
+                if (Token::Match(opTok, "<|>"))
+                    op = opTok->str()[0]=='>'?'<':'>';
+            }
 
-        else if (Token::Match(tok, "! %var% >|>=|==|!=|<=|< %any%")) {
-            numTok = tok->tokAt(3);
-            opTok = tok->tokAt(2);
-            if (Token::Match(opTok, "<|>"))
-                op = opTok->str()[0];
-        } else if (Token::Match(tok, "%any% >|>=|==|!=|<=|< ! %var%")) {
-            numTok = tok;
-            opTok = tok->next();
-            if (Token::Match(opTok, "<|>"))
-                op = opTok->str()[0]=='>'?'<':'>';
-        }
+            else if (Token::Match(tok, "! %var% %op% %any%") && tok->tokAt(2)->isComparisonOp()) {
+                numTok = tok->tokAt(3);
+                opTok = tok->tokAt(2);
+                if (Token::Match(opTok, "<|>"))
+                    op = opTok->str()[0];
+            } else if (Token::Match(tok, "%any% %op% ! %var%") && tok->next()->isComparisonOp()) {
+                numTok = tok;
+                opTok = tok->next();
+                if (Token::Match(opTok, "<|>"))
+                    op = opTok->str()[0]=='>'?'<':'>';
+            }
 
-        if (numTok && opTok) {
-            if (numTok->isNumber()) {
-                if (((numTok->str() != "0" && numTok->str() != "1") || !Token::Match(opTok, "!=|==")) && !((op == '<' && numTok->str() == "1") || (op == '>' && numTok->str() == "0")))
-                    comparisonOfBoolExpressionWithIntError(tok, true);
-            } else if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(numTok->varId())))
-                comparisonOfBoolExpressionWithIntError(tok, false);
+            if (numTok && opTok) {
+                if (numTok->isNumber()) {
+                    if (((numTok->str() != "0" && numTok->str() != "1") || !Token::Match(opTok, "!=|==")) && !((op == '<' && numTok->str() == "1") || (op == '>' && numTok->str() == "0")))
+                        comparisonOfBoolExpressionWithIntError(tok, true);
+                } else if (isNonBoolStdType(symbolDatabase->getVariableFromVarId(numTok->varId())))
+                    comparisonOfBoolExpressionWithIntError(tok, false);
+            }
         }
     }
 }
@@ -3399,15 +3430,11 @@ void CheckOther::checkSignOfUnsignedVariable()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
-
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
         // check all the code in the function
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
                 const Variable * var = symbolDatabase->getVariableFromVarId(tok->varId());
                 if (var && var->typeEndToken()->isUnsigned())
