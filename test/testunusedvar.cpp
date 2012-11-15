@@ -1494,6 +1494,12 @@ private:
                               "    return a + b;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f() {\n" // ticket #4318
+                              "    int a,b;\n"
+                              "    x(a, b=2);\n"  // <- if param2 is passed-by-reference then b might be used in x
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar37() { // ticket #3078

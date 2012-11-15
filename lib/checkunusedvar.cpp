@@ -735,9 +735,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.use(tok->tokAt(2)->varId(), tok);
         }
         // assignment
-        else if (!Token::Match(tok->tokAt(-2), "[;{}.] %var% (") &&
-                 (Token::Match(tok, "*| ++|--| %var% ++|--| =") ||
-                  Token::Match(tok, "*| ( const| %type% *| ) %var% ="))) {
+        else if (Token::Match(tok, "*| ++|--| %var% ++|--| =") ||
+                 Token::Match(tok, "*| ( const| %type% *| ) %var% =")) {
             bool dereference = false;
             bool pre = false;
             bool post = false;
@@ -762,7 +761,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 post = true;
 
             const unsigned int varid1 = tok->varId();
-            const Token *start = tok;
+            const Token * const start = tok;
 
             tok = doAssignment(variables, tok, dereference, scope);
 
@@ -777,7 +776,9 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.read(varid1, tok);
             } else {
                 Variables::VariableUsage *var = variables.find(varid1);
-                if (var && var->_type == Variables::reference) {
+                if (var && Token::simpleMatch(start->previous(), ",")) {
+                    variables.use(varid1, tok);
+                } else if (var && var->_type == Variables::reference) {
                     variables.writeAliases(varid1, tok);
                     variables.read(varid1, tok);
                 }
