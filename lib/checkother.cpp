@@ -722,7 +722,10 @@ void CheckOther::checkRedundantAssignment()
                         }
                         it->second = tok;
                     }
-                    varAssignments[tok->varId()] = tok;
+                    if (Token::simpleMatch(tok->tokAt(2), "0 ;"))
+                        varAssignments.erase(tok->varId());
+                    else
+                        varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
                 } else if (tok->next()->type() == Token::eIncDecOp || (tok->previous()->type() == Token::eIncDecOp && !Token::Match(tok->next(), ".|[|("))) { // Variable incremented/decremented
                     varAssignments[tok->varId()] = tok;

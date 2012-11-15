@@ -1696,6 +1696,12 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"  // Ticket #4356
+              "    int x = 0;\n"  // <- ignore assignment with 0
+              "    x = 3;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantOperationTest() {
