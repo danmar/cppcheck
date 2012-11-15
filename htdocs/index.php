@@ -49,14 +49,20 @@ uninitialized variables, unused functions" />
 </div> <!-- #anchors -->
 <div id="content">
   <div class="wrap">
-<p><strong>Cppcheck</strong> is an <a href="http://en.wikipedia.org/wiki/Static_analysis_tool">static analysis tool</a>
+<p>
+<strong>Cppcheck</strong> is a <a href="http://en.wikipedia.org/wiki/Static_analysis_tool">static analysis tool</a>
 for C/C++ code. Unlike C/C++ compilers and many other analysis tools it does
 not detect syntax errors in the code. Cppcheck primarily detects the types of
 bugs that the compilers normally do not detect. The goal is to detect only real
-errors in the code (i.e. have zero false positives).</p>
+errors in the code (i.e. have zero false positives).
+</p>
 
 <h2><a id="download">Download</a></h2>
-<p><a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.57/cppcheck-1.57-x86-Setup.msi"><strong>Download Now!</strong> <em>Version 1.57 for Windows</em></a></p>
+<p>
+    <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.57/cppcheck-1.57-x86-Setup.msi">
+    <strong>Download Now!</strong> <em>Version 1.57 for Windows</em>
+    </a>
+</p>
 <p>You can download the standalone Cppcheck from our
 <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
 as a plugin for your favorite IDE:</p>
