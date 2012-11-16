@@ -968,10 +968,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        // only check functions
-        if (scope->type != Scope::eFunction)
-            continue;
+    // only check functions
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
 
         // varId, usage {read, write, modified}
         Variables variables;

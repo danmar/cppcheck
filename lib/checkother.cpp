@@ -3180,26 +3180,29 @@ void CheckOther::checkSuspiciousStringCompare()
         return;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->next()->type() != Token::eComparisonOp)
+                continue;
 
-    for (const Token* tok = _tokenizer->list.front(); tok && tok->tokAt(3); tok = tok->next()) {
-        if (tok->next()->type() != Token::eComparisonOp)
-            continue;
+            const Token* varTok = tok;
+            const Token* litTok = tok->tokAt(2);
 
-        const Token* varTok = tok;
-        const Token* litTok = tok->tokAt(2);
+            if (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+")
+                continue;
 
-        if (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+")
-            continue;
+            if ((varTok->type() == Token::eString || varTok->type() == Token::eVariable) && (litTok->type() == Token::eString || litTok->type() == Token::eVariable) && litTok->type() != varTok->type()) {
+                if (varTok->type() == Token::eString)
+                    std::swap(varTok, litTok);
 
-        if ((varTok->type() == Token::eString || varTok->type() == Token::eVariable) && (litTok->type() == Token::eString || litTok->type() == Token::eVariable) && litTok->type() != varTok->type()) {
-            if (varTok->type() == Token::eString)
-                std::swap(varTok, litTok);
-
-            const Variable* var = symbolDatabase->getVariableFromVarId(varTok->varId());
-            if (var) {
-                if (_tokenizer->isC() ||
-                    (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]")))
-                    suspiciousStringCompareError(tok, var->name());
+                const Variable* var = symbolDatabase->getVariableFromVarId(varTok->varId());
+                if (var) {
+                    if (_tokenizer->isC() ||
+                        (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]")))
+                        suspiciousStringCompareError(tok, var->name());
+                }
             }
         }
     }
@@ -3568,15 +3571,20 @@ void CheckOther::checkNegativeBitwiseShift()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next()) {
-        if ((Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num% >>|<< %num%")) && !Token::Match(tok->previous(),">>|<<")) {
-            if (tok->isName()) {
-                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-                if (var && var->typeStartToken()->isStandardType() && (tok->strAt(2))[0] == '-')
-                    negativeBitwiseShiftError(tok);
-            } else {
-                if ((tok->strAt(2))[0] == '-')
-                    negativeBitwiseShiftError(tok);
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+
+            if ((Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num% >>|<< %num%")) && !Token::Match(tok->previous(),">>|<<")) {
+                if (tok->isName()) {
+                    const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                    if (var && var->typeStartToken()->isStandardType() && (tok->strAt(2))[0] == '-')
+                        negativeBitwiseShiftError(tok);
+                } else {
+                    if ((tok->strAt(2))[0] == '-')
+                        negativeBitwiseShiftError(tok);
+                }
             }
         }
     }
@@ -3599,18 +3607,22 @@ void CheckOther::checkIncompleteArrayFill()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "memset|memcpy|memmove ( %var% ,") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
-            const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
-            if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
-                continue;
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "memset|memcpy|memmove ( %var% ,") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(2)->varId());
+                if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
+                    continue;
 
-            if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
-                unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
-                if ((size != 1 && size != 100 && size != 0) || var->typeEndToken()->str() == "*")
-                    incompleteArrayFillError(tok, var->name(), tok->str(), false);
-                else if (var->typeStartToken()->str() == "bool" && _settings->isEnabled("portability")) // sizeof(bool) is not 1 on all platforms
-                    incompleteArrayFillError(tok, var->name(), tok->str(), true);
+                if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
+                    unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
+                    if ((size != 1 && size != 100 && size != 0) || var->typeEndToken()->str() == "*")
+                        incompleteArrayFillError(tok, var->name(), tok->str(), false);
+                    else if (var->typeStartToken()->str() == "bool" && _settings->isEnabled("portability")) // sizeof(bool) is not 1 on all platforms
+                        incompleteArrayFillError(tok, var->name(), tok->str(), true);
+                }
             }
         }
     }
