@@ -6519,7 +6519,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
 
         if (Token::simpleMatch(tok->previous(), "? (") && Token::simpleMatch(tok->link(), ") :")) {
             const Token *tok2 = tok->next();
-            while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->isBoolean() || tok2->isArithmeticalOp()))
+            while (tok2 && (Token::Match(tok2,"%bool%|%num%|%var%") || tok2->isArithmeticalOp()))
                 tok2 = tok2->next();
             if (tok2 && tok2->str() == ")") {
                 tok->link()->deleteThis();
@@ -6544,13 +6544,12 @@ bool Tokenizer::simplifyRedundantParenthesis()
         }
 
         // Simplify "!!operator !!(%var%|)) ( %num%|%bool% ) %op%|;|,|)"
-        if (Token::Match(tok, "( !!) ) %op%|;|,|)") &&
+        if (Token::Match(tok, "( %bool%|%num% ) %op%|;|,|)") &&
             !Token::simpleMatch(tok->tokAt(-2), "operator") &&
             tok->previous() &&
             !tok->previous()->isName() &&
             tok->previous()->str() != ")" &&
-            (!isCPP() || tok->previous()->str() != ">") &&
-            (tok->next()->isNumber() || tok->next()->isBoolean())) {
+            (!isCPP() || tok->previous()->str() != ">")) {
             tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;
@@ -8000,9 +7999,7 @@ void Tokenizer::simplifyStructInit()
             while (tok2->str() != ".")
                 tok2 = tok2->next();
             while (tok2 && tok2->str() == ".") {
-                if (Token::Match(tok2, ". %type% = %num% [,}]"))
-                    tok2 = tok2->tokAt(4);
-                else if (Token::Match(tok2, ". %type% = %var% [,}]"))
+                if (Token::Match(tok2, ". %type% = %num%|%var% [,}]"))
                     tok2 = tok2->tokAt(4);
                 else if (Token::Match(tok2, ". %type% = & %var% [,}]"))
                     tok2 = tok2->tokAt(5);
@@ -8044,12 +8041,8 @@ void Tokenizer::simplifyComparisonOrder()
 {
     // Use "<" comparison instead of ">"
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;(] %any% >|>= %any% [);]")) {
-            if (!tok->next()->isName() && !tok->next()->isNumber())
-                continue;
+        if (Token::Match(tok, "[;(] %var%|%num% >|>= %num%|%var% [);]")) {
             const Token *operand2 = tok->tokAt(3);
-            if (!operand2->isName() && !operand2->isNumber())
-                continue;
             const std::string op1(tok->next()->str());
             unsigned int var1 = tok->next()->varId();
             tok->next()->str(operand2->str());
@@ -8061,8 +8054,6 @@ void Tokenizer::simplifyComparisonOrder()
             else
                 tok->tokAt(2)->str("<=");
         } else if (Token::Match(tok, "( %num% ==|!= %var% )")) {
-            if (!tok->next()->isName() && !tok->next()->isNumber())
-                continue;
             const std::string op1(tok->next()->str());
             unsigned int var1 = tok->next()->varId();
             tok->next()->str(tok->strAt(3));
