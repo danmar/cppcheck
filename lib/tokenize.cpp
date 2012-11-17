@@ -8457,7 +8457,7 @@ void Tokenizer::simplifyAssignmentBlock()
             }
             if (indentlevel == 2 && Token::simpleMatch(tok2, "} )")) {
                 tok2 = tok2->tokAt(-3);
-                if (Token::Match(tok2, "[;{}] %any% ;") && (tok2->next()->isName() || tok2->next()->isNumber())) {
+                if (Token::Match(tok2, "[;{}] %num%|%var% ;")) {
                     tok2->insertToken("=");
                     tok2->insertToken(tok->next()->str());
                     tok2->next()->varId(tok->next()->varId());
@@ -8545,7 +8545,7 @@ void Tokenizer::simplifyBitfields()
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = (tok->next()->str() == "const") ? tok->tokAt(3) : tok->tokAt(2);
             if (tok1 && tok1->tokAt(2) &&
-                (tok1->tokAt(2)->isBoolean() || tok1->tokAt(2)->isNumber() ||
+                (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
                 while (tok1->next() && !Token::Match(tok1->next(), "[;,)]{}]")) {
                     if (Token::Match(tok1->next(), "[([]"))
@@ -8790,11 +8790,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("scanf");
             } else if (Token::simpleMatch(tok, "_stscanf (")) {
                 tok->str("sscanf");
-            } else if (Token::Match(tok, "_T ( %str% )")) {
-                tok->deleteNext();
-                tok->deleteThis();
-                tok->deleteNext();
-            } else if (Token::Match(tok, "_T ( %char% )")) {
+            } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
@@ -8837,8 +8833,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("wscanf");
             } else if (Token::simpleMatch(tok, "_stscanf (")) {
                 tok->str("swscanf");
-            } else if (Token::Match(tok, "_T ( %char% )") ||
-                       Token::Match(tok, "_T ( %str% )")) {
+            } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
