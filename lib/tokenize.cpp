@@ -3287,11 +3287,8 @@ bool Tokenizer::simplifyTokenList()
     }
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%var%")
-            && !Token::Match(tok, "%num%")
-            && !Token::Match(tok, "]|)")
-            && (Token::Match(tok->next(), "& %var% [ %num% ]") ||
-                Token::Match(tok->next(), "& %var% [ %var% ]"))) {
+        if (!Token::Match(tok, "%num%|%var%") && !Token::Match(tok, "]|)") &&
+            (Token::Match(tok->next(), "& %var% [ %num%|%var% ]"))) {
             tok = tok->next();
 
             if (tok->next()->varId()) {
@@ -3506,9 +3503,7 @@ void Tokenizer::removeRedundantAssignment()
                     tok2 = tok2->tokAt(2);
                     localvars.insert(tok2->varId());
                 } else if (tok2->varId() &&
-                           !Token::Match(tok2->previous(), "[;{}] %var% = %var% ;") &&
-                           !Token::Match(tok2->previous(), "[;{}] %var% = %num% ;") &&
-                           !Token::Match(tok2->previous(), "[;{}] %var% = %char% ;")) {
+                           !Token::Match(tok2->previous(), "[;{}] %var% = %char%|%num%|%var% ;")) {
                     localvars.erase(tok2->varId());
                 }
             }
@@ -4231,7 +4226,7 @@ bool Tokenizer::simplifyConditions()
     bool ret = false;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "! %num%") || Token::Match(tok, "! %bool%")) {
+        if (Token::Match(tok, "! %bool%|%num%")) {
             tok->deleteThis();
             if (tok->str() == "0" || tok->str() == "false")
                 tok->str("true");
@@ -4381,13 +4376,13 @@ bool Tokenizer::simplifyConstTernaryOp()
         if (tok->str() != "?")
             continue;
 
-        if (!Token::Match(tok->tokAt(-2), "=|,|(|[|{|}|;|case|return %any%") &&
-            !Token::Match(tok->tokAt(-4), "=|,|(|[|{|}|;|case|return ( %any% )"))
+        if (!Token::Match(tok->tokAt(-2), "<|=|,|(|[|{|}|;|case|return %bool%|%num%") &&
+            !Token::Match(tok->tokAt(-4), "<|=|,|(|[|{|}|;|case|return ( %bool%|%num% )"))
             continue;
 
         const unsigned int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
-        if (!tok->tokAt(-offset)->isBoolean() && !tok->tokAt(-offset)->isNumber())
+        if (tok->strAt(-2*offset) == "<" && !TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
             continue;
 
         // Find the token ":" then go to the next token
