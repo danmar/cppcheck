@@ -2108,10 +2108,7 @@ bool Tokenizer::hasEnumsWithTypedef()
 void Tokenizer::concatenateDoubleSharp()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // TODO: pattern should be "%var%|%num% ## %var%|%num%"
-        while (Token::Match(tok, "%any% ## %any%") &&
-               (tok->isName() || tok->isNumber()) &&
-               (tok->tokAt(2)->isName() || tok->tokAt(2)->isNumber())) {
+        while (Token::Match(tok, "%num%|%var% ## %num%|%var%")) {
             tok->str(tok->str() + tok->strAt(2));
             tok->deleteNext(2);
         }
@@ -2180,8 +2177,7 @@ void Tokenizer::simplifyRoundCurlyParenthesis()
             tok->linkAt(2)->previous()->deleteNext(3);
             tok->deleteNext(2);
         }
-        if (Token::Match(tok, "( { %any% ; } )") &&
-            (tok->tokAt(2)->isNumber() || tok->tokAt(2)->isName())) {
+        if (Token::Match(tok, "( { %bool%|%char%|%num%|%str%|%var% ; } )")) {
             tok->deleteNext();
             tok->deleteThis();
             tok->deleteNext(3);
@@ -3259,8 +3255,7 @@ bool Tokenizer::simplifyTokenList()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%var%") && !tok->isNumber()
             && !Token::Match(tok, "]|)")
-            && (Token::Match(tok->next(), "* ( %var% + %num% )") ||
-                Token::Match(tok->next(), "* ( %var% + %var% )"))) {
+            && (Token::Match(tok->next(), "* ( %var% + %num%|%var% )"))) {
             // remove '* ('
             tok->deleteNext(2);
 
