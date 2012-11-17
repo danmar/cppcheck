@@ -4820,10 +4820,8 @@ bool Tokenizer::simplifyFunctionReturn()
         if (tok->str() == "{")
             tok = tok->link();
 
-        else if (Token::Match(tok, "%var% ( ) { return %any% ; }")) {
+        else if (Token::Match(tok, "%var% ( ) { return %bool%|%char%|%num%|%str% ; }")) {
             const Token* const any = tok->tokAt(5);
-            if (!any->isNumber() && !any->isBoolean() && any->str()[0] != '"')
-                continue;
 
             const std::string pattern("(|[|=|%op% " + tok->str() + " ( ) ;|]|)|%op%");
             for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
@@ -5464,8 +5462,7 @@ void Tokenizer::simplifyIfAssign()
 void Tokenizer::simplifyVariableMultipleAssign()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%var% = %var% = %num% ;") ||
-            Token::Match(tok, "%var% = %var% = %var% ;")) {
+        if (Token::Match(tok, "%var% = %var% = %num%|%var% ;")) {
             // skip intermediate assignments
             Token *tok2 = tok->previous();
             while (tok2 &&
@@ -5807,7 +5804,7 @@ bool Tokenizer::simplifyKnownVariables()
 
                 const Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
                 const Token * const valuetok = vartok->tokAt(2);
-                if (valuetok->isNumber() || Token::Match(valuetok, "%str% ;")) {
+                if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% ;")) {
                     constantValues[vartok->varId()] = valuetok->str();
 
                     // remove statement
@@ -5853,13 +5850,9 @@ bool Tokenizer::simplifyKnownVariables()
             }
 
             else if (tok2->previous()->str() != "*" &&
-                     (Token::Match(tok2, "%var% = %num% ;") ||
-                      Token::Match(tok2, "%var% = %str% ;") ||
-                      Token::Match(tok2, "%var% = %char% ;") ||
+                     (Token::Match(tok2, "%var% = %bool%|%char%|%num%|%str%|%var% ;") ||
                       Token::Match(tok2, "%var% [ ] = %str% ;") ||
                       Token::Match(tok2, "%var% [ %num% ] = %str% ;") ||
-                      Token::Match(tok2, "%var% = %bool% ;") ||
-                      Token::Match(tok2, "%var% = %var% ;") ||
                       Token::Match(tok2, "%var% = & %var% ;") ||
                       Token::Match(tok2, "%var% = & %var% [ 0 ] ;"))) {
                 const unsigned int varid = tok2->varId();
