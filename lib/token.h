@@ -137,13 +137,14 @@ public:
      * multi-compare patterns such as "int|void|char" can contain %or%, %oror% and %op%
      * but it is not recommended to put such an %cmd% as the first pattern.
      *
+     * It's possible to use multi-compare patterns with just %cmds%, except for %varid%.
+     * For example: "%var%|%num%| " means yes to a variable, a number or empty string.
+     *
      * The patterns can be also combined to compare to multiple tokens at once
      * by separating tokens with a space, e.g.
      * ") const|void {" will return true if first token is ')' next token is either
      * "const" or "void" and token after that is '{'. If even one of the tokens does not
      * match its pattern, false is returned.
-     *
-     * @todo pattern "%type%|%num%" should mean either a type or a num.
      *
      * @param tok List of tokens to be compared to the pattern
      * @param pattern The pattern against which the tokens are compared,

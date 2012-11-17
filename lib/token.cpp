@@ -530,10 +530,30 @@ int Token::firstWordLen(const char *str)
     return len;
 }
 
+#define multicompare(p,cond,ismulticomp)            \
+{                                                   \
+    if ((p)[0] != '|') {                            \
+        if (!(cond))                                \
+            return false;                           \
+        ismulticomp = false;                        \
+    } else {                                        \
+        if (cond) {                                 \
+            while (*(p) && *(p) != ' ')             \
+                ++(p);                              \
+            ismulticomp = false;                    \
+        } else {                                    \
+            (p) += 1;                               \
+            ismulticomp = (*(p) && *(p) != ' ');    \
+            continue;                               \
+        }                                           \
+    }                                               \
+}
+
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;
     bool firstpattern = true;
+    bool ismulticomp = false;
     while (*p) {
         // Skip spaces in pattern..
         while (*p == ' ')
@@ -573,9 +593,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // work, before that change can be made.
                 // Any symbolname..
                 if (p[4] == '%') { // %var%
-                    if (!tok->isName())
-                        return false;
                     p += 5;
+                    multicompare(p,tok->isName(),ismulticomp);
                     patternUnderstood = true;
                 } else { // %varid%
                     if (varid == 0) {
@@ -592,16 +611,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             case 't':
                 // Type (%type%)
             {
-                if (!tok->isName())
-                    return false;
-
-                if (tok->varId() != 0)
-                    return false;
-
-                if (tok->str() == "delete")
-                    return false;
-
                 p += 6;
+                multicompare(p,tok->isName() && tok->varId() == 0 && tok->str() != "delete",ismulticomp);
                 patternUnderstood = true;
             }
             break;
@@ -609,98 +620,75 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // Accept any token (%any%)
             {
                 p += 5;
+                if (p[0] == '|')
+                    while (*p && *p != ' ')
+                        ++p;
+                ismulticomp = false;
                 patternUnderstood = true;
             }
             break;
             case 'n':
                 // Number (%num%)
             {
-                if (!tok->isNumber())
-                    return false;
                 p += 5;
+                multicompare(p,tok->isNumber(),ismulticomp);
                 patternUnderstood = true;
             }
             break;
             case 'c':
                 // Character (%char%)
             {
-                if (tok->_type != eChar)
-                    return false;
                 p += 6;
+                multicompare(p,tok->_type == eChar,ismulticomp);
                 patternUnderstood = true;
             }
             break;
             case 's':
                 // String (%str%)
             {
-                if (tok->_str[0] != '\"')
-                    return false;
                 p += 5;
+                multicompare(p,tok->_type == eString,ismulticomp);
                 patternUnderstood = true;
             }
             break;
             case 'b':
                 // Bool (%bool%)
             {
-                if (!tok->isBoolean())
-                    return false;
                 p += 6;
+                multicompare(p,tok->isBoolean(),ismulticomp);
                 patternUnderstood = true;
             }
             break;
             case 'o':
-                // Or (%or%) and Op (%op%)
                 if (p[3] == '%') {
-                    patternUnderstood = true;
-
-                    // multicompare..
-                    if (p[4] == '|') {
-                        int result = multiCompare(p, tok->str().c_str());
-                        if (result == -1)
-                            return false;   // No match
-
-                        while (*p && *p != ' ')
-                            p++;
+                    p += 2;
+                    // Or (%or%)
+                    if (p[0] == 'r') {
+                        p += 2;
+                        multicompare(p,tok->str() == "|",ismulticomp)
+                        patternUnderstood = true;
+                    // Op (%op%)
+                    } else if (p[0] == 'p') {
+                        p += 2;
+                        multicompare(p,tok->isOp(),ismulticomp);
+                        patternUnderstood = true;
                     }
-
-                    // single compare..
-                    else if (p[2] == 'r') {
-                        if (tok->str() != "|")
-                            return false;
-                        p += 4;
-                    } else if (p[2] == 'p') {
-                        if (!tok->isOp())
-                            return false;
-                        p += 4;
-                    } else
-                        patternUnderstood = false;
                 }
 
                 // Oror (%oror%)
                 else if (p[5] == '%') {
-                    // multicompare..
-                    if (p[6] == '|') {
-                        int result = multiCompare(p, tok->str().c_str());
-                        if (result == -1)
-                            return false;   // No match
-
-                        while (*p && *p != ' ')
-                            p++;
-                    }
-
-                    // single compare..
-                    else if (tok->str() != "||")
-                        return false;
-
-                    else
-                        p += 6;
-
+                    p += 6;
+                    multicompare(p,tok->str() == "||",ismulticomp);
                     patternUnderstood = true;
                 }
                 break;
             default:
                 if (firstWordEquals(p, tok->_str.c_str())) {
                     p += tok->_str.length();
+                    if (p[0] == '|') {
+                        while (*p && *p != ' ')
+                            p++;
+                    }
                     patternUnderstood = true;
                 }
                 break;
@@ -710,10 +698,12 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 return false;
             }
 
-            // debugging: assert that this is not part of a multicompare pattern..
-            assert(*p != '|');
-
             tok = tok->next();
+            continue;
+        }
+
+        else if (ismulticomp) {
+            ismulticomp = false;
             continue;
         }
 

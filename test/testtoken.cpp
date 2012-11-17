@@ -172,6 +172,32 @@ private:
         ASSERT_EQUALS(true, Token::Match(toks4.tokens(), "%var% >>|<<|&|%or%|^|% %var% ;"));
         ASSERT_EQUALS(true, Token::Match(toks4.tokens(), "%var% %|>>|<<|&|%or%|^ %var% ;"));
         ASSERT_EQUALS(true, Token::Match(toks4.tokens(), "%var% >>|<<|&|%or%|%|^ %var% ;"));
+
+        //%var%|%num% support
+        givenACodeSampleToTokenize num("100", true);
+        ASSERT_EQUALS(true, Token::Match(num.tokens(), "%num%|%var%"));
+        ASSERT_EQUALS(true, Token::Match(num.tokens(), "%var%|%num%"));
+        ASSERT_EQUALS(true, Token::Match(num.tokens(), "%var%|%num%|%bool%"));
+        ASSERT_EQUALS(true, Token::Match(num.tokens(), "%var%|%bool%|%num%"));
+        ASSERT_EQUALS(true, Token::Match(num.tokens(), "%var%|%bool%|%str%|%num%"));
+        ASSERT_EQUALS(false, Token::Match(num.tokens(), "%bool%|%var%"));
+        ASSERT_EQUALS(false, Token::Match(num.tokens(), "%type%|%bool%|%char%"));
+        ASSERT_EQUALS(true, Token::Match(num.tokens(), "%type%|%bool%|100"));
+
+        givenACodeSampleToTokenize numparen("( 100 )", true);
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| %num%|%var% )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| %var%|%num% )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| %var%|%num%|%bool% )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| %var%|%bool%|%num% )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| %var%|%bool%|%str%|%num% )|"));
+        ASSERT_EQUALS(false, Token::Match(numparen.tokens(), "(| %bool%|%var% )|"));
+
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %num%|%var%| )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %var%|%num%| )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %var%|%num%|%bool%| )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %var%|%bool%|%num%| )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %var%|%bool%|%str%|%num%| )|"));
+        ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %bool%|%var%| )|"));
     }
 
     void getStrLength() {
