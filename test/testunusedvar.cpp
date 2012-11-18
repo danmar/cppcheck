@@ -45,6 +45,7 @@ private:
         TEST_CASE(structmember9);  // #2017 - struct is inherited
         TEST_CASE(structmember_extern); // No false positives for extern structs
         TEST_CASE(structmember10);
+        TEST_CASE(structmember11); // #4168 - initialization with {} / passed by address to unknown function
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -331,6 +332,18 @@ private:
                                "    Fred fred;\n"
                                "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember11() { // #4168
+        checkStructMemberUsage("struct abc { int x; };\n"
+                               "struct abc s = {0};\n"
+                               "void f() { do_something(&s); }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct abc { int x; };\n"
+                               "struct abc s = {0};\n"
+                               "void f() { }\n");
+        TODO_ASSERT_EQUALS("abc::x is not used", "", errout.str());
     }
 
     void structmember_extern() {

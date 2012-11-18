@@ -1082,6 +1082,18 @@ void CheckUnusedVar::checkStructMemberUsage()
             if (Token::findmatch(tok, s.c_str()))
                 structname.clear();
 
+            // Bail out if instance is initialized with {}..
+            if (!structname.empty()) {
+                const std::string pattern1(structname + " %var% ;");
+                const Token *tok2 = tok;
+                while (NULL != (tok2 = Token::findmatch(tok2->next(), pattern1.c_str()))) {
+                    if (Token::simpleMatch(tok2->tokAt(3), (tok2->strAt(1) + " = {").c_str())) {
+                        structname.clear();
+                        break;
+                    }
+                }
+            }
+
             // Try to prevent false positives when struct members are not used directly.
             if (Token::findmatch(tok, (structname + " *").c_str()))
                 structname.clear();
