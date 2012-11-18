@@ -667,7 +667,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                         p += 2;
                         multicompare(p,tok->str() == "|",ismulticomp)
                         patternUnderstood = true;
-                    // Op (%op%)
+                        // Op (%op%)
                     } else if (p[0] == 'p') {
                         p += 2;
                         multicompare(p,tok->isOp(),ismulticomp);
