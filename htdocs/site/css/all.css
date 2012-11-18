@@ -10,13 +10,17 @@ dt {
     font-weight: bold;
 }
 
+
 /* Default link style */
-a:link          { color:#036; text-decoration:underline; }
-a:visited       { color:#036; text-decoration:underline; }
-a:focus         { color:#369; text-decoration:none; }
+a:link,
+a:visited   { color:#036; text-decoration:underline; }
+
+a:focus     { color:#369; text-decoration:none; }
+
 a:link:hover,
-a:visited:hover { color:#369; text-decoration:none; }
-a:active        { color:#369; text-decoration:none; }
+a:visited:hover,
+a:active    { color:#369; text-decoration:none; }
+
 
 /* Header */
 #header {
@@ -66,11 +70,13 @@ a:active        { color:#369; text-decoration:none; }
     border: none;
 }
 
-#tabs a:link    { color:#eee; text-decoration:none; }
+#tabs a:link,
 #tabs a:visited { color:#eee; text-decoration:none; }
-#tabs a:focus   { color:#fff; text-decoration:underline; }
-#tabs a:hover   { color:#fff; text-decoration:underline; }
+
+#tabs a:focus,
+#tabs a:hover,
 #tabs a:active  { color:#fff; text-decoration:underline; }
+
 
 /* Anchors */
 #anchors ul {
@@ -94,6 +100,7 @@ a:active        { color:#369; text-decoration:none; }
     padding: 0;
 }
 
+
 /* Wrap */
 .wrap {
     width: 50em;
@@ -101,12 +108,14 @@ a:active        { color:#369; text-decoration:none; }
     padding: .5em;
 }
 
+
 /* RSS feed items */
 .rssfeeditems em {
     margin-left: .5em;
     color: #888;
     font-size: smaller;
 }
+
 
 /* "Download Now!" link */
 a.downloadnow {
