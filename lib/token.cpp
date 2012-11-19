@@ -542,7 +542,7 @@ int Token::firstWordLen(const char *str)
                 ++(p);                              \
             ismulticomp = false;                    \
         } else {                                    \
-            (p) += 1;                               \
+            ++(p);                                  \
             ismulticomp = (*(p) && *(p) != ' ');    \
             continue;                               \
         }                                           \
@@ -574,7 +574,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         }
 
         // If we are in the first token, we skip all initial !! patterns
-        if (firstpattern && !tok->previous() && tok->next() && p[1] == '!' && p[0] == '!' && p[2] != '\0') {
+        if (firstpattern && !tok->previous() && tok->next() && p[0] == '!' && p[1] == '!' && p[2] != '\0') {
             while (*p && *p != ' ')
                 ++p;
             continue;
@@ -639,7 +639,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // Character (%char%)
             {
                 p += 6;
-                multicompare(p,tok->_type == eChar,ismulticomp);
+                multicompare(p,tok->type() == eChar,ismulticomp);
                 patternUnderstood = true;
             }
             break;
@@ -647,7 +647,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // String (%str%)
             {
                 p += 5;
-                multicompare(p,tok->_type == eString,ismulticomp);
+                multicompare(p,tok->type() == eString,ismulticomp);
                 patternUnderstood = true;
             }
             break;
@@ -684,11 +684,11 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 }
                 break;
             default:
-                if (firstWordEquals(p, tok->_str.c_str())) {
-                    p += tok->_str.length();
+                if (firstWordEquals(p, tok->str().c_str())) {
+                    p += tok->str().length();
                     if (p[0] == '|') {
                         while (*p && *p != ' ')
-                            p++;
+                            ++p;
                     }
                     patternUnderstood = true;
                 }
@@ -698,9 +698,6 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             if (!patternUnderstood) {
                 return false;
             }
-
-            tok = tok->next();
-            continue;
         }
 
         else if (ismulticomp) {
@@ -710,20 +707,18 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // [.. => search for a one-character token..
         else if (p[0] == '[' && chrInFirstWord(p, ']')) {
-            if (tok->_str.length() != 1)
+            if (tok->str().length() != 1)
                 return false;
 
-            const char *temp = p + 1;
+            const char *temp = p+1;
             bool chrFound = false;
-            int count = 0;
+            unsigned int count = 0;
             while (*temp && *temp != ' ') {
                 if (*temp == ']') {
                     ++count;
-                    ++temp;
-                    continue;
                 }
 
-                if (*temp == tok->_str[0]) {
+                else if (*temp == tok->str()[0]) {
                     chrFound = true;
                     break;
                 }
@@ -731,13 +726,15 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 ++temp;
             }
 
-            if (count > 1) {
-                if (tok->_str[0] == ']')
-                    chrFound = true;
-            }
+            if (count > 1 && tok->str()[0] == ']')
+                chrFound = true;
 
             if (!chrFound)
                 return false;
+
+            p = temp;
+            while (*p && *p != ' ')
+                ++p;
         }
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
@@ -755,9 +752,12 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         }
 
         // Parse "not" options. Token can be anything except the given one
-        else if (p[1] == '!' && p[0] == '!' && p[2] != '\0') {
-            if (firstWordEquals(&(p[2]), tok->str().c_str()))
+        else if (p[0] == '!' && p[1] == '!' && p[2] != '\0') {
+            p += 2;
+            if (firstWordEquals(p, tok->str().c_str()))
                 return false;
+            while (*p && *p != ' ')
+                ++p;
         }
 
         else if (!firstWordEquals(p, tok->_str.c_str())) {
