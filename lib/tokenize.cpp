@@ -2148,7 +2148,7 @@ void Tokenizer::simplifyNull()
 void Tokenizer::concatenateNegativeNumber()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "?|:|,|(|[|=|return|case|sizeof|%op% - %num%")) {
+        if (Token::Match(tok, "?|:|,|(|[|{|=|return|case|sizeof|%op% - %num%")) {
             tok->deleteNext();
             tok->next()->str("-" + tok->next()->str());
         }
