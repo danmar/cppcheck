@@ -92,6 +92,7 @@ private:
         TEST_CASE(stlBoundries1);
         TEST_CASE(stlBoundries2);
         TEST_CASE(stlBoundries3);
+        TEST_CASE(stlBoundries4); // #4364
 
         // if (str.find("ab"))
         TEST_CASE(if_find);
@@ -1255,6 +1256,28 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid iterator 'current' used.\n", errout.str());
     }
 
+    void stlBoundries4() {
+
+        check("void f() {\n"
+              "    std::forward_list<std::vector<std::vector<int>>>::iterator it;\n"
+              "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
+
+        // don't crash
+        check("void f() {\n"
+              "    if (list < 0) ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (list < 0) {\n"
+              "        std::forward_list<std::vector<std::vector<int>>>::iterator it;\n"
+              "        for (it = ab.begin(); ab.end() > it; ++it) {}\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
+    }
 
 
     void if_find() {

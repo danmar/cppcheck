@@ -721,10 +721,7 @@ void CheckStl::stlBoundries()
                 if (tok->link())
                     tok = tok->link();
                 else
-                    while (tok && tok->str() != ">")
-                        tok = tok->next();
-                if (!tok)
-                    break;
+                    continue;
 
                 if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;")) {
                     const unsigned int iteratorid(tok->tokAt(3)->varId());
