@@ -898,9 +898,14 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], const Toke
     return 0;
 }
 
-void Token::insertToken(const std::string &tokenStr)
+void Token::insertToken(const std::string &tokenStr, bool prepend)
 {
     Token *newToken;
+
+    //TODO: Find a solution for the first token on the list
+    if (prepend && !this->previous())
+        return;
+
     if (_str.empty())
         newToken = this;
     else
@@ -911,14 +916,25 @@ void Token::insertToken(const std::string &tokenStr)
     newToken->_progressValue = _progressValue;
 
     if (newToken != this) {
-        if (this->next()) {
-            newToken->next(this->next());
-            newToken->next()->previous(newToken);
-        } else if (tokensBack) {
-            *tokensBack = newToken;
+        if (prepend) {
+            /*if (this->previous())*/ {
+                newToken->previous(this->previous());
+                newToken->previous()->next(newToken);
+            } /*else if (tokensFront?) {
+                *tokensFront? = newToken;
+            }*/
+            this->previous(newToken);
+            newToken->next(this);
+        } else {
+            if (this->next()) {
+                newToken->next(this->next());
+                newToken->next()->previous(newToken);
+            } else if (tokensBack) {
+                *tokensBack = newToken;
+            }
+            this->next(newToken);
+            newToken->previous(this);
         }
-        this->next(newToken);
-        newToken->previous(this);
     }
 }
 
