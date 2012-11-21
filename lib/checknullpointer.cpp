@@ -1091,6 +1091,7 @@ void CheckNullPointer::nullPointer()
     nullPointerStructByDeRefAndChec();
     nullPointerByDeRefAndChec();
     nullPointerByCheckAndDeRef();
+    nullPointerDefaultArgument();
 }
 
 /** Dereferencing null constant (simplified token list) */
@@ -1170,6 +1171,64 @@ void CheckNullPointer::nullConstantDereference()
     }
 }
 
+
+/**
+* @brief Does one part of the check for nullPointer().
+* -# default argument that sets a pointer to 0
+* -# dereference pointer
+*/
+void CheckNullPointer::nullPointerDefaultArgument()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eFunction || !i->classStart || !i->function)
+            continue;
+
+        // Scan the argument list for default arguments that are pointers and
+        // which default to a NULL pointer if no argument is specified.
+        std::set<unsigned int> pointerArgs;
+        for (const Token *tok = i->function->arg; tok != i->function->arg->link(); tok = tok->next()) {
+
+            if (Token::Match(tok, "%var% = 0 ,|)") && tok->varId() != 0) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                if (var && var->isPointer())
+                    pointerArgs.insert(tok->varId());
+            }
+        }
+
+        // Report an error if any of the default-NULL arguments are dereferenced
+        if (!pointerArgs.empty()) {
+            bool unknown = _settings->inconclusive;
+            for (const Token *tok = i->classStart; tok != i->classEnd; tok = tok->next()) {
+                // If we encounter a possible NULL-pointer check, skip over its body
+                if (Token::Match(tok, "if ( "))  {
+                    bool dependsOnPointer = false;
+                    const Token *endOfCondition = tok->next()->link();
+                    for (const Token *tok2 = tok->next(); tok2 != endOfCondition; tok2 = tok2->next()) {
+                        if (tok2->isName() && tok2->varId() > 0 && pointerArgs.count(tok2->varId()) > 0) {
+                            dependsOnPointer = true;
+                        }
+                    }
+                    if (dependsOnPointer && Token::Match(endOfCondition, ") {")) {
+                        tok = endOfCondition->next()->link();
+                        continue;
+                    }
+                }
+
+                if (tok->varId() == 0 || pointerArgs.count(tok->varId()) == 0)
+                    continue;
+
+                // If a pointer is assigned a new value, stop considering it.
+                if (Token::Match(tok, "%var% = %any%"))
+                    pointerArgs.erase(tok->varId());
+
+                if (isPointerDeRef(tok, unknown, symbolDatabase))
+                    nullPointerDefaultArgError(tok, tok->str());
+            }
+        }
+    }
+}
 
 /// @addtogroup Checks
 /// @{
@@ -1396,4 +1455,9 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     callstack.push_back(nullCheck);
     const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check it against null.");
     reportError(callstack, Severity::error, "nullPointer", errmsg, inconclusive);
+}
+
+void CheckNullPointer::nullPointerDefaultArgError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference if the default parameter value is used: " + varname);
 }

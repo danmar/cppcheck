@@ -72,8 +72,8 @@ private:
         TEST_CASE(nullpointerStdString);
         TEST_CASE(nullpointerStdStream);
         TEST_CASE(functioncall);
-
         TEST_CASE(crash1);
+        TEST_CASE(functioncallDefaultArguments);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
@@ -2140,6 +2140,67 @@ private:
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error, inconclusive) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", errout.str());
         }
     }
+
+
+    void functioncallDefaultArguments() {
+
+        check("void f(int *p = 0) {\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+
+        check("void f(char a, int *p = 0) {\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    printf(\"p = %d\", *p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    printf(\"p[1] = %d\", p[1]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    if (p != 0 && bar())\n"
+              "      *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p) {\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    if (p != 0)\n"
+              "      *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    if (a != 0)\n"
+              "      *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    p = a;\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    p += a;\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+    }
+
 
     void crash1() {
         check("int f() {\n"

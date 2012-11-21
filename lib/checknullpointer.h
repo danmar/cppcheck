@@ -100,7 +100,7 @@ public:
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname);
     void nullPointerError(const Token *tok, const std::string &varname, const Token* nullcheck, bool inconclusive = false);
-
+    void nullPointerDefaultArgError(const Token *tok, const std::string &varname);
 private:
 
     /** Get error messages. Used by --errorlist */
@@ -145,6 +145,13 @@ private:
      * -# dereference pointer
      */
     void nullPointerConditionalAssignment();
+
+    /**
+     * @brief Does one part of the check for nullPointer().
+     * -# default argument that sets a pointer to 0
+     * -# dereference pointer
+     */
+    void nullPointerDefaultArgument();
 
     /**
      * @brief Investigate if function call can make pointer null. If
