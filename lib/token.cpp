@@ -565,7 +565,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         if (!tok) {
             // If we have no tokens, pattern "!!else" should return true
-            if (p[1] == '!' && p[0] == '!' && p[2] != '\0') {
+            if (p[0] == '!' && p[1] == '!' && p[2] != '\0') {
                 while (*p && *p != ' ')
                     ++p;
                 continue;
@@ -584,18 +584,25 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Compare the first character of the string for optimization reasons
         // before doing more detailed checks.
-        if (p[0] == '%' && p[1]!='|') {
-            bool patternUnderstood = false;
-            switch (p[1]) {
+        if (p[0] == '%') {
+            ++p;
+            switch (p[0]) {
+            case '|':
+            case '\0':
+            case ' ':
+                //simple '%' character
+            {
+                multicompare(p, tok->str() == "%", ismulticomp);
+            }
+            break;
             case 'v':
                 // TODO: %var% should match only for
                 // variables that have varId != 0, but that needs a lot of
                 // work, before that change can be made.
                 // Any symbolname..
-                if (p[4] == '%') { // %var%
-                    p += 5;
+                if (p[3] == '%') { // %var%
+                    p += 4;
                     multicompare(p,tok->isName(),ismulticomp);
-                    patternUnderstood = true;
                 } else { // %varid%
                     if (varid == 0) {
                         throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
@@ -604,99 +611,79 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     if (tok->varId() != varid)
                         return false;
 
-                    p += 7;
-                    patternUnderstood = true;
+                    p += 6;
                 }
                 break;
             case 't':
                 // Type (%type%)
             {
-                p += 6;
+                p += 5;
                 multicompare(p,tok->isName() && tok->varId() == 0 && tok->str() != "delete",ismulticomp);
-                patternUnderstood = true;
             }
             break;
             case 'a':
                 // Accept any token (%any%)
             {
-                p += 5;
-                if (p[0] == '|')
+                p += 4;
+                if (p[0] == '|') {
                     while (*p && *p != ' ')
                         ++p;
+                }
                 ismulticomp = false;
-                patternUnderstood = true;
             }
             break;
             case 'n':
                 // Number (%num%)
             {
-                p += 5;
+                p += 4;
                 multicompare(p,tok->isNumber(),ismulticomp);
-                patternUnderstood = true;
             }
             break;
             case 'c':
                 // Character (%char%)
             {
-                p += 6;
+                p += 5;
                 multicompare(p,tok->type() == eChar,ismulticomp);
-                patternUnderstood = true;
             }
             break;
             case 's':
                 // String (%str%)
             {
-                p += 5;
+                p += 4;
                 multicompare(p,tok->type() == eString,ismulticomp);
-                patternUnderstood = true;
             }
             break;
             case 'b':
                 // Bool (%bool%)
             {
-                p += 6;
+                p += 5;
                 multicompare(p,tok->isBoolean(),ismulticomp);
-                patternUnderstood = true;
             }
             break;
             case 'o':
-                if (p[3] == '%') {
-                    p += 2;
-                    // Or (%or%)
-                    if (p[0] == 'r') {
-                        p += 2;
-                        multicompare(p,tok->str() == "|",ismulticomp)
-                        patternUnderstood = true;
-                    }
+                ++p;
+                if (p[1] == '%') {
                     // Op (%op%)
-                    else if (p[0] == 'p') {
+                    if (p[0] == 'p') {
                         p += 2;
                         multicompare(p,tok->isOp(),ismulticomp);
-                        patternUnderstood = true;
+                    }
+                    // Or (%or%)
+                    else {
+                        p += 2;
+                        multicompare(p,tok->str() == "|",ismulticomp)
                     }
                 }
 
                 // Oror (%oror%)
-                else if (p[5] == '%') {
-                    p += 6;
+                else {
+                    p += 4;
                     multicompare(p,tok->str() == "||",ismulticomp);
-                    patternUnderstood = true;
                 }
                 break;
             default:
-                if (firstWordEquals(p, tok->str().c_str())) {
-                    p += tok->str().length();
-                    if (p[0] == '|') {
-                        while (*p && *p != ' ')
-                            ++p;
-                    }
-                    patternUnderstood = true;
-                }
-                break;
-            }
-
-            if (!patternUnderstood) {
-                return false;
+                //unknown %cmd%, abort
+                abort();
             }
         }
 
