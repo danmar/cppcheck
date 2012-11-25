@@ -1181,14 +1181,16 @@ void CheckNullPointer::nullPointerDefaultArgument()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eFunction || !i->classStart || !i->function)
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        if (scope->function == 0 || !scope->function->hasBody) // We only look for functions with a body
             continue;
 
         // Scan the argument list for default arguments that are pointers and
         // which default to a NULL pointer if no argument is specified.
         std::set<unsigned int> pointerArgs;
-        for (const Token *tok = i->function->arg; tok != i->function->arg->link(); tok = tok->next()) {
+        for (const Token *tok = scope->function->arg; tok != scope->function->arg->link(); tok = tok->next()) {
 
             if (Token::Match(tok, "%var% = 0 ,|)") && tok->varId() != 0) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
@@ -1200,7 +1202,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
         // Report an error if any of the default-NULL arguments are dereferenced
         if (!pointerArgs.empty()) {
             bool unknown = _settings->inconclusive;
-            for (const Token *tok = i->classStart; tok != i->classEnd; tok = tok->next()) {
+            for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
                 // If we encounter a possible NULL-pointer check, skip over its body
                 if (Token::Match(tok, "if ( "))  {
                     bool dependsOnPointer = false;
