@@ -7309,30 +7309,30 @@ private:
     }
 
     void simplifyFuncInWhile() {
-        ASSERT_EQUALS("int cppcheck:r = fclose ( f ) ; "
-                      "while ( cppcheck:r ) "
+        ASSERT_EQUALS("int cppcheck:r1 = fclose ( f ) ; "
+                      "while ( cppcheck:r1 ) "
                       "{ "
                       "foo ( ) ; "
-                      "cppcheck:r = fclose ( f ) ; "
+                      "cppcheck:r1 = fclose ( f ) ; "
                       "}",
                       tok("while(fclose(f))foo();"));
 
-        ASSERT_EQUALS("int cppcheck:r = fclose ( f ) ; "
-                      "while ( cppcheck:r ) "
+        ASSERT_EQUALS("int cppcheck:r1 = fclose ( f ) ; "
+                      "while ( cppcheck:r1 ) "
                       "{ "
-                      "; cppcheck:r = fclose ( f ) ; "
+                      "; cppcheck:r1 = fclose ( f ) ; "
                       "}",
                       tok("while(fclose(f));"));
 
-        ASSERT_EQUALS("int cppcheck:r = fclose ( f ) ; "
-                      "while ( cppcheck:r ) "
+        ASSERT_EQUALS("int cppcheck:r1 = fclose ( f ) ; "
+                      "while ( cppcheck:r1 ) "
                       "{ "
-                      "; cppcheck:r = fclose ( f ) ; "
+                      "; cppcheck:r1 = fclose ( f ) ; "
                       "} "
-                      "int cppcheck:r = fclose ( g ) ; "
-                      "while ( cppcheck:r ) "
+                      "int cppcheck:r2 = fclose ( g ) ; "
+                      "while ( cppcheck:r2 ) "
                       "{ "
-                      "; cppcheck:r = fclose ( g ) ; "
+                      "; cppcheck:r2 = fclose ( g ) ; "
                       "}",
                       tok("while(fclose(f)); while(fclose(g));"));
     }

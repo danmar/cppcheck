@@ -8176,19 +8176,19 @@ void Tokenizer::simplifyErrNoInWhile()
 
 void Tokenizer::simplifyFuncInWhile()
 {
+    unsigned int count = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "while ( %var% ( %var% ) ) {"))
             continue;
 
         Token *func = tok->tokAt(2);
         Token *var = tok->tokAt(4);
-        Token *end = tok->linkAt(7);
-        if (!end)
-            break;
+        Token *end = tok->next()->link()->next()->link();
 
         const unsigned int varid = ++_varId; // Create new variable
+        const std::string varname("cppcheck:r" + MathLib::longToString(++count));
         tok->str("int");
-        tok->next()->insertToken("cppcheck:r");
+        tok->next()->insertToken(varname);
         tok->tokAt(2)->varId(varid);
         tok->insertToken("while");
         tok->insertToken(";");
@@ -8198,10 +8198,10 @@ void Tokenizer::simplifyFuncInWhile()
         tok->insertToken("(");
         tok->insertToken(func->str());
         tok->insertToken("=");
-        tok->insertToken("cppcheck:r");
+        tok->insertToken(varname);
         tok->next()->varId(varid);
         Token::createMutualLinks(tok->tokAt(4), tok->tokAt(6));
-        end->previous()->insertToken("cppcheck:r");
+        end->previous()->insertToken(varname);
         end->previous()->varId(varid);
         end->previous()->insertToken("=");
         Token::move(func, func->tokAt(3), end->previous());
