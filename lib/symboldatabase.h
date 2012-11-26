@@ -614,6 +614,8 @@ public:
     void printOut(const char * title = NULL) const;
     void printVariable(const Variable *var, const char *indent) const;
 
+    bool isCPP() const;
+
 private:
 
     // Needed by Borland C++:

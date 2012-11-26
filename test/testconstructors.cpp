@@ -107,6 +107,7 @@ private:
         TEST_CASE(uninitVar20); // ticket #2867
         TEST_CASE(uninitVar21); // ticket #2947
         TEST_CASE(uninitVar22); // ticket #3043
+        TEST_CASE(uninitVar23); // ticket #3702
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1559,6 +1560,29 @@ private:
               "    return *this;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::x' is not assigned a value in 'Fred::operator='.\n", errout.str());
+    }
+
+    void uninitVar23() { // ticket #3702
+        check("class Fred {\n"
+              "    int x;\n"
+              "public:\n"
+              "    Fred(struct A a, struct B b);\n"
+              "    Fred(C c, struct D d);\n"
+              "    Fred(struct E e, F f);\n"
+              "    Fred(struct G, struct H);\n"
+              "    Fred(I, J);\n"
+              "};\n"
+              "Fred::Fred(A a, B b) { }\n"
+              "Fred::Fred(struct C c, D d) { }\n"
+              "Fred::Fred(E e, struct F f) { }\n"
+              "Fred::Fred(G g, H h) { }\n"
+              "Fred::Fred(struct I i, struct J j) { }\n"
+             );
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
+                      "[test.cpp:11]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
+                      "[test.cpp:12]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
+                      "[test.cpp:13]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
+                      "[test.cpp:14]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {

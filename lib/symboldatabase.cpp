@@ -898,6 +898,16 @@ void Variable::evaluate()
 
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth)
 {
+    const bool isCPP = scope->check->isCPP();
+
+    // skip "struct" if it is C++
+    if (isCPP) {
+        if (first->str() == "struct")
+            first = first->next();
+        if (second->str() == "struct")
+            second = second->next();
+    }
+
     while (first->str() == second->str()) {
         // at end of argument list
         if (first->str() == ")") {
@@ -975,6 +985,14 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
         first = first->next();
         second = second->next();
+
+        // skip "struct" if it is C++
+        if (isCPP) {
+            if (first->str() == "struct")
+                first = first->next();
+            if (second->str() == "struct")
+                second = second->next();
+        }
     }
 
     return false;
@@ -2280,4 +2298,11 @@ unsigned int Scope::getNestedNonFunctions() const
             nested++;
     }
     return nested;
+}
+
+//---------------------------------------------------------------------------
+
+bool SymbolDatabase::isCPP() const
+{
+    return _tokenizer->isCPP();
 }
