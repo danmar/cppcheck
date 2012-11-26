@@ -2518,6 +2518,26 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
         }
+        {
+            //don't simplify '&x'!
+            const char code[] = "const char * foo ( ) {\n"
+                                "const char x1 = 'b' ;\n"
+                                "f ( & x1 ) ;\n"
+                                "const char x2 = 'b' ;\n"
+                                "f ( y , & x2 ) ;\n"
+                                "const char x3 = 'b' ;\n"
+                                "t = & x3 ;\n"
+                                "const char x4 = 'b' ;\n"
+                                "t = y + & x4 ;\n"
+                                "const char x5 = 'b' ;\n"
+                                "z [ & x5 ] = y ;\n"
+                                "const char x6 = 'b' ;\n"
+                                "v = { & x6 } ;\n"
+                                "const char x7 = 'b' ;\n"
+                                "return & x7 ;\n"
+                                "}";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariablesIfEq1() {

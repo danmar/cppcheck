@@ -5805,6 +5805,18 @@ bool Tokenizer::simplifyKnownVariables()
                 const Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
                 const Token * const valuetok = vartok->tokAt(2);
                 if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% ;")) {
+                    //check if there's not a reference usage inside the code
+                    bool withreference = false;
+                    for (const Token *tok2 = valuetok->tokAt(2); tok2; tok2 = tok2->next()) {
+                        if (Token::Match(tok2,"(|[|,|{|=|return|%op% & %varid%", vartok->varId())) {
+                            withreference = true;
+                            break;
+                        }
+                    }
+                    //don't simplify 'f(&x)' to 'f(&100)'
+                    if (withreference)
+                        continue;
+
                     constantValues[vartok->varId()] = valuetok->str();
 
                     // remove statement
