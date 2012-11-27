@@ -31,10 +31,17 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
 {
     // hexadecimal numbers:
     if (isHex(str)) {
-        bigint ret = 0;
-        std::istringstream istr(str);
-        istr >> std::hex >> ret;
-        return ret;
+        if (str[0] == '-') {
+            bigint ret = 0;
+            std::istringstream istr(str);
+            istr >> std::hex >> ret;
+            return ret;
+        } else {
+            unsigned long long ret = 0;
+            std::istringstream istr(str);
+            istr >> std::hex >> ret;
+            return (bigint)ret;
+        }
     }
 
     // octal numbers:

@@ -185,6 +185,10 @@ private:
         ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.0E+1"));
         ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.0E-1"));
 
+        // from long long
+        ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
+        ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
+
         // -----------------
         // to double number:
         // -----------------
