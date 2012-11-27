@@ -2,6 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+char *replace(char *str, char before, char after) {
+    while (strchr(str,before))
+        *strchr(str,before) = after;
+    return str;
+}
+
 int main() {
     FILE *f = fopen("times.log", "rt");
     if (!f)
@@ -14,13 +20,11 @@ int main() {
     char rev[10] = {0};
     char line[128] = {0};
     while (fgets(line,sizeof(line),f) && n < 64) {
-        if (strchr(line,'\r'))
-            *strchr(line,'\r') = 0;
-        if (strchr(line,'\n'))
-            *strchr(line,'\n') = 0;
+        replace(line,'\r','\0');
+        replace(line,'\n','\0');
         if (strncmp(line,"HEAD is now at ", 15) == 0) {
             if (rev[0])
-                sprintf(lines[n++],"%s: %.1f - %.1f", rev, mintime, maxtime);
+                sprintf(lines[n++],"%s\t%.1f\t%.1f", rev, mintime, maxtime);
             strncpy(rev, line+15, 7);
             mintime = 0.0f;
             maxtime = 0.0f;
@@ -29,7 +33,7 @@ int main() {
             float time = atof(line+14);
             if (mintime < 0.1f || time < mintime)
                 mintime = time;
-            else if (time > maxtime)
+            if (time > maxtime)
                 maxtime = time;
         }
     }
