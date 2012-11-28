@@ -4382,7 +4382,7 @@ bool Tokenizer::simplifyConstTernaryOp()
             !Token::Match(tok->tokAt(-4), "<|=|,|(|[|{|}|;|case|return ( %bool%|%num% )"))
             continue;
 
-        const unsigned int offset = (tok->previous()->str() == ")") ? 2 : 1;
+        const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
         if (tok->strAt(-2*offset) == "<" && !TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
             continue;
