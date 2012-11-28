@@ -627,6 +627,18 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
+                              "    int i = 0,code=10,d=10;\n"
+                              "    for(i = 0; i < 10; i++) {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "        g(d);\n"
+                              "        d = code;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
                               "    int code=10;\n"
                               "    while(code < 20) {\n"
                               "        std::cout<<code<<std::endl;\n"
@@ -648,6 +660,51 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
+                              "    int code=10,d=10;\n"
+                              "    while(code < 20) {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "        g(d);\n"
+                              "        d += code;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int code=10;\n"
+                              "    do {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "    } while(code < 20)\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int code=10,d=10;\n"
+                              "    do {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "        d += code;\n"
+                              "    } while(code < 20)\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int code=10,d=10;\n"
+                              "    do {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "        g(d);\n"
+                              "        d += code;\n"
+                              "    } while(code < 20)\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
                               "    int code=10;\n"
                               "    for(int i=0; i < 10; i++) {\n"
                               "        if(true) {\n"
@@ -679,6 +736,18 @@ private:
                               "            code += 2;\n"
                               "        }\n"
                               "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int code=10;\n"
+                              "    do {\n"
+                              "        if(true) {\n"
+                              "            std::cout<<code<<std::endl;\n"
+                              "            code += 2;\n"
+                              "        }\n"
+                              "    } while(code < 20)\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
