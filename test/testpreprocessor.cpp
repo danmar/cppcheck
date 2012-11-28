@@ -2698,9 +2698,9 @@ private:
 
     void define_if4() {
         const char filedata[] = "#define X +123\n"
-                                 "#if X==123\n"
-                                 "FOO\n"
-                                 "#endif";
+                                "#if X==123\n"
+                                "FOO\n"
+                                "#endif";
         Preprocessor preprocessor(NULL, this);
         ASSERT_EQUALS("\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
     }
