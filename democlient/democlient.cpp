@@ -67,10 +67,16 @@ public:
 
 int main()
 {
-    const char *lenstr = getenv("CONTENT_LENGTH");
     char data[4096] = {0};
-    int len = std::min(1 + atoi(lenstr), (int)(sizeof(data) - 2));
-    fgets(data, len, stdin);
+
+    const char *lenstr = getenv("CONTENT_LENGTH");
+    if (lenstr) {
+        int len = std::min(1 + atoi(lenstr), (int)(sizeof(data) - 2));
+        fgets(data, len, stdin);
+    } else {
+	const char *s = getenv("QUERY_STRING");
+        strncpy(data, s?s:"", sizeof(data)-2);
+    }
 
     char code[4096] = {0};
     unencode(data, code);
