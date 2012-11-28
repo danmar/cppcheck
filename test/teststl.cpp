@@ -1864,6 +1864,15 @@ private:
               "    return hello().c_str();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:11]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
+        // #4183 - using MyStringClass.c_str()
+        check("void a(const std::string &str);\n"
+              "\n"
+              "void b() {\n"
+              "    MyStringClass s;\n"
+              "    a(s.c_str());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void autoPointer() {

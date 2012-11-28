@@ -1194,8 +1194,11 @@ void CheckStl::string_c_str()
                         tok2 = tok->next()->link();
                     else
                         tok2 = tok2->previous();
-                    if (tok2 && Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )"))
-                        string_c_strParam(tok, i->second);
+                    if (tok2 && Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
+                        const Variable* var = symbolDatabase->getVariableFromVarId(tok2->tokAt(-5)->varId());
+                        if (var && Token::Match(var->typeStartToken(), "const| std :: string|wstring"))
+                            string_c_strParam(tok, i->second);
+                    }
                 }
             }
 
