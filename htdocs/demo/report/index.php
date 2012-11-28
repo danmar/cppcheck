@@ -66,7 +66,7 @@
   <link rel="stylesheet" type="text/css" href="/site/css/all.min.css" />
   <link rel="stylesheet" type="text/css" href="/site/css/demo.min.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
   <script src="/site/js/picnet.table.filter.min.pack.js" type="text/javascript"></script>
   <script type="text/javascript">
     $(document).ready(function() {
