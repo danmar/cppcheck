@@ -2151,6 +2151,8 @@ void Tokenizer::concatenateNegativeNumber()
         if (Token::Match(tok, "?|:|,|(|[|{|=|return|case|sizeof|%op% - %num%")) {
             tok->deleteNext();
             tok->next()->str("-" + tok->next()->str());
+        } else if (Token::Match(tok, "?|:|,|(|[|{|=|return|case|sizeof|%op% +")) {
+            tok->deleteNext();
         }
     }
 }

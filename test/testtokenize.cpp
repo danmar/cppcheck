@@ -71,7 +71,7 @@ private:
 
         TEST_CASE(foreach);     // #3690
 
-        TEST_CASE(minus);
+        TEST_CASE(concatenateNegativeNumber);
 
         TEST_CASE(longtok);
 
@@ -810,12 +810,14 @@ private:
         ASSERT_EQUALS("void f ( ) { for ( char c in MyString ) { Console :: Write ( c ) ; } }" ,tokenizeAndStringify(code.c_str()));
     }
 
-    void minus() {
+    void concatenateNegativeNumber() {
         ASSERT_EQUALS("i = -12", tokenizeAndStringify("i = -12"));
         ASSERT_EQUALS("1 - 2", tokenizeAndStringify("1-2"));
         ASSERT_EQUALS("foo ( -1 ) - 2", tokenizeAndStringify("foo(-1)-2"));
         ASSERT_EQUALS("int f ( ) { return -2 ; }", tokenizeAndStringify("int f(){return -2;}"));
         ASSERT_EQUALS("int x [ 2 ] = { -2 , 1 }", tokenizeAndStringify("int x[2] = {-2,1}"));
+
+        ASSERT_EQUALS("f ( 123 )", tokenizeAndStringify("f(+123)"));
     }
 
 
