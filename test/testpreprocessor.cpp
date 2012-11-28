@@ -222,6 +222,7 @@ private:
         TEST_CASE(define_if1);
         TEST_CASE(define_if2);
         TEST_CASE(define_if3);
+        TEST_CASE(define_if4); // #4079 - #define X +123
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
@@ -2691,6 +2692,15 @@ private:
                                 "#if (A==0)\n"
                                 "FOO\n"
                                 "#endif";
+        Preprocessor preprocessor(NULL, this);
+        ASSERT_EQUALS("\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
+    }
+
+    void define_if4() {
+        const char filedata[] = "#define X +123\n"
+                                 "#if X==123\n"
+                                 "FOO\n"
+                                 "#endif";
         Preprocessor preprocessor(NULL, this);
         ASSERT_EQUALS("\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
     }

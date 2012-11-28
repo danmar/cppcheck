@@ -1450,6 +1450,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     }
 
     // simplify calculations..
+    tokenizer.concatenateNegativeNumber();
     bool modified = true;
     while (modified) {
         modified = false;
