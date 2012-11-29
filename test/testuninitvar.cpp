@@ -2077,12 +2077,17 @@ private:
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (y == 1) { return; }\n"
-                        "    if (y == 2) { break; }\n"
-                        "    if (y == 3) { continue; }\n"
                         "    else { x = 1; }\n"
                         "    return x;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    if (y == 1) { return; }\n"
+                        "    return x;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
@@ -2109,7 +2114,7 @@ private:
                         "        if (foo) break;\n"
                         "    return x;\n"
                         "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
         // if goto is simplified there might be conditions that are always true
         checkUninitVar2("void f() {\n"

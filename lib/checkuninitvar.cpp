@@ -1079,7 +1079,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
         while (tok && tok->str() != ";")
             tok = tok->next();
         if (stdtype || i->isPointer())
-            checkScopeForVariable(tok, *i, NULL);
+            checkScopeForVariable(tok, *i, NULL, NULL);
     }
 
     for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
@@ -1088,7 +1088,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
     }
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit)
+bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn)
 {
     const bool suppressErrors(possibleInit && *possibleInit);
 
@@ -1117,7 +1117,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
         // Unconditional inner scope..
         if (tok->str() == "{" && Token::Match(tok->previous(), "[;{}]")) {
-            if (checkScopeForVariable(tok->next(), var, possibleInit))
+            if (checkScopeForVariable(tok->next(), var, possibleInit, NULL))
                 return true;
             tok = tok->link();
             continue;
@@ -1144,7 +1144,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 break;
             if (tok->str() == "{") {
                 bool possibleInitIf(number_of_if > 0 || suppressErrors);
-                const bool initif = checkScopeForVariable(tok->next(), var, &possibleInitIf);
+                bool noreturnIf = false;
+                const bool initif = checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf);
 
                 // goto the }
                 tok = tok->link();
@@ -1160,12 +1161,16 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     tok = tok->tokAt(2);
 
                     bool possibleInitElse(number_of_if > 0 || suppressErrors);
-                    const bool initelse = checkScopeForVariable(tok->next(), var, &possibleInitElse);
+                    bool noreturnElse = false;
+                    const bool initelse = checkScopeForVariable(tok->next(), var, &possibleInitElse, NULL);
 
                     // goto the }
                     tok = tok->link();
 
                     if (initif && initelse)
+                        return true;
+
+                    if ((initif && noreturnElse) || (initelse && noreturnIf))
                         return true;
 
                     if (initif || initelse || possibleInitElse)
@@ -1203,7 +1208,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
             if (tok2 && tok2->str() == "{") {
                 bool possibleinit = true;
-                bool init = checkScopeForVariable(tok2->next(), var, &possibleinit);
+                bool init = checkScopeForVariable(tok2->next(), var, &possibleinit, NULL);
 
                 // variable is initialized in the loop..
                 if (possibleinit || init)
@@ -1213,6 +1218,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 if (!suppressErrors) {
                     checkIfForWhileHead(tok->next(), var, false, bool(number_of_if == 0));
                 }
+
+                // goto "}"
+                tok = tok2->link();
             }
         }
 
@@ -1226,9 +1234,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             return true;
         }
 
-        if (Token::Match(tok, "return|break|continue|throw|goto"))
-            ret = true;
-        else if (ret && tok->str() == ";")
+        if (Token::Match(tok, "return|break|continue|throw|goto")) {
+            if (noreturn)
+                *noreturn = true;
+            else
+                ret = true;
+        } else if (tok->str() == "goto")
             return true;
 
         // variable is seen..
