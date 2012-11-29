@@ -4003,11 +4003,7 @@ bool Tokenizer::simplifyIfAddBraces()
 void Tokenizer::simplifyDoWhileAddBraces()
 {
     //start from the last token and proceed backwards
-    Token *last = list.front();
-    while (last && last->next())
-        last = last->next();
-
-    for (Token *tok = last; tok; tok = tok->previous()) {
+    for (Token *tok = list.back(); tok; tok = tok->previous()) {
         // fix for #988
         if (tok->str() == ")" || tok->str() == "]" ||
             (tok->str() == "}" && tok->link()->previous() &&
