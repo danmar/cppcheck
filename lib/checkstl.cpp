@@ -1196,7 +1196,7 @@ void CheckStl::string_c_str()
                         tok2 = tok2->previous();
                     if (tok2 && Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
                         const Variable* var = symbolDatabase->getVariableFromVarId(tok2->tokAt(-5)->varId());
-                        if (var && Token::Match(var->typeStartToken(), "const| std ::"))
+                        if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
                             string_c_strParam(tok, i->second);
                     }
                 }
@@ -1242,7 +1242,7 @@ void CheckStl::string_c_str()
                         tok2 = tok2->tokAt(-5);
                         if (tok2->isName()) {  // return var.c_str(); => check if var is a std type
                             const Variable* var = symbolDatabase->getVariableFromVarId(tok2->varId());
-                            if (var && Token::Match(var->typeStartToken(), "const| std ::"))
+                            if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
                                 string_c_strReturn(tok);
                         } else {
                             // TODO: determine if a error should be written or not
