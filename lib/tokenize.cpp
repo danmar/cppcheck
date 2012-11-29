@@ -1624,6 +1624,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     simplifySQL();
 
+    // replace __LINE__ macro with line number
+    simplifyLineMacro();
+
     // Concatenate double sharp: 'a ## b' -> 'ab'
     concatenateDoubleSharp();
 
@@ -1631,9 +1634,6 @@ bool Tokenizer::tokenize(std::istream &code,
         // Source has syntax errors, can't proceed
         return false;
     }
-
-    // replace __LINE__ macro with line number
-    simplifyLineMacro();
 
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();

@@ -5792,6 +5792,7 @@ private:
     }
 
     void simplifyTypedef98() { // ticket #2963
+        //TODO: this testcase fails because "inconclusive" and "style" are not enabled in "tok".
         const char code[] = "#define X type ## __LINE__\n"
                             "typedef int X;\n"
                             "typedef int X;\n";
