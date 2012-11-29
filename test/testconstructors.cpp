@@ -1609,7 +1609,7 @@ private:
         check("class John\n"
               "{\n"
               "public:\n"
-              "    John() { strcpy(name, ""); }\n"
+              "    John() { strcpy(name, \"\"); }\n"
               "\n"
               "private:\n"
               "    char name[255];\n"

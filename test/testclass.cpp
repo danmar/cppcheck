@@ -2290,13 +2290,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n", errout.str());
 
         checkConst("class Fred {\n"
-                   "    const std::string foo() { return ""; }\n"
+                   "    const std::string foo() { return \"\"; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    std::string s;\n"
-                   "    const std::string & foo() { return ""; }\n"
+                   "    const std::string & foo() { return \"\"; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
@@ -2349,7 +2349,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class Fred {\n"
-                   "    const std::string foo() const throw() { return ""; }\n"
+                   "    const std::string foo() const throw() { return \"\"; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
     }
@@ -2359,7 +2359,7 @@ private:
         // assignment to variable can't be const
         checkConst("class Fred {\n"
                    "    std::string s;\n"
-                   "    void foo() { s = ""; }\n"
+                   "    void foo() { s = \"\"; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -2462,8 +2462,8 @@ private:
                    "    std::string s;\n"
                    "    const std::string & foo();\n"
                    "};\n"
-                   "const std::string & Fred::foo() { return ""; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
+                   "const std::string & Fred::foo() { return \"\"; }");
+        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", "", errout.str());
 
         // functions with a function call to a non-const member can't be const.. (#1305)
         checkConst("class Fred\n"
@@ -2490,7 +2490,7 @@ private:
                    "    std::string s;\n"
                    "    void foo();\n"
                    "};\n"
-                   "void Fred::foo() { s = ""; }");
+                   "void Fred::foo() { s = \"\"; }");
         ASSERT_EQUALS("", errout.str());
 
         // assignment to function argument reference can be const
@@ -2860,7 +2860,7 @@ private:
         // ticket #1517
         checkConst("class A {\n"
                    "public:\n"
-                   "    A():m_strValue(""){}\n"
+                   "    A():m_strValue(\"\"){}\n"
                    "    std::string strGetString() { return m_strValue; }\n"
                    "private:\n"
                    "    std::string m_strValue;\n"
@@ -3514,7 +3514,7 @@ private:
     void const25() { // ticket #1724
         checkConst("class A{\n"
                    "public:\n"
-                   "A(){m_strVal="";}\n"
+                   "A(){m_strVal=\"\";}\n"
                    "std::string strGetString() const\n"
                    "{return m_strVal.c_str();}\n"
                    "const std::string strGetString1() const\n"
@@ -3527,7 +3527,7 @@ private:
 
         checkConst("class A{\n"
                    "public:\n"
-                   "A(){m_strVal="";}\n"
+                   "A(){m_strVal=\"\";}\n"
                    "std::string strGetString()\n"
                    "{return m_strVal.c_str();}\n"
                    "private:\n"
@@ -3538,7 +3538,7 @@ private:
 
         checkConst("class A{\n"
                    "public:\n"
-                   "A(){m_strVal="";}\n"
+                   "A(){m_strVal=\"\";}\n"
                    "const std::string strGetString1()\n"
                    "{return m_strVal.c_str();}\n"
                    "private:\n"
@@ -3549,7 +3549,7 @@ private:
 
         checkConst("class A{\n"
                    "public:\n"
-                   "A(){m_strVec.push_back("");}\n"
+                   "A(){m_strVec.push_back(\"\");}\n"
                    "size_t strGetSize()\n"
                    "{return m_strVec.size();}\n"
                    "private:\n"
@@ -3560,7 +3560,7 @@ private:
 
         checkConst("class A{\n"
                    "public:\n"
-                   "A(){m_strVec.push_back("");}\n"
+                   "A(){m_strVec.push_back(\"\");}\n"
                    "bool strGetEmpty()\n"
                    "{return m_strVec.empty();}\n"
                    "private:\n"

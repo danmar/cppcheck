@@ -1704,7 +1704,7 @@ private:
               "\n"
               "static char* foo()\n"
               "{\n"
-              "    return strdup("");\n"
+              "    return strdup(\"\");\n"
               "}\n"
               "\n"
               "static void bar()\n"
