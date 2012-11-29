@@ -173,6 +173,27 @@ private:
               "    if ((x | 4) != 3);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X | 0x4) != 0x3' is always true.\n", errout.str());
+
+        // array
+        check("void foo(int *x)\n"
+              "{\n"
+              "    if (x[0] & 4 == 3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
+
+        // struct member
+        check("void foo(struct X *x)\n"
+              "{\n"
+              "    if (x->y & 4 == 3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
+
+        // expression
+        check("void foo(int x)\n"
+              "{\n"
+              "    if ((x+2) & 4 == 3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
     }
 
     void multicompare() {
