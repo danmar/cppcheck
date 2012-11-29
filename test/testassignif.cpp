@@ -87,6 +87,19 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // various simple assignments
+        check("void foo(int x) {\n"
+              "    int y = (x+1) | 1;\n"
+              "    if (y == 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==2' is always false.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int y = 1 | x();\n"
+              "    if (y == 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==2' is always false.\n", errout.str());
+
         // multiple conditions
         check("void foo(int x) {\n"
               "    int y = x & 4;\n"

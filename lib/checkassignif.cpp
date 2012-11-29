@@ -42,15 +42,29 @@ void CheckAssignIf::assignIf()
         if (tok->str() != "=")
             continue;
 
-        if (Token::Match(tok->tokAt(-2), "[;{}] %var% = %var% [&|] %num% ;")) {
+        if (Token::Match(tok->tokAt(-2), "[;{}] %var% =")) {
             const unsigned int varid(tok->previous()->varId());
             if (varid == 0)
                 continue;
 
-            const char bitop(tok->strAt(2).at(0));
+            char bitop = '\0';
+            MathLib::bigint num = 0;
 
-            const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(3));
-            if (num < 0)
+            if (Token::Match(tok->next(), "%num% [&|]")) {
+                bitop = tok->strAt(2).at(0);
+                num = MathLib::toLongNumber(tok->next()->str());
+            } else {
+                const Token * const endToken = Token::findmatch(tok, ";");
+                if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
+                    bitop = endToken->strAt(-2).at(0);
+                    num = MathLib::toLongNumber(endToken->previous()->str());
+                }
+            }
+
+            if (bitop == '\0')
+                continue;
+
+            if (num < 0 && bitop == '|')
                 continue;
 
             bool islocal = false;
