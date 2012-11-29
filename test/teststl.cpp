@@ -1769,6 +1769,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("std::string get_msg() {\n" // #3678
+              "    MyStringClass errmsg;\n"
+              "    return errmsg.c_str();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
 
         check("void Foo1(const std::string& str) {}\n"
               "void Foo2(char* c, const std::string str) {}\n"
