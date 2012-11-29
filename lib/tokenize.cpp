@@ -1593,6 +1593,9 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // remove MACRO in variable declaration: MACRO int x;
+    removeMacroInVarDecl();
+
     // Combine wide strings
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
@@ -3471,6 +3474,35 @@ void Tokenizer::removeMacrosInGlobalScope()
 
         if (tok->str() == "{")
             tok = tok->link();
+    }
+}
+//---------------------------------------------------------------------------
+
+void Tokenizer::removeMacroInVarDecl()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[;{}] %var% (") && tok->next()->isUpperCaseName()) {
+            // goto ')' paranthesis
+            const Token *tok2 = tok;
+            int parlevel = 0;
+            while (tok2) {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")") {
+                    if (--parlevel <= 0)
+                        break;
+                }
+                tok2 = tok2->next();
+            }
+            tok2 = tok2 ? tok2->next() : NULL;
+
+            // check if this is a variable declaration..
+            const Token *tok3 = tok2;
+            while (tok3 && tok3->isUpperCaseName())
+                tok3 = tok3->next();
+            if (tok3 && (tok3->isStandardType() || Token::Match(tok3,"const|static|struct|union|class")))
+                Token::eraseTokens(tok,tok2);
+        }
     }
 }
 //---------------------------------------------------------------------------

@@ -172,6 +172,9 @@ public:
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
 
+    /** Remove unknown macro in variable declarations: PROGMEM char x; */
+    void removeMacroInVarDecl();
+
     /** Remove redundant assignment */
     void removeRedundantAssignment();
 
