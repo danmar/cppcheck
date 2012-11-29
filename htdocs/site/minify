@@ -1,6 +1,7 @@
 #!/bin/bash
-cleancss -o css/all.min.css css/all.css
-cleancss -o css/demo.min.css css/demo.css
+# install node.js and then run:
+# npm install -g clean-css
+# npm install -g uglify-js
 
-uglifyjs js/github.js -o js/github.min.js -c -m
-uglifyjs js/picnet.table.filter.min.js -o js/picnet.table.filter.min.pack.js -c -m
+cat css/all.css css/demo.css | cleancss -o css/pack.css
+uglifyjs js/github.js js/picnet.table.filter.min.js -o js/pack.js -c -m

@@ -10,7 +10,7 @@ code, errors, bugs, compilers, bounds checking, memory leaks, obsolete functions
 uninitialized variables, unused functions" />
   <title>Cppcheck - A tool for static C/C++ code analysis</title>
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Orbitron&amp;text=Cppcheck" />
-  <link rel="stylesheet" type="text/css" href="/site/css/all.min.css" />
+  <link rel="stylesheet" type="text/css" href="/site/css/pack.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
         href="http://sourceforge.net/export/rss2_projnews.php?group_id=195752" />

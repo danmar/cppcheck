@@ -19,7 +19,9 @@ jQuery.fn.listCommits = function(username, repository, branch) {
 
       list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> <em>by <strong>' + author + '</strong></em></li>');
 
-      if (i == 9) return false;
+      if (i === 9) {
+        return false;
+      }
     });
   });
 

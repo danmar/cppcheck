@@ -63,11 +63,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <title>Online Demo Report - Cppcheck</title>
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Orbitron&amp;text=Cppcheck" />
-  <link rel="stylesheet" type="text/css" href="/site/css/all.min.css" />
-  <link rel="stylesheet" type="text/css" href="/site/css/demo.min.css" />
+  <link rel="stylesheet" type="text/css" href="/site/css/pack.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
-  <script src="/site/js/picnet.table.filter.min.pack.js" type="text/javascript"></script>
+  <script src="/site/js/pack.js" type="text/javascript"></script>
   <script type="text/javascript">
     $(document).ready(function() {
       $('#resultsTable').tableFilter();
