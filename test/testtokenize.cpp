@@ -2708,6 +2708,13 @@ private:
         const char expected[] = "void f ( ) {\n\nx ( 0.25 ) ;\n}";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+
+        // Ticket #4227
+        const char code2[] = "double f() {"
+                             "    double a = false;"
+                             "    return a;"
+                             "}";
+        ASSERT_EQUALS("double f ( ) { return 0.0 ; }", tokenizeAndStringify(code2,true));
     }
 
     void simplifyKnownVariablesFunctionCalls() {

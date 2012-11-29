@@ -6050,6 +6050,11 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
             value += ".0";
         }
 
+        // float variable: convert true/false to 1.0 / 0.0
+        else if (tok2->tokAt(2)->isBoolean() && floatvar) {
+            value = (value == "true") ? "1.0" : "0.0";
+        }
+
         if (Token::simpleMatch(tok2->next(), "= &"))
             tok2 = tok2->tokAt(3);
 
