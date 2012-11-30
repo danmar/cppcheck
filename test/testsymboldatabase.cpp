@@ -675,7 +675,7 @@ private:
                     seen_something = true;
                 }
             }
-            TODO_ASSERT_EQUALS("works", "doesn't work", seen_something ? "works" : "doesn't work");
+            ASSERT_EQUALS(true, seen_something);
         }
     }
 

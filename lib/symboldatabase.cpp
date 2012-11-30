@@ -49,50 +49,83 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // Store current access in each scope (depends on evaluation progress)
     std::map<const Scope*, AccessControl> access;
 
+    std::map<const Token *, Scope *> back;
+
     // find all scopes
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate next class
-        if (Token::Match(tok, "class|struct|union|namespace %var% [{:]")) {
-            scopeList.push_back(Scope(this, tok, scope));
-
-            Scope *new_scope = &scopeList.back();
-            if (tok->str() == "class")
-                access[new_scope] = Private;
-            else if (tok->str() == "struct")
-                access[new_scope] = Public;
-
+        if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::")) {
             const Token *tok2 = tok->tokAt(2);
 
-            // only create base list for classes and structures
-            if (new_scope->isClassOrStruct()) {
-                // goto initial '{'
-                tok2 = new_scope->initBaseInfo(tok);
+            if (tok->strAt(1) == "::")
+                tok2 = tok2->next();
+
+            while (tok2 && tok2->str() == "::")
+                tok2 = tok2->tokAt(2);
+
+            // make sure we have valid code
+            if (!tok2 || !Token::Match(tok2, "{|:"))
+                break;
+
+            Scope *new_scope = findScope(tok->next(), scope);
+
+            if (new_scope) {
+                // only create base list for classes and structures
+                if (new_scope->isClassOrStruct()) {
+                    // goto initial '{'
+                    tok2 = new_scope->initBaseInfo(tok, tok2);
+
+                    // make sure we have valid code
+                    if (!tok2) {
+                        break;
+                    }
+                }
+                back[tok2->link()] = scope;
+                new_scope->classDef = tok;
+                new_scope->classStart = tok2;
+                new_scope->classEnd = tok2->link();
+                scope = new_scope;
+                tok = tok2;
+            } else {
+                scopeList.push_back(Scope(this, tok, scope));
+                new_scope = &scopeList.back();
+
+                if (tok->str() == "class")
+                    access[new_scope] = Private;
+                else if (tok->str() == "struct")
+                    access[new_scope] = Public;
+
+                // only create base list for classes and structures
+                if (new_scope->isClassOrStruct()) {
+                    // goto initial '{'
+                    tok2 = new_scope->initBaseInfo(tok, tok2);
+
+                    // make sure we have valid code
+                    if (!tok2) {
+                        scopeList.pop_back();
+                        break;
+                    }
+                }
+
+                new_scope->classStart = tok2;
+                new_scope->classEnd = tok2->link();
 
                 // make sure we have valid code
-                if (!tok2) {
+                if (!new_scope->classEnd) {
                     scopeList.pop_back();
                     break;
                 }
+
+                // fill the classAndStructTypes set..
+                if (new_scope->isClassOrStruct())
+                    classAndStructTypes.insert(new_scope->className);
+
+                // make the new scope the current scope
+                scope = &scopeList.back();
+                scope->nestedIn->nestedList.push_back(scope);
+
+                tok = tok2;
             }
-
-            new_scope->classStart = tok2;
-            new_scope->classEnd = tok2->link();
-
-            // make sure we have valid code
-            if (!new_scope->classEnd) {
-                scopeList.pop_back();
-                break;
-            }
-
-            // fill the classAndStructTypes set..
-            if (new_scope->isClassOrStruct())
-                classAndStructTypes.insert(new_scope->className);
-
-            // make the new scope the current scope
-            scope = &scopeList.back();
-            scope->nestedIn->nestedList.push_back(scope);
-
-            tok = tok2;
         }
 
         // Namespace and unknown macro (#3854)
@@ -124,13 +157,20 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
 
         // forward declaration
-        else if (Token::Match(tok, "class|struct %var% ;")) {
-            // fill the classAndStructTypes set..
-            classAndStructTypes.insert(tok->next()->str());
+        else if (Token::Match(tok, "class|struct %var% ;") &&
+                 tok->strAt(-1) != "friend") {
+            if (!findScope(tok->next(), scope)) {
+                // fill the classAndStructTypes set..
+                classAndStructTypes.insert(tok->next()->str());
 
-            /** @todo save forward declarations in database someday */
+                scopeList.push_back(Scope(this, tok, scope));
+
+                Scope *new_scope = &scopeList.back();
+
+                // add scope
+                scope->nestedList.push_back(new_scope);
+            }
             tok = tok->tokAt(2);
-            continue;
         }
 
         // using namespace
@@ -205,7 +245,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         else {
             // check for end of scope
             if (tok == scope->classEnd) {
-                scope = scope->nestedIn;
+                if (back.find(tok) != back.end()) {
+                    scope = back[tok];
+                    back.erase(tok);
+                } else
+                    scope = scope->nestedIn;
                 continue;
             }
 
@@ -1065,7 +1109,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         return;
 
     // back up to head of path
-    while (tok1 && tok1->previous() && tok1->previous()->str() == "::") {
+    while (tok1 && tok1->previous() && tok1->previous()->str() == "::" &&
+           tok1->tokAt(-2) && tok1->tokAt(-2)->isName()) {
         path = tok1->str() + " :: " + path;
         tok1 = tok1->tokAt(-2);
         count++;
@@ -1203,10 +1248,10 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
 }
 
-const Token *Scope::initBaseInfo(const Token *tok)
+const Token *Scope::initBaseInfo(const Token *tok, const Token *tok1)
 {
     // goto initial '{'
-    const Token *tok2 = tok->tokAt(2);
+    const Token *tok2 = tok1;
     while (tok2 && tok2->str() != "{") {
         // skip unsupported templates
         if (tok2->str() == "<")
@@ -1542,7 +1587,7 @@ void SymbolDatabase::printOut(const char *title) const
 
         count = scope->nestedList.size();
         for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
-            std::cout << " " << &(*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
+            std::cout << " " << (*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
             if (count-- > 1)
                 std::cout << ",";
         }
@@ -2233,6 +2278,19 @@ Scope * Scope::findInNestedList(const std::string & name)
 
 //---------------------------------------------------------------------------
 
+Scope * Scope::findRecordInNestedList(const std::string & name)
+{
+    std::list<Scope *>::const_iterator it;
+
+    for (it = nestedList.begin(); it != nestedList.end(); ++it) {
+        if ((*it)->className == name && (*it)->type != eFunction)
+            return (*it);
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
 Scope * Scope::findInNestedListRecursive(const std::string & name)
 {
     std::list<Scope *>::iterator it;
@@ -2305,4 +2363,56 @@ unsigned int Scope::getNestedNonFunctions() const
 bool SymbolDatabase::isCPP() const
 {
     return _tokenizer->isCPP();
+}
+
+//---------------------------------------------------------------------------
+
+const Scope * SymbolDatabase::findScope(const Token *tok, const Scope *startScope) const
+{
+    return findScope(tok, startScope);
+}
+
+Scope * SymbolDatabase::findScope(const Token *tok, Scope *startScope)
+{
+    // absolute path
+    if (tok->str() == "::") {
+        tok = tok->next();
+        Scope *scope = &scopeList.front();
+
+        while (scope && tok && tok->isName()) {
+            scope = scope->findRecordInNestedList(tok->str());
+
+            if (scope) {
+                if (tok->strAt(1) == "::")
+                    tok = tok->tokAt(2);
+                else
+                    break;
+            }
+
+        }
+
+        return scope;
+    }
+
+    // relative path
+    else if (tok->isName()) {
+        Scope *scope = startScope;
+
+        while (scope && tok && tok->isName()) {
+            scope = scope->findRecordInNestedList(tok->str());
+
+            if (scope) {
+                if (tok->strAt(1) == "::")
+                    tok = tok->tokAt(2);
+                else
+                    break;
+            }
+        }
+
+        return scope;
+    }
+
+    // not a valid path
+    else
+        return 0;
 }

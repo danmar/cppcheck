@@ -108,6 +108,7 @@ private:
         TEST_CASE(uninitVar21); // ticket #2947
         TEST_CASE(uninitVar22); // ticket #3043
         TEST_CASE(uninitVar23); // ticket #3702
+        TEST_CASE(uninitVar24); // ticket #3190
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1583,6 +1584,36 @@ private:
                       "[test.cpp:12]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
                       "[test.cpp:13]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
                       "[test.cpp:14]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar24() { // ticket #3190
+        check("class Foo;\n"
+              "class Bar;\n"
+              "class Sub;\n"
+              "class Foo { class Sub; };\n"
+              "class Bar { class Sub; };\n"
+              "class Bar::Sub {\n"
+              "    int b;\n"
+              "public:\n"
+              "    Sub() { }\n"
+              "    Sub(int);\n"
+              "};\n"
+              "Bar::Sub::Sub(int) { };\n"
+              "class ::Foo::Sub {\n"
+              "    int f;\n"
+              "public:\n"
+              "    ~Sub();\n"
+              "    Sub();\n"
+              "};\n"
+              "::Foo::Sub::~Sub() { }\n"
+              "::Foo::Sub::Sub() { }\n"
+              "class Foo;\n"
+              "class Bar;\n"
+              "class Sub;\n");
+
+        ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'Sub::f' is not initialized in the constructor.\n"
+                      "[test.cpp:9]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n"
+                      "[test.cpp:12]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {

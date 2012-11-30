@@ -490,11 +490,17 @@ public:
                 type == eTry || type == eCatch);
     }
 
+    bool isForwardDeclaration() const {
+        return isClassOrStruct() && classStart == NULL;
+    }
+
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
     Scope * findInNestedList(const std::string & name);
+
+    Scope * findRecordInNestedList(const std::string & name);
 
     /**
      * @brief find if name is in nested list
@@ -512,7 +518,7 @@ public:
                                    type_, scope_));
     }
 
-    const Token *initBaseInfo(const Token *tok);
+    const Token *initBaseInfo(const Token *tok, const Token *tok1);
 
     /** @brief initialize varlist */
     void getVariableList();
@@ -594,6 +600,8 @@ public:
 
     const Scope* findScopeByName(const std::string& name) const;
 
+    const Scope *findScope(const Token *tok, const Scope *startScope) const;
+
     bool isClassOrStruct(const std::string &type) const {
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
     }
@@ -626,6 +634,8 @@ private:
     Function* addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
     static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
+
+    Scope *findScope(const Token *tok, Scope *startScope);
 
     /** class/struct types */
     std::set<std::string> classAndStructTypes;

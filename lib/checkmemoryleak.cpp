@@ -2222,6 +2222,10 @@ void CheckMemoryLeakInFunction::check()
         if (!var->isPointer() && var->typeStartToken()->str() != "int")
             continue;
 
+        // check for known class without implementation (forward declaration)
+        if (var->isPointer() && var->type() && var->type()->isForwardDeclaration())
+            continue;
+
         unsigned int sz = _tokenizer->sizeOfType(var->typeStartToken());
         if (sz < 1)
             sz = 1;
