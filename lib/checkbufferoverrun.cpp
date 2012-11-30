@@ -375,15 +375,13 @@ static bool for3(const Token * const tok,
                  const bool maxMinFlipped)
 {
     assert(tok != 0);
-    if (Token::Match(tok, "%varid% += %num% )", varid) ||
-        Token::Match(tok, "%varid%  = %num% + %varid% )", varid)) {
+    if (Token::Match(tok, "%varid%  = %num% + %varid% )", varid)) {
         if (!for_maxvalue(tok->tokAt(2), min_value, max_value))
             return false;
     } else if (Token::Match(tok, "%varid% = %varid% + %num% )", varid)) {
         if (!for_maxvalue(tok->tokAt(4), min_value, max_value))
             return false;
-    } else if (Token::Match(tok, "%varid% -= %num% )", varid) ||
-               Token::Match(tok, "%varid%  = %num% - %varid% )", varid)) {
+    } else if (Token::Match(tok, "%varid% = %num% - %varid% )", varid)) {
         if (!for_maxvalue(tok->tokAt(2), min_value, max_value))
             return false;
     } else if (Token::Match(tok, "%varid% = %varid% - %num% )", varid)) {
@@ -418,7 +416,7 @@ static bool for_bailout(const Token * const tok1, unsigned int varid)
     for (const Token *loopTok = tok1; loopTok && loopTok != tok1->link(); loopTok = loopTok->next()) {
         if (loopTok->varId() == varid) {
             // Counter variable used inside loop
-            if (Token::Match(loopTok->next(), "+=|-=|++|--|=") ||
+            if (Token::Match(loopTok->next(), "++|--|=") ||
                 (loopTok->previous()->type() == Token::eIncDecOp)) {
                 return true;
             }
@@ -764,7 +762,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     if (!for3(tok2->next(), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
         return;
 
-    if (Token::Match(tok2->next(), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= size)
+    if (Token::Match(tok2->next(), "%var% =") && MathLib::toLongNumber(max_counter_value) <= size)
         condition_out_of_bounds = false;
 
     // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..

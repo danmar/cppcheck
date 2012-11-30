@@ -379,7 +379,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
         ovarid = tok->tokAt(2)->varId();
     else if (Token::Match(tok->tokAt(-2), "%var% ==|!= %var%"))
         ovarid = tok->tokAt(-2)->varId();
-    else if (Token::Match(tok->tokAt(-2), "%var% =|+=|+ %var% )|]|,|;|+"))
+    else if (Token::Match(tok->tokAt(-2), "%var% =|+ %var% )|]|,|;|+"))
         ovarid = tok->tokAt(-2)->varId();
     if (ovarid) {
         const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
@@ -1168,7 +1168,7 @@ void CheckNullPointer::nullConstantDereference()
                 ovarid = tok->tokAt(2)->varId();
             else if (Token::Match(tok, "%var% ==|!= 0"))
                 ovarid = tok->varId();
-            else if (Token::Match(tok, "%var% =|+=|+ 0 )|]|,|;|+"))
+            else if (Token::Match(tok, "%var% =|+ 0 )|]|,|;|+"))
                 ovarid = tok->varId();
             if (ovarid) {
                 const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
