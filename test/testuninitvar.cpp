@@ -2116,6 +2116,14 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar2("int f() {\n"
+                        "    int x;\n"
+                        "    while (foo)\n"
+                        "        if (bar) break;\n"
+                        "    return x;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+
         // if goto is simplified there might be conditions that are always true
         checkUninitVar2("void f() {\n"
                         "    int i;\n"

@@ -1197,8 +1197,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
             tok = tok->next()->link();
 
-        // for..
-        if (Token::simpleMatch(tok, "for (")) {
+        // for/while..
+        if (Token::Match(tok, "for|while (")) {
             // is variable initialized in for-head (don't report errors yet)?
             if (checkIfForWhileHead(tok->next(), var, true, false))
                 return true;
