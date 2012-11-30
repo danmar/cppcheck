@@ -338,6 +338,7 @@ private:
         TEST_CASE(vardecl21);  // #4042 - a::b const *p = 0;
         TEST_CASE(vardecl22);  // #4211 - segmentation fault
         TEST_CASE(vardecl23);  // #4276 - segmentation fault
+        TEST_CASE(vardecl24);  // #4187 - variable declaration within lambda function
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template_1);
@@ -5360,6 +5361,24 @@ private:
 
     void vardecl23() {  // #4276 - segmentation fault
         tokenizeAndStringify("class a { protected : template < class int x = 1 ; public : int f ( ) ; }");
+    }
+
+    void vardecl24() {  // #4187 - variable declaration within lambda function
+        const char code[] = "void f() {\n"
+                            "    std::for_each(ints.begin(), ints.end(), [](int val)\n"
+                            "    {\n"
+                            "        int temp = 0;\n"
+                            "    });\n"
+                            "}";
+
+        const char expected[] = "void f ( ) {\n"
+                                "std :: for_each ( ints . begin ( ) , ints . end ( ) , [ ] ( int val )\n"
+                                "{\n"
+                                "int temp ; temp = 0 ;\n"
+                                "} ) ;\n"
+                                "}";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void volatile_variables() {

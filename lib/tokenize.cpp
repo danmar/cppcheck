@@ -4906,6 +4906,10 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 continue;
         } else if (tok->str() == "(") {
             tok = tok->link();
+
+            // TestTokenizer::vardecl24 - lambda functions..
+            if (isCPP() && tok->previous()->str() == "}")
+                tok = tok->previous()->link();
         }
 
         if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|)|public:|protected:|private:"))
