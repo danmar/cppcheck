@@ -57,6 +57,7 @@ private:
         TEST_CASE(matchNothingOrAnyNotElse);
         TEST_CASE(matchType);
         TEST_CASE(matchChar);
+        TEST_CASE(matchCompOp);
         TEST_CASE(matchStr);
         TEST_CASE(matchVarid);
         TEST_CASE(matchNumeric);
@@ -312,6 +313,17 @@ private:
 
         givenACodeSampleToTokenize noChr("\"10\"", true);
         ASSERT_EQUALS(false, Token::Match(noChr.tokens(), "%char%"));
+    }
+
+    void matchCompOp() {
+        givenACodeSampleToTokenize comp1("<=", true);
+        ASSERT_EQUALS(true, Token::Match(comp1.tokens(), "%comp%"));
+
+        givenACodeSampleToTokenize comp2(">", true);
+        ASSERT_EQUALS(true, Token::Match(comp2.tokens(), "%comp%"));
+
+        givenACodeSampleToTokenize noComp("=", true);
+        ASSERT_EQUALS(false, Token::Match(noComp.tokens(), "%comp%"));
     }
 
     void matchStr() {

@@ -122,15 +122,17 @@ void CheckInternal::checkMissingPercentCharacter()
     static std::set<std::string> magics;
     if (magics.empty()) {
         magics.insert("%any%");
-        magics.insert("%var%");
-        magics.insert("%type%");
-        magics.insert("%num%");
         magics.insert("%bool%");
         magics.insert("%char%");
-        magics.insert("%str%");
-        magics.insert("%varid%");
+        magics.insert("%comp%");
+        magics.insert("%num%");
+        magics.insert("%op%");
         magics.insert("%or%");
         magics.insert("%oror%");
+        magics.insert("%str%");
+        magics.insert("%type%");
+        magics.insert("%var%");
+        magics.insert("%varid%");
     }
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -175,16 +177,17 @@ void CheckInternal::checkUnknownPattern()
     static std::set<std::string> knownPatterns;
     if (knownPatterns.empty()) {
         knownPatterns.insert("%any%");
-        knownPatterns.insert("%var%");
-        knownPatterns.insert("%type%");
-        knownPatterns.insert("%num%");
         knownPatterns.insert("%bool%");
         knownPatterns.insert("%char%");
-        knownPatterns.insert("%str%");
-        knownPatterns.insert("%varid%");
+        knownPatterns.insert("%comp%");
+        knownPatterns.insert("%num%");
+        knownPatterns.insert("%op%");
         knownPatterns.insert("%or%");
         knownPatterns.insert("%oror%");
-        knownPatterns.insert("%op%");
+        knownPatterns.insert("%str%");
+        knownPatterns.insert("%type%");
+        knownPatterns.insert("%var%");
+        knownPatterns.insert("%varid%");
     }
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {

@@ -560,8 +560,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             ++p;
 
         // No token => Success!
-        if (*p == 0)
-            return true;
+        if (*p == '\0')
+            break;
 
         if (!tok) {
             // If we have no tokens, pattern "!!else" should return true
@@ -587,9 +587,9 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         if (p[0] == '%') {
             ++p;
             switch (p[0]) {
-            case '|':
             case '\0':
             case ' ':
+            case '|':
                 //simple '%' character
             {
                 multicompare(p, tok->str() == "%", ismulticomp);
@@ -640,10 +640,18 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             }
             break;
             case 'c':
-                // Character (%char%)
             {
-                p += 5;
-                multicompare(p,tok->type() == eChar,ismulticomp);
+                p += 1;
+                // Character (%char%)
+                if (p[0] == 'h') {
+                    p += 4;
+                    multicompare(p,tok->type() == eChar,ismulticomp);
+                }
+                // Comparison operator (%comp%)
+                else {
+                    p += 4;
+                    multicompare(p,tok->isComparisonOp(),ismulticomp);
+                }
             }
             break;
             case 's':
@@ -661,6 +669,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             }
             break;
             case 'o':
+            {
                 ++p;
                 if (p[1] == '%') {
                     // Op (%op%)
@@ -680,7 +689,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     p += 4;
                     multicompare(p,tok->str() == "||",ismulticomp);
                 }
-                break;
+            }
+            break;
             default:
                 //unknown %cmd%, abort
                 abort();
