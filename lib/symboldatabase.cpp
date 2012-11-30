@@ -2369,7 +2369,7 @@ bool SymbolDatabase::isCPP() const
 
 const Scope * SymbolDatabase::findScope(const Token *tok, const Scope *startScope) const
 {
-    return findScope(tok, startScope);
+    return const_cast<SymbolDatabase*>(this)->findScope(tok, const_cast<Scope*>(startScope));
 }
 
 Scope * SymbolDatabase::findScope(const Token *tok, Scope *startScope)
