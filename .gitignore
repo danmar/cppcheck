@@ -1,49 +1,60 @@
-cppcheck
-cppcheck.exe
-testrunner
-testrunner.exe
-*.o
 *.bak
 *.gcno
-tools/dmake
-tools/extracttests
+*.o
+cppcheck
+cppcheck.exe
 dmake
+tags
+testrunner
+testrunner.exe
+tools/dmake
 tools/errmsg
+tools/extracttests
+
 # VS generated files
-*.obj
+*.idb
 *.ncb
+*.obj
+*.opensdf
+*.orig
+*.pdb
+*.sdf
 *.suo
 *.user
-*.idb
-*.pdb
+
 # VS build folders
-cli/temp/
-lib/temp/
-test/temp/
 bin/
 Build/
 BuildTmp/
+cli/temp/
+ipch/
+lib/temp/
+test/temp/
+
 # XCode build folders and files
-build/
-*.pbxuser
 *.mode[0-9]v[0-9]
+*.pbxuser
+build/
+
 # GUI build folders
 gui/debug/
 gui/release/
 gui/temp/
+
 # Other (generated) GUI files
+gui/*.qm
+gui/cppcheck-gui
+gui/gui.sln
+gui/gui.vcproj
 gui/Makefile
 gui/Makefile.debug
 gui/Makefile.release
-gui/gui.sln
-gui/gui.vcproj
-gui/cppcheck-gui
 gui/qrc_gui.cpp
-gui/*.qm
+
 # Doxygen output folder
 doxyoutput/
-# qmake generated
 
+# qmake generated
 htmlreport/.tox/
 htmlreport/MANIFEST
 
@@ -54,10 +65,3 @@ htmlreport/MANIFEST
 
 # kdevelop 4.x
 *.kdev4
-
-*.sdf
-ipch
-*.opensdf
-*.orig
-
-tags
