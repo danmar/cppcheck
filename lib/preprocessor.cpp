@@ -559,8 +559,6 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                         } else if (std::iscntrl((unsigned char)str[p]) ||
                                    std::isspace((unsigned char)str[p])) {
                             code << " ";
-                        } else if (str[p] == '\\') {
-                            code << "\\";
                         } else if (str[p] == '\"' || str[p] == '\'') {
                             code << "\\" << (char)str[p];
                         } else {
@@ -570,7 +568,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     code << "\"";
                     if (rawstringnewlines > 0)
                         code << std::string(rawstringnewlines, '\n');
-                    i = endpos + delim.size() + 2;
+                    i = endpos + delim.size() + 1;
                 } else {
                     code << "R";
                     previous = 'R';

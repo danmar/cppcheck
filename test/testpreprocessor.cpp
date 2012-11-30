@@ -66,7 +66,7 @@ private:
     void run() {
         // Just read the code into a string. Perform simple cleanup of the code
         TEST_CASE(readCode1);
-        TEST_CASE(readCode2);
+        TEST_CASE(readCode2); // #4308 - convert C++11 raw string to plain old C string
         TEST_CASE(readCode3);
 
         // reading utf-16 file
@@ -298,12 +298,12 @@ private:
     }
 
     void readCode2() {
-        const char code[] = "R\"( \" /* abc */ \n)\"";
+        const char code[] = "R\"( \" /* abc */ \n)\";";
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
-        ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n", codestr);
+        ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n;", codestr);
     }
 
     void readCode3() {
