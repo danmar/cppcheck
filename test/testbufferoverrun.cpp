@@ -1872,6 +1872,23 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    for (int i = 0; i != 10; ++i) {\n"
+              "        some_condition ? 0 : a[i-1];\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a[10];\n"
+              "    for (int i = 0; i != 10; ++i) {\n"
+              "        i==0 ? 0 : a[i-1];\n"
+              "        a[i-1] = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_varid0() { // #4228: No varid for counter variable

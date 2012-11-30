@@ -431,10 +431,32 @@ void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &array
     const std::string pattern = (arrayInfo.varid() ? std::string("%varid%") : arrayInfo.varname()) + " [ " + strindex + " ]";
 
     for (const Token* tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
-        // TODO: try to reduce false negatives. This is just a quick fix
-        // for TestBufferOverrun::array_index_for_question
-        if (tok2->str() == "?")
-            break;
+        // TestBufferOverrun::array_index_for_question
+        if (tok2->str() == "?") {
+            // does condition check counter variable?
+            bool usesCounter = false;
+            const Token *tok3 = tok2->previous();
+            while (Token::Match(tok3, "%var%|%num%|)|>=|>|<=|<|==|!=")) {
+                if (tok3->str() == strindex) {
+                    usesCounter = true;
+                    break;
+                }
+                tok3 = tok3->previous();
+            }
+
+            // If strindex is used in the condition then skip the
+            // conditional expressions
+            if (usesCounter) {
+                while (tok2 && !Token::Match(tok2, "[)],;]")) {
+                    if (tok2->str() == "(" || tok2->str() == "[")
+                        tok2 = tok2->link();
+                    tok2 = tok2->next();
+                }
+                if (!tok2)
+                    break;
+                continue;
+            }
+        }
 
         if (Token::simpleMatch(tok2, "for (") && Token::simpleMatch(tok2->next()->link(), ") {")) {
             const Token *endpar = tok2->next()->link();
