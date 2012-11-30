@@ -429,7 +429,7 @@ public:
 
     void simplifyNull();
 
-    void concatenateNegativeNumber();
+    void concatenateNegativeNumberAndAnyPositive();
 
     void simplifyExternC();
 

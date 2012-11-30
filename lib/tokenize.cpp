@@ -1642,7 +1642,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyMathExpressions();
 
     // combine "- %num%"
-    concatenateNegativeNumber();
+    concatenateNegativeNumberAndAnyPositive();
 
     // simplify simple calculations
     for (Token *tok = list.front() ? list.front()->next() : NULL; tok; tok = tok->next()) {
@@ -2150,14 +2150,16 @@ void Tokenizer::simplifyNull()
     }
 }
 
-void Tokenizer::concatenateNegativeNumber()
+void Tokenizer::concatenateNegativeNumberAndAnyPositive()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "?|:|,|(|[|{|=|return|case|sizeof|%op% - %num%")) {
+        if (!Token::Match(tok, "?|:|,|(|[|{|=|return|case|sizeof|%op% +|-"))
+            continue;
+        if (tok->next()->str() == "+")
+            tok->deleteNext();
+        else if (Token::Match(tok->next(), "- %num%")) {
             tok->deleteNext();
             tok->next()->str("-" + tok->next()->str());
-        } else if (Token::Match(tok, "?|:|,|(|[|{|=|return|case|sizeof|%op% +")) {
-            tok->deleteNext();
         }
     }
 }
