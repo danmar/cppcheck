@@ -4985,19 +4985,16 @@ private:
 
     void duplicateIf1() { // ticket 3689 ( avoid false positive )
 
-        check("#define INT32_MAX 0x7fffffffLL\n"
-              "#define INT48_MAX 0x7fffffffffffLL\n"
-              "#define INT64_MAX 0x7fffffffffffffffLL\n"
-              "int fitInt(long long int nValue){\n"
-              "    if( nValue < INT32_MAX )\n"
+        check("int fitInt(long long int nValue){\n"
+              "    if( nValue < 0x7fffffffLL )\n"
               "    {\n"
               "        return 32;\n"
               "    }\n"
-              "    if( nValue < INT48_MAX )\n"
+              "    if( nValue < 0x7fffffffffffLL )\n"
               "    {\n"
               "        return 48;\n"
               "    }\n"
-              "    else if( nValue < INT64_MAX )\n"
+              "    else if( nValue < 0x7fffffffffffffffLL )\n"
               "    {\n"
               "        return 64;\n"
               "    } else\n"

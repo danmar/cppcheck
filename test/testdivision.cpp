@@ -118,11 +118,10 @@ private:
     }
 
     void division5() {
-        check("#define USER_HASH (16)\n"
-              "void foo()\n"
+        check("void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
-              "    val = val / USER_HASH;"
+              "    val = val / (16);\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }

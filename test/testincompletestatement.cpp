@@ -74,11 +74,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    const char def[] =\n"
-              "#ifdef ABC\n"
               "    \"abc\";\n"
-              "#else\n"
-              "    \"not abc\";\n"
-              "#endif\n"
               "}\n");
 
         ASSERT_EQUALS("", errout.str());

@@ -5792,12 +5792,11 @@ private:
     }
 
     void simplifyTypedef98() { // ticket #2963
-        //TODO: this testcase fails because "inconclusive" and "style" are not enabled in "tok".
-        const char code[] = "#define X type ## __LINE__\n"
-                            "typedef int X;\n"
-                            "typedef int X;\n";
-        tok(code);
-        ASSERT_EQUALS("", errout.str());
+        const char code[] = "typedef int type ## __LINE__;\n"
+                            "typedef int type ## __LINE__;\n"
+                            "type1 x;\n"
+                            "type2 y;";
+        ASSERT_EQUALS("int x ; int y ;", tok(code));
     }
 
     void simplifyTypedef99() { // ticket #2999
