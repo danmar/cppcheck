@@ -34,7 +34,7 @@ ApplicationDialog::ApplicationDialog(const QString &title,
     mUI.setupUi(this);
 
     connect(mUI.mButtonBrowse, SIGNAL(clicked()), this, SLOT(Browse()));
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
     mUI.mPath->setText(app.getPath());
     mUI.mName->setText(app.getName());
@@ -70,21 +70,22 @@ void ApplicationDialog::Browse()
 
 void ApplicationDialog::Ok()
 {
-    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty() ||
-        mUI.mParameters->text().isEmpty()) {
+    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty()) {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
-                        tr("You must specify a name, a path and parameters for the application!"),
+                        tr("You must specify a name, a path and optionally parameters for the application!"),
                         QMessageBox::Ok,
                         this);
 
         msg.exec();
 
+        reject();
     } else {
         // Convert possible native (Windows) path to internal presentation format
         mApplication.setName(mUI.mName->text());
         mApplication.setPath(QDir::fromNativeSeparators(mUI.mPath->text()));
         mApplication.setParameters(mUI.mParameters->text());
+
         accept();
     }
 }
