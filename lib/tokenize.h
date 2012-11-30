@@ -425,7 +425,7 @@ public:
 
     void concatenateDoubleSharp();
 
-    void simplifyLineMacro();
+    void simplifyFileAndLineMacro();
 
     void simplifyNull();
 

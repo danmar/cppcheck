@@ -1625,7 +1625,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifySQL();
 
     // replace __LINE__ macro with line number
-    simplifyLineMacro();
+    simplifyFileAndLineMacro();
 
     // Concatenate double sharp: 'a ## b' -> 'ab'
     concatenateDoubleSharp();
@@ -2118,10 +2118,12 @@ void Tokenizer::concatenateDoubleSharp()
     }
 }
 
-void Tokenizer::simplifyLineMacro()
+void Tokenizer::simplifyFileAndLineMacro()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "__LINE__")
+        if (tok->str() == "__FILE__")
+            tok->str(list.file(tok));
+        else if (tok->str() == "__LINE__")
             tok->str(MathLib::longToString(tok->linenr()));
     }
 }
