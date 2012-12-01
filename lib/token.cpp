@@ -639,8 +639,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 multicompare(p,tok->isNumber(),ismulticomp);
             }
             break;
-            case 'c':
-            {
+            case 'c': {
                 p += 1;
                 // Character (%char%)
                 if (p[0] == 'h') {
@@ -668,8 +667,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 multicompare(p,tok->isBoolean(),ismulticomp);
             }
             break;
-            case 'o':
-            {
+            case 'o': {
                 ++p;
                 if (p[1] == '%') {
                     // Op (%op%)

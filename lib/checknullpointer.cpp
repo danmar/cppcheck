@@ -1212,7 +1212,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
             bool unknown = _settings->inconclusive;
             for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
                 // If we encounter a possible NULL-pointer check, skip over its body
-                if (Token::Match(tok, "if ( "))  {
+                if (Token::simpleMatch(tok, "if ( "))  {
                     bool dependsOnPointer = false;
                     const Token *endOfCondition = tok->next()->link();
                     for (const Token *tok2 = tok->next(); tok2 != endOfCondition; tok2 = tok2->next()) {
@@ -1220,7 +1220,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
                             dependsOnPointer = true;
                         }
                     }
-                    if (dependsOnPointer && Token::Match(endOfCondition, ") {")) {
+                    if (dependsOnPointer && Token::simpleMatch(endOfCondition, ") {")) {
                         tok = endOfCondition->next()->link();
                         continue;
                     }

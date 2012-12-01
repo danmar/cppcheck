@@ -54,7 +54,7 @@ void CheckAssignIf::assignIf()
                 bitop = tok->strAt(2).at(0);
                 num = MathLib::toLongNumber(tok->next()->str());
             } else {
-                const Token * const endToken = Token::findmatch(tok, ";");
+                const Token * const endToken = Token::findsimplematch(tok, ";");
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
                     num = MathLib::toLongNumber(endToken->previous()->str());
