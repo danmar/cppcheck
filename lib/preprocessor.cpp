@@ -1448,7 +1448,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     }
 
     // simplify calculations..
-    tokenizer.concatenateNegativeNumber();
+    tokenizer.concatenateNegativeNumberAndAnyPositive();
     bool modified = true;
     while (modified) {
         modified = false;
