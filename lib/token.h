@@ -45,6 +45,8 @@ private:
 
     // Not implemented..
     Token();
+    Token(const Token &);
+    Token operator=(const Token &);
 
 public:
     enum Type {
@@ -139,8 +141,13 @@ public:
      * multi-compare patterns such as "int|void|char" can contain %or%, %oror% and %op%
      * but it is not recommended to put such an %cmd% as the first pattern.
      *
-     * It's possible to use multi-compare patterns with just %cmds%, except for %varid%.
-     * For example: "%var%|%num%| " means yes to a variable, a number or empty string.
+     * It's possible to use multi-compare patterns with all the other %cmds%,
+     * except for %varid%, and normal names, but the %cmds% should be put as
+     * the first patterns in the list, then the normal names.
+     * For example: "%var%|%num%|)" means yes to a variable, a number or ')'.
+     *
+     * @todo Make it possible to use the %cmds% and the normal names in the
+     * multicompare list without an order.
      *
      * The patterns can be also combined to compare to multiple tokens at once
      * by separating tokens with a space, e.g.
@@ -151,7 +158,8 @@ public:
      * @param tok List of tokens to be compared to the pattern
      * @param pattern The pattern against which the tokens are compared,
      * e.g. "const" or ") const|volatile| {".
-     * @param varid if %varid% is given in the pattern the Token::varId will be matched against this argument
+     * @param varid if %varid% is given in the pattern the Token::varId
+     * will be matched against this argument
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
