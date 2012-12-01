@@ -90,7 +90,11 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>You must specify a name, a path and parameters for the application!</source>
-        <translation>응용 프로그램의 이름, 경로 및 인자를 명시해야 합니다!</translation>
+        <translation type="obsolete">응용 프로그램의 이름, 경로 및 인자를 명시해야 합니다!</translation>
+    </message>
+    <message>
+        <source>You must specify a name, a path and optionally parameters for the application!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

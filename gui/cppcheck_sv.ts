@@ -100,14 +100,18 @@ Parametrar: -l(line) (file)</translation>
         <translation>Välj program</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="76"/>
+        <location filename="applicationdialog.cpp" line="75"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="77"/>
+        <location filename="applicationdialog.cpp" line="76"/>
+        <source>You must specify a name, a path and optionally parameters for the application!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>You must specify a name, a path and parameters for the application!</source>
-        <translation>Du måste ange ett namn, en sökväg samt parametrar för programmet!</translation>
+        <translation type="obsolete">Du måste ange ett namn, en sökväg samt parametrar för programmet!</translation>
     </message>
 </context>
 <context>

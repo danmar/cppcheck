@@ -101,14 +101,14 @@ Parametri: -l(line) (file)
         <translation>Seleziona l&apos;applicazione di lettura</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="76"/>
+        <location filename="applicationdialog.cpp" line="75"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="77"/>
-        <source>You must specify a name, a path and parameters for the application!</source>
-        <translation>Devi specificare un nome, un percorso ed i parametri per l&apos;applicazione!</translation>
+        <location filename="applicationdialog.cpp" line="76"/>
+        <source>You must specify a name, a path and optionally parameters for the application!</source>
+        <translation>Devi specificare un nome, un percorso ed, opzionalmente, i parametri per l&apos;applicazione!</translation>
     </message>
 </context>
 <context>

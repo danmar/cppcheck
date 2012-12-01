@@ -90,13 +90,13 @@ Parameters: -l(line) (file)</source>
         <translation>Selecteer applicatie</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="76"/>
+        <location filename="applicationdialog.cpp" line="75"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="77"/>
-        <source>You must specify a name, a path and parameters for the application!</source>
+        <location filename="applicationdialog.cpp" line="76"/>
+        <source>You must specify a name, a path and optionally parameters for the application!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

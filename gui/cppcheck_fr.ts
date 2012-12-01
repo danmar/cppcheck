@@ -61,10 +61,6 @@ General Public License version 3</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You must specify a name, a path and parameters for the application!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
 The following texts in parameters are replaced with appropriate values when application is executed:
@@ -80,6 +76,10 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>&amp;Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must specify a name, a path and optionally parameters for the application!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
