@@ -530,23 +530,20 @@ int Token::firstWordLen(const char *str)
     return len;
 }
 
-#define multicompare(p,cond,ismulticomp)            \
-{                                                   \
-    if ((p)[0] != '|') {                            \
-        if (!(cond))                                \
-            return false;                           \
-        ismulticomp = false;                        \
-    } else {                                        \
-        if (cond) {                                 \
-            while (*(p) && *(p) != ' ')             \
-                ++(p);                              \
-            ismulticomp = false;                    \
-        } else {                                    \
-            ++(p);                                  \
-            ismulticomp = (*(p) && *(p) != ' ');    \
-            continue;                               \
-        }                                           \
-    }                                               \
+#define multicompare(p,cond,ismulticomp)        \
+{                                               \
+    if (!(cond)) {                              \
+        if (*(p) != '|')                        \
+            return false;                       \
+        ++(p);                                  \
+        ismulticomp = (*(p) && *(p) != ' ');    \
+        continue;                               \
+    }                                           \
+    if (*(p) == '|') {                          \
+        while (*(p) && *(p) != ' ')             \
+            ++(p);                              \
+    }                                           \
+    ismulticomp = false;                        \
 }
 
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
