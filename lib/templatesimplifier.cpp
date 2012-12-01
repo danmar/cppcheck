@@ -694,7 +694,7 @@ static bool isLowerThanAnd(const Token* lower)
 }
 static bool isLowerThanShift(const Token* lower)
 {
-    return isLowerThanAnd(lower) || Token::Match(lower, "&|<|<=|>|>=|==|!=");
+    return isLowerThanAnd(lower) || Token::Match(lower, "%comp%|&");
 }
 static bool isLowerThanPlusMinus(const Token* lower)
 {
@@ -808,8 +808,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             ret = true;
         }
 
-        if (tok->type() == Token::eChar &&
-            Token::Match(tok->previous(), "(|&&|%oror% %any% ==|!=|<=|<|>=|> %num% &&|%oror%|)")) {
+        if (Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
             tok->str(MathLib::longToString(tok->str()[1] & 0xff));
         }
 
@@ -921,7 +920,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 ret = true;
             }
 
-            if (Token::Match(tok, "%num% ==|!=|<=|>=|<|> %num%") &&
+            if (Token::Match(tok, "%num% %comp% %num%") &&
                 MathLib::isInt(tok->str()) &&
                 MathLib::isInt(tok->strAt(2))) {
                 if (Token::Match(tok->previous(), "(|&&|%oror%") && Token::Match(tok->tokAt(3), ")|&&|%oror%")) {

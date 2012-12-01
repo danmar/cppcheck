@@ -124,8 +124,10 @@ public:
      * - "%num%" Any numeric token, e.g. "23"
      * - "%bool%" true or false
      * - "%char%" Any token enclosed in &apos;-character.
+     * - "%comp%" Any token such that isComparisonOp() returns true.
      * - "%str%" Any token starting with &quot;-character (C-string).
      * - "%varid%" Match with parameter varid
+     * - "%op%" Any token such that isOp() returns true.
      * - "%or%" A bitwise-or operator '|'
      * - "%oror%" A logical-or operator '||'
      * - "[abc]" Any of the characters 'a' or 'b' or 'c'

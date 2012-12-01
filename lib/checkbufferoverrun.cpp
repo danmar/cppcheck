@@ -436,7 +436,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &array
             // does condition check counter variable?
             bool usesCounter = false;
             const Token *tok3 = tok2->previous();
-            while (Token::Match(tok3, "%var%|%num%|)|>=|>|<=|<|==|!=")) {
+            while (Token::Match(tok3, "%comp%|%num%|%var%|)")) {
                 if (tok3->str() == strindex) {
                     usesCounter = true;
                     break;

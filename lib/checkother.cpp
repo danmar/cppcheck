@@ -184,7 +184,7 @@ void CheckOther::clarifyCondition()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "!|<|<=|==|!=|>|>=")) {
+            if (Token::Match(tok, "%comp%|!")) {
                 if (tok->link()) // don't write false positives when templates are used
                     continue;
 
@@ -1226,25 +1226,21 @@ void CheckOther::checkIncorrectLogicOperator()
             const Token *term1Tok = NULL, *term2Tok = NULL;
             const Token *op1Tok = NULL, *op2Tok = NULL, *op3Tok = NULL, *nextTok = NULL;
 
-            if (Token::Match(tok, "( %any% %op% %any% ) &&|%oror%") &&
-                tok->tokAt(2)->isComparisonOp()) {
+            if (Token::Match(tok, "( %any% %comp% %any% ) &&|%oror%")) {
                 term1Tok = tok->next();
                 op1Tok = tok->tokAt(2);
                 op2Tok = tok->tokAt(5);
-            } else if (Token::Match(tok, "%any% %op% %any% &&|%oror%") &&
-                       tok->tokAt(1)->isComparisonOp()) {
+            } else if (Token::Match(tok, "%any% %comp% %any% &&|%oror%")) {
                 term1Tok = tok;
                 op1Tok = tok->next();
                 op2Tok = tok->tokAt(3);
             }
             if (op2Tok) {
-                if (Token::Match(op2Tok->next(), "( %any% %op% %any% ) %any%") &&
-                    op2Tok->tokAt(3)->isComparisonOp()) {
+                if (Token::Match(op2Tok->next(), "( %any% %comp% %any% ) %any%")) {
                     term2Tok = op2Tok->tokAt(2);
                     op3Tok = op2Tok->tokAt(3);
                     nextTok = op2Tok->tokAt(6);
-                } else if (Token::Match(op2Tok->next(), "%any% %op% %any% %any%") &&
-                           op2Tok->tokAt(2)->isComparisonOp()) {
+                } else if (Token::Match(op2Tok->next(), "%any% %comp% %any% %any%")) {
                     term2Tok = op2Tok->next();
                     op3Tok = op2Tok->tokAt(2);
                     nextTok = op2Tok->tokAt(4);
@@ -3061,7 +3057,7 @@ void CheckOther::checkDuplicateExpression()
         complexDuplicateExpressionCheck(constFunctions, scope->classStart, "&&", "%oror%|%or%");
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% ==|!=|<=|>=|<|>|- %var% )|&&|%oror%|;|,") &&
+            if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% %comp%|- %var% )|&&|%oror%|;|,") &&
                 tok->strAt(1) == tok->strAt(3)) {
                 // float == float and float != float are valid NaN checks
                 if (Token::Match(tok->tokAt(2), "==|!=") && tok->next()->varId()) {
@@ -3078,7 +3074,7 @@ void CheckOther::checkDuplicateExpression()
                     continue;
 
                 duplicateExpressionError(tok->next(), tok->tokAt(3), tok->strAt(2));
-            } else if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% . %var% ==|!=|<=|>=|<|>|- %var% . %var% )|&&|%oror%|;|,") &&
+            } else if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% . %var% %comp%|- %var% . %var% )|&&|%oror%|;|,") &&
                        tok->strAt(1) == tok->strAt(5) && tok->strAt(3) == tok->strAt(7)) {
 
                 // If either variable token is an expanded macro then
@@ -3224,7 +3220,7 @@ void CheckOther::checkModuloAlwaysTrueFalse()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if ((Token::Match(tok, "% %num% %op% %num%") && tok->tokAt(2)->isComparisonOp()) &&
+            if ((Token::Match(tok, "% %num% %comp% %num%")) &&
                 (!tok->tokAt(4) || !tok->tokAt(4)->isArithmeticalOp())) {
                 if (MathLib::isLessEqual(tok->strAt(1), tok->strAt(3)))
                     moduloAlwaysTrueFalseError(tok, tok->strAt(1));
@@ -3376,24 +3372,24 @@ void CheckOther::checkComparisonOfBoolExpressionWithInt()
             const Token* numTok = 0;
             const Token* opTok = 0;
             char op = 0;
-            if (Token::Match(tok, "&&|%oror% %any% ) %op% %any%") && tok->tokAt(3)->isComparisonOp()) {
+            if (Token::Match(tok, "&&|%oror% %any% ) %comp% %any%")) {
                 numTok = tok->tokAt(4);
                 opTok = tok->tokAt(3);
                 if (Token::Match(opTok, "<|>"))
                     op = opTok->str()[0];
-            } else if (Token::Match(tok, "%any% %op% ( %any% &&|%oror%") && tok->next()->isComparisonOp()) {
+            } else if (Token::Match(tok, "%any% %comp% ( %any% &&|%oror%")) {
                 numTok = tok;
                 opTok = tok->next();
                 if (Token::Match(opTok, "<|>"))
                     op = opTok->str()[0]=='>'?'<':'>';
             }
 
-            else if (Token::Match(tok, "! %var% %op% %any%") && tok->tokAt(2)->isComparisonOp()) {
+            else if (Token::Match(tok, "! %var% %comp% %any%")) {
                 numTok = tok->tokAt(3);
                 opTok = tok->tokAt(2);
                 if (Token::Match(opTok, "<|>"))
                     op = opTok->str()[0];
-            } else if (Token::Match(tok, "%any% %op% ! %var%") && tok->next()->isComparisonOp()) {
+            } else if (Token::Match(tok, "%any% %comp% ! %var%")) {
                 numTok = tok;
                 opTok = tok->next();
                 if (Token::Match(opTok, "<|>"))

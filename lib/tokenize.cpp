@@ -6260,9 +6260,9 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         }
 
         // Using the variable in condition..
-        if (Token::Match(tok3->previous(), ("if ( " + structname + " %varid% ==|!=|<|<=|>|>=|)").c_str(), varid) ||
-            Token::Match(tok3, ("( " + structname + " %varid% ==|!=|<|<=|>|>=").c_str(), varid) ||
-            Token::Match(tok3, ("!|==|!=|<|<=|>|>= " + structname + " %varid% ==|!=|<|<=|>|>=|)|;").c_str(), varid) ||
+        if (Token::Match(tok3->previous(), ("if ( " + structname + " %varid% %comp%|)").c_str(), varid) ||
+            Token::Match(tok3, ("( " + structname + " %varid% %comp%").c_str(), varid) ||
+            Token::Match(tok3, ("%comp%|! " + structname + " %varid% %comp%|)|;").c_str(), varid) ||
             Token::Match(tok3->previous(), "strlen|free ( %varid% )", varid)) {
             if (value[0] == '\"' && tok3->previous()->str() != "strlen") {
                 // bail out if value is a string unless if it's just given
