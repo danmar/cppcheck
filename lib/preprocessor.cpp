@@ -153,9 +153,11 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
         if (ch == '\\') {
             unsigned char chNext;
 
+            unsigned int spaces = 0;
+
 #ifdef __GNUC__
             // gcc-compatibility: ignore spaces
-            for (;;) {
+            for (;; spaces++) {
                 chNext = (unsigned char)istr.peek();
                 if (chNext != '\n' && chNext != '\r' &&
                     (std::isspace(chNext) || std::iscntrl(chNext))) {
@@ -174,7 +176,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
                 ++newlines;
                 (void)readChar(istr,bom);   // Skip the "<backslash><newline>"
             } else
-                code << "\\";
+                code << "\\" << (spaces?" ":"");
         } else {
             code << char(ch);
 

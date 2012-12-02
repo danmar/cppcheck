@@ -68,6 +68,7 @@ private:
         TEST_CASE(readCode1);
         TEST_CASE(readCode2); // #4308 - convert C++11 raw string to plain old C string
         TEST_CASE(readCode3);
+        TEST_CASE(readCode4); // #4351 - escaped whitespace in gcc
 
         // reading utf-16 file
         TEST_CASE(utf16);
@@ -313,6 +314,15 @@ private:
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("func(#errorname)", codestr);
+    }
+
+    void readCode4() {
+        const char code[] = "char c = '\\ ';";
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        ASSERT_EQUALS("char c = '\\ ';", preprocessor.read(istr,"test.c"));
+        ASSERT_EQUALS("", errout.str());
     }
 
 
