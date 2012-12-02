@@ -75,6 +75,7 @@ public:
         checkOther.checkVariableScope();
         checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkComparisonOfBoolExpressionWithInt();
+        checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
         checkOther.checkIncompleteArrayFill();
         checkOther.checkSuspiciousStringCompare();
@@ -103,7 +104,6 @@ public:
         checkOther.checkMemsetZeroBytes();
         checkOther.checkIncorrectStringCompare();
         checkOther.checkIncrementBoolean();
-        checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
         checkOther.checkModuloAlwaysTrueFalse();

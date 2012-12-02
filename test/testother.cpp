@@ -144,6 +144,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt3);
         TEST_CASE(comparisonOfBoolWithInt4);
         TEST_CASE(comparisonOfBoolWithInt5);
+        TEST_CASE(comparisonOfBoolWithInt6); // #4224 - integer is casted to bool
 
         TEST_CASE(checkComparisonOfFuncReturningBool1);
         TEST_CASE(checkComparisonOfFuncReturningBool2);
@@ -3604,8 +3605,7 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n"
-                      "[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str()); // The second message appears because the code is simplified to "true == 6". Its neither wrong nor necessary.
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x || 0x0f)==0)\n"
@@ -4726,6 +4726,13 @@ private:
         check("void SetVisible(int index, bool visible) {\n"
               "    bool (SciTEBase::*ischarforsel)(char ch);\n"
               "    if (visible != GetVisible(index)) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt6() { // #4224 - integer is casted to bool
+        check("void SetVisible(bool b, int i) {\n"
+              "    if (b == (bool)i) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
