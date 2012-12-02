@@ -68,7 +68,7 @@ private:
         TEST_CASE(ticket3238);
     }
 
-    void check(const char code[]) {
+    void check(const char code[], const char filename[]="test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -80,7 +80,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList();
 
         // Check for obsolete functions..
@@ -220,8 +220,14 @@ private:
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n", errout.str());
+              "}\n", "test.cpp");  // #4382 - there are no VLAs in C++
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char *x = alloca(10);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (style) Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n", errout.str());
     }
 
     // ticket #3121

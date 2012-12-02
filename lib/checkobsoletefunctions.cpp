@@ -70,8 +70,9 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                     }
                 }
                 if (_settings->standards.c >= Standards::C99) {
+                    // alloca : this function is obsolete in C but not in C++ (#4382)
                     it = _obsoleteC99Functions.find(tok->str());
-                    if (it != _obsoleteC99Functions.end()) {
+                    if (it != _obsoleteC99Functions.end() && !(tok->str() == "alloca" && _tokenizer->isCPP())) {
                         reportError(tok->next(), Severity::style, "obsoleteFunctions"+it->first, it->second);
                     }
                 }
