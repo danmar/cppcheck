@@ -52,7 +52,7 @@ void f()
 <label><input type="checkbox" name="xml" value="1" />XML output</label></p>
 </form>
 <h3>Examples</h3>
-<p>This code can be copy and pasted in the edit box above.</p>
+<p>This code can be copied and pasted in the edit box above.</p>
 <h4>NULL pointers</h4>
 <pre class="cpp geshicode"><span class="kw4">void</span> f1<span class="br0">(</span><span class="kw4">struct</span> fred_t <span class="sy2">*</span>p<span class="br0">)</span>
 <span class="br0">{</span>
