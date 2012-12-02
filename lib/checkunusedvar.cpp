@@ -643,10 +643,6 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
     }
 
-    if (scope->classDef->str() == "for" || scope->classDef->str() == "while") {
-        insideLoop = true;
-    }
-
     // Check variable usage
     for (const Token *tok = scope->classDef->next(); tok && tok != scope->classEnd; tok = tok->next()) {
         if (tok->str() == "for" || tok->str() == "while" || tok->str() == "do") {
