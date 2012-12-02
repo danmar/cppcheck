@@ -7373,6 +7373,9 @@ void Tokenizer::simplifyEnum()
                                    (tok2->next()->isName() || tok2->next()->str() == "(")) {
                             simplify = true;
                             hasClass = false;
+                        } else if (tok2->previous()->str() == "(" && tok2->next()->str() == ")") {
+                            simplify = true;
+                            hasClass = false;
                         }
                     }
 

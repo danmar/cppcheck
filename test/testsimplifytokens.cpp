@@ -356,6 +356,7 @@ private:
         TEST_CASE(enum33); // ticket #4015 (segmentation fault)
         TEST_CASE(enum34); // ticket #4141 (division by zero)
         TEST_CASE(enum35); // ticket #3953 (avoid simplification of type)
+        TEST_CASE(enum36); // ticket #4378
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -7239,6 +7240,11 @@ private:
     void enum35() {  // #3953 - avoid simplification of type
         ASSERT_EQUALS("void f ( A * a ) ;", checkSimplifyEnum("enum { A }; void f(A * a) ;"));
         ASSERT_EQUALS("void f ( A * a ) { }", checkSimplifyEnum("enum { A }; void f(A * a) { }"));
+    }
+
+    void enum36() {  // #4378
+        const char code[] = "struct X { enum Y { a, b }; X(Y) { Y y = (Y)1; } };";
+        ASSERT_EQUALS("struct X { X ( int ) { int y ; y = ( int ) 1 ; } } ;", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
