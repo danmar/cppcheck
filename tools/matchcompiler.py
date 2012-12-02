@@ -91,6 +91,16 @@ def compilePattern(pattern, nr):
     return ret
 
 
+def findMatchPattern(line):
+    res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,]+)\s*,\s*"([^"]+)"[)]', line)
+    if res == None:
+        res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,(]+[(][^()]*[)])\s*,\s*"([^"]+)"[)]', line)
+    if res == None:
+        res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,(]+[(][^()]*[)][^(,(]+[(][^()]*[)])\s*,\s*"([^"]+)"[)]', line)
+    if res == None:
+        res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,(]+[(][^()]*[)][^(,(]+[(][^()]*[)][^(,(]+[(][^()]*[)])\s*,\s*"([^"]+)"[)]', line)
+    return res
+
 def convertFile(srcname, destname):
     fin = open(srcname, "rt")
     srclines = fin.readlines()
@@ -104,17 +114,15 @@ def convertFile(srcname, destname):
 
     patternNumber = 1
     for line in srclines:
-        res = re.search(r'Token::Match[(]([^(,]+),\s*"([^"]+)"[)]', line)
-        if res == None:
-            res = re.search(r'Token::simpleMatch[(]([^(,]+),\s*"([^"]+)"[)]', line)
-        if res == None: # or patternNumber > 68:
-            code = code + line
-        else:
+        res = findMatchPattern(line)
+        while res != None:
             g0 = res.group(0)
             pos1 = line.find(g0)
-            code = code + line[:pos1]+'match'+str(patternNumber)+'('+res.group(1)+')'+line[pos1+len(g0):]
+            line = line[:pos1]+'match'+str(patternNumber)+'('+res.group(1)+')'+line[pos1+len(g0):]
             matchfunctions = matchfunctions + compilePattern(res.group(2), patternNumber)
             patternNumber = patternNumber + 1
+            res = findMatchPattern(line)
+        code = code + line
 
     fout = open(destname, 'wt')
     fout.write(matchfunctions+code)
