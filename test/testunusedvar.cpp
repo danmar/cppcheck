@@ -676,7 +676,7 @@ private:
                               "    do {\n"
                               "        std::cout<<code<<std::endl;\n"
                               "        code += 2;\n"
-                              "    } while(code < 20)\n"
+                              "    } while(code < 20);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -687,7 +687,7 @@ private:
                               "        std::cout<<code<<std::endl;\n"
                               "        code += 2;\n"
                               "        d += code;\n"
-                              "    } while(code < 20)\n"
+                              "    } while(code < 20);\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n", errout.str());
 
@@ -699,7 +699,7 @@ private:
                               "        code += 2;\n"
                               "        g(d);\n"
                               "        d += code;\n"
-                              "    } while(code < 20)\n"
+                              "    } while(code < 20);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -747,7 +747,7 @@ private:
                               "            std::cout<<code<<std::endl;\n"
                               "            code += 2;\n"
                               "        }\n"
-                              "    } while(code < 20)\n"
+                              "    } while(code < 20);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
