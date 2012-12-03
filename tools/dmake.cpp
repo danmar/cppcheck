@@ -235,7 +235,7 @@ int main(int argc, char **argv)
     fout << "# folder where lib/*.cpp files are located\n";
     makeConditionalVariable(fout, "LIBDIR", "lib");
     fout << "ifeq ($(LIBDIR),build)\n"
-         << "    matchcompiler_S := $(shell sh -c 'python tools/matchcompiler.py 2>/dev/null || echo not')\n"
+         << "    matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
          << "endif\n\n";
 
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.

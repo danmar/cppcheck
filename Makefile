@@ -11,7 +11,7 @@ ifndef LIBDIR
 endif
 
 ifeq ($(LIBDIR),build)
-    matchcompiler_S := $(shell sh -c 'python tools/matchcompiler.py 2>/dev/null || echo not')
+    matchcompiler_S := $(shell python tools/matchcompiler.py)
 endif
 
 # Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.
