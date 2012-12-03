@@ -2668,38 +2668,44 @@ void Tokenizer::setVarId()
             (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {"))) {
             scopeInfo.push(variableId);
         } else if (tok->str() == "{") {
-            scopestartvarid.push(_varId);
-            if (Token::simpleMatch(tok->previous(), ")") || Token::Match(tok->tokAt(-2), ") %type%")) {
-                executableScope.push(true);
-            } else {
-                executableScope.push(executableScope.top());
-                scopeInfo.push(variableId);
+            // parse anonymous unions as part of the current scope
+            if (!(Token::simpleMatch(tok->previous(), "union") && Token::simpleMatch(tok->link(), "} ;"))) {
+                scopestartvarid.push(_varId);
+                if (Token::simpleMatch(tok->previous(), ")") || Token::Match(tok->tokAt(-2), ") %type%")) {
+                    executableScope.push(true);
+                } else {
+                    executableScope.push(executableScope.top());
+                    scopeInfo.push(variableId);
+                }
             }
         } else if (tok->str() == "}") {
-            // Set variable ids in class declaration..
-            if (!isC() && !executableScope.top() && tok->link()) {
-                setVarIdClassDeclaration(tok->link(),
-                                         variableId,
-                                         scopestartvarid.top(),
-                                         &structMembers,
-                                         &_varId);
-            }
+            // parse anonymous unions as part of the current scope
+            if (!(Token::simpleMatch(tok, "} ;") && Token::simpleMatch(tok->link()->previous(), "union {"))) {
+                // Set variable ids in class declaration..
+                if (!isC() && !executableScope.top() && tok->link()) {
+                    setVarIdClassDeclaration(tok->link(),
+                                             variableId,
+                                             scopestartvarid.top(),
+                                             &structMembers,
+                                             &_varId);
+                }
 
-            scopestartvarid.pop();
-            if (scopestartvarid.empty()) {  // should be impossible
-                scopestartvarid.push(0);
-            }
+                scopestartvarid.pop();
+                if (scopestartvarid.empty()) {  // should be impossible
+                    scopestartvarid.push(0);
+                }
 
-            if (scopeInfo.empty()) {
-                variableId.clear();
-            } else {
-                variableId.swap(scopeInfo.top());
-                scopeInfo.pop();
-            }
+                if (scopeInfo.empty()) {
+                    variableId.clear();
+                } else {
+                    variableId.swap(scopeInfo.top());
+                    scopeInfo.pop();
+                }
 
-            executableScope.pop();
-            if (executableScope.empty()) {   // should not possibly happen
-                executableScope.push(false);
+                executableScope.pop();
+                if (executableScope.empty()) {   // should not possibly happen
+                    executableScope.push(false);
+                }
             }
         }
 

@@ -252,6 +252,7 @@ private:
         TEST_CASE(varid_in_class8);     // unknown macro in class
         TEST_CASE(varid_in_class9);     // #4291 - id for variables accessed through 'this'
         TEST_CASE(varid_in_class10);
+        TEST_CASE(varid_in_class11);    // #4277 - anonymous union
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -3990,6 +3991,30 @@ private:
                            "6: ( ( FooBase ) g@3 ) . m_bar = m_bar@2 ;\n"
                            "7: }\n",
                            tokenizeDebugListing(code));
+    }
+
+    void varid_in_class11() { // #4277 - anonymous union
+        const char code1[] = "class Foo {\n"
+                             "    union { float a; int b; };\n"
+                             "    void f() { a=0; }\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo {\n"
+                      "2: union { float a@1 ; int b@2 ; } ;\n"
+                      "3: void f ( ) { a@1 = 0 ; }\n"
+                      "4: } ;\n",
+                      tokenizeDebugListing(code1));
+
+        const char code2[] = "class Foo {\n"
+                             "    void f() { a=0; }\n"
+                             "    union { float a; int b; };\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo {\n"
+                      "2: void f ( ) { a@1 = 0 ; }\n"
+                      "3: union { float a@1 ; int b@2 ; } ;\n"
+                      "4: } ;\n",
+                      tokenizeDebugListing(code2));
     }
 
 
