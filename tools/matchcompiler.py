@@ -92,7 +92,7 @@ def compilePattern(pattern, nr):
 
 
 def findMatchPattern(line):
-    res = re.search(r'Token::s?i?m?p?l?e?Match[(](([^(,]+([(][^()]*[)])?)+)\s*,\s*"([^"]+)"[)]', line)
+    res = re.search(r'Token::s?i?m?p?l?e?Match[(](([^(,]+([(][^()]*[)])?){1,4})\s*,\s*"([^"]+)"[)]', line)
     return res
 
 def convertFile(srcname, destname):
