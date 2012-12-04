@@ -92,13 +92,7 @@ def compilePattern(pattern, nr):
 
 
 def findMatchPattern(line):
-    res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,]+)\s*,\s*"([^"]+)"[)]', line)
-    if res == None:
-        res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,(]+[(][^()]*[)])\s*,\s*"([^"]+)"[)]', line)
-    if res == None:
-        res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,(]+[(][^()]*[)][^(,(]+[(][^()]*[)])\s*,\s*"([^"]+)"[)]', line)
-    if res == None:
-        res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,(]+[(][^()]*[)][^(,(]+[(][^()]*[)][^(,(]+[(][^()]*[)])\s*,\s*"([^"]+)"[)]', line)
+    res = re.search(r'Token::s?i?m?p?l?e?Match[(](([^(,]+([(][^()]*[)])?)+)\s*,\s*"([^"]+)"[)]', line)
     return res
 
 def convertFile(srcname, destname):
@@ -128,7 +122,14 @@ def convertFile(srcname, destname):
     fout.write(matchfunctions+code)
     fout.close()
 
+# selftests..
+assert(None != findMatchPattern(' Token::Match(tok, ";") '))
+assert(None != findMatchPattern(' Token::Match(tok->next(), ";") '))
+assert(None != findMatchPattern(' Token::Match(tok->next()->next(), ";") '))
+assert(None != findMatchPattern(' Token::Match(tok->next()->next()->next(), ";") '))
+assert(None != findMatchPattern(' Token::Match(tok->next()->next()->next()->next(), ";") '))
 
+# convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
     print f + ' => build/' + f[4:]
     convertFile(f, 'build/'+f[4:])
