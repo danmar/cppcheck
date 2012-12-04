@@ -70,7 +70,9 @@ MainWindow::MainWindow() :
 
     // "Filter" toolbar
     mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
+#if (QT_VERSION >= 0x407000) || defined(Q_WS_MAEMO_5)
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
+#endif
     mUI.mToolBarFilter->addWidget(mLineEditFilter);
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
