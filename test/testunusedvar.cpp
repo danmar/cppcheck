@@ -639,6 +639,32 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
+                              "    int i = 0,code=10,d=10;\n"
+                              "    for(i = 0; i < 10; i++) {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "        if (i == 3) {\n"
+                              "            return d;\n"
+                              "        }\n"
+                              "        d = code;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i = 0,a=10,b=20;\n"
+                              "    for(i = 0; i < 10; i++) {\n"
+                              "        std::cout<<a<<std::endl;\n"
+                              "        int tmp=a;\n"
+                              "        a=b;\n"
+                              "        b=tmp;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
                               "    int code=10;\n"
                               "    while(code < 20) {\n"
                               "        std::cout<<code<<std::endl;\n"
@@ -672,6 +698,32 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
+                              "    int code=10,d=10;\n"
+                              "    while(code < 20) {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "        if (i == 3) {\n"
+                              "            return d;\n"
+                              "        }\n"
+                              "        d += code;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a=10,b=20;\n"
+                              "    while(a != 30) {\n"
+                              "        std::cout<<a<<std::endl;\n"
+                              "        int tmp=a;\n"
+                              "        a=b;\n"
+                              "        b=tmp;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
                               "    int code=10;\n"
                               "    do {\n"
                               "        std::cout<<code<<std::endl;\n"
@@ -700,6 +752,32 @@ private:
                               "        g(d);\n"
                               "        d += code;\n"
                               "    } while(code < 20);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int code=10,d=10;\n"
+                              "    do {\n"
+                              "        std::cout<<code<<std::endl;\n"
+                              "        code += 2;\n"
+                              "        if (i == 3) {\n"
+                              "            return d;\n"
+                              "        }\n"
+                              "        d += code;\n"
+                              "    } while(code < 20);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a=10,b=20;\n"
+                              "    do {\n"
+                              "        std::cout<<a<<std::endl;\n"
+                              "        int tmp=a;\n"
+                              "        a=b;\n"
+                              "        b=tmp;\n"
+                               "    } while( a!=30 );\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
