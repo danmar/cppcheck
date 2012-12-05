@@ -35,9 +35,6 @@ class Variables {
 public:
     enum VariableType { standard, array, pointer, reference, pointerArray, referenceArray, pointerPointer, none };
 
-    typedef std::set<unsigned int> VariableSet;
-    typedef std::list<VariableSet> VariableListOfSets;
-
     /** Store information about variable usage */
     class VariableUsage {
     public:
@@ -57,7 +54,7 @@ public:
         }
 
         /** variable is used.. set both read+write */
-        void use(VariableListOfSets & varReadInScope) {
+        void use(std::list<std::set<unsigned int> > & varReadInScope) {
             varReadInScope.back().insert(_var->varId());
             _read = true;
             _write = true;
@@ -79,8 +76,6 @@ public:
         bool _modified; // read/modify/write
         bool _allocateMemory;
     };
-
-    typedef std::map<unsigned int, VariableUsage> VariableMap;
 
     class ScopeGuard
     {
@@ -106,7 +101,7 @@ public:
     void clear() {
         _varUsage.clear();
     }
-    const VariableMap &varUsage() const {
+    const std::map<unsigned int, VariableUsage> &varUsage() const {
         return _varUsage;
     }
     void addVar(const Variable *var, VariableType type, bool write_);
@@ -136,9 +131,9 @@ private:
     void enterScope();
     void leaveScope(bool insideLoop);
 
-    VariableMap _varUsage;
-    VariableListOfSets _varAddedInScope;
-    VariableListOfSets _varReadInScope;
+    std::map<unsigned int, VariableUsage> _varUsage;
+    std::list<std::set<unsigned int> > _varAddedInScope;
+    std::list<std::set<unsigned int> > _varReadInScope;
 };
 
 
@@ -366,7 +361,7 @@ void Variables::modified(unsigned int varid, const Token* tok)
 Variables::VariableUsage *Variables::find(unsigned int varid)
 {
     if (varid) {
-        VariableMap::iterator i = _varUsage.find(varid);
+        std::map<unsigned int, VariableUsage>::iterator i = _varUsage.find(varid);
         if (i != _varUsage.end())
             return &i->second;
     }
@@ -375,16 +370,16 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
 
 void Variables::enterScope()
 {
-    _varAddedInScope.push_back(VariableSet());
-    _varReadInScope.push_back(VariableSet());
+    _varAddedInScope.push_back(std::set<unsigned int>());
+    _varReadInScope.push_back(std::set<unsigned int>());
 }
 
 void Variables::leaveScope(bool insideLoop)
 {
     if (insideLoop) {
         // read variables are read again in subsequent run through loop
-        VariableSet const & currentVarReadInScope = _varReadInScope.back();
-        for (VariableSet::const_iterator readIter = currentVarReadInScope.begin();
+        std::set<unsigned int> const & currentVarReadInScope = _varReadInScope.back();
+        for (std::set<unsigned int>::const_iterator readIter = currentVarReadInScope.begin();
              readIter != currentVarReadInScope.end();
              ++readIter)
         {
@@ -392,21 +387,21 @@ void Variables::leaveScope(bool insideLoop)
         }
     }
 
-    VariableListOfSets::reverse_iterator reverseReadIter = _varReadInScope.rbegin();
+    std::list<std::set<unsigned int> >::reverse_iterator reverseReadIter = _varReadInScope.rbegin();
     ++reverseReadIter;
     if (reverseReadIter != _varReadInScope.rend())
     {
         // Transfer read variables into previous scope
 
-        VariableSet const & currentVarAddedInScope = _varAddedInScope.back();
-        VariableSet & currentVarReadInScope = _varReadInScope.back();
-        for (VariableSet::const_iterator addedIter = currentVarAddedInScope.begin();
+        std::set<unsigned int> const & currentVarAddedInScope = _varAddedInScope.back();
+        std::set<unsigned int>  & currentVarReadInScope = _varReadInScope.back();
+        for (std::set<unsigned int>::const_iterator addedIter = currentVarAddedInScope.begin();
              addedIter != currentVarAddedInScope.end();
              ++addedIter)
         {
             currentVarReadInScope.erase(*addedIter);
         }
-        VariableSet & previousVarReadInScope = *reverseReadIter;
+        std::set<unsigned int> & previousVarReadInScope = *reverseReadIter;
         previousVarReadInScope.insert(currentVarReadInScope.begin(),
                                       currentVarReadInScope.end());
     }
@@ -1041,7 +1036,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
 
         // Check usage of all variables in the current scope..
-        for (Variables::VariableMap::const_iterator it = variables.varUsage().begin(); it != variables.varUsage().end(); ++it) {
+        for (std::map<unsigned int, Variables::VariableUsage>::const_iterator it = variables.varUsage().begin();
+             it != variables.varUsage().end();
+             ++it) {
             const Variables::VariableUsage &usage = it->second;
             const std::string &varname = usage._var->name();
             const Variable* var = symbolDatabase->getVariableFromVarId(it->first);
