@@ -445,6 +445,8 @@ public:
     };
 
     struct FriendInfo {
+        const Token *nameStart;
+        const Token *nameEnd;
         std::string name;
         Scope *scope;
     };

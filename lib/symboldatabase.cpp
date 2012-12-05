@@ -54,7 +54,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // find all scopes
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Locate next class
-        if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::")) {
+        if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::") &&
+            tok->strAt(-1) != "friend") {
             const Token *tok2 = tok->tokAt(2);
 
             if (tok->strAt(1) == "::")
@@ -429,10 +430,25 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
 
                 // friend class declaration?
-                else if (Token::Match(tok, "friend class| %any% ;")) {
+                else if (Token::Match(tok, "friend class| ::| %any% ;|::")) {
                     Scope::FriendInfo friendInfo;
 
-                    friendInfo.name = tok->strAt(1) == "class" ? tok->strAt(2) : tok->strAt(1);
+                    // save the name start
+                    friendInfo.nameStart = tok->strAt(1) == "class" ? tok->tokAt(2) : tok->tokAt(1);
+                    friendInfo.nameEnd = friendInfo.nameStart;
+
+                    // skip leading "::"
+                    if (friendInfo.nameEnd->str() == "::")
+                        friendInfo.nameEnd = friendInfo.nameEnd->next();
+
+                    // skip qualification "name ::"
+                    while (friendInfo.nameEnd && friendInfo.nameEnd->strAt(1) == "::")
+                        friendInfo.nameEnd = friendInfo.nameEnd->tokAt(2);
+
+                    // save the name
+                    if (friendInfo.nameEnd)
+                        friendInfo.name = friendInfo.nameEnd->str();
+
                     // fill this in after parsing is complete
                     friendInfo.scope = 0;
 
@@ -641,7 +657,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         for (std::list<Scope::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
             for (std::list<Scope>::iterator j = scopeList.begin(); j != scopeList.end(); ++j) {
                 // check scope for match
-                scope = const_cast<Scope*>(j->findQualifiedScope(i->name));
+                scope = findScope(i->nameStart, it->nestedIn);
 
                 // found match?
                 if (scope && scope->isClassOrStruct()) {
@@ -1568,6 +1584,24 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << " Unknown";
 
             std::cout << " " << scope->derivedFrom[i].name;
+            if (count-- > 1)
+                std::cout << ",";
+        }
+
+        std::cout << " )" << std::endl;
+
+        std::cout << "    friendList[" << scope->friendList.size() << "] = (";
+
+        std::list<Scope::FriendInfo>::const_iterator fii;
+
+        count = scope->friendList.size();
+        for (fii = scope->friendList.begin(); fii != scope->friendList.end(); ++fii) {
+            if (fii->scope)
+                std::cout << fii->scope->type;
+            else
+                std::cout << " Unknown";
+
+            std::cout << " " << fii->name;
             if (count-- > 1)
                 std::cout << ",";
         }

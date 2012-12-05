@@ -50,6 +50,7 @@ private:
         TEST_CASE(noConstructor3);
         TEST_CASE(noConstructor4);
         TEST_CASE(noConstructor5);
+        TEST_CASE(noConstructor6); // ticket #4386
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
@@ -1878,6 +1879,20 @@ private:
                            "{\n"
                            "    int i;\n"
                            "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor6() {
+        // ticket #4386
+        checkNoConstructor("class Ccpucycles {\n"
+                           "    friend class foo::bar;\n"
+                           "    Ccpucycles() :\n"
+                           "    m_v(0), m_b(true)\n"
+                           "    {}\n"
+                           "private:\n"
+                           "    cpucyclesT m_v;\n"
+                           "    bool m_b;\n"
+                           "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
