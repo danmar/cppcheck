@@ -107,11 +107,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="applicationdialog.cpp" line="76"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You must specify a name, a path and parameters for the application!</source>
-        <translation type="obsolete">Sie müssen einen Namen, einen Pfad und Parameter für die Anwendung angeben!</translation>
+        <translation>Sie müssen einen Namen, einen Pfad und ggf. Parameter für die Anwendung angeben!</translation>
     </message>
 </context>
 <context>
