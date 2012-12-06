@@ -699,7 +699,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #2463
-        check("struct A \n"
+        check("struct A\n"
               "{\n"
               "    B* W;\n"
               "\n"
@@ -1122,7 +1122,7 @@ private:
         check("void foo()\n"
               "{\n"
               "  struct my_type* p;\n"
-              "  p = 0; \n"
+              "  p = 0;\n"
               "  p->x = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
@@ -1146,7 +1146,7 @@ private:
         check("int foo()\n"
               "{\n"
               "  my_type* p;\n"
-              "  p = 0; \n"
+              "  p = 0;\n"
               "  return p->x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
@@ -1154,7 +1154,7 @@ private:
         check("int foo()\n"
               "{\n"
               "  struct my_type* p;\n"
-              "  p = 0; \n"
+              "  p = 0;\n"
               "  return p->x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());

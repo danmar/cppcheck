@@ -274,12 +274,12 @@ private:
               "}", "test.cpp", true, true);
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
 
-        check("void foo(int i) \n"
+        check("void foo(int i)\n"
               "{\n"
               "   if(i > 5) {\n"
               "       i = bar();\n"
               "       if(i < 5) {\n"
-              "           cout << a;  \n"
+              "           cout << a;\n"
               "       }\n"
               "    }\n"
               "}", "test.cpp", true, true);
@@ -329,7 +329,7 @@ private:
               "    int n = 100;\n"
               "    for(int i = 0; i < n; i ++)\n"
               "    {\n"
-              "        sum += i; \n"
+              "        sum += i;\n"
               "    }\n"
               "    cout<<b/sum;\n"
               "}\n");
@@ -4875,27 +4875,27 @@ private:
         // Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
         check("void f()\n"
               "{\n"
-              "  if (front < 0) \n"
+              "  if (front < 0)\n"
               "    frac = (front)/(front-back);\n"
-              "  else \n"
-              "    frac = (front)/(front-back);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "  if (front < 0) \n"
-              "  { frac = (front)/(front-back);}\n"
-              "  else \n"
+              "  else\n"
               "    frac = (front)/(front-back);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f()\n"
               "{\n"
-              "  if (front < 0) \n"
+              "  if (front < 0)\n"
               "  { frac = (front)/(front-back);}\n"
-              "  else \n"
+              "  else\n"
+              "    frac = (front)/(front-back);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  if (front < 0)\n"
+              "  { frac = (front)/(front-back);}\n"
+              "  else\n"
               "    frac = (front)/((front-back));\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());

@@ -1706,7 +1706,6 @@ private:
                                 "{\n"
                                 "public:\n"
                                 "    typedef ABC<T> m;\n"
-                                "\n"
                                 "};\n";
 
             const std::string expected("template < class T > class ABC { public: } ;");
@@ -5257,10 +5256,10 @@ private:
     }
 
     void simplifyTypedef65() { // ticket #2314
-        const char code[] = "typedef BAR<int> Foo; \n"
-                            "int main() { \n"
-                            "    Foo b(0); \n"
-                            "    return b > Foo(10); \n"
+        const char code[] = "typedef BAR<int> Foo;\n"
+                            "int main() {\n"
+                            "    Foo b(0);\n"
+                            "    return b > Foo(10);\n"
                             "}";
         const std::string actual(tok(code));
         ASSERT_EQUALS("int main ( ) { BAR < int > b ( 0 ) ; return b > BAR < int > ( 10 ) ; }", actual);
@@ -5296,7 +5295,7 @@ private:
 
     void simplifyTypedef69() { // ticket #2348
         const char code[] = "typedef int (*CompilerHook)();\n"
-                            "typedef struct VirtualMachine \n"
+                            "typedef struct VirtualMachine\n"
                             "{\n"
                             "    CompilerHook *(*compilerHookVector)(void);\n"
                             "}VirtualMachine;\n";
@@ -5417,7 +5416,7 @@ private:
     }
 
     void simplifyTypedef75() { // ticket #2426
-        const char code[] = "typedef _Packed struct S { long l; }; \n";
+        const char code[] = "typedef _Packed struct S { long l; };\n";
         const std::string expected = "";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
@@ -7002,7 +7001,7 @@ private:
     void enum10() {
         // ticket 1445
         const char code[] = "enum {\n"
-                            "SHELL_SIZE = sizeof(union { int i; char *cp; double d; }) - 1, \n"
+                            "SHELL_SIZE = sizeof(union { int i; char *cp; double d; }) - 1,\n"
                             "} e = SHELL_SIZE;";
         const char expected[] = "int e ; e = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 ;";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
@@ -7186,7 +7185,7 @@ private:
 
     void enum28() {
         const char code[] = "enum { x=0 };\n"
-                            "void f() { char x[4];  memset(x, 0, 4); \n"
+                            "void f() { char x[4];  memset(x, 0, 4);\n"
                             "{ x } };\n"
                             "void g() { x; }";
         ASSERT_EQUALS("void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", checkSimplifyEnum(code));

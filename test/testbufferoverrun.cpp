@@ -1401,7 +1401,7 @@ private:
 
     void array_index_43() { // #3838
 
-        check("int f( ) \n"
+        check("int f( )\n"
               "{\n"
               "  struct {\n"
               "    int arr[ 3 ];\n"
@@ -1415,7 +1415,7 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var[0].arr[3]' index 3 out of bounds.\n","", errout.str());
 
-        check("int f( ) \n"
+        check("int f( )\n"
               "{\n"
               "  struct {\n"
               "    int arr[ 3 ];\n"
@@ -2592,7 +2592,7 @@ private:
         check("void main() {\n"
               "   int array[] = {1,2};\n"
               "   int x = 0;\n"
-              "   for( int i = 0; i<6; ) { \n"
+              "   for( int i = 0; i<6; ) {\n"
               "      x += array[i];\n"
               "       i++;  }\n"
               "}\n");
@@ -2601,7 +2601,7 @@ private:
         check("void main() {\n"
               "   int array[] = {1,2};\n"
               "   int x = 0;\n"
-              "   for( int i = 0; i<6; ) { \n"
+              "   for( int i = 0; i<6; ) {\n"
               "       i++;  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -2611,7 +2611,7 @@ private:
         check("void main() {\n"
               "   int array[] = {1,2};\n"
               "   int x = 0;\n"
-              "   for( int i = 0; i<6; ) { \n"
+              "   for( int i = 0; i<6; ) {\n"
               "      x += array[i++];\n"
               "         }\n"
               "}\n");

@@ -1192,8 +1192,7 @@ private:
                        "{\n"
                        "        int y[2];\n"
                        "        int s;\n"
-                       "        GetField( y + 0, \n"
-                       "                       y + 1 );\n"
+                       "        GetField( y + 0, y + 1 );\n"
                        "        s = y[0]*y[1];\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());

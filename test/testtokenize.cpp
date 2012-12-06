@@ -1153,7 +1153,7 @@ private:
                             "{\n"
                             "    if (a)\n"
                             "        bar1 ();\n"
-                            "    \n"
+                            "\n"
                             "    else\n"
                             "        bar2 ();\n"
                             "}\n";

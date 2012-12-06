@@ -1187,7 +1187,7 @@ private:
         errout.str("");
         const std::string src = "void f()\n"
                                 "{\n"
-                                "    for ( \n"
+                                "    for (\n"
                                 "}\n";
 
         Settings settings;
@@ -1910,7 +1910,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T> p2;\n"
               "    p2 = new T;\n"
@@ -1945,39 +1945,39 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // ticket #748
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    T* var = new T[10];\n"
               "    auto_ptr<T> p2( var );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    foo::bar::baz* var = new foo::bar::baz[10];\n"
               "    auto_ptr<foo::bar::baz> p2( var );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T> p2( new T[] );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T> p2( new T[5] );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<foo::bar> p(new foo::bar[10]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T> p2;\n"
               "    p2.reset( new T[] );\n"
@@ -1985,34 +1985,34 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T> p2( new T[][] );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T> p2;\n"
               "    p2 = new T[10];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T::B> p2;\n"
               "    p2 = new T::B[10];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T> p2;\n"
               "    p2.reset( new T[10] );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
 
-        check("void f() \n"
+        check("void f()\n"
               "{\n"
               "    auto_ptr<T::B> p2;\n"
               "    p2.reset( new T::B[10] );\n"
@@ -2034,7 +2034,6 @@ private:
               "    string s1, s2;\n"
               "    s1.swap(s2);\n"
               "    s2.swap(s2);\n"
-              "    \n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (performance) It is inefficient to swap a object with itself by calling 's2.swap(s2)'\n", errout.str());
 
@@ -2045,7 +2044,6 @@ private:
               "    s2.compare(s2);\n"
               "    s1.compare(s2.c_str());\n"
               "    s1.compare(0, s1.size(), s1);\n"
-              "    \n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (warning) It is inefficient to call 's2.compare(s2)' as it always returns 0.\n", errout.str());
 
@@ -2058,7 +2056,6 @@ private:
               "    s1 = s2.substr(0, x);\n"
               "    s1 = s2.substr(0,std::string::npos);\n"
               "    s1 = s2.substr(x+5-n, 0);\n"
-              "    \n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (performance) Ineffective call of function \'substr\' because it returns a copy of "
                       "the object. Use operator= instead.\n"

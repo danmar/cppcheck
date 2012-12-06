@@ -1524,7 +1524,7 @@ private:
               "private:\n"
               "    int a[23];\n"
               "public:\n"
-              "    Fred(); \n"
+              "    Fred();\n"
               "};\n"
               "Fred::Fred() {\n"
               "    a[x::y] = 0;\n"

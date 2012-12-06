@@ -2201,13 +2201,13 @@ private:
 
     // #2705
     void func24() {
-        check("void f(void) \n"
+        check("void f(void)\n"
               "{\n"
               "  std::string *x = new std::string;\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n","", errout.str());
 
-        check("void f(void) \n"
+        check("void f(void)\n"
               "{\n"
               "  std::string *x = new std::string;\n"
               "  delete x;\n"
@@ -2217,7 +2217,7 @@ private:
 
     void func25() { // ticket #2904
         check("class Fred { };\n"
-              "void f(void) \n"
+              "void f(void)\n"
               "{\n"
               "  Fred *f = new Fred();\n"
               "  delete f;\n"
@@ -2225,14 +2225,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred { };\n"
-              "void f(void) \n"
+              "void f(void)\n"
               "{\n"
               "  Fred *f = new Fred();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: f\n", errout.str());
 
         check("class Fred { void foo(){ } };\n"
-              "void f(void) \n"
+              "void f(void)\n"
               "{\n"
               "  Fred *f = new Fred();\n"
               "  delete f;\n"
@@ -2240,7 +2240,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred { void foo(){ } };\n"
-              "void f(void) \n"
+              "void f(void)\n"
               "{\n"
               "  Fred *f = new Fred();\n"
               "}\n");
@@ -3479,11 +3479,11 @@ private:
         check("int myfunc()\n"
               "{\n"
               "  int handle;\n"
-              "  \n"
+              "\n"
               "  handle = open(\"myfile\");\n"
               "  if (handle < 0) return 1;\n"
-              "  \n"
-              "    while (some_condition()) \n"
+              "\n"
+              "    while (some_condition())\n"
               "      if (some_other_condition())\n"
               "      {\n"
               "         close(handle);\n"
@@ -3497,11 +3497,11 @@ private:
         check("int myfunc()\n"
               "{\n"
               "  int handle;\n"
-              "  \n"
+              "\n"
               "  handle = open(\"myfile\", O_RDONLY);\n"
               "  if (handle < 0) return 1;\n"
-              "  \n"
-              "    while (some_condition()) \n"
+              "\n"
+              "    while (some_condition())\n"
               "      if (some_other_condition())\n"
               "      {\n"
               "         return 3;\n"
@@ -4115,7 +4115,7 @@ private:
               "{\n"
               "public:\n"
               "    void foo()\n"
-              "    {    \n"
+              "    {\n"
               "        char *str = new char[100];\n"
               "        delete [] str;\n"
               "        hello();\n"
