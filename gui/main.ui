@@ -52,11 +52,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="ResultsView" name="mResults" native="true"/>
-      </item>
-     </layout>
+     <widget class="ResultsView" name="mResults" native="true"/>
     </item>
    </layout>
   </widget>
