@@ -217,7 +217,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
             // the second column is the severity so check it next
             if (parent->child(i, 1)->text() == list[1]->text()) {
                 // the fourth column is the summary so check it last
-                if (parent->child(i, 3)->text() == list[3]->text()) {
+                if (parent->child(i, 4)->text() == list[4]->text()) {
                     // this row matches so don't add it
                     return 0;
                 }
