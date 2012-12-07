@@ -77,19 +77,16 @@ public:
         bool _allocateMemory;
     };
 
-    class ScopeGuard
-    {
+    class ScopeGuard {
     public:
         ScopeGuard(Variables & guarded,
                    bool insideLoop)
             :_guarded(guarded),
-             _insideLoop(insideLoop)
-        {
+             _insideLoop(insideLoop) {
             _guarded.enterScope();
         }
 
-        ~ScopeGuard()
-        {
+        ~ScopeGuard() {
             _guarded.leaveScope(_insideLoop);
         }
 
@@ -381,24 +378,21 @@ void Variables::leaveScope(bool insideLoop)
         std::set<unsigned int> const & currentVarReadInScope = _varReadInScope.back();
         for (std::set<unsigned int>::const_iterator readIter = currentVarReadInScope.begin();
              readIter != currentVarReadInScope.end();
-             ++readIter)
-        {
+             ++readIter) {
             read(*readIter, NULL);
         }
     }
 
     std::list<std::set<unsigned int> >::reverse_iterator reverseReadIter = _varReadInScope.rbegin();
     ++reverseReadIter;
-    if (reverseReadIter != _varReadInScope.rend())
-    {
+    if (reverseReadIter != _varReadInScope.rend()) {
         // Transfer read variables into previous scope
 
         std::set<unsigned int> const & currentVarAddedInScope = _varAddedInScope.back();
         std::set<unsigned int>  & currentVarReadInScope = _varReadInScope.back();
         for (std::set<unsigned int>::const_iterator addedIter = currentVarAddedInScope.begin();
              addedIter != currentVarAddedInScope.end();
-             ++addedIter)
-        {
+             ++addedIter) {
             currentVarReadInScope.erase(*addedIter);
         }
         std::set<unsigned int> & previousVarReadInScope = *reverseReadIter;

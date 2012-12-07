@@ -777,7 +777,7 @@ private:
                               "        int tmp=a;\n"
                               "        a=b;\n"
                               "        b=tmp;\n"
-                               "    } while( a!=30 );\n"
+                              "    } while( a!=30 );\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 

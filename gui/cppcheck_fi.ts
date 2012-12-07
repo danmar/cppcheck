@@ -183,374 +183,374 @@ Parameters: -l(line) (file)</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="main.ui" line="159"/>
+        <location filename="main.ui" line="155"/>
         <source>Standard</source>
         <translation>Vakio</translation>
     </message>
     <message>
-        <location filename="main.ui" line="74"/>
+        <location filename="main.ui" line="70"/>
         <source>&amp;File</source>
         <translation>&amp;Tiedosto</translation>
     </message>
     <message>
-        <location filename="main.ui" line="89"/>
+        <location filename="main.ui" line="85"/>
         <source>&amp;View</source>
         <translation>&amp;Näytä</translation>
     </message>
     <message>
-        <location filename="main.ui" line="93"/>
+        <location filename="main.ui" line="89"/>
         <source>&amp;Toolbars</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="131"/>
+        <location filename="main.ui" line="127"/>
         <source>&amp;Check</source>
         <translation>&amp;Tarkista</translation>
     </message>
     <message>
-        <location filename="main.ui" line="146"/>
+        <location filename="main.ui" line="142"/>
         <source>&amp;Edit</source>
         <translation>&amp;Muokkaa</translation>
     </message>
     <message>
-        <location filename="main.ui" line="207"/>
+        <location filename="main.ui" line="203"/>
         <source>&amp;License...</source>
         <translation>&amp;Lisenssi...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="212"/>
+        <location filename="main.ui" line="208"/>
         <source>A&amp;uthors...</source>
         <translation>&amp;Tekijät...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="221"/>
+        <location filename="main.ui" line="217"/>
         <source>&amp;About...</source>
         <translation>&amp;Tietoa ohjelmasta Cppcheck...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="226"/>
+        <location filename="main.ui" line="222"/>
         <source>&amp;Files...</source>
         <translation>&amp;Tiedostot...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="229"/>
-        <location filename="main.ui" line="232"/>
+        <location filename="main.ui" line="225"/>
+        <location filename="main.ui" line="228"/>
         <source>Check files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="235"/>
+        <location filename="main.ui" line="231"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="244"/>
+        <location filename="main.ui" line="240"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Hakemisto...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="247"/>
-        <location filename="main.ui" line="250"/>
+        <location filename="main.ui" line="243"/>
+        <location filename="main.ui" line="246"/>
         <source>Check directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="253"/>
+        <location filename="main.ui" line="249"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="262"/>
+        <location filename="main.ui" line="258"/>
         <source>&amp;Recheck files</source>
         <translation>Tarkista tiedostot &amp;uudelleen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="265"/>
+        <location filename="main.ui" line="261"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="274"/>
+        <location filename="main.ui" line="270"/>
         <source>&amp;Stop</source>
         <translation>&amp;Pysäytä</translation>
     </message>
     <message>
-        <location filename="main.ui" line="277"/>
-        <location filename="main.ui" line="280"/>
+        <location filename="main.ui" line="273"/>
+        <location filename="main.ui" line="276"/>
         <source>Stop checking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="283"/>
+        <location filename="main.ui" line="279"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="292"/>
+        <location filename="main.ui" line="288"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Tallenna tulokset tiedostoon...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="295"/>
+        <location filename="main.ui" line="291"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="300"/>
+        <location filename="main.ui" line="296"/>
         <source>&amp;Quit</source>
         <translation>&amp;Lopeta</translation>
     </message>
     <message>
-        <location filename="main.ui" line="309"/>
+        <location filename="main.ui" line="305"/>
         <source>&amp;Clear results</source>
         <translation>&amp;Tyhjennä tulokset</translation>
     </message>
     <message>
-        <location filename="main.ui" line="318"/>
+        <location filename="main.ui" line="314"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Asetukset</translation>
     </message>
     <message>
-        <location filename="main.ui" line="348"/>
+        <location filename="main.ui" line="344"/>
         <source>Errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="351"/>
-        <location filename="main.ui" line="354"/>
+        <location filename="main.ui" line="347"/>
+        <location filename="main.ui" line="350"/>
         <source>Show errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="436"/>
+        <location filename="main.ui" line="432"/>
         <source>Show S&amp;cratchpad...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="486"/>
+        <location filename="main.ui" line="482"/>
         <source>Warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="489"/>
-        <location filename="main.ui" line="492"/>
+        <location filename="main.ui" line="485"/>
+        <location filename="main.ui" line="488"/>
         <source>Show warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="504"/>
+        <location filename="main.ui" line="500"/>
         <source>Performance warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="507"/>
-        <location filename="main.ui" line="510"/>
+        <location filename="main.ui" line="503"/>
+        <location filename="main.ui" line="506"/>
         <source>Show performance warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="518"/>
+        <location filename="main.ui" line="514"/>
         <source>Show &amp;hidden</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="530"/>
+        <location filename="main.ui" line="526"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="533"/>
+        <location filename="main.ui" line="529"/>
         <source>Show information messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="545"/>
+        <location filename="main.ui" line="541"/>
         <source>Portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="548"/>
+        <location filename="main.ui" line="544"/>
         <source>Show portability warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="556"/>
+        <location filename="main.ui" line="552"/>
         <source>&amp;Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="559"/>
+        <location filename="main.ui" line="555"/>
         <source>Filter results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="575"/>
+        <location filename="main.ui" line="571"/>
         <source>Windows 32-bit ANSI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="583"/>
+        <location filename="main.ui" line="579"/>
         <source>Windows 32-bit Unicode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="591"/>
+        <location filename="main.ui" line="587"/>
         <source>Unix 32-bit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="599"/>
+        <location filename="main.ui" line="595"/>
         <source>Unix 64-bit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="607"/>
+        <location filename="main.ui" line="603"/>
         <source>Windows 64-bit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="615"/>
+        <location filename="main.ui" line="611"/>
         <source>Platforms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="626"/>
+        <location filename="main.ui" line="622"/>
         <source>C++11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="634"/>
+        <location filename="main.ui" line="630"/>
         <source>C99</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="642"/>
+        <location filename="main.ui" line="638"/>
         <source>Posix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="359"/>
+        <location filename="main.ui" line="355"/>
         <source>&amp;Check all</source>
         <translation>&amp;Valitse kaikki</translation>
     </message>
     <message>
-        <location filename="main.ui" line="196"/>
+        <location filename="main.ui" line="192"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="364"/>
+        <location filename="main.ui" line="360"/>
         <source>&amp;Uncheck all</source>
         <translation>&amp;Poista kaikista valinta</translation>
     </message>
     <message>
-        <location filename="main.ui" line="369"/>
+        <location filename="main.ui" line="365"/>
         <source>Collapse &amp;all</source>
         <translation>&amp;Pienennä kaikki</translation>
     </message>
     <message>
-        <location filename="main.ui" line="374"/>
+        <location filename="main.ui" line="370"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Laajenna kaikki</translation>
     </message>
     <message>
-        <location filename="main.ui" line="382"/>
+        <location filename="main.ui" line="378"/>
         <source>&amp;Standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="385"/>
+        <location filename="main.ui" line="381"/>
         <source>Standard items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="401"/>
+        <location filename="main.ui" line="397"/>
         <source>Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="409"/>
+        <location filename="main.ui" line="405"/>
         <source>&amp;Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="412"/>
+        <location filename="main.ui" line="408"/>
         <source>Error categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="417"/>
+        <location filename="main.ui" line="413"/>
         <source>&amp;Open XML...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="426"/>
+        <location filename="main.ui" line="422"/>
         <source>Open P&amp;roject File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="441"/>
+        <location filename="main.ui" line="437"/>
         <source>&amp;New Project File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="446"/>
+        <location filename="main.ui" line="442"/>
         <source>&amp;Log View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="449"/>
+        <location filename="main.ui" line="445"/>
         <source>Log View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="457"/>
+        <location filename="main.ui" line="453"/>
         <source>C&amp;lose Project File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="465"/>
+        <location filename="main.ui" line="461"/>
         <source>&amp;Edit Project File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="474"/>
+        <location filename="main.ui" line="470"/>
         <source>&amp;Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="390"/>
+        <location filename="main.ui" line="386"/>
         <source>&amp;Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="179"/>
+        <location filename="main.ui" line="175"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="330"/>
+        <location filename="main.ui" line="326"/>
         <source>Style warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="333"/>
-        <location filename="main.ui" line="336"/>
+        <location filename="main.ui" line="329"/>
+        <location filename="main.ui" line="332"/>
         <source>Show style warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="393"/>
+        <location filename="main.ui" line="389"/>
         <source>Open the help contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="396"/>
+        <location filename="main.ui" line="392"/>
         <source>F1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="121"/>
+        <location filename="main.ui" line="117"/>
         <source>&amp;Help</source>
         <translation>&amp;Ohje</translation>
     </message>
@@ -1204,7 +1204,7 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     </message>
     <message>
         <location filename="settings.ui" line="187"/>
-        <location filename="settings.ui" line="239"/>
+        <location filename="settings.ui" line="237"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1256,7 +1256,7 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     </message>
     <message>
         <location filename="settings.ui" line="201"/>
-        <location filename="settings.ui" line="253"/>
+        <location filename="settings.ui" line="251"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1266,47 +1266,47 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
         <translation>Ohjelmat</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="246"/>
+        <location filename="settings.ui" line="244"/>
         <source>Edit...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="260"/>
+        <location filename="settings.ui" line="258"/>
         <source>Set as default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="285"/>
+        <location filename="settings.ui" line="281"/>
         <source>Reports</source>
         <translation>Raportit</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="291"/>
+        <location filename="settings.ui" line="287"/>
         <source>Save all errors when creating report</source>
         <translation>Tallenna kaikki virheet raporttia luodessa</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="298"/>
+        <location filename="settings.ui" line="294"/>
         <source>Save full path to files in reports</source>
         <translation>Tallenna tiedostojen koko polku raportteihin</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="319"/>
+        <location filename="settings.ui" line="315"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="333"/>
+        <location filename="settings.ui" line="329"/>
         <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="339"/>
+        <location filename="settings.ui" line="335"/>
         <source>&amp;Show inconclusive errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="346"/>
+        <location filename="settings.ui" line="342"/>
         <source>S&amp;how internal warnings in log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1426,7 +1426,7 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="stats.ui" line="365"/>
+        <location filename="stats.ui" line="364"/>
         <source>Copy to Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
