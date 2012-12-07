@@ -210,10 +210,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++) {
-        // The first column is the file name and is always the same so
-        // we skip it in other platforms than Windows, where filename case
-        // is ignored. So in Windows we can get filenames "header.h" and
-        // "Header.h" and must compare them as identical filenames.
+        // The first column is the file name and is always the same
 
         // the third column is the line number so check it first
         if (parent->child(i, 2)->text() == list[2]->text()) {
@@ -221,15 +218,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
             if (parent->child(i, 1)->text() == list[1]->text()) {
                 // the fourth column is the summary so check it last
                 if (parent->child(i, 3)->text() == list[3]->text()) {
-#if defined(_WIN32)
-                    const QString first = parent->child(i, 0)->text().toLower();
-                    const QString second = list[0]->text().toLower();
-                    if (first == second)
-                        return 0;
-#else
                     // this row matches so don't add it
                     return 0;
-#endif // _WIN32
                 }
             }
         }
@@ -280,9 +270,16 @@ QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name) const
 {
-    QList<QStandardItem *> list = mModel.findItems(name);
-    if (list.size() > 0) {
-        return list[0];
+    // The first column contains the file name. In Windows we can get filenames
+    // "header.h" and "Header.h" and must compare them as identical.
+
+    for (int i = 0; i < mModel.rowCount(); i++) {
+#ifdef _WIN32
+        if (QString::compare(mModel.item(i, 0)->text(), name, Qt::CaseInsensitive) == 0)
+#else
+        if (mModel.item(i, 0)->text() == name)
+#endif
+            return mModel.item(i, 0);
     }
     return 0;
 }
