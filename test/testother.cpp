@@ -86,6 +86,8 @@ private:
         TEST_CASE(switchFallThroughCase);
         TEST_CASE(unreachableCode);
 
+        TEST_CASE(suspiciousCase);
+
         TEST_CASE(selfAssignment);
         TEST_CASE(trac1132);
         TEST_CASE(testMisusedScopeObjectDoesNotPickFunction1);
@@ -2723,6 +2725,31 @@ private:
               "    return 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+    }
+
+
+    void suspiciousCase() {
+        check("void foo() {\n"
+              "    switch(a) {\n"
+              "        case A&&B:\n"
+              "            foo();\n"
+              "        case (A||B):\n"
+              "            foo();\n"
+              "        case 1||5:\n"
+              "            foo();\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious case label in switch(). Operator '&&' probably doesn't work as intended.\n"
+                      "[test.cpp:5]: (warning, inconclusive) Found suspicious case label in switch(). Operator '||' probably doesn't work as intended.\n"
+                      "[test.cpp:7]: (warning, inconclusive) Found suspicious case label in switch(). Operator '||' probably doesn't work as intended.\n", errout.str());
+
+        check("void foo() {\n"
+              "    switch(a) {\n"
+              "        case 1:\n"
+              "            a=A&&B;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

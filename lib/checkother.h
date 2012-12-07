@@ -62,6 +62,7 @@ public:
         checkOther.suspiciousSizeofCalculation();
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
+        checkOther.checkSuspiciousCaseInSwitch();
         checkOther.checkAssignmentInAssert();
         checkOther.checkSizeofForArrayParameter();
         checkOther.checkSizeofForPointerSize();
@@ -185,6 +186,9 @@ public:
 
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
     void checkRedundantAssignmentInSwitch();
+
+    /** @brief %Check for code like 'case A||B:'*/
+    void checkSuspiciousCaseInSwitch();
 
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
@@ -311,6 +315,7 @@ private:
     void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void switchCaseFallThrough(const Token *tok);
+    void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
@@ -392,6 +397,7 @@ private:
         c.redundantAssignmentInSwitchError(0, 0, "var");
         c.redundantCopyInSwitchError(0, 0, "var");
         c.switchCaseFallThrough(0);
+        c.suspiciousCaseInSwitchError(0, "||");
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
@@ -469,6 +475,7 @@ private:
                "* look for calculations inside sizeof()\n"
                "* look for suspicious calculations with sizeof()\n"
                "* assignment of a variable to itself\n"
+               "* Suspicious case labels in switch()\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* Clarify calculation with parentheses\n"
                "* using increment on boolean\n"

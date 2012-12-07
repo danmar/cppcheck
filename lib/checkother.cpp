@@ -1057,6 +1057,42 @@ void CheckOther::switchCaseFallThrough(const Token *tok)
                 "switchCaseFallThrough", "Switch falls through case without comment. 'break;' missing?");
 }
 
+
+//---------------------------------------------------------------------------
+// Check for statements like case A||B: in switch()
+//---------------------------------------------------------------------------
+void CheckOther::checkSuspiciousCaseInSwitch()
+{
+    if (!_settings->inconclusive || !_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eSwitch)
+            continue;
+
+        for (const Token* tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
+            if (tok->str() == "case") {
+                for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "[:;}{]"))
+                        break;
+                    if (Token::Match(tok2, "&&|%oror%"))
+                        suspiciousCaseInSwitchError(tok, tok2->str());
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString)
+{
+    reportError(tok, Severity::warning, "suspiciousCase",
+                "Found suspicious case label in switch(). Operator '" + operatorString + "' probably doesn't work as intended.\n"
+                "Using an operator like '" + operatorString + "' in a case label is suspicious. Did you intend to use a bitwise operator, multiple case labels or if/else instead?", true);
+}
+
+
 //---------------------------------------------------------------------------
 //    int x = 1;
 //    x = x;            // <- redundant assignment to self
