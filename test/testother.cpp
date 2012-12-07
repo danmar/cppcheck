@@ -2750,6 +2750,14 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    switch(a) {\n"
+              "        case A&&B?B:A:\n"
+              "            foo();\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

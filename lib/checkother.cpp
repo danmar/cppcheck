@@ -1074,11 +1074,21 @@ void CheckOther::checkSuspiciousCaseInSwitch()
 
         for (const Token* tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
             if (tok->str() == "case") {
+                const Token* end = 0;
                 for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, "[:;}{]"))
+                    if (tok2->str() == ":") {
+                        end = tok2;
                         break;
-                    if (Token::Match(tok2, "&&|%oror%"))
-                        suspiciousCaseInSwitchError(tok, tok2->str());
+                    }
+                    if (Token::Match(tok2, "[?;}{]")) {
+                        break;
+                    }
+                }
+
+                if (end) {
+                    const Token* finding = Token::findmatch(tok->next(), "&&|%oror%", end);
+                    if (finding)
+                        suspiciousCaseInSwitchError(tok, finding->str());
                 }
             }
         }
