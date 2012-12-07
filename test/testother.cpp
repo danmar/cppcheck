@@ -6544,6 +6544,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
+        check("void f() {\n"
+              "    static int i;\n"
+              "    i = 1;\n"
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
         // Testing different types
         check("void f() {\n"
               "    Foo& bar = foo();\n"
@@ -6570,6 +6577,14 @@ private:
               "    i = 1;\n"
               "    bar();\n" // Global variable might be accessed in bar()
               "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static int i;\n"
+              "    i = 1;\n"
+              "    bar();\n" // bar() might call f() recursively. This could be a false positive in more complex examples (when value of i is used somewhere. See #4229)
+              "    i = 2;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
