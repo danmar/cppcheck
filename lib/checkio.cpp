@@ -255,6 +255,11 @@ void CheckIO::checkFileUsage()
                 }
             }
         }
+        for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
+            i->second.op_indent = 0;
+            i->second.mode = UNKNOWN;
+            i->second.lastOperation = Filepointer::UNKNOWN_OP;
+        }
     }
 }
 

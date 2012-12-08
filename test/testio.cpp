@@ -287,6 +287,43 @@ private:
               "    fclose(f[0]);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4368: multiple functions
+        check("static FILE *fp = NULL;\n"
+              "\n"
+              "void close()\n"
+              "{\n"
+              "  fclose(fp);\n"
+              "}\n"
+              "\n"
+              "void dump()\n"
+              "{\n"
+              "  if (fp == NULL) return;\n"
+              "  fprintf(fp, \"Here's the output.\\n\");\n"
+              "}\n"
+              "\n"
+              "int main()\n"
+              "{\n"
+              "  fp = fopen(\"test.txt\", \"w\");\n"
+              "  dump();\n"
+              "  close();\n"
+              "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("static FILE *fp = NULL;\n"
+              "\n"
+              "void close()\n"
+              "{\n"
+              "  fclose(fp);\n"
+              "}\n"
+              "\n"
+              "void dump()\n"
+              "{\n"
+              "  fclose(fp);\n"
+              "  fprintf(fp, \"Here's the output.\\n\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Used file that is not opened.\n", errout.str());
     }
 
     void fileIOwithoutPositioning() {
