@@ -91,10 +91,7 @@ def compilePattern(pattern, nr):
     return ret
 
 def findMatchPattern(line):
-    res = re.search(r'Token::Match[(]([^(,]+),\s*"([^"]+)"[)]', line)
-    if res == None:
-        res = re.search(r'Token::simpleMatch[(]([^(,]+),\s*"([^"]+)"[)]', line)
-
+    res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,]+),\s*"([^"]+)"[)]', line)
     return res
 
 def convertFile(srcname, destname):
@@ -126,6 +123,7 @@ def convertFile(srcname, destname):
 
 # selftests..
 assert(None != findMatchPattern(' Token::Match(tok, ";") '))
+assert(None != findMatchPattern(' Token::simpleMatch(tok, ";") '))
 assert(None == findMatchPattern(' Token::Match(tok->next(), ";") ')) # function calls are not handled
 
 # convert all lib/*.cpp files
