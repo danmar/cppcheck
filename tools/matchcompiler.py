@@ -90,9 +90,11 @@ def compilePattern(pattern, nr):
     ret = ret + '    return true;\n}\n'
     return ret
 
-
 def findMatchPattern(line):
-    res = re.search(r'Token::s?i?m?p?l?e?Match[(](([^(,]+([(][^()]*[)])?){1,4})\s*,\s*"([^"]+)"[)]', line)
+    res = re.search(r'Token::Match[(]([^(,]+),\s*"([^"]+)"[)]', line)
+    if res == None:
+        res = re.search(r'Token::simpleMatch[(]([^(,]+),\s*"([^"]+)"[)]', line)
+
     return res
 
 def convertFile(srcname, destname):
@@ -109,14 +111,14 @@ def convertFile(srcname, destname):
     patternNumber = 1
     for line in srclines:
         res = findMatchPattern(line)
-        while res != None:
+        if res == None: # or patternNumber > 68:
+            code = code + line
+        else:
             g0 = res.group(0)
             pos1 = line.find(g0)
-            line = line[:pos1]+'match'+str(patternNumber)+'('+res.group(1)+')'+line[pos1+len(g0):]
+            code = code + line[:pos1]+'match'+str(patternNumber)+'('+res.group(1)+')'+line[pos1+len(g0):]
             matchfunctions = matchfunctions + compilePattern(res.group(2), patternNumber)
             patternNumber = patternNumber + 1
-            res = findMatchPattern(line)
-        code = code + line
 
     fout = open(destname, 'wt')
     fout.write(matchfunctions+code)
@@ -124,10 +126,7 @@ def convertFile(srcname, destname):
 
 # selftests..
 assert(None != findMatchPattern(' Token::Match(tok, ";") '))
-assert(None != findMatchPattern(' Token::Match(tok->next(), ";") '))
-assert(None != findMatchPattern(' Token::Match(tok->next()->next(), ";") '))
-assert(None != findMatchPattern(' Token::Match(tok->next()->next()->next(), ";") '))
-assert(None != findMatchPattern(' Token::Match(tok->next()->next()->next()->next(), ";") '))
+assert(None == findMatchPattern(' Token::Match(tok->next(), ";") ')) # function calls are not handled
 
 # convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
