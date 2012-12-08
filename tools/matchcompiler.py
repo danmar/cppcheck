@@ -91,8 +91,45 @@ def compilePattern(pattern, nr):
     return ret
 
 def findMatchPattern(line):
-    res = re.search(r'Token::s?i?m?p?l?e?Match[(]([^(,]+),\s*"([^"]+)"[)]', line)
-    return res
+    
+    pos1 = line.find('Token::Match(')
+    if pos1 == -1:
+        pos1 = line.find('Token::simpleMatch(')
+    if pos1 == -1:
+        return None
+
+    parlevel = 0
+    args = []
+    argstart = 0
+    pos = pos1
+    inString = False
+    while pos < len(line):
+        if inString:
+            if line[pos] == '\\':
+                pos = pos + 1
+            elif line[pos] == '"':
+                inString = False
+        elif line[pos] == '"':
+            inString = True
+        elif line[pos] == '(':
+            parlevel = parlevel + 1
+            if parlevel == 1:
+                argstart = pos + 1
+        elif line[pos] == ')':
+            parlevel = parlevel - 1
+            if parlevel == 0:
+                ret = []
+                ret.append(line[pos1:pos+1])
+                for arg in args:
+                    ret.append(arg)
+                ret.append(line[argstart:pos])
+                return ret
+        elif line[pos] == ',' and parlevel == 1:
+            args.append(line[argstart:pos])
+            argstart = pos + 1
+        pos = pos + 1
+
+    return None
 
 def convertFile(srcname, destname):
     fin = open(srcname, "rt")
@@ -108,23 +145,46 @@ def convertFile(srcname, destname):
     patternNumber = 1
     for line in srclines:
         res = findMatchPattern(line)
-        if res == None: # or patternNumber > 68:
+        if res == None:
             code = code + line
+        elif len(res) != 3:
+            code = code + line  # TODO: handle varid
         else:
-            g0 = res.group(0)
-            pos1 = line.find(g0)
-            code = code + line[:pos1]+'match'+str(patternNumber)+'('+res.group(1)+')'+line[pos1+len(g0):]
-            matchfunctions = matchfunctions + compilePattern(res.group(2), patternNumber)
-            patternNumber = patternNumber + 1
+            g0 = res[0]
+            arg1 = res[1]
+            arg2 = res[2]
+
+            res = re.match(r'\s*"(.+)"\s*$', arg2)
+            if res == None:
+                code = code + line  # Non-const pattern - bailout
+            else:
+                arg2 = res.group(1)
+                pos1 = line.find(g0)
+                code = code + line[:pos1]+'match'+str(patternNumber)+'('+arg1+')'+line[pos1+len(g0):]
+                matchfunctions = matchfunctions + compilePattern(arg2, patternNumber)
+                patternNumber = patternNumber + 1
 
     fout = open(destname, 'wt')
     fout.write(matchfunctions+code)
     fout.close()
 
 # selftests..
-assert(None != findMatchPattern(' Token::Match(tok, ";") '))
-assert(None != findMatchPattern(' Token::simpleMatch(tok, ";") '))
-assert(None == findMatchPattern(' Token::Match(tok->next(), ";") ')) # function calls are not handled
+def testFindMatchPattern(arg1,pattern):
+    res = findMatchPattern(' Token::Match(' + arg1 + ', "' + pattern + '") ')
+    assert(res != None)
+    assert(len(res) == 3)
+    assert(res[0] == 'Token::Match(' + arg1 + ', "' + pattern + '")')
+    assert(res[1] == arg1)
+    assert(res[2] == ' "' + pattern + '"')
+    res = findMatchPattern(' Token::simpleMatch(' + arg1 + ', "' + pattern + '") ')
+    assert(res != None)
+    assert(len(res) == 3)
+    assert(res[0] == 'Token::simpleMatch(' + arg1 + ', "' + pattern + '")')
+    assert(res[1] == arg1)
+    assert(res[2] == ' "' + pattern + '"')
+testFindMatchPattern('tok', ';')
+testFindMatchPattern('tok->next()', ';')
+testFindMatchPattern('Token::findsimplematch(tok,")")', ';')
 
 # convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
