@@ -214,6 +214,12 @@ private:
               "    char *x = gets();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    foo(x, gets());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
     }
 
     void testalloca() {
