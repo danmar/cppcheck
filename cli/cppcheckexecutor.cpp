@@ -249,16 +249,11 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     if (time2 >= (time1 + 10)) {
         time1 = time2;
 
-        // current time in the format "Www Mmm dd hh:mm:ss yyyy"
-        const std::string str(std::ctime(&time2));
-
         // format a progress message
         std::ostringstream ostr;
         ostr << "progress: "
              << stage
              << ' ' << value << '%';
-        if (_settings->_verbose)
-            ostr << " time=" << str.substr(11, 8);
 
         // Report progress message
         reportOut(ostr.str());
