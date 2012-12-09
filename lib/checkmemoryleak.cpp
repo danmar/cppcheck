@@ -934,24 +934,37 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 else {
                     // is the pointer in rhs?
                     bool rhs = false;
+                    bool trailingSemicolon = false;
+                    bool used = false;
                     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                         if (tok2->str() == ";") {
+                            trailingSemicolon = true;
                             if (rhs)
                                 tok = tok2;
                             break;
                         }
 
-                        if (Token::Match(tok2, "[=+(,] %varid%", varid)) {
-                            if (!rhs && Token::Match(tok2, "[(,]")) {
-                                addtoken(&rettail, tok, "use");
-                                addtoken(&rettail, tok, ";");
+                        if (!used) {
+                            if (Token::Match(tok2, "[=+(,] %varid%", varid)) {
+                                if (!rhs && Token::Match(tok2, "[(,]")) {
+                                    used = true;
+                                    addtoken(&rettail, tok, "use");
+                                    addtoken(&rettail, tok, ";");
+                                }
+                                rhs = true;
                             }
-                            rhs = true;
                         }
                     }
 
-                    if (!rhs)
-                        addtoken(&rettail, tok, "assign");
+                    if (!used) {
+                        if (!rhs)
+                            addtoken(&rettail, tok, "assign");
+                        else {
+                            addtoken(&rettail, tok, "use_");
+                            if (trailingSemicolon)
+                                addtoken(&rettail, tok, ";");
+                        }
+                    }
                     continue;
                 }
             }
@@ -1250,12 +1263,15 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 return rethead;
             }
             if (Token::Match(tok, "[)=] %varid% [+;)]", varid) ||
-                Token::Match(tok, "%var% + %varid%", varid) ||
+                (Token::Match(tok, "%var% + %varid%", varid) &&
+                 tok->strAt(3) != "[" &&
+                 tok->strAt(3) != ".") ||
                 Token::Match(tok, "<< %varid% ;", varid) ||
                 Token::Match(tok, "= strcpy|strcat|memmove|memcpy ( %varid% ,", varid) ||
                 Token::Match(tok, "[;{}] %var% [ %varid% ]", varid)) {
                 addtoken(&rettail, tok, "use");
-            } else if (Token::Match(tok->previous(), ";|{|}|=|(|,|%op% %varid% [", varid)) {
+            } else if (Token::Match(tok->previous(), ";|{|}|=|(|,|%op% %varid% [", varid) ||
+                       Token::Match(tok->previous(), ";|{|}|=|(|,|%op% %varid% .", varid)) {
                 // warning is written for "dealloc ; use_ ;".
                 // but this use doesn't affect the leak-checking
                 addtoken(&rettail, tok, "use_");
@@ -1828,8 +1844,33 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
             }
 
             // use use => use
-            if (Token::simpleMatch(tok2, "use use")) {
+            while (Token::simpleMatch(tok2, "use use")) {
                 tok2->deleteNext();
+                done = false;
+            }
+
+            // use use_ => use
+            if (Token::simpleMatch(tok2, "use use_")) {
+                tok2->deleteNext();
+                done = false;
+            }
+
+            // use_ use => use
+            if (Token::simpleMatch(tok2, "use_ use")) {
+                tok2->deleteThis();
+                done = false;
+            }
+
+            // use & use => use
+            while (Token::simpleMatch(tok2, "use & use")) {
+                tok2->deleteNext(2);
+                done = false;
+            }
+
+            // & use use => use
+            while (Token::simpleMatch(tok2, "& use use")) {
+                tok2->deleteThis();
+                tok2->deleteThis();
                 done = false;
             }
 

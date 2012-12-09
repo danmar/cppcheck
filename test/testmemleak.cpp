@@ -500,11 +500,18 @@ private:
         ASSERT_EQUALS(";;use;;", getcode("char *s; x = {1,s};", "s"));
         ASSERT_EQUALS(";{};;alloc;;use;", getcode("struct Foo { }; Foo *p; p = malloc(10); const Foo *q; q = p;", "p"));
         ASSERT_EQUALS(";;alloc;use;", getcode("Fred *fred; p.setFred(fred = new Fred);", "fred"));
-        ASSERT_EQUALS(";;use;", getcode("struct AB *ab; f(ab->a);", "ab"));
+        ASSERT_EQUALS(";;useuse_;", getcode("struct AB *ab; f(ab->a);", "ab"));
         ASSERT_EQUALS(";;use;", getcode("struct AB *ab; ab = pop(ab);", "ab"));
 
         // non-use..
-        ASSERT_EQUALS(";;", getcode("char *s; s = s + 1;", "s"));
+        ASSERT_EQUALS(";;use_;", getcode("char *s; c = x + s[0];","s"));
+        ASSERT_EQUALS(";;use_;", getcode("char *s; c = s[0] + x;","s"));
+        ASSERT_EQUALS(";;use_;", getcode("type *c; y = x + c->y;","c"));
+        ASSERT_EQUALS(";;use_;", getcode("type *c; y = c->y + x;","c"));
+        ASSERT_EQUALS(";;use_;", getcode("char *s; s = s + 1;", "s"));
+
+        // use reference
+        ASSERT_EQUALS(";;callfunc&use;", getcode("struct AB *ab; f(&ab);", "ab"));
 
         // reference
         ASSERT_EQUALS(";", getcode("char *p; char * & ref = p; p = malloc(10);", "p"));
@@ -664,6 +671,10 @@ private:
 
         // use..
         ASSERT_EQUALS("; use ; }", simplifycode("; use use ; }"));
+        ASSERT_EQUALS("; use ; }", simplifycode("; use use_ ; }"));
+        ASSERT_EQUALS("; use ; }", simplifycode("; use_ use ; }"));
+        ASSERT_EQUALS("; use ; }", simplifycode("; &use use ; }"));
+        ASSERT_EQUALS("; use ; }", simplifycode("; use &use ; }"));
         ASSERT_EQUALS("; alloc ; dealloc ; }", simplifycode("; alloc ; use ; use ; if use ; dealloc ; }"));
 
         // if, else..

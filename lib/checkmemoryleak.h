@@ -276,6 +276,7 @@ public:
      * - "use" : unknown usage -> bail out checking of this execution path
      * - "&use" : the address of the variable is taken
      * - "::use" : calling member function of class
+     * - "use_" : content of variable is accessed (used to warn access after dealloc)
      */
     Token *getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, unsigned int sz);
 
