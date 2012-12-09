@@ -118,7 +118,8 @@ private:
         _obsoleteC99Functions["alloca"] = "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
                                           "The obsolete function 'alloca' is called. In C99 and later it is recommended to use a variable length array or a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons (http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).";
         _obsoleteC99Functions["asctime"] = "Obsolete function 'asctime' called. It is recommended to use the function 'strftime' instead.";
-        _obsoleteC99Functions["ctime"] = "Obsolete function 'ctime' called. It is recommended to use the function 'strftime' instead.";
+        // ctime is obsolete - it's not threadsafe. but there is no good replacement.
+        //_obsoleteC99Functions["ctime"] = "Obsolete function 'ctime' called. It is recommended to use the function 'strftime' instead.";
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
