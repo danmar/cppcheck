@@ -169,6 +169,7 @@ private:
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
+        TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
         TEST_CASE(simplifyKnownVariablesBailOutFor3);
@@ -2596,6 +2597,20 @@ private:
         const char expected[] = "void f ( struct ABC * list ) {\n"
                                 "struct ABC * last ; last = 0 ;\n"
                                 "nr = ( last = list . prev ) . nr ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutAssign3() { // #4395 - nested assignments
+        const char code[] = "void f() {\n"
+                            "    int *p = 0;\n"
+                            "    a = p = (VdbeCursor*)pMem->z;\n"
+                            "    return p ;\n"
+                            "}\n";
+        const char expected[] = "void f ( ) {\n"
+                                "int * p ; p = 0 ;\n"
+                                "a = p = pMem . z ;\n"
+                                "return p ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
