@@ -90,14 +90,7 @@ def compilePattern(pattern, nr):
     ret = ret + '    return true;\n}\n'
     return ret
 
-def findMatchPattern(line):
-    
-    pos1 = line.find('Token::Match(')
-    if pos1 == -1:
-        pos1 = line.find('Token::simpleMatch(')
-    if pos1 == -1:
-        return None
-
+def parseMatch(line, pos1):
     parlevel = 0
     args = []
     argstart = 0
@@ -144,47 +137,49 @@ def convertFile(srcname, destname):
 
     patternNumber = 1
     for line in srclines:
-        res = findMatchPattern(line)
-        if res == None:
-            code = code + line
-        elif len(res) != 3:
-            code = code + line  # TODO: handle varid
-        else:
-            g0 = res[0]
-            arg1 = res[1]
-            arg2 = res[2]
+        while True:
+            pos1 = line.find('Token::Match(')
+            if pos1 == -1:
+                pos1 = line.find('Token::simpleMatch(')
+            if pos1 == -1:
+                break
 
-            res = re.match(r'\s*"(.+)"\s*$', arg2)
+            res = parseMatch(line, pos1)
             if res == None:
-                code = code + line  # Non-const pattern - bailout
+                break
+            elif len(res) != 3:
+                # TODO: handle varid
+                break
             else:
-                arg2 = res.group(1)
-                pos1 = line.find(g0)
-                code = code + line[:pos1]+'match'+str(patternNumber)+'('+arg1+')'+line[pos1+len(g0):]
-                matchfunctions = matchfunctions + compilePattern(arg2, patternNumber)
-                patternNumber = patternNumber + 1
+                g0 = res[0]
+                arg1 = res[1]
+                arg2 = res[2]
+
+                res = re.match(r'\s*"(.+)"\s*$', arg2)
+                if res == None:
+                    break  # Non-const pattern - bailout
+                else:
+                    arg2 = res.group(1)
+                    line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+')'+line[pos1+len(g0):]
+                    matchfunctions = matchfunctions + compilePattern(arg2, patternNumber)
+                    patternNumber = patternNumber + 1
+
+        code = code + line
 
     fout = open(destname, 'wt')
     fout.write(matchfunctions+code)
     fout.close()
 
 # selftests..
-def testFindMatchPattern(arg1,pattern):
-    res = findMatchPattern(' Token::Match(' + arg1 + ', "' + pattern + '") ')
-    assert(res != None)
-    assert(len(res) == 3)
-    assert(res[0] == 'Token::Match(' + arg1 + ', "' + pattern + '")')
-    assert(res[1] == arg1)
-    assert(res[2] == ' "' + pattern + '"')
-    res = findMatchPattern(' Token::simpleMatch(' + arg1 + ', "' + pattern + '") ')
-    assert(res != None)
-    assert(len(res) == 3)
-    assert(res[0] == 'Token::simpleMatch(' + arg1 + ', "' + pattern + '")')
-    assert(res[1] == arg1)
-    assert(res[2] == ' "' + pattern + '"')
-testFindMatchPattern('tok', ';')
-testFindMatchPattern('tok->next()', ';')
-testFindMatchPattern('Token::findsimplematch(tok,")")', ';')
+def assertEquals(actual,expected):
+    if actual!=expected:
+        print 'Assertion failed:'
+        print actual
+        print expected
+        assert actual == expected
+assertEquals(parseMatch('  Token::Match(tok, ";") ',2), ['Token::Match(tok, ";")','tok',' ";"'])
+assertEquals(parseMatch('  Token::Match(tok,', 2), None) # multiline Token::Match is not supported yet
+assertEquals(parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), ['Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"']) # inner function call
 
 # convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
