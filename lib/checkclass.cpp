@@ -57,6 +57,10 @@ void CheckClass::constructors()
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
+        // skip forward declarations
+        if (scope->isForwardDeclaration())
+            continue;
+
         // don't check uninstantiated template classes
         if (scope->classDef->strAt(-1) == ">")
             continue;
