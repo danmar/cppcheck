@@ -30,7 +30,7 @@
 std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
-        filename = "$(LIBDIR)" + filename.substr(3);
+        filename = "$(SRCDIR)" + filename.substr(3);
     return filename;
 }
 
@@ -233,8 +233,8 @@ int main(int argc, char **argv)
 
     // compiled patterns..
     fout << "# folder where lib/*.cpp files are located\n";
-    makeConditionalVariable(fout, "LIBDIR", "lib");
-    fout << "ifeq ($(LIBDIR),build)\n"
+    makeConditionalVariable(fout, "SRCDIR", "lib");
+    fout << "ifeq ($(SRCDIR),build)\n"
          << "    matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
          << "endif\n\n";
 
