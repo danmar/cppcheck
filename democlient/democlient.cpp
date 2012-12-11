@@ -74,7 +74,7 @@ int main()
         int len = std::min(1 + atoi(lenstr), (int)(sizeof(data) - 2));
         fgets(data, len, stdin);
     } else {
-	const char *s = getenv("QUERY_STRING");
+        const char *s = getenv("QUERY_STRING");
         strncpy(data, s?s:"", sizeof(data)-2);
     }
 

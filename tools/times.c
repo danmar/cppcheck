@@ -2,13 +2,15 @@
 #include <string.h>
 #include <stdlib.h>
 
-char *replace(char *str, char before, char after) {
+char *replace(char *str, char before, char after)
+{
     while (strchr(str,before))
         *strchr(str,before) = after;
     return str;
 }
 
-int main() {
+int main()
+{
     FILE *f = fopen("times.log", "rt");
     if (!f)
         return 1;
