@@ -26,6 +26,9 @@
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 #define THREADING_MODEL_FORK
+#elif defined(_WIN32)
+#define THREADING_MODEL_WIN
+#include <Windows.h>
 #endif
 
 class Settings;
@@ -42,6 +45,7 @@ public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &_errorLogger);
     virtual ~ThreadExecutor();
     unsigned int check();
+
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
@@ -61,7 +65,7 @@ private:
     ErrorLogger &_errorLogger;
     unsigned int _fileCount;
 
-#ifdef THREADING_MODEL_FORK
+#if defined(THREADING_MODEL_FORK)
 
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
@@ -82,6 +86,32 @@ private:
      */
     std::list<std::string> _errorList;
     int _wpipe;
+
+public:
+    /**
+     * @return true if support for threads exist.
+     */
+    static bool isEnabled() {
+        return true;
+    }
+
+#elif defined(THREADING_MODEL_WIN)
+
+private:
+    enum MessageType {REPORT_ERROR, REPORT_INFO};
+
+    std::map<std::string, std::string> _fileContents;
+    std::map<std::string, std::size_t>::const_iterator _itNextFile;
+    CRITICAL_SECTION _fileSync;
+
+    std::list<std::string> _errorList;
+    CRITICAL_SECTION _errorSync;
+
+    CRITICAL_SECTION _reportSync;
+
+    void report(const ErrorLogger::ErrorMessage &msg, MessageType msgType);
+
+    static unsigned __stdcall threadProc(void*);
 
 public:
     /**
