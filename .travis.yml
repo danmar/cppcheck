@@ -7,6 +7,5 @@ script:
   - $CXX -o cppcheck -O2 cli/*.cpp lib/*.cpp -Ilib
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch -q cli gui lib -igui/test
   - mkdir build
-  - python tools/matchcompiler.py
-  - make test LIBDIR=build
+  - make test SRCDIR=build
 
