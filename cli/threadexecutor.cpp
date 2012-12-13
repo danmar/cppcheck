@@ -317,6 +317,14 @@ unsigned int ThreadExecutor::check()
 
     _itNextFile = _files.begin();
 
+    _processedFiles = 0;
+    _processedSize = 0;
+    _totalFiles = _files.size();
+    _totalFileSize = 0;
+    for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+        _totalFileSize += i->second;
+    }
+
     InitializeCriticalSection(&_fileSync);
     InitializeCriticalSection(&_errorSync);
     InitializeCriticalSection(&_reportSync);
@@ -390,7 +398,9 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
             return result;
 
         }
-        const std::string &file = (it++)->first;
+        const std::string &file = it->first;
+        const int fileSize = it->second;
+        it++;
 
         LeaveCriticalSection(&threadExecutor->_fileSync);
 
@@ -402,6 +412,17 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
             result += fileChecker.check(file);
         }
 
+        EnterCriticalSection(&threadExecutor->_fileSync);
+
+        threadExecutor->_processedSize += fileSize;
+        threadExecutor->_processedFiles++;
+        if (!threadExecutor->_settings._errorsOnly) {
+            EnterCriticalSection(&threadExecutor->_reportSync);
+            CppCheckExecutor::reportStatus(threadExecutor->_processedFiles, threadExecutor->_totalFiles, threadExecutor->_processedSize, threadExecutor->_totalFileSize);
+            LeaveCriticalSection(&threadExecutor->_reportSync);
+        }
+
+        LeaveCriticalSection(&threadExecutor->_fileSync);
     };
 
     return result;

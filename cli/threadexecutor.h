@@ -102,6 +102,10 @@ private:
 
     std::map<std::string, std::string> _fileContents;
     std::map<std::string, std::size_t>::const_iterator _itNextFile;
+    unsigned int _processedFiles;
+    unsigned int _totalFiles;
+    size_t       _processedSize;
+    size_t       _totalFileSize;
     CRITICAL_SECTION _fileSync;
 
     std::list<std::string> _errorList;
