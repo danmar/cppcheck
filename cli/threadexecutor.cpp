@@ -43,8 +43,13 @@
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : _files(files), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
-#ifdef THREADING_MODEL_FORK
+#if defined(THREADING_MODEL_FORK)
     _wpipe = 0;
+#elif defined(THREADING_MODEL_WIN)
+    _processedFiles = 0;
+    _totalFiles = 0;
+    _processedSize = 0;
+    _totalFileSize = 0;
 #endif
 }
 
