@@ -115,7 +115,7 @@
 				Name="VCPreLinkEventTool" />
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_CONSOLE,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS" />
+				PreprocessorDefinitions="_CONSOLE,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_CRT_SECURE_NO_WARNINGS,NDEBUG" />
 		</Configuration>
 	</Configurations>
 	<Files>
@@ -224,7 +224,11 @@
 			<File
 				RelativePath="testincompletestatement.cpp" />
 			<File
+				RelativePath="testinternal.cpp" />
+			<File
 				RelativePath="testio.cpp" />
+			<File
+				RelativePath="testleakautovar.cpp" />
 			<File
 				RelativePath="testmathlib.cpp" />
 			<File
@@ -261,6 +265,8 @@
 				RelativePath="testsymboldatabase.cpp" />
 			<File
 				RelativePath="testthreadexecutor.cpp" />
+			<File
+				RelativePath="testtimer.cpp" />
 			<File
 				RelativePath="testtoken.cpp" />
 			<File

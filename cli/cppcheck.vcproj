@@ -279,8 +279,6 @@
 			<File
 				RelativePath="..\lib\preprocessor.h" />
 			<File
-				RelativePath="resource.h" />
-			<File
 				RelativePath="..\lib\settings.h" />
 			<File
 				RelativePath="..\lib\suppressions.h" />
@@ -302,16 +300,18 @@
 				RelativePath="..\lib\tokenize.h" />
 			<File
 				RelativePath="..\lib\tokenlist.h" />
+			<File
+				RelativePath="..\lib\version.h" />
 		</Filter>
 		<Filter
 			Name="Generated Files"
 			Filter="cpp;c;cxx;moc;h;def;odl;idl;res;"
 			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}">
 			<File
-				RelativePath="temp\cppcheck.res" />
+				RelativePath="temp\version.res" />
 		</Filter>
 		<File
-			RelativePath="cppcheck.rc" />
+			RelativePath="version.rc" />
 	</Files>
 	<Globals>
 	</Globals>
