@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
+    <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\pathmatch.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
