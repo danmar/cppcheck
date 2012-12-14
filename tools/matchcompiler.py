@@ -28,13 +28,18 @@ def compileCmd(tok):
         return '(tok->isName() && tok->varId()==0U && tok->str() != "delete")'
     elif tok == '%var%':
         return 'tok->isName()'
+    elif tok == '%varid%':
+        return '(tok->isName() && tok->varId()==varid)'
     elif (len(tok)>2) and (tok[0]=="%"):
         print "unhandled:" + tok
     return '(tok->str()=="'+tok+'")'
 
-def compilePattern(pattern, nr):
+def compilePattern(pattern, nr, varid):
+    arg2 = ''
+    if varid:
+        arg2 = ', const unsigned int varid'
     ret = '// ' + pattern + '\n'
-    ret = ret + 'static bool match' + str(nr) + '(const Token *tok) {\n'
+    ret = ret + 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
     tokens = pattern.split(' ')
     gotoNextToken = ''
     for tok in tokens:
@@ -147,21 +152,26 @@ def convertFile(srcname, destname):
             res = parseMatch(line, pos1)
             if res == None:
                 break
-            elif len(res) != 3:
-                # TODO: handle varid
-                break
             else:
+                assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
+
                 g0 = res[0]
                 arg1 = res[1]
                 arg2 = res[2]
+                arg3 = None
+                if len(res) == 4:
+                    arg3 = res[3]
 
-                res = re.match(r'\s*"(.+)"\s*$', arg2)
+                res = re.match(r'\s*"([^"]*)"\s*$', arg2)
                 if res == None:
                     break  # Non-const pattern - bailout
                 else:
                     arg2 = res.group(1)
-                    line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+')'+line[pos1+len(g0):]
-                    matchfunctions = matchfunctions + compilePattern(arg2, patternNumber)
+                    a3 = ''
+                    if arg3:
+                        a3 = ',' + arg3
+                    line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
+                    matchfunctions = matchfunctions + compilePattern(arg2, patternNumber, arg3)
                     patternNumber = patternNumber + 1
 
         code = code + line
