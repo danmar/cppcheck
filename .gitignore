@@ -12,6 +12,7 @@ tools/errmsg
 tools/extracttests
 
 # VS generated files
+*.aps
 *.idb
 *.ncb
 *.obj
