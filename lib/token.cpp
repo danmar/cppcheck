@@ -46,7 +46,10 @@ Token::Token(Token **t) :
     _isLong(false),
     _isUnused(false),
     _isStandardType(false),
-    _isExpandedMacro(false)
+    _isExpandedMacro(false),
+    _astOperand1(NULL),
+    _astOperand2(NULL),
+    _astParent(NULL)
 {
 }
 
@@ -1045,3 +1048,41 @@ std::string Token::stringifyList(bool varid) const
 {
     return stringifyList(varid, false, true, true, true, 0, 0);
 }
+
+void Token::astOperand1(Token *tok)
+{
+    if (tok->_astParent) {
+        tok->_astParent->_astOperand2 = this;
+        _astParent = tok->_astParent;
+    }
+    tok->_astParent = this;
+    _astOperand1 = tok;
+}
+
+void Token::astOperand2(Token *tok)
+{
+    if (tok->_astParent) {
+        tok->_astParent->_astOperand1 = this;
+        _astParent = tok->_astParent;
+    }
+    _astOperand2 = tok;
+    tok->_astParent = this;
+}
+
+void Token::astHandleParenthesis()
+{
+    Token *innerTop = (_str == "(") ? _next : _previous;
+    while (innerTop->_astParent)
+        innerTop = innerTop->_astParent;
+
+    if (_astParent) {
+        if (_str == "(")
+            _astParent->_astOperand2 = innerTop;
+        else
+            _astParent->_astOperand1 = innerTop;
+        innerTop->_astParent = _astParent;
+    } else {
+        _astParent = innerTop;
+    }
+}
+

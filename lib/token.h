@@ -542,6 +542,38 @@ private:
 
     /** Update internal property cache about isStandardType() */
     void update_property_isStandardType();
+
+    // AST..
+    Token *_astOperand1;
+    Token *_astOperand2;
+    Token *_astParent;
+public:
+    void astOperand1(Token *tok);
+    void astOperand2(Token *tok);
+    void astHandleParenthesis();
+    void astHandleBrackets();
+
+    const Token * astOperand1() const {
+        return _astOperand1;
+    }
+    const Token * astOperand2() const {
+        return _astOperand2;
+    }
+    const Token *astTop() const {
+        const Token *ret = this;
+        while (ret->_astParent)
+            ret = ret->_astParent;
+        return ret;
+    }
+
+    std::string astString() const {
+        std::string ret;
+        if (_astOperand1)
+            ret = _astOperand1->astString();
+        if (_astOperand2)
+            ret += _astOperand2->astString();
+        return ret+_str;
+    }
 };
 
 /// @}

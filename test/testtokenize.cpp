@@ -459,6 +459,12 @@ private:
         TEST_CASE(platformUnix64);
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
+
+        // AST data
+        TEST_CASE(astexpr);
+        TEST_CASE(astpar);
+        TEST_CASE(astbrackets);
+        TEST_CASE(astunaryop);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -7619,6 +7625,43 @@ private:
         ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
     }
 
+
+
+
+
+    std::string testAst(const char code[]) {
+        // tokenize given code..
+        TokenList tokenList(NULL);
+        std::istringstream istr(code);
+        if (!tokenList.createTokens(istr,"test.cpp"))
+            return "ERROR";
+
+        // Create AST..
+        tokenList.createAst();
+
+        return tokenList.front()->astTop()->astString();
+    }
+
+    void astexpr() {
+        ASSERT_EQUALS("123++", testAst("1+2+3"));
+        ASSERT_EQUALS("12*3+", testAst("1*2+3"));
+        ASSERT_EQUALS("123*+", testAst("1+2*3"));
+        ASSERT_EQUALS("12*34*+", testAst("1*2+3*4"));
+    }
+
+    void astpar() {
+        ASSERT_EQUALS("12+3*", testAst("(1+2)*3"));
+        ASSERT_EQUALS("123+*", testAst("1*(2+3)"));
+        ASSERT_EQUALS("123+*4*", testAst("1*(2+3)*4"));
+    }
+
+    void astbrackets() {
+        ASSERT_EQUALS("123+[4+", testAst("1[2+3]+4"));
+    }
+
+    void astunaryop() {
+        ASSERT_EQUALS("12-+", testAst("1+-2"));
+    }
 };
 
 REGISTER_TEST(TestTokenizer)

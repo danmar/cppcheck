@@ -105,6 +105,8 @@ public:
      */
     std::string fileLine(const Token *tok) const;
 
+    void createAst();
+
 private:
     /** Disable copy constructor, no implementation */
     TokenList(const TokenList &);

@@ -339,6 +339,57 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
+void TokenList::createAst()
+{
+    // operators that must be ordered according to C-precedence
+    const char * const operators[] = {
+        " :: ",
+        " [ . ++ -- ",
+        "> ++ -- + - ! ~ * & ",  // prefix unary operators, from right to left
+        " || ",
+        " && ",
+        " | ",
+        " ^ ",
+        " & ",
+        " == != ",
+        " < <= > >= ",
+        " << >> ",
+        " + - ",
+        " * / % "
+    };
+
+    for (unsigned int i = 0; i < sizeof(operators) / sizeof(*operators); ++i) {
+        // TODO: extract operators to std::set - that should be faster
+        if (*operators[i] == '>') {
+            const std::string op(1+operators[i]);
+            Token *tok = _front;
+            while (tok->next())
+                tok = tok->next();
+            for (; tok; tok = tok->previous()) {
+                if ((!tok->previous() || tok->previous()->isOp()) &&
+                    op.find(" "+tok->str()+" ")!=std::string::npos) {
+                    tok->astOperand1(tok->next());
+                }
+            }
+        } else {
+            const std::string op(operators[i]);
+            for (Token *tok = _front; tok; tok = tok->next()) {
+                if (tok->astOperand1()==NULL && op.find(" "+tok->str()+" ")!=std::string::npos) {
+                    tok->astOperand1(tok->previous());
+                    tok->astOperand2(tok->next());
+                }
+            }
+        }
+    }
+
+    // parentheses..
+    for (Token *tok = _front; tok; tok = tok->next()) {
+        if (tok->str() == "(" || tok->str() == ")" || tok->str() == "]") {
+            tok->astHandleParenthesis();
+        }
+    }
+}
+
 const std::string& TokenList::file(const Token *tok) const
 {
     return _files.at(tok->fileIndex());
