@@ -343,6 +343,7 @@ void TokenList::createAst()
 {
     // operators that must be ordered according to C-precedence
     const char * const operators[] = {
+        " , "
         " :: ",
         " [ . ++ -- ",
         "> ++ -- + - ! ~ * & ",  // prefix unary operators, from right to left
@@ -384,6 +385,12 @@ void TokenList::createAst()
                 }
             }
         }
+    }
+
+    // function calls..
+    for (Token *tok = _front; tok; tok = tok->next()) {
+        if (Token::Match(tok, "%var% ("))
+            tok->astFunctionCall();
     }
 
     // parentheses..

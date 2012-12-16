@@ -7668,7 +7668,9 @@ private:
     }
 
     void astfunction() { // function calls
-        TODO_ASSERT_EQUALS("1f+2+", "1f+", testAst("1+f()+2"));
+        ASSERT_EQUALS("1(f+2+", testAst("1+f()+2"));
+        ASSERT_EQUALS("12f+3+", testAst("1+f(2)+3"));
+        ASSERT_EQUALS("123,f+4+", testAst("1+f(2,3)+4"));
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc.. how do we handle them?

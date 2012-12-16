@@ -1080,9 +1080,21 @@ void Token::astOperand2(Token *tok)
     tok->_astParent = this;
 }
 
+void Token::astFunctionCall()
+{
+    _astOperand1 = _next;
+    _next->_astParent = this;
+}
+
 void Token::astHandleParenthesis()
 {
-    Token *innerTop = (_str == "(") ? _next : _previous;
+    Token *innerTop;
+    if (_str != "(")
+        innerTop = _previous;
+    else if (_next && _next->_str == ")")
+        return;
+    else
+        innerTop = _next;
     while (innerTop->_astParent)
         innerTop = innerTop->_astParent;
 
