@@ -1234,8 +1234,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
 
         // throw..
-        else if (Token::Match(tok, "try|throw|catch"))
+        else if (Token::Match(tok, "try|throw|catch")) {
             addtoken(&rettail, tok, tok->str());
+            if (tok->strAt(1) == "(")
+                tok = tok->next()->link();
+        }
 
         // Assignment..
         if (varid) {
@@ -1414,7 +1417,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
     // Insert extra ";"
     for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
         if (!tok2->previous() || Token::Match(tok2->previous(), "[;{}]")) {
-            if (Token::Match(tok2, "assign|callfunc|use assign|callfunc|use")) {
+            if (Token::Match(tok2, "assign|callfunc|use assign|callfunc|use|}")) {
                 tok2->insertToken(";");
             }
         }

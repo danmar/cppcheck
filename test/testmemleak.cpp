@@ -572,6 +572,9 @@ private:
                       getcode("char *s = new char[10];\n"
                               "struct ab { int a, b; };\n"
                               "delete [] s;\n", "s"));
+
+        // #4405 - catch
+        ASSERT_EQUALS(";;catch{}", getcode("char *s; catch(err) { }", "s"));
     }
 
 
@@ -765,6 +768,7 @@ private:
         ASSERT_EQUALS("; callfunc ; }", simplifycode(";callfunc callfunc ; }"));
         ASSERT_EQUALS("dealloc ; alloc ; return ; }", simplifycode("while1 { dealloc ; alloc ; } callfunc ; return ; }"));
         ASSERT_EQUALS("; }", simplifycode("loop callfunc ; }"));
+        ASSERT_EQUALS("alloc ; dealloc ; }", simplifycode("alloc ; if { dealloc ; callfunc } dealloc ; }")); // #4405
 
         // #2900 - don't report false positive
         ASSERT_EQUALS("; alloc ; if { if { dealloc ; callfunc ; } return ; } dealloc ; }",
