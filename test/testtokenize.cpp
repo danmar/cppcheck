@@ -7645,10 +7645,11 @@ private:
     }
 
     void astexpr() { // simple expressions with arithmetical ops
-        ASSERT_EQUALS("123++", testAst("1+2+3"));
+        ASSERT_EQUALS("12+3+", testAst("1+2+3"));
         ASSERT_EQUALS("12*3+", testAst("1*2+3"));
         ASSERT_EQUALS("123*+", testAst("1+2*3"));
         ASSERT_EQUALS("12*34*+", testAst("1*2+3*4"));
+        ASSERT_EQUALS("12*34*5*+", testAst("1*2+3*4*5"));
     }
 
     void astpar() { // parentheses

@@ -343,20 +343,23 @@ void TokenList::createAst()
 {
     // operators that must be ordered according to C-precedence
     const char * const operators[] = {
-        " , "
         " :: ",
-        " [ . ++ -- ",
-        "> ++ -- + - ! ~ * & ",  // prefix unary operators, from right to left
-        " || ",
-        " && ",
-        " | ",
-        " ^ ",
-        " & ",
-        " == != ",
-        " < <= > >= ",
-        " << >> ",
+        " ++ -- . ",
+        "> ++ -- + - ! ~ * & sizeof ",  // prefix unary operators, from right to left
+        " * / % ",
         " + - ",
-        " * / % "
+        " << >> ",
+        " < <= > >= ",
+        " == != ",
+        " & ",
+        " ^ ",
+        " | ",
+        " && ",
+        " || ",
+        " = ? : ",
+        " throw ",
+        " , "
+        " [ "
     };
 
     for (unsigned int i = 0; i < sizeof(operators) / sizeof(*operators); ++i) {
