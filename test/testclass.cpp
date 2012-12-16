@@ -52,6 +52,7 @@ private:
         TEST_CASE(noConstructor5);
         TEST_CASE(noConstructor6); // ticket #4386
         TEST_CASE(noConstructor7); // ticket #4391
+        TEST_CASE(noConstructor8); // ticket #4404
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
@@ -1901,6 +1902,14 @@ private:
         // ticket #4391
         checkNoConstructor("short bar;\n"
                            "class foo;\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor8() {
+        // ticket #4404
+        checkNoConstructor("class LineSegment;\n"
+                           "class PointArray  { };\n"
+                           "void* tech_ = NULL;\n");
         ASSERT_EQUALS("", errout.str());
     }
 

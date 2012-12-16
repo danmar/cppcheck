@@ -1912,8 +1912,14 @@ void Scope::getVariableList()
 
     if (classStart)
         start = classStart->next();
-    else
+
+    // global scope
+    else if (className.empty())
         start = check->_tokenizer->tokens();
+
+    // forward declaration
+    else
+        return;
 
     for (const Token *tok = start; tok; tok = tok->next()) {
         // end of scope?
