@@ -7650,6 +7650,12 @@ private:
         ASSERT_EQUALS("123*+", testAst("1+2*3"));
         ASSERT_EQUALS("12*34*+", testAst("1*2+3*4"));
         ASSERT_EQUALS("12*34*5*+", testAst("1*2+3*4*5"));
+
+        // Various tests of precedence
+        ASSERT_EQUALS("ab::c+", testAst("a::b+c"));
+        ASSERT_EQUALS("abc+=", testAst("a=b+c"));
+        ASSERT_EQUALS("abc=,", testAst("a,b=c"));
+
     }
 
     void astpar() { // parentheses
