@@ -1051,16 +1051,27 @@ std::string Token::stringifyList(bool varid) const
 
 void Token::astOperand1(Token *tok)
 {
+    // unary operand -> goto parent operator
+    while (tok->_astParent && !tok->_astParent->_astOperand2)
+        tok = tok->_astParent;
+
+    // there is a parent.. relink
     if (tok->_astParent) {
         tok->_astParent->_astOperand2 = this;
         _astParent = tok->_astParent;
     }
+
     tok->_astParent = this;
     _astOperand1 = tok;
 }
 
 void Token::astOperand2(Token *tok)
 {
+    // unary operand -> goto parent operator
+    while (tok->_astParent && !tok->_astParent->_astOperand2)
+        tok = tok->_astParent;
+
+    // there is a parent.. relink
     if (tok->_astParent) {
         tok->_astParent->_astOperand1 = this;
         _astParent = tok->_astParent;
@@ -1076,7 +1087,7 @@ void Token::astHandleParenthesis()
         innerTop = innerTop->_astParent;
 
     if (_astParent) {
-        if (_str == "(")
+        if (_str == "(" && _astParent->_astOperand2 != NULL)
             _astParent->_astOperand2 = innerTop;
         else
             _astParent->_astOperand1 = innerTop;

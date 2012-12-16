@@ -465,6 +465,8 @@ private:
         TEST_CASE(astpar);
         TEST_CASE(astbrackets);
         TEST_CASE(astunaryop);
+        TEST_CASE(astfunction);
+        TEST_CASE(asttemplate);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -7642,25 +7644,35 @@ private:
         return tokenList.front()->astTop()->astString();
     }
 
-    void astexpr() {
+    void astexpr() { // simple expressions with arithmetical ops
         ASSERT_EQUALS("123++", testAst("1+2+3"));
         ASSERT_EQUALS("12*3+", testAst("1*2+3"));
         ASSERT_EQUALS("123*+", testAst("1+2*3"));
         ASSERT_EQUALS("12*34*+", testAst("1*2+3*4"));
     }
 
-    void astpar() {
+    void astpar() { // parentheses
         ASSERT_EQUALS("12+3*", testAst("(1+2)*3"));
         ASSERT_EQUALS("123+*", testAst("1*(2+3)"));
         ASSERT_EQUALS("123+*4*", testAst("1*(2+3)*4"));
     }
 
-    void astbrackets() {
+    void astbrackets() { // []
         ASSERT_EQUALS("123+[4+", testAst("1[2+3]+4"));
     }
 
-    void astunaryop() {
-        ASSERT_EQUALS("12-+", testAst("1+-2"));
+    void astunaryop() { // unary operators
+        ASSERT_EQUALS("1a--+", testAst("1 + --a"));
+        ASSERT_EQUALS("1a--+", testAst("1 + a--"));
+        ASSERT_EQUALS("ab+!", testAst("!(a+b)"));
+    }
+
+    void astfunction() { // function calls
+        TODO_ASSERT_EQUALS("1f+2+", "1f+", testAst("1+f()+2"));
+    }
+
+    void asttemplate() { // uninstantiated templates will have <,>,etc.. how do we handle them?
+        //ASSERT_EQUALS("", testAst("a<int>()==3"));
     }
 };
 

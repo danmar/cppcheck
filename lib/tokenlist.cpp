@@ -360,7 +360,7 @@ void TokenList::createAst()
 
     for (unsigned int i = 0; i < sizeof(operators) / sizeof(*operators); ++i) {
         // TODO: extract operators to std::set - that should be faster
-        if (*operators[i] == '>') {
+        if (*operators[i] == '>') {  // Unary operators, parse from right to left
             const std::string op(1+operators[i]);
             Token *tok = _front;
             while (tok->next())
@@ -371,12 +371,16 @@ void TokenList::createAst()
                     tok->astOperand1(tok->next());
                 }
             }
-        } else {
+        } else {  // parse from left to right
             const std::string op(operators[i]);
             for (Token *tok = _front; tok; tok = tok->next()) {
                 if (tok->astOperand1()==NULL && op.find(" "+tok->str()+" ")!=std::string::npos) {
-                    tok->astOperand1(tok->previous());
-                    tok->astOperand2(tok->next());
+                    if (tok->str() != "++" && tok->str() != "--") {
+                        tok->astOperand1(tok->previous());
+                        tok->astOperand2(tok->next());
+                    } else if (tok->previous() && !tok->previous()->isOp()) {
+                        tok->astOperand1(tok->previous());
+                    }
                 }
             }
         }
