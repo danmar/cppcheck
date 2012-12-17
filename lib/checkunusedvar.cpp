@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkunusedvar.h"
 #include "symboldatabase.h"
-
+#include <algorithm>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -746,11 +746,24 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             break;
         }
 
-        if (Token::Match(tok,"%var% (") && Token::simpleMatch(tok->linkAt(1),") {") && !Token::Match(tok, "for|while|if|catch")) {
-            const Token * const endTok = tok->linkAt(1)->linkAt(1);
-            for (const Token *tok2 = endTok->link(); tok2 && tok2 != endTok; tok2 = tok2->next()) {
-                if (tok2->varId())
-                    variables.erase(tok2->varId());
+        // bailout when for_each is used
+        if (Token::Match(tok,"%var% (") && Token::simpleMatch(tok->linkAt(1),") {")) {
+            // does the name contain "for_each" or "foreach"?
+            std::string name(tok->str());
+            std::transform(name.begin(),name.end(),name.begin(),static_cast<int(*)(int)>(std::tolower));
+            if (name.find("foreach") != std::string::npos || name.find("for_each") != std::string::npos) {
+                // bailout all variables in the body that are used more than once.
+                // TODO: there is no need to bailout if variable is only read or only written
+                std::set<unsigned int> varid;
+                const Token * const endTok = tok->linkAt(1)->linkAt(1);
+                for (const Token *tok2 = endTok->link(); tok2 && tok2 != endTok; tok2 = tok2->next()) {
+                    if (tok2->varId()) {
+                        if (varid.find(tok2->varId()) == varid.end())
+                            varid.insert(tok2->varId());
+                        else
+                            variables.erase(tok2->varId());
+                    }
+                }
             }
         }
 
