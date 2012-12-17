@@ -135,6 +135,7 @@ private:
         TEST_CASE(localvarIfElse);      // return tmp1 ? tmp2 : tmp3;
         TEST_CASE(localvarOpAssign);    // a |= b;
         TEST_CASE(localvarFor);         // for ( ; var; )
+        TEST_CASE(localvarForEach);     // BOOST_FOREACH, hlist_for_each, etc
         TEST_CASE(localvarShift1);      // 1 >> var
         TEST_CASE(localvarShift2);      // x = x >> 1
         TEST_CASE(localvarShift3);      // x << y
@@ -2945,6 +2946,18 @@ private:
                               "    for (int i = 0; (pci = cdi_list_get(pciDevices, i)); i++)\n"
                               "    {}\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarForEach() {
+        functionVariableUsage("void foo() {\n"
+                              "    int i = -1;\n"
+                              "    int a[] = {1,2,3};\n"
+                              "    FOREACH_X (int x, a) {\n"
+                              "        if (i==x) return x;\n"
+                              "        i = x;\n"
+                              "    }\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

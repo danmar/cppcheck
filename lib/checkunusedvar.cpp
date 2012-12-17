@@ -746,6 +746,14 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             break;
         }
 
+        if (Token::Match(tok,"%var% (") && Token::simpleMatch(tok->linkAt(1),") {") && !Token::Match(tok, "for|while|if|catch")) {
+            const Token * const endTok = tok->linkAt(1)->linkAt(1);
+            for (const Token *tok2 = endTok->link(); tok2 && tok2 != endTok; tok2 = tok2->next()) {
+                if (tok2->varId())
+                    variables.erase(tok2->varId());
+            }
+        }
+
         if (Token::Match(tok->previous(), "[;{}]")) {
             for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->varId()) {
