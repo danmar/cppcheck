@@ -3005,6 +3005,13 @@ private:
                               "    ints << 1;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n" // #4320
+                              "    int x;\n"
+                              "    x << 1;\n"
+                              "    return x;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarCast() {

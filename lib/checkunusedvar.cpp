@@ -954,6 +954,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
+        else if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %var% <<")) {
+            variables.erase(tok->next()->varId());
+        }
+
         else if (Token::Match(tok, "& %var%")) {
             if (tok->previous()->isName() || tok->previous()->isNumber()) { // bitop
                 variables.read(tok->next()->varId(), tok);

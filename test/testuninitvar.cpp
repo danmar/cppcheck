@@ -377,6 +377,14 @@ private:
                            "}\n",
                            "test.c");
             ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: ret\n", errout.str());
+
+            // #4320
+            checkUninitVar("void f() {\n"
+                           "    int a;\n"
+                           "    a << 1;\n"
+                           "    return a;\n"
+                           "}\n");
+            ASSERT_EQUALS("", errout.str());
         }
 
         checkUninitVar("void a() {\n"   // asm
@@ -2341,6 +2349,13 @@ private:
                         "    char a = c << 2;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", errout.str());
+
+        // #4320
+        checkUninitVar2("void f() {\n"
+                        "    int a;\n"
+                        "    a << 1;\n"  // there might be a operator<<
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Handling of unknown types. Assume they are POD in C.

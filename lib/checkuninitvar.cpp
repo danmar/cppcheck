@@ -574,7 +574,8 @@ private:
                     return tok.tokAt(3);
             }
 
-            else if ((!isC && Token::Match(tok.previous(), "<<|>>")) || Token::simpleMatch(tok.next(), "=")) {
+            else if ((!isC && (Token::Match(tok.previous(), "<<|>>") || Token::Match(tok.previous(), "[;{}] %var% <<"))) ||
+                     Token::simpleMatch(tok.next(), "=")) {
                 // TODO: Don't bail out for "<<" and ">>" if these are
                 // just computations
                 ExecutionPath::bailOutVar(checks, tok.varId());
@@ -1328,12 +1329,17 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
     }
 
     if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
+        // Is this calculation done in rhs?
+        const Token *tok = vartok;
+        while (tok && Token::Match(tok, "%var%|.|::"))
+            tok = tok->previous();
+        if (Token::Match(tok, "[;{}]"))
+            return false;
+
         // Is variable a known POD type then this is a variable usage,
         // otherwise we assume it's not.
         const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(vartok->varId());
-        if (var && var->typeStartToken()->isStandardType())
-            return true;
-        return false;
+        return (var && var->typeStartToken()->isStandardType());
     }
 
     if (Token::Match(vartok->next(), "++|--|%op%"))
