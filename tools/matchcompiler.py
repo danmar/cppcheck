@@ -40,6 +40,11 @@ def compilePattern(pattern, nr, varid):
         arg2 = ', const unsigned int varid'
     ret = '// ' + pattern + '\n'
     ret = ret + 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
+    if varid:
+        # if varid is provided, check that it's non-zero
+        ret = ret + '    if (varid==0U)\n'
+        ret = ret + '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");\n'
+
     tokens = pattern.split(' ')
     gotoNextToken = ''
     for tok in tokens:
@@ -136,6 +141,7 @@ def convertFile(srcname, destname):
 
     matchfunctions = ''
     matchfunctions = matchfunctions + '#include "token.h"\n'
+    matchfunctions = matchfunctions + '#include "errorlogger.h"\n'
     matchfunctions = matchfunctions + '#include <string>\n'
     matchfunctions = matchfunctions + '#include <cstring>\n'
     code = ''
