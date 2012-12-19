@@ -21,6 +21,7 @@
 #include "checkunusedvar.h"
 #include "symboldatabase.h"
 #include <algorithm>
+#include <cctype>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
