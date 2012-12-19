@@ -6,34 +6,34 @@
     <message>
         <location filename="about.ui" line="14"/>
         <source>About Cppcheck</source>
-        <translation>关于 cppcheck</translation>
+        <translation>关于 ppcheck</translation>
     </message>
     <message>
         <location filename="about.ui" line="64"/>
         <source>Version %1</source>
-        <translation>%1 版本</translation>
+        <translation>版本 %1</translation>
     </message>
     <message>
         <location filename="about.ui" line="71"/>
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
-        <translation>Cppcheck - 一个 C/C++ 静态代码分析工具.</translation>
+        <translation>Cppcheck - C/C++ 静态代码分析工具。</translation>
     </message>
     <message utf8="true">
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
         <oldsource>Copyright © 2007-2011 Daniel Marjamäki and cppcheck team.</oldsource>
-        <translation>版权所有 © 2007-2012 Daniel Marjamäki 与 cppcheck 团队.</translation>
+        <translation>版权所有 © 2007-2012 Daniel Marjamäki 与 cppcheck 团队。</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
-        <translation type="unfinished"></translation>
+        <translation>该程序在 GNU 通用公共授权版本 3 的条款下发布</translation>
     </message>
     <message>
         <location filename="about.ui" line="102"/>
         <source>Visit Cppcheck homepage at %1</source>
-        <translation>访问 Cppcheck 主页于 %1</translation>
+        <translation>访问 Cppcheck 主页：%1</translation>
     </message>
 </context>
 <context>
@@ -56,7 +56,17 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">在这里，你添加一个应用程序，用于打开错误文件。为此应用程序指定一个名称、可执行文件和命令行参数。
+
+The following texts in parameters are replaced with appropriate values when application is executed:
+(file) - Filename containing the error
+(line) - Line number containing the error
+(message) - Error message
+(severity) - Error severity
+
+Example opening a file with Kate and make Kate scroll to the correct line:
+Executable: kate
+Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <location filename="application.ui" line="76"/>
@@ -81,7 +91,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="applicationdialog.cpp" line="58"/>
         <source>Executable files (*.exe);;All files(*.*)</source>
-        <translation>可执行文件 (*.exe);;所有文件 (*.*)</translation>
+        <translation>可执行文件(*.exe);;所有文件(*.*)</translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="61"/>
@@ -187,7 +197,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="85"/>
         <source>&amp;View</source>
-        <translation>视图(&amp;V)</translation>
+        <translation>查看(&amp;V)</translation>
     </message>
     <message>
         <location filename="main.ui" line="89"/>
@@ -459,7 +469,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="514"/>
         <source>Show &amp;hidden</source>
-        <translation>显示隐藏(&amp;H)</translation>
+        <translation>显示隐藏项(&amp;H)</translation>
     </message>
     <message>
         <location filename="main.ui" line="355"/>
@@ -556,7 +566,9 @@ Parameters: -l(line) (file)</source>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
-        <translation type="unfinished"></translation>
+        <translation>加载编辑器应用程序设置出错。
+
+这可能是因为 Cppcheck 不同版本间的设置有所不同。请检查（并修复）编辑器应用程序设置，否则编辑器程序可能不会正确启动。</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="308"/>
@@ -856,7 +868,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfile.ui" line="49"/>
         <source>Root:</source>
-        <translation type="unfinished"></translation>
+        <translation>　根:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="68"/>
@@ -988,7 +1000,7 @@ Do you want to remove the file from the recently used projects -list?</source>
         <location filename="resultstree.cpp" line="205"/>
         <location filename="resultstree.cpp" line="724"/>
         <source>[Inconclusive]</source>
-        <translation>[未知错误]</translation>
+        <translation>[不确定的]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="273"/>
@@ -1209,7 +1221,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="14"/>
         <source>Preferences</source>
-        <translation>属性</translation>
+        <translation>首选项</translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>
@@ -1230,12 +1242,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="41"/>
         <source>Number of threads: </source>
-        <translation>线程个数:</translation>
+        <translation>线程个数：</translation>
     </message>
     <message>
         <location filename="settings.ui" line="85"/>
         <source>Ideal count:</source>
-        <translation type="unfinished"></translation>
+        <translation>理想个数：</translation>
     </message>
     <message>
         <location filename="settings.ui" line="114"/>
@@ -1251,17 +1263,17 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="128"/>
         <source>Show &quot;No errors found&quot; message when no errors found</source>
-        <translation>未找到错误时，显示“未发现错误”消息</translation>
+        <translation>当未找到错误，显示“未发现错误”消息</translation>
     </message>
     <message>
         <location filename="settings.ui" line="135"/>
         <source>Display error Id in column &quot;Id&quot;</source>
-        <translation type="unfinished">在列“Id”中显示错误 Id</translation>
+        <translation>在列“Id”中显示错误 Id</translation>
     </message>
     <message>
         <location filename="settings.ui" line="142"/>
         <source>Enable inline suppressions</source>
-        <translation type="unfinished"></translation>
+        <translation>启动内联方案</translation>
     </message>
     <message>
         <location filename="settings.ui" line="163"/>
@@ -1322,7 +1334,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="335"/>
         <source>&amp;Show inconclusive errors</source>
-        <translation>显示未知错误(&amp;S)</translation>
+        <translation>显示不确定的错误(&amp;S)</translation>
     </message>
     <message>
         <location filename="settings.ui" line="342"/>
@@ -1442,7 +1454,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="326"/>
         <source>Information messages:</source>
-        <translation type="unfinished">信息消息:</translation>
+        <translation>信息:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="364"/>
@@ -1562,7 +1574,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="111"/>
         <source>Information messages</source>
-        <translation>信息消息</translation>
+        <translation>信息</translation>
     </message>
 </context>
 <context>
@@ -1578,7 +1590,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="txtreport.cpp" line="73"/>
         <source>inconclusive</source>
-        <translation>未知错误</translation>
+        <translation>不确定的</translation>
     </message>
 </context>
 </TS>
