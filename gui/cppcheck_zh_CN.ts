@@ -86,7 +86,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="applicationdialog.cpp" line="61"/>
         <source>Select viewer application</source>
-        <translation type="unfinished"></translation>
+        <translation>选择查看应用程序</translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="75"/>
@@ -187,7 +187,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="85"/>
         <source>&amp;View</source>
-        <translation>查看(&amp;V)</translation>
+        <translation>视图(&amp;V)</translation>
     </message>
     <message>
         <location filename="main.ui" line="89"/>
@@ -310,69 +310,69 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="305"/>
         <source>&amp;Clear results</source>
-        <translation type="unfinished"></translation>
+        <translation>清空结果(&amp;C)</translation>
     </message>
     <message>
         <location filename="main.ui" line="314"/>
         <source>&amp;Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>首选项(&amp;P)</translation>
     </message>
     <message>
         <location filename="main.ui" line="326"/>
         <source>Style warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>风格警告</translation>
     </message>
     <message>
         <location filename="main.ui" line="329"/>
         <location filename="main.ui" line="332"/>
         <source>Show style warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>显示风格警告</translation>
     </message>
     <message>
         <location filename="main.ui" line="344"/>
         <source>Errors</source>
-        <translation type="unfinished"></translation>
+        <translation>错误</translation>
     </message>
     <message>
         <location filename="main.ui" line="347"/>
         <location filename="main.ui" line="350"/>
         <source>Show errors</source>
-        <translation type="unfinished"></translation>
+        <translation>显示错误</translation>
     </message>
     <message>
         <location filename="main.ui" line="432"/>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="unfinished"></translation>
+        <translation>显示便条(&amp;C)...</translation>
     </message>
     <message>
         <location filename="main.ui" line="526"/>
         <source>Information</source>
-        <translation type="unfinished"></translation>
+        <translation>信息</translation>
     </message>
     <message>
         <location filename="main.ui" line="529"/>
         <source>Show information messages</source>
-        <translation type="unfinished"></translation>
+        <translation>显示信息消息</translation>
     </message>
     <message>
         <location filename="main.ui" line="541"/>
         <source>Portability</source>
-        <translation type="unfinished"></translation>
+        <translation>移植可能性</translation>
     </message>
     <message>
         <location filename="main.ui" line="544"/>
         <source>Show portability warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>显示可移植性警告</translation>
     </message>
     <message>
         <location filename="main.ui" line="552"/>
         <source>&amp;Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>滤器(&amp;F)</translation>
     </message>
     <message>
         <location filename="main.ui" line="555"/>
         <source>Filter results</source>
-        <translation type="unfinished"></translation>
+        <translation>过滤结果</translation>
     </message>
     <message>
         <location filename="main.ui" line="571"/>
@@ -402,7 +402,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="611"/>
         <source>Platforms</source>
-        <translation type="unfinished"></translation>
+        <translation>平台</translation>
     </message>
     <message>
         <location filename="main.ui" line="622"/>
@@ -422,12 +422,12 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="453"/>
         <source>C&amp;lose Project File</source>
-        <translation type="unfinished"></translation>
+        <translation>关闭项目文件(&amp;L)</translation>
     </message>
     <message>
         <location filename="main.ui" line="461"/>
         <source>&amp;Edit Project File...</source>
-        <translation type="unfinished"></translation>
+        <translation>编辑项目文件(&amp;E)...</translation>
     </message>
     <message>
         <location filename="main.ui" line="470"/>
@@ -443,68 +443,68 @@ Parameters: -l(line) (file)</source>
         <location filename="main.ui" line="485"/>
         <location filename="main.ui" line="488"/>
         <source>Show warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>显示警告</translation>
     </message>
     <message>
         <location filename="main.ui" line="500"/>
         <source>Performance warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>性能警告</translation>
     </message>
     <message>
         <location filename="main.ui" line="503"/>
         <location filename="main.ui" line="506"/>
         <source>Show performance warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>显示性能警告</translation>
     </message>
     <message>
         <location filename="main.ui" line="514"/>
         <source>Show &amp;hidden</source>
-        <translation type="unfinished"></translation>
+        <translation>显示隐藏(&amp;H)</translation>
     </message>
     <message>
         <location filename="main.ui" line="355"/>
         <source>&amp;Check all</source>
-        <translation type="unfinished"></translation>
+        <translation>全部选中(&amp;C)</translation>
     </message>
     <message>
         <location filename="main.ui" line="192"/>
         <source>Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>滤器</translation>
     </message>
     <message>
         <location filename="main.ui" line="360"/>
         <source>&amp;Uncheck all</source>
-        <translation type="unfinished"></translation>
+        <translation>全部取消选中(&amp;U)</translation>
     </message>
     <message>
         <location filename="main.ui" line="365"/>
         <source>Collapse &amp;all</source>
-        <translation type="unfinished"></translation>
+        <translation>全部折叠(&amp;A)</translation>
     </message>
     <message>
         <location filename="main.ui" line="370"/>
         <source>&amp;Expand all</source>
-        <translation type="unfinished"></translation>
+        <translation>全部展开(&amp;E)</translation>
     </message>
     <message>
         <location filename="main.ui" line="378"/>
         <source>&amp;Standard</source>
-        <translation type="unfinished"></translation>
+        <translation>标准(&amp;S)</translation>
     </message>
     <message>
         <location filename="main.ui" line="381"/>
         <source>Standard items</source>
-        <translation type="unfinished"></translation>
+        <translation>标准项</translation>
     </message>
     <message>
         <location filename="main.ui" line="386"/>
         <source>&amp;Contents</source>
-        <translation type="unfinished"></translation>
+        <translation>内容(&amp;C)</translation>
     </message>
     <message>
         <location filename="main.ui" line="389"/>
         <source>Open the help contents</source>
-        <translation type="unfinished"></translation>
+        <translation>打开帮助内容</translation>
     </message>
     <message>
         <location filename="main.ui" line="392"/>
@@ -514,42 +514,42 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="397"/>
         <source>Toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>工具栏</translation>
     </message>
     <message>
         <location filename="main.ui" line="405"/>
         <source>&amp;Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>分类(&amp;C)</translation>
     </message>
     <message>
         <location filename="main.ui" line="408"/>
         <source>Error categories</source>
-        <translation type="unfinished"></translation>
+        <translation>错误分类</translation>
     </message>
     <message>
         <location filename="main.ui" line="413"/>
         <source>&amp;Open XML...</source>
-        <translation type="unfinished"></translation>
+        <translation>打开 XML (&amp;O)...</translation>
     </message>
     <message>
         <location filename="main.ui" line="422"/>
         <source>Open P&amp;roject File...</source>
-        <translation type="unfinished"></translation>
+        <translation>打开项目文件(&amp;R)...</translation>
     </message>
     <message>
         <location filename="main.ui" line="437"/>
         <source>&amp;New Project File...</source>
-        <translation type="unfinished"></translation>
+        <translation>新建项目文件(&amp;N)...</translation>
     </message>
     <message>
         <location filename="main.ui" line="442"/>
         <source>&amp;Log View</source>
-        <translation type="unfinished"></translation>
+        <translation>日志视图(&amp;L)</translation>
     </message>
     <message>
         <location filename="main.ui" line="445"/>
         <source>Log View</source>
-        <translation type="unfinished"></translation>
+        <translation>日志视图</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="244"/>
@@ -561,65 +561,73 @@ This is probably because the settings were changed between the Cppcheck versions
     <message>
         <location filename="mainwindow.cpp" line="308"/>
         <source>No suitable files found to check!</source>
-        <translation type="unfinished"></translation>
+        <translation>未发现适合检查的文件！</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="364"/>
         <source>You must close the project file before selecting new files or directories!</source>
-        <translation type="unfinished"></translation>
+        <translation>在选择新的文件或目录之前，你必须先关闭此项目文件！</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="395"/>
         <source>Select directory to check</source>
-        <translation type="unfinished"></translation>
+        <translation>选择目录来检查</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="73"/>
         <source>Quick Filter:</source>
-        <translation type="unfinished"></translation>
+        <translation>快速滤器:</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="431"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
-        <translation type="unfinished"></translation>
+        <translation>找到项目文件: %1
+
+你是否想加载该项目文件？</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="453"/>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
-        <translation type="unfinished"></translation>
+        <translation>在目录中找到项目文件。
+
+你是否想在不使用这些项目文件的情况下，执行检查？</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="645"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>当前结果将被清空。
+
+打开一个新的 XML 文件将会清空当前结果。你要继续吗？</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="660"/>
         <source>XML files (*.xml)</source>
-        <translation type="unfinished"></translation>
+        <translation>XML 文件(*.xml)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="662"/>
         <source>Open the report file</source>
-        <translation type="unfinished"></translation>
+        <translation>打开报告文件</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="731"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?.</source>
-        <translation type="unfinished"></translation>
+        <translation>检查正在执行。
+
+你是否需要停止检查并退出 Cppcheck？</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="777"/>
         <source>License</source>
-        <translation type="unfinished"></translation>
+        <translation>许可证</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="784"/>
@@ -630,32 +638,32 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <location filename="mainwindow.cpp" line="792"/>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>XML 文件版本 2 (*.xml);;XML 文件版本 1 (*.xml);; 文本文件(*.txt);; CSV 文件(*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="794"/>
         <source>Save the report file</source>
-        <translation type="unfinished"></translation>
+        <translation>保存报告文件</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="801"/>
         <source>XML files version 1 (*.xml)</source>
-        <translation type="unfinished"></translation>
+        <translation>XML 文件版本 1 (*.xml)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="805"/>
         <source>XML files version 2 (*.xml)</source>
-        <translation type="unfinished"></translation>
+        <translation>XML 文件版本 2 (*.xml)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="809"/>
         <source>Text files (*.txt)</source>
-        <translation type="unfinished"></translation>
+        <translation>文本文件(*.txt)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="813"/>
         <source>CSV files (*.csv)</source>
-        <translation type="unfinished"></translation>
+        <translation>CSV 文件(*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="856"/>
@@ -669,34 +677,38 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 %1
 
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
-        <translation type="unfinished"></translation>
+        <translation>更改用户界面语言失败：
+
+%1
+
+用户界面语言已被重置为英语。打开“首选项”对话框，选择任何可用的语言。</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="912"/>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>项目文件(*.cppcheck);;所有文件(*.*)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="914"/>
         <source>Select Project File</source>
-        <translation type="unfinished"></translation>
+        <translation>选择项目文件</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="942"/>
         <location filename="mainwindow.cpp" line="1007"/>
         <source>Project:</source>
-        <translation type="unfinished"></translation>
+        <translation>项目:</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="997"/>
         <source>Select Project Filename</source>
-        <translation type="unfinished"></translation>
+        <translation>选择项目文件名</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1032"/>
         <source>No project file loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>项目文件未加载</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1107"/>
@@ -707,7 +719,13 @@ The user interface language has been reset to English. Open the Preferences-dial
  could not be found!
 
 Do you want to remove the file from the recently used projects -list?</source>
-        <translation type="unfinished"></translation>
+        <translation>项目文件
+
+%1
+
+未找到！
+
+你要从最近使用的项目列表中删除此文件吗？</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="33"/>
@@ -717,12 +735,12 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="translationhandler.cpp" line="32"/>
         <source>Dutch</source>
-        <translation type="unfinished"></translation>
+        <translation>荷兰语</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="34"/>
         <source>Finnish</source>
-        <translation type="unfinished"></translation>
+        <translation>芬兰语</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="35"/>
@@ -732,22 +750,22 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="translationhandler.cpp" line="37"/>
         <source>Italian</source>
-        <translation type="unfinished"></translation>
+        <translation>意大利语</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="39"/>
         <source>Korean</source>
-        <translation type="unfinished"></translation>
+        <translation>韩文</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="42"/>
         <source>Spanish</source>
-        <translation type="unfinished"></translation>
+        <translation>西班牙语</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="43"/>
         <source>Swedish</source>
-        <translation type="unfinished"></translation>
+        <translation>瑞典语</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="36"/>
@@ -757,7 +775,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="translationhandler.cpp" line="40"/>
         <source>Russian</source>
-        <translation type="unfinished"></translation>
+        <translation>俄语</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="38"/>
@@ -768,7 +786,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="translationhandler.cpp" line="41"/>
         <source>Serbian</source>
-        <translation type="unfinished"></translation>
+        <translation>塞尔维亚语</translation>
     </message>
 </context>
 <context>
@@ -870,12 +888,12 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfile.ui" line="134"/>
         <source>Includes</source>
-        <translation type="unfinished"></translation>
+        <translation>包含</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="140"/>
         <source>Include directories:</source>
-        <translation type="unfinished"></translation>
+        <translation>Include 目录：</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="192"/>
@@ -890,7 +908,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfile.ui" line="211"/>
         <source>Exclude</source>
-        <translation type="unfinished"></translation>
+        <translation>排除</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="32"/>
@@ -908,17 +926,17 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfiledialog.cpp" line="209"/>
         <source>Select include directory</source>
-        <translation type="unfinished"></translation>
+        <translation>选择 Include 目录</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="232"/>
         <source>Select a directory to check</source>
-        <translation type="unfinished"></translation>
+        <translation>选择一个检查目录</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="272"/>
         <source>Select directory to ignore</source>
-        <translation type="unfinished"></translation>
+        <translation>选择忽略的目录</translation>
     </message>
 </context>
 <context>
@@ -949,7 +967,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
         <source>Severity</source>
-        <translation type="unfinished"></translation>
+        <translation>严重</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
@@ -959,48 +977,48 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
         <source>Summary</source>
-        <translation type="unfinished"></translation>
+        <translation>概要</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="102"/>
         <source>Undefined file</source>
-        <translation type="unfinished"></translation>
+        <translation>未定义文件 </translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="205"/>
         <location filename="resultstree.cpp" line="724"/>
         <source>[Inconclusive]</source>
-        <translation type="unfinished"></translation>
+        <translation>[未知错误]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="273"/>
         <source>debug</source>
-        <translation type="unfinished"></translation>
+        <translation>调试</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="535"/>
         <source>Copy filename</source>
-        <translation type="unfinished"></translation>
+        <translation>复制文件名</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="536"/>
         <source>Copy full path</source>
-        <translation type="unfinished"></translation>
+        <translation>复制完整路径</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="537"/>
         <source>Copy message</source>
-        <translation type="unfinished"></translation>
+        <translation>复制消息</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="538"/>
         <source>Copy message id</source>
-        <translation type="unfinished"></translation>
+        <translation>复制消息 ID</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="539"/>
         <source>Hide</source>
-        <translation type="unfinished"></translation>
+        <translation>隐藏</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="585"/>
@@ -1014,63 +1032,71 @@ Do you want to remove the file from the recently used projects -list?</source>
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
         <oldsource>Configure the text file viewer program in Cppcheck preferences/Applications.</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>编辑应用程序未配置。
+
+在“首先项 / 应用程序”中为 Cppcheck 配置编辑应用程序。</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="600"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
-        <translation type="unfinished"></translation>
+        <translation>未选中默认编辑应用程序。
+
+请在“首先项 / 应用程序”中选择默认应用程序。</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="629"/>
         <source>Could not find the file!</source>
-        <translation type="unfinished"></translation>
+        <translation>找不到文件！</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="675"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
-        <translation type="unfinished"></translation>
+        <translation>无法启动 %1
+
+请检查此应用程序的路径与参数是否正确。</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="689"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="unfinished"></translation>
+        <translation>无法找到文件：
+%1
+请选择文件所在目录。</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="696"/>
         <source>Select Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>选择目录</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="255"/>
         <source>style</source>
-        <translation type="unfinished"></translation>
+        <translation>风格</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="258"/>
         <source>error</source>
-        <translation type="unfinished"></translation>
+        <translation>错误</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="261"/>
         <source>warning</source>
-        <translation type="unfinished"></translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="264"/>
         <source>performance</source>
-        <translation type="unfinished"></translation>
+        <translation>性能</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="267"/>
@@ -1080,7 +1106,7 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultstree.cpp" line="270"/>
         <source>information</source>
-        <translation type="unfinished"></translation>
+        <translation>信息</translation>
     </message>
 </context>
 <context>
@@ -1088,23 +1114,23 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultsview.ui" line="26"/>
         <source>Results</source>
-        <translation type="unfinished"></translation>
+        <translation>结果</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="139"/>
         <source>No errors found, nothing to save.</source>
-        <translation type="unfinished"></translation>
+        <translation>未发现错误，没有结果可保存。</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="166"/>
         <location filename="resultsview.cpp" line="174"/>
         <source>Failed to save the report.</source>
-        <translation type="unfinished"></translation>
+        <translation>保存报告失败。</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="200"/>
         <source>%p% (%1 of %2 files checked)</source>
-        <translation type="unfinished"></translation>
+        <translation>%p%(%1 of %2 文件已检查)</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="213"/>
@@ -1115,35 +1141,36 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultsview.cpp" line="214"/>
         <source>No errors found.</source>
-        <translation type="unfinished"></translation>
+        <translation>未发现错误。</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="221"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
-        <translation type="unfinished"></translation>
+        <translation>发现错误，但它们被设为隐藏。
+打开“查看”菜单，切换需要显示的错误。</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="267"/>
         <location filename="resultsview.cpp" line="285"/>
         <location filename="resultsview.cpp" line="293"/>
         <source>Failed to read the report.</source>
-        <translation type="unfinished"></translation>
+        <translation>读取报告失败。</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="330"/>
         <source>Summary</source>
-        <translation type="unfinished"></translation>
+        <translation>概要</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="331"/>
         <source>Message</source>
-        <translation type="unfinished"></translation>
+        <translation>消息</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="333"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
 </context>
 <context>
@@ -1151,12 +1178,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="14"/>
         <source>Scratchpad</source>
-        <translation type="unfinished"></translation>
+        <translation>便条</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="48"/>
         <source>filename</source>
-        <translation type="unfinished"></translation>
+        <translation>文件名</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="55"/>
@@ -1169,12 +1196,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="selectfilesdialog.ui" line="14"/>
         <source>Select files to check</source>
-        <translation type="unfinished">选择要检查的文件</translation>
+        <translation>选择要检查的文件</translation>
     </message>
     <message>
         <location filename="selectfilesdialog.cpp" line="230"/>
         <source>Check</source>
-        <translation type="unfinished">检查</translation>
+        <translation>检查</translation>
     </message>
 </context>
 <context>
@@ -1182,7 +1209,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="14"/>
         <source>Preferences</source>
-        <translation>首选项</translation>
+        <translation>属性</translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>
