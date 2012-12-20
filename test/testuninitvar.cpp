@@ -57,6 +57,7 @@ private:
         TEST_CASE(uninitvar4);          // #3869 (reference)
         TEST_CASE(uninitvar5);          // #3861
         TEST_CASE(uninitvar6);          // handling unknown types in C and C++ files
+        TEST_CASE(uninitvar2_func);     // function calls
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -2373,6 +2374,45 @@ private:
         checkUninitVar2(code, "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: a\n", errout.str());
     }
+
+    // Handling of unknown types. Assume they are POD in C.
+    void uninitvar2_func() {
+        checkUninitVar2("void a(char c);\n"
+                        "void b() {\n"
+                        "    char c;\n"
+                        "    a(c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar2("void a(const char *s);\n"
+                        "void b() {\n"
+                        "    char c;\n"
+                        "    a(&c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar2("void a(char *s);\n"
+                        "void b() {\n"
+                        "    char c;\n"
+                        "    a(&c);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void a(const ABC *abc);\n"
+                        "void b() {\n"
+                        "    ABC abc;\n"
+                        "    a(&abc);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void a(const ABC *abc);\n"
+                        "void b() {\n"
+                        "    ABC abc;\n"
+                        "    a(&abc);\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: abc\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestUninitVar)

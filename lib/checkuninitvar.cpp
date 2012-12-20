@@ -1080,7 +1080,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
         while (tok && tok->str() != ";")
             tok = tok->next();
         if (stdtype || i->isPointer())
-            checkScopeForVariable(tok, *i, NULL, NULL);
+            checkScopeForVariable(scope, tok, *i, NULL, NULL);
     }
 
     for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
@@ -1089,7 +1089,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
     }
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn)
+bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn)
 {
     const bool suppressErrors(possibleInit && *possibleInit);
 
@@ -1118,7 +1118,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
         // Unconditional inner scope..
         if (tok->str() == "{" && Token::Match(tok->previous(), "[;{}]")) {
-            if (checkScopeForVariable(tok->next(), var, possibleInit, NULL))
+            if (checkScopeForVariable(scope, tok->next(), var, possibleInit, NULL))
                 return true;
             tok = tok->link();
             continue;
@@ -1131,7 +1131,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         // Inner scope..
         if (Token::simpleMatch(tok, "if (")) {
             // initialization / usage in condition..
-            if (checkIfForWhileHead(tok->next(), var, suppressErrors, bool(number_of_if == 0)))
+            if (checkIfForWhileHead(scope, tok->next(), var, suppressErrors, bool(number_of_if == 0)))
                 return true;
 
             // checking if a not-zero variable is zero => bail out
@@ -1146,7 +1146,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (tok->str() == "{") {
                 bool possibleInitIf(number_of_if > 0 || suppressErrors);
                 bool noreturnIf = false;
-                const bool initif = checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf);
+                const bool initif = checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf);
 
                 // goto the }
                 tok = tok->link();
@@ -1163,7 +1163,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
                     bool possibleInitElse(number_of_if > 0 || suppressErrors);
                     bool noreturnElse = false;
-                    const bool initelse = checkScopeForVariable(tok->next(), var, &possibleInitElse, NULL);
+                    const bool initelse = checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, NULL);
 
                     // goto the }
                     tok = tok->link();
@@ -1201,7 +1201,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         // for/while..
         if (Token::Match(tok, "for|while (")) {
             // is variable initialized in for-head (don't report errors yet)?
-            if (checkIfForWhileHead(tok->next(), var, true, false))
+            if (checkIfForWhileHead(scope, tok->next(), var, true, false))
                 return true;
 
             // goto the {
@@ -1209,7 +1209,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
             if (tok2 && tok2->str() == "{") {
                 bool possibleinit = true;
-                bool init = checkScopeForVariable(tok2->next(), var, &possibleinit, NULL);
+                bool init = checkScopeForVariable(scope, tok2->next(), var, &possibleinit, NULL);
 
                 // variable is initialized in the loop..
                 if (possibleinit || init)
@@ -1217,7 +1217,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
                 // is variable used in for-head?
                 if (!suppressErrors) {
-                    checkIfForWhileHead(tok->next(), var, false, bool(number_of_if == 0));
+                    checkIfForWhileHead(scope, tok->next(), var, false, bool(number_of_if == 0));
                 }
 
                 // goto "}"
@@ -1246,7 +1246,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         // variable is seen..
         if (tok->varId() == var.varId()) {
             // Use variable
-            if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
+            if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
                 uninitvarError(tok, tok->str());
 
             else
@@ -1258,12 +1258,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
     return ret;
 }
 
-bool CheckUninitVar::checkIfForWhileHead(const Token *startparanthesis, const Variable& var, bool suppressErrors, bool isuninit)
+bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startparanthesis, const Variable& var, bool suppressErrors, bool isuninit)
 {
     const Token * const endpar = startparanthesis->link();
     for (const Token *tok = startparanthesis->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == var.varId()) {
-            if (isVariableUsage(tok, var.isPointer())) {
+            if (isVariableUsage(scope, tok, var.isPointer())) {
                 if (!suppressErrors)
                     uninitvarError(tok, tok->str());
                 else
@@ -1279,10 +1279,44 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparanthesis, const Va
     return false;
 }
 
-bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
+bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bool pointer) const
 {
     if (vartok->previous()->str() == "return")
         return true;
+
+    // Passing variable to function..
+    if (Token::Match(vartok->previous(), "[(,] %var% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %var% [,)]")) {
+        const bool address(vartok->previous()->str() == "&");
+
+        // locate start parenthesis in function call..
+        int argumentNumber = 0;
+        const Token *start = vartok;
+        while (start && !Token::Match(start, "[;{}(]")) {
+            if (start->str() == ")")
+                start = start->link();
+            else if (start->str() == ",")
+                ++argumentNumber;
+            start = start->previous();
+        }
+
+        // is this a function call?
+        if (start && Token::Match(start->previous(), "%var% (")) {
+            // check how function handle uninitialized data arguments..
+            const Function *func = _tokenizer->getSymbolDatabase()->findFunctionByNameAndArgs(start->previous(), scope);
+            if (func) {
+                const Variable *arg = func->getArgumentVar(argumentNumber);
+                if (arg) {
+                    const Token *argStart = arg->typeStartToken();
+                    while (argStart->previous() && argStart->previous()->isName())
+                        argStart = argStart->previous();
+                    if (argStart->isStandardType() && Token::Match(argStart, "%type% %var% [,)]"))
+                        return true;
+                    if (Token::Match(argStart, "const"))
+                        return true;
+                }
+            }
+        }
+    }
 
     if (Token::Match(vartok->previous(), "++|--|%op%")) {
         if (vartok->previous()->str() == ">>" && _tokenizer->isCPP()) {
