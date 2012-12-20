@@ -22,7 +22,7 @@
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
         <oldsource>Copyright © 2007-2011 Daniel Marjamäki and cppcheck team.</oldsource>
-        <translation>版权所有 © 2007-2012 Daniel Marjamäki 与 cppcheck 团队。</translation>
+        <translation>版权所有 © 2007-2012 Daniel Marjamäki 与 Cppcheck 团队。</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -33,7 +33,7 @@ of the GNU General Public License version 3</source>
     <message>
         <location filename="about.ui" line="102"/>
         <source>Visit Cppcheck homepage at %1</source>
-        <translation>访问 Cppcheck 主页：%1</translation>
+        <translation>访问 Cppcheck 主页: %1</translation>
     </message>
 </context>
 <context>
@@ -56,7 +56,7 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation type="unfinished">在这里，你添加一个应用程序，用于打开错误文件。为此应用程序指定一个名称、可执行文件和命令行参数。
+        <translation>在这里，你添加一个应用程序，用于打开错误文件。为此应用程序指定一个名称、可执行文件和命令行参数。
 
 The following texts in parameters are replaced with appropriate values when application is executed:
 (file) - Filename containing the error
@@ -71,7 +71,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="application.ui" line="76"/>
         <source>&amp;Name:</source>
-        <translation>名称(&amp;N)：</translation>
+        <translation>名称(&amp;N):</translation>
     </message>
     <message>
         <location filename="application.ui" line="86"/>
@@ -689,7 +689,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 %1
 
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
-        <translation>更改用户界面语言失败：
+        <translation>更改用户界面语言失败:
 
 %1
 
@@ -868,7 +868,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfile.ui" line="49"/>
         <source>Root:</source>
-        <translation>　根:</translation>
+        <translation>根目录:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="68"/>
@@ -905,7 +905,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfile.ui" line="140"/>
         <source>Include directories:</source>
-        <translation>Include 目录：</translation>
+        <translation>Include 目录:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="192"/>
@@ -979,7 +979,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
         <source>Severity</source>
-        <translation>严重</translation>
+        <translation>严重性</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="1000"/>
@@ -1076,7 +1076,7 @@ Please check the application path and parameters are correct.</source>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation>无法找到文件：
+        <translation>无法找到文件:
 %1
 请选择文件所在目录。</translation>
     </message>
@@ -1142,7 +1142,7 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultsview.cpp" line="200"/>
         <source>%p% (%1 of %2 files checked)</source>
-        <translation>%p%(%1 of %2 文件已检查)</translation>
+        <translation>%p% (%2 个文件已检查 %1 个)</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="213"/>
@@ -1242,12 +1242,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="41"/>
         <source>Number of threads: </source>
-        <translation>线程个数：</translation>
+        <translation>线程个数:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="85"/>
         <source>Ideal count:</source>
-        <translation>理想个数：</translation>
+        <translation>理想个数:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="114"/>
@@ -1273,7 +1273,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="142"/>
         <source>Enable inline suppressions</source>
-        <translation>启动内联方案</translation>
+        <translation>启用内联方案</translation>
     </message>
     <message>
         <location filename="settings.ui" line="163"/>
@@ -1509,7 +1509,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="89"/>
         <source> and </source>
-        <translation type="unfinished"></translation>
+        <translation> 与 </translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="96"/>
@@ -1582,7 +1582,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="threadresult.cpp" line="54"/>
         <source>%1 of %2 files checked</source>
-        <translation>%1 / %2 文件已检查</translation>
+        <translation>%2 个文件已检查 %1 个</translation>
     </message>
 </context>
 <context>
