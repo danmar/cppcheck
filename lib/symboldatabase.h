@@ -451,6 +451,11 @@ public:
         Scope *scope;
     };
 
+    struct UsingInfo {
+        const Token *start;
+        Scope *scope;
+    };
+
     enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch };
     enum NeedInitialization { Unknown, True, False };
 
@@ -469,7 +474,7 @@ public:
     Scope *nestedIn;
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
-    std::list<const Token *> usingList;
+    std::list<UsingInfo> usingList;
     NeedInitialization needInitialization;
     ScopeType type;
 

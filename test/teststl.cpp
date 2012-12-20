@@ -100,6 +100,7 @@ private:
 
         TEST_CASE(size1);
         TEST_CASE(size2);
+        TEST_CASE(size3);
 
         // Redundant conditions..
         // if (ints.find(123) != ints.end()) ints.remove(123);
@@ -1587,6 +1588,34 @@ private:
               "void Wilma::foo()\n"
               "{\n"
               "    if (f.x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+    }
+
+    void size3() {
+        check("namespace N {\n"
+              "    class Zzz {\n"
+              "    public:\n"
+              "        std::list<int> x;\n"
+              "    };\n"
+              "}\n"
+              "using namespace N;\n"
+              "Zzz * zzz;\n"
+              "int main() {\n"
+              "    if (zzz->x.size() > 0) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+
+        check("namespace N {\n"
+              "    class Zzz {\n"
+              "    public:\n"
+              "        std::list<int> x;\n"
+              "    };\n"
+              "}\n"
+              "using namespace N;\n"
+              "int main() {\n"
+              "    Zzz * zzz;\n"
+              "    if (zzz->x.size() > 0) { }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
     }

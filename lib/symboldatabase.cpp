@@ -176,8 +176,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
         // using namespace
         else if (Token::Match(tok, "using namespace %type% ;|::")) {
-            // save location
-            scope->usingList.push_back(tok);
+            Scope::UsingInfo using_info;
+
+            using_info.start = tok; // save location
+            using_info.scope = 0; // fill in later
+
+            scope->usingList.push_back(using_info);
 
             tok = tok->tokAt(3);
         }
@@ -665,6 +669,19 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     i->scope = scope;
                     break;
                 }
+            }
+        }
+    }
+
+    // fill in using info
+    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+        for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
+            // check scope for match
+            scope = findScope(i->start->tokAt(2), &(*it));
+            if (scope) {
+                // set found scope
+                i->scope = scope;
+                break;
             }
         }
     }
@@ -1633,16 +1650,16 @@ void SymbolDatabase::printOut(const char *title) const
                   scope->needInitialization == Scope::False ? "False" :
                   "Invalid") << std::endl;
 
-        std::list<const Token *>::const_iterator use;
+        std::list<Scope::UsingInfo>::const_iterator use;
 
         for (use = scope->usingList.begin(); use != scope->usingList.end(); ++use) {
-            std::cout << "    using: " << (*use)->strAt(2);
-            const Token *tok1 = (*use)->tokAt(3);
+            std::cout << "    using: " << use->scope << " " << use->start->strAt(2);
+            const Token *tok1 = use->start->tokAt(3);
             while (tok1 && tok1->str() == "::") {
                 std::cout << "::" << tok1->strAt(1);
                 tok1 = tok1->tokAt(2);
             }
-            std::cout << " " << _tokenizer->list.fileLine(*use) << std::endl;
+            std::cout << " " << _tokenizer->list.fileLine(use->start) << std::endl;
         }
 
         std::cout << "    functionOf: " << scope->functionOf;
@@ -1724,8 +1741,24 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             }
 
             const Scope *argType = NULL;
-            if (!typeTok->isStandardType())
+            if (!typeTok->isStandardType()) {
                 argType = symbolDatabase->findVariableType(scope, typeTok);
+                if (!argType) {
+                    // look for variable type in any using namespace in this scope or above
+                    const Scope *parent = scope;
+                    while (parent) {
+                        for (std::list<Scope::UsingInfo>::const_iterator ui = scope->usingList.begin();
+                             ui != scope->usingList.end(); ++ui) {
+                            if (ui->scope) {
+                                argType = symbolDatabase->findVariableType(ui->scope, typeTok);
+                                if (argType)
+                                    break;
+                            }
+                        }
+                        parent = parent->nestedIn;
+                    }
+                }
+            }
 
             // skip default values
             if (tok->str() == "=") {
@@ -2065,8 +2098,24 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
 
         const Scope *scope = NULL;
 
-        if (typetok)
+        if (typetok) {
             scope = check->findVariableType(this, typetok);
+            if (!scope) {
+                // look for variable type in any using namespace in this scope or above
+                const Scope *parent = this;
+                while (parent) {
+                    for (std::list<Scope::UsingInfo>::const_iterator ui = parent->usingList.begin();
+                         ui != parent->usingList.end(); ++ui) {
+                        if (ui->scope) {
+                            scope = check->findVariableType(ui->scope, typetok);
+                            if (scope)
+                                break;
+                        }
+                    }
+                    parent = parent->nestedIn;
+                }
+            }
+        }
 
         addVariable(vartok, typestart, vartok->previous(), varaccess, scope, this);
     }
