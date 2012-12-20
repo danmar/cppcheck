@@ -2466,6 +2466,12 @@ void CheckOther::checkIncorrectStringCompare()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            // skip "assert(str && ..)" and "assert(.. && str)"
+            if (Token::Match(tok, "%var% (") &&
+                (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")) &&
+                (tok->str().find("assert")+6U==tok->str().size() || tok->str().find("ASSERT")+6U==tok->str().size()))
+                tok = tok->next()->link();
+
             if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
                 MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(5));
                 std::size_t slen = Token::getStrLength(tok->tokAt(8));
@@ -2478,15 +2484,9 @@ void CheckOther::checkIncorrectStringCompare()
                 if (clen != (int)slen) {
                     incorrectStringCompareError(tok->next(), "substr", tok->str());
                 }
-            } else if (Token::Match(tok, "&&|%oror% %str% &&|%oror%|)")) {
-                // assert(condition && "debug message") would be considered a fp.
-                if (tok->str() == "&&" && tok->strAt(2) == ")" && tok->linkAt(2)->previous()->str() == "assert")
-                    continue;
+            } else if (Token::Match(tok, "&&|%oror%|( %str% &&|%oror%|)") && !Token::Match(tok, "( %str% )")) {
                 incorrectStringBooleanError(tok->next(), tok->strAt(1));
-            } else if (Token::Match(tok, "if|while|assert ( %str% &&|%oror%|)")) {
-                // assert("debug message" && condition) would be considered a fp.
-                if (tok->strAt(3) == "&&" && tok->str() == "assert")
-                    continue;
+            } else if (Token::Match(tok, "if|while ( %str% )")) {
                 incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
             }
         }

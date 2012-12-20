@@ -4611,6 +4611,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
+              " BOOST_ASSERT (\"Hello\" && test);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
               " return f2(\"Hello\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
