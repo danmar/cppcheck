@@ -2412,6 +2412,13 @@ private:
                         "}", "test.c");
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: abc\n", errout.str());
 
+        checkUninitVar2("void a(char *p);\n"
+                        "void b() {\n"
+                        "    char *s;\n"
+                        "    a(s);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+
         checkUninitVar2("void a(const char **p);\n"
                         "void b() {\n"
                         "    const char *s;\n"

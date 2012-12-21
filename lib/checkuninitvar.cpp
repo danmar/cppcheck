@@ -1309,9 +1309,13 @@ bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bo
                     const Token *argStart = arg->typeStartToken();
                     while (argStart->previous() && argStart->previous()->isName())
                         argStart = argStart->previous();
-                    if (argStart->isStandardType() && Token::Match(argStart, "%type% %var% [,)]"))
+                    if (Token::Match(argStart, "const| %type% %var% [,)]"))
                         return true;
-                    if (!(pointer && address) && Token::Match(argStart, "const"))
+                    if (Token::Match(argStart, "const %type% & %var% [,)]"))
+                        return true;
+                    if (pointer && Token::Match(argStart, "%type% * %var% [,)]"))
+                        return true;
+                    if (!(pointer && address) && Token::Match(argStart, "const %type% * %var% [,)]"))
                         return true;
                 }
             }
