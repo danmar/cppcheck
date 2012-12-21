@@ -2387,52 +2387,76 @@ private:
 
     // Handling of function calls
     void uninitvar2_func() {
-        checkUninitVar2("void a(char c);\n"
+        // non-pointer variable
+        checkUninitVar2("void a(char c);\n"  // value => error
                         "void b() {\n"
                         "    char c;\n"
                         "    a(c);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
 
-        checkUninitVar2("void a(const char *s);\n"
+        checkUninitVar2("void a(const char c);\n"  // const value => error
+                        "void b() {\n"
+                        "    char c;\n"
+                        "    a(c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar2("void a(char *c);\n"  // address => no error
+                        "void b() {\n"
+                        "    char c;\n"
+                        "    a(&c);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void a(const char *c);\n"  // const address => error
                         "void b() {\n"
                         "    char c;\n"
                         "    a(&c);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
 
-        checkUninitVar2("void a(char *s);\n"
+        // pointer variable
+        checkUninitVar2("void a(char c);\n"  // value => error
+                        "void b() {\n"
+                        "    char *c;\n"
+                        "    a(*c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar2("void a(const char c);\n"  // const value => error
                         "void b() {\n"
                         "    char c;\n"
+                        "    a(*c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+
+        checkUninitVar2("void a(char *c);\n"  // address => error
+                        "void b() {\n"
+                        "    char *c;\n"
+                        "    a(c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar2("void a(const char *c);\n"  // const address => error
+                        "void b() {\n"
+                        "    char *c;\n"
+                        "    a(c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar2("void a(char **c);\n"  // address of pointer => no error
+                        "void b() {\n"
+                        "    char *c;\n"
                         "    a(&c);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar2("void a(const ABC *abc);\n"
+        checkUninitVar2("void a(const char **c);\n"  // const address of pointer => no error
                         "void b() {\n"
-                        "    ABC abc;\n"
-                        "    a(&abc);\n"
-                        "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar2("void a(const ABC *abc);\n"
-                        "void b() {\n"
-                        "    ABC abc;\n"
-                        "    a(&abc);\n"
-                        "}", "test.c");
-        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: abc\n", errout.str());
-
-        checkUninitVar2("void a(char *p);\n"
-                        "void b() {\n"
-                        "    char *s;\n"
-                        "    a(s);\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
-
-        checkUninitVar2("void a(const char **p);\n"
-                        "void b() {\n"
-                        "    const char *s;\n"
-                        "    a(&s);\n"
+                        "    const char *c;\n"
+                        "    a(&c);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
     }
