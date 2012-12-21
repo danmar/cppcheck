@@ -2373,6 +2373,16 @@ private:
         // Assume dfs is a POD type if file is C
         checkUninitVar2(code, "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        const char code2[] = "struct AB { int a,b; };\n"
+                             "void f() {\n"
+                             "    struct AB ab;\n"
+                             "    return ab;\n"
+                             "}";
+        checkUninitVar2(code2, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+        checkUninitVar2(code2, "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
     }
 
     // Handling of function calls
