@@ -364,9 +364,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
         if (initList) {
-            if (level == 0 && Token::Match(ftok, "%var% ("))
-                initVar(ftok->str(), scope, usage);
-            else if (level != 0 && Token::Match(ftok, "%var% =")) // assignment in the initializer: var(value = x)
+            if (level == 0 && Token::Match(ftok, "%var% (")) {
+                if (ftok->strAt(2) != ")")
+                    initVar(ftok->str(), scope, usage);
+            } else if (level != 0 && Token::Match(ftok, "%var% =")) // assignment in the initializer: var(value = x)
                 assignVar(ftok->str(), scope, usage);
 
             else if (ftok->str() == "(")
