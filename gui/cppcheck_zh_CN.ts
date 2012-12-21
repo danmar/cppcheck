@@ -6,7 +6,7 @@
     <message>
         <location filename="about.ui" line="14"/>
         <source>About Cppcheck</source>
-        <translation>关于 ppcheck</translation>
+        <translation>关于 Cppcheck</translation>
     </message>
     <message>
         <location filename="about.ui" line="64"/>
@@ -56,17 +56,17 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation>在这里，你添加一个应用程序，用于打开错误文件。为此应用程序指定一个名称、可执行文件和命令行参数。
+        <translation>在这里，你可以添加一个应用程序，用于打开错误文件。请为该应用程序指定一个名称、可执行文件和命令行参数。
 
-The following texts in parameters are replaced with appropriate values when application is executed:
-(file) - Filename containing the error
-(line) - Line number containing the error
-(message) - Error message
-(severity) - Error severity
+当应用程序执行时，在参数中的以下文本将会替换为适当的值:
+(file) - 包含错误的文件名称
+(line) - 包含错误的行号
+(message) - 错误消息
+(severity) - 错误严重性
 
-Example opening a file with Kate and make Kate scroll to the correct line:
-Executable: kate
-Parameters: -l(line) (file)</translation>
+示例：使用 Kate 打开一个文件，并使之滚动到相应的行:
+可执行文件: kate
+参数: -l(line) (file)</translation>
     </message>
     <message>
         <location filename="application.ui" line="76"/>
@@ -106,7 +106,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="applicationdialog.cpp" line="76"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
-        <translation>你必须为此应用程序指定名称、路径以及可选参数！</translation>
+        <translation>你必须为应用程序指定名称、路径以及可选参数！</translation>
     </message>
 </context>
 <context>
@@ -568,7 +568,7 @@ Parameters: -l(line) (file)</translation>
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
         <translation>加载编辑器应用程序设置出错。
 
-这可能是因为 Cppcheck 不同版本间的设置有所不同。请检查（并修复）编辑器应用程序设置，否则编辑器程序可能不会正确启动。</translation>
+这可能是因为 Cppcheck 不同版本间的设置有所不同。请检查(并修复)编辑器应用程序设置，否则编辑器程序可能不会正确启动。</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="308"/>
@@ -994,7 +994,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="resultstree.cpp" line="102"/>
         <source>Undefined file</source>
-        <translation>未定义文件 </translation>
+        <translation>未定义文件</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="205"/>
