@@ -2375,7 +2375,7 @@ private:
         ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: a\n", errout.str());
     }
 
-    // Handling of unknown types. Assume they are POD in C.
+    // Handling of function calls
     void uninitvar2_func() {
         checkUninitVar2("void a(char c);\n"
                         "void b() {\n"
@@ -2411,6 +2411,13 @@ private:
                         "    a(&abc);\n"
                         "}", "test.c");
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: abc\n", errout.str());
+
+        checkUninitVar2("void a(const char **p);\n"
+                        "void b() {\n"
+                        "    const char *s;\n"
+                        "    a(&s);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

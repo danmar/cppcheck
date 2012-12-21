@@ -1311,7 +1311,7 @@ bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bo
                         argStart = argStart->previous();
                     if (argStart->isStandardType() && Token::Match(argStart, "%type% %var% [,)]"))
                         return true;
-                    if (Token::Match(argStart, "const"))
+                    if (!(pointer && address) && Token::Match(argStart, "const"))
                         return true;
                 }
             }
