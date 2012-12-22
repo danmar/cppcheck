@@ -6697,14 +6697,12 @@ void Tokenizer::simplifyGoto()
         }
 
         else if (tok->str() == "}") {
-            if (!indentlevel) {
+            if (indentlevel == 0) {
                 if (indentspecial)
                     --indentspecial;
-                else
-                    break;  // break out - it seems the code is wrong
             } else {
                 --indentlevel;
-                if (!indentlevel) {
+                if (indentlevel == 0) {
                     gotos.clear();
                     beginfunction = 0;
                 }
@@ -6839,12 +6837,16 @@ void Tokenizer::simplifyGoto()
             }
 
             // goto the end of the function
-            while (tok) {
-                if (tok->str() == "{")
-                    tok = tok->link();
-                else if (tok->str() == "}")
-                    break;
-                tok = tok->next();
+            if (tok->str() == "{")
+                tok = tok->link();
+            else {
+                while (tok) {
+                    if (tok->str() == "{")
+                        tok = tok->link();
+                    else if (tok->str() == "}")
+                        break;
+                    tok = tok->next();
+                }
             }
             if (!tok)
                 break;

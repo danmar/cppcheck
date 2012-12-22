@@ -174,6 +174,7 @@ private:
         TEST_CASE(goto3);  // #3138
         TEST_CASE(goto4);  // #3459
         TEST_CASE(goto5);  // #3705 - return ({asm("");});
+        TEST_CASE(goto6);
 
         //remove dead code after flow control statements
         TEST_CASE(flowControl);
@@ -3345,6 +3346,33 @@ private:
                       " return { asm ( \"X\" ) ; } ;"
                       " return { asm ( \"X\" ) ; } ; "
                       "}", tok(code));
+    }
+
+    void goto6() { // from code in linux that wasn't handled well
+        const char code1[] = "static void a() {\n"
+                             "unlock:\n"
+                             "}\n"
+                             "\n"
+                             "static void b() {\n"
+                             "  if (c)\n"
+                             "    goto defer;\n"
+                             "defer:\n"
+                             "}\n";
+        ASSERT_EQUALS("static void a ( ) { } "
+                      "static void b ( ) { if ( c ) { return ; } }", tok(code1));
+
+        const char code2[] = "void a()\n"
+                             "{\n"
+                             "  if (x) {}\n"
+                             "unlock:\n"
+                             "}\n"
+                             "\n"
+                             "void b()\n"
+                             "{\n"
+                             "  { goto defer; }\n"
+                             "defer:\n"
+                             "}";
+        ASSERT_EQUALS("void a ( ) { if ( x ) { } } void b ( ) { return ; }", tok(code2));
     }
 
     void flowControl() {
