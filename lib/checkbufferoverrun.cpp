@@ -176,6 +176,11 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
     reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, true);
 }
 
+void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
+{
+    reportError(tok, Severity::style, "argumentSize", "the array " + varname + " is too small, the function " + functionName + " expects a bigger array");
+}
+
 //---------------------------------------------------------------------------
 
 
@@ -620,7 +625,8 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     // Calling a user function?
     // only 1-dimensional arrays can be checked currently
     else if (arrayInfo.num().size() == 1) {
-        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(tok.str(), tok.scope());;
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(tok.str(), tok.scope());
+
         if (func && func->hasBody) {
             // Get corresponding parameter..
             const Variable* parameter = func->getArgumentVar(par-1);
@@ -683,6 +689,36 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                     ai.varid(parameter->varId());
                     checkFunctionCall(ftok, ai, callstack);
                 }
+            }
+        }
+    }
+
+    // Check 'float x[10]' arguments in declaration
+    if (_settings->isEnabled("style")) {
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(tok.str(), tok.scope());
+
+        // If argument is '%type% a[num]' then check bounds against num
+        if (func) {
+            const Variable* argument = func->getArgumentVar(par-1);
+            if (Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")) {
+                const Token *tok2 = argument->nameToken()->next();
+
+                MathLib::bigint argsize = _tokenizer->sizeOfType(argument->typeStartToken());
+                if (argsize == 100) // unknown size
+                    argsize = 0;
+                while (Token::Match(tok2, "[ %num% ] [,)[]")) {
+                    argsize *= MathLib::toLongNumber(tok2->strAt(1));
+                    tok2 = tok2->tokAt(3);
+                }
+
+                MathLib::bigint arraysize = arrayInfo.element_size();
+                if (arraysize == 100) // unknown size
+                    arraysize = 0;
+                for (unsigned int i = 0; i < arrayInfo.num().size(); i++)
+                    arraysize *= arrayInfo.num(i);
+
+                if (Token::Match(tok2, "[,)]") && arraysize > 0 && argsize > arraysize)
+                    argumentSizeError(&tok, tok.str(), arrayInfo.varname());
             }
         }
     }

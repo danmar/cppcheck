@@ -133,8 +133,8 @@ private:
         TEST_CASE(array_index_cast);         // FP after cast. #2841
         TEST_CASE(array_index_string_literal);
 
-        TEST_CASE(buffer_overrun_1);
-        TEST_CASE(buffer_overrun_2);
+        TEST_CASE(buffer_overrun_1_standard_functions);
+        TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
         TEST_CASE(buffer_overrun_4);
         TEST_CASE(buffer_overrun_5);
@@ -159,6 +159,7 @@ private:
         TEST_CASE(buffer_overrun_24); // #4106
         TEST_CASE(buffer_overrun_25); // #4096
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
+        TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
 
         // It is undefined behaviour to point out of bounds of an array
@@ -1987,7 +1988,7 @@ private:
 
     }
 
-    void buffer_overrun_1() {
+    void buffer_overrun_1_standard_functions() {
         check("void f()\n"
               "{\n"
               "    char str[3];\n"
@@ -2121,7 +2122,7 @@ private:
     }
 
 
-    void buffer_overrun_2() {
+    void buffer_overrun_2_struct() {
         check("struct ABC\n"
               "{\n"
               "    char str[5];\n"
@@ -2219,7 +2220,7 @@ private:
               "void f2()\n"
               "{\n"
               "  char s[3];\n"
-              "  f1(s,3);\n"
+              "  f1(s,20);\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Buffer is accessed out of bounds.\n", "", errout.str());
 
@@ -2668,6 +2669,36 @@ private:
               "    f1(a);"
               "}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Array 'a[10]' accessed at index 100, which is out of bounds.\n", errout.str());
+    }
+
+    void buffer_overrun_function_array_argument() {
+        check("void f(char a[10]);\n"
+              "void g() {\n"
+              "    char a[2];\n"
+              "    f(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) the array a is too small, the function f expects a bigger array\n", errout.str());
+
+        check("void f(float a[10][20]);\n"
+              "void g() {\n"
+              "    float a[2][3];\n"
+              "    f(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) the array a is too small, the function f expects a bigger array\n", errout.str());
+
+        check("void f(char a[20]);\n"
+              "void g() {\n"
+              "    int a[2];\n"
+              "    f(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) the array a is too small, the function f expects a bigger array\n", errout.str());
+
+        check("void f(char a[20]);\n"
+              "void g() {\n"
+              "    int a[5];\n"
+              "    f(a);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void possible_buffer_overrun_1() { // #3035

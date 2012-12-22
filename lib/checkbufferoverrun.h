@@ -225,6 +225,7 @@ private:
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
+    void argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname);
 
 public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -244,6 +245,7 @@ public:
         c.arrayIndexThenCheckError(0, "index");
         c.possibleBufferOverrunError(0, "source", "destination", false);
         c.possibleReadlinkBufferOverrunError(0, "readlink", "buffer");
+        c.argumentSizeError(0, "function", "array");
     }
 private:
 
