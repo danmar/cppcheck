@@ -862,6 +862,20 @@ private:
               "        a[i+6] = i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[12]' accessed at index 12, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"  // #4398
+              "    int a[2];\n"
+              "    for (int i = 0; i < 4; i+=2)\n"
+              "        a[i] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n", errout.str());
+
+        check("void f() {\n"  // #4398
+              "    int a[2];\n"
+              "    for (int i = 0; i < 4; i+=2)\n"
+              "        do_stuff(&a[i]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_18() {

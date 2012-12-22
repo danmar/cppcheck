@@ -784,7 +784,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     if (!for3(tok2->next(), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
         return;
 
-    if (Token::Match(tok2->next(), "%var% =") && MathLib::toLongNumber(max_counter_value) <= size)
+    if (Token::Match(tok2->next(), "%var% =") && MathLib::toLongNumber(max_counter_value) < size)
         condition_out_of_bounds = false;
 
     // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
