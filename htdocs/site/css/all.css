@@ -15,10 +15,9 @@ dt {
 a:link,
 a:visited   { color:#036; text-decoration:underline; }
 
-a:focus     { color:#369; text-decoration:none; }
-
 a:link:hover,
 a:visited:hover,
+a:focus,
 a:active    { color:#369; text-decoration:none; }
 
 
@@ -164,8 +163,8 @@ a.downloadnow em {
 pre.cmd {
   padding: .5em;
   background: #f7f7f7;
-  border: 1px solid #c0c0c0;
-  border-left: 10px solid #c0c0c0;
+  border: 1px solid silver;
+  border-left: 10px solid silver;
 }
 
 /* Printing */
