@@ -290,6 +290,7 @@ private:
 
         TEST_CASE(simplifyFunctionParameters);
         TEST_CASE(simplifyFunctionParameters1); // #3721
+        TEST_CASE(simplifyFunctionParameters2); // #4430
         TEST_CASE(simplifyFunctionParametersErrors);
 
         TEST_CASE(removeParentheses1);       // Ticket #61
@@ -4683,6 +4684,16 @@ private:
         ASSERT_EQUALS("int f ( float * p , int w , int d , int e , short len )\n"
                       "{\n"
                       "}", tokenizeAndStringify(code));
+    }
+
+    void simplifyFunctionParameters2() { // #4430
+        const char code[] = "class Item { "
+                            "int i ; "
+                            "public: "
+                            "Item ( int i ) ; "
+                            "} ; "
+                            "Item :: Item ( int i ) : i ( i ) { }";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     void simplifyFunctionParametersErrors() {

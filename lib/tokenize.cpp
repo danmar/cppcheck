@@ -4607,7 +4607,7 @@ bool Tokenizer::simplifyFunctionParameters()
         }
 
         // Find the function e.g. foo( x ) or foo( x, y )
-        else if (Token::Match(tok, "%var% ( %var% [,)]")) {
+        else if (Token::Match(tok, "%var% ( %var% [,)]") && tok->strAt(-1) != ":") {
             // We have found old style function, now we need to change it
 
             // First step: Get list of argument names in parenthesis
