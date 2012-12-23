@@ -2591,8 +2591,13 @@ static void setVarIdClassDeclaration(Token * const startToken,
             ++indentlevel;
         } else if (tok->str() == "}")
             --indentlevel;
-        else if (tok->isName() && tok->varId() <= scopeStartVarId) {
-            if (indentlevel > 0 || (initList && indentlevel == 0 && (tok->strAt(-1) == "," || tok->strAt(-1) == ":"))) {
+        else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %var% (")) {
+            const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
+            if (it != variableId.end()) {
+                tok->varId(it->second);
+            }
+        } else if (tok->isName() && tok->varId() <= scopeStartVarId) {
+            if (indentlevel > 0) {
                 if (Token::Match(tok->previous(), "::|."))
                     continue;
                 if (tok->next()->str() == "::") {

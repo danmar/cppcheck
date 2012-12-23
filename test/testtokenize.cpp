@@ -4043,16 +4043,27 @@ private:
 
 
     void varid_initList() {
-        const char code[] = "class A {\n"
-                            "  A() : x(0) {}\n"
-                            "  int x;\n"
-                            "};";
+        const char code1[] = "class A {\n"
+                             "  A() : x(0) {}\n"
+                             "  int x;\n"
+                             "};";
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class A {\n"
                       "2: A ( ) : x@1 ( 0 ) { }\n"
                       "3: int x@1 ;\n"
                       "4: } ;\n",
-                      tokenizeDebugListing(code));
+                      tokenizeDebugListing(code1));
+
+        const char code2[] = "class A {\n"
+                             "  A(int x) : x(x) {}\n"
+                             "  int x;\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: A ( int x@1 ) : x@2 ( x@1 ) { }\n"
+                      "3: int x@2 ;\n"
+                      "4: } ;\n",
+                      tokenizeDebugListing(code2));
     }
 
     void varid_operator() {
