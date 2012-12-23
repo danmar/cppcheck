@@ -1148,6 +1148,14 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 bool noreturnIf = false;
                 const bool initif = checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf);
 
+                std::set<unsigned int> notzeroIf;
+                if (!initif) {
+                    for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
+                        if (Token::Match(tok2, "[;{}] %var% = - %var% ;"))
+                            notzeroIf.insert(tok2->next()->varId());
+                    }
+                }
+
                 // goto the }
                 tok = tok->link();
 
@@ -1165,6 +1173,14 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     bool noreturnElse = false;
                     const bool initelse = checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, NULL);
 
+                    std::set<unsigned int> notzeroElse;
+                    if (!initelse) {
+                        for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
+                            if (Token::Match(tok2, "[;{}] %var% = - %var% ;"))
+                                notzeroElse.insert(tok2->next()->varId());
+                        }
+                    }
+
                     // goto the }
                     tok = tok->link();
 
@@ -1174,8 +1190,11 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     if ((initif && noreturnElse) || (initelse && noreturnIf))
                         return true;
 
-                    if (initif || initelse || possibleInitElse)
+                    if (initif || initelse || possibleInitElse) {
                         ++number_of_if;
+                        notzero.insert(notzeroIf.begin(), notzeroIf.end());
+                        notzero.insert(notzeroElse.begin(), notzeroElse.end());
+                    }
                 }
             }
         }

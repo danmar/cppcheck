@@ -2153,6 +2153,15 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int i, y;\n"
+                        "    if (x) y = -ENOMEM;\n"
+                        "    else y = get_value(i);\n"
+                        "    if (y != 0) return;\n" // <- condition is always true if i is uninitialized
+                        "    i++;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // for, while
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
