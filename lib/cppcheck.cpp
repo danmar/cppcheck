@@ -171,7 +171,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
             configurations.push_back(_settings.userDefines);
         }
 
-        if (!_settings._force && configurations.size() > _settings._maxConfigs) {
+        if (_settings.isEnabled("information") && !_settings._force && configurations.size() > _settings._maxConfigs) {
             const std::string fixedpath = Path::toNativeSeparators(filename);
             ErrorLogger::ErrorMessage::FileLocation location;
             location.setfile(fixedpath);
@@ -195,7 +195,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (!_settings._force && checkCount >= _settings._maxConfigs) {
+            if (_settings.isEnabled("information") && !_settings._force && checkCount >= _settings._maxConfigs) {
 
                 const std::string fixedpath = Path::toNativeSeparators(filename);
                 ErrorLogger::ErrorMessage::FileLocation location;
