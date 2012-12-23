@@ -19,61 +19,48 @@ body.body {
     font-family: Arial;
     font-size: 13px;
     background-color: black;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 .error {
     font-family: Arial;
     font-size: 13px;
     background-color: #ffb7b7;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 #page-header {
     clear: both;
     width: 900px;
-    margin: 20px auto 0px auto;
+    margin: 20px auto 0 auto;
     height: 10px;
-        border-bottom-width: 2px;
-        border-bottom-style: solid;
-        border-bottom-color: #aaaaaa;
+    border-bottom: 2px solid #aaa;
 }
 
 #page {
     width: 860px;
     margin: auto;
-        border-left-width: 2px;
-        border-left-style: solid;
-        border-left-color: #aaaaaa;
-        border-right-width: 2px;
-        border-right-style: solid;
-        border-right-color: #aaaaaa;
-    background-color: White;
+    border-left: 2px solid #aaa;
+    border-right: 2px solid #aaa;
+    background-color: white;
     padding: 20px;
 }
 
 #page-footer {
-    clear: both;
     width: 900px;
-    margin: auto;
     height: 10px;
-        border-top-width: 2px;
-        border-top-style: solid;
-        border-top-color: #aaaaaa;
+    clear: both;
+    margin: auto;
+    border-top: 2px solid #aaa;
 }
 
 #header {
     width: 100%;
     height: 70px;
-    background-image: url(logo.png);
-    background-repeat: no-repeat;
-    background-position: left top;
-
-    border-bottom-style: solid;
-    border-bottom-width: thin;
-    border-bottom-color: #aaaaaa;
+    background: url(logo.png) no-repeat left top;
+    border-bottom: thin solid #aaa;
 }
 
 #menu {
@@ -94,19 +81,15 @@ body.body {
     width: 720px;
 
     margin: 5px;
-    padding: 0px 10px 10px 10px;
+    padding: 0 10px 10px 10px;
 
-    border-left-style: solid;
-    border-left-width: thin;
-    border-left-color: #aaaaaa;
+    border-left: thin solid #aaa;
 }
 
 #footer {
     padding-bottom: 5px;
     padding-top: 5px;
-    border-top-style: solid;
-    border-top-width: thin;
-    border-top-color: #aaaaaa;
+    border-top: thin solid #aaa;
     clear: both;
     font-size: 10px;
 }
