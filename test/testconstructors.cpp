@@ -124,8 +124,7 @@ private:
         TEST_CASE(uninitVarArray8);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
-        TEST_CASE(uninitVarCpp11Init1);
-        TEST_CASE(uninitVarCpp11Init2);
+        TEST_CASE(uninitVarCpp11Init);
         TEST_CASE(uninitVarStruct1);       // ticket #2172
         TEST_CASE(uninitVarStruct2);       // ticket #838
         TEST_CASE(uninitVarUnion1);        // ticket #3196
@@ -1815,7 +1814,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninitVarCpp11Init1() {
+    void uninitVarCpp11Init() {
         check("class Foo {\n"
               "    std::vector<std::string> bar;\n"
               "public:\n"
@@ -1824,20 +1823,6 @@ private:
               "    {}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void uninitVarCpp11Init2() {
-        check("class Fred {\n"
-              "    struct Foo {\n"
-              "        int a;\n"
-              "        bool b;\n"
-              "    };\n"
-              "    Foo f;\n"
-              "    float g;\n"
-              "public:\n"
-              "    Fred() : f{0, true} { }\n"
-              "};");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::g' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarStruct1() { // ticket #2172

@@ -916,7 +916,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct()) && // or a ctor/dtor
              (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
-              Token::Match(tok->next()->link(), ") : ::| %var% (|::|<|{"))) {
+              Token::Match(tok->next()->link(), ") : ::| %var% (|::"))) {
         *funcStart = tok;
         *argStart = tok->next();
         return true;
@@ -1251,8 +1251,8 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     Scope *new_scope = &scopeList.back();
 
     // skip to start of function
-    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const"))) {
-        if (tok1->str() == "(" || tok1->str() == "{")
+    while (tok1 && tok1->str() != "{") {
+        if (tok1->str() == "(")
             tok1 = tok1->link();
         tok1 = tok1->next();
     }

@@ -53,7 +53,6 @@ private:
         TEST_CASE(noConstructor6); // ticket #4386
         TEST_CASE(noConstructor7); // ticket #4391
         TEST_CASE(noConstructor8); // ticket #4404
-        TEST_CASE(noConstructor9); // ticket #4419
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
@@ -1911,17 +1910,6 @@ private:
         checkNoConstructor("class LineSegment;\n"
                            "class PointArray  { };\n"
                            "void* tech_ = NULL;\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor9() {
-        // ticket #4419
-        checkNoConstructor("class CGreeting : public CGreetingBase<char> {\n"
-                           "public:\n"
-                           " CGreeting() : CGreetingBase<char>(), MessageSet(false) {}\n"
-                           "private:\n"
-                           " bool MessageSet;\n"
-                           "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
