@@ -24,6 +24,7 @@
 #include "checknullpointer.h"   // CheckNullPointer::parseFunctionCall
 #include "symboldatabase.h"
 #include <algorithm>
+#include <map>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -1100,8 +1101,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
     unsigned int number_of_if = 0;
 
-    // variables that are known to be non-zero
-    std::set<unsigned int> notzero;
+    // variable values
+    std::map<unsigned int, int> variableValue;
+    static const int NOT_ZERO = (1<<30); // special variable value
 
     for (; tok; tok = tok->next()) {
         // End of scope..
@@ -1126,17 +1128,39 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
         // assignment with nonzero constant..
         if (Token::Match(tok->previous(), "[;{}] %var% = - %var% ;") && tok->varId() > 0)
-            notzero.insert(tok->varId());
+            variableValue[tok->varId()] = NOT_ZERO;
 
         // Inner scope..
         if (Token::simpleMatch(tok, "if (")) {
+            bool alwaysTrue = false;
+
+            // known variable in condition..
+            if (Token::Match(tok, "if ( !| %var% %oror%")) {
+                const Token *vartok = tok->tokAt(2);
+                if (vartok->str() == "!")
+                    vartok = vartok->next();
+                std::map<unsigned int, int>::const_iterator it = variableValue.find(vartok->varId());
+                if (tok->strAt(2) == "!")
+                    alwaysTrue = bool(it != variableValue.end() && it->second == 0);
+                else
+                    alwaysTrue = bool(it != variableValue.end() && it->second != 0);
+            }
+
             // initialization / usage in condition..
-            if (checkIfForWhileHead(scope, tok->next(), var, suppressErrors, bool(number_of_if == 0)))
+            if (!alwaysTrue && checkIfForWhileHead(scope, tok->next(), var, suppressErrors, bool(number_of_if == 0)))
                 return true;
 
             // checking if a not-zero variable is zero => bail out
-            if (Token::Match(tok, "if ( %var% )") && notzero.find(tok->tokAt(2)->varId()) != notzero.end())
-                return true;   // this scope is not fully analysed => return true
+            unsigned int condVarId = 0, condVarValue = 0;
+            if (Token::Match(tok, "if ( %var% )")) {
+                std::map<unsigned int,int>::const_iterator it = variableValue.find(tok->tokAt(2)->varId());
+                if (it != variableValue.end() && it->second == NOT_ZERO)
+                    return true;   // this scope is not fully analysed => return true
+                else {
+                    condVarId = tok->tokAt(2)->varId();
+                    condVarValue = NOT_ZERO;
+                }
+            }
 
             // goto the {
             tok = tok->next()->link()->next();
@@ -1146,15 +1170,20 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             if (tok->str() == "{") {
                 bool possibleInitIf(number_of_if > 0 || suppressErrors);
                 bool noreturnIf = false;
-                const bool initif = checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf);
+                const bool initif = !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf);
 
-                std::set<unsigned int> notzeroIf;
+                std::map<unsigned int, int> varValueIf;
                 if (!initif) {
                     for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                         if (Token::Match(tok2, "[;{}] %var% = - %var% ;"))
-                            notzeroIf.insert(tok2->next()->varId());
+                            varValueIf[tok2->next()->varId()] = NOT_ZERO;
+                        if (Token::Match(tok2, "[;{}] %var% = %num% ;"))
+                            varValueIf[tok2->next()->varId()] = (int)MathLib::toLongNumber(tok2->strAt(3));
                     }
                 }
+
+                if (initif && condVarId > 0U)
+                    variableValue[condVarId] = condVarValue ^ NOT_ZERO;
 
                 // goto the }
                 tok = tok->link();
@@ -1173,13 +1202,19 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     bool noreturnElse = false;
                     const bool initelse = checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, NULL);
 
-                    std::set<unsigned int> notzeroElse;
+                    std::map<unsigned int, int> varValueElse;
                     if (!initelse) {
                         for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                             if (Token::Match(tok2, "[;{}] %var% = - %var% ;"))
-                                notzeroElse.insert(tok2->next()->varId());
+                                varValueElse[tok2->next()->varId()] = NOT_ZERO;
+                            if (Token::Match(tok2, "[;{}] %var% = %num% ;"))
+                                varValueElse[tok2->next()->varId()] = (int)MathLib::toLongNumber(tok2->strAt(3));
                         }
                     }
+
+
+                    if (initelse && condVarId > 0U)
+                        variableValue[condVarId] = condVarValue;
 
                     // goto the }
                     tok = tok->link();
@@ -1192,8 +1227,8 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
                     if (initif || initelse || possibleInitElse) {
                         ++number_of_if;
-                        notzero.insert(notzeroIf.begin(), notzeroIf.end());
-                        notzero.insert(notzeroElse.begin(), notzeroElse.end());
+                        variableValue.insert(varValueIf.begin(), varValueIf.end());
+                        variableValue.insert(varValueElse.begin(), varValueElse.end());
                     }
                 }
             }

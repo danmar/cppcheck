@@ -58,6 +58,7 @@ private:
         TEST_CASE(uninitvar5);          // #3861
         TEST_CASE(uninitvar6);          // handling unknown types in C and C++ files
         TEST_CASE(uninitvar2_func);     // function calls
+        TEST_CASE(uninitvar2_value);    // value flow
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -2132,36 +2133,6 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
-        // if goto is simplified there might be conditions that are always true
-        checkUninitVar2("void f() {\n"
-                        "    int i;\n"
-                        "    if (x) {\n"
-                        "        int y = -ENOMEM;\n"
-                        "        if (y != 0) return;\n"
-                        "        i++;\n"
-                        "    }\n"
-                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar2("void f() {\n"
-                        "    int i, y;\n"
-                        "    if (x) {\n"
-                        "        y = -ENOMEM;\n"
-                        "        if (y != 0) return;\n"
-                        "        i++;\n"
-                        "    }\n"
-                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar2("void f() {\n"
-                        "    int i, y;\n"
-                        "    if (x) y = -ENOMEM;\n"
-                        "    else y = get_value(i);\n"
-                        "    if (y != 0) return;\n" // <- condition is always true if i is uninitialized
-                        "    i++;\n"
-                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         // for, while
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
@@ -2470,6 +2441,66 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitvar2_value() {
+        checkUninitVar2("void f() {\n"
+                        "    int i;\n"
+                        "    if (x) {\n"
+                        "        int y = -ENOMEM;\n"  // assume constant ENOMEM is nonzero since it's negated
+                        "        if (y != 0) return;\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int i, y;\n"
+                        "    if (x) {\n"
+                        "        y = -ENOMEM;\n"  // assume constant ENOMEM is nonzero since it's negated
+                        "        if (y != 0) return;\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int i, y;\n"
+                        "    if (x) y = -ENOMEM;\n"  // assume constant ENOMEM is nonzero since it's negated
+                        "    else y = get_value(i);\n"
+                        "    if (y != 0) return;\n" // <- condition is always true if i is uninitialized
+                        "    i++;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (!x) i = 0;\n"
+                        "    if (!x || i>0) {}\n" // <- error
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar2("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) i = 0;\n"
+                        "    if (!x || i>0) {}\n" // <- no error
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (!x) { }\n"
+                        "    else i = 0;\n"
+                        "    if (x || i>0) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar2("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) { }\n"
+                        "    else i = 0;\n"
+                        "    if (x || i>0) {}\n" // <- no error
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestUninitVar)
