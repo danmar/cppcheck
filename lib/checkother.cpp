@@ -3703,7 +3703,22 @@ void CheckOther::oppositeInnerCondition()
 
             if (scope->classDef->strAt(6) == "{") {
 
-                if (scope->classDef->strAt(3) == "==") {
+                const char *oppositeCondition = NULL;
+
+                if (scope->classDef->strAt(3) == "==")
+                    oppositeCondition = "if ( %any% !=|<|>|<=|>= %any% )";
+                else if (scope->classDef->strAt(3) == "!=")
+                    oppositeCondition = "if ( %any% ==|>=|<= %any% )";
+                else if (scope->classDef->strAt(3) == "<")
+                    oppositeCondition = "if ( %any% >|>=|== %any% )";
+                else if (scope->classDef->strAt(3) == "<=")
+                    oppositeCondition = "if ( %any% > %any% )";
+                else if (scope->classDef->strAt(3) == ">")
+                    oppositeCondition = "if ( %any% <|<=|== %any% )";
+                else if (scope->classDef->strAt(3) == ">=")
+                    oppositeCondition = "if ( %any% < %any% )";
+
+                if (oppositeCondition) {
                     int flag = 0;
 
                     for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
@@ -3719,70 +3734,7 @@ void CheckOther::oppositeInnerCondition()
                                     break;
                                 }
                             }
-                        } else if (Token::Match(tok, "if ( %any% !=|<|>|<=|>= %any% )")) {
-                            if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                                oppositeInnerConditionError(toke);
-                        }
-                    }
-                } else if (scope->classDef->strAt(3) == "!=") {
-                    int flag = 0;
-
-                    for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
-                        if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
-                            break;
-                        else if (Token::Match(tok, "%any% ( %any% )")) {
-                            if ((tok->strAt(2) == op1Tok->str() || tok->strAt(2) == op2Tok->str()))
-                                break;
-                        } else if (Token::Match(tok, "%any% ( %any% , %any%")) {
-                            for (const Token* tok2 = tok->next(); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-                                if (tok2->str() == op1Tok->str()) {
-                                    flag = 1;
-                                    break;
-                                }
-                            }
-                        } else if (Token::Match(tok, "if ( %any% ==|>=|<= %any% )")) {
-                            if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                                oppositeInnerConditionError(toke);
-                        }
-                    }
-                } else if (scope->classDef->strAt(3) == "<") {
-                    int flag = 0;
-
-                    for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
-                        if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
-                            break;
-                        else if (Token::Match(tok, "%any% ( %any% )")) {
-                            if ((tok->strAt(2) == op1Tok->str() || tok->strAt(2) == op2Tok->str()))
-                                break;
-                        } else if (Token::Match(tok, "%any% ( %any% , %any%")) {
-                            for (const Token* tok2 = tok->next(); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-                                if (tok2->str() == op1Tok->str()) {
-                                    flag = 1;
-                                    break;
-                                }
-                            }
-                        } else if (Token::Match(tok, "if ( %any% <|<=|>|>=|== %any% )")) {
-                            if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                                oppositeInnerConditionError(toke);
-                        }
-                    }
-                } else if (scope->classDef->strAt(3) == "<=") {
-                    int flag = 0;
-
-                    for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
-                        if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && tok->strAt(1) == "=")
-                            break;
-                        else if (Token::Match(tok, "%any% ( %any% )")) {
-                            if ((tok->strAt(2) == op1Tok->str() || tok->strAt(2) == op2Tok->str()))
-                                break;
-                        } else if (Token::Match(tok, "%any% ( %any% , %any%")) {
-                            for (const Token* tok2 = tok->next(); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-                                if (tok2->str() == op1Tok->str()) {
-                                    flag = 1;
-                                    break;
-                                }
-                            }
-                        } else if (Token::Match(tok, "if ( %any% <|<=|>|>= %any% )")) {
+                        } else if (Token::Match(tok, oppositeCondition)) {
                             if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
                                 oppositeInnerConditionError(toke);
                         }
