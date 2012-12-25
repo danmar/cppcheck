@@ -842,9 +842,14 @@ private:
     }
 
     void declareArray() {
-        const char code[] = "void f ( ) { char str [ ] = \"100\" ; }";
-        const char expected[] = "void f ( ) { char str [ 4 ] = \"100\" ; }";
-        ASSERT_EQUALS(expected, tok(code));
+        const char code1[] = "void f ( ) { char str [ ] = \"100\" ; }";
+        const char expected1[] = "void f ( ) { char str [ 4 ] = \"100\" ; }";
+        ASSERT_EQUALS(expected1, tok(code1));
+
+        const char code2[] = "char str [ ] = \"\\x00\";";
+        const char expected2[] = "char str [ 2 ] = \"\\0\" ;";
+        std::string actual = tok(code2);
+        ASSERT_EQUALS(expected2, actual);
     }
 
     void dontRemoveIncrement() {

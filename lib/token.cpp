@@ -976,7 +976,16 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes) const
         if (isLong())
             os << "long ";
     }
-    os << _str;
+    if (_str[0] != '\"' || _str.find("\0") == std::string::npos)
+        os << _str;
+    else {
+        for (std::size_t i = 0U; i < _str.size(); ++i) {
+            if (_str[i] == '\0')
+                os << "\\0";
+            else
+                os << _str[i];
+        }
+    }
     if (varid && _varId != 0)
         os << '@' << _varId;
 }

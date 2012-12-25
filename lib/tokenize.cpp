@@ -8048,12 +8048,9 @@ std::string Tokenizer::simplifyString(const std::string &source)
 
         if (sz <= 2)
             i++;
-        else if (i+sz < str.size()) {
-            if (c == 0)
-                str = str.substr(0,i) + "\"";
-            else
-                str.replace(i, sz, std::string(1U, (char)c));
-        } else
+        else if (i+sz < str.size())
+            str.replace(i, sz, std::string(1U, (char)c));
+        else
             str.replace(i, str.size() - i - 1U, "a");
     }
 
