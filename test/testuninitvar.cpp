@@ -2106,6 +2106,19 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f(int x) {\n"
+                        "    int ret;\n"
+                        "    if (!x) {\n"
+                        "        ret = -123;\n"
+                        "        goto out1;\n"
+                        "    }\n"
+                        "    return 0;\n"
+                        "out1:\n"
+                        "out2:\n"
+                        "    return ret;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar2("void f() {\n"
                         "    int i;\n"
                         "    if (x) {\n"

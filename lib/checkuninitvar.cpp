@@ -1097,8 +1097,6 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
     if (possibleInit)
         *possibleInit = false;
 
-    bool ret = false;
-
     unsigned int number_of_if = 0;
 
     // variable values
@@ -1292,10 +1290,24 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         if (Token::Match(tok, "return|break|continue|throw|goto")) {
             if (noreturn)
                 *noreturn = true;
-            else
-                ret = true;
-        } else if (tok->str() == "goto")
-            return true;
+
+            while (tok && tok->str() != ";") {
+                // variable is seen..
+                if (tok->varId() == var.varId()) {
+                    // Use variable
+                    if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
+                        uninitvarError(tok, tok->str());
+
+                    else
+                        // assume that variable is assigned
+                        return true;
+                }
+
+                tok = tok->next();
+            }
+
+            return bool(noreturn==NULL);
+        }
 
         // variable is seen..
         if (tok->varId() == var.varId()) {
@@ -1309,7 +1321,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         }
     }
 
-    return ret;
+    return false;
 }
 
 bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startparanthesis, const Variable& var, bool suppressErrors, bool isuninit)
