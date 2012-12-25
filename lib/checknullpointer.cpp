@@ -1013,6 +1013,8 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                             nullPointerError(tok2, pointerName, vartok, inconclusive);
                         else if (unknown)
                             nullPointerError(tok2, pointerName, vartok, true);
+                        if (Token::Match(tok2, "%var% ?"))
+                            break;
                     }
                 }
                 break;

@@ -1679,6 +1679,18 @@ private:
               "    *x = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // return ?:
+        check("int f(ABC *p) {\n" // FP : return ?:
+              "    if (!p) {}\n"
+              "    return p ? p->x : 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("int f(ABC *p) {\n" // no fn
+              "    if (!p) {}\n"
+              "    return q ? p->x : 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
