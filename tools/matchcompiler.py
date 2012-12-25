@@ -31,7 +31,7 @@ def compileCmd(tok):
     elif tok == '%varid%':
         return '(tok->isName() && tok->varId()==varid)'
     elif (len(tok)>2) and (tok[0]=="%"):
-        print "unhandled:" + tok
+        print ("unhandled:" + tok)
     return '(tok->str()=="'+tok+'")'
 
 def compilePattern(pattern, nr, varid):
@@ -189,9 +189,9 @@ def convertFile(srcname, destname):
 # selftests..
 def assertEquals(actual,expected):
     if actual!=expected:
-        print 'Assertion failed:'
-        print actual
-        print expected
+        print ('Assertion failed:')
+        print (actual)
+        print (expected)
         assert actual == expected
 assertEquals(parseMatch('  Token::Match(tok, ";") ',2), ['Token::Match(tok, ";")','tok',' ";"'])
 assertEquals(parseMatch('  Token::Match(tok,', 2), None) # multiline Token::Match is not supported yet
@@ -199,6 +199,6 @@ assertEquals(parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 
 
 # convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
-    print f + ' => build/' + f[4:]
+    print (f + ' => build/' + f[4:])
     convertFile(f, 'build/'+f[4:])
 
