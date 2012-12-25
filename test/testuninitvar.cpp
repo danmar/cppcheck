@@ -2293,6 +2293,12 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    struct ABC *abc;\n"
+                        "    return do_something(typeof(*abc));\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Ticket #3486 - Don't crash garbage code
         checkUninitVar2("void f()\n"
                         "{\n"

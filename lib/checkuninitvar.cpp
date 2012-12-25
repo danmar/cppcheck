@@ -1303,6 +1303,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                         return true;
                 }
 
+                else if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
+                    tok = tok->linkAt(1);
+
                 tok = tok->next();
             }
 
