@@ -43,5 +43,6 @@ int main()
     while (n > 0)
         printf("%s\n", lines[--n]);
 
+    fclose(f);
     return 0;
 }
