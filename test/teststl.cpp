@@ -2124,6 +2124,12 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of std::remove() ignored. Elements remain in container.\n"
                       "[test.cpp:3]: (warning) Return value of std::remove_if() ignored. Elements remain in container.\n"
                       "[test.cpp:4]: (warning) Return value of std::unique() ignored. Elements remain in container.\n", errout.str());
+
+        // #4431 - fp
+        check("bool f() {\n"
+              "    return x ? true : (y.empty());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
