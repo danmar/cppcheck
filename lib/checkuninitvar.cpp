@@ -1378,7 +1378,7 @@ bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bo
                     const Token *argStart = arg->typeStartToken();
                     while (argStart->previous() && argStart->previous()->isName())
                         argStart = argStart->previous();
-                    if (Token::Match(argStart, "const| %type% %var% [,)]"))
+                    if (!address && Token::Match(argStart, "const| %type% %var% [,)]"))
                         return true;
                     if (Token::Match(argStart, "const %type% & %var% [,)]"))
                         return true;

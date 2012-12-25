@@ -2408,6 +2408,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void a(pstr s);\n"  // address => no error
+                        "void b() {\n"
+                        "    char c;\n"
+                        "    a(&c);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar2("void a(const char *c);\n"  // const address => error
                         "void b() {\n"
                         "    char c;\n"
