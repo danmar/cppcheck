@@ -2452,6 +2452,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void a(char *c);\n"  // address of pointer (suspicious cast to pointer) => no error
+                        "void b() {\n"
+                        "    char *c;\n"
+                        "    a(&c);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar2("void a(const char **c);\n"  // const address of pointer => no error
                         "void b() {\n"
                         "    const char *c;\n"

@@ -1382,7 +1382,7 @@ bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bo
                         return true;
                     if (Token::Match(argStart, "const %type% & %var% [,)]"))
                         return true;
-                    if (pointer && Token::Match(argStart, "%type% * %var% [,)]"))
+                    if (pointer && !address && Token::Match(argStart, "%type% * %var% [,)]"))
                         return true;
                     if ((pointer || address) && Token::Match(argStart, "const %type% * %var% [,)]"))
                         return true;
