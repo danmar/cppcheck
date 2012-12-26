@@ -2641,7 +2641,7 @@ private:
               "    char inbuf[1000];\n"
               "    char *f[10];\n"
               "    split(inbuf, f, 10, \"\t\t\");\n"
-              "}n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }

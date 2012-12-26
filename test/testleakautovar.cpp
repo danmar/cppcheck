@@ -498,7 +498,7 @@ private:
     void return4() { // ticket #3862
         // avoid false positives
         check("void f(char *p, int x) {\n"
-              "    if (x==12) {n"
+              "    if (x==12) {\n"
               "        free(p);\n"
               "        throw 1;\n"
               "    }\n"
@@ -507,7 +507,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char *p, int x) {\n"
-              "    if (x==12) {n"
+              "    if (x==12) {\n"
               "        delete p;\n"
               "        throw 1;\n"
               "    }\n"
@@ -516,7 +516,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char *p, int x) {\n"
-              "    if (x==12) {n"
+              "    if (x==12) {\n"
               "        delete [] p;\n"
               "        throw 1;\n"
               "    }\n"
