@@ -158,6 +158,7 @@ private:
         TEST_CASE(buffer_overrun_23); // #3153
         TEST_CASE(buffer_overrun_24); // #4106
         TEST_CASE(buffer_overrun_25); // #4096
+        TEST_CASE(buffer_overrun_26); // #4432 (segmentation fault)
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
@@ -2632,6 +2633,17 @@ private:
               "}\n");
 
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: array\n", errout.str());
+    }
+
+    void buffer_overrun_26() { // ticket #4432 (segmentation fault)
+        check("extern int split();\n"
+              "void regress() {\n"
+              "    char inbuf[1000];\n"
+              "    char *f[10];\n"
+              "    split(inbuf, f, 10, \"\t\t\");\n"
+              "}n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch() {
