@@ -848,8 +848,11 @@ private:
 
         const char code2[] = "char str [ ] = \"\\x00\";";
         const char expected2[] = "char str [ 2 ] = \"\\0\" ;";
-        std::string actual = tok(code2);
-        ASSERT_EQUALS(expected2, actual);
+        ASSERT_EQUALS(expected2, tok(code2));
+
+        const char code3[] = "char str [ ] = \"\\0\";";
+        const char expected3[] = "char str [ 2 ] = \"\\0\" ;";
+        ASSERT_EQUALS(expected3, tok(code3));
     }
 
     void dontRemoveIncrement() {

@@ -8037,13 +8037,8 @@ std::string Tokenizer::simplifyString(const std::string &source)
                 sz++;
             std::istringstream istr(str.substr(i+1, sz-1));
             istr >> std::oct >> c;
-            if (sz == 2) {
-                if (c == 0) {
-                    str = str.substr(0,i) + "\"";
-                    continue;
-                } else
-                    str[i+1] = (char)c;
-            }
+            str = str.substr(0,i) + (char)c + str.substr(i+sz);
+            continue;
         }
 
         if (sz <= 2)

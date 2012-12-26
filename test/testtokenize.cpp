@@ -6005,7 +6005,7 @@ private:
         ASSERT_EQUALS("\" 7\"", tokenizer.simplifyString("\"\\0407\""));
 
         // terminate a string at null character.
-        ASSERT_EQUALS("\"a\"", tokenizer.simplifyString("\"a\\0\""));
+        ASSERT_EQUALS(std::string("\"a") + '\0' + "\"", tokenizer.simplifyString("\"a\\0\""));
     }
 
     void simplifyConst() {
