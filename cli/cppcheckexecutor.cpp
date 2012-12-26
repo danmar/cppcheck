@@ -195,6 +195,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         if (!settings._errorsOnly)
             reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
 
+        cppCheck.tooManyConfigsError("",0U);
+
         if (settings.isEnabled("missingInclude") && Preprocessor::missingIncludeFlag) {
             const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
             ErrorLogger::ErrorMessage msg(callStack,

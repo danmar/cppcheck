@@ -131,6 +131,8 @@ public:
         return _dependencies;
     }
 
+    void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
+
 private:
 
     /** @brief Process one file. */
@@ -189,6 +191,9 @@ private:
     unsigned int exitcode;
 
     bool _useGlobalSuppressions;
+
+    /** Are there too many configs? */
+    bool tooManyConfigs;
 };
 
 /// @}

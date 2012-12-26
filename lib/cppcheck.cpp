@@ -40,7 +40,7 @@ static const char ExtraVersion[] = "";
 static TimerResults S_timerResults;
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : _errorLogger(errorLogger), exitcode(0), _useGlobalSuppressions(useGlobalSuppressions)
+    : _errorLogger(errorLogger), exitcode(0), _useGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false)
 {
 }
 
@@ -171,46 +171,20 @@ unsigned int CppCheck::processFile(const std::string& filename)
             configurations.push_back(_settings.userDefines);
         }
 
-        if (_settings.isEnabled("information") && !_settings._force && configurations.size() > _settings._maxConfigs) {
-            const std::string fixedpath = Path::toNativeSeparators(filename);
-            ErrorLogger::ErrorMessage::FileLocation location;
-            location.setfile(fixedpath);
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> loclist(1, location);
-            std::ostringstream msg;
-            msg << "Too many #ifdef configurations - cppcheck will only check " << _settings._maxConfigs << " of " << configurations.size() << ".\n"
-                "The checking of the file will be interrupted because there are too many "
-                "#ifdef configurations. Checking of all #ifdef configurations can be forced "
-                "by --force command line option or from GUI preferences. However that may "
-                "increase the checking time.";
-            ErrorLogger::ErrorMessage errmsg(loclist,
-                                             Severity::information,
-                                             msg.str(),
-                                             "toomanyconfigs",
-                                             false);
-
-            reportErr(errmsg);
+        if (!_settings._force && configurations.size() > _settings._maxConfigs) {
+            if (_settings.isEnabled("information")) {
+                tooManyConfigsError(Path::toNativeSeparators(filename),configurations.size());
+            } else {
+                tooManyConfigs = true;
+            }
         }
 
         unsigned int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (_settings.isEnabled("information") && !_settings._force && checkCount >= _settings._maxConfigs) {
-
-                const std::string fixedpath = Path::toNativeSeparators(filename);
-                ErrorLogger::ErrorMessage::FileLocation location;
-                location.setfile(fixedpath);
-                std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
-                loclist.push_back(location);
-                ErrorLogger::ErrorMessage errmsg(loclist,
-                                                 Severity::information,
-                                                 "Interrupted checking because of too many #ifdef configurations.",
-                                                 "toomanyconfigs",
-                                                 false);
-
-                reportInfo(errmsg);
+            if (!_settings._force && ++checkCount > _settings._maxConfigs)
                 break;
-            }
 
             cfg = *it;
 
@@ -234,8 +208,6 @@ unsigned int CppCheck::processFile(const std::string& filename)
             } else {
                 checkFile(codeWithoutCfg + appendCode, filename.c_str());
             }
-
-            ++checkCount;
         }
     } catch (const std::runtime_error &e) {
         // Exception was thrown when checking this file..
@@ -456,6 +428,46 @@ Settings &CppCheck::settings()
     return _settings;
 }
 
+void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations)
+{
+    if (!_settings.isEnabled("information") && !tooManyConfigs)
+        return;
+
+    tooManyConfigs = false;
+
+    if (_settings.isEnabled("information") && file.empty())
+        return;
+
+    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+    if (!file.empty()) {
+        ErrorLogger::ErrorMessage::FileLocation location;
+        location.setfile(file);
+        loclist.push_back(location);
+    }
+
+    std::ostringstream msg;
+    msg << "Too many #ifdef configurations - cppcheck only checks " << _settings._maxConfigs;
+    if (numberOfConfigurations > _settings._maxConfigs)
+        msg << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.\n";
+    if (file.empty())
+        msg << " configurations. Use --force to check all configurations. For more details, use --enable=information.\n";
+    msg << "The checking of the file will be interrupted because there are too many "
+        "#ifdef configurations. Checking of all #ifdef configurations can be forced "
+        "by --force command line option or from GUI preferences. However that may "
+        "increase the checking time.";
+    if (file.empty())
+        msg << " For more details, use --enable=information.";
+
+
+    ErrorLogger::ErrorMessage errmsg(loclist,
+                                     Severity::information,
+                                     msg.str(),
+                                     "toomanyconfigs",
+                                     false);
+
+    reportErr(errmsg);
+}
+
 //---------------------------------------------------------------------------
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
@@ -534,6 +546,9 @@ void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount
 
 void CppCheck::getErrorMessages()
 {
+    tooManyConfigs = true;
+    tooManyConfigsError("",0U);
+
     // call all "getErrorMessages" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         (*it)->getErrorMessages(this, &_settings);
