@@ -796,7 +796,6 @@ void Preprocessor::preprocessWhitespaces(std::string &processedFile)
 
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
-    std::map<std::string, std::string> defs;
     std::string forcedIncludes;
 
     if (file0.empty())
@@ -882,6 +881,8 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     }
 
     if (_settings && !_settings->userDefines.empty()) {
+        std::map<std::string, std::string> defs;
+
         // TODO: break out this code. There is other similar code.
         std::string::size_type pos1 = 0;
         while (pos1 != std::string::npos) {
