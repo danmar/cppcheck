@@ -293,6 +293,7 @@ private:
         TEST_CASE(simplifyFunctionParameters);
         TEST_CASE(simplifyFunctionParameters1); // #3721
         TEST_CASE(simplifyFunctionParameters2); // #4430
+        TEST_CASE(simplifyFunctionParameters3); // #4436
         TEST_CASE(simplifyFunctionParametersErrors);
 
         TEST_CASE(removeParentheses1);       // Ticket #61
@@ -4742,6 +4743,17 @@ private:
                             "Item ( int i ) ; "
                             "} ; "
                             "Item :: Item ( int i ) : i ( i ) { }";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void simplifyFunctionParameters3() { // #4436
+        const char code[] = "class Item { "
+                            "int i ; "
+                            "int j ; "
+                            "public: "
+                            "Item ( int i , int j ) ; "
+                            "} ; "
+                            "Item :: Item ( int i , int j ) : i ( i ) , j ( j ) { }";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
