@@ -806,7 +806,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     if (_settings && !_settings->userIncludes.empty()) {
         for (std::list<std::string>::iterator it = _settings->userIncludes.begin();
              it != _settings->userIncludes.end();
-             it++) {
+             ++it) {
             std::string cur = *it;
 
             // try to open file
