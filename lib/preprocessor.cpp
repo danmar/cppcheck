@@ -796,10 +796,65 @@ void Preprocessor::preprocessWhitespaces(std::string &processedFile)
 
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
+    std::map<std::string, std::string> defs;
+    std::string forcedIncludes;
+
     if (file0.empty())
         file0 = filename;
 
     processedFile = read(srcCodeStream, filename);
+
+    if (_settings && !_settings->userIncludes.empty()) {
+        for (std::list<std::string>::iterator it = _settings->userIncludes.begin();
+                it != _settings->userIncludes.end();
+                it++) {
+            std::string cur = *it;
+
+            // try to open file
+            std::ifstream fin;
+
+            fin.open(cur.c_str());
+            if (!fin.is_open()) {
+                if (_settings && !_settings->nomsg.isSuppressed("missingInclude", cur, 1)) {
+                    std::string path = "";
+
+                    std::size_t pos = cur.find_last_of("\\/");
+
+                    if (pos != std::string::npos)
+                        path = cur.substr(0, 1 + pos);
+
+                    missingIncludeFlag = true;
+                    missingInclude(Path::toNativeSeparators(path),
+                                   1,
+                                   cur,
+                                   true);
+                }
+                continue;
+            }
+            std::string fileData = read(fin, filename);
+
+            fin.close();
+
+            //handleIncludes("#include \"" + cur + "\"\n", cur, includePaths, defs);
+            forcedIncludes =
+                    forcedIncludes +
+                    "#file \"" + cur + "\"\n" +
+                    "#line 1\n" +
+                    fileData + "\n" +
+                    "#endfile\n"
+                    ;
+        }
+    }
+
+    if (!forcedIncludes.empty()) {
+        processedFile =
+                forcedIncludes +
+                "#file \"" + filename + "\"\n" +
+                "#line 1\n" +
+                processedFile +
+                "#endfile\n"
+                ;
+    }
 
     // Remove asm(...)
     removeAsm(processedFile);
@@ -827,8 +882,6 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     }
 
     if (_settings && !_settings->userDefines.empty()) {
-        std::map<std::string, std::string> defs;
-
         // TODO: break out this code. There is other similar code.
         std::string::size_type pos1 = 0;
         while (pos1 != std::string::npos) {
@@ -855,7 +908,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         }
 
         processedFile = handleIncludes(processedFile, filename, includePaths, defs);
-        if (_settings->userDefines.empty())  // TODO: How can it be empty?
+        if (_settings->userIncludes.empty())
             resultConfigurations = getcfgs(processedFile, filename);
 
     } else {
@@ -1042,6 +1095,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (!line.empty() && line.compare(0, 3, "#if") != 0)
             includeguard = false;
+
+        if (line.compare(0, 5, "#line") == 0)
+            continue;
 
         if (line.empty() || line[0] != '#')
             continue;
@@ -1723,6 +1779,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         } else if (line.compare(0, 7, "#file \"") == 0 ||
                    line.compare(0, 8, "#endfile") == 0 ||
                    line.compare(0, 8, "#define ") == 0 ||
+                   line.compare(0, 6, "#line ") == 0 ||
                    line.compare(0, 6, "#undef") == 0) {
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.

@@ -414,6 +414,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path += '/';
 
             _settings->_includePaths.push_back(path);
+        } else if (std::strncmp(argv[i], "--include=", 10) == 0) {
+            std::string path = argv[i] + 10;
+
+            path = Path::fromNativeSeparators(path);
+
+            _settings->userIncludes.push_back(path);
+            _settings->userDefines += ";";
         } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
             // open this file and read every input file (1 file name per line)
             AddInclPathsToList(16 + argv[i], _settings->_includePaths);
@@ -772,6 +779,10 @@ void CmdLineParser::PrintHelp()
               "                         First given path is searched for contained header\n"
               "                         files first. If paths are relative to source files,\n"
               "                         this is not needed.\n"
+              "    --include=<file>\n"
+              "                         Force inclusion of a file. Can be used for example when\n"
+              "                         checking the Linux kernel, where autoconf.h needs to be\n"
+              "                         included for every file compiled.\n"
               "    -i <dir or file>     Give a source file or source file directory to exclude\n"
               "                         from the check. This applies only to source files so\n"
               "                         header files included by source files are not matched.\n"

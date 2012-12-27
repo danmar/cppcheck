@@ -287,6 +287,16 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             if (CurrentToken == "#file") {
                 // Handle this where strings are handled
                 continue;
+            } else if (CurrentToken == "#line") {
+                // Read to end of line
+                std::string line;
+
+                std::getline(code, line);
+
+                // Update the current line number
+                std::stringstream(line) >> lineno;
+                CurrentToken.clear();
+                continue;
             } else if (CurrentToken == "#endfile") {
                 if (lineNumbers.empty() || fileIndexes.empty()) { // error
                     deallocateTokens();
