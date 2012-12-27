@@ -154,6 +154,14 @@ private:
               "    if (y==8);\n" // non-local variable => no error
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4434 : false positive: ?:
+        check("void f(int x) {\n"
+              "    x = x & 1;\n"
+              "    x = x & 1 ? 1 : -1;\n"
+              "    if(x != -1) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void compare() {
