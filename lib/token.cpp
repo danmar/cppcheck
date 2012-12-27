@@ -322,7 +322,7 @@ const std::string &Token::strAt(int index) const
 static bool strisop(const char str[])
 {
     if (str[1] == 0) {
-        if (strchr("+-*/%&|^~!<>", *str))
+        if (std::strchr("+-*/%&|^~!<>", *str))
             return true;
     } else if (str[2] == 0) {
         if ((str[0] == '&' && str[1] == '&') ||
@@ -469,21 +469,21 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     const char *current, *next;
 
     current = pattern;
-    next = strchr(pattern, ' ');
+    next = std::strchr(pattern, ' ');
     if (!next)
-        next = pattern + strlen(pattern);
+        next = pattern + std::strlen(pattern);
 
     while (*current) {
         std::size_t length = static_cast<std::size_t>(next - current);
 
-        if (!tok || length != tok->_str.length() || strncmp(current, tok->_str.c_str(), length))
+        if (!tok || length != tok->_str.length() || std::strncmp(current, tok->_str.c_str(), length))
             return false;
 
         current = next;
         if (*next) {
-            next = strchr(++current, ' ');
+            next = std::strchr(++current, ' ');
             if (!next)
-                next = current + strlen(current);
+                next = current + std::strlen(current);
         }
         tok = tok->next();
     }
@@ -691,7 +691,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             break;
             default:
                 //unknown %cmd%, abort
-                abort();
+                std::abort();
             }
         }
 

@@ -73,10 +73,10 @@ void TokenList::addtoken(const char str[], const unsigned int lineno, const unsi
         return;
 
     // If token contains # characters, split it up
-    if (split && strstr(str, "##")) {
+    if (split && std::strstr(str, "##")) {
         std::string temp;
         for (unsigned int i = 0; str[i]; ++i) {
-            if (strncmp(&str[i], "##", 2) == 0) {
+            if (std::strncmp(&str[i], "##", 2) == 0) {
                 addtoken(temp.c_str(), lineno, fileno, false);
                 temp.clear();
                 addtoken("##", lineno, fileno, false);
@@ -92,7 +92,7 @@ void TokenList::addtoken(const char str[], const unsigned int lineno, const unsi
     std::ostringstream str2;
     if (MathLib::isHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
         str2 << MathLib::toLongNumber(str);
-    } else if (strncmp(str, "_Bool", 5) == 0) {
+    } else if (std::strncmp(str, "_Bool", 5) == 0) {
         str2 << "bool";
     } else {
         str2 << str;
@@ -273,7 +273,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             CurrentToken.length() > 0 &&
             std::isdigit(CurrentToken[0])) {
             // Don't separate doubles "5.4"
-        } else if (strchr("+-", ch) &&
+        } else if (std::strchr("+-", ch) &&
                    CurrentToken.length() > 0 &&
                    std::isdigit(CurrentToken[0]) &&
                    (CurrentToken[CurrentToken.length()-1] == 'e' ||
@@ -283,7 +283,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
         } else if (CurrentToken.empty() && ch == '.' && std::isdigit(code.peek())) {
             // tokenize .125 into 0.125
             CurrentToken = "0";
-        } else if (strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch)) {
+        } else if (std::strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch)) {
             if (CurrentToken == "#file") {
                 // Handle this where strings are handled
                 continue;
@@ -316,7 +316,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
             CurrentToken += ch;
             // Add "++", "--", ">>" or ... token
-            if (strchr("+-<>=:&|", ch) && (code.peek() == ch))
+            if (std::strchr("+-<>=:&|", ch) && (code.peek() == ch))
                 CurrentToken += (char)code.get();
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             _back->setExpandedMacro(expandedMacro);

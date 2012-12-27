@@ -304,7 +304,7 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
             throw InternalError(0, "Internal Error: Division by zero");
         return longToString(toLongNumber(first) % b);
     }
-    return doubleToString(fmod(toDoubleNumber(first),toDoubleNumber(second)));
+    return doubleToString(std::fmod(toDoubleNumber(first),toDoubleNumber(second)));
 }
 
 std::string MathLib::calculate(const std::string &first, const std::string &second, char action)

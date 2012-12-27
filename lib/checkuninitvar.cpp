@@ -1015,7 +1015,7 @@ std::set<std::string> UninitVar::uvarFunctions;
 /// @}
 
 
-void CheckUninitVar::analyse(const Token * const tokens, std::set<std::string> &func) const
+void CheckUninitVar::analyse(const Token * tokens, std::set<std::string> &func) const
 {
     UninitVar::analyseFunctions(tokens, func);
 }

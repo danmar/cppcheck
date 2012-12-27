@@ -94,7 +94,7 @@ static const char * const call_func_white_list[] = {
 
 static int call_func_white_list_compare(const void *a, const void *b)
 {
-    return strcmp((const char *)a, *(const char * const *)b);
+    return std::strcmp((const char *)a, *(const char * const *)b);
 }
 
 //---------------------------------------------------------------------------

@@ -1680,7 +1680,7 @@ bool Tokenizer::tokenize(std::istream &code,
             const char c2 = tok->next()->str()[0];
 
             // combine +-*/ and =
-            if (c2 == '=' && (strchr("+-*/%&|^=!<>", c1))) {
+            if (c2 == '=' && (std::strchr("+-*/%&|^=!<>", c1))) {
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
                 continue;
@@ -5132,7 +5132,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
                 else if (tok2->str() == "<" && tok2->previous()->isName() && !tok2->previous()->varId())
                     tok2->findClosingBracket(tok2);
 
-                else if (strchr(";,", tok2->str()[0])) {
+                else if (std::strchr(";,", tok2->str()[0])) {
                     // "type var ="   =>   "type var; var ="
                     const Token *VarTok = type0->tokAt((int)typelen);
                     while (Token::Match(VarTok, "*|&|const"))

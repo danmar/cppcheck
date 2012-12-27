@@ -58,7 +58,7 @@ std::string Path::fromNativeSeparators(std::string path)
 std::string Path::simplifyPath(const char *originalPath)
 {
     // Skip ./ at the beginning
-    if (strlen(originalPath) > 2 && originalPath[0] == '.' &&
+    if (std::strlen(originalPath) > 2 && originalPath[0] == '.' &&
         originalPath[1] == '/') {
         originalPath += 2;
     }

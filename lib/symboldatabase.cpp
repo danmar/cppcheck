@@ -35,6 +35,13 @@
 #define LLONG_MAX LONG_MAX
 #endif
 
+// Define ULLONG_MAX and LLONG_MAX for SunCC on non-Solaris systems
+#if (defined(__SUNPRO_C) || defined(__SUNPRO_CC)) && \
+  !(defined (__sun) || defined (__sun__))
+#define ULLONG_MAX ULONG_MAX
+#define LLONG_MAX LONG_MAX
+#endif
+
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)

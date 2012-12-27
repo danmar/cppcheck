@@ -40,6 +40,9 @@
 #include <errno.h>
 #endif
 
+// required for FD_ZERO
+using std::memset;
+
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : _files(files), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
@@ -82,19 +85,19 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 
     if (type != REPORT_OUT && type != REPORT_ERROR && type != REPORT_INFO && type != CHILD_END) {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
-        exit(0);
+        std::exit(0);
     }
 
     unsigned int len = 0;
     if (read(rpipe, &len, sizeof(len)) <= 0) {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
-        exit(0);
+        std::exit(0);
     }
 
     char *buf = new char[len];
     if (read(rpipe, buf, len) <= 0) {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
-        exit(0);
+        std::exit(0);
     }
 
     if (type == REPORT_OUT) {
@@ -154,26 +157,26 @@ unsigned int ThreadExecutor::check()
         if (i != _files.end() && rpipes.size() < _settings._jobs) {
             int pipes[2];
             if (pipe(pipes) == -1) {
-                std::cerr << "pipe() failed: "<< strerror(errno) << std::endl;
-                exit(EXIT_FAILURE);
+                std::cerr << "pipe() failed: "<< std::strerror(errno) << std::endl;
+                std::exit(EXIT_FAILURE);
             }
 
             int flags = 0;
             if ((flags = fcntl(pipes[0], F_GETFL, 0)) < 0) {
-                std::cerr << "fcntl(F_GETFL) failed: "<< strerror(errno) << std::endl;
-                exit(EXIT_FAILURE);
+                std::cerr << "fcntl(F_GETFL) failed: "<< std::strerror(errno) << std::endl;
+                std::exit(EXIT_FAILURE);
             }
 
             if (fcntl(pipes[0], F_SETFL, flags | O_NONBLOCK) < 0) {
-                std::cerr << "fcntl(F_SETFL) failed: "<< strerror(errno) << std::endl;
-                exit(EXIT_FAILURE);
+                std::cerr << "fcntl(F_SETFL) failed: "<< std::strerror(errno) << std::endl;
+                std::exit(EXIT_FAILURE);
             }
 
             pid_t pid = fork();
             if (pid < 0) {
                 // Error
-                std::cerr << "Failed to create child process: "<< strerror(errno) << std::endl;
-                exit(EXIT_FAILURE);
+                std::cerr << "Failed to create child process: "<< std::strerror(errno) << std::endl;
+                std::exit(EXIT_FAILURE);
             } else if (pid == 0) {
                 close(pipes[0]);
                 _wpipe = pipes[1];
@@ -193,7 +196,7 @@ unsigned int ThreadExecutor::check()
                 std::ostringstream oss;
                 oss << resultOfCheck;
                 writeToPipe(CHILD_END, oss.str());
-                exit(0);
+                std::exit(0);
             }
 
             close(pipes[1]);
@@ -288,7 +291,7 @@ void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
         delete [] out;
         out = 0;
         std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
-        exit(0);
+        std::exit(0);
     }
 
     delete [] out;
