@@ -4067,6 +4067,19 @@ private:
                       "3: int x@2 ;\n"
                       "4: } ;\n",
                       tokenizeDebugListing(code2));
+
+        const char code3[] = "class A {\n"
+                             "  A(int x);\n"
+                             "  int x;\n"
+                             "};\n"
+                             "A::A(int x) : x(x) {}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: A ( int x@1 ) ;\n"
+                      "3: int x@2 ;\n"
+                      "4: } ;\n"
+                      "5: A :: A ( int x@3 ) : x@2 ( x@3 ) { }\n",
+                      tokenizeDebugListing(code3));
     }
 
     void varid_operator() {

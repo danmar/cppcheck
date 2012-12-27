@@ -2818,7 +2818,7 @@ void Tokenizer::setVarId()
             std::map<std::string, unsigned int> varlist;
             const Token* tokStart = Token::findsimplematch(tok, "{");
             if (tokStart) {
-                for (const Token *tok2 = tokStart->next(); tok2 != tok->link(); tok2 = tok2->next()) {
+                for (const Token *tok2 = tokStart->next(); tok2 != tokStart->link(); tok2 = tok2->next()) {
                     // skip parentheses..
                     if (tok2->str() == "{")
                         tok2 = tok2->link();
@@ -2866,8 +2866,11 @@ void Tokenizer::setVarId()
 
                     // constructor with initializer list
                     if (Token::Match(tok2, ") : %var% (")) {
-                        const Token *tok3 = tok2;
+                        Token *tok3 = tok2;
                         while (Token::Match(tok3, ") [:,] %var% (")) {
+                            Token *vartok = tok3->tokAt(2);
+                            if (varlist.find(vartok->str()) != varlist.end())
+                                vartok->varId(varlist[vartok->str()]);
                             tok3 = tok3->linkAt(3);
                         }
                         if (Token::simpleMatch(tok3, ") {")) {
