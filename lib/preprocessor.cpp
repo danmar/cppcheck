@@ -806,8 +806,8 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
     if (_settings && !_settings->userIncludes.empty()) {
         for (std::list<std::string>::iterator it = _settings->userIncludes.begin();
-                it != _settings->userIncludes.end();
-                it++) {
+             it != _settings->userIncludes.end();
+             it++) {
             std::string cur = *it;
 
             // try to open file
@@ -837,23 +837,23 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
             //handleIncludes("#include \"" + cur + "\"\n", cur, includePaths, defs);
             forcedIncludes =
-                    forcedIncludes +
-                    "#file \"" + cur + "\"\n" +
-                    "#line 1\n" +
-                    fileData + "\n" +
-                    "#endfile\n"
-                    ;
+                forcedIncludes +
+                "#file \"" + cur + "\"\n" +
+                "#line 1\n" +
+                fileData + "\n" +
+                "#endfile\n"
+                ;
         }
     }
 
     if (!forcedIncludes.empty()) {
         processedFile =
-                forcedIncludes +
-                "#file \"" + filename + "\"\n" +
-                "#line 1\n" +
-                processedFile +
-                "#endfile\n"
-                ;
+            forcedIncludes +
+            "#file \"" + filename + "\"\n" +
+            "#line 1\n" +
+            processedFile +
+            "#endfile\n"
+            ;
     }
 
     // Remove asm(...)
