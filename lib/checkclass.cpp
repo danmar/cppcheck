@@ -359,7 +359,6 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
     bool initList = true;
     const Token *ftok = func.arg->link()->next();
     int level = 0;
-
     for (; ftok != func.functionScope->classEnd; ftok = ftok->next()) {
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
@@ -367,6 +366,9 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
             if (level == 0 && Token::Match(ftok, "%var% (")) {
                 if (ftok->strAt(2) != ")")
                     initVar(ftok->str(), scope, usage);
+            } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const") {
+                initVar(ftok->str(), scope, usage);
+                ftok = ftok->linkAt(1);
             } else if (level != 0 && Token::Match(ftok, "%var% =")) // assignment in the initializer: var(value = x)
                 assignVar(ftok->str(), scope, usage);
 
