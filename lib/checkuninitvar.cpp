@@ -1170,6 +1170,13 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 bool noreturnIf = false;
                 const bool initif = !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf);
 
+                // bail out for such code:
+                //    if (a) x=0;    // conditional initialization
+                //    if (b) return; // cppcheck doesn't know if b can be false when a is false.
+                //    x++;           // it's possible x is always initialized
+                if (!alwaysTrue && noreturnIf && number_of_if > 0)
+                    return true;
+
                 std::map<unsigned int, int> varValueIf;
                 if (!initif) {
                     for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {

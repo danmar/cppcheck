@@ -2533,6 +2533,15 @@ private:
                         "    if (x || i>0) {}\n" // <- no error
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Unknown => bail out..
+        checkUninitVar2("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (a(x)) i = 0;\n"
+                        "    if (b(x)) return;\n"
+                        "    i++;\n" // <- no error if b(x) is always true when a(x) is false
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
