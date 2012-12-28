@@ -2131,7 +2131,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         // filename contains now a file name e.g. "menu.h"
         std::string processedFile;
         std::string filepath;
-        if (headerType == UserHeader)
+        if (headerType == UserHeader && !paths.empty())
             filepath = paths.back();
         std::ifstream fin;
         const bool fileOpened(openHeader(filename, includePaths, filepath, fin));
