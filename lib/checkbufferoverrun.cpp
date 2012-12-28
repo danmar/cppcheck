@@ -591,7 +591,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
 
         // Parse function call. When a ',' is seen, arg is decremented.
         // if arg becomes 1 then the current function parameter is the wanted parameter.
-        // if arg becomes 1000 then multiply current and next argument.
+        // if arg becomes 1001 then multiply current and next argument.
         const Token *tok2 = tok.tokAt(2)->nextArgument();
         if (arg == 3)
             tok2 = tok2->nextArgument();
