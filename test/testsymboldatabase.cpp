@@ -154,6 +154,7 @@ private:
         TEST_CASE(symboldatabase26); // ticket #3561 (throw C)
         TEST_CASE(symboldatabase27); // ticket #3543 (segmentation fault)
         TEST_CASE(symboldatabase28);
+        TEST_CASE(symboldatabase29); // ticket #4442 (segmentation fault)
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1322,6 +1323,14 @@ private:
         GET_SYMBOL_DB("struct S {};\n"
                       "void foo(struct S s) {}");
         ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->className == "S");
+    }
+
+    // #ticket #4442 (segmentation fault)
+    void symboldatabase29() {
+        check("struct B : A {\n"
+              "    B() : A {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isImplicitlyVirtual() {

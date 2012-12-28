@@ -1258,7 +1258,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     Scope *new_scope = &scopeList.back();
 
     // skip to start of function
-    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const"))) {
+    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const" && Token::Match(tok1->link()->next(), ",|{|%name%")))) {
         if (tok1->str() == "(" || tok1->str() == "{")
             tok1 = tok1->link();
         tok1 = tok1->next();
