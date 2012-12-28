@@ -420,7 +420,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             path = Path::fromNativeSeparators(path);
 
             _settings->userIncludes.push_back(path);
-            _settings->userDefines += ";";
         } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
             // open this file and read every input file (1 file name per line)
             AddInclPathsToList(16 + argv[i], _settings->_includePaths);
