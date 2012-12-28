@@ -815,15 +815,8 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
             fin.open(cur.c_str());
             if (!fin.is_open()) {
                 if (_settings && !_settings->nomsg.isSuppressed("missingInclude", cur, 1)) {
-                    std::string path = "";
-
-                    std::size_t pos = cur.find_last_of("\\/");
-
-                    if (pos != std::string::npos)
-                        path = cur.substr(0, 1 + pos);
-
                     missingIncludeFlag = true;
-                    missingInclude(Path::toNativeSeparators(path),
+                    missingInclude(Path::toNativeSeparators(Path::getPathFromFilename(cur)),
                                    1,
                                    cur,
                                    true);

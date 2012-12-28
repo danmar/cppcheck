@@ -57,6 +57,13 @@ public:
     static std::string simplifyPath(const char *originalPath);
 
     /**
+     * @brief Lookup the path part from a filename (e.g., '/tmp/a.h' -> '/tmp/', 'a.h' -> '')
+     * @param filename filename to lookup, must have / -separators.
+     * @return path part of the filename
+     */
+    static std::string getPathFromFilename(const std::string &filename);
+
+    /**
      * @brief Compare filenames to see if they are the same.
      * On Linux the comparison is case-sensitive. On Windows it is case-insensitive.
      * @param fname1 one filename

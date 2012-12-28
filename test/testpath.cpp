@@ -33,6 +33,7 @@ private:
         TEST_CASE(getRelative);
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
+        TEST_CASE(get_path_from_filename);
     }
 
     void simplify_path() const {
@@ -116,6 +117,13 @@ private:
         ASSERT(Path::isCPP("index.cpp"));
         ASSERT(Path::isCPP("C:\\foo\\index.cpp"));
         ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));
+    }
+
+    void get_path_from_filename() const {
+        ASSERT_EQUALS("", Path::getPathFromFilename("index.h"));
+        ASSERT_EQUALS("/tmp/", Path::getPathFromFilename("/tmp/index.h"));
+        ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/index.h"));
+        ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/"));
     }
 };
 
