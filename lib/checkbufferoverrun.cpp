@@ -700,8 +700,10 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
         // If argument is '%type% a[num]' then check bounds against num
         if (func) {
             const Variable* argument = func->getArgumentVar(par-1);
-            if (argument && Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")) {
-                const Token *tok2 = argument->nameToken()->next();
+            const Token *nameToken;
+            if (argument && Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")
+                && (nameToken = argument->nameToken()) != NULL) {
+                const Token *tok2 = nameToken->next();
 
                 MathLib::bigint argsize = _tokenizer->sizeOfType(argument->typeStartToken());
                 if (argsize == 100) // unknown size

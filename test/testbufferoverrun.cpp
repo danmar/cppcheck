@@ -159,6 +159,7 @@ private:
         TEST_CASE(buffer_overrun_24); // #4106
         TEST_CASE(buffer_overrun_25); // #4096
         TEST_CASE(buffer_overrun_26); // #4432 (segmentation fault)
+        TEST_CASE(buffer_overrun_27); // #4444 (segmentation fault)
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
@@ -2641,6 +2642,16 @@ private:
               "    char inbuf[1000];\n"
               "    char *f[10];\n"
               "    split(inbuf, f, 10, \"\t\t\");\n"
+              "}");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_27() { // ticket #4444 (segmentation fault)
+        check("void abc(struct foobar[5]);\n"
+              "void main() {\n"
+              "struct foobar x[5];\n"
+              "abc(x);\n"
               "}");
 
         ASSERT_EQUALS("", errout.str());
