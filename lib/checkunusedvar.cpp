@@ -547,13 +547,13 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                             else
                                 variables.read(varid2, tok);
                         } else {
-                            variables.read(varid2, tok);
+                            variables.readAll(varid2, tok);
                         }
                     }
                 } else if (var1->_type == Variables::reference) {
                     variables.alias(varid1, varid2, true);
                 } else {
-                    if (var2->_type == Variables::pointer && tok->strAt(1) == "[")
+                    if ((var2->_type == Variables::pointer || var2->_type == Variables::pointerArray) && tok->strAt(1) == "[")
                         variables.readAliases(varid2, tok);
 
                     variables.read(varid2, tok);

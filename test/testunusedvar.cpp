@@ -2156,6 +2156,24 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is not assigned a value.\n", errout.str());
 
+        functionVariableUsage("void foo() {\n" // #4022 - FP (a is assigned a value that is never used)
+                              "    int a[2], *b[2];\n"
+                              "    a[0] = 123;\n"
+                              "    b[0] = &a[0];\n"
+                              "    int *d = b[0];\n"
+                              "    return *d;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo() {\n" // #4022 - FP (a is assigned a value that is never used)
+                              "    entry a[2], *b[2];\n"
+                              "    a[0].value = 123;\n"
+                              "    b[0] = &a[0];\n"
+                              "    int d = b[0].value;\n"
+                              "    return d;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         functionVariableUsage("struct S { char c[100]; };\n"
                               "void foo()\n"
                               "{\n"
