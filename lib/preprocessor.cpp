@@ -834,7 +834,6 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
             fin.close();
 
-            //handleIncludes("#include \"" + cur + "\"\n", cur, includePaths, defs);
             forcedIncludes =
                 forcedIncludes +
                 "#file \"" + cur + "\"\n" +
