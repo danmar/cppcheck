@@ -2321,6 +2321,13 @@ private:
                         "    return x;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // &
+        checkUninitVar2("void f() {\n"  // #4426 - address of uninitialized variable
+                        "    int a,b;\n"
+                        "    if (&a == &b);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #3869 - reference variable
