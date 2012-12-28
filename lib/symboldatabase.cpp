@@ -1017,11 +1017,15 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             second = second->next();
         else if (first->next()->str() == ")" && second->next()->str() != ")")
             second = second->next();
+        else if (first->next()->str() == "[" && second->next()->str() != "[")
+            second = second->next();
 
         // function missing variable name
         else if (second->next()->str() == "," && first->next()->str() != ",")
             first = first->next();
         else if (second->next()->str() == ")" && first->next()->str() != ")")
+            first = first->next();
+        else if (second->next()->str() == "[" && first->next()->str() != "[")
             first = first->next();
 
         // argument list has different number of arguments
