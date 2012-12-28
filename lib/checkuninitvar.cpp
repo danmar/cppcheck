@@ -1174,8 +1174,18 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 //    if (a) x=0;    // conditional initialization
                 //    if (b) return; // cppcheck doesn't know if b can be false when a is false.
                 //    x++;           // it's possible x is always initialized
-                if (!alwaysTrue && noreturnIf && number_of_if > 0)
+                if (!alwaysTrue && noreturnIf && number_of_if > 0) {
+                    if (_settings->debugwarnings) {
+                        std::string condition;
+                        for (const Token *tok2 = tok->linkAt(-1); tok2 != tok; tok2 = tok2->next()) {
+                            condition += tok2->str();
+                            if (tok2->isName() && tok2->next()->isName())
+                                condition += ' ';
+                        }
+                        reportError(tok, Severity::debug, "debug", "uninitialized variables: bailout. can't determine if this condition can be false when previous condition is false: " + condition);
+                    }
                     return true;
+                }
 
                 std::map<unsigned int, int> varValueIf;
                 if (!initif) {
