@@ -35,6 +35,7 @@ private:
     void run() {
         TEST_CASE(oppositeInnerCondition);
         TEST_CASE(assignBoolToPointer);
+        TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
         TEST_CASE(zeroDiv2);
@@ -309,6 +310,12 @@ private:
               "    p = false;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
+    }
+
+    void emptyBrackets() {
+        check("{\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

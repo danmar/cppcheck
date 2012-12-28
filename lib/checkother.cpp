@@ -2761,7 +2761,8 @@ void CheckOther::checkDoubleFree()
         // of previously freed variables.
         // TODO: There are false negatives. This bailout is only needed when the
         // loop will exit without free()'ing the memory on the last iteration.
-        else if (tok->str() == "}" && tok->link() && tok->link()->linkAt(-1) &&
+        else if (tok->str() == "}" && tok->link() && tok->link()->tokAt(-1) &&
+                 tok->link()->linkAt(-1) &&
                  Token::Match(tok->link()->linkAt(-1)->previous(), "while|for") &&
                  Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != NULL) {
             freedVariables.clear();
