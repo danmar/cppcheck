@@ -6599,7 +6599,9 @@ bool Tokenizer::simplifyRedundantParenthesis()
             }
         }
 
-        while (Token::Match(tok->previous(), "[{([,:] ( !!{") && Token::Match(tok->link(), ") [;,])]")) {
+        while (Token::Match(tok->previous(), "[{([,:] ( !!{") &&
+               Token::Match(tok->link(), ") [;,])]") &&
+               !Token::findmatch(tok, ",",tok->link())) {
             // We have "( ... )", remove the parenthesis
             tok->link()->deleteThis();
             tok->deleteThis();
