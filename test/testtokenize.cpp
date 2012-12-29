@@ -3749,6 +3749,12 @@ private:
             ASSERT_EQUALS(expected, actual);
         }
 
+        {
+            const std::string actual = tokenizeDebugListing("void f(struct foobar);", false, "test.c");
+            const std::string expected("\n\n##file 0\n"
+                                       "1: void f ( struct foobar ) ;\n");
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varid_sizeof() {
