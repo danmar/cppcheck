@@ -82,6 +82,7 @@ private:
         TEST_CASE(initvar_nocopy3);            // ticket #3611
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
+        TEST_CASE(initvar_func_ret_func_ptr); // ticket #4449
 
         TEST_CASE(operatorEqSTL);
 
@@ -940,6 +941,14 @@ private:
               "public:\n"
               "    Fred() : var(0) {}\n"
               "    ~Fred() {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initvar_func_ret_func_ptr() { // ticket #4449 (segmentation fault)
+        check("class something {\n"
+              "    int * ( something :: * process()) () { return 0; }\n"
+              "    something() { process(); }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }

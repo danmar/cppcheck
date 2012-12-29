@@ -356,7 +356,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 
 void CheckClass::initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
-    bool initList = true;
+    bool initList = func.type == Function::eConstructor || func.type == Function::eCopyConstructor;
     const Token *ftok = func.arg->link()->next();
     int level = 0;
     for (; ftok != func.functionScope->classEnd; ftok = ftok->next()) {
