@@ -776,8 +776,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         tok = tok2->next();
                         if (Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
                             tok = tok->next();
-                        else if (Token::Match(tok, "= %var% ;")) // Simple initialization
+                        else if (Token::Match(tok, "= %var% ;")) { // Simple initialization
                             tok = tok->next();
+                            if (!var->isReference())
+                                variables.read(tok->varId(), tok);
+                        }
                         else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
                             tok = tok->previous();
                         break;

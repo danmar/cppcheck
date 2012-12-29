@@ -1148,6 +1148,14 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
 
+        functionVariableUsage("double foo()\n"
+                              "{\n"
+                              "    double i = 0.0;\n"
+                              "    const double j = i;\n"
+                              "    return j;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    A * i;\n"
