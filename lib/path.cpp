@@ -104,6 +104,19 @@ std::string Path::simplifyPath(const char *originalPath)
     return oss.str();
 }
 
+std::string Path::getPathFromFilename(const std::string &filename)
+{
+    std::string path = "";
+
+    std::size_t pos = filename.find_last_of("\\/");
+
+    if (pos != std::string::npos)
+        path = filename.substr(0, 1 + pos);
+
+    return path;
+}
+
+
 bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 {
 #if defined(__linux__) || defined(__sun) || defined(__hpux)
