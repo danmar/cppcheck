@@ -119,6 +119,7 @@ private:
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
         TEST_CASE(functionArgs3);
+        TEST_CASE(functionArgs4);
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -906,6 +907,23 @@ private:
         GET_SYMBOL_DB("void f(int i,) { }"); // Don't crash
         const Variable *a = db->getVariableFromVarId(1);
         ASSERT_EQUALS("i", a->nameToken()->str());
+    }
+
+    void functionArgs4() {
+        GET_SYMBOL_DB("void f1(char [10], struct foo [10]);");
+        ASSERT_EQUALS(true, db->scopeList.front().functionList.size() == 1UL);
+        const Function *func = &db->scopeList.front().functionList.front();
+        ASSERT_EQUALS(true, func && func->argumentList.size() == 2UL);
+        if (func && func->argumentList.size() == 2UL) {
+            const Variable *first = &func->argumentList.front();
+            ASSERT_EQUALS(0UL, first->name().size());
+            ASSERT_EQUALS(1UL, first->dimensions().size());
+            ASSERT_EQUALS(10UL, first->dimension(0));
+            const Variable *second = &func->argumentList.back();
+            ASSERT_EQUALS(0UL, second->name().size());
+            ASSERT_EQUALS(1UL, second->dimensions().size());
+            ASSERT_EQUALS(10UL, second->dimension(0));
+        }
     }
 
     void namespaces1() {

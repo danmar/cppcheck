@@ -969,8 +969,16 @@ void Variable::evaluate()
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
     if (_access == Argument) {
         tok = _name;
-        if (!tok)
-            tok = _end; // Argument without name
+        if (!tok) {
+            // Argument without name
+            tok = _end;
+            // back up to start of array dimensions
+            while (tok && tok->str() == "]")
+                tok = tok->link()->previous();
+            // add array dimensions if present
+            if (tok->next()->str() == "[")
+                setFlag(fIsArray, arrayDimensions(_dimensions, tok->next()));
+        }
         if (!tok)
             return;
         tok = tok->next();
