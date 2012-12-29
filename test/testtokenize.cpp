@@ -4086,6 +4086,17 @@ private:
                       "4: } ;\n"
                       "5: A :: A ( int x@3 ) : x@2 ( x@3 ) { }\n",
                       tokenizeDebugListing(code3));
+
+        const char code4[] = "struct A {\n"
+                             "  int x;\n"
+                             "  A(int x) : x(x) {}\n"
+                             "};\n";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct A {\n"
+                      "2: int x@1 ;\n"
+                      "3: A ( int x@2 ) : x@1 ( x@2 ) { }\n"
+                      "4: } ;\n",
+                      tokenizeDebugListing(code4));
     }
 
     void varid_operator() {

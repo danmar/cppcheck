@@ -2639,6 +2639,17 @@ static void setVarIdClassFunction(Token * const startToken,
     }
 }
 
+static bool isInitList(const Token *tok)
+{
+    if (!Token::Match(tok, ") : %var% ("))
+        return false;
+
+    tok = tok->linkAt(3);
+    while (Token::Match(tok, ") , %var% ("))
+        tok = tok->linkAt(3);
+
+    return Token::Match(tok, ") {");
+}
 
 void Tokenizer::setVarId()
 {
@@ -2666,13 +2677,16 @@ void Tokenizer::setVarId()
     executableScope.push(false);
     std::stack<unsigned int> scopestartvarid;  // varid when scope starts
     scopestartvarid.push(0);
+    bool initlist = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
         // scope info to handle shadow variables..
-        if (tok->str() == "(" &&
-            (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {"))) {
+        if (!initlist && tok->str() == "(" &&
+            (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {") || isInitList(tok->link()))) {
             scopeInfo.push(variableId);
+            initlist = Token::simpleMatch(tok->link(), ") :");
         } else if (tok->str() == "{") {
+            initlist = false;
             // parse anonymous unions as part of the current scope
             if (!(Token::simpleMatch(tok->previous(), "union") && Token::simpleMatch(tok->link(), "} ;"))) {
                 scopestartvarid.push(_varId);
