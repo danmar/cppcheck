@@ -20,8 +20,6 @@ def compileCmd(tok):
         return '(tok->str()=="|")'
     elif tok == '%oror%':
         return '(tok->str()=="||")'
-    elif tok == '%num%':
-        return 'tok->isNumber()'
     elif tok == '%str%':
         return '(tok->type()==Token::eString)'
     elif tok == '%type%':
