@@ -3,7 +3,17 @@
 import re
 import glob
 
-def compileCmd(tok):
+def insertMatchStr(matchStrs, look_for):
+    prefix = 'matchStr'
+
+    # Add entry if needed
+    if look_for not in matchStrs:
+        pos = len(matchStrs) + 1
+        matchStrs[look_for] = pos
+
+    return prefix + str(matchStrs[look_for])
+
+def compileCmd(tok, matchStrs):
     if tok == '%any%':
         return 'true'
     elif tok == '%bool%':
@@ -17,22 +27,23 @@ def compileCmd(tok):
     elif tok == '%op%':
         return 'tok->isOp()'
     elif tok == '%or%':
-        return '(tok->str()=="|")'
+        return '(tok->str()==' + insertMatchStr(matchStrs, '|') + ')/* | */'
     elif tok == '%oror%':
-        return '(tok->str()=="||")'
+        return '(tok->str()==' + insertMatchStr(matchStrs, '||') + ')/* || */'
     elif tok == '%str%':
         return '(tok->type()==Token::eString)'
     elif tok == '%type%':
-        return '(tok->isName() && tok->varId()==0U && tok->str() != "delete")'
+        return '(tok->isName() && tok->varId()==0U && tok->str() != ' + insertMatchStr(matchStrs, 'delete') + '/* delete */)'
     elif tok == '%var%':
         return 'tok->isName()'
     elif tok == '%varid%':
         return '(tok->isName() && tok->varId()==varid)'
     elif (len(tok)>2) and (tok[0]=="%"):
         print ("unhandled:" + tok)
-    return '(tok->str()=="'+tok+'")'
 
-def compilePattern(pattern, nr, varid):
+    return '(tok->str()==' + insertMatchStr(matchStrs, tok) + ')/* ' + tok + ' */'
+
+def compilePattern(matchStrs, pattern, nr, varid):
     arg2 = ''
     if varid:
         arg2 = ', const unsigned int varid'
@@ -76,7 +87,7 @@ def compilePattern(pattern, nr, varid):
                 if not first:
                     ret = ret + logicalOp
                 first = False
-                ret = ret + neg + compileCmd(tok2)
+                ret = ret + neg + compileCmd(tok2, matchStrs)
 
             if "" in tokens2:
                 ret = ret + '))\n'
@@ -88,14 +99,15 @@ def compilePattern(pattern, nr, varid):
 
         # !!a
         elif tok[0:2]=="!!":
-            ret = ret + '    if (tok && tok->str() == "' + tok[2:] + '")\n'
+            ret = ret + '    if (tok && tok->str() == ' + insertMatchStr(matchStrs, tok[2:]) + ')/* ' + tok[2:] + ' */\n'
             ret = ret + '        return false;\n'
             gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
         else:
-            ret = ret + '    if (!tok || !' + compileCmd(tok) + ')\n'
+            ret = ret + '    if (!tok || !' + compileCmd(tok, matchStrs) + ')\n'
             ret = ret + '        return false;\n'
     ret = ret + '    return true;\n}\n'
+
     return ret
 
 def parseMatch(line, pos1):
@@ -137,13 +149,14 @@ def convertFile(srcname, destname):
     srclines = fin.readlines()
     fin.close()
 
+    header = '#include "token.h"\n'
+    header += '#include "errorlogger.h"\n'
+    header += '#include <string>\n'
+    header += '#include <cstring>\n'
     matchfunctions = ''
-    matchfunctions = matchfunctions + '#include "token.h"\n'
-    matchfunctions = matchfunctions + '#include "errorlogger.h"\n'
-    matchfunctions = matchfunctions + '#include <string>\n'
-    matchfunctions = matchfunctions + '#include <cstring>\n'
     code = ''
 
+    matchStrs = {}
     patternNumber = 1
     for line in srclines:
         while True:
@@ -175,13 +188,18 @@ def convertFile(srcname, destname):
                     if arg3:
                         a3 = ',' + arg3
                     line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                    matchfunctions = matchfunctions + compilePattern(arg2, patternNumber, arg3)
+                    matchfunctions = matchfunctions + compilePattern(matchStrs, arg2, patternNumber, arg3)
                     patternNumber = patternNumber + 1
 
         code = code + line
 
+    # Compute string list
+    stringList = ''
+    for match in sorted(matchStrs, key=matchStrs.get):
+        stringList += 'static const std::string matchStr' + str(matchStrs[match]) + '("' + match + '");\n'
+
     fout = open(destname, 'wt')
-    fout.write(matchfunctions+code)
+    fout.write(header+stringList+matchfunctions+code)
     fout.close()
 
 # selftests..
