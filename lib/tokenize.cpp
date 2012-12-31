@@ -2648,7 +2648,7 @@ static bool isInitList(const Token *tok)
     while (Token::Match(tok, ") , %var% ("))
         tok = tok->linkAt(3);
 
-    return Token::Match(tok, ") {");
+    return Token::simpleMatch(tok, ") {");
 }
 
 void Tokenizer::setVarId()
@@ -6615,7 +6615,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
 
         while (Token::Match(tok->previous(), "[{([,:] ( !!{") &&
                Token::Match(tok->link(), ") [;,])]") &&
-               !Token::findmatch(tok, ",",tok->link())) {
+               !Token::findsimplematch(tok, ",", tok->link())) {
             // We have "( ... )", remove the parenthesis
             tok->link()->deleteThis();
             tok->deleteThis();
