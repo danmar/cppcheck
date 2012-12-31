@@ -48,24 +48,24 @@ def compilePattern(matchStrs, pattern, nr, varid):
     if varid:
         arg2 = ', const unsigned int varid'
     ret = '// ' + pattern + '\n'
-    ret = ret + 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
+    ret += 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
     if varid:
         # if varid is provided, check that it's non-zero
-        ret = ret + '    if (varid==0U)\n'
-        ret = ret + '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");\n'
+        ret += '    if (varid==0U)\n'
+        ret += '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");\n'
 
     tokens = pattern.split(' ')
     gotoNextToken = ''
     for tok in tokens:
         if tok == '':
             continue
-        ret = ret + gotoNextToken
+        ret += gotoNextToken
         gotoNextToken = '    tok = tok->next();\n'
 
         # [abc]
         if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
-            ret = ret + '    if (!tok || tok->str().size()!=1U || !strchr("'+tok[1:-1]+'", tok->str()[0]))\n'
-            ret = ret + '        return false;\n'
+            ret += '    if (!tok || tok->str().size()!=1U || !strchr("'+tok[1:-1]+'", tok->str()[0]))\n'
+            ret += '        return false;\n'
 
         # a|b|c
         elif tok.find('|') > 0:
@@ -73,11 +73,11 @@ def compilePattern(matchStrs, pattern, nr, varid):
             logicalOp = None
             neg = None
             if "" in tokens2:
-                ret = ret + '    if (tok && ('
+                ret += '    if (tok && ('
                 logicalOp = ' || '
                 neg = ''
             else:
-                ret = ret + '    if (!tok || !('
+                ret += '    if (!tok || !('
                 logicalOp = ' || '
                 neg = ''
             first = True
@@ -85,28 +85,28 @@ def compilePattern(matchStrs, pattern, nr, varid):
                 if tok2 == '':
                     continue
                 if not first:
-                    ret = ret + logicalOp
+                    ret += logicalOp
                 first = False
-                ret = ret + neg + compileCmd(tok2, matchStrs)
+                ret += neg + compileCmd(tok2, matchStrs)
 
             if "" in tokens2:
-                ret = ret + '))\n'
-                ret = ret + '        tok = tok->next();\n'
+                ret += '))\n'
+                ret += '        tok = tok->next();\n'
                 gotoNextToken = ''
             else:
-                ret = ret + '))\n'
-                ret = ret + '        return false;\n'
+                ret += '))\n'
+                ret += '        return false;\n'
 
         # !!a
         elif tok[0:2]=="!!":
-            ret = ret + '    if (tok && tok->str() == ' + insertMatchStr(matchStrs, tok[2:]) + ')/* ' + tok[2:] + ' */\n'
-            ret = ret + '        return false;\n'
+            ret += '    if (tok && tok->str() == ' + insertMatchStr(matchStrs, tok[2:]) + ')/* ' + tok[2:] + ' */\n'
+            ret += '        return false;\n'
             gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
         else:
-            ret = ret + '    if (!tok || !' + compileCmd(tok, matchStrs) + ')\n'
-            ret = ret + '        return false;\n'
-    ret = ret + '    return true;\n}\n'
+            ret += '    if (!tok || !' + compileCmd(tok, matchStrs) + ')\n'
+            ret += '        return false;\n'
+    ret += '    return true;\n}\n'
 
     return ret
 
@@ -119,17 +119,17 @@ def parseMatch(line, pos1):
     while pos < len(line):
         if inString:
             if line[pos] == '\\':
-                pos = pos + 1
+                pos += 1
             elif line[pos] == '"':
                 inString = False
         elif line[pos] == '"':
             inString = True
         elif line[pos] == '(':
-            parlevel = parlevel + 1
+            parlevel += 1
             if parlevel == 1:
                 argstart = pos + 1
         elif line[pos] == ')':
-            parlevel = parlevel - 1
+            parlevel -= 1
             if parlevel == 0:
                 ret = []
                 ret.append(line[pos1:pos+1])
@@ -140,7 +140,7 @@ def parseMatch(line, pos1):
         elif line[pos] == ',' and parlevel == 1:
             args.append(line[argstart:pos])
             argstart = pos + 1
-        pos = pos + 1
+        pos += 1
 
     return None
 
@@ -208,8 +208,8 @@ def convertFile(srcname, destname):
                     if arg3:
                         a3 = ',' + arg3
                     line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                    matchfunctions = matchfunctions + compilePattern(matchStrs, arg2, patternNumber, arg3)
-                    patternNumber = patternNumber + 1
+                    matchfunctions += compilePattern(matchStrs, arg2, patternNumber, arg3)
+                    patternNumber += 1
 
         # Replace plain old C-string comparison with C++ strings
         while True:
@@ -228,7 +228,7 @@ def convertFile(srcname, destname):
             text = line[startPos+1:endPos-1]
             line = line[:startPos] + insertMatchStr(matchStrs, text) + line[endPos:]
 
-        code = code + line
+        code += line
 
     # Compute string list
     stringList = ''
