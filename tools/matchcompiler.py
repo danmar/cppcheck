@@ -164,6 +164,60 @@ def parseStringComparison(line, pos1):
 
     return None
 
+def replaceTokenMatch(matchFunctions, matchStrs, line):
+    while True:
+        pos1 = line.find('Token::Match(')
+        if pos1 == -1:
+            pos1 = line.find('Token::simpleMatch(')
+        if pos1 == -1:
+            break
+
+        res = parseMatch(line, pos1)
+        if res == None:
+            break
+        else:
+            assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
+
+            g0 = res[0]
+            arg1 = res[1]
+            arg2 = res[2]
+            arg3 = None
+            if len(res) == 4:
+                arg3 = res[3]
+
+            res = re.match(r'\s*"([^"]*)"\s*$', arg2)
+            if res == None:
+                break  # Non-const pattern - bailout
+            else:
+                arg2 = res.group(1)
+                a3 = ''
+                if arg3:
+                    a3 = ',' + arg3
+                patternNumber = len(matchFunctions) + 1
+                line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
+                matchFunctions.append(compilePattern(matchStrs, arg2, patternNumber, arg3))
+
+    return line
+
+def replaceCStrings(matchStrs, line):
+    while True:
+        match = re.search('str\(\) (==|!=) "', line)
+        if not match:
+            match = re.search('strAt\(.+?\) (==|!=) "', line)
+        if not match:
+            break
+
+        res = parseStringComparison(line, match.start())
+        if res == None:
+            break
+
+        startPos = res[0]
+        endPos = res[1]
+        text = line[startPos+1:endPos-1]
+        line = line[:startPos] + insertMatchStr(matchStrs, text) + line[endPos:]
+
+    return line
+
 def convertFile(srcname, destname):
     fin = open(srcname, "rt")
     srclines = fin.readlines()
@@ -173,60 +227,16 @@ def convertFile(srcname, destname):
     header += '#include "errorlogger.h"\n'
     header += '#include <string>\n'
     header += '#include <cstring>\n'
-    matchfunctions = ''
+    matchFunctions = []
     code = ''
 
     matchStrs = {}
-    patternNumber = 1
     for line in srclines:
-        while True:
-            pos1 = line.find('Token::Match(')
-            if pos1 == -1:
-                pos1 = line.find('Token::simpleMatch(')
-            if pos1 == -1:
-                break
+        # Compile Token::Match and Token::simpleMatch
+        line = replaceTokenMatch(matchFunctions, matchStrs, line)
 
-            res = parseMatch(line, pos1)
-            if res == None:
-                break
-            else:
-                assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
-
-                g0 = res[0]
-                arg1 = res[1]
-                arg2 = res[2]
-                arg3 = None
-                if len(res) == 4:
-                    arg3 = res[3]
-
-                res = re.match(r'\s*"([^"]*)"\s*$', arg2)
-                if res == None:
-                    break  # Non-const pattern - bailout
-                else:
-                    arg2 = res.group(1)
-                    a3 = ''
-                    if arg3:
-                        a3 = ',' + arg3
-                    line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                    matchfunctions += compilePattern(matchStrs, arg2, patternNumber, arg3)
-                    patternNumber += 1
-
-        # Replace plain old C-string comparison with C++ strings
-        while True:
-            match = re.search('str\(\) (==|!=) "', line)
-            if not match:
-                match = re.search('strAt\(.+?\) (==|!=) "', line)
-            if not match:
-                break
-
-            res = parseStringComparison(line, match.start())
-            if res == None:
-                break
-
-            startPos = res[0]
-            endPos = res[1]
-            text = line[startPos+1:endPos-1]
-            line = line[:startPos] + insertMatchStr(matchStrs, text) + line[endPos:]
+        # Cache plain C-strings in C++ strings
+        line = replaceCStrings(matchStrs, line)
 
         code += line
 
@@ -235,8 +245,13 @@ def convertFile(srcname, destname):
     for match in sorted(matchStrs, key=matchStrs.get):
         stringList += 'static const std::string matchStr' + str(matchStrs[match]) + '("' + match + '");\n'
 
+    # Compute matchFunctions
+    strFunctions = ''
+    for function in matchFunctions:
+        strFunctions += function;
+
     fout = open(destname, 'wt')
-    fout.write(header+stringList+matchfunctions+code)
+    fout.write(header+stringList+strFunctions+code)
     fout.close()
 
 # selftests..
