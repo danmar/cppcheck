@@ -110,6 +110,25 @@ def compilePattern(matchStrs, pattern, nr, varid):
 
     return ret
 
+def compileFindPattern(matchFunctions, matchStrs, pattern, findmatchnr, matchnr, endToken):
+    arg2 = ''
+    endCondition = ''
+    if endToken:
+        arg2 = ', const Token *end'
+        endCondition = ' && tok != end'
+
+    ret = '// ' + pattern + '\n'
+    ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *tok'+arg2+') {\n'
+    ret += '    for (; tok' + endCondition + '; tok = tok->next()) {\n'
+    ret += '        if (match' + str(matchnr) + '(tok))\n';
+    ret += '            return tok;\n'
+    ret += '    }\n'
+    ret += '    return NULL;\n}\n'
+
+    matchFunctions.append(compilePattern(matchStrs, pattern, matchnr, None))
+
+    return ret
+
 def parseMatch(line, pos1):
     parlevel = 0
     args = []
@@ -199,6 +218,49 @@ def replaceTokenMatch(matchFunctions, matchStrs, line):
 
     return line
 
+def replaceTokenFindMatch(matchFunctions, matchStrs, line):
+    pos1 = 0
+    while True:
+        # TODO: Add support for Token::findmatch()
+        # Function prototypes from token.h:
+        # static const Token *findsimplematch(const Token *tok, const char pattern[]);
+        # static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
+        # static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
+        # static const Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
+        pos1 = line.find('Token::findsimplematch(')
+        # if pos1 == -1:
+            # pos1 = line.find('Token::findmatch(')
+        if pos1 == -1:
+            break
+
+        res = parseMatch(line, pos1)
+        if res == None:
+            break
+        else:
+            assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
+
+            g0 = res[0]
+            arg1 = res[1]
+            arg2 = res[2]
+            arg3 = None
+            if len(res) == 4:
+                arg3 = res[3]
+
+            res = re.match(r'\s*"([^"]*)"\s*$', arg2)
+            if res == None:
+                break  # Non-const pattern - bailout
+            else:
+                arg2 = res.group(1)
+                a3 = ''
+                if arg3:
+                    a3 = ',' + arg3
+                findMatchNumber = len(matchFunctions) + 2
+                matchNumber = len(matchFunctions) + 1
+                line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
+                matchFunctions.append(compileFindPattern(matchFunctions, matchStrs, arg2, findMatchNumber, matchNumber, arg3))
+
+    return line
+
 def replaceCStrings(matchStrs, line):
     while True:
         match = re.search('str\(\) (==|!=) "', line)
@@ -234,6 +296,13 @@ def convertFile(srcname, destname):
     for line in srclines:
         # Compile Token::Match and Token::simpleMatch
         line = replaceTokenMatch(matchFunctions, matchStrs, line)
+
+        # Compile Token::findsimplematch
+        # NOTE: Not enabled for now since the generated code
+        # is slower than before. We need to optimize the compilePattern
+        # function f.e. not to check for "if (!tok) in the findmatch() case
+        #
+        # line = replaceTokenFindMatch(matchFunctions, matchStrs, line)
 
         # Cache plain C-strings in C++ strings
         line = replaceCStrings(matchStrs, line)
