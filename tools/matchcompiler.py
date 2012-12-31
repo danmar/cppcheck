@@ -144,6 +144,26 @@ def parseMatch(line, pos1):
 
     return None
 
+def parseStringComparison(line, pos1):
+    startPos = 0
+    endPos = 0
+    pos = pos1
+    inString = False
+    while pos < len(line):
+        if inString:
+            if line[pos] == '\\':
+                pos += 1
+            elif line[pos] == '"':
+                inString = False
+                endPos = pos+1
+                return (startPos, endPos)
+        elif line[pos] == '"':
+            startPos = pos
+            inString = True
+        pos += 1
+
+    return None
+
 def convertFile(srcname, destname):
     fin = open(srcname, "rt")
     srclines = fin.readlines()
@@ -191,6 +211,23 @@ def convertFile(srcname, destname):
                     matchfunctions = matchfunctions + compilePattern(matchStrs, arg2, patternNumber, arg3)
                     patternNumber = patternNumber + 1
 
+        # Replace plain old C-string comparison with C++ strings
+        while True:
+            match = re.search('str\(\) (==|!=) "', line)
+            if not match:
+                match = re.search('strAt\(.+?\) (==|!=) "', line)
+            if not match:
+                break
+
+            res = parseStringComparison(line, match.start())
+            if res == None:
+                break
+
+            startPos = res[0]
+            endPos = res[1]
+            text = line[startPos+1:endPos-1]
+            line = line[:startPos] + insertMatchStr(matchStrs, text) + line[endPos:]
+
         code = code + line
 
     # Compute string list
@@ -217,4 +254,3 @@ assertEquals(parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 
 for f in glob.glob('lib/*.cpp'):
     print (f + ' => build/' + f[4:])
     convertFile(f, 'build/'+f[4:])
-
