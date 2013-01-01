@@ -216,8 +216,16 @@ int main(int argc, char *argv[])
                 pos2 += 2;
 
                 // find end of block..
-                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0))))
+                int level = 0;
+                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0)) || filedata[pos2].compare(0,3,"#if")==0 || filedata[pos2]=="#else" || filedata[pos2]=="#endif")) {
+                    if (filedata[pos2].compare(0,3,"#if") == 0)
+                        ++level;
+                    else if (filedata[pos2] == "#endif")
+                        --level;
                     ++pos2;
+                }
+                if (level != 0)
+                    break;
 
                 // does block of code end with a '}'
                 if ((pos2 < filedata.size()) && (filedata[pos2] == "}" || filedata[pos2] == "};")) {
