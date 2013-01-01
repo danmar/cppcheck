@@ -137,6 +137,210 @@ static std::vector<std::string> readfile(const std::string &filename)
     return filedata;
 }
 
+static bool removeMacrosInGlobalScope(std::vector<std::string> &filedata, const char filename[], const int linenr)
+{
+    bool changed = false;
+
+    // Remove macros in global scope..
+    for (std::size_t i = 0; i < filedata.size(); i++) {
+        const std::string line = (i==0U&&filedata.empty()) ? std::string(";") : filedata[i];
+        if (line.empty())
+            continue;
+
+        const char startChar = line[0];
+        const char endChar   = line[line.size() - 1U];
+
+        bool decl = bool(!std::isspace(startChar) && (endChar=='}' || endChar==';'));
+        while (decl) {
+            decl = false; // might be set to true below
+            std::size_t pos = i + 1U;
+            while (pos < filedata.size() && filedata[pos].empty())
+                ++pos;
+            if (pos >= filedata.size())
+                break;
+            const std::string &s = filedata[pos];  // possible macro : make sure it matches '[A-Z0-9_]+\(.*\)'
+            std::string::size_type si = 0;
+            while (si < s.size() && ((s[si]>='A' && s[si]<='Z') || (i>0 && s[si]>='0' && s[si]<='9') || s[si]=='_'))
+                si++;
+            while (si < s.size() && std::isspace(s[si]))
+                si++;
+            if (si == 0U || si >= s.size() || s[si] != '(')
+                break;
+            si++;
+            unsigned int parlevel = 1;
+            while (si < s.size() && parlevel >= 1U) {
+                if (s[si] == '(')
+                    ++parlevel;
+                else if (s[si] == ')')
+                    --parlevel;
+                si++;
+            }
+            if (!(parlevel == 0U && si == s.size()))
+                break;
+            if (test(filename, linenr, filedata, pos)) {
+                decl = true;
+                filedata[pos].clear();
+                std::cout << "removed declaration at line " << pos << std::endl;
+                changed = true;
+            } else {
+                std::cout << "kept declaration at line " << pos << std::endl;
+            }
+        }
+    }
+
+    return changed;
+}
+
+static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char filename[], const int linenr)
+{
+    bool changed = false;
+
+    // Remove blocks of code..
+    for (std::size_t i = 0; i < filedata.size(); i++) {
+        const std::string line = (i==0U&&filedata.empty()) ? std::string(";") : filedata[i];
+        if (line.empty())
+            continue;
+
+        const char startChar = line[0];
+        const char endChar   = line[line.size() - 1U];
+
+        // some kind of single line declaration
+        if (std::isalpha(startChar) && endChar==';') {
+            if (test(filename, linenr, filedata, i)) {
+                filedata[i].clear();
+                std::cout << "removed declaration at line " << i << std::endl;
+                changed = true;
+            } else {
+                std::cout << "kept declaration at line " << i << std::endl;
+            }
+        }
+
+        // remove a function body below a '}'
+        bool decl = bool(!std::isspace(startChar) && (endChar=='}' || endChar==';'));
+        while (decl) {
+            decl = false; // might be set to true below
+            std::size_t pos = ++i;
+            while (pos < filedata.size() && filedata[pos].empty())
+                ++pos;
+            if ((pos+2U < filedata.size()) && (std::isalpha(filedata[pos].at(0)))) {
+
+                // does code block start with "{"
+                std::size_t pos2 = pos;
+                if (filedata[pos].find("(") != std::string::npos && filedata[pos].find(")")==std::string::npos) {
+                    ++pos2;
+                    while (pos2+2U < filedata.size() && !filedata[pos2].empty() && filedata[pos2].find_first_of("(){}") == std::string::npos)
+                        ++pos2;
+                    if (filedata[pos2].find_first_of("({}")!=std::string::npos || filedata[pos2].find(")") == std::string::npos)
+                        break;
+                }
+                if (pos2+2U >= filedata.size() || filedata[pos2+1U] != "{")
+                    break;
+                pos2 += 2;
+
+                // find end of block..
+                int level = 0;
+                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0)) || filedata[pos2].compare(0,3,"#if")==0 || filedata[pos2]=="#else" || filedata[pos2]=="#endif")) {
+                    if (filedata[pos2].compare(0,3,"#if") == 0)
+                        ++level;
+                    else if (filedata[pos2] == "#endif")
+                        --level;
+                    ++pos2;
+                }
+                if (level != 0)
+                    break;
+
+                // does block of code end with a '}'
+                if ((pos2 < filedata.size()) && (filedata[pos2] == "}" || filedata[pos2] == "};")) {
+                    if (test(filename, linenr, filedata, pos, pos2)) {
+                        for (i = pos; i <= pos2; i++)
+                            filedata[i].clear();
+                        std::cout << "removed block of code at lines " << pos << "-" << pos2 << std::endl;
+                        decl = true;
+                        changed = true;
+                    } else {
+                        std::cout << "kept block of code at lines " << pos << "-" << pos2 << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    return changed;
+}
+
+static bool removeClassAndStructMembers(std::vector<std::string> &filedata, const char filename[], const int linenr)
+{
+    bool changed = false;
+
+    // remove class and struct members
+    for (std::size_t i = 0; i + 2U < filedata.size(); i++) {
+        if ((filedata[i].compare(0,6,"class ")==0 || filedata[i].compare(0,7,"struct ")==0) && filedata[i].find(";")==std::string::npos && filedata[i+1]=="{") {
+            bool decl = true;
+            for (std::size_t pos = i+2U; pos < filedata.size(); pos++) {
+                const std::string line = filedata[pos];
+                if (line.empty())
+                    continue;
+
+                // count { and }
+                unsigned int c1=0, c2=0;
+                for (std::string::size_type c = 0; c < line.size(); c++) {
+                    if (line[c] == '{')
+                        ++c1;
+                    else if (line[c] == '}')
+                        ++c2;
+                }
+                if (c2>0 && (c1!=1 || c2!=1))
+                    break;
+
+                const char endChar = line[line.size() - 1U];
+
+                if (decl && (endChar == ';' || (c1==1 && c2==1 && endChar=='}'))) {
+                    if (test(filename, linenr, filedata, pos)) {
+                        std::cout << "removed struct/class declaration at line " << pos << std::endl;
+                        filedata[pos].clear();
+                        changed = true;
+                    } else {
+                        std::cout << "kept struct/class declaration at line " << pos << std::endl;
+                    }
+                }
+
+                if (line[0] != '#')
+                    decl = bool(endChar == ';' || endChar == '}');
+            }
+        }
+    }
+
+    return changed;
+}
+
+static bool removeIfEndIf(std::vector<std::string> &filedata, const char filename[], const int linenr)
+{
+    bool changed = false;
+
+    // #if - #endif
+    for (std::size_t i = 0; i < filedata.size(); ++i) {
+        while (filedata[i].compare(0,3,"#if") == 0) {
+            std::size_t pos2 = i + 1;
+            while (pos2 < filedata.size() && filedata[pos2].empty())
+                ++pos2;
+            if (pos2 < filedata.size() && filedata[pos2] == "#endif") {
+                if (test(filename, linenr, filedata, i, pos2)) {
+                    std::cout << "Removed #if - #endif block at lines " << i << "-" << pos2 << std::endl;
+                    filedata[i].clear();
+                    filedata[pos2].clear();
+                    i = 0;
+                    changed = true;
+                } else {
+                    std::cout << "Kept #if - #endif block at lines " << i << "-" << pos2 << std::endl;
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+    return changed;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "cppcheck tool that reduce code for a false positive" << std::endl;
@@ -201,72 +405,13 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Remove blocks of code..
-    for (std::size_t i = 0; i < filedata.size(); i++) {
-        const std::string line = (i==0U&&filedata.empty()) ? std::string(";") : filedata[i];
-        if (line.empty())
-            continue;
-
-        const char startChar = line[0];
-        const char endChar   = line[line.size() - 1U];
-
-        // some kind of single line declaration
-        if (std::isalpha(startChar) && endChar==';') {
-            if (test(filename, linenr, filedata, i)) {
-                filedata[i].clear();
-                std::cout << "removed declaration at line " << i << std::endl;
-            } else {
-                std::cout << "kept declaration at line " << i << std::endl;
-            }
-        }
-
-        // remove a function body below a '}'
-        bool decl = bool(!std::isspace(startChar) && (endChar=='}' || endChar==';'));
-        while (decl) {
-            decl = false; // might be set to true below
-            std::size_t pos = ++i;
-            while (pos < filedata.size() && filedata[pos].empty())
-                ++pos;
-            if ((pos+2U < filedata.size()) && (std::isalpha(filedata[pos].at(0)))) {
-
-                // does code block start with "{"
-                std::size_t pos2 = pos;
-                if (filedata[pos].find("(") != std::string::npos && filedata[pos].find(")")==std::string::npos) {
-                    ++pos2;
-                    while (pos2+2U < filedata.size() && !filedata[pos2].empty() && filedata[pos2].find_first_of("(){}") == std::string::npos)
-                        ++pos2;
-                    if (filedata[pos2].find_first_of("({}")!=std::string::npos || filedata[pos2].find(")") == std::string::npos)
-                        break;
-                }
-                if (pos2+2U >= filedata.size() || filedata[pos2+1U] != "{")
-                    break;
-                pos2 += 2;
-
-                // find end of block..
-                int level = 0;
-                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0)) || filedata[pos2].compare(0,3,"#if")==0 || filedata[pos2]=="#else" || filedata[pos2]=="#endif")) {
-                    if (filedata[pos2].compare(0,3,"#if") == 0)
-                        ++level;
-                    else if (filedata[pos2] == "#endif")
-                        --level;
-                    ++pos2;
-                }
-                if (level != 0)
-                    break;
-
-                // does block of code end with a '}'
-                if ((pos2 < filedata.size()) && (filedata[pos2] == "}" || filedata[pos2] == "};")) {
-                    if (test(filename, linenr, filedata, pos, pos2)) {
-                        for (i = pos; i <= pos2; i++)
-                            filedata[i].clear();
-                        std::cout << "removed block of code at lines " << pos << "-" << pos2 << std::endl;
-                        decl = true;
-                    } else {
-                        std::cout << "kept block of code at lines " << pos << "-" << pos2 << std::endl;
-                    }
-                }
-            }
-        }
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        changed |= removeMacrosInGlobalScope(filedata, filename, linenr);
+        changed |= removeBlocksOfCode(filedata, filename, linenr);
+        changed |= removeClassAndStructMembers(filedata, filename, linenr);
+        changed |= removeIfEndIf(filedata, filename, linenr);
     }
 
     // Write resulting code..
