@@ -11,31 +11,31 @@
 class CppcheckExecutor : public ErrorLogger {
 private:
     CppCheck cppcheck;
-    const std::string line;
+    std::string pattern;
     bool foundLine;
 
 public:
-    CppcheckExecutor(const std::string &l)
+    CppcheckExecutor(int linenr)
         : ErrorLogger()
         , cppcheck(*this,false)
-        , line(':' + l + ']')
         , foundLine(false) {
+        std::ostringstream ostr;
+        ostr << linenr;
+        pattern = ":" + ostr.str() + "]";
+        cppcheck.settings().addEnabled("all");
+        cppcheck.settings().inconclusive = true;
+        cppcheck.settings()._force = true;
     }
 
     bool run(const char filename[]) {
         foundLine = false;
-        Settings settings;
-        settings.addEnabled("all");
-        settings.inconclusive = true;
-        settings._force = true;
-        cppcheck.settings() = settings;
         cppcheck.check(filename);
         return foundLine;
     }
 
     void reportOut(const std::string &outmsg) { }
     void reportErr(const ErrorLogger::ErrorMessage &msg) {
-        if (msg.toString(false).find(line) != std::string::npos) {
+        if (msg.toString(false).find(pattern) != std::string::npos) {
             foundLine = true;
             cppcheck.terminate();
         }
@@ -44,7 +44,7 @@ public:
 };
 
 
-static bool test(CppcheckExecutor &cppcheck, const char *filename, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
+static bool test(const char *filename, int linenr, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
 {
     std::string path(filename);
     if (path.find_first_of("\\/") != std::string::npos)
@@ -57,12 +57,14 @@ static bool test(CppcheckExecutor &cppcheck, const char *filename, const std::ve
     for (std::size_t i = 0; i < filedata.size(); i++)
         fout << ((i>=line1 && i<=line2) ? "" : filedata[i]) << std::endl;
     fout.close();
+
+    CppcheckExecutor cppcheck(linenr);
     return cppcheck.run(tempfilename.c_str());
 }
 
-static bool test(CppcheckExecutor &cppcheck, const char *filename, const std::vector<std::string> &filedata, const std::size_t line)
+static bool test(const char *filename, int linenr, const std::vector<std::string> &filedata, const std::size_t line)
 {
-    return test(cppcheck, filename, filedata, line, line);
+    return test(filename, linenr, filedata, line, line);
 }
 
 static void printstr(const std::vector<std::string> &filedata, int i1, int i2)
@@ -70,6 +72,69 @@ static void printstr(const std::vector<std::string> &filedata, int i1, int i2)
     std::cout << filedata.size();
     for (int i = i1; i < i2; ++i)
         std::cout << i << ":" << filedata[i] << std::endl;
+}
+
+static std::vector<std::string> readfile(const std::string &filename)
+{
+    std::vector<std::string> filedata;
+    std::ifstream fin(filename.c_str());
+    std::string line;
+    bool blockComment = false;
+    while (std::getline(fin,line)) {
+        // replace various space characters with space
+        for (std::string::size_type pos = 0; pos < line.size(); ++pos) {
+            if (line[pos] & 0x80 || std::isspace(line[pos]))
+                line[pos] = ' ';
+        }
+
+        // remove block comments TODO: Handle /* inside strings
+        if (blockComment) {
+            if (line.find("*/") == std::string::npos)
+                line.clear();
+            else {
+                if (line.find("*/") + 2U == line.size())
+                    line.clear();
+                else
+                    line = line.substr(line.find("*/") + 2U);
+                blockComment = false;
+            }
+        }
+        while (!blockComment && line.find("/*") != std::string::npos) {
+            std::string::size_type pos = line.find("/*");
+            if (line.find("*/",pos) == std::string::npos) {
+                blockComment = true;
+                if (pos==0)
+                    line.clear();
+                else
+                    line = line.substr(0,pos);
+            } else {
+                blockComment = false;
+                line = line.erase(pos, 2U + line.find("*/", pos) - pos);
+            }
+        }
+
+        // Remove // comments
+        if (line.find("//") != std::string::npos)
+            line = line.substr(0, line.find("//"));
+
+        // empty line
+        if (line.find_first_not_of(" ") == std::string::npos)
+            line.clear();
+        else {
+            const std::string::size_type pos = line.find_first_not_of(" ");
+
+            // remove spaces before leading #
+            if (line[pos]=='#')
+                line = line.substr(pos);
+        }
+
+        // remove trailing spaces
+        while (!line.empty() && std::isspace(line[line.size()-1U]))
+            line = line.substr(0, line.size() - 1U);
+
+        filedata.push_back(line);
+    }
+    return filedata;
 }
 
 int main(int argc, char *argv[])
@@ -82,94 +147,56 @@ int main(int argc, char *argv[])
     }
 
     const char * const filename = argv[1];
-    const char * const linenr   = argv[2];
+    int linenr                   = std::atoi(argv[2]);
 
     std::cout << "make sure false positive can be reproduced" << std::endl;
 
     // Execute Cppcheck on the file..
-    CppcheckExecutor cppcheck(linenr);
-    if (!cppcheck.run(filename)) {
-        std::cerr << "Can't reproduce false positive at line " << linenr << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    // Read file..
-    std::vector<std::string> filedata;
     {
-        std::ifstream fin(filename);
-        std::string line;
-        bool blockComment = false;
-        while (std::getline(fin,line)) {
-            // replace various space characters with space
-            for (std::string::size_type pos = 0; pos < line.size(); ++pos) {
-                if (line[pos] & 0x80 || std::isspace(line[pos]))
-                    line[pos] = ' ';
-            }
-
-            // remove block comments TODO: Handle /* inside strings
-            if (blockComment) {
-                if (line.find("*/") == std::string::npos)
-                    line.clear();
-                else {
-                    if (line.find("*/") + 2U == line.size())
-                        line.clear();
-                    else
-                        line = line.substr(line.find("*/") + 2U);
-                    blockComment = false;
-                }
-            }
-            while (!blockComment && line.find("/*") != std::string::npos) {
-                std::string::size_type pos = line.find("/*");
-                if (line.find("*/",pos) == std::string::npos) {
-                    blockComment = true;
-                    if (pos==0)
-                        line.clear();
-                    else
-                        line = line.substr(0,pos);
-                } else {
-                    blockComment = false;
-                    line = line.erase(pos, 2U + line.find("*/", pos) - pos);
-                }
-            }
-
-            // Remove // comments
-            if (line.find("//") != std::string::npos)
-                line = line.substr(0, line.find("//"));
-
-            // empty line
-            if (line.find_first_not_of(" ") == std::string::npos)
-                line.clear();
-            else {
-                const std::string::size_type pos = line.find_first_not_of(" ");
-
-                // remove spaces before leading #
-                if (line[pos]=='#')
-                    line = line.substr(pos);
-            }
-
-            // remove trailing spaces
-            while (!line.empty() && std::isspace(line[line.size()-1U]))
-                line = line.substr(0, line.size() - 1U);
-
-            filedata.push_back(line);
+        CppcheckExecutor cppcheck(linenr);
+        if (!cppcheck.run(filename)) {
+            std::cerr << "Can't reproduce false positive at line " << linenr << std::endl;
+            return EXIT_FAILURE;
         }
     }
 
+    // Read file..
+    std::vector<std::string> filedata(readfile(filename));
 
     // Write resulting code..
-    if (!test(cppcheck, filename, filedata, ~0)) {
+    if (!test(filename, linenr, filedata, ~0)) {
         std::cerr << "Cleanup failed." << std::endl;
         return EXIT_FAILURE;
     }
 
     // Remove includes..
+    std::set<std::string> headers;
     for (std::size_t i = 0; i < filedata.size(); i++) {
         if (filedata[i].compare(0,8,"#include")==0) {
-            if (test(cppcheck, filename, filedata, i)) {
+            if (test(filename, linenr, filedata, i)) {
+                std::cout << "removed #include : " << filedata[i] << std::endl;
                 filedata[i].clear();
-                std::cout << "removed #include at line " << i << std::endl;
             } else {
-                std::cout << "kept #include at line " << i << std::endl;
+                std::string header = filedata[i];
+                header = header.substr(1U + header.find_first_of("\"<"));
+                header = header.erase(header.find_last_of("\">"));
+                if (headers.find(header) != headers.end()) {
+                    std::cerr << "Failed to reduce headers" << std::endl;
+                    return EXIT_FAILURE;
+                }
+                headers.insert(header);
+                std::string path(filename);
+                if (path.find_first_of("\\/") != std::string::npos)
+                    path = path.erase(1 + path.find_last_of("\\/"));
+                else
+                    path.clear();
+                std::cout << "expand #include : " << (path+header) << std::endl;
+                std::vector<std::string> data(readfile(path+header));
+                if (!data.empty()) {
+                    filedata[i].clear();
+                    filedata.insert(filedata.begin()+i, data.begin(), data.end());
+                    linenr += data.size();
+                }
             }
         }
     }
@@ -185,7 +212,7 @@ int main(int argc, char *argv[])
 
         // some kind of single line declaration
         if (std::isalpha(startChar) && endChar==';') {
-            if (test(cppcheck, filename, filedata, i)) {
+            if (test(filename, linenr, filedata, i)) {
                 filedata[i].clear();
                 std::cout << "removed declaration at line " << i << std::endl;
             } else {
@@ -229,7 +256,7 @@ int main(int argc, char *argv[])
 
                 // does block of code end with a '}'
                 if ((pos2 < filedata.size()) && (filedata[pos2] == "}" || filedata[pos2] == "};")) {
-                    if (test(cppcheck, filename, filedata, pos, pos2)) {
+                    if (test(filename, linenr, filedata, pos, pos2)) {
                         for (i = pos; i <= pos2; i++)
                             filedata[i].clear();
                         std::cout << "removed block of code at lines " << pos << "-" << pos2 << std::endl;
