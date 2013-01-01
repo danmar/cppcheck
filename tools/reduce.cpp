@@ -20,19 +20,25 @@ public:
         , cppcheck(*this,false)
         , line(':' + l + ']')
         , foundLine(false) {
-        cppcheck.settings().addEnabled("all");
-        cppcheck.settings().inconclusive = true;
     }
 
     bool run(const char filename[]) {
         foundLine = false;
+        Settings settings;
+        settings.addEnabled("all");
+        settings.inconclusive = true;
+        settings._force = true;
+        cppcheck.settings() = settings;
         cppcheck.check(filename);
         return foundLine;
     }
 
     void reportOut(const std::string &outmsg) { }
     void reportErr(const ErrorLogger::ErrorMessage &msg) {
-        foundLine |= bool(msg.toString(false).find(line) != std::string::npos);
+        if (msg.toString(false).find(line) != std::string::npos) {
+            foundLine = true;
+            cppcheck.terminate();
+        }
     }
     void reportProgress(const std::string &filename, const char stage[], const unsigned int value) { }
 };
