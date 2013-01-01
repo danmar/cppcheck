@@ -394,6 +394,10 @@ public:
           retFuncPtr(false) {
     }
 
+    const std::string &name() const {
+        return tokenDef->str();
+    }
+
     std::size_t argCount() const {
         return argumentList.size();
     }
@@ -604,6 +608,8 @@ public:
      * @return pointer to function if found or NULL if not found
      */
     const Function* findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const;
+
+    const Function* findFunctionByNameAndArgsInScope(const Token *tok, const Scope *scope) const;
 
     const Scope* findScopeByName(const std::string& name) const;
 

@@ -105,7 +105,7 @@ void CheckClass::constructors()
             // Mark all variables not used
             clearAllVar(usage);
 
-            std::list<std::string> callstack;
+            std::list<const Function *> callstack;
             initializeVarList(*func, callstack, &(*scope), usage);
 
             // Check if any variables are uninitialized
@@ -354,7 +354,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
     return false;
 }
 
-void CheckClass::initializeVarList(const Function &func, std::list<std::string> &callstack, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
     bool initList = func.type == Function::eConstructor || func.type == Function::eCopyConstructor;
     const Token *ftok = func.arg->link()->next();
@@ -364,8 +364,35 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         // clKalle::clKalle() : var(value) { }
         if (initList) {
             if (level == 0 && Token::Match(ftok, "%var% (")) {
-                if (ftok->strAt(2) != ")")
-                    initVar(ftok->str(), scope, usage);
+                if (ftok->str() != func.name()) {
+                    if (ftok->strAt(2) != ")")
+                        initVar(ftok->str(), scope, usage);
+                } else { // c++11 delegate constructor
+                    const Function *member = symbolDatabase->findFunctionByNameAndArgsInScope(ftok, scope);
+                    // member function found
+                    if (member) {
+                        // recursive call
+                        // assume that all variables are initialized
+                        if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                            /** @todo false negative: just bail */
+                            assignAllVar(usage);
+                            return;
+                        }
+
+                        // member function has implementation
+                        if (member->hasBody) {
+                            // initialize variable use list using member function
+                            callstack.push_back(member);
+                            initializeVarList(*member, callstack, scope, usage);
+                            callstack.pop_back();
+                        }
+
+                        // there is a called member function, but it has no implementation, so we assume it initializes everything
+                        else {
+                            assignAllVar(usage);
+                        }
+                    }
+                }
             } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const" && Token::Match(ftok->next()->link()->next(), ",|{|%type%")) {
                 initVar(ftok->str(), scope, usage);
                 ftok = ftok->linkAt(1);
@@ -469,29 +496,22 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
         // Calling member function?
         else if (Token::simpleMatch(ftok, "operator= (") &&
                  ftok->previous()->str() != "::") {
-            // recursive call / calling overloaded function
-            // assume that all variables are initialized
-            if (std::find(callstack.begin(), callstack.end(), ftok->str()) != callstack.end()) {
-                /** @todo false negative: just bail */
-                assignAllVar(usage);
-                return;
-            }
-
-            /** @todo check function parameters for overloaded function so we check the right one */
-            // check if member function exists
-            std::list<Function>::const_iterator it;
-            for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it) {
-                if (ftok->str() == it->tokenDef->str() && it->type != Function::eConstructor)
-                    break;
-            }
-
+            const Function *member = symbolDatabase->findFunctionByNameAndArgsInScope(ftok, scope);
             // member function found
-            if (it != scope->functionList.end()) {
+            if (member) {
+                // recursive call
+                // assume that all variables are initialized
+                if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                    /** @todo false negative: just bail */
+                    assignAllVar(usage);
+                    return;
+                }
+
                 // member function has implementation
-                if (it->hasBody) {
+                if (member->hasBody) {
                     // initialize variable use list using member function
-                    callstack.push_back(ftok->str());
-                    initializeVarList(*it, callstack, scope, usage);
+                    callstack.push_back(member);
+                    initializeVarList(*member, callstack, scope, usage);
                     callstack.pop_back();
                 }
 
@@ -517,27 +537,23 @@ void CheckClass::initializeVarList(const Function &func, std::list<std::string> 
                 }
             }
 
-            // recursive call / calling overloaded function
-            // assume that all variables are initialized
-            if (std::find(callstack.begin(), callstack.end(), ftok->str()) != callstack.end()) {
-                assignAllVar(usage);
-                return;
-            }
-
             // check if member function
-            std::list<Function>::const_iterator it;
-            for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it) {
-                if (ftok->str() == it->tokenDef->str() && it->type != Function::eConstructor)
-                    break;
-            }
+            const Function *member = symbolDatabase->findFunctionByNameAndArgsInScope(ftok, scope);
 
             // member function found
-            if (it != scope->functionList.end()) {
+            if (member && member->type != Function::eConstructor) {
+                // recursive call
+                // assume that all variables are initialized
+                if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                    assignAllVar(usage);
+                    return;
+                }
+
                 // member function has implementation
-                if (it->hasBody) {
+                if (member->hasBody) {
                     // initialize variable use list using member function
-                    callstack.push_back(ftok->str());
-                    initializeVarList(*it, callstack, scope, usage);
+                    callstack.push_back(member);
+                    initializeVarList(*member, callstack, scope, usage);
                     callstack.pop_back();
 
                     // Assume that variables that are passed to it are initialized..

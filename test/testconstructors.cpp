@@ -73,6 +73,7 @@ private:
         TEST_CASE(initvar_constvar);
         TEST_CASE(initvar_staticvar);
         TEST_CASE(initvar_union);
+        TEST_CASE(initvar_delegate);       // ticket #4302
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
@@ -685,6 +686,43 @@ private:
               "    }\n"
               "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::U' is not initialized in the constructor.\n", "", errout.str());
+    }
+
+
+    void initvar_delegate() {
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) { }\n"
+              "    A() : A(42) {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::number' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) { number = n; }\n"
+              "    A() : A(42) {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) : A() { }\n"
+              "    A() {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::number' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) : A() { }\n"
+              "    A() { number = 42; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -2465,7 +2503,7 @@ private:
               "    void init(int value)\n"
               "    { }\n"
               "};");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'A::i' is not initialized in the constructor.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'A::i' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarOperatorEqual() { // ticket #2415

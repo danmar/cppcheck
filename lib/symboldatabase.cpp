@@ -2299,6 +2299,8 @@ const Function *SymbolDatabase::findFunctionByToken(const Token *tok) const
     return 0;
 }
 
+//---------------------------------------------------------------------------
+
 const Function* SymbolDatabase::findFunctionByName(const std::string& str, const Scope* startScope) const
 {
     const Scope* currScope = startScope;
@@ -2318,10 +2320,43 @@ const Function* SymbolDatabase::findFunctionByName(const std::string& str, const
     return 0;
 }
 
+//---------------------------------------------------------------------------
+
 /** @todo This function only counts the number of arguments in the function call.
     It does not take into account functions with default arguments.
     It does not take into account argument types.  This can be difficult because of promotion and conversion operators and casts and because the argument can also be a function call.
  */
+const Function* SymbolDatabase::findFunctionByNameAndArgsInScope(const Token *tok, const Scope *scope) const
+{
+    for (std::list<Function>::const_iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
+        if (i->tokenDef->str() == tok->str()) {
+            const Function *func = &*i;
+            if (tok->strAt(1) == "(" && tok->tokAt(2)) {
+                // check if function has no arguments
+                if (tok->strAt(2) == ")" && (func->argCount() == 0 || func->argCount() == func->initializedArgCount()))
+                    return func;
+
+                // check the arguments
+                unsigned int args = 0;
+                const Token *arg = tok->tokAt(2);
+                while (arg && arg->str() != ")") {
+                    /** @todo check argument type for match */
+                    /** @todo check for default arguments */
+                    args++;
+                    arg = arg->nextArgument();
+                }
+
+                if (args == func->argCount())
+                    return func;
+            }
+        }
+    }
+
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
 const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const
 {
     const Scope* currScope = startScope;
@@ -2332,29 +2367,9 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
             currScope = currScope->nestedIn;
     }
     while (currScope) {
-        for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
-            if (i->tokenDef->str() == tok->str()) {
-                const Function *func = &*i;
-                if (tok->strAt(1) == "(" && tok->tokAt(2)) {
-                    // check if function has no arguments
-                    if (tok->strAt(2) == ")" && (func->argCount() == 0 || func->argCount() == func->initializedArgCount()))
-                        return func;
-
-                    // check the arguments
-                    unsigned int args = 0;
-                    const Token *arg = tok->tokAt(2);
-                    while (arg && arg->str() != ")") {
-                        /** @todo check argument type for match */
-                        /** @todo check for default arguments */
-                        args++;
-                        arg = arg->nextArgument();
-                    }
-
-                    if (args == func->argCount())
-                        return func;
-                }
-            }
-        }
+        const Function *func = findFunctionByNameAndArgsInScope(tok, currScope);
+        if (func)
+            return func;
         currScope = currScope->nestedIn;
     }
     return 0;
