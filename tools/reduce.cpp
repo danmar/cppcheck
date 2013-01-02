@@ -231,13 +231,19 @@ static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char fi
                     if (filedata[pos2].find_first_of("({}")!=std::string::npos || filedata[pos2].find(")") == std::string::npos)
                         break;
                 }
-                if (pos2+2U >= filedata.size() || filedata[pos2+1U] != "{")
+                pos2++;
+                if (pos2 < filedata.size() && !filedata[pos2].empty() && filedata[pos2].at(filedata[pos2].find_first_not_of(" ")) == ':') {
+                    pos2++;
+                    while (pos2 < filedata.size() && !filedata[pos2].empty() && filedata[pos2].at(filedata[pos2].find_first_not_of(" ")) == ',')
+                        pos2++;
+                }
+                if (pos2+2U >= filedata.size() || filedata[pos2] != "{")
                     break;
-                pos2 += 2;
+                pos2++;
 
                 // find end of block..
                 int level = 0;
-                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0)) || (std::isalpha(filedata[pos2].at(0)) && filedata[pos2].at(filedata[pos2].size()-1U) == ':') || filedata[pos2].compare(0,3,"#if")==0 || filedata[pos2]=="#else" || filedata[pos2]=="#endif")) {
+                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0)) || (std::isalpha(filedata[pos2].at(0)) && filedata[pos2].at(filedata[pos2].size()-1U) == ':') || filedata[pos2].compare(0,3,"#if")==0 || filedata[pos2].compare(0,3,"#el")==0 || filedata[pos2]=="#endif")) {
                     if (filedata[pos2].compare(0,3,"#if") == 0)
                         ++level;
                     else if (filedata[pos2] == "#endif")
@@ -342,6 +348,76 @@ static bool removeIfEndIf(std::vector<std::string> &filedata, const char filenam
             }
         }
     }
+
+    // #ifndef UNUSED_ID
+    for (std::size_t i = 0; i < filedata.size(); ++i) {
+        if (filedata[i].compare(0,8,"#ifndef ") == 0) {
+            bool erase = true;
+            bool def = false;
+            const std::string id(filedata[i].substr(8));
+            for (std::size_t i2 = 0; i2 < filedata.size(); i2++) {
+                if (i2 == i)
+                    continue;
+                if (filedata[i2].find(id) != std::string::npos) {
+                    if (!def && filedata[i2].compare(0,8,"#define ")==0)
+                        def = true;
+                    else
+                        erase = false;
+                }
+            }
+            if (erase) {
+                unsigned int level = 0;
+                for (std::size_t i2 = i + 1U; i2 < filedata.size(); i2++) {
+                    if (filedata[i2].compare(0,3,"#if")==0)
+                        ++level;
+                    else if (filedata[i2] == "#else")
+                        break;
+                    else if (filedata[i2] == "#endif") {
+                        if (level > 0)
+                            --level;
+                        else {
+                            std::vector<std::string> filedata2(filedata);
+                            filedata2[i].clear();
+                            filedata2[i2].clear();
+
+                            if (test(filename, linenr, filedata2, i)) {
+                                std::cout << "Removed #ifndef at line " << i << std::endl;
+                                filedata.swap(filedata2);
+                                changed = true;
+                            } else {
+                                std::cout << "Kept #ifndef at line " << i << std::endl;
+                                break;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return changed;
+}
+
+static bool removeUnusedDefines(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
+{
+    bool changed = false;
+
+    for (std::size_t i = 0; i < filedata.size(); ++i) {
+        if (filedata[i].compare(0,8,"#define ")==0 && filedata[i].find("\\")==std::string::npos) {
+            // Try to remove macro..
+
+            if (test(filename, linenr, filedata, i)) {
+                std::cout << "Removed #define at line " << i << std::endl;
+                filedata[i].clear();
+                changed = true;
+            } else {
+                std::cout << "Kept #define at line " << i << std::endl;
+            }
+        }
+    }
+
     return changed;
 }
 
@@ -431,6 +507,7 @@ int main(int argc, char *argv[])
         changed |= removeBlocksOfCode(filedata, filename, linenr);
         changed |= removeClassAndStructMembers(filedata, filename, linenr);
         changed |= removeIfEndIf(filedata, filename, linenr);
+        changed |= removeUnusedDefines(filedata, filename, linenr);
     }
 
     // Write resulting code..
