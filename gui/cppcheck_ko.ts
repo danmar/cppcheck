@@ -639,6 +639,10 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <source>Show S&amp;cratchpad...</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Chinese (Simplified)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>

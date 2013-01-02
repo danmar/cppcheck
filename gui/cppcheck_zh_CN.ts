@@ -740,63 +740,68 @@ Do you want to remove the file from the recently used projects -list?</source>
 你要从最近使用的项目列表中删除此文件吗？</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="34"/>
         <source>English</source>
         <translation>英語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="32"/>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>Dutch</source>
         <translation>荷兰语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="32"/>
+        <source>Chinese (Simplified)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>Finnish</source>
         <translation>芬兰语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>French</source>
         <translation>法语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Italian</source>
         <translation>意大利语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="40"/>
         <source>Korean</source>
         <translation>韩文</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>Spanish</source>
         <translation>西班牙语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="43"/>
+        <location filename="translationhandler.cpp" line="44"/>
         <source>Swedish</source>
         <translation>瑞典语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>German</source>
         <translation>德语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="41"/>
         <source>Russian</source>
         <translation>俄语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Japanese</source>
         <oldsource>Japanease</oldsource>
         <translation>日语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Serbian</source>
         <translation>塞尔维亚语</translation>
     </message>
@@ -954,17 +959,17 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="77"/>
+        <location filename="translationhandler.cpp" line="78"/>
         <source>Unknown language specified!</source>
         <translation>指定了未知语言！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="89"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Language file %1 not found!</source>
         <translation>语言文件 %1 不存在！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="95"/>
+        <location filename="translationhandler.cpp" line="96"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>无法从文件 %2 中为语言 %1 加载翻译文件</translation>
     </message>
@@ -972,22 +977,22 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Severity</source>
         <translation>严重性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Line</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Summary</source>
         <translation>概要</translation>
     </message>
@@ -998,48 +1003,48 @@ Do you want to remove the file from the recently used projects -list?</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="205"/>
-        <location filename="resultstree.cpp" line="724"/>
+        <location filename="resultstree.cpp" line="721"/>
         <source>[Inconclusive]</source>
         <translation>[不确定的]</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="273"/>
+        <location filename="resultstree.cpp" line="263"/>
         <source>debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="535"/>
+        <location filename="resultstree.cpp" line="532"/>
         <source>Copy filename</source>
         <translation>复制文件名</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="536"/>
+        <location filename="resultstree.cpp" line="533"/>
         <source>Copy full path</source>
         <translation>复制完整路径</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="537"/>
+        <location filename="resultstree.cpp" line="534"/>
         <source>Copy message</source>
         <translation>复制消息</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="538"/>
+        <location filename="resultstree.cpp" line="535"/>
         <source>Copy message id</source>
         <translation>复制消息 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="539"/>
+        <location filename="resultstree.cpp" line="536"/>
         <source>Hide</source>
         <translation>隐藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="585"/>
-        <location filename="resultstree.cpp" line="599"/>
+        <location filename="resultstree.cpp" line="582"/>
+        <location filename="resultstree.cpp" line="596"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="586"/>
+        <location filename="resultstree.cpp" line="583"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1049,7 +1054,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 在“首先项 / 应用程序”中为 Cppcheck 配置编辑应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="600"/>
+        <location filename="resultstree.cpp" line="597"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -1058,12 +1063,12 @@ Please select the default editor application in preferences/Applications.</sourc
 请在“首先项 / 应用程序”中选择默认应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="629"/>
+        <location filename="resultstree.cpp" line="626"/>
         <source>Could not find the file!</source>
         <translation>找不到文件！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="675"/>
+        <location filename="resultstree.cpp" line="672"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1072,7 +1077,7 @@ Please check the application path and parameters are correct.</source>
 请检查此应用程序的路径与参数是否正确。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="689"/>
+        <location filename="resultstree.cpp" line="686"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
@@ -1081,42 +1086,42 @@ Please select the directory where file is located.</source>
 请选择文件所在目录。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="696"/>
+        <location filename="resultstree.cpp" line="693"/>
         <source>Select Directory</source>
         <translation>选择目录</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="255"/>
+        <location filename="resultstree.cpp" line="245"/>
         <source>style</source>
         <translation>风格</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="258"/>
+        <location filename="resultstree.cpp" line="248"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="261"/>
+        <location filename="resultstree.cpp" line="251"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="264"/>
+        <location filename="resultstree.cpp" line="254"/>
         <source>performance</source>
         <translation>性能</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="267"/>
+        <location filename="resultstree.cpp" line="257"/>
         <source>portability</source>
         <translation>移植可能性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="270"/>
+        <location filename="resultstree.cpp" line="260"/>
         <source>information</source>
         <translation>信息</translation>
     </message>

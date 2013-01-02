@@ -712,63 +712,68 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="34"/>
         <source>English</source>
         <translation>英語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="32"/>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>Dutch</source>
         <translation>オランダ語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="32"/>
+        <source>Chinese (Simplified)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>Finnish</source>
         <translation>フィンランド語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>French</source>
         <translation>フランス語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Italian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="40"/>
         <source>Korean</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>Spanish</source>
         <translation>スペイン語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="43"/>
+        <location filename="translationhandler.cpp" line="44"/>
         <source>Swedish</source>
         <translation>スウェーデン語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>German</source>
         <translation>ドイツ語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="41"/>
         <source>Russian</source>
         <translation>ロシア語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Japanese</source>
         <oldsource>Japanease</oldsource>
         <translation>日本語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Serbian</source>
         <translation>セルビア語</translation>
     </message>
@@ -926,17 +931,17 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="77"/>
+        <location filename="translationhandler.cpp" line="78"/>
         <source>Unknown language specified!</source>
         <translation>指定された未知の言語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="89"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Language file %1 not found!</source>
         <translation>言語ファイル %1 が見つかりません!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="95"/>
+        <location filename="translationhandler.cpp" line="96"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -944,22 +949,22 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Severity</source>
         <translation>警告種別</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Line</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Summary</source>
         <translation>内容</translation>
     </message>
@@ -970,48 +975,48 @@ Do you want to remove the file from the recently used projects -list?</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="205"/>
-        <location filename="resultstree.cpp" line="724"/>
+        <location filename="resultstree.cpp" line="721"/>
         <source>[Inconclusive]</source>
         <translation>[結論の出ない]</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="273"/>
+        <location filename="resultstree.cpp" line="263"/>
         <source>debug</source>
         <translation>デバッグ</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="535"/>
+        <location filename="resultstree.cpp" line="532"/>
         <source>Copy filename</source>
         <translation>ファイル名をコピー</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="536"/>
+        <location filename="resultstree.cpp" line="533"/>
         <source>Copy full path</source>
         <translation>フルパスをコピー</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="537"/>
+        <location filename="resultstree.cpp" line="534"/>
         <source>Copy message</source>
         <translation>メッセージをコピー</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="538"/>
+        <location filename="resultstree.cpp" line="535"/>
         <source>Copy message id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="539"/>
+        <location filename="resultstree.cpp" line="536"/>
         <source>Hide</source>
         <translation>非表示</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="585"/>
-        <location filename="resultstree.cpp" line="599"/>
+        <location filename="resultstree.cpp" line="582"/>
+        <location filename="resultstree.cpp" line="596"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="586"/>
+        <location filename="resultstree.cpp" line="583"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1019,19 +1024,19 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
         <translation type="unfinished">メニューの「編集」→「設定」からテキストファイルを表示するアプリケーションを設定してください。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="600"/>
+        <location filename="resultstree.cpp" line="597"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="629"/>
+        <location filename="resultstree.cpp" line="626"/>
         <source>Could not find the file!</source>
         <translation>ファイルが見つかりません</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="675"/>
+        <location filename="resultstree.cpp" line="672"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1040,7 +1045,7 @@ Please check the application path and parameters are correct.</source>
 実行ファイルパスや引数の設定を確認してください。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="689"/>
+        <location filename="resultstree.cpp" line="686"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
@@ -1049,42 +1054,42 @@ Please select the directory where file is located.</source>
 ディレクトリにファイルが存在するか確認してください。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="696"/>
+        <location filename="resultstree.cpp" line="693"/>
         <source>Select Directory</source>
         <translation>ディレクトリを選択</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="255"/>
+        <location filename="resultstree.cpp" line="245"/>
         <source>style</source>
         <translation>スタイル</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="258"/>
+        <location filename="resultstree.cpp" line="248"/>
         <source>error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="261"/>
+        <location filename="resultstree.cpp" line="251"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="264"/>
+        <location filename="resultstree.cpp" line="254"/>
         <source>performance</source>
         <translation>パフォーマンス</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="267"/>
+        <location filename="resultstree.cpp" line="257"/>
         <source>portability</source>
         <translation>移植可能性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="270"/>
+        <location filename="resultstree.cpp" line="260"/>
         <source>information</source>
         <translation>情報</translation>
     </message>

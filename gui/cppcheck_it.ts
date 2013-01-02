@@ -741,62 +741,67 @@ Do you want to remove the file from the recently used projects -list?</source>
 Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>Finnish</source>
         <translation>Finnish</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="34"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="32"/>
+        <source>Chinese (Simplified)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>Dutch</source>
         <translation>Dutch</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>French</source>
         <translation>French</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Italian</source>
         <translation>Italian</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="40"/>
         <source>Korean</source>
         <translation>Korean</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>Spanish</source>
         <translation>Spanish</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="43"/>
+        <location filename="translationhandler.cpp" line="44"/>
         <source>Swedish</source>
         <translation>Swedish</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>German</source>
         <translation>German</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="41"/>
         <source>Russian</source>
         <translation>Russian</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Japanese</source>
         <translation>Japanese</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Serbian</source>
         <translation>Serbian</translation>
     </message>
@@ -954,17 +959,17 @@ Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="77"/>
+        <location filename="translationhandler.cpp" line="78"/>
         <source>Unknown language specified!</source>
         <translation>Lingua specificata sconosciuta!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="89"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Language file %1 not found!</source>
         <translation>Il file di lingua %1 non trovato!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="95"/>
+        <location filename="translationhandler.cpp" line="96"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>Fallito il tentativo di aprire la traduzione per la lingua %1 dal file %2</translation>
     </message>
@@ -972,22 +977,22 @@ Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Severity</source>
         <translation>Severità</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Line</source>
         <translation>Linea</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Summary</source>
         <translation>Riassunto</translation>
     </message>
@@ -998,48 +1003,48 @@ Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation
     </message>
     <message>
         <location filename="resultstree.cpp" line="205"/>
-        <location filename="resultstree.cpp" line="724"/>
+        <location filename="resultstree.cpp" line="721"/>
         <source>[Inconclusive]</source>
         <translation>[Inconcludente]</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="273"/>
+        <location filename="resultstree.cpp" line="263"/>
         <source>debug</source>
         <translation>debug</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="535"/>
+        <location filename="resultstree.cpp" line="532"/>
         <source>Copy filename</source>
         <translation>Copia nome file</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="536"/>
+        <location filename="resultstree.cpp" line="533"/>
         <source>Copy full path</source>
         <translation>Copia tutto il percorso</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="537"/>
+        <location filename="resultstree.cpp" line="534"/>
         <source>Copy message</source>
         <translation>Copia messaggio</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="538"/>
+        <location filename="resultstree.cpp" line="535"/>
         <source>Copy message id</source>
         <translation>Copia id del messaggio</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="539"/>
+        <location filename="resultstree.cpp" line="536"/>
         <source>Hide</source>
         <translation>Nascondi</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="585"/>
-        <location filename="resultstree.cpp" line="599"/>
+        <location filename="resultstree.cpp" line="582"/>
+        <location filename="resultstree.cpp" line="596"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="586"/>
+        <location filename="resultstree.cpp" line="583"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1048,7 +1053,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Configura l&apos;applicazione di scrittura per Cppcheck in Preferenze/Applicazioni.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="600"/>
+        <location filename="resultstree.cpp" line="597"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -1057,12 +1062,12 @@ Please select the default editor application in preferences/Applications.</sourc
 Per favore seleziona l&apos;applicazione di scrittura predefinito in Preferenze/Applicazioni.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="629"/>
+        <location filename="resultstree.cpp" line="626"/>
         <source>Could not find the file!</source>
         <translation>Non è stato possibile trovare il file!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="675"/>
+        <location filename="resultstree.cpp" line="672"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1071,7 +1076,7 @@ Please check the application path and parameters are correct.</source>
 Per favore verifica che il percorso dell&apos;applicazione e i parametri siano corretti.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="689"/>
+        <location filename="resultstree.cpp" line="686"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
@@ -1080,42 +1085,42 @@ Please select the directory where file is located.</source>
 Per favore selezioa la cartella dove il file è posizionato.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="696"/>
+        <location filename="resultstree.cpp" line="693"/>
         <source>Select Directory</source>
         <translation>Seleziona Cartella</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1000"/>
+        <location filename="resultstree.cpp" line="997"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="255"/>
+        <location filename="resultstree.cpp" line="245"/>
         <source>style</source>
         <translation>stile</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="258"/>
+        <location filename="resultstree.cpp" line="248"/>
         <source>error</source>
         <translation>errore</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="261"/>
+        <location filename="resultstree.cpp" line="251"/>
         <source>warning</source>
         <translation>avviso</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="264"/>
+        <location filename="resultstree.cpp" line="254"/>
         <source>performance</source>
         <translation>performance</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="267"/>
+        <location filename="resultstree.cpp" line="257"/>
         <source>portability</source>
         <translation>portabilità</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="270"/>
+        <location filename="resultstree.cpp" line="260"/>
         <source>information</source>
         <translation>Informazione</translation>
     </message>
