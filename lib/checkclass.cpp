@@ -365,8 +365,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         if (initList) {
             if (level == 0 && Token::Match(ftok, "%var% (")) {
                 if (ftok->str() != func.name()) {
-                    if (ftok->strAt(2) != ")")
-                        initVar(ftok->str(), scope, usage);
+                    initVar(ftok->str(), scope, usage);
                 } else { // c++11 delegate constructor
                     const Function *member = symbolDatabase->findFunctionByNameAndArgsInScope(ftok, scope);
                     // member function found
