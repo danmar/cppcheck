@@ -204,6 +204,9 @@ check:	all
 dmake:	tools/dmake.cpp
 	$(CXX) -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib
 
+reduce:	tools/reduce.cpp
+	$(CXX) -o reduce tools/reduce.cpp -Ilib $(LIBOBJ)
+
 clean:
 	rm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner cppcheck cppcheck.1
 
