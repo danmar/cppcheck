@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "cppcheck.h"
-
+#include "mathlib.h"
 
 class CppcheckExecutor : public ErrorLogger {
 private:
@@ -15,13 +15,11 @@ private:
     bool foundLine;
 
 public:
-    CppcheckExecutor(int linenr)
+    CppcheckExecutor(std::size_t linenr)
         : ErrorLogger()
         , cppcheck(*this,false)
+        , pattern(":" + MathLib::longToString(linenr) + "]")
         , foundLine(false) {
-        std::ostringstream ostr;
-        ostr << linenr;
-        pattern = ":" + ostr.str() + "]";
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
         cppcheck.settings()._force = true;
@@ -33,18 +31,18 @@ public:
         return foundLine;
     }
 
-    void reportOut(const std::string &outmsg) { }
+    void reportOut(const std::string &/*outmsg*/) { }
     void reportErr(const ErrorLogger::ErrorMessage &msg) {
         if (msg.toString(false).find(pattern) != std::string::npos) {
             foundLine = true;
             cppcheck.terminate();
         }
     }
-    void reportProgress(const std::string &filename, const char stage[], const unsigned int value) { }
+    void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const unsigned int /*value*/) { }
 };
 
 
-static bool test(const char *filename, int linenr, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
+static bool test(const char *filename, std::size_t linenr, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
 {
     std::string path(filename);
     if (path.find_first_of("\\/") != std::string::npos)
@@ -62,7 +60,7 @@ static bool test(const char *filename, int linenr, const std::vector<std::string
     return cppcheck.run(tempfilename.c_str());
 }
 
-static bool test(const char *filename, int linenr, const std::vector<std::string> &filedata, const std::size_t line)
+static bool test(const char *filename, std::size_t linenr, const std::vector<std::string> &filedata, const std::size_t line)
 {
     return test(filename, linenr, filedata, line, line);
 }
@@ -137,7 +135,7 @@ static std::vector<std::string> readfile(const std::string &filename)
     return filedata;
 }
 
-static bool removeMacrosInGlobalScope(std::vector<std::string> &filedata, const char filename[], const int linenr)
+static bool removeMacrosInGlobalScope(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
 {
     bool changed = false;
 
@@ -191,7 +189,7 @@ static bool removeMacrosInGlobalScope(std::vector<std::string> &filedata, const 
     return changed;
 }
 
-static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char filename[], const int linenr)
+static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
 {
     bool changed = false;
 
@@ -239,7 +237,7 @@ static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char fi
 
                 // find end of block..
                 int level = 0;
-                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0)) || filedata[pos2].compare(0,3,"#if")==0 || filedata[pos2]=="#else" || filedata[pos2]=="#endif")) {
+                while ((pos2 < filedata.size()) && (filedata[pos2].empty() || std::isspace(filedata[pos2].at(0)) || (std::isalpha(filedata[pos2].at(0)) && filedata[pos2].at(filedata[pos2].size()-1U) == ':') || filedata[pos2].compare(0,3,"#if")==0 || filedata[pos2]=="#else" || filedata[pos2]=="#endif")) {
                     if (filedata[pos2].compare(0,3,"#if") == 0)
                         ++level;
                     else if (filedata[pos2] == "#endif")
@@ -267,7 +265,7 @@ static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char fi
     return changed;
 }
 
-static bool removeClassAndStructMembers(std::vector<std::string> &filedata, const char filename[], const int linenr)
+static bool removeClassAndStructMembers(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
 {
     bool changed = false;
 
@@ -303,8 +301,14 @@ static bool removeClassAndStructMembers(std::vector<std::string> &filedata, cons
                     }
                 }
 
-                if (line[0] != '#')
-                    decl = bool(endChar == ';' || endChar == '}');
+                if (line[0] != '#') {
+                    if (decl && std::isalpha(line[0]) && endChar == ':') {
+                        decl = true;
+                        for (std::string::size_type linepos = 0U; linepos+1U < line.size(); ++linepos)
+                            decl &= (std::isspace(line[linepos]) || std::isalpha(line[linepos]));
+                    } else
+                        decl = bool(endChar == ';' || endChar == '}');
+                }
             }
         }
     }
@@ -312,7 +316,7 @@ static bool removeClassAndStructMembers(std::vector<std::string> &filedata, cons
     return changed;
 }
 
-static bool removeIfEndIf(std::vector<std::string> &filedata, const char filename[], const int linenr)
+static bool removeIfEndIf(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
 {
     bool changed = false;
 
@@ -345,13 +349,28 @@ int main(int argc, char *argv[])
 {
     std::cout << "cppcheck tool that reduce code for a false positive" << std::endl;
 
-    if (argc != 3) {
-        std::cerr << "Syntax: " << argv[0] << " filename line" << std::endl;
-        return EXIT_FAILURE;
+    bool stdout = false;
+    const char *filename = NULL;
+    std::size_t linenr = 0;
+
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--stdout") == 0)
+            stdout = true;
+        else if (filename==NULL && strchr(argv[i],'.'))
+            filename = argv[i];
+        else if (linenr == 0U && MathLib::isInt(argv[i]))
+            linenr = std::atoi(argv[i]);
+        else {
+            std::cerr << "invalid option " << argv[i] << std::endl;
+            return EXIT_FAILURE;
+        }
     }
 
-    const char * const filename = argv[1];
-    int linenr                   = std::atoi(argv[2]);
+    if (linenr == 0U || filename == NULL) {
+        std::cerr << "Syntax:" << std::endl
+                  << argv[0] << " [--stdout] filename linenr" << std::endl;
+        return EXIT_FAILURE;
+    }
 
     std::cout << "make sure false positive can be reproduced" << std::endl;
 
@@ -417,10 +436,13 @@ int main(int argc, char *argv[])
     // Write resulting code..
     {
         const std::string outfilename(std::string("__out__") + std::strrchr(filename,'.'));
-        std::ofstream fout(outfilename.c_str());
+        std::ofstream fout;
+        if (!stdout)
+            fout.open(outfilename.c_str());
+        std::ostream &os = stdout ? std::cout : fout;
         for (std::size_t i = 0; i < filedata.size(); i++) {
             if (!filedata[i].empty())
-                fout << filedata[i] << std::endl;
+                os << filedata[i] << std::endl;
         }
     }
 
