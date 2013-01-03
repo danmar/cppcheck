@@ -482,7 +482,7 @@ static bool cleanupStatements(const ReduceSettings &settings, std::vector<std::s
 
             // function parameter..
             if (std::strchr("(,", line[pos])) {
-                std::string::size_type pos1 = (line[pos] == ',') ? pos : (pos + 1U);
+                const std::string::size_type pos1 = (line[pos] == ',') ? pos : (pos + 1U);
                 std::string::size_type pos2 = pos + 1;
                 while (pos2 < line.size() && std::isspace(line[pos2]))
                     ++pos2;
@@ -497,6 +497,7 @@ static bool cleanupStatements(const ReduceSettings &settings, std::vector<std::s
                         std::cout << "Removed function parameter at line " << i << ", column " << pos1 << std::endl;
                         line = filedata[i];
                         changed = true;
+                        continue;
                     } else {
                         std::cout << "Kept function parameter at line " << i << ", column " << pos1 << std::endl;
                         filedata[i] = backup;
@@ -505,7 +506,7 @@ static bool cleanupStatements(const ReduceSettings &settings, std::vector<std::s
             }
 
             // cast
-            else if (line[pos] == '=') {
+            if (line[pos] == '=' || line[pos] == '(') {
                 const std::string::size_type pos1 = pos + 1;
                 std::string::size_type pos2 = pos + 1;
                 while (pos2 < line.size() && std::isspace(line[pos2]))
@@ -553,9 +554,11 @@ int main(int argc, char *argv[])
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
             stdout = true;
-        else if (strcmp(argv[i], "--hang") == 0)
+        else if (strcmp(argv[i], "--hang") == 0) {
             settings.hang = true;
-        else if (strncmp(argv[i], "--maxtime=", 10) == 0)
+            if (settings.maxtime == ~0U)
+                settings.maxtime = 300;  // default timeout = 5 minutes
+        } else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
         else if (settings.filename==NULL && strchr(argv[i],'.'))
             settings.filename = argv[i];
