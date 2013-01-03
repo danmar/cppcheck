@@ -4,6 +4,8 @@
 cppcheck
 cppcheck.exe
 dmake
+reduce
+reduce.exe
 tags
 testrunner
 testrunner.exe
