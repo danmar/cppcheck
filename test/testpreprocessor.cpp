@@ -140,6 +140,7 @@ private:
         TEST_CASE(if_cond12);
         TEST_CASE(if_cond13);
         TEST_CASE(if_cond14);
+        TEST_CASE(if_cond15); // #4456 - segfault
 
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
@@ -1584,6 +1585,20 @@ private:
                                 "#endif\n";
         Preprocessor preprocessor(NULL, this);
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(filedata,"",""));
+    }
+
+    void if_cond15() { // #4456 - segmentation fault
+        const char filedata[] = "#if ((A >= B) && (C != D))\n"
+                                "#if (E < F(1))\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "4456.c");  // <- don't crash in Preprocessor::getcfgs -> Tokenize -> number of template parameters
     }
 
 

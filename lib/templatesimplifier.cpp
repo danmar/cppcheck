@@ -214,8 +214,10 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // Function pointer or prototype..
-        while (tok->str() == "(")
+        while (tok && tok->str() == "(")
             tok = tok->link()->next();
+        if (!tok)
+            return 0;
 
         // inner template
         if (tok->str() == "<") {
