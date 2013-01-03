@@ -279,32 +279,9 @@ const Token *Token::tokAt(int index) const
     return tok;
 }
 
-Token *Token::tokAt(int index)
-{
-    Token *tok = this;
-    int num = std::abs(index);
-    while (num > 0 && tok) {
-        if (index > 0)
-            tok = tok->next();
-        else
-            tok = tok->previous();
-        --num;
-    }
-    return tok;
-}
-
 const Token *Token::linkAt(int index) const
 {
     const Token *tok = this->tokAt(index);
-    if (!tok) {
-        throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
-    }
-    return tok->link();
-}
-
-Token *Token::linkAt(int index)
-{
-    Token *tok = this->tokAt(index);
     if (!tok) {
         throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
     }

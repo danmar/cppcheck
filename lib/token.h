@@ -84,14 +84,18 @@ public:
      * would return next from that one.
      */
     const Token *tokAt(int index) const;
-    Token *tokAt(int index);
+    Token *tokAt(int index) {
+        return const_cast<Token *>(static_cast<const Token *>(this)->tokAt(index));
+    }
 
     /**
      * Returns the link to the token in given index, related to this token.
      * For example index 1 would return the link to next token.
      */
     const Token *linkAt(int index) const;
-    Token *linkAt(int index);
+    Token *linkAt(int index) {
+        return const_cast<Token *>(static_cast<const Token *>(this)->linkAt(index));
+    }
 
     const std::string &strAt(int index) const;
 
@@ -255,6 +259,18 @@ public:
     static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
     static const Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
+    static Token *findsimplematch(Token *tok, const char pattern[]) {
+        return const_cast<Token *>(findsimplematch(static_cast<const Token *>(tok), pattern));
+    }
+    static Token *findsimplematch(Token *tok, const char pattern[], const Token *end) {
+        return const_cast<Token *>(findsimplematch(static_cast<const Token *>(tok), pattern, end));
+    }
+    static Token *findmatch(Token *tok, const char pattern[], unsigned int varId = 0) {
+        return const_cast<Token *>(findmatch(static_cast<const Token *>(tok), pattern, varId));
+    }
+    static Token *findmatch(Token *tok, const char pattern[], const Token *end, unsigned int varId = 0) {
+        return const_cast<Token *>(findmatch(static_cast<const Token *>(tok), pattern, end, varId));
+    }
 
     /**
      * Needle is build from multiple alternatives. If one of
