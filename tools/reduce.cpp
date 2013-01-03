@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 
 #include "cppcheck.h"
 #include "mathlib.h"
@@ -13,56 +14,75 @@ private:
     CppCheck cppcheck;
     std::string pattern;
     bool foundLine;
+    std::time_t stopTime;
 
 public:
-    CppcheckExecutor(std::size_t linenr)
+    CppcheckExecutor(std::size_t linenr, bool hang)
         : ErrorLogger()
         , cppcheck(*this,false)
-        , pattern(":" + MathLib::longToString(linenr) + "]")
-        , foundLine(false) {
+        , foundLine(false)
+        , stopTime(0) {
+
+        if (!hang)
+            pattern = ":" + MathLib::longToString(linenr) + "]";
+
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
         cppcheck.settings()._force = true;
     }
 
-    bool run(const char filename[]) {
+    bool run(const char filename[], unsigned int maxtime) {
         foundLine = false;
+        stopTime = std::time(0) + maxtime;
         cppcheck.check(filename);
         return foundLine;
     }
 
     void reportOut(const std::string &/*outmsg*/) { }
     void reportErr(const ErrorLogger::ErrorMessage &msg) {
-        if (msg.toString(false).find(pattern) != std::string::npos) {
+        if (!pattern.empty() && msg.toString(false).find(pattern) != std::string::npos) {
             foundLine = true;
             cppcheck.terminate();
         }
     }
-    void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const unsigned int /*value*/) { }
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
+        if (std::time(0) > stopTime) {
+            if (pattern.empty())
+                foundLine = true;
+            std::cout << "terminate" << std::endl;
+            cppcheck.terminate();
+        }
+    }
 };
 
+struct ReduceSettings {
+    const char *filename;
+    std::size_t linenr;
+    bool hang;
+    unsigned int maxtime;
+};
 
-static bool test(const char *filename, std::size_t linenr, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
+static bool test(const ReduceSettings &settings, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
 {
-    std::string path(filename);
+    std::string path(settings.filename);
     if (path.find_first_of("\\/") != std::string::npos)
         path = path.erase(1 + path.find_last_of("\\/"));
     else
         path.clear();
 
-    const std::string tempfilename(path + "__temp__" + std::strrchr(filename,'.'));
+    const std::string tempfilename(path + "__temp__" + std::strrchr(settings.filename,'.'));
     std::ofstream fout(tempfilename.c_str());
     for (std::size_t i = 0; i < filedata.size(); i++)
         fout << ((i>=line1 && i<=line2) ? "" : filedata[i]) << std::endl;
     fout.close();
 
-    CppcheckExecutor cppcheck(linenr);
-    return cppcheck.run(tempfilename.c_str());
+    CppcheckExecutor cppcheck(settings.linenr, settings.hang);
+    return cppcheck.run(tempfilename.c_str(), settings.maxtime);
 }
 
-static bool test(const char *filename, std::size_t linenr, const std::vector<std::string> &filedata, const std::size_t line)
+static bool test(const ReduceSettings &settings, const std::vector<std::string> &filedata, const std::size_t line)
 {
-    return test(filename, linenr, filedata, line, line);
+    return test(settings, filedata, line, line);
 }
 
 static void printstr(const std::vector<std::string> &filedata, int i1, int i2)
@@ -135,7 +155,7 @@ static std::vector<std::string> readfile(const std::string &filename)
     return filedata;
 }
 
-static bool removeMacrosInGlobalScope(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
+static bool removeMacrosInGlobalScope(const ReduceSettings &settings, std::vector<std::string> &filedata)
 {
     bool changed = false;
 
@@ -175,7 +195,7 @@ static bool removeMacrosInGlobalScope(std::vector<std::string> &filedata, const 
             }
             if (!(parlevel == 0U && si == s.size()))
                 break;
-            if (test(filename, linenr, filedata, pos)) {
+            if (test(settings, filedata, pos)) {
                 decl = true;
                 filedata[pos].clear();
                 std::cout << "removed declaration at line " << pos << std::endl;
@@ -189,7 +209,7 @@ static bool removeMacrosInGlobalScope(std::vector<std::string> &filedata, const 
     return changed;
 }
 
-static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
+static bool removeBlocksOfCode(const ReduceSettings &settings, std::vector<std::string> &filedata)
 {
     bool changed = false;
 
@@ -204,7 +224,7 @@ static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char fi
 
         // some kind of single line declaration
         if (std::isalpha(startChar) && endChar==';') {
-            if (test(filename, linenr, filedata, i)) {
+            if (test(settings, filedata, i)) {
                 filedata[i].clear();
                 std::cout << "removed declaration at line " << i << std::endl;
                 changed = true;
@@ -255,7 +275,7 @@ static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char fi
 
                 // does block of code end with a '}'
                 if ((pos2 < filedata.size()) && (filedata[pos2] == "}" || filedata[pos2] == "};")) {
-                    if (test(filename, linenr, filedata, pos, pos2)) {
+                    if (test(settings, filedata, pos, pos2)) {
                         for (i = pos; i <= pos2; i++)
                             filedata[i].clear();
                         std::cout << "removed block of code at lines " << pos << "-" << pos2 << std::endl;
@@ -271,7 +291,7 @@ static bool removeBlocksOfCode(std::vector<std::string> &filedata, const char fi
     return changed;
 }
 
-static bool removeClassAndStructMembers(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
+static bool removeClassAndStructMembers(const ReduceSettings &settings, std::vector<std::string> &filedata)
 {
     bool changed = false;
 
@@ -298,7 +318,7 @@ static bool removeClassAndStructMembers(std::vector<std::string> &filedata, cons
                 const char endChar = line[line.size() - 1U];
 
                 if (decl && (endChar == ';' || (c1==1 && c2==1 && endChar=='}'))) {
-                    if (test(filename, linenr, filedata, pos)) {
+                    if (test(settings, filedata, pos)) {
                         std::cout << "removed struct/class declaration at line " << pos << std::endl;
                         filedata[pos].clear();
                         changed = true;
@@ -322,7 +342,7 @@ static bool removeClassAndStructMembers(std::vector<std::string> &filedata, cons
     return changed;
 }
 
-static bool removeIfEndIf(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
+static bool removeIfEndIf(const ReduceSettings &settings, std::vector<std::string> &filedata)
 {
     bool changed = false;
 
@@ -333,7 +353,7 @@ static bool removeIfEndIf(std::vector<std::string> &filedata, const char filenam
             while (pos2 < filedata.size() && filedata[pos2].empty())
                 ++pos2;
             if (pos2 < filedata.size() && filedata[pos2] == "#endif") {
-                if (test(filename, linenr, filedata, i, pos2)) {
+                if (test(settings, filedata, i, pos2)) {
                     std::cout << "Removed #if - #endif block at lines " << i << "-" << pos2 << std::endl;
                     filedata[i].clear();
                     filedata[pos2].clear();
@@ -380,7 +400,7 @@ static bool removeIfEndIf(std::vector<std::string> &filedata, const char filenam
                             filedata2[i].clear();
                             filedata2[i2].clear();
 
-                            if (test(filename, linenr, filedata2, i)) {
+                            if (test(settings, filedata2, i)) {
                                 std::cout << "Removed #ifndef at line " << i << std::endl;
                                 filedata.swap(filedata2);
                                 changed = true;
@@ -400,7 +420,7 @@ static bool removeIfEndIf(std::vector<std::string> &filedata, const char filenam
     return changed;
 }
 
-static bool removeUnusedDefines(std::vector<std::string> &filedata, const char filename[], const std::size_t linenr)
+static bool removeUnusedDefines(const ReduceSettings &settings, std::vector<std::string> &filedata)
 {
     bool changed = false;
 
@@ -408,7 +428,7 @@ static bool removeUnusedDefines(std::vector<std::string> &filedata, const char f
         if (filedata[i].compare(0,8,"#define ")==0 && filedata[i].find("\\")==std::string::npos) {
             // Try to remove macro..
 
-            if (test(filename, linenr, filedata, i)) {
+            if (test(settings, filedata, i)) {
                 std::cout << "Removed #define at line " << i << std::endl;
                 filedata[i].clear();
                 changed = true;
@@ -421,49 +441,154 @@ static bool removeUnusedDefines(std::vector<std::string> &filedata, const char f
     return changed;
 }
 
+static bool removeSingleLines(const ReduceSettings &settings, std::vector<std::string> &filedata)
+{
+    bool changed = false;
+
+    bool decl = true;
+    for (std::size_t i = 0; i < filedata.size(); ++i) {
+        const std::string line = filedata[i];
+        if (line.empty())
+            continue;
+
+        const char endChar = line[line.size() - 1U];
+        if (decl && endChar == ';') {
+            if (test(settings, filedata, i)) {
+                std::cout << "Removed statement at line " << i << std::endl;
+                filedata[i].clear();
+            } else {
+                std::cout << "Kept statement at line " << i << std::endl;
+            }
+        } else {
+            decl = bool (endChar == ';' || endChar == '{' || endChar == '}');
+        }
+    }
+
+    return changed;
+}
+
+// Try to remove stuff from statements
+static bool cleanupStatements(const ReduceSettings &settings, std::vector<std::string> &filedata)
+{
+    bool changed = false;
+
+    bool decl = true;
+    for (std::size_t i = 0; i < filedata.size(); ++i) {
+        std::string line = filedata[i];
+        if (line.empty())
+            continue;
+
+        for (std::string::size_type pos = 0U; pos < line.size(); ++pos) {
+
+            // function parameter..
+            if (std::strchr("(,", line[pos])) {
+                std::string::size_type pos1 = (line[pos] == ',') ? pos : (pos + 1U);
+                std::string::size_type pos2 = pos + 1;
+                while (pos2 < line.size() && std::isspace(line[pos2]))
+                    ++pos2;
+                while (pos2 < line.size() && (std::isalnum(line[pos2]) || line[pos2]=='_'))
+                    ++pos2;
+                while (pos2 < line.size() && std::isspace(line[pos2]))
+                    ++pos2;
+                if (pos2 >= pos+2U && pos2<line.size() && std::strchr(",)", line[pos2])) {
+                    const std::string backup(filedata[i]);
+                    filedata[i] = line.substr(0,pos) + line.substr(pos2);
+                    if (test(settings, filedata, ~0U)) {
+                        std::cout << "Removed function parameter at line " << i << ", column " << pos1 << std::endl;
+                        line = filedata[i];
+                        changed = true;
+                    } else {
+                        std::cout << "Kept function parameter at line " << i << ", column " << pos1 << std::endl;
+                        filedata[i] = backup;
+                    }
+                }
+            }
+
+            // cast
+            else if (line[pos] == '=') {
+                const std::string::size_type pos1 = pos + 1;
+                std::string::size_type pos2 = pos + 1;
+                while (pos2 < line.size() && std::isspace(line[pos2]))
+                    ++pos2;
+                if (pos2>=line.size() || line[pos2]!='(')
+                    continue;
+                pos2++;
+                while (pos2 < line.size() && std::isalpha(line[pos2]))
+                    ++pos2;
+                while (pos2 < line.size() && std::isspace(line[pos2]))
+                    ++pos2;
+                if (pos2>=line.size() || line[pos2]!='*')
+                    continue;
+                while (pos2 < line.size() && line[pos2]=='*')
+                    ++pos2;
+                if (pos2<line.size() && line[pos2]==')') {
+                    pos2++;
+                    const std::string backup(filedata[i]);
+                    filedata[i] = line.substr(0,pos1) + line.substr(pos2);
+                    if (test(settings, filedata, ~0U)) {
+                        std::cout << "Removed cast at line " << i << ", column " << pos1 << std::endl;
+                        line = filedata[i];
+                        changed = true;
+                    } else {
+                        std::cout << "Kept cast at line " << i << ", column " << pos1 << std::endl;
+                        filedata[i] = backup;
+                    }
+                }
+            }
+        }
+    }
+
+    return changed;
+}
+
+
 int main(int argc, char *argv[])
 {
-    std::cout << "cppcheck tool that reduce code for a false positive" << std::endl;
+    std::cout << "cppcheck tool that reduce code for a hang / false positive" << std::endl;
 
     bool stdout = false;
-    const char *filename = NULL;
-    std::size_t linenr = 0;
+    struct ReduceSettings settings = {0};
+    settings.maxtime = ~0U;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
             stdout = true;
-        else if (filename==NULL && strchr(argv[i],'.'))
-            filename = argv[i];
-        else if (linenr == 0U && MathLib::isInt(argv[i]))
-            linenr = std::atoi(argv[i]);
+        else if (strcmp(argv[i], "--hang") == 0)
+            settings.hang = true;
+        else if (strncmp(argv[i], "--maxtime=", 10) == 0)
+            settings.maxtime = std::atoi(argv[i] + 10);
+        else if (settings.filename==NULL && strchr(argv[i],'.'))
+            settings.filename = argv[i];
+        else if (settings.linenr == 0U && MathLib::isInt(argv[i]))
+            settings.linenr = std::atoi(argv[i]);
         else {
             std::cerr << "invalid option " << argv[i] << std::endl;
             return EXIT_FAILURE;
         }
     }
 
-    if (linenr == 0U || filename == NULL) {
+    if ((!settings.hang && settings.linenr == 0U) || settings.filename == NULL) {
         std::cerr << "Syntax:" << std::endl
-                  << argv[0] << " [--stdout] filename linenr" << std::endl;
+                  << argv[0] << " [--stdout] [--hang] filename [linenr]" << std::endl;
         return EXIT_FAILURE;
     }
 
-    std::cout << "make sure false positive can be reproduced" << std::endl;
+    std::cout << "make sure " << (settings.hang ? "hang" : "false positive") << " can be reproduced" << std::endl;
 
     // Execute Cppcheck on the file..
     {
-        CppcheckExecutor cppcheck(linenr);
-        if (!cppcheck.run(filename)) {
-            std::cerr << "Can't reproduce false positive at line " << linenr << std::endl;
+        CppcheckExecutor cppcheck(settings.linenr, settings.hang);
+        if (!cppcheck.run(settings.filename, settings.maxtime)) {
+            std::cerr << "Can't reproduce false positive at line " << settings.linenr << std::endl;
             return EXIT_FAILURE;
         }
     }
 
     // Read file..
-    std::vector<std::string> filedata(readfile(filename));
+    std::vector<std::string> filedata(readfile(settings.filename));
 
     // Write resulting code..
-    if (!test(filename, linenr, filedata, ~0)) {
+    if (!test(settings, filedata, ~0)) {
         std::cerr << "Cleanup failed." << std::endl;
         return EXIT_FAILURE;
     }
@@ -472,7 +597,7 @@ int main(int argc, char *argv[])
     std::set<std::string> headers;
     for (std::size_t i = 0; i < filedata.size(); i++) {
         if (filedata[i].compare(0,8,"#include")==0) {
-            if (test(filename, linenr, filedata, i)) {
+            if (test(settings, filedata, i)) {
                 std::cout << "removed #include : " << filedata[i] << std::endl;
                 filedata[i].clear();
             } else {
@@ -484,7 +609,7 @@ int main(int argc, char *argv[])
                     return EXIT_FAILURE;
                 }
                 headers.insert(header);
-                std::string path(filename);
+                std::string path(settings.filename);
                 if (path.find_first_of("\\/") != std::string::npos)
                     path = path.erase(1 + path.find_last_of("\\/"));
                 else
@@ -494,7 +619,7 @@ int main(int argc, char *argv[])
                 if (!data.empty()) {
                     filedata[i].clear();
                     filedata.insert(filedata.begin()+i, data.begin(), data.end());
-                    linenr += data.size();
+                    settings.linenr += data.size();
                 }
             }
         }
@@ -503,16 +628,21 @@ int main(int argc, char *argv[])
     bool changed = true;
     while (changed) {
         changed = false;
-        changed |= removeMacrosInGlobalScope(filedata, filename, linenr);
-        changed |= removeBlocksOfCode(filedata, filename, linenr);
-        changed |= removeClassAndStructMembers(filedata, filename, linenr);
-        changed |= removeIfEndIf(filedata, filename, linenr);
-        changed |= removeUnusedDefines(filedata, filename, linenr);
+        changed |= removeMacrosInGlobalScope(settings,filedata);
+        changed |= removeBlocksOfCode(settings,filedata);
+        changed |= removeClassAndStructMembers(settings,filedata);
+        changed |= removeIfEndIf(settings,filedata);
+        changed |= removeUnusedDefines(settings,filedata);
+
+        if (settings.hang) {
+            changed |= removeSingleLines(settings,filedata);
+            changed |= cleanupStatements(settings,filedata);
+        }
     }
 
     // Write resulting code..
     {
-        const std::string outfilename(std::string("__out__") + std::strrchr(filename,'.'));
+        const std::string outfilename(std::string("__out__") + std::strrchr(settings.filename,'.'));
         std::ofstream fout;
         if (!stdout)
             fout.open(outfilename.c_str());
