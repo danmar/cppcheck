@@ -6406,15 +6406,18 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 break;
             if (!structname.empty()) {
                 tok3->deleteNext(2);
+                ret = true;
             }
             tok3 = tok3->next();
+            if (tok3->str() != value)
+                ret = true;
             tok3->str(value);
             tok3->varId(valueVarId);
             if (tok3->previous()->str() == "*" && valueIsPointer) {
                 tok3 = tok3->previous();
                 tok3->deleteThis();
+                ret = true;
             }
-            ret = true;
         }
 
         if (Token::simpleMatch(tok3, "= {")) {

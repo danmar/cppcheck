@@ -165,6 +165,7 @@ private:
         TEST_CASE(simplifyKnownVariables48);    // ticket #3754 - wrong simplification in for loop header
         TEST_CASE(simplifyKnownVariables49);    // #3691 - continue in switch
         TEST_CASE(simplifyKnownVariables50);    // #4066 sprintf changes
+        TEST_CASE(simplifyKnownVariables51);    // #4409 hang
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
@@ -2556,6 +2557,15 @@ private:
                                 "}";
             ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
         }
+    }
+
+    void simplifyKnownVariables51() { // #4409 hang
+        const char code[] = "void mhz_M(int enough) {\n"
+                            "  TYPE *x=&x, **p=x, **q = NULL;\n"
+                            "  BENCH1(q = _mhz_M(n); n = 1;)\n"
+                            "  use_pointer(q);\n"
+                            "}";
+        tokenizeAndStringify(code, true); // don't hang
     }
 
     void simplifyKnownVariablesIfEq1() {
