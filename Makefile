@@ -208,7 +208,7 @@ reduce:	tools/reduce.cpp
 	$(CXX) -g -o reduce tools/reduce.cpp -Ilib lib/*.cpp
 
 clean:
-	rm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner cppcheck cppcheck.1
+	rm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1
 
 man:	man/cppcheck.1
 
