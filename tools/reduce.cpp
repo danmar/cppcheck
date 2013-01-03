@@ -472,7 +472,6 @@ static bool cleanupStatements(const ReduceSettings &settings, std::vector<std::s
 {
     bool changed = false;
 
-    bool decl = true;
     for (std::size_t i = 0; i < filedata.size(); ++i) {
         std::string line = filedata[i];
         if (line.empty())
