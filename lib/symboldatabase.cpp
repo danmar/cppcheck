@@ -2377,7 +2377,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
 
 //---------------------------------------------------------------------------
 
-const Scope* SymbolDatabase::findScopeByName(const std::string& name) const
+const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 {
     for (std::list<Scope>::const_iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->className == name)
@@ -2388,7 +2388,7 @@ const Scope* SymbolDatabase::findScopeByName(const std::string& name) const
 
 //---------------------------------------------------------------------------
 
-Scope * Scope::findInNestedList(const std::string & name)
+Scope *Scope::findInNestedList(const std::string & name)
 {
     std::list<Scope *>::iterator it;
 
@@ -2401,7 +2401,7 @@ Scope * Scope::findInNestedList(const std::string & name)
 
 //---------------------------------------------------------------------------
 
-Scope * Scope::findRecordInNestedList(const std::string & name)
+const Scope *Scope::findRecordInNestedList(const std::string & name) const
 {
     std::list<Scope *>::const_iterator it;
 
@@ -2414,7 +2414,7 @@ Scope * Scope::findRecordInNestedList(const std::string & name)
 
 //---------------------------------------------------------------------------
 
-Scope * Scope::findInNestedListRecursive(const std::string & name)
+Scope *Scope::findInNestedListRecursive(const std::string & name)
 {
     std::list<Scope *>::iterator it;
 
@@ -2433,7 +2433,7 @@ Scope * Scope::findInNestedListRecursive(const std::string & name)
 
 //---------------------------------------------------------------------------
 
-const Scope * Scope::findQualifiedScope(const std::string & name) const
+const Scope *Scope::findQualifiedScope(const std::string & name) const
 {
     if (type == Scope::eClass || type == Scope::eStruct || type == Scope::eNamespace) {
         if (name.compare(0, className.size(), className) == 0) {
@@ -2490,17 +2490,12 @@ bool SymbolDatabase::isCPP() const
 
 //---------------------------------------------------------------------------
 
-const Scope * SymbolDatabase::findScope(const Token *tok, const Scope *startScope) const
-{
-    return const_cast<SymbolDatabase*>(this)->findScope(tok, const_cast<Scope*>(startScope));
-}
-
-Scope * SymbolDatabase::findScope(const Token *tok, Scope *startScope)
+const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope) const
 {
     // absolute path
     if (tok->str() == "::") {
         tok = tok->next();
-        Scope *scope = &scopeList.front();
+        const Scope *scope = &scopeList.front();
 
         while (scope && tok && tok->isName()) {
             scope = scope->findRecordInNestedList(tok->str());
@@ -2519,7 +2514,7 @@ Scope * SymbolDatabase::findScope(const Token *tok, Scope *startScope)
 
     // relative path
     else if (tok->isName()) {
-        Scope *scope = startScope;
+        const Scope *scope = startScope;
 
         while (scope && tok && tok->isName()) {
             scope = scope->findRecordInNestedList(tok->str());

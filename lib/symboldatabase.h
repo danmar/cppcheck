@@ -509,17 +509,20 @@ public:
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
-    Scope * findInNestedList(const std::string & name);
+    Scope *findInNestedList(const std::string & name);
 
-    Scope * findRecordInNestedList(const std::string & name);
+    const Scope *findRecordInNestedList(const std::string & name) const;
+    Scope *findRecordInNestedList(const std::string & name) {
+        return const_cast<Scope *>(static_cast<const Scope *>(this)->findRecordInNestedList(name));
+    }
 
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
-    Scope * findInNestedListRecursive(const std::string & name);
+    Scope *findInNestedListRecursive(const std::string & name);
 
-    const Scope * findQualifiedScope(const std::string & name) const;
+    const Scope *findQualifiedScope(const std::string & name) const;
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Scope *type_,
@@ -599,7 +602,7 @@ public:
 
     const Function *findFunctionByToken(const Token *tok) const;
 
-    const Function* findFunctionByName(const std::string& str, const Scope* startScope) const;
+    const Function *findFunctionByName(const std::string& str, const Scope* startScope) const;
 
     /**
      * @brief find a function by name and arguments
@@ -607,13 +610,16 @@ public:
      * @param startScope scope to start looking in
      * @return pointer to function if found or NULL if not found
      */
-    const Function* findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const;
+    const Function *findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const;
 
-    const Function* findFunctionByNameAndArgsInScope(const Token *tok, const Scope *scope) const;
+    const Function *findFunctionByNameAndArgsInScope(const Token *tok, const Scope *scope) const;
 
-    const Scope* findScopeByName(const std::string& name) const;
+    const Scope *findScopeByName(const std::string& name) const;
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
+    Scope *findScope(const Token *tok, Scope *startScope) const {
+        return const_cast<Scope *>(this->findScope(tok, static_cast<const Scope *>(startScope)));
+    }
 
     bool isClassOrStruct(const std::string &type) const {
         return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
@@ -643,12 +649,10 @@ private:
     friend class Scope;
 
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
-    Function* addGlobalFunctionDecl(Scope*& scope, const Token *argStart, const Token* funcStart);
-    Function* addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
+    Function *addGlobalFunctionDecl(Scope*& scope, const Token *argStart, const Token* funcStart);
+    Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
     static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
-
-    Scope *findScope(const Token *tok, Scope *startScope);
 
     /** class/struct types */
     std::set<std::string> classAndStructTypes;
