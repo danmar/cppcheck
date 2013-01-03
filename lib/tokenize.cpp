@@ -3376,6 +3376,9 @@ bool Tokenizer::simplifyTokenList()
 
     bool modified = true;
     while (modified) {
+        if (_settings && _settings->terminated())
+            return false;
+
         modified = false;
         modified |= simplifyConditions();
         modified |= simplifyFunctionReturn();
@@ -5978,6 +5981,10 @@ bool Tokenizer::simplifyKnownVariables()
                 Token *tok3 = NULL;
                 bool valueIsPointer = false;
 
+                // there could be a hang here if tok2 is moved back by the function calls below for some reason
+                if (_settings->terminated())
+                    return false;
+
                 if (!simplifyKnownVariablesGetData(varid, &tok2, &tok3, value, valueVarId, valueIsPointer, floatvars.find(tok2->varId()) != floatvars.end()))
                     continue;
 
@@ -6017,6 +6024,10 @@ bool Tokenizer::simplifyKnownVariables()
                 const bool valueIsPointer(false);
                 Token *tok3 = tok2->tokAt(6);
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
+
+                // there could be a hang here if tok2 was moved back by the function call above for some reason
+                if (_settings->terminated())
+                    return false;
             }
         }
 
@@ -6101,6 +6112,9 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
 bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const
 {
     const bool pointeralias(valueToken->isName() || Token::Match(valueToken, "& %var% ["));
+
+    if (_errorLogger && !list.getFiles().empty())
+        _errorLogger->reportProgress(list.getFiles()[0], "Tokenize (simplifyKnownVariables)", tok3->progressValue());
 
     bool ret = false;
 
