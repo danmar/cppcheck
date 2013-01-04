@@ -53,7 +53,7 @@ class MatchCompiler:
 
         if isFindMatch:
             ret = '\nconst Token *tok = start_tok;\n'
-            returnStatement = 'continue;\n';
+            returnStatement = 'continue;\n'
         else:
             arg2 = ''
             if varid:
@@ -61,7 +61,7 @@ class MatchCompiler:
 
             ret = '// ' + pattern + '\n'
             ret += 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
-            returnStatement = 'return false;\n';
+            returnStatement = 'return false;\n'
 
         tokens = pattern.split(' ')
         gotoNextToken = ''
@@ -114,7 +114,7 @@ class MatchCompiler:
                     ret += '        ' + returnStatement
 
             # !!a
-            elif tok[0:2]=="!!":
+            elif tok[0:2] == "!!":
                 ret += '    if (tok && tok->str() == ' + self._insertMatchStr(matchStrs, tok[2:]) + ')/* ' + tok[2:] + ' */\n'
                 ret += '        ' + returnStatement
                 gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
@@ -352,14 +352,14 @@ class MatchCompiler:
         # Compute matchFunctions
         strFunctions = ''
         for function in matchFunctions:
-            strFunctions += function;
+            strFunctions += function
 
         fout = open(destname, 'wt')
         fout.write(header+stringList+strFunctions+code)
         fout.close()
 
-    def _assertEquals(self,actual,expected):
-        if actual!=expected:
+    def _assertEquals(self, actual, expected):
+        if actual != expected:
             print ('Assertion failed:')
             print (actual)
             print (expected)
