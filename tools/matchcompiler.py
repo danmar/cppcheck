@@ -49,18 +49,21 @@ def compilePattern(matchStrs, pattern, nr, varid):
         arg2 = ', const unsigned int varid'
     ret = '// ' + pattern + '\n'
     ret += 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
-    if varid:
-        # if varid is provided, check that it's non-zero
-        ret += '    if (varid==0U)\n'
-        ret += '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");\n'
 
     tokens = pattern.split(' ')
     gotoNextToken = ''
+    checked_varid = False
     for tok in tokens:
         if tok == '':
             continue
         ret += gotoNextToken
         gotoNextToken = '    tok = tok->next();\n'
+
+        # if varid is provided, check that it's non-zero on first use
+        if varid and tok.find('%varid%') != -1 and checked_varid == False:
+            ret += '    if (varid==0U)\n'
+            ret += '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");\n'
+            checked_varid = True
 
         # [abc]
         if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
