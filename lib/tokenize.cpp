@@ -9352,12 +9352,12 @@ void Tokenizer::simplifyMathExpressions()
 
         //Pythagorean trigonometric identity: pow(sin(x),2n)+pow(cos(x),2n) = 1
         //Hyperbolic identity: pow(sinh(x),2n)-pow(cosh(x),2n) = -1
-        //2n = any number which is multiple of 2
+        //2n = any even number
         if (Token::simpleMatch(tok, "pow (")) {
             if (Token::simpleMatch(tok->tokAt(2), "sin (")) {
                 Token *tok2 = tok->linkAt(3);
                 if (!Token::Match(tok2, ") , %num% ) + pow ( cos (") ||
-                    MathLib::toLongNumber(tok2->strAt(2)) % 2 != 0)
+                    (MathLib::toLongNumber(tok2->strAt(2)) & 1) == 1)
                     continue;
                 Token *tok3 = tok2->tokAt(8);
                 if (!Token::Match(tok3->link(), ") , %num% )") ||
@@ -9370,7 +9370,7 @@ void Tokenizer::simplifyMathExpressions()
             } else if (Token::simpleMatch(tok->tokAt(2), "sinh (")) {
                 Token *tok2 = tok->linkAt(3);
                 if (!Token::Match(tok2, ") , %num% ) - pow ( cosh (") ||
-                    MathLib::toLongNumber(tok2->strAt(2)) % 2 != 0)
+                    (MathLib::toLongNumber(tok2->strAt(2)) & 1) == 1)
                     continue;
                 Token *tok3 = tok2->tokAt(8);
                 if (!Token::Match(tok3->link(), ") , %num% )") ||
