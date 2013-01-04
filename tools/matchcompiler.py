@@ -43,12 +43,21 @@ def compileCmd(tok, matchStrs):
 
     return '(tok->str()==' + insertMatchStr(matchStrs, tok) + ')/* ' + tok + ' */'
 
-def compilePattern(matchStrs, pattern, nr, varid):
-    arg2 = ''
-    if varid:
-        arg2 = ', const unsigned int varid'
-    ret = '// ' + pattern + '\n'
-    ret += 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
+def compilePattern(matchStrs, pattern, nr, varid, isFindMatch=False):
+    ret = ''
+    returnStatement = ''
+
+    if isFindMatch:
+        ret = '\nconst Token *tok = start_tok;\n'
+        returnStatement = 'continue;\n';
+    else:
+        arg2 = ''
+        if varid:
+            arg2 = ', const unsigned int varid'
+
+        ret = '// ' + pattern + '\n'
+        ret += 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
+        returnStatement = 'return false;\n';
 
     tokens = pattern.split(' ')
     gotoNextToken = ''
@@ -68,7 +77,7 @@ def compilePattern(matchStrs, pattern, nr, varid):
         # [abc]
         if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
             ret += '    if (!tok || tok->str().size()!=1U || !strchr("'+tok[1:-1]+'", tok->str()[0]))\n'
-            ret += '        return false;\n'
+            ret += '        ' + returnStatement
 
         # a|b|c
         elif tok.find('|') > 0:
@@ -98,44 +107,42 @@ def compilePattern(matchStrs, pattern, nr, varid):
                 gotoNextToken = ''
             else:
                 ret += '))\n'
-                ret += '        return false;\n'
+                ret += '        ' + returnStatement
 
         # !!a
         elif tok[0:2]=="!!":
             ret += '    if (tok && tok->str() == ' + insertMatchStr(matchStrs, tok[2:]) + ')/* ' + tok[2:] + ' */\n'
-            ret += '        return false;\n'
+            ret += '        ' + returnStatement
             gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
         else:
             ret += '    if (!tok || !' + compileCmd(tok, matchStrs) + ')\n'
-            ret += '        return false;\n'
-    ret += '    return true;\n}\n'
+            ret += '        ' + returnStatement
+
+    if isFindMatch:
+        ret += '    return start_tok;\n'
+    else:
+        ret += '    return true;\n'
+        ret += '}\n'
 
     return ret
 
-def compileFindPattern(matchFunctions, matchStrs, pattern, findmatchnr, matchnr, endToken, varId):
+def compileFindPattern(matchFunctions, matchStrs, pattern, findmatchnr, endToken, varId):
     more_args = ''
     endCondition = ''
     if endToken:
         more_args += ', const Token *end'
-        endCondition = ' && tok != end'
+        endCondition = ' && start_tok != end'
     if varId:
-        more_args += ', unsigned int varId'
+        more_args += ', unsigned int varid'
 
     ret = '// ' + pattern + '\n'
-    ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *tok'+more_args+') {\n'
-    ret += '    for (; tok' + endCondition + '; tok = tok->next()) {\n'
+    ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *start_tok'+more_args+') {\n'
+    ret += '    for (; start_tok' + endCondition + '; start_tok = start_tok->next()) {\n'
 
-    ret += '        if (match' + str(matchnr) + '(tok'
-    if varId:
-        ret += ', varId'
-    ret += '))\n';
-
-    ret += '            return tok;\n'
+    ret += compilePattern(matchStrs, pattern, -1, varId, True)
     ret += '    }\n'
     ret += '    return NULL;\n}\n'
-
-    matchFunctions.append(compilePattern(matchStrs, pattern, matchnr, varId))
 
     return ret
 
@@ -282,10 +289,9 @@ def replaceTokenFindMatch(matchFunctions, matchStrs, line):
                     a3 += ',' + endToken
                 if varId:
                     a3 += ',' + varId
-                findMatchNumber = len(matchFunctions) + 2
-                matchNumber = len(matchFunctions) + 1
+                findMatchNumber = len(matchFunctions) + 1
                 line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                matchFunctions.append(compileFindPattern(matchFunctions, matchStrs, pattern, findMatchNumber, matchNumber, endToken, varId))
+                matchFunctions.append(compileFindPattern(matchFunctions, matchStrs, pattern, findMatchNumber, endToken, varId))
 
     return line
 
@@ -326,10 +332,7 @@ def convertFile(srcname, destname):
         line = replaceTokenMatch(matchFunctions, matchStrs, line)
 
         # Compile Token::findsimplematch
-        # NOTE: Not enabled for now since the generated code
-        # is slower than before. We need to optimize the compilePattern
-        # function f.e. not to check for "if (!tok) in the findmatch() case
-        #
+        # NOTE: Not enabled for now since the generated code is slower than before.
         # line = replaceTokenFindMatch(matchFunctions, matchStrs, line)
 
         # Cache plain C-strings in C++ strings
