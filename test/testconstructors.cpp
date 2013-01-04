@@ -277,10 +277,29 @@ private:
     void simple6() { // ticket #4085 - uninstantiated template class
         check("template <class T> struct A {\n"
               "    A<T>() { x = 0; }\n"
+              "    A<T>(const T & t) { x = t.x; }\n"
               "private:\n"
               "    int x;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("template <class T> struct A {\n"
+              "    A<T>() : x(0) { }\n"
+              "    A<T>(const T & t) : x(t.x) { }\n"
+              "private:\n"
+              "    int x;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <class T> struct A {\n"
+              "    A<T>() : x(0) { }\n"
+              "    A<T>(const T & t) : x(t.x) { }\n"
+              "private:\n"
+              "    int x;\n"
+              "    int y;\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Member variable 'A::y' is not initialized in the constructor.\n"
+                      "[test.cpp:3]: (warning) Member variable 'A::y' is not initialized in the constructor.\n", errout.str());
     }
 
     void initvar_with_this() {

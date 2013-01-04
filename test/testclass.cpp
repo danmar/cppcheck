@@ -43,7 +43,8 @@ private:
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
 
-        TEST_CASE(copyConstructor);
+        TEST_CASE(copyConstructor1);
+        TEST_CASE(copyConstructor2); // ticket #4458
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -186,7 +187,7 @@ private:
         checkClass.copyconstructors();
     }
 
-    void copyConstructor() {
+    void copyConstructor1() {
         checkCopyConstructor("class F\n"
                              "{\n"
                              "   public:\n"
@@ -377,6 +378,22 @@ private:
                              "      p = malloc(100);\n"
                              "   }\n"
                              "   F(F& f);\n" // non-copyable
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void copyConstructor2() { // ticket #4458
+        checkCopyConstructor("template <class _Tp>\n"
+                             "class Vector\n"
+                             "{\n"
+                             "public:\n"
+                             "    Vector() {\n"
+                             "        _M_finish = new _Tp[ 42 ];\n"
+                             "    }\n"
+                             "    Vector( const Vector<_Tp>& v ) {\n"
+                             "    }\n"
+                             "    _Tp* _M_finish;\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
     }

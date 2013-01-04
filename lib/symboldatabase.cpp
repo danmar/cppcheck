@@ -320,14 +320,26 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             function.type = Function::eDestructor;
 
                         // copy constructor
-                        else if ((Token::Match(function.tokenDef, "%var% ( const %var% & )") ||
-                                  Token::Match(function.tokenDef, "%var% ( const %var% & %var% )")) &&
+                        else if ((Token::Match(function.tokenDef, "%var% ( const %var% & %var%| )") ||
+                                  (Token::Match(function.tokenDef, "%var% ( const %var% <") &&
+                                   Token::Match(function.tokenDef->linkAt(4), "> & %var%| )"))) &&
                                  function.tokenDef->strAt(3) == scope->className)
                             function.type = Function::eCopyConstructor;
 
+                        else if ((Token::Match(function.tokenDef, "%var% <") &&
+                                  Token::Match(function.tokenDef->linkAt(1), "> (const %var% & %var%| )")) &&
+                                 function.tokenDef->linkAt(1)->strAt(3) == scope->className)
+                            function.type = Function::eCopyConstructor;
+
                         // copy constructor with non-const argument
-                        else if ((Token::Match(function.tokenDef, "%var% ( %var% & )") ||
-                                  Token::Match(function.tokenDef, "%var% ( %var% & %var% )")) &&
+                        else if ((Token::Match(function.tokenDef, "%var% ( %var% & %var%| )") ||
+                                  (Token::Match(function.tokenDef, "%var% ( %var% <") &&
+                                   Token::Match(function.tokenDef->linkAt(4), "> & %var%| )"))) &&
+                                 function.tokenDef->strAt(2) == scope->className)
+                            function.type = Function::eCopyConstructor;
+
+                        else if ((Token::Match(function.tokenDef, "%var% <") &&
+                                  Token::Match(function.tokenDef->linkAt(1), "> ( %var% & %var%| )")) &&
                                  function.tokenDef->strAt(2) == scope->className)
                             function.type = Function::eCopyConstructor;
 
@@ -926,6 +938,15 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
               Token::Match(tok->next()->link(), ") : ::| %var% (|::|<|{"))) {
         *funcStart = tok;
         *argStart = tok->next();
+        return true;
+    }
+
+    // template constructor?
+    else if (Token::Match(tok, "%var% <") && Token::Match(tok->next()->link(), "> (") &&
+             (Token::Match(tok->next()->link()->next()->link(), ") const| ;|{|=") ||
+              Token::Match(tok->next()->link()->next()->link(), ") : ::| %var% (|::|<|{"))) {
+        *funcStart = tok;
+        *argStart = tok->next()->link()->next();
         return true;
     }
 
