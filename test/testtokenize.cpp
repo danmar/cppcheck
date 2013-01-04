@@ -7725,6 +7725,10 @@ private:
                              "    std::cout<<ln(1);\n"
                              "    std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
                              "    std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
+                             "    std::cout<<pow(sin(x*y+z),2)+pow(cos(x*y+z),2);\n"
+                             "    std::cout<<pow(sinh(x*y+z),2)-pow(cosh(x*y+z),2);\n"
+                             "    std::cout<<pow(sin(x),4)+pow(cos(x),4);\n"
+                             "    std::cout<<pow(sinh(x),10)-pow(cosh(x),10);\n"
                              "}";
 
         const char expected1[] = "void foo ( ) {\n"
@@ -7736,6 +7740,10 @@ private:
                                  "std :: cout << 0 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << -1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << -1 ;\n"
                                  "}";

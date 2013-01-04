@@ -9350,14 +9350,37 @@ void Tokenizer::simplifyMathExpressions()
             tok->str("0");
         }
 
-        if (Token::Match(tok,"pow ( sin ( %any% ) , 2 ) + pow ( cos ( %any% ) , 2 )") && tok->strAt(4) == tok->strAt(14)) {
-            tok->deleteNext(18);
-            tok->str("1");
-        }
-
-        if (Token::Match(tok,"pow ( sinh ( %any% ) , 2 ) - pow ( cosh ( %any% ) , 2 )") && tok->strAt(4) == tok->strAt(14)) {
-            tok->deleteNext(18);
-            tok->str("-1");
+        //Pythagorean trigonometric identity: pow(sin(x),2n)+pow(cos(x),2n) = 1
+        //Hyperbolic identity: pow(sinh(x),2n)-pow(cosh(x),2n) = -1
+        //2n = any number which is multiple of 2
+        if (Token::simpleMatch(tok, "pow (")) {
+            if (Token::simpleMatch(tok->tokAt(2), "sin (")) {
+                Token *tok2 = tok->linkAt(3);
+                if (!Token::Match(tok2, ") , %num% ) + pow ( cos (") ||
+                    MathLib::toLongNumber(tok2->strAt(2)) % 2 != 0)
+                    continue;
+                Token *tok3 = tok2->tokAt(8);
+                if (!Token::Match(tok3->link(), ") , %num% )") ||
+                    tok3->link()->strAt(2) != tok2->strAt(2))
+                    continue;
+                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
+                    Token::eraseTokens(tok, tok3->link()->tokAt(4));
+                    tok->str("1");
+                }
+            } else if (Token::simpleMatch(tok->tokAt(2), "sinh (")) {
+                Token *tok2 = tok->linkAt(3);
+                if (!Token::Match(tok2, ") , %num% ) - pow ( cosh (") ||
+                    MathLib::toLongNumber(tok2->strAt(2)) % 2 != 0)
+                    continue;
+                Token *tok3 = tok2->tokAt(8);
+                if (!Token::Match(tok3->link(), ") , %num% )") ||
+                    tok3->link()->strAt(2) != tok2->strAt(2))
+                    continue;
+                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
+                    Token::eraseTokens(tok, tok3->link()->tokAt(4));
+                    tok->str("-1");
+                }
+            }
         }
     }
 }
