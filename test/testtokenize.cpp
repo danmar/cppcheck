@@ -7714,32 +7714,38 @@ private:
     }
 
     void simplifyMathExpressions() {//#1620
-        const char *code1 ="void foo() {\n"
-                           "std::cout<<sin(0);\n"
-                           "std::cout<<cos(0);\n"
-                           "std::cout<<sinh(0);\n"
-                           "std::cout<<cosh(0);\n"
-                           "std::cout<<exp(0);\n"
-                           "std::cout<<sqrt(0);\n"
-                           "std::cout<<sqrt(1);\n"
-                           "std::cout<<ln(1);\n"
-                           "std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
-                           "std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
-                           "}";
+        const char code1[] = "void foo() {\n"
+                             "    std::cout<<sin(0);\n"
+                             "    std::cout<<cos(0);\n"
+                             "    std::cout<<sinh(0);\n"
+                             "    std::cout<<cosh(0);\n"
+                             "    std::cout<<exp(0);\n"
+                             "    std::cout<<sqrt(0);\n"
+                             "    std::cout<<sqrt(1);\n"
+                             "    std::cout<<ln(1);\n"
+                             "    std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
+                             "    std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
+                             "}";
 
-        const char *expected1 ="void foo ( ) {\n"
-                               "std :: cout << 0 ;\n"
-                               "std :: cout << 1 ;\n"
-                               "std :: cout << 0 ;\n"
-                               "std :: cout << 1 ;\n"
-                               "std :: cout << 1 ;\n"
-                               "std :: cout << 0 ;\n"
-                               "std :: cout << 1 ;\n"
-                               "std :: cout << 0 ;\n"
-                               "std :: cout << 1 ;\n"
-                               "std :: cout << -1 ;\n"
-                               "}";
+        const char expected1[] = "void foo ( ) {\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "}";
         ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
+
+        const char code2[] = "void f ( ) {\n"
+                             "z = pow ( sin ( x ) , 2 ) + pow ( cos ( y ) , 2 ) ;\n"
+                             "t = pow ( sinh ( x ) , 2 ) - pow ( cosh ( y ) , 2 ) ;\n"
+                             "}";
+        ASSERT_EQUALS(code2, tokenizeAndStringify(code2));
     }
 
 

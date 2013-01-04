@@ -9350,12 +9350,12 @@ void Tokenizer::simplifyMathExpressions()
             tok->str("0");
         }
 
-        if (Token::Match(tok,"pow ( sin ( %var% ) , 2 ) + pow ( cos ( %var% ) , 2 )")) {
+        if (Token::Match(tok,"pow ( sin ( %any% ) , 2 ) + pow ( cos ( %any% ) , 2 )") && tok->strAt(4) == tok->strAt(14)) {
             tok->deleteNext(18);
             tok->str("1");
         }
 
-        if (Token::Match(tok,"pow ( sinh ( %var% ) , 2 ) - pow ( cosh ( %var% ) , 2 )")) {
+        if (Token::Match(tok,"pow ( sinh ( %any% ) , 2 ) - pow ( cosh ( %any% ) , 2 )") && tok->strAt(4) == tok->strAt(14)) {
             tok->deleteNext(18);
             tok->str("-1");
         }
