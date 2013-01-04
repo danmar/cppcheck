@@ -44,8 +44,7 @@ FORMS = about.ui \
         resultsview.ui \
         scratchpad.ui \
         settings.ui \
-        stats.ui \
-        selectfilesdialog.ui
+        stats.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -99,8 +98,7 @@ HEADERS += aboutdialog.h \
            txtreport.h \
            xmlreport.h \
            xmlreportv1.h \
-           xmlreportv2.h \
-           selectfilesdialog.h
+           xmlreportv2.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -132,8 +130,7 @@ SOURCES += aboutdialog.cpp \
            txtreport.cpp \
            xmlreport.cpp \
            xmlreportv1.cpp \
-           xmlreportv2.cpp \
-           selectfilesdialog.cpp
+           xmlreportv2.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
