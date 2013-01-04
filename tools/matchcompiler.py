@@ -9,8 +9,45 @@ class MatchCompiler:
         self._selftests()
 
     def _reset(self):
-        self._matchFunctions = []
+        self._rawMatchFunctions = []
         self._matchStrs = {}
+        self._matchFunctionCache = {}
+
+    def _generateCacheSignature(self, pattern, endToken=None, varId=None, isFindMatch=False):
+        sig = pattern
+
+        if endToken:
+            sig += '|ENDTOKEN'
+        else:
+            sig += '|NO-ENDTOKEN'
+
+        if varId:
+            sig += '|VARID'
+        else:
+            sig += '|NO-VARID'
+
+        if isFindMatch:
+            sig += '|ISFINDMATCH'
+        else:
+            sig += '|NORMALMATCH'
+
+        return sig
+
+    def _lookupMatchFunctionId(self, pattern, endToken=None, varId=None, isFindMatch=False):
+        signature = self._generateCacheSignature(pattern, endToken, varId, isFindMatch)
+
+        if signature in self._matchFunctionCache:
+            return self._matchFunctionCache[signature]
+
+        return None
+
+    def _insertMatchFunctionId(self, id, pattern, endToken=None, varId=None, isFindMatch=False):
+        signature = self._generateCacheSignature(pattern, endToken, varId, isFindMatch)
+
+        # function signature should not be in the cache
+        assert(self._lookupMatchFunctionId(pattern, endToken, varId, isFindMatch) == None)
+
+        self._matchFunctionCache[signature] = id
 
     def _insertMatchStr(self, look_for):
         prefix = 'matchStr'
@@ -64,7 +101,7 @@ class MatchCompiler:
             if varid:
                 arg2 = ', const unsigned int varid'
 
-            ret = '// ' + pattern + '\n'
+            ret = '// pattern: ' + pattern + '\n'
             ret += 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
             returnStatement = 'return false;\n'
 
@@ -145,7 +182,7 @@ class MatchCompiler:
         if varId:
             more_args += ', unsigned int varid'
 
-        ret = '// ' + pattern + '\n'
+        ret = '// pattern: ' + pattern + '\n'
         ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *start_tok'+more_args+') {\n'
         ret += '    for (; start_tok' + endCondition + '; start_tok = start_tok->next()) {\n'
 
@@ -234,13 +271,20 @@ class MatchCompiler:
                 if res == None:
                     break  # Non-const pattern - bailout
                 else:
-                    arg2 = res.group(1)
+                    pattern = res.group(1)
                     a3 = ''
                     if arg3:
                         a3 = ',' + arg3
-                    patternNumber = len(self._matchFunctions) + 1
+
+                    # Compile function or use previously compiled one
+                    patternNumber = self._lookupMatchFunctionId(pattern, None, arg3, False)
+
+                    if patternNumber == None:
+                        patternNumber = len(self._rawMatchFunctions) + 1
+                        self._insertMatchFunctionId(patternNumber, pattern, None, arg3, False)
+                        self._rawMatchFunctions.append(self._compilePattern(pattern, patternNumber, arg3))
+
                     line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                    self._matchFunctions.append(self._compilePattern(arg2, patternNumber, arg3))
 
         return line
 
@@ -298,9 +342,16 @@ class MatchCompiler:
                         a3 += ',' + endToken
                     if varId:
                         a3 += ',' + varId
-                    findMatchNumber = len(self._matchFunctions) + 1
+
+                    # Compile function or use previously compiled one
+                    findMatchNumber = self._lookupMatchFunctionId(pattern, endToken, varId, True)
+
+                    if findMatchNumber == None:
+                        findMatchNumber = len(self._rawMatchFunctions) + 1
+                        self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
+                        self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
+
                     line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                    self._matchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
 
         return line
 
@@ -356,7 +407,7 @@ class MatchCompiler:
 
         # Compute matchFunctions
         strFunctions = ''
-        for function in self._matchFunctions:
+        for function in self._rawMatchFunctions:
             strFunctions += function
 
         fout = open(destname, 'wt')
