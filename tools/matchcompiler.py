@@ -110,22 +110,29 @@ def compilePattern(matchStrs, pattern, nr, varid):
 
     return ret
 
-def compileFindPattern(matchFunctions, matchStrs, pattern, findmatchnr, matchnr, endToken):
-    arg2 = ''
+def compileFindPattern(matchFunctions, matchStrs, pattern, findmatchnr, matchnr, endToken, varId):
+    more_args = ''
     endCondition = ''
     if endToken:
-        arg2 = ', const Token *end'
+        more_args += ', const Token *end'
         endCondition = ' && tok != end'
+    if varId:
+        more_args += ', unsigned int varId'
 
     ret = '// ' + pattern + '\n'
-    ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *tok'+arg2+') {\n'
+    ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *tok'+more_args+') {\n'
     ret += '    for (; tok' + endCondition + '; tok = tok->next()) {\n'
-    ret += '        if (match' + str(matchnr) + '(tok))\n';
+
+    ret += '        if (match' + str(matchnr) + '(tok'
+    if varId:
+        ret += ', varId'
+    ret += '))\n';
+
     ret += '            return tok;\n'
     ret += '    }\n'
     ret += '    return NULL;\n}\n'
 
-    matchFunctions.append(compilePattern(matchStrs, pattern, matchnr, None))
+    matchFunctions.append(compilePattern(matchStrs, pattern, matchnr, varId))
 
     return ret
 
@@ -221,15 +228,11 @@ def replaceTokenMatch(matchFunctions, matchStrs, line):
 def replaceTokenFindMatch(matchFunctions, matchStrs, line):
     pos1 = 0
     while True:
-        # TODO: Add support for Token::findmatch()
-        # Function prototypes from token.h:
-        # static const Token *findsimplematch(const Token *tok, const char pattern[]);
-        # static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
-        # static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
-        # static const Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
+        is_findmatch = False
         pos1 = line.find('Token::findsimplematch(')
-        # if pos1 == -1:
-            # pos1 = line.find('Token::findmatch(')
+        if pos1 == -1:
+            is_findmatch = True
+            pos1 = line.find('Token::findmatch(')
         if pos1 == -1:
             break
 
@@ -237,27 +240,49 @@ def replaceTokenFindMatch(matchFunctions, matchStrs, line):
         if res == None:
             break
         else:
-            assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
+            assert(len(res)>=3 or len(res) < 6)  # assert that Token::find(simple)match has either 2, 3 or four arguments
 
             g0 = res[0]
             arg1 = res[1]
-            arg2 = res[2]
-            arg3 = None
-            if len(res) == 4:
-                arg3 = res[3]
+            pattern = res[2]
 
-            res = re.match(r'\s*"([^"]*)"\s*$', arg2)
+            # Check for varId
+            varId = None
+            if is_findmatch and g0.find("%varid%") != -1:
+                if len(res) == 5:
+                    varId = res[4]
+                else:
+                    varId = res[3]
+
+            # endToken support. We resolve the overloaded type by checking if varId is used or not.
+            # Function protoypes:
+            #     Token *findsimplematch(const Token *tok, const char pattern[]);
+            #     Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
+            #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
+            #     Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
+            endToken = None
+            if is_findmatch == False and len(res) == 4:
+                endToken = res[3]
+            elif is_findmatch == True:
+                if varId and len(res) == 5:
+                    endToken = res[3]
+                elif varId == None and len(res) == 4:
+                    endToken = res[3]
+
+            res = re.match(r'\s*"([^"]*)"\s*$', pattern)
             if res == None:
                 break  # Non-const pattern - bailout
             else:
-                arg2 = res.group(1)
+                pattern = res.group(1)
                 a3 = ''
-                if arg3:
-                    a3 = ',' + arg3
+                if endToken:
+                    a3 += ',' + endToken
+                if varId:
+                    a3 += ',' + varId
                 findMatchNumber = len(matchFunctions) + 2
                 matchNumber = len(matchFunctions) + 1
                 line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                matchFunctions.append(compileFindPattern(matchFunctions, matchStrs, arg2, findMatchNumber, matchNumber, arg3))
+                matchFunctions.append(compileFindPattern(matchFunctions, matchStrs, pattern, findMatchNumber, matchNumber, endToken, varId))
 
     return line
 
