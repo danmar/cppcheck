@@ -5,19 +5,24 @@ import glob
 
 class MatchCompiler:
     def __init__(self):
+        self._reset()
         self._selftests()
 
-    def _insertMatchStr(self, matchStrs, look_for):
+    def _reset(self):
+        self._matchFunctions = []
+        self._matchStrs = {}
+
+    def _insertMatchStr(self, look_for):
         prefix = 'matchStr'
 
         # Add entry if needed
-        if look_for not in matchStrs:
-            pos = len(matchStrs) + 1
-            matchStrs[look_for] = pos
+        if look_for not in self._matchStrs:
+            pos = len(self._matchStrs) + 1
+            self._matchStrs[look_for] = pos
 
-        return prefix + str(matchStrs[look_for])
+        return prefix + str(self._matchStrs[look_for])
 
-    def _compileCmd(self, tok, matchStrs):
+    def _compileCmd(self, tok):
         if tok == '%any%':
             return 'true'
         elif tok == '%bool%':
@@ -31,13 +36,13 @@ class MatchCompiler:
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
-            return '(tok->str()==' + self._insertMatchStr(matchStrs, '|') + ')/* | */'
+            return '(tok->str()==' + self._insertMatchStr('|') + ')/* | */'
         elif tok == '%oror%':
-            return '(tok->str()==' + self._insertMatchStr(matchStrs, '||') + ')/* || */'
+            return '(tok->str()==' + self._insertMatchStr('||') + ')/* || */'
         elif tok == '%str%':
             return '(tok->type()==Token::eString)'
         elif tok == '%type%':
-            return '(tok->isName() && tok->varId()==0U && tok->str() != ' + self._insertMatchStr(matchStrs, 'delete') + '/* delete */)'
+            return '(tok->isName() && tok->varId()==0U && tok->str() != ' + self._insertMatchStr('delete') + '/* delete */)'
         elif tok == '%var%':
             return 'tok->isName()'
         elif tok == '%varid%':
@@ -45,9 +50,9 @@ class MatchCompiler:
         elif (len(tok)>2) and (tok[0]=="%"):
             print ("unhandled:" + tok)
 
-        return '(tok->str()==' + self._insertMatchStr(matchStrs, tok) + ')/* ' + tok + ' */'
+        return '(tok->str()==' + self._insertMatchStr(tok) + ')/* ' + tok + ' */'
 
-    def _compilePattern(self, matchStrs, pattern, nr, varid, isFindMatch=False):
+    def _compilePattern(self, pattern, nr, varid, isFindMatch=False):
         ret = ''
         returnStatement = ''
 
@@ -103,7 +108,7 @@ class MatchCompiler:
                     if not first:
                         ret += logicalOp
                     first = False
-                    ret += neg + self._compileCmd(tok2, matchStrs)
+                    ret += neg + self._compileCmd(tok2)
 
                 if "" in tokens2:
                     ret += '))\n'
@@ -115,12 +120,12 @@ class MatchCompiler:
 
             # !!a
             elif tok[0:2] == "!!":
-                ret += '    if (tok && tok->str() == ' + self._insertMatchStr(matchStrs, tok[2:]) + ')/* ' + tok[2:] + ' */\n'
+                ret += '    if (tok && tok->str() == ' + self._insertMatchStr(tok[2:]) + ')/* ' + tok[2:] + ' */\n'
                 ret += '        ' + returnStatement
                 gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
             else:
-                ret += '    if (!tok || !' + self._compileCmd(tok, matchStrs) + ')\n'
+                ret += '    if (!tok || !' + self._compileCmd(tok) + ')\n'
                 ret += '        ' + returnStatement
 
         if isFindMatch:
@@ -131,7 +136,7 @@ class MatchCompiler:
 
         return ret
 
-    def _compileFindPattern(self, matchFunctions, matchStrs, pattern, findmatchnr, endToken, varId):
+    def _compileFindPattern(self, pattern, findmatchnr, endToken, varId):
         more_args = ''
         endCondition = ''
         if endToken:
@@ -144,7 +149,7 @@ class MatchCompiler:
         ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *start_tok'+more_args+') {\n'
         ret += '    for (; start_tok' + endCondition + '; start_tok = start_tok->next()) {\n'
 
-        ret += self._compilePattern(matchStrs, pattern, -1, varId, True)
+        ret += self._compilePattern(pattern, -1, varId, True)
         ret += '    }\n'
         ret += '    return NULL;\n}\n'
 
@@ -204,7 +209,7 @@ class MatchCompiler:
 
         return None
 
-    def _replaceTokenMatch(self, matchFunctions, matchStrs, line):
+    def _replaceTokenMatch(self, line):
         while True:
             pos1 = line.find('Token::Match(')
             if pos1 == -1:
@@ -233,13 +238,13 @@ class MatchCompiler:
                     a3 = ''
                     if arg3:
                         a3 = ',' + arg3
-                    patternNumber = len(matchFunctions) + 1
+                    patternNumber = len(self._matchFunctions) + 1
                     line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                    matchFunctions.append(self._compilePattern(matchStrs, arg2, patternNumber, arg3))
+                    self._matchFunctions.append(self._compilePattern(arg2, patternNumber, arg3))
 
         return line
 
-    def _replaceTokenFindMatch(self, matchFunctions, matchStrs, line):
+    def _replaceTokenFindMatch(self, line):
         pos1 = 0
         while True:
             is_findmatch = False
@@ -293,13 +298,13 @@ class MatchCompiler:
                         a3 += ',' + endToken
                     if varId:
                         a3 += ',' + varId
-                    findMatchNumber = len(matchFunctions) + 1
+                    findMatchNumber = len(self._matchFunctions) + 1
                     line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
-                    matchFunctions.append(self._compileFindPattern(matchFunctions, matchStrs, pattern, findMatchNumber, endToken, varId))
+                    self._matchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
 
         return line
 
-    def _replaceCStrings(self, matchStrs, line):
+    def _replaceCStrings(self, line):
         while True:
             match = re.search('str\(\) (==|!=) "', line)
             if not match:
@@ -314,11 +319,13 @@ class MatchCompiler:
             startPos = res[0]
             endPos = res[1]
             text = line[startPos+1:endPos-1]
-            line = line[:startPos] + self._insertMatchStr(matchStrs, text) + line[endPos:]
+            line = line[:startPos] + self._insertMatchStr(text) + line[endPos:]
 
         return line
 
     def convertFile(self, srcname, destname):
+        self._reset()
+
         fin = open(srcname, "rt")
         srclines = fin.readlines()
         fin.close()
@@ -327,31 +334,29 @@ class MatchCompiler:
         header += '#include "errorlogger.h"\n'
         header += '#include <string>\n'
         header += '#include <cstring>\n'
-        matchFunctions = []
         code = ''
 
-        matchStrs = {}
         for line in srclines:
             # Compile Token::Match and Token::simpleMatch
-            line = self._replaceTokenMatch(matchFunctions, matchStrs, line)
+            line = self._replaceTokenMatch(line)
 
             # Compile Token::findsimplematch
             # NOTE: Not enabled for now since the generated code is slower than before.
-            # line = self._replaceTokenFindMatch(matchFunctions, matchStrs, line)
+            # line = self._replaceTokenFindMatch(line)
 
             # Cache plain C-strings in C++ strings
-            line = self._replaceCStrings(matchStrs, line)
+            line = self._replaceCStrings(line)
 
             code += line
 
         # Compute string list
         stringList = ''
-        for match in sorted(matchStrs, key=matchStrs.get):
-            stringList += 'static const std::string matchStr' + str(matchStrs[match]) + '("' + match + '");\n'
+        for match in sorted(self._matchStrs, key=self._matchStrs.get):
+            stringList += 'static const std::string matchStr' + str(self._matchStrs[match]) + '("' + match + '");\n'
 
         # Compute matchFunctions
         strFunctions = ''
-        for function in matchFunctions:
+        for function in self._matchFunctions:
             strFunctions += function
 
         fout = open(destname, 'wt')
