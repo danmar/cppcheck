@@ -340,6 +340,9 @@ int main(int argc, char **argv)
 
     makeExtObj(fout, externalfiles);
 
+    fout << std::endl << "### set version" << std::endl;
+    fout << "CXXFLAGS += -DCPPCHECK_VERSION=$(shell git describe --tags)" << std::endl;
+
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";

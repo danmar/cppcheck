@@ -185,6 +185,9 @@ endif
 
 EXTOBJ += $(TINYXML)
 
+### set version
+CXXFLAGS += -DCPPCHECK_VERSION=$(shell git describe --tags)
+
 ###### Targets
 
 cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)

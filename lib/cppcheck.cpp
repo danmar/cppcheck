@@ -34,7 +34,14 @@
 #include <pcre.h>
 #endif
 
-static const char Version[] = "1.58 dev";
+#ifdef CPPCHECK_VERSION
+    #define STRINGIFY(x) #x
+    #define AS_STRING(x) STRINGIFY(x)
+    static const char Version[] = AS_STRING(CPPCHECK_VERSION);
+#else
+    static const char Version[] = "unknown version (later than 1.57)";
+#endif
+
 static const char ExtraVersion[] = "";
 
 static TimerResults S_timerResults;
