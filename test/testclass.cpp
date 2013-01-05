@@ -2282,6 +2282,16 @@ private:
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n", errout.str());
+
+        checkNoMemset("struct A {\n"
+                      "     std::vector<int *> buf;\n"
+                      "     operator int*() {return &buf[0];}\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    A a;\n"
+                      "    memset(a, 0, 100);\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str()); // #4460
     }
 
 

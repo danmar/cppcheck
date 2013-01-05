@@ -847,8 +847,8 @@ void CheckClass::noMemset()
             else if (Token::Match(arg1, "&| %var% ,")) {
                 unsigned int varid = arg1->str() == "&" ? arg1->next()->varId() : arg1->varId();
                 const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-                if (var && (var->typeStartToken() == var->typeEndToken() ||
-                            Token::Match(var->typeStartToken(), "%type% :: %type%")))
+                if (var && (var->typeStartToken() == var->typeEndToken() || Token::Match(var->typeStartToken(), "%type% :: %type%"))
+                    && (arg1->str() == "&" || var->isPointer() || var->isArray()))
                     typeTok = var->typeEndToken();
             }
 
