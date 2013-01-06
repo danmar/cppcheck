@@ -6222,7 +6222,7 @@ private:
             "    free(x);\n"
             "}"
         );
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", "", errout.str());
 
         check(
             "void foo(int y)\n"
@@ -6265,7 +6265,53 @@ private:
             "    free(p);\n"
             "}"
         );
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", "", errout.str());
+
+        check(
+            "void MyFuction()\n"
+            "{\n"
+            "    char* data = new char[100];\n"
+            "    try\n"
+            "    {\n"
+            "    }\n"
+            "    catch(err)\n"
+            "    {\n"
+            "        delete[] data;\n"
+            "        MyThrow(err);\n"
+            "    }\n"
+            "    delete[] data;\n"
+            "}\n"
+
+            "void MyThrow(err)\n"
+            "{\n"
+            "    throw(err);\n"
+            "}\n"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void MyFuction()\n"
+            "{\n"
+            "    char* data = new char[100];\n"
+            "    try\n"
+            "    {\n"
+            "    }\n"
+            "    catch(err)\n"
+            "    {\n"
+            "        delete[] data;\n"
+            "        MyExit(err);\n"
+            "    }\n"
+            "    delete[] data;\n"
+            "}\n"
+
+            "void MyExit(err)\n"
+            "{\n"
+            "    exit(err);\n"
+            "}\n"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+
     }
 
 

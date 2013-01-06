@@ -2716,8 +2716,6 @@ void CheckOther::checkDoubleFree()
     std::set<unsigned int> closeDirVariables;
 
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        bool isUnknown = true;
-
         // Keep track of any variables passed to "free()", "g_free()" or "closedir()",
         // and report an error if the same variable is passed twice.
         if (Token::Match(tok, "free|g_free|closedir ( %var% )")) {
@@ -2751,7 +2749,7 @@ void CheckOther::checkDoubleFree()
         }
 
         // If this scope doesn't return, clear the set of previously freed variables
-        else if (tok->str() == "}" && _tokenizer->IsScopeNoReturn(tok, &isUnknown) && !isUnknown) {
+        else if (tok->str() == "}" && _tokenizer->IsScopeNoReturn(tok)) {
             freedVariables.clear();
             closeDirVariables.clear();
         }
