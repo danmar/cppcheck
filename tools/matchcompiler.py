@@ -4,7 +4,8 @@ import re
 import glob
 
 class MatchCompiler:
-    def __init__(self):
+    def __init__(self, verify_mode=False):
+        self._verifyMode = verify_mode
         self._reset()
         self._selftests()
 
@@ -246,7 +247,39 @@ class MatchCompiler:
 
         return None
 
-    def _replaceSpecificTokenMatch(self, line, start_pos, end_pos, pattern, tok, varId):
+    def _compileVerifyTokenMatch(self, is_simplematch, verifyNumber, pattern, patternNumber, varId):
+        more_args = ''
+        if varId:
+            more_args = ', const unsigned int varid'
+
+        ret = 'static bool match_verify' + str(verifyNumber) + '(const Token *tok'+more_args+') {\n'
+
+        origMatchName = 'Match'
+        if is_simplematch:
+            origMatchName = 'simpleMatch'
+            assert(varId == None)
+
+        ret += '    bool res_parsed_match = Token::' + origMatchName + '(tok, "' + pattern + '"'
+        if varId:
+            ret += ', varid'
+        ret += ');\n'
+
+        ret += '    bool res_compiled_match = match'+str(patternNumber)+'(tok'
+        if varId:
+            ret += ', varid'
+        ret += ');\n'
+
+        ret += '\n'
+        # Don't use assert() here, it's disabled for optimized builds.
+        # We also need to verify builds in 'release' mode
+        ret += '    if (res_parsed_match != res_compiled_match)\n'
+        ret += '        throw InternalError(tok, "Internal error. compiled match returned different result than parsed match");\n'
+        ret += '    return res_compiled_match;\n'
+        ret += '}\n'
+
+        return ret
+
+    def _replaceSpecificTokenMatch(self, is_simplematch, line, start_pos, end_pos, pattern, tok, varId):
         more_args = ''
         if varId:
             more_args = ',' + varId
@@ -259,12 +292,23 @@ class MatchCompiler:
             self._insertMatchFunctionId(patternNumber, pattern, None, varId, False)
             self._rawMatchFunctions.append(self._compilePattern(pattern, patternNumber, varId))
 
-        return line[:start_pos]+'match'+str(patternNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
+        functionName = "match"
+        if self._verifyMode:
+            verifyNumber = len(self._rawMatchFunctions) + 1
+            self._rawMatchFunctions.append(self._compileVerifyTokenMatch(is_simplematch, verifyNumber, pattern, patternNumber, varId))
+
+            # inject verify function
+            functionName = "match_verify"
+            patternNumber = verifyNumber
+
+        return line[:start_pos]+functionName+str(patternNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
 
     def _replaceTokenMatch(self, line):
         while True:
+            is_simplematch = False
             pos1 = line.find('Token::Match(')
             if pos1 == -1:
+                is_simplematch = True
                 pos1 = line.find('Token::simpleMatch(')
             if pos1 == -1:
                 break
@@ -287,7 +331,7 @@ class MatchCompiler:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
-            line = self._replaceSpecificTokenMatch(line, pos1, end_pos, pattern, tok, varId)
+            line = self._replaceSpecificTokenMatch(is_simplematch, line, pos1, end_pos, pattern, tok, varId)
 
         return line
 
@@ -431,7 +475,10 @@ class MatchCompiler:
 
 
 # Main program
-mc = MatchCompiler()
+
+# TODO: Add cmdline switch for verify mode
+# Set to 'True' to enable compiled match verification
+mc = MatchCompiler(verify_mode=False)
 
 # convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
