@@ -643,6 +643,10 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <source>Chinese (Simplified)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Select files to check</source>
+        <translation type="unfinished">검사할 파일 선택</translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -966,11 +970,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     <name>SelectFilesDialog</name>
     <message>
         <source>Select files to check</source>
-        <translation>검사할 파일 선택</translation>
+        <translation type="obsolete">검사할 파일 선택</translation>
     </message>
     <message>
         <source>Check</source>
-        <translation>검사</translation>
+        <translation type="obsolete">검사</translation>
     </message>
 </context>
 <context>

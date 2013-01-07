@@ -611,6 +611,10 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <source>Chinese (Simplified)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Select files to check</source>
+        <translation type="unfinished">Sélectionner les fichiers à vérifier</translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -928,11 +932,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     <name>SelectFilesDialog</name>
     <message>
         <source>Select files to check</source>
-        <translation type="unfinished">Sélectionner les fichiers à vérifier</translation>
-    </message>
-    <message>
-        <source>Check</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Sélectionner les fichiers à vérifier</translation>
     </message>
 </context>
 <context>
