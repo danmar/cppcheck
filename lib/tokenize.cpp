@@ -8333,7 +8333,9 @@ void Tokenizer::simplifyStructDecl()
 
         // check for named struct/union
         else if (Token::Match(tok, "class|struct|union %type% :|{")) {
-            Token *isStatic = tok->previous() && tok->previous()->str() == "static" ? tok->previous() : NULL;
+            Token *start = tok;
+            while (Token::Match(start->previous(), "%type%"))
+                start = start->previous();
             Token *type = tok->next();
             Token *next = tok->tokAt(2);
 
@@ -8349,12 +8351,14 @@ void Tokenizer::simplifyStructDecl()
             if (Token::Match(tok->next(), "*|&| %type% ,|;|[|=")) {
                 tok->insertToken(";");
                 tok = tok->next();
-                if (isStatic) {
-                    isStatic->deleteThis();
-                    tok->insertToken("static");
+                while (!Token::Match(start, "struct|class|union")) {
+                    tok->insertToken(start->str());
                     tok = tok->next();
+                    start->deleteThis();
                 }
                 tok->insertToken(type->str());
+                if (start->str() != "class")
+                    tok->insertToken(start->str());
             }
 
             tok = restart;
@@ -9366,7 +9370,7 @@ void Tokenizer::simplifyMathExpressions()
                 }
             } else if (Token::simpleMatch(tok->tokAt(2), "sinh (")) {
                 Token *tok2 = tok->linkAt(3);
-                if (!Token::simpleMatch(tok2, ") , 2 ) - pow ( cosh (") )
+                if (!Token::simpleMatch(tok2, ") , 2 ) - pow ( cosh ("))
                     continue;
                 Token *tok3 = tok2->tokAt(8);
                 if (!Token::simpleMatch(tok3->link(), ") , 2 )"))

@@ -322,6 +322,8 @@ private:
         TEST_CASE(simplify_null);
         TEST_CASE(simplifyMulAndParens);    // Ticket #2784 + #3184
 
+        TEST_CASE(simplifyStructDecl);
+
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
@@ -3151,8 +3153,8 @@ private:
             const std::string expected("\n\n##file 0\n"
                                        "1: struct S {\n"
                                        "2: struct T {\n"
-                                       "3: } ; T t@1 ;\n"
-                                       "4: } ; S s@2 ;\n");
+                                       "3: } ; struct T t@1 ;\n"
+                                       "4: } ; struct S s@2 ;\n");
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -3167,7 +3169,7 @@ private:
             const std::string expected("\n\n##file 0\n"
                                        "1: struct S {\n"
                                        "2: struct T {\n"
-                                       "3: } ; T t@1 ;\n"
+                                       "3: } ; struct T t@1 ;\n"
                                        "4: } ;\n");
 
             ASSERT_EQUALS(expected, actual);
@@ -5135,6 +5137,11 @@ private:
                                 " n15 = n15 + 10 ; "
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void simplifyStructDecl() {
+        const char code[] = "const struct A { int a; int b; } a;";
+        ASSERT_EQUALS("struct A { int a ; int b ; } ; const struct A a ;", tokenizeAndStringify(code));
     }
 
     void vardecl1() {

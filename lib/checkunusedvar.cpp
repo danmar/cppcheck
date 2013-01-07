@@ -1133,12 +1133,6 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         if (Token::Match(tok, "struct|union %type% {")) {
-            structname.clear();
-            if (tok->strAt(-1) == "extern")
-                continue;
-            if ((!tok->previous() || tok->previous()->str() == ";") && Token::Match(tok->linkAt(2), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
-                continue;
-
             structname = tok->strAt(1);
 
             // Bail out if struct/union contain any functions
@@ -1172,6 +1166,20 @@ void CheckUnusedVar::checkStructMemberUsage()
                     }
                 }
             }
+
+            // bail out for extern/global struct
+            for (const Token *tok2 = Token::findmatch(tok, (structname + " %var%").c_str());
+                 tok2;
+                 tok2 = Token::findmatch(tok2->next(), (structname + " %var%").c_str())) {
+
+                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->next()->varId());
+                if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic()))) {
+                    structname.clear();
+                    break;
+                }
+            }
+            if (structname.empty())
+                continue;
 
             // Try to prevent false positives when struct members are not used directly.
             if (Token::findmatch(tok, (structname + " *").c_str()))

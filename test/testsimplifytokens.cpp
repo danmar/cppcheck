@@ -7391,37 +7391,37 @@ private:
     void simplifyStructDecl1() {
         {
             const char code[] = "struct ABC { } abc;";
-            const char expected[] = "struct ABC { } ; ABC abc ;";
+            const char expected[] = "struct ABC { } ; struct ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC { } * pabc;";
-            const char expected[] = "struct ABC { } ; ABC * pabc ;";
+            const char expected[] = "struct ABC { } ; struct ABC * pabc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC { } abc[4];";
-            const char expected[] = "struct ABC { } ; ABC abc [ 4 ] ;";
+            const char expected[] = "struct ABC { } ; struct ABC abc [ 4 ] ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC { } abc, def;";
-            const char expected[] = "struct ABC { } ; ABC abc ; ABC def ;";
+            const char expected[] = "struct ABC { } ; struct ABC abc ; struct ABC def ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC { } abc, * pabc;";
-            const char expected[] = "struct ABC { } ; ABC abc ; ABC * pabc ;";
+            const char expected[] = "struct ABC { } ; struct ABC abc ; struct ABC * pabc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC { struct DEF {} def; } abc;";
-            const char expected[] = "struct ABC { struct DEF { } ; DEF def ; } ; ABC abc ;";
+            const char expected[] = "struct ABC { struct DEF { } ; struct DEF def ; } ; struct ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7457,13 +7457,13 @@ private:
 
         {
             const char code[] = "struct { struct DEF {} def; } abc;";
-            const char expected[] = "struct Anonymous0 { struct DEF { } ; DEF def ; } ; Anonymous0 abc ;";
+            const char expected[] = "struct Anonymous0 { struct DEF { } ; struct DEF def ; } ; Anonymous0 abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC { struct {} def; } abc;";
-            const char expected[] = "struct ABC { struct Anonymous0 { } ; Anonymous0 def ; } ; ABC abc ;";
+            const char expected[] = "struct ABC { struct Anonymous0 { } ; Anonymous0 def ; } ; struct ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7475,7 +7475,7 @@ private:
 
         {
             const char code[] = "union ABC { int i; float f; } abc;";
-            const char expected[] = "union ABC { int i ; float f ; } ; ABC abc ;";
+            const char expected[] = "union ABC { int i ; float f ; } ; union ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7518,7 +7518,7 @@ private:
         // ticket 2464
         {
             const char code[] = "static struct ABC { } abc ;";
-            const char expected[] = "struct ABC { } ; static ABC abc ;";
+            const char expected[] = "struct ABC { } ; static struct ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7676,7 +7676,7 @@ private:
                                 "void foo ( ) { "
                                 "int i ; "
                                 "float & f = i ; "
-                                "struct Fee { } ; Fee fee ; "
+                                "struct Fee { } ; struct Fee fee ; "
                                 "} "
                                 "union { "
                                 "long long ll ; "
@@ -7700,7 +7700,7 @@ private:
     void simplifyStructDecl6() {
         ASSERT_EQUALS("struct A { "
                       "char integers [ X ] ; "
-                      "} ; A arrays ; arrays = { { 0 } } ;",
+                      "} ; struct A arrays ; arrays = { { 0 } } ;",
                       tok("struct A {\n"
                           "    char integers[X];\n"
                           "} arrays = {{0}};", false));
