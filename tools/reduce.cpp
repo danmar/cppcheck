@@ -546,13 +546,13 @@ int main(int argc, char *argv[])
 {
     std::cout << "cppcheck tool that reduce code for a hang / false positive" << std::endl;
 
-    bool stdout = false;
+    bool print = false;
     struct ReduceSettings settings = {0};
     settings.maxtime = ~0U;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
-            stdout = true;
+            print = true;
         else if (strcmp(argv[i], "--hang") == 0) {
             settings.hang = true;
             if (settings.maxtime == ~0U)
@@ -646,7 +646,7 @@ int main(int argc, char *argv[])
     {
         const std::string outfilename(std::string("__out__") + std::strrchr(settings.filename,'.'));
         std::ofstream fout;
-        if (!stdout)
+        if (!print)
             fout.open(outfilename.c_str());
         std::ostream &os = stdout ? std::cout : fout;
         for (std::size_t i = 0; i < filedata.size(); i++) {
