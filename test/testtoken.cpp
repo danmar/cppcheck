@@ -45,6 +45,7 @@ private:
         TEST_CASE(multiCompare);
         TEST_CASE(multiCompare2);                   // #3294 - false negative multi compare between "=" and "=="
         TEST_CASE(multiCompare3);                   // false positive for %or% on code using "|="
+        TEST_CASE(multiCompare4);
         TEST_CASE(getStrLength);
         TEST_CASE(strValue);
 
@@ -199,6 +200,16 @@ private:
         ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %var%|%bool%|%num%| )|"));
         ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %var%|%bool%|%str%|%num%| )|"));
         ASSERT_EQUALS(true, Token::Match(numparen.tokens(), "(| 100 %bool%|%var%| )|"));
+    }
+
+    void multiCompare4() {
+        givenACodeSampleToTokenize var("std :: queue < int > foo ;");
+
+        ASSERT_EQUALS(Token::eBracket, var.tokens()->tokAt(3)->type());
+        ASSERT_EQUALS(Token::eBracket, var.tokens()->tokAt(5)->type());
+
+        ASSERT_EQUALS(false, Token::Match(var.tokens(), "std :: queue %op%"));
+        TODO_ASSERT_EQUALS(false, true, Token::Match(var.tokens(), "std :: queue x|%op%"));
     }
 
     void getStrLength() {
