@@ -246,6 +246,21 @@ class MatchCompiler:
 
         return None
 
+    def _replaceSpecificTokenMatch(self, line, start_pos, end_pos, pattern, tok, varId):
+        more_args = ''
+        if varId:
+            more_args = ',' + varId
+
+        # Compile function or use previously compiled one
+        patternNumber = self._lookupMatchFunctionId(pattern, None, varId, False)
+
+        if patternNumber == None:
+            patternNumber = len(self._rawMatchFunctions) + 1
+            self._insertMatchFunctionId(patternNumber, pattern, None, varId, False)
+            self._rawMatchFunctions.append(self._compilePattern(pattern, patternNumber, varId))
+
+        return line[:start_pos]+'match'+str(patternNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
+
     def _replaceTokenMatch(self, line):
         while True:
             pos1 = line.find('Token::Match(')
@@ -257,34 +272,22 @@ class MatchCompiler:
             res = self.parseMatch(line, pos1)
             if res == None:
                 break
-            else:
-                assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
 
-                g0 = res[0]
-                arg1 = res[1]
-                arg2 = res[2]
-                arg3 = None
-                if len(res) == 4:
-                    arg3 = res[3]
+            assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
 
-                res = re.match(r'\s*"([^"]*)"\s*$', arg2)
-                if res == None:
-                    break  # Non-const pattern - bailout
-                else:
-                    pattern = res.group(1)
-                    a3 = ''
-                    if arg3:
-                        a3 = ',' + arg3
+            end_pos = len(res[0])
+            tok = res[1]
+            raw_pattern = res[2]
+            varId = None
+            if len(res) == 4:
+                varId = res[3]
 
-                    # Compile function or use previously compiled one
-                    patternNumber = self._lookupMatchFunctionId(pattern, None, arg3, False)
+            res = re.match(r'\s*"([^"]*)"\s*$', raw_pattern)
+            if res == None:
+                break  # Non-const pattern - bailout
 
-                    if patternNumber == None:
-                        patternNumber = len(self._rawMatchFunctions) + 1
-                        self._insertMatchFunctionId(patternNumber, pattern, None, arg3, False)
-                        self._rawMatchFunctions.append(self._compilePattern(pattern, patternNumber, arg3))
-
-                    line = line[:pos1]+'match'+str(patternNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
+            pattern = res.group(1)
+            line = self._replaceSpecificTokenMatch(line, pos1, end_pos, pattern, tok, varId)
 
         return line
 
