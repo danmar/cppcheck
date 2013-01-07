@@ -313,6 +313,9 @@ private:
 
         givenACodeSampleToTokenize noType("delete", true);
         ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
+
+        givenACodeSampleToTokenize noType2("void delete", true);
+        TODO_ASSERT_EQUALS(false, true, Token::Match(noType2.tokens(), "!!foo %type%"));
     }
 
     void matchChar() {
