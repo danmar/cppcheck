@@ -3512,6 +3512,11 @@ private:
                               "    std::vector<MyClass> x(100);\n" // Might have a side-effect
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::lock_guard<MyClass> lock(mutex_);\n" // Has a side-effect #4385
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #3104 - false positive when variable is read with "if (NOT var)"
