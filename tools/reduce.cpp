@@ -49,6 +49,8 @@ public:
         if (std::time(0) > stopTime) {
             if (pattern.empty())
                 foundLine = true;
+            else
+                std::cerr << "timeout. You might want to use a longer --maxtime timeout" << std::endl;
             std::cout << "terminate" << std::endl;
             cppcheck.terminate();
         }
@@ -548,15 +550,13 @@ int main(int argc, char *argv[])
 
     bool print = false;
     struct ReduceSettings settings = {0};
-    settings.maxtime = ~0U;
+    settings.maxtime = 300;  // default timeout = 5 minutes
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
             print = true;
         else if (strcmp(argv[i], "--hang") == 0) {
             settings.hang = true;
-            if (settings.maxtime == ~0U)
-                settings.maxtime = 300;  // default timeout = 5 minutes
         } else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
         else if (settings.filename==NULL && strchr(argv[i],'.'))
