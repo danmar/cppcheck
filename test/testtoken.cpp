@@ -316,7 +316,6 @@ private:
         ASSERT_EQUALS(false, Token::Match(emptyString.tokens(), "!!else something"));
 
         givenACodeSampleToTokenize ifSemicolon("if ;", true);
-        ASSERT_EQUALS(true, Token::Match(ifSemicolon.tokens(), "!!return if"));
         ASSERT_EQUALS(true, Token::Match(ifSemicolon.tokens(), "if ; !!else"));
 
         givenACodeSampleToTokenize ifSemicolonSomething("if ; something", true);
@@ -342,7 +341,7 @@ private:
         ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
 
         givenACodeSampleToTokenize noType2("void delete", true);
-        TODO_ASSERT_EQUALS(false, true, Token::Match(noType2.tokens(), "!!foo %type%"));
+        ASSERT_EQUALS(false, Token::Match(noType2.tokens(), "!!foo %type%"));
     }
 
     void matchChar() {
