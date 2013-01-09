@@ -1,6 +1,7 @@
 *.bak
 *.gcno
 *.o
+*.pyc
 cppcheck
 cppcheck.exe
 dmake
