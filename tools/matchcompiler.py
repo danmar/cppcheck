@@ -339,6 +339,12 @@ class MatchCompiler:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
+
+            # TODO: We currently generate incorrect code for "!!" patterns
+            # skip them for now until this is fixed
+            if pattern.find("!!") != -1:
+                break
+
             line = self._replaceSpecificTokenMatch(is_simplematch, line, pos1, end_pos, pattern, tok, varId)
 
         return line
