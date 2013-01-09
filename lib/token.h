@@ -279,13 +279,14 @@ public:
      * string, return value is 0. If needle was not found, return
      * value is -1.
      *
+     * @param tok Current token
      * @param haystack e.g. "one|two" or "|one|two"
      * @param needle e.g. "one", "two" or "invalid"
      * @return 1 if needle is found from the haystack
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const char *haystack, const char *needle);
+    static int multiCompare(const Token *tok, const char *haystack, const char *needle);
 
     unsigned int linenr() const {
         return _linenr;

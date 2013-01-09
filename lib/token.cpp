@@ -296,26 +296,7 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->_str : empty_str;
 }
 
-static bool strisop(const char str[])
-{
-    if (str[1] == 0) {
-        if (std::strchr("+-*/%&|^~!<>", *str))
-            return true;
-    } else if (str[2] == 0) {
-        if ((str[0] == '&' && str[1] == '&') ||
-            (str[0] == '|' && str[1] == '|') ||
-            (str[0] == '=' && str[1] == '=') ||
-            (str[0] == '!' && str[1] == '=') ||
-            (str[0] == '>' && str[1] == '=') ||
-            (str[0] == '<' && str[1] == '=') ||
-            (str[0] == '>' && str[1] == '>') ||
-            (str[0] == '<' && str[1] == '<'))
-            return true;
-    }
-    return false;
-}
-
-static int multiComparePercent(const char * * haystack_p,
+static int multiComparePercent(const Token *tok, const char * * haystack_p,
                                const char * needle,
                                bool emptyStringFound)
 {
@@ -325,7 +306,7 @@ static int multiComparePercent(const char * * haystack_p,
         if (haystack[1] == 'o' && // "%op%"
             haystack[2] == 'p' &&
             haystack[3] == '%') {
-            if (strisop(needle))
+            if (tok->isOp())
                 return 1;
             *haystack_p = haystack = haystack + 4;
         } else if (haystack[1] == 'o' && // "%or%"
@@ -355,14 +336,14 @@ static int multiComparePercent(const char * * haystack_p,
     return 0xFFFF;
 }
 
-int Token::multiCompare(const char *haystack, const char *needle)
+int Token::multiCompare(const Token *tok, const char *haystack, const char *needle)
 {
     if (haystack[0] == '%' && haystack[1] == 'o') {
         if (haystack[2] == 'p' && // "%op%|"
             haystack[3] == '%' &&
             haystack[4] == '|') {
             haystack = haystack + 5;
-            if (strisop(needle))
+            if (tok->isOp())
                 return 1;
         } else if (haystack[2] == 'r' && // "%or%|"
                    haystack[3] == '%' &&
@@ -402,7 +383,7 @@ int Token::multiCompare(const char *haystack, const char *needle)
             needlePointer = needle;
             ++haystack;
 
-            int ret = multiComparePercent(&haystack, needle, emptyStringFound);
+            int ret = multiComparePercent(tok, &haystack, needle, emptyStringFound);
             if (ret < 2)
                 return ret;
         } else if (*haystack == ' ' || *haystack == '\0') {
@@ -425,7 +406,7 @@ int Token::multiCompare(const char *haystack, const char *needle)
 
             ++haystack;
 
-            int ret = multiComparePercent(&haystack, needle, emptyStringFound);
+            int ret = multiComparePercent(tok, &haystack, needle, emptyStringFound);
             if (ret < 2)
                 return ret;
         }
@@ -711,7 +692,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
         else if (chrInFirstWord(p, '|') && (p[0] != '|' || firstWordLen(p) > 2)) {
-            int res = multiCompare(p, tok->_str.c_str());
+            int res = multiCompare(tok, p, tok->_str.c_str());
             if (res == 0) {
                 // Empty alternative matches, use the same token on next round
                 while (*p && *p != ' ')
