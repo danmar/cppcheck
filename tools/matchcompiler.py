@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import sys
 import re
 import glob
 
@@ -484,6 +485,11 @@ class MatchCompiler:
 
 # Main program
 build_dir = 'build'
+
+# Check if we are invoked from the right place
+if not os.path.exists('lib') and not os.path.exists('samples'):
+    print('Please invoke from the top level cppcheck source dir. Example: tools/matchcompiler.py')
+    sys.exit(-1)
 
 # Create build directory if needed
 if not os.path.exists(build_dir):
