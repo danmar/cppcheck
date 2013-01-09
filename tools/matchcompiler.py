@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import glob
+import argparse
 
 class MatchCompiler:
     def __init__(self, verify_mode=False):
@@ -503,9 +504,13 @@ if not os.path.exists(build_dir):
 if not os.path.isdir(build_dir):
     raise Exception(build_dir + ' is not a directory')
 
-# TODO: Add cmdline switch for verify mode
-# Set to 'True' to enable compiled match verification
-mc = MatchCompiler(verify_mode=False)
+# Argument handling
+parser = argparse.ArgumentParser(description='Compile Token::Match() calls into native C++ code')
+parser.add_argument('--verify', action='store_true', default=False,
+                                help='verify compiled matches against on-the-fly parser. Slow!')
+args = parser.parse_args()
+
+mc = MatchCompiler(verify_mode=args.verify)
 
 # convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
