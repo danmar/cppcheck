@@ -259,12 +259,12 @@ class MatchCompiler:
             origMatchName = 'simpleMatch'
             assert(varId == None)
 
-        ret += '    bool res_parsed_match = Token::' + origMatchName + '(tok, "' + pattern + '"'
+        ret += '    bool res_compiled_match = match'+str(patternNumber)+'(tok'
         if varId:
             ret += ', varid'
         ret += ');\n'
 
-        ret += '    bool res_compiled_match = match'+str(patternNumber)+'(tok'
+        ret += '    bool res_parsed_match = Token::' + origMatchName + '(tok, "' + pattern + '"'
         if varId:
             ret += ', varid'
         ret += ');\n'
@@ -272,8 +272,14 @@ class MatchCompiler:
         ret += '\n'
         # Don't use assert() here, it's disabled for optimized builds.
         # We also need to verify builds in 'release' mode
-        ret += '    if (res_parsed_match != res_compiled_match)\n'
+        ret += '    if (res_parsed_match != res_compiled_match) {\n'
+#        ret += '        std::cout << "res_parsed_match' + str(verifyNumber) + ': " << res_parsed_match << ", res_compiled_match: " << res_compiled_match << "\\n";\n'
+#        ret += '        if (tok)\n'
+#        ret += '            std::cout << "tok: " << tok->str();\n'
+#        ret += '        if (tok->next())\n'
+#        ret += '            std::cout << "tok next: " << tok->next()->str();\n'
         ret += '        throw InternalError(tok, "Internal error. compiled match returned different result than parsed match");\n'
+        ret += '    }\n'
         ret += '    return res_compiled_match;\n'
         ret += '}\n'
 
@@ -432,6 +438,7 @@ class MatchCompiler:
         header += '#include "errorlogger.h"\n'
         header += '#include <string>\n'
         header += '#include <cstring>\n'
+        # header += '#include <iostream>\n'
         code = ''
 
         for line in srclines:
