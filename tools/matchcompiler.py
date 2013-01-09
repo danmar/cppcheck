@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os
 import re
 import glob
 
@@ -482,6 +483,13 @@ class MatchCompiler:
 
 
 # Main program
+build_dir = 'build'
+
+# Create build directory if needed
+if not os.path.exists(build_dir):
+    os.makedirs(build_dir)
+if not os.path.isdir(build_dir):
+    raise Exception(build_dir + ' is not a directory')
 
 # TODO: Add cmdline switch for verify mode
 # Set to 'True' to enable compiled match verification
@@ -489,5 +497,5 @@ mc = MatchCompiler(verify_mode=False)
 
 # convert all lib/*.cpp files
 for f in glob.glob('lib/*.cpp'):
-    print (f + ' => build/' + f[4:])
-    mc.convertFile(f, 'build/'+f[4:])
+    print (f + ' => ' + build_dir + '/' + f[4:])
+    mc.convertFile(f, build_dir + '/'+f[4:])
