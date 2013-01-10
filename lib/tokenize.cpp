@@ -8320,6 +8320,16 @@ void Tokenizer::simplifyStructDecl()
     std::stack<bool> skip; // true = in function, false = not in function
     skip.push(false);
 
+    // Add names for anonymous structs
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        // check for anonymous struct/union
+        if (Token::Match(tok, "struct|union {")) {
+            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[")) {
+                tok->insertToken("Anonymous" + MathLib::longToString(count++));
+            }
+        }
+    }
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         Token *restart;
 
@@ -8373,21 +8383,8 @@ void Tokenizer::simplifyStructDecl()
             restart = tok->next();
             tok = tok->next()->link();
 
-            // check for named type
-            if (Token::Match(tok->next(), "*|&| %type% ,|;|[")) {
-                std::string name;
-
-                name = "Anonymous" + MathLib::longToString(count++);
-
-                tok1->insertToken(name);
-
-                tok->insertToken(";");
-                tok = tok->next();
-                tok->insertToken(name);
-            }
-
             // unnamed anonymous struct/union so possibly remove it
-            else if (tok->next() && tok->next()->str() == ";") {
+            if (tok->next() && tok->next()->str() == ";") {
                 if (tok1->str() == "union" && inFunction) {
                     // Try to create references in the union..
                     Token *tok2 = tok1->tokAt(2);

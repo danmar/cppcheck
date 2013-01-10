@@ -389,6 +389,7 @@ private:
         TEST_CASE(simplifyStructDecl4);
         TEST_CASE(simplifyStructDecl5); // ticket #3533 (segmentation fault)
         TEST_CASE(simplifyStructDecl6); // ticket #3732
+        TEST_CASE(simplifyStructDecl7); // ticket #476 (static anonymous struct array)
 
         // register int var; => int var;
         // inline int foo() {} => int foo() {}
@@ -7427,49 +7428,49 @@ private:
 
         {
             const char code[] = "struct { } abc;";
-            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc ;";
+            const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct { } * pabc;";
-            const char expected[] = "struct Anonymous0 { } ; Anonymous0 * pabc ;";
+            const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 * pabc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct { } abc[4];";
-            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc [ 4 ] ;";
+            const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc [ 4 ] ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct { } abc, def;";
-            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc ; Anonymous0 def ;";
+            const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc ; struct Anonymous0 def ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct { } abc, * pabc;";
-            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc ; Anonymous0 * pabc ;";
+            const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc ; struct Anonymous0 * pabc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct { struct DEF {} def; } abc;";
-            const char expected[] = "struct Anonymous0 { struct DEF { } ; struct DEF def ; } ; Anonymous0 abc ;";
+            const char expected[] = "struct Anonymous0 { struct DEF { } ; struct DEF def ; } ; struct Anonymous0 abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC { struct {} def; } abc;";
-            const char expected[] = "struct ABC { struct Anonymous0 { } ; Anonymous0 def ; } ; struct ABC abc ;";
+            const char expected[] = "struct ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ; struct ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct { struct {} def; } abc;";
-            const char expected[] = "struct Anonymous0 { struct Anonymous1 { } ; Anonymous1 def ; } ; Anonymous0 abc ;";
+            const char expected[] = "struct Anonymous0 { struct Anonymous1 { } ; struct Anonymous1 def ; } ; struct Anonymous0 abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7481,13 +7482,13 @@ private:
 
         {
             const char code[] = "struct ABC { struct {} def; };";
-            const char expected[] = "struct ABC { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            const char expected[] = "struct ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "struct ABC : public XYZ { struct {} def; };";
-            const char expected[] = "struct ABC : public XYZ { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            const char expected[] = "struct ABC : public XYZ { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7605,13 +7606,13 @@ private:
 
         {
             const char code[] = "struct { class DEF {} def; } abc;";
-            const char expected[] = "struct Anonymous0 { class DEF { } ; DEF def ; } ; Anonymous0 abc ;";
+            const char expected[] = "struct Anonymous0 { class DEF { } ; DEF def ; } ; struct Anonymous0 abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "class ABC { struct {} def; } abc;";
-            const char expected[] = "class ABC { struct Anonymous0 { } ; Anonymous0 def ; } ; ABC abc ;";
+            const char expected[] = "class ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ; ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7623,13 +7624,13 @@ private:
 
         {
             const char code[] = "class ABC { struct {} def; };";
-            const char expected[] = "class ABC { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            const char expected[] = "class ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
         {
             const char code[] = "class ABC : public XYZ { struct {} def; };";
-            const char expected[] = "class ABC : public XYZ { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            const char expected[] = "class ABC : public XYZ { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
@@ -7704,6 +7705,13 @@ private:
                       tok("struct A {\n"
                           "    char integers[X];\n"
                           "} arrays = {{0}};", false));
+    }
+
+    void simplifyStructDecl7() {
+        ASSERT_EQUALS("struct Anonymous0 { char x ; } ; struct Anonymous0 a [ 2 ] ;",
+                      tok("struct { char x; } a[2];", false));
+        ASSERT_EQUALS("struct Anonymous0 { char x ; } ; static struct Anonymous0 a [ 2 ] ;",
+                      tok("static struct { char x; } a[2];", false));
     }
 
     void removeUnwantedKeywords() {
