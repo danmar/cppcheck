@@ -1223,7 +1223,12 @@ void CheckNullPointer::nullPointerDefaultArgument()
                         }
                     }
                     if (dependsOnPointer && Token::simpleMatch(endOfCondition, ") {")) {
-                        tok = endOfCondition->next()->link();
+                        const Token *endOfIf = endOfCondition->next()->link();
+                        for (; tok != endOfIf; tok = tok->next()) {
+                            // If a pointer is assigned a new value, stop considering it.
+                            if (Token::Match(tok, "%var% ="))
+                                pointerArgs.erase(tok->varId());
+                        }
                         continue;
                     }
                 }
@@ -1232,7 +1237,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
                     continue;
 
                 // If a pointer is assigned a new value, stop considering it.
-                if (Token::Match(tok, "%var% = %any%"))
+                if (Token::Match(tok, "%var% ="))
                     pointerArgs.erase(tok->varId());
 
                 if (isPointerDeRef(tok, unknown, symbolDatabase))

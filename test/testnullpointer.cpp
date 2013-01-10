@@ -2194,6 +2194,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int *p = 0) {\n"
+              "    int y;\n"
+              "    if (p == 0)\n"
+              "      p = &y;\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
               "    if (a != 0)\n"
               "      *p = 0;\n"
               "}");
