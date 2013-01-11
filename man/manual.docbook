@@ -147,7 +147,9 @@ Checking path/file2.cpp...
           <term>performance</term>
 
           <listitem>
-            <para>suggestions for making the code faster</para>
+            <para>Suggestions for making the code faster. These suggestions are
+            only based on common knowledge. It is not certain you'll get any
+            measurable difference in speed by fixing these messages.</para>
           </listitem>
         </varlistentry>
 
@@ -155,7 +157,8 @@ Checking path/file2.cpp...
           <term>portability</term>
 
           <listitem>
-            <para>portability warnings. 64-bit portability. code might work different on different compilers. etc.</para>
+            <para>portability warnings. 64-bit portability. code might work
+            different on different compilers. etc.</para>
           </listitem>
         </varlistentry>
 
@@ -163,16 +166,10 @@ Checking path/file2.cpp...
           <term>information</term>
 
           <listitem>
-            <para>Informational messages that might be interesting. Ignore
-            these messages unless you really agree.</para>
+            <para>Informational messages about checking problems.</para>
           </listitem>
         </varlistentry>
       </variablelist>
-
-      <remark>The performance messages are based on 'common knowledge'. It is
-      not certain that fixing performance messages will make any measurable
-      difference in speed. Fixing performance messages generally doesn't make
-      your code more readable.</remark>
     </section>
 
     <section>
