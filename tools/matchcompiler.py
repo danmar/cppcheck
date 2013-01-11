@@ -499,30 +499,33 @@ class MatchCompiler:
         self._assertEquals(self.parseMatch('  Token::Match(tok,', 2), None) # multiline Token::Match is not supported yet
         self._assertEquals(self.parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), ['Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"']) # inner function call
 
+def main():
+    # Main program
+    build_dir = 'build'
 
-# Main program
-build_dir = 'build'
+    # Check if we are invoked from the right place
+    if not os.path.exists('lib') and not os.path.exists('samples'):
+        print('Please invoke from the top level cppcheck source dir. Example: tools/matchcompiler.py')
+        sys.exit(-1)
 
-# Check if we are invoked from the right place
-if not os.path.exists('lib') and not os.path.exists('samples'):
-    print('Please invoke from the top level cppcheck source dir. Example: tools/matchcompiler.py')
-    sys.exit(-1)
+    # Create build directory if needed
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+    if not os.path.isdir(build_dir):
+        raise Exception(build_dir + ' is not a directory')
 
-# Create build directory if needed
-if not os.path.exists(build_dir):
-    os.makedirs(build_dir)
-if not os.path.isdir(build_dir):
-    raise Exception(build_dir + ' is not a directory')
+    # Argument handling
+    parser = argparse.ArgumentParser(description='Compile Token::Match() calls into native C++ code')
+    parser.add_argument('--verify', action='store_true', default=False,
+                    help='verify compiled matches against on-the-fly parser. Slow!')
+    args = parser.parse_args()
 
-# Argument handling
-parser = argparse.ArgumentParser(description='Compile Token::Match() calls into native C++ code')
-parser.add_argument('--verify', action='store_true', default=False,
-                                help='verify compiled matches against on-the-fly parser. Slow!')
-args = parser.parse_args()
+    mc = MatchCompiler(verify_mode=args.verify)
 
-mc = MatchCompiler(verify_mode=args.verify)
+    # convert all lib/*.cpp files
+    for f in glob.glob('lib/*.cpp'):
+        print (f + ' => ' + build_dir + '/' + f[4:])
+        mc.convertFile(f, build_dir + '/'+f[4:])
 
-# convert all lib/*.cpp files
-for f in glob.glob('lib/*.cpp'):
-    print (f + ' => ' + build_dir + '/' + f[4:])
-    mc.convertFile(f, build_dir + '/'+f[4:])
+if __name__ == '__main__':
+    main()
