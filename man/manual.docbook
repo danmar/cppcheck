@@ -549,8 +549,9 @@ Checking test.c...
     <section>
       <title>User-defined allocation/deallocation functions</title>
 
-      <para>Cppcheck understands many common allocation and
-      deallocation functions. But not all.</para>
+      <para>Cppcheck understands standard allocation and
+      deallocation functions. But it doesn't know what library functions
+      do.</para>
 
       <para>Here is example code that might leak memory or resources:</para>
 
@@ -564,11 +565,11 @@ Checking test.c...
 
       <para>If you analyse that with Cppcheck it won't find any leaks:</para>
 
-      <programlisting>cppcheck --enable=possibleError fred1.cpp</programlisting>
+      <programlisting>cppcheck fred1.c</programlisting>
 
       <para>You can add some custom leaks checking by providing simple
       implementations for the allocation and deallocation functions. Write
-      this in a separate file:</para>
+      this in a separate file <literal>fred.def</literal>:</para>
 
       <programlisting>void *CreateFred()
 {
@@ -586,12 +587,12 @@ void DestroyFred(void *p)
 
       <para>Now, execute <command>cppcheck</command> this way:</para>
 
-      <programlisting>cppcheck --append=fred.cpp fred1.cpp</programlisting>
+      <programlisting>cppcheck --include=fred.def fred1.c</programlisting>
 
       <para>The output from <command>cppcheck</command> is:</para>
 
-      <programlisting>Checking fred1.cpp...
-[fred1.cpp:5]: (error) Memory leak: f</programlisting>
+      <programlisting>Checking fred1.c...
+[fred1.c:5]: (error) Memory leak: f</programlisting>
     </section>
   </chapter>
 
