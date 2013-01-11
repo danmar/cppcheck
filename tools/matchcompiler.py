@@ -490,8 +490,8 @@ class MatchCompiler:
     def _assertEquals(self, actual, expected):
         if actual != expected:
             print ('Assertion failed:')
-            print (actual)
-            print (expected)
+            print ('"' + actual + '"')
+            print ('"' + expected + '"')
             assert actual == expected
 
     def _selftests(self):
