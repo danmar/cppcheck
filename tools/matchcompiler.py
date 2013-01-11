@@ -494,10 +494,94 @@ class MatchCompiler:
             print ('"' + expected + '"')
             assert actual == expected
 
-    def _selftests(self):
+    def _selftest_parseMatch(self):
         self._assertEquals(self.parseMatch('  Token::Match(tok, ";") ',2), ['Token::Match(tok, ";")','tok',' ";"'])
         self._assertEquals(self.parseMatch('  Token::Match(tok,', 2), None) # multiline Token::Match is not supported yet
         self._assertEquals(self.parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), ['Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"']) # inner function call
+
+    def _selftest_replaceTokenMatch(self):
+        self._reset()
+
+        input = 'if (Token::Match(tok, "foobar")) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match1(tok)) {')
+        self._assertEquals(1, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        input = 'if (Token::Match(tok->next()->next(), "foobar %type% %num%")) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match2(tok->next()->next())) {')
+        self._assertEquals(2, len(self._matchStrs))
+
+        input = 'if (Token::Match(tok, "foo\"special\"bar %num%")) {'
+        output = self._replaceTokenMatch(input)
+        # FIXME: Currently detected as non-static pattern
+        self._assertEquals(output, 'if (Token::Match(tok, "foo"special"bar %num%")) {')
+        # self._assertEquals(3, len(self._matchStrs))
+
+    def _selftest_replaceTokenMatchWithVarId(self):
+        self._reset()
+
+        input = 'if (Token::Match(tok, "foobar %varid%", 123)) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match1(tok, 123)) {')
+        self._assertEquals(1, len(self._matchStrs))
+
+        input = 'if (Token::Match(tok->next()->next(), "%varid% foobar", tok->varId())) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match2(tok->next()->next(), tok->varId())) {')
+        self._assertEquals(1, len(self._matchStrs))
+
+        input = 'if (Token::Match(tok, "foo\"special\"bar %type% %varid%", my_varid_cache)) {'
+        output = self._replaceTokenMatch(input)
+        # FIXME: Currently detected as non-static pattern
+        self._assertEquals(output, 'if (Token::Match(tok, "foo"special"bar %type% %varid%", my_varid_cache)) {')
+        # self._assertEquals(1, len(self._matchStrs))
+
+        # test caching: reuse existing matchX()
+        input = 'if (Token::Match(tok, "foobar %varid%", 123)) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match1(tok, 123)) {')
+        self._assertEquals(1, len(self._matchStrs))
+
+        # two in one line
+        input = 'if (Token::Match(tok, "foobar2 %varid%", 123) || Token::Match(tok, "%type% %varid%", 123)) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match3(tok, 123) || match4(tok, 123)) {')
+        self._assertEquals(3, len(self._matchStrs))
+
+    def _selftest_replaceTokenSimpleMatch(self):
+        self._reset()
+
+        input = 'if (Token::simpleMatch(tok, "foobar")) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match1(tok)) {')
+        self._assertEquals(1, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        input = 'if (Token::simpleMatch(tok->next()->next(), "foobar")) {'
+        output = self._replaceTokenMatch(input)
+        self._assertEquals(output, 'if (match1(tok->next()->next())) {')
+        self._assertEquals(1, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        input = 'if (Token::simpleMatch(tok, "foo\"special\"bar")) {'
+        output = self._replaceTokenMatch(input)
+        # FIXME: Currently detected as non-static pattern
+        self._assertEquals(output, 'if (Token::simpleMatch(tok, "foo\"special\"bar")) {')
+        self._assertEquals(1, len(self._matchStrs))
+
+    def _selftests(self):
+        self._selftest_parseMatch()
+
+        # Self test currently not compatible with the verify mode
+        # as it modifies the expected output
+        if self._verifyMode == False:
+            self._selftest_replaceTokenMatch()
+            self._selftest_replaceTokenMatchWithVarId()
+            self._selftest_replaceTokenSimpleMatch()
+
+        self._reset()
 
 def main():
     # Main program
