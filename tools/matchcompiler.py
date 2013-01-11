@@ -571,6 +571,57 @@ class MatchCompiler:
         self._assertEquals(output, 'if (Token::simpleMatch(tok, "foo\"special\"bar")) {')
         self._assertEquals(1, len(self._matchStrs))
 
+    def _selftest_replaceTokenFindSimpleMatch(self):
+        self._reset()
+
+        input = 'if (Token::findsimplematch(tok, "foobar")) {'
+        output = self._replaceTokenFindMatch(input)
+        self._assertEquals(output, 'if (findmatch1(tok)) {')
+        self._assertEquals(1, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        input = 'if (Token::findsimplematch(tok->next()->next(), "foobar", tok->link())) {'
+        output = self._replaceTokenFindMatch(input)
+        self._assertEquals(output, 'if (findmatch2(tok->next()->next(), tok->link())) {')
+        self._assertEquals(1, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        input = 'if (Token::findsimplematch(tok, "foo\"special\"bar")) {'
+        output = self._replaceTokenFindMatch(input)
+        # FIXME: Currently detected as non-static pattern
+        self._assertEquals(output, 'if (Token::findsimplematch(tok, "foo\"special\"bar")) {')
+        self._assertEquals(1, len(self._matchStrs))
+
+    def _selftest_replaceTokenFindMatch(self):
+        self._reset()
+
+        input = 'if (Token::findmatch(tok, "foobar")) {'
+        output = self._replaceTokenFindMatch(input)
+        self._assertEquals(output, 'if (findmatch1(tok)) {')
+        self._assertEquals(1, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        # findmatch with varid
+        input = 'if (Token::findmatch(tok, "foobar %varid%", tok->varId())) {'
+        output = self._replaceTokenFindMatch(input)
+        self._assertEquals(output, 'if (findmatch2(tok, tok->varId())) {')
+        self._assertEquals(1, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        # findmatch with end token
+        input = 'if (Token::findmatch(tok->next()->next(), "foobar %type%", tok->link())) {'
+        output = self._replaceTokenFindMatch(input)
+        self._assertEquals(output, 'if (findmatch3(tok->next()->next(), tok->link())) {')
+        self._assertEquals(2, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
+        # findmatch with end token and varid
+        input = 'if (Token::findmatch(tok->next()->next(), "foobar %type% %varid%", tok->link(), 123)) {'
+        output = self._replaceTokenFindMatch(input)
+        self._assertEquals(output, 'if (findmatch4(tok->next()->next(), tok->link(), 123)) {')
+        self._assertEquals(2, len(self._matchStrs))
+        self._assertEquals(1, self._matchStrs['foobar'])
+
     def _selftests(self):
         self._selftest_parseMatch()
 
@@ -580,6 +631,9 @@ class MatchCompiler:
             self._selftest_replaceTokenMatch()
             self._selftest_replaceTokenMatchWithVarId()
             self._selftest_replaceTokenSimpleMatch()
+
+            self._selftest_replaceTokenFindSimpleMatch()
+            self._selftest_replaceTokenFindMatch()
 
         self._reset()
 
