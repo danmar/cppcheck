@@ -593,55 +593,6 @@ void DestroyFred(void *p)
   </chapter>
 
   <chapter>
-    <title>Exception safety</title>
-
-    <para>Cppcheck has a few checks that ensure that you don't break the basic
-    guarantee of exception safety. It doesn't have any checks for the strong
-    guarantee yet.</para>
-
-    <para>Example:</para>
-
-    <programlisting>Fred::Fred() : a(new int[20]), b(new int[20])
-{
-}</programlisting>
-
-    <para>By default Cppcheck will not detect any problems in that
-    code.</para>
-
-    <para>To enable the exception safety checking you can use
-    <parameter class="command">--enable</parameter>:</para>
-
-    <programlisting>cppcheck --enable=exceptNew --enable=exceptRealloc fred.cpp</programlisting>
-
-    <para>The output will be:</para>
-
-    <programlisting>[fred.cpp:3]: (style) Upon exception there is memory leak: a</programlisting>
-
-    <para>If an exception occurs when <varname>b</varname> is allocated,
-    <varname>a</varname> will leak.</para>
-
-    <para>Here is another example:</para>
-
-    <programlisting>int *p;
-
-int a(int sz)
-{
-    delete [] p;
-    if (sz &lt;= 0)
-        throw std::runtime_error("size &lt;= 0");
-    p = new int[sz];
-}</programlisting>
-
-    <para>Check that with Cppcheck:</para>
-
-    <programlisting>cppcheck --enable=exceptNew --enable=exceptRealloc except2.cpp</programlisting>
-
-    <para>The output from Cppcheck is:</para>
-
-    <programlisting>[except2.cpp:7]: (error) Throwing exception in invalid state, p points at deallocated memory</programlisting>
-  </chapter>
-
-  <chapter>
     <title>HTML report</title>
 
     <para>You can convert the XML output from cppcheck into a HTML report.
