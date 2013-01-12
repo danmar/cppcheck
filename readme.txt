@@ -60,6 +60,10 @@ Compiling
         To build Cppcheck without rules (no dependencies):
             make
 
+        If you have python it is recommended that you add "SRCDIR=build". When
+        that is used, the Makefile uses python to compile Cppcheck (but python
+        is not used at runtime). The advantage is that it makes Cppcheck faster.
+
     g++ (for experts)
     =================
         If you just want to build Cppcheck without dependencies then you can use this command:
@@ -67,9 +71,11 @@ Compiling
 
         If you want to use --rule and --rule-file then dependencies are needed:
             g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+
     mingw
     =====
-        make LDFLAGS=-lshlwapi
+        The "LDFLAGS=-lshlwapi" is needed when building with mingw
+            mingw32-make LDFLAGS=-lshlwapi
 
 Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
