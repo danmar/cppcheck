@@ -229,6 +229,20 @@ Checking path/file2.cpp...
 
         <programlisting>cppcheck --enable=all path</programlisting>
       </section>
+
+      <section>
+        <title>Inconclusive checks</title>
+
+        <para>By default Cppcheck only writes error messages if it is certain.
+        With <parameter class="command">--inconclusive</parameter> error
+        messages will also be written when the analysis is inconclusive.</para>
+
+        <programlisting>cppcheck --inconclusive path</programlisting>
+
+        <para>This can of course cause false warnings, it might be reported
+        that there are bugs even though there are not. Only use this command
+        if false warnings are acceptable.</para>
+      </section>
     </section>
 
     <section>
