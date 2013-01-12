@@ -24,7 +24,7 @@
 void TestTranslationHandler::construct()
 {
     TranslationHandler handler;
-    QCOMPARE(handler.GetNames().size(), 11);
+    QCOMPARE(handler.GetNames().size(), 13);  // 12 translations + english
     QCOMPARE(handler.GetCurrentLanguage(), QString("en"));
 }
 
