@@ -680,11 +680,6 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
         </listitem>
       </itemizedlist>
 
-      <para>It isn't recommended to provide the paths to the standard C/C++
-      headers - Cppcheck has internal knowledge about ANSI C/C++ and it isn't
-      recommended that this known functionality is redefined. But feel free to
-      try it.</para>
-
       <para>As you can read in <link linkend="preprocessor-configurations">chapter
       3</link> in this manual the default is that Cppcheck checks all configurations.
       So only provide preprocessor defines if you want to limit the checking.</para>
