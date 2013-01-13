@@ -359,7 +359,46 @@ class MatchCompiler:
 
         return line
 
-    def _replaceSpecificFindTokenMatch(self, is_findmatch, line, start_pos, end_pos, pattern, tok, endToken, varId):
+    def _compileVerifyTokenFindMatch(self, is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId):
+        more_args = ''
+        if endToken:
+            more_args += ', const Token *endToken'
+        if varId:
+            more_args += ', const unsigned int varid'
+
+        ret = 'static const Token *findmatch_verify' + str(verifyNumber) + '(const Token *tok'+more_args+') {\n'
+
+        origFindMatchName = 'findmatch'
+        if is_findsimplematch:
+            origMatchName = 'findsimplematch'
+            assert(varId == None)
+
+        ret += '    const Token *res_compiled_findmatch = findmatch'+str(patternNumber)+'(tok'
+        if endToken:
+            ret += ', endToken'
+        if varId:
+            ret += ', varid'
+        ret += ');\n'
+
+        ret += '    const Token *res_parsed_findmatch = Token::' + origFindMatchName + '(tok, "' + pattern + '"'
+        if endToken:
+            ret += ', endToken'
+        if varId:
+            ret += ', varid'
+        ret += ');\n'
+
+        ret += '\n'
+        # Don't use assert() here, it's disabled for optimized builds.
+        # We also need to verify builds in 'release' mode
+        ret += '    if (res_parsed_findmatch != res_compiled_findmatch) {\n'
+        ret += '        throw InternalError(tok, "Internal error. compiled findmatch returned different result than parsed findmatch");\n'
+        ret += '    }\n'
+        ret += '    return res_compiled_findmatch;\n'
+        ret += '}\n'
+
+        return ret
+
+    def _replaceSpecificFindTokenMatch(self, is_findsimplematch, line, start_pos, end_pos, pattern, tok, endToken, varId):
         more_args = ''
         if endToken:
             more_args += ',' + endToken
@@ -374,15 +413,24 @@ class MatchCompiler:
             self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
             self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
 
-        return line[:start_pos]+'findmatch'+str(findMatchNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
+        functionName = "findmatch"
+        if self._verifyMode:
+            verifyNumber = len(self._rawMatchFunctions) + 1
+            self._rawMatchFunctions.append(self._compileVerifyTokenFindMatch(is_findsimplematch, verifyNumber, pattern, findMatchNumber, endToken, varId))
+
+            # inject verify function
+            functionName = "findmatch_verify"
+            findMatchNumber = verifyNumber
+
+        return line[:start_pos]+functionName+str(findMatchNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
 
     def _replaceTokenFindMatch(self, line):
         pos1 = 0
         while True:
-            is_findmatch = False
+            is_findsimplematch = True
             pos1 = line.find('Token::findsimplematch(')
             if pos1 == -1:
-                is_findmatch = True
+                is_findsimplematch = False
                 pos1 = line.find('Token::findmatch(')
             if pos1 == -1:
                 break
@@ -399,7 +447,7 @@ class MatchCompiler:
 
             # Check for varId
             varId = None
-            if is_findmatch and g0.find("%varid%") != -1:
+            if not is_findsimplematch and g0.find("%varid%") != -1:
                 if len(res) == 5:
                     varId = res[4]
                 else:
@@ -412,9 +460,9 @@ class MatchCompiler:
             #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
             #     Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
             endToken = None
-            if is_findmatch == False and len(res) == 4:
+            if is_findsimplematch == True and len(res) == 4:
                 endToken = res[3]
-            elif is_findmatch == True:
+            elif is_findsimplematch == False:
                 if varId and len(res) == 5:
                     endToken = res[3]
                 elif varId == None and len(res) == 4:
@@ -425,7 +473,7 @@ class MatchCompiler:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
-            line = self._replaceSpecificFindTokenMatch(is_findmatch, line, pos1, len(g0), pattern, tok, endToken, varId)
+            line = self._replaceSpecificFindTokenMatch(is_findsimplematch, line, pos1, len(g0), pattern, tok, endToken, varId)
 
         return line
 
