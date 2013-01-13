@@ -373,56 +373,56 @@ class MatchCompiler:
             res = self.parseMatch(line, pos1)
             if res == None:
                 break
-            else:
-                assert(len(res)>=3 or len(res) < 6)  # assert that Token::find(simple)match has either 2, 3 or four arguments
 
-                g0 = res[0]
-                arg1 = res[1]
-                pattern = res[2]
+            assert(len(res)>=3 or len(res) < 6)  # assert that Token::find(simple)match has either 2, 3 or four arguments
 
-                # Check for varId
-                varId = None
-                if is_findmatch and g0.find("%varid%") != -1:
-                    if len(res) == 5:
-                        varId = res[4]
-                    else:
-                        varId = res[3]
+            g0 = res[0]
+            arg1 = res[1]
+            pattern = res[2]
 
-                # endToken support. We resolve the overloaded type by checking if varId is used or not.
-                # Function protoypes:
-                #     Token *findsimplematch(const Token *tok, const char pattern[]);
-                #     Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
-                #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
-                #     Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
-                endToken = None
-                if is_findmatch == False and len(res) == 4:
-                    endToken = res[3]
-                elif is_findmatch == True:
-                    if varId and len(res) == 5:
-                        endToken = res[3]
-                    elif varId == None and len(res) == 4:
-                        endToken = res[3]
-
-                res = re.match(r'\s*"([^"]*)"\s*$', pattern)
-                if res == None:
-                    break  # Non-const pattern - bailout
+            # Check for varId
+            varId = None
+            if is_findmatch and g0.find("%varid%") != -1:
+                if len(res) == 5:
+                    varId = res[4]
                 else:
-                    pattern = res.group(1)
-                    a3 = ''
-                    if endToken:
-                        a3 += ',' + endToken
-                    if varId:
-                        a3 += ',' + varId
+                    varId = res[3]
 
-                    # Compile function or use previously compiled one
-                    findMatchNumber = self._lookupMatchFunctionId(pattern, endToken, varId, True)
+            # endToken support. We resolve the overloaded type by checking if varId is used or not.
+            # Function protoypes:
+            #     Token *findsimplematch(const Token *tok, const char pattern[]);
+            #     Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
+            #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
+            #     Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
+            endToken = None
+            if is_findmatch == False and len(res) == 4:
+                endToken = res[3]
+            elif is_findmatch == True:
+                if varId and len(res) == 5:
+                    endToken = res[3]
+                elif varId == None and len(res) == 4:
+                    endToken = res[3]
 
-                    if findMatchNumber == None:
-                        findMatchNumber = len(self._rawMatchFunctions) + 1
-                        self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
-                        self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
+            res = re.match(r'\s*"([^"]*)"\s*$', pattern)
+            if res == None:
+                break  # Non-const pattern - bailout
 
-                    line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
+            pattern = res.group(1)
+            a3 = ''
+            if endToken:
+                a3 += ',' + endToken
+            if varId:
+                a3 += ',' + varId
+
+            # Compile function or use previously compiled one
+            findMatchNumber = self._lookupMatchFunctionId(pattern, endToken, varId, True)
+
+            if findMatchNumber == None:
+                findMatchNumber = len(self._rawMatchFunctions) + 1
+                self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
+                self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
+
+            line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
 
         return line
 
