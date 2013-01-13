@@ -2765,7 +2765,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
         // defining a macro..
         if (line.compare(0, 8, "#define ") == 0) {
             PreprocessorMacro *macro = new PreprocessorMacro(line.substr(8));
-            if (macro->name().empty()) {
+            if (macro->name().empty() || macro->name() == "NULL") {
                 delete macro;
             } else if (macro->name() == "BOOST_FOREACH") {
                 // BOOST_FOREACH is currently too complex to parse, so skip it.

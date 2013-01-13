@@ -182,6 +182,7 @@ private:
         TEST_CASE(macro_linenumbers);
         TEST_CASE(macro_nopar);
         TEST_CASE(macro_switchCase);
+        TEST_CASE(macro_NULL); // skip #define NULL .. it is replaced in the tokenizer
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(string3);
@@ -2082,6 +2083,11 @@ private:
                                     "{C( 2 );\n";
             ASSERT_EQUALS("\n\n\n{$$$} 5;;\n", OurPreprocessor::expandMacros(filedata));
         }
+    }
+
+    void macro_NULL() {
+        ASSERT_EQUALS("\n$0", OurPreprocessor::expandMacros("#define null 0\nnull"));
+        ASSERT_EQUALS("\nNULL", OurPreprocessor::expandMacros("#define NULL 0\nNULL"));
     }
 
     void string1() {
