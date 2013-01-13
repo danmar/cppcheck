@@ -1173,7 +1173,7 @@ void CheckUnusedVar::checkStructMemberUsage()
 
             // bail out for extern/global struct
             for (const Token *tok2 = Token::findmatch(tok, (structname + " %var%").c_str());
-                 tok2;
+                 tok2 && tok2->next();
                  tok2 = Token::findmatch(tok2->next(), (structname + " %var%").c_str())) {
 
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->next()->varId());
