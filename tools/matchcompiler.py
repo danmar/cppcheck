@@ -359,6 +359,23 @@ class MatchCompiler:
 
         return line
 
+    def _replaceSpecificFindTokenMatch(self, is_findmatch, line, start_pos, end_pos, pattern, tok, endToken, varId):
+        more_args = ''
+        if endToken:
+            more_args += ',' + endToken
+        if varId:
+            more_args += ',' + varId
+
+        # Compile function or use previously compiled one
+        findMatchNumber = self._lookupMatchFunctionId(pattern, endToken, varId, True)
+
+        if findMatchNumber == None:
+            findMatchNumber = len(self._rawMatchFunctions) + 1
+            self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
+            self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
+
+        return line[:start_pos]+'findmatch'+str(findMatchNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
+
     def _replaceTokenFindMatch(self, line):
         pos1 = 0
         while True:
@@ -377,7 +394,7 @@ class MatchCompiler:
             assert(len(res)>=3 or len(res) < 6)  # assert that Token::find(simple)match has either 2, 3 or four arguments
 
             g0 = res[0]
-            arg1 = res[1]
+            tok = res[1]
             pattern = res[2]
 
             # Check for varId
@@ -408,21 +425,7 @@ class MatchCompiler:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
-            a3 = ''
-            if endToken:
-                a3 += ',' + endToken
-            if varId:
-                a3 += ',' + varId
-
-            # Compile function or use previously compiled one
-            findMatchNumber = self._lookupMatchFunctionId(pattern, endToken, varId, True)
-
-            if findMatchNumber == None:
-                findMatchNumber = len(self._rawMatchFunctions) + 1
-                self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
-                self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
-
-            line = line[:pos1]+'findmatch'+str(findMatchNumber)+'('+arg1+a3+')'+line[pos1+len(g0):]
+            line = self._replaceSpecificFindTokenMatch(is_findmatch, line, pos1, len(g0), pattern, tok, endToken, varId)
 
         return line
 
