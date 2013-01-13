@@ -433,6 +433,7 @@ private:
         TEST_CASE(undefinedSizeArray);
 
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
+        TEST_CASE(simplifyCharAt);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -8045,6 +8046,18 @@ private:
 
         // Don't crash
         tok("int", true);
+    }
+
+    void simplifyCharAt() { // ticket #4481
+        ASSERT_EQUALS("'h' ;", tok("\"hello\"[0] ;"));
+        ASSERT_EQUALS("'\n' ;", tok("\"\n\"[0] ;"));
+        ASSERT_EQUALS("'\\0' ;", tok("\"hello\"[5] ;"));
+        ASSERT_EQUALS("'\\0' ;", tok("\"\"[0] ;"));
+        ASSERT_EQUALS("'\\0' ;", tok("\"\\0\"[0] ;"));
+        ASSERT_EQUALS("'\\n' ;", tok("\"hello\\nworld\"[5] ;"));
+        ASSERT_EQUALS("'w' ;", tok("\"hello\nworld\"[6] ;"));
+        ASSERT_EQUALS("\"hello\" [ 7 ] ;", tok("\"hello\"[7] ;"));
+        ASSERT_EQUALS("\"hello\" [ -1 ] ;", tok("\"hello\"[-1] ;"));
     }
 };
 

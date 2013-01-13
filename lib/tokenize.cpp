@@ -3244,6 +3244,8 @@ bool Tokenizer::simplifyTokenList()
     // clear the _functionList so it can't contain dead pointers
     deleteSymbolDatabase();
 
+    simplifyCharAt();
+
     // simplify references
     simplifyReference();
 
@@ -6659,6 +6661,21 @@ bool Tokenizer::simplifyRedundantParenthesis()
         }
     }
     return ret;
+}
+
+void Tokenizer::simplifyCharAt()
+{
+    // Replace "string"[0] with 's'
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%str% [ %num% ]")) {
+            const MathLib::bigint index = MathLib::toLongNumber(tok->tokAt(2)->str());
+            // Check within range
+            if (index >= 0 && index <= (MathLib::bigint)Token::getStrLength(tok)) {
+                tok->str(std::string("'" + Token::getCharAt(tok, (size_t)index) + "'"));
+                tok->deleteNext(3);
+            }
+        }
+    }
 }
 
 void Tokenizer::simplifyReference()

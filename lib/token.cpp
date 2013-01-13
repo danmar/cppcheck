@@ -741,6 +741,34 @@ std::size_t Token::getStrLength(const Token *tok)
     return len;
 }
 
+std::string Token::getCharAt(const Token *tok, std::size_t index)
+{
+    assert(tok != NULL);
+
+    const std::string strValue(tok->strValue());
+    const char *str = strValue.c_str();
+
+    while (*str) {
+        if (index == 0) {
+            std::string ret;
+            if (*str == '\\') {
+                ret = *str;
+                ++str;
+            }
+            ret += *str;
+            return ret;
+        }
+
+        if (*str == '\\')
+            ++str;
+        ++str;
+        --index;
+    }
+    assert(index == 0);
+
+    return "\\0";
+}
+
 void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
 {
     /**[newLocation] -> b -> c -> [srcStart] -> [srcEnd] -> f */

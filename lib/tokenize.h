@@ -400,6 +400,8 @@ public:
      */
     bool simplifyRedundantParenthesis();
 
+    void simplifyCharAt();
+
     /** Simplify references */
     void simplifyReference();
 
