@@ -80,6 +80,7 @@ public:
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
         checkOther.checkIncompleteArrayFill();
         checkOther.checkSuspiciousStringCompare();
+        checkOther.checkVarFuncNullUB();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -285,6 +286,9 @@ public:
     /** @brief %Check for buffers that are filled incompletely with memset and similar functions */
     void checkIncompleteArrayFill();
 
+    /** @brief %Check that variadic function calls don't use NULL. If NULL is #defined as 0 and the function expects a pointer, the behaviour is undefined. */
+    void checkVarFuncNullUB();
+
 private:
     // Error messages..
     void oppositeInnerConditionError(const Token *tok);
@@ -354,6 +358,7 @@ private:
     void negativeBitwiseShiftError(const Token *tok);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
+    void varFuncNullUBError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -428,6 +433,7 @@ private:
         c.cctypefunctionCallError(0, "funname", "value");
         c.moduloAlwaysTrueFalseError(0, "1");
         c.incompleteArrayFillError(0, "buffer", "memset", false);
+        c.varFuncNullUBError(0);
     }
 
     static std::string myName() {
@@ -495,7 +501,8 @@ private:
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "* incorrect usage of functions from ctype library.\n"
                "* Comparisons of modulo results that are always true/false.\n"
-               "* Array filled incompletely using memset/memcpy/memmove.\n";
+               "* Array filled incompletely using memset/memcpy/memmove.\n"
+               "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n";
     }
 
     void checkExpressionRange(const std::list<const Function*> &constFunctions,

@@ -3748,3 +3748,85 @@ void CheckOther::oppositeInnerConditionError(const Token *tok)
 {
     reportError(tok, Severity::warning, "oppositeInnerCondition", "Opposite conditions in nested 'if' blocks lead to a dead code block.", true);
 }
+
+
+void CheckOther::checkVarFuncNullUB()
+{
+    if (!_settings->isEnabled("portability"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            // Is NULL passed to a function?
+            if (Token::Match(tok,"[(,] NULL [,)]")) {
+                // Locate function name in this function call.
+                const Token *ftok = tok;
+                while (ftok && ftok->str() != "(") {
+                    if (ftok->str() == ")")
+                        ftok = ftok->link();
+                    ftok = ftok->previous();
+                }
+                ftok = ftok ? ftok->previous() : NULL;
+                if (ftok && ftok->isName()) {
+                    // If this is a variadic function then report error
+                    const Function *f = symbolDatabase->findFunctionByName(ftok->str(), scope);
+                    if (f) {
+                        const Token *tok2 = f->argDef;
+                        tok2 = tok2 ? tok2->link() : NULL; // goto ')'
+                        if (Token::simpleMatch(tok2->tokAt(-3), ". . ."))
+                            varFuncNullUBError(tok);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::varFuncNullUBError(const Token *tok)
+{
+    reportError(tok,
+                Severity::portability,
+                "varFuncNullUB",
+                "Passing NULL to a function with variable number of arguments leads to undefined behaviour on some platforms.\n"
+                "Passing NULL to a function with variable number of arguments leads to undefined behaviour on some platforms.\n"
+                "The behaviour is undefined when NULL is #defined as 0, sizeof(int)!=sizeof(void*) and the function expects a pointer. Otherwise the behaviour is defined.\n"
+                "See section section 7.1.4 and section 7.15.1.1 in the C standard. Section 7.1.4 explains that the function call is UB. Section 7.15.1.1 explains that the va_arg macro has UB.\n"
+                "To reproduce you might be able to use this little code example. Try it on a platform where sizeof(int)!=sizeof(void*), for instance on a x86_64 machine. If ERROR is written by the program on the screen it means that 0 is not converted to a NULL pointer. Changing the 0 to (void*)0 will fix the program.\n"
+                "#include <stdarg.h>\n"
+                "#include <stdio.h>\n"
+                "\n"
+                "void f(char *s, ...) {\n"
+                "    va_list ap;\n"
+                "    va_start(ap,s);\n"
+                "    for (;;) {\n"
+                "        char *p = va_arg(ap,char*);\n"
+                "        printf(\"%018p, %s\n\", p, (long)p & 255 ? p : \"\");\n"
+                "        if(!p) break;\n"
+                "    }\n"
+                "    va_end(ap);\n"
+                "}\n"
+                "\n"
+                "void g() {\n"
+                "    char *s2 = \"x\";\n"
+                "   char *s3 = \"ERROR\";\n"
+                "\n"
+                "    // changing 0 to 0L makes the error go away on x86_64\n"
+                "    f(\"first\", s2, s2, s2, s2, s2, 0, s3, (char*)0);\n"
+                "}\n"
+                "\n"
+                "void h() {\n"
+                "    int i;\n"
+                "    volatile unsigned char a[1000];\n"
+                "    for (i = 0; i<sizeof(a); i++)\n"
+                "        a[i] = -1;\n"
+                "}\n"
+                "\n"
+                "int main() {\n"
+                "    h();\n"
+                "    g();\n"
+                "    return 0;\n"
+                "}");
+}

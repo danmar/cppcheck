@@ -188,6 +188,8 @@ private:
 
         TEST_CASE(redundantVarAssignment);
         TEST_CASE(redundantMemWrite);
+
+        TEST_CASE(varFuncNullUB);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
@@ -6798,6 +6800,12 @@ private:
               "        memset(a, 0, size);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varFuncNullUB() { // #4482
+        check("void a(...);\n"
+              "void b() { a(NULL); }");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Passing NULL to a function with variable number of arguments leads to undefined behaviour on some platforms.\n", errout.str());
     }
 };
 

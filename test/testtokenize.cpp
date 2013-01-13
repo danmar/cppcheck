@@ -448,6 +448,8 @@ private:
         TEST_CASE(simplifyOperatorName5);
         TEST_CASE(simplifyOperatorName6); // ticket #3194
 
+        TEST_CASE(simplifyNull);
+
         TEST_CASE(simplifyNullArray);
 
         // Some simple cleanups of unhandled macros in the global scope
@@ -7205,6 +7207,11 @@ private:
         const char code2[] = "value_type * operator -- (int);";
         const char result2[] = "value_type * operator-- ( int ) ;";
         ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+    }
+
+    void simplifyNull() {
+        ASSERT_EQUALS("if ( p == 0 )", tokenizeAndStringify("if (p==NULL)"));
+        ASSERT_EQUALS("f ( NULL ) ;", tokenizeAndStringify("f(NULL);"));
     }
 
     void simplifyNullArray() {

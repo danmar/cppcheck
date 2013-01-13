@@ -2131,14 +2131,14 @@ void Tokenizer::simplifyFileAndLineMacro()
 void Tokenizer::simplifyNull()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "NULL" || tok->str() == "__null" ||
-            tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
+        if (tok->str() == "NULL" && !Token::Match(tok->previous(), "[(,] NULL [,)]"))
             tok->str("0");
-        } else if (tok->isNumber() &&
-                   MathLib::isInt(tok->str()) &&
-                   MathLib::toLongNumber(tok->str()) == 0) {
+        else if (tok->str() == "__null" || tok->str() == "'\\0'" || tok->str() == "'\\x0'")
             tok->str("0");
-        }
+        else if (tok->isNumber() &&
+                 MathLib::isInt(tok->str()) &&
+                 MathLib::toLongNumber(tok->str()) == 0)
+            tok->str("0");
     }
 
     // nullptr..

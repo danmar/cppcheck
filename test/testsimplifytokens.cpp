@@ -3407,7 +3407,7 @@ private:
                 ASSERT_EQUALS("void f ( int i ) { goto label ; { label : ; " + *it + " ; } }",tok("void f (int i) { goto label; switch(i) { label: " + *it + "; } }"));
                 //ticket #3148
                 ASSERT_EQUALS("void f ( ) { MACRO ( " + *it + " ) }",tok("void f() { MACRO(" + *it + ") }"));
-                ASSERT_EQUALS("void f ( ) { MACRO ( " + *it + " ; , 0 ) }",tok("void f() { MACRO(" + *it + ";, NULL) }"));
+                ASSERT_EQUALS("void f ( ) { MACRO ( " + *it + " ; , NULL ) }",tok("void f() { MACRO(" + *it + ";, NULL) }"));
                 ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , " + *it + " ) }",tok("void f() { MACRO(bar1, " + *it + ") }"));
                 ASSERT_EQUALS("void f ( ) { MACRO ( " + *it + " ; bar2 , foo ) }",tok("void f() { MACRO(" + *it + "; bar2, foo) }"));
             }
