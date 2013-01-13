@@ -22,6 +22,7 @@
 #ifdef THREADING_MODEL_FORK
 #include <algorithm>
 #include <iostream>
+#include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
