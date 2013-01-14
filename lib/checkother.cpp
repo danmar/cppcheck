@@ -3764,16 +3764,19 @@ void CheckOther::checkVarFuncNullUB()
             if (Token::Match(tok,"[(,] NULL [,)]")) {
                 // Locate function name in this function call.
                 const Token *ftok = tok;
+                int argnr = 1;
                 while (ftok && ftok->str() != "(") {
                     if (ftok->str() == ")")
                         ftok = ftok->link();
+                    else if (ftok->str() == ",")
+                        ++argnr;
                     ftok = ftok->previous();
                 }
                 ftok = ftok ? ftok->previous() : NULL;
                 if (ftok && ftok->isName()) {
                     // If this is a variadic function then report error
                     const Function *f = symbolDatabase->findFunctionByName(ftok->str(), scope);
-                    if (f) {
+                    if (f && f->argCount() <= argnr) {
                         const Token *tok2 = f->argDef;
                         tok2 = tok2 ? tok2->link() : NULL; // goto ')'
                         if (Token::simpleMatch(tok2->tokAt(-3), ". . ."))

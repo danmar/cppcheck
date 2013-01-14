@@ -2086,6 +2086,8 @@ private:
     }
 
     void macro_NULL() {
+        // Let the tokenizer handle NULL.
+        // See ticket #4482 - UB when passing NULL to variadic function
         ASSERT_EQUALS("\n$0", OurPreprocessor::expandMacros("#define null 0\nnull"));
         ASSERT_EQUALS("\nNULL", OurPreprocessor::expandMacros("#define NULL 0\nNULL"));
     }

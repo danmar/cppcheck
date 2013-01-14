@@ -6806,6 +6806,10 @@ private:
         check("void a(...);\n"
               "void b() { a(NULL); }");
         ASSERT_EQUALS("[test.cpp:2]: (portability) Passing NULL to a function with variable number of arguments leads to undefined behaviour on some platforms.\n", errout.str());
+
+        check("void a(char *p, ...);\n"
+              "void b() { a(NULL, 2); }");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
