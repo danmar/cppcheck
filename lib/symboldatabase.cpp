@@ -942,7 +942,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     }
 
     // template constructor?
-    else if (Token::Match(tok, "%var% <") && Token::Match(tok->next()->link(), "> (") &&
+    else if (Token::Match(tok, "%var% <") && Token::simpleMatch(tok->next()->link(), "> (") &&
              (Token::Match(tok->next()->link()->next()->link(), ") const| ;|{|=") ||
               Token::Match(tok->next()->link()->next()->link(), ") : ::| %var% (|::|<|{"))) {
         *funcStart = tok;
