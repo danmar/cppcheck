@@ -67,10 +67,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         tok = funcname->linkAt(1);
 
         // Check that ") {" is found..
-        if (! Token::simpleMatch(tok, ") {") &&
-            ! Token::simpleMatch(tok, ") const {") &&
-            ! Token::simpleMatch(tok, ") const throw ( ) {") &&
-            ! Token::simpleMatch(tok, ") throw ( ) {"))
+        if (! Token::Match(tok, ") const| {") &&
+            ! Token::simpleMatch(tok, ") const| throw ( ) {"))
             funcname = 0;
 
         if (funcname) {
@@ -92,7 +90,23 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
     }
 
     // Function usage..
+    const Token *scopeEnd = NULL;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        if (scopeEnd == NULL) {
+            if (tok->str() != ")")
+                continue;
+            if (!Token::Match(tok, ") const| {"))
+                continue;
+            scopeEnd = tok;
+            while (scopeEnd->str() != "{")
+                scopeEnd = scopeEnd->next();
+            scopeEnd = scopeEnd->link();
+        } else if (tok == scopeEnd) {
+            scopeEnd = NULL;
+            continue;
+        }
+
+
         const Token *funcname = 0;
 
         if (Token::Match(tok->next(), "%var% (")) {
@@ -117,7 +131,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
         // funcname ( => Assert that the end parenthesis isn't followed by {
         if (Token::Match(funcname, "%var% (")) {
-            if (Token::Match(funcname->linkAt(1), ") const|{"))
+            if (Token::Match(funcname->linkAt(1), ") const|throw|{"))
                 funcname = NULL;
         }
 

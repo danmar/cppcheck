@@ -51,6 +51,8 @@ private:
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
         TEST_CASE(lineNumber); // Ticket 3059
+
+        TEST_CASE(ignore_declaration); // ignore declaration
     }
 
     void check(const char code[]) {
@@ -256,6 +258,12 @@ private:
               "int main()\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used.\n"
                       "[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
+    }
+
+    void ignore_declaration() {
+        check("void f();\n"
+              "void f() {}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout.str());
     }
 };
 
