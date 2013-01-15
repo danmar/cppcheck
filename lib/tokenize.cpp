@@ -6668,7 +6668,7 @@ void Tokenizer::simplifyCharAt()
     // Replace "string"[0] with 's'
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% [ %num% ]")) {
-            const MathLib::bigint index = MathLib::toLongNumber(tok->tokAt(2)->str());
+            const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
             // Check within range
             if (index >= 0 && index <= (MathLib::bigint)Token::getStrLength(tok)) {
                 tok->str(std::string("'" + Token::getCharAt(tok, (size_t)index) + "'"));
