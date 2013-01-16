@@ -186,7 +186,7 @@ unsigned int ThreadExecutor::check()
                 fileChecker.settings() = _settings;
                 unsigned int resultOfCheck = 0;
 
-                if (_fileContents.size() > 0 && _fileContents.find(i->first) != _fileContents.end()) {
+                if (!_fileContents.empty() && _fileContents.find(i->first) != _fileContents.end()) {
                     // File content was given as a string
                     resultOfCheck = fileChecker.check(i->first, _fileContents[ i->first ]);
                 } else {

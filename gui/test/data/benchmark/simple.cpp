@@ -532,7 +532,7 @@ void CheckOther::checkIncorrectLogicOperator()
     const Token *endTok = tok ? tok->next()->link() : NULL;
 
     while (tok && endTok) {
-        // Find a pair of OR'd terms, with or without parenthesis
+        // Find a pair of OR'd terms, with or without parentheses
         // e.g. if (x != 3 || x != 4)
         const Token *logicTok = NULL, *term1Tok = NULL, *term2Tok = NULL;
         const Token *op1Tok = NULL, *op2Tok = NULL, *op3Tok = NULL, *nextTok = NULL;
@@ -2772,7 +2772,7 @@ void CheckOther::checkMathFunctions()
                  MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0) {
             mathfunctionCallError(tok);
         }
-        // acos( x ), asin( x )  where x is defined for intervall [-1,+1], but not beyound
+        // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "acos|asin ( %num% )") &&
                  std::fabs(MathLib::toDoubleNumber(tok->tokAt(2)->str())) > 1.0) {
@@ -3508,6 +3508,6 @@ void CheckOther::unsignedPositive(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::style, "unsignedPositive",
                 "Checking if unsigned variable '" + varname + "' is positive is always true.\n"
-                "An unsigned variable will never alwayw be positive so it is either pointless or "
+                "An unsigned variable can't be negative so it is either pointless or "
                 "an error to check if it is.");
 }

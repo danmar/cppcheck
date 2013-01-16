@@ -825,7 +825,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     if (Token::Match(tok2->next(), "%var% =") && MathLib::toLongNumber(max_counter_value) < size)
         condition_out_of_bounds = false;
 
-    // Goto the end parenthesis of the for-statement: "for (x; y; z)" ..
+    // Goto the end parentheses of the for-statement: "for (x; y; z)" ..
     tok2 = tok->next()->link();
     if (!tok2 || !tok2->tokAt(5)) {
         bailout = true;

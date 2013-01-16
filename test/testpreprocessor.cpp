@@ -266,7 +266,7 @@ private:
         TEST_CASE(def_handleIncludes_ifelse1);   // problems in handleIncludes for #else
         TEST_CASE(def_handleIncludes_ifelse2);
 
-        TEST_CASE(def_valueWithParenthesis); // #3531
+        TEST_CASE(def_valueWithParentheses); // #3531
 
         // Using -U to undefine symbols
         TEST_CASE(undef1);
@@ -3424,8 +3424,8 @@ private:
                       preprocessor.handleIncludes(code, "test.c", includePaths, defs).find("123"));
     }
 
-    void def_valueWithParenthesis() {
-        // #define should introduce a new symbol regardless of parenthesis in the value
+    void def_valueWithParentheses() {
+        // #define should introduce a new symbol regardless of parentheses in the value
         // and regardless of white space in weird places (people do this for some reason).
         const char code[] = "#define A (Fred)\n"
                             "      #       define B (Flintstone)\n"

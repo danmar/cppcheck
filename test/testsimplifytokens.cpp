@@ -2485,17 +2485,17 @@ private:
                             "return(-1);\n"
                             "fclose(f);\n"
                             "}\n";
-        const char *exptected = "void foo ( ) "
-                                "{ "
-                                "FILE * f ; "
-                                "f = fopen ( \"foo\" , \"r\" ) ; "
-                                "if ( ! f ) "
-                                "{ "
-                                "return -1 ; "
-                                "} "
-                                "fclose ( f ) ; "
-                                "}";
-        ASSERT_EQUALS(exptected, tok(code));
+        const char *expected = "void foo ( ) "
+                               "{ "
+                               "FILE * f ; "
+                               "f = fopen ( \"foo\" , \"r\" ) ; "
+                               "if ( ! f ) "
+                               "{ "
+                               "return -1 ; "
+                               "} "
+                               "fclose ( f ) ; "
+                               "}";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void whileAssign1() {

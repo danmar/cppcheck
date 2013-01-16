@@ -32,7 +32,7 @@ ScratchPad::ScratchPad(MainWindow& mainWindow)
 void ScratchPad::CheckButtonClicked()
 {
     QString filename = mUI.lineEdit->text();
-    if (filename.size() == 0)
+    if (filename.isEmpty())
         filename = "test.cpp";
     mMainWindow.CheckCode(mUI.plainTextEdit->toPlainText(), filename);
 }

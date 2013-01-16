@@ -210,7 +210,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Filter errors
-        // This is deprecated, see --supressions-list above
+        // This is deprecated, see --suppressions-list above
         else if (std::strcmp(argv[i], "--suppressions") == 0) {
             ++i;
 

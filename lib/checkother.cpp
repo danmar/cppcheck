@@ -1266,7 +1266,7 @@ void CheckOther::checkIncorrectLogicOperator()
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // Find a pair of comparison expressions with or without parenthesis
+            // Find a pair of comparison expressions with or without parentheses
             // with a shared variable and constants and with a logical operator between them.
             // e.g. if (x != 3 || x != 4)
             const Token *term1Tok = NULL, *term2Tok = NULL;
@@ -2231,7 +2231,7 @@ void CheckOther::checkMathFunctions()
                 }
             }
 
-            // acos( x ), asin( x )  where x is defined for intervall [-1,+1], but not beyound
+            // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
             else if (Token::Match(tok, "acos|asin ( %num% )") &&
                      std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0) {
                 mathfunctionCallError(tok);
@@ -2985,7 +2985,7 @@ void CheckOther::checkExpressionRange(const std::list<const Function*> &constFun
     for (; it != expressions.getMap().end(); ++it) {
         // check expression..
         bool valid = true;
-        unsigned int parenthesis = 0;  // ()
+        unsigned int parentheses = 0;  // ()
         unsigned int brackets = 0;     // []
 
         // taking address?
@@ -2995,13 +2995,13 @@ void CheckOther::checkExpressionRange(const std::list<const Function*> &constFun
 
         for (const Token *tok = it->second.start; tok && tok != it->second.end; tok = tok->next()) {
             if (tok->str() == "(") {
-                ++parenthesis;
+                ++parentheses;
             } else if (tok->str() == ")") {
-                if (parenthesis == 0) {
+                if (parentheses == 0) {
                     valid = false;
                     break;
                 }
-                --parenthesis;
+                --parentheses;
             } else if (tok->str() == "[") {
                 ++brackets;
             } else if (tok->str() == "]") {
@@ -3016,7 +3016,7 @@ void CheckOther::checkExpressionRange(const std::list<const Function*> &constFun
             }
         }
 
-        if (!valid || parenthesis!=0 || brackets!=0)
+        if (!valid || parentheses!=0 || brackets!=0)
             continue;
 
         const ExpressionTokens &expr = it->second;
@@ -3764,7 +3764,7 @@ void CheckOther::checkVarFuncNullUB()
             if (Token::Match(tok,"[(,] NULL [,)]")) {
                 // Locate function name in this function call.
                 const Token *ftok = tok;
-                int argnr = 1;
+                std::size_t argnr = 1;
                 while (ftok && ftok->str() != "(") {
                     if (ftok->str() == ")")
                         ftok = ftok->link();

@@ -92,9 +92,14 @@ static const char * const call_func_white_list[] = {
     , "vscanf", "vsnprintf", "vsprintf", "vsscanf", "while", "wordexp","write", "writev"
 };
 
-static int call_func_white_list_compare(const void *a, const void *b)
+extern "C"
 {
-    return std::strcmp((const char *)a, *(const char * const *)b);
+    int call_func_white_list_compare(const void *a, const void *b);
+
+    int call_func_white_list_compare(const void *a, const void *b)
+    {
+        return std::strcmp((const char *)a, *(const char * const *)b);
+    }
 }
 
 //---------------------------------------------------------------------------

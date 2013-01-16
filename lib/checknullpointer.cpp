@@ -358,7 +358,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
     // streams dereference nullpointers
     if (Token::Match(tok->previous(), "<<|>> %var%")) {
         const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
-        if (var && var->isPointer() && Token::Match(var->typeStartToken(), "char|wchar_t")) { // Only outputing or reading to char* can cause problems
+        if (var && var->isPointer() && Token::Match(var->typeStartToken(), "char|wchar_t")) { // Only outputting or reading to char* can cause problems
             const Token* tok2 = tok->previous(); // Find start of statement
             for (; tok2; tok2 = tok2->previous()) {
                 if (Token::Match(tok2->previous(), ";|{|}|:"))
