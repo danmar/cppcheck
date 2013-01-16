@@ -93,9 +93,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
     const Token *scopeEnd = NULL;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
         if (scopeEnd == NULL) {
-            if (tok->str() != ")")
-                continue;
-            if (!Token::Match(tok, ") const| {"))
+            if (!Token::Match(tok, ")|= const| {"))
                 continue;
             scopeEnd = tok;
             while (scopeEnd->str() != "{")

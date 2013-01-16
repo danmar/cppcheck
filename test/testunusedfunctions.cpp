@@ -264,6 +264,10 @@ private:
         check("void f();\n"
               "void f() {}");
         ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout.str());
+
+        check("void f(void) {}\n"
+              "void (*list[])(void) = {f}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
