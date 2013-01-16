@@ -68,7 +68,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 
         // Check that ") {" is found..
         if (! Token::Match(tok, ") const| {") &&
-            ! Token::simpleMatch(tok, ") const| throw ( ) {"))
+            ! Token::Match(tok, ") const| throw ( ) {"))
             funcname = 0;
 
         if (funcname) {
