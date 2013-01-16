@@ -59,6 +59,7 @@ private:
         TEST_CASE(uninitvar6);          // handling unknown types in C and C++ files
         TEST_CASE(uninitvar2_func);     // function calls
         TEST_CASE(uninitvar2_value);    // value flow
+        TEST_CASE(uninitvar2_structmembers); // struct members
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -1937,11 +1938,12 @@ private:
 
 
     /** New checking that doesn't rely on ExecutionPath */
-    void checkUninitVar2(const char code[], const char fname[] = "test.cpp") {
+    void checkUninitVar2(const char code[], const char fname[] = "test.cpp", bool experimental = false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
+        settings.experimental = experimental;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2548,6 +2550,27 @@ private:
                         "    if (b(x)) return;\n"
                         "    i++;\n" // <- no error if b(x) is always true when a(x) is false
                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar2_structmembers() { // struct members
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void do_something(const struct AB ab);\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    ab.a = 0;\n"
+                        "    do_something(ab);\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("[test.c:6]: (error) Uninitialized variable: ab.b\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void do_something(const struct AB ab);\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    ab.a = 0;\n"
+                        "    ab.b = 0;\n"
+                        "    do_something(ab);\n"
+                        "}\n", "test.c", true);
         ASSERT_EQUALS("", errout.str());
     }
 };
