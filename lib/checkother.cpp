@@ -3154,12 +3154,8 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     if (!_settings->isEnabled("style"))
         return;
 
-    const char pattern1[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ";
-    const char pattern2[] = "QString :: compare ( %str% , %str% )";
-    const char pattern3[] = "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ";
-
     const Token *tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, pattern1)) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ")) != NULL) {
         const std::string &str1 = tok->strAt(2);
         const std::string &str2 = tok->strAt(4);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -3167,7 +3163,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, pattern2)) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "QString :: compare ( %str% , %str% )")) != NULL) {
         const std::string &str1 = tok->strAt(4);
         const std::string &str2 = tok->strAt(6);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -3175,7 +3171,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, pattern3)) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ")) != NULL) {
         const std::string &str1 = tok->strAt(2);
         const std::string &str2 = tok->strAt(4);
         if (str1 == str2)
