@@ -8459,9 +8459,8 @@ void Tokenizer::simplifyStructDecl()
 
 void Tokenizer::simplifyCallingConvention()
 {
-    static const char pattern[] = "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK";
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, pattern)) {
+        while (Token::Match(tok, "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK")) {
             tok->deleteThis();
         }
     }
@@ -8505,15 +8504,25 @@ void Tokenizer::simplifyAttribute()
 //   - Not in C++ standard yet
 void Tokenizer::simplifyKeyword()
 {
-    std::string pattern = "volatile|inline|__inline|__forceinline|register|__restrict|__restrict__";
-    if (_settings->standards.c >= Standards::C99)
-        pattern += "|restrict";
-    if (_settings->standards.cpp >= Standards::CPP11)
-        pattern += "|constexpr|override|final";
-
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, pattern.c_str())) {
+        while (Token::Match(tok, "volatile|inline|__inline|__forceinline|register|__restrict|__restrict__")) {
             tok->deleteThis();
+        }
+    }
+
+    if (_settings->standards.c >= Standards::C99) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            while (Token::Match(tok, "restrict")) {
+                tok->deleteThis();
+            }
+        }
+    }
+
+    if (_settings->standards.cpp >= Standards::CPP11) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            while (Token::Match(tok, "constexpr|override|final")) {
+                tok->deleteThis();
+            }
         }
     }
 }
