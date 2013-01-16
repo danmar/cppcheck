@@ -2251,7 +2251,7 @@ private:
     }
 
     void simplifyKnownVariables37() {
-        // Ticket #2398 - no simplication in for loop
+        // Ticket #2398 - no simplification in for loop
         const char code[] = "void f() {\n"
                             "    double x = 0;\n"
                             "    for (int iter=0; iter<42; iter++) {\n"
@@ -6364,11 +6364,11 @@ private:
         //with '&' operator
         ASSERT_EQUALS("void f(){ ab:;& b=0;}", labels_("void f() { ab: &b=0; }"));
         ASSERT_EQUALS("void f(){ ab:;&( b. x)=0;}", labels_("void f() { ab: &(b->x)=0; }"));
-        //with '(' parenthesis
+        //with '(' parentheses
         ASSERT_EQUALS("void f(){ ab:;*(* b). x=0;}", labels_("void f() { ab: *(* b)->x=0; }"));
         ASSERT_EQUALS("void f(){ ab:;(** b). x=0;}", labels_("void f() { ab: (** b).x=0; }"));
         ASSERT_EQUALS("void f(){ ab:;&(* b. x)=0;}", labels_("void f() { ab: &(*b.x)=0; }"));
-        //with '{' parenthesis
+        //with '{' parentheses
         ASSERT_EQUALS("void f(){ ab:;{ b=0;}}", labels_("void f() { ab: {b=0;} }"));
         ASSERT_EQUALS("void f(){ ab:;{* b=0;}}", labels_("void f() { ab: { *b=0;} }"));
         ASSERT_EQUALS("void f(){ ab:;{& b=0;}}", labels_("void f() { ab: { &b=0;} }"));

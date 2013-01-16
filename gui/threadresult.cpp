@@ -91,7 +91,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 QString ThreadResult::GetNextFile()
 {
     QMutexLocker locker(&mutex);
-    if (mFiles.size() == 0) {
+    if (mFiles.isEmpty()) {
         return "";
     }
 

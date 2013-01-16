@@ -363,7 +363,7 @@ std::string MathLib::abs(const std::string &tok)
 
 bool MathLib::isEqual(const std::string &first, const std::string &second)
 {
-    // this conversion is needed for formating
+    // this conversion is needed for formatting
     // e.g. if first=0.1 and second=1.0E-1, the direct comparison of the strings whould fail
     return doubleToString(toDoubleNumber(first)) == doubleToString(toDoubleNumber(second));
 }

@@ -771,7 +771,7 @@ void CheckClass::privateFunctions()
             }
         }
 
-        // Bailout for overriden virtual functions of base classes
+        // Bailout for overridden virtual functions of base classes
         if (!scope->derivedFrom.empty()) {
             // Check virtual functions
             for (std::list<const Function*>::iterator it = FuncList.begin(); it != FuncList.end();) {
@@ -1108,7 +1108,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope)
             var = tok->tokAt(3);
         else if (Token::Match(tok, "delete %var%"))
             var = tok->next();
-        // Check for assignement to the deleted pointer (only if its a member of the class)
+        // Check for assignment to the deleted pointer (only if its a member of the class)
         if (var && isMemberVar(scope, var)) {
             for (const Token *tok1 = var->next(); tok1 && (tok1 != last); tok1 = tok1->next()) {
                 if (Token::Match(tok1, "%var% =")) {

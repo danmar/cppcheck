@@ -1344,10 +1344,10 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
     return false;
 }
 
-bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startparanthesis, const Variable& var, bool suppressErrors, bool isuninit)
+bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit)
 {
-    const Token * const endpar = startparanthesis->link();
-    for (const Token *tok = startparanthesis->next(); tok && tok != endpar; tok = tok->next()) {
+    const Token * const endpar = startparentheses->link();
+    for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == var.varId()) {
             if (isVariableUsage(scope, tok, var.isPointer())) {
                 if (!suppressErrors)
@@ -1374,7 +1374,7 @@ bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bo
     if (Token::Match(vartok->previous(), "[(,] %var% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %var% [,)]")) {
         const bool address(vartok->previous()->str() == "&");
 
-        // locate start parenthesis in function call..
+        // locate start parentheses in function call..
         int argumentNumber = 0;
         const Token *start = vartok;
         while (start && !Token::Match(start, "[;{}(]")) {

@@ -1058,7 +1058,7 @@ void Token::astFunctionCall()
     _next->_astParent = this;
 }
 
-void Token::astHandleParenthesis()
+void Token::astHandleParentheses()
 {
     Token *innerTop;
     if (_str != "(")

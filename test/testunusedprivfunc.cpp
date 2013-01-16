@@ -419,7 +419,7 @@ private:
               "class derived : public base {\n"
               "private:\n"
               "    void foo() {}\n" // Skip for overrides of virtual functions of base
-              "    void bar() {}\n" // Don't skip if no function is overriden
+              "    void bar() {}\n" // Don't skip if no function is overridden
               "};");
         ASSERT_EQUALS("[test.cpp:9]: (style) Unused private function: 'derived::bar'\n", errout.str());
 

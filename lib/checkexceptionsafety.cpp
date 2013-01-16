@@ -115,7 +115,7 @@ void CheckExceptionSafety::deallocThrow()
 
                 // Variable is assigned -> Bail out
                 else if (Token::Match(tok2, "%varid% =", varid)) {
-                    if (ThrowToken) // For non-inconclusive checking, wait until we find an assignement to it. Otherwise we assume it is safe to leave a dead pointer.
+                    if (ThrowToken) // For non-inconclusive checking, wait until we find an assignment to it. Otherwise we assume it is safe to leave a dead pointer.
                         deallocThrowError(ThrowToken, tok2->str());
                     break;
                 }

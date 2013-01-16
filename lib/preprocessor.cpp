@@ -646,7 +646,7 @@ std::string Preprocessor::removeParentheses(const std::string &str)
             while ((pos = line.find(") ", pos)) != std::string::npos)
                 line.erase(pos + 1, 1);
 
-            // Remove inner parenthesis "((..))"..
+            // Remove inner parentheses "((..))"..
             pos = 0;
             while ((pos = line.find("((", pos)) != std::string::npos) {
                 ++pos;
@@ -1506,7 +1506,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         modified = false;
         modified |= tokenizer.simplifySizeof();
         modified |= tokenizer.simplifyCalculations();
-        modified |= tokenizer.simplifyRedundantParenthesis();
+        modified |= tokenizer.simplifyRedundantParentheses();
         for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next()) {
             if (Token::Match(tok, "! %num%")) {
                 tok->deleteThis();
@@ -2231,7 +2231,7 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
  * @param pos  in: Position to the '('. out: Position to the ')'
  * @param params out: The extracted parameters
  * @param numberOfNewlines out: number of newlines in the macro call
- * @param endFound out: was the end parenthesis found?
+ * @param endFound out: was the end parentheses found?
  */
 static void getparams(const std::string &line,
                       std::string::size_type &pos,
@@ -2257,14 +2257,14 @@ static void getparams(const std::string &line,
 
     // scan for parameters..
     for (; pos < line.length(); ++pos) {
-        // increase parenthesis level
+        // increase parentheses level
         if (line[pos] == '(') {
             ++parlevel;
             if (parlevel == 1)
                 continue;
         }
 
-        // decrease parenthesis level
+        // decrease parentheses level
         else if (line[pos] == ')') {
             --parlevel;
             if (parlevel <= 0) {
@@ -2909,7 +2909,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                     // if the macro has parentheses, get parameters
                     if (macro->variadic() || macro->nopar() || macro->params().size()) {
-                        // is the end parenthesis found?
+                        // is the end parentheses found?
                         bool endFound = false;
 
                         getparams(line,pos2,params,numberOfNewlines,endFound);

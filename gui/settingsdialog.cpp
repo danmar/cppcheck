@@ -242,7 +242,7 @@ void SettingsDialog::EditApplication()
 void SettingsDialog::DefaultApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    if (selected.size() > 0) {
+    if (!selected.isEmpty()) {
         int index = mUI.mListWidget->row(selected[0]);
         mTempApplications->SetDefault(index);
         mUI.mListWidget->clear();
