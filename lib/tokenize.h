@@ -390,7 +390,7 @@ public:
     void simplifyStructDecl();
 
     /**
-     * Remove redundant parenthesis:
+     * Remove redundant parentheses:
      * - "((x))" => "(x)"
      * - "(function())" => "function()"
      * - "(delete x)" => "delete x"
@@ -398,7 +398,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyRedundantParenthesis();
+    bool simplifyRedundantParentheses();
 
     void simplifyCharAt();
 
@@ -435,7 +435,7 @@ public:
 
     void simplifyExternC();
 
-    void simplifyRoundCurlyParenthesis();
+    void simplifyRoundCurlyParentheses();
 
     void simplifyDebugNew();
 

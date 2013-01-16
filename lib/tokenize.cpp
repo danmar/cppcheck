@@ -1209,7 +1209,7 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     else if (functionPtr || functionRef || function) {
-                        // don't add parenthesis around function names because it
+                        // don't add parentheses around function names because it
                         // confuses other simplifications
                         bool needParen = true;
                         if (!inTemplate && function && tok2->next() && tok2->next()->str() != "*")
@@ -1655,7 +1655,7 @@ bool Tokenizer::tokenize(std::istream &code,
         simplifyExternC();
 
     // simplify weird but legal code: "[;{}] ( { code; } ) ;"->"[;{}] code;"
-    simplifyRoundCurlyParenthesis();
+    simplifyRoundCurlyParentheses();
 
     // check for simple syntax errors..
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
@@ -1962,7 +1962,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyVariableMultipleAssign();
 
     // Remove redundant parentheses
-    simplifyRedundantParenthesis();
+    simplifyRedundantParentheses();
     for (Token *tok = list.front(); tok; tok = tok->next())
         while (TemplateSimplifier::simplifyNumericCalculations(tok));
 
@@ -2178,7 +2178,7 @@ void Tokenizer::simplifyExternC()
     }
 }
 
-void Tokenizer::simplifyRoundCurlyParenthesis()
+void Tokenizer::simplifyRoundCurlyParentheses()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::Match(tok, "[;{}] ( {") &&
@@ -2866,7 +2866,7 @@ void Tokenizer::setVarId()
 
                 // Found a class function..
                 if (Token::Match(tok2, funcpattern.c_str())) {
-                    // Goto the end parenthesis..
+                    // Goto the end parentheses..
                     tok2 = tok2->linkAt(3);
                     if (!tok2)
                         break;
@@ -3135,7 +3135,7 @@ bool Tokenizer::simplifySizeof()
 
         // sizeof int -> sizeof( int )
         else if (tok->next()->str() != "(") {
-            // Add parenthesis around the sizeof
+            // Add parentheses around the sizeof
             int parlevel = 0;
             for (Token *tempToken = tok->next(); tempToken; tempToken = tempToken->next()) {
                 if (tempToken->str() == "(")
@@ -3365,7 +3365,7 @@ bool Tokenizer::simplifyTokenList()
     elseif();
     simplifyErrNoInWhile();
     simplifyIfAssign();
-    simplifyRedundantParenthesis();
+    simplifyRedundantParentheses();
     simplifyIfNot();
     simplifyIfNotNull();
     simplifyIfSameInnerCondition();
@@ -3386,7 +3386,7 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
         modified |= removeRedundantConditions();
-        modified |= simplifyRedundantParenthesis();
+        modified |= simplifyRedundantParentheses();
         modified |= simplifyConstTernaryOp();
         modified |= simplifyCalculations();
     }
@@ -3519,7 +3519,7 @@ void Tokenizer::removeMacroInVarDecl()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[;{}] %var% (") && tok->next()->isUpperCaseName()) {
-            // goto ')' paranthesis
+            // goto ')' parentheses
             const Token *tok2 = tok;
             int parlevel = 0;
             while (tok2) {
@@ -4133,9 +4133,9 @@ void Tokenizer::simplifyCompoundAssignment()
                 while (tok->next()->str() != ";")
                     tok->deleteNext();
             } else {
-                // Enclose the rhs in parenthesis..
+                // Enclose the rhs in parentheses..
                 if (!Token::Match(tok->tokAt(2), "[;)]")) {
-                    // Only enclose rhs in parenthesis if there is some operator
+                    // Only enclose rhs in parentheses if there is some operator
                     bool someOperator = false;
                     for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                         if (tok2->str() == "(")
@@ -4466,7 +4466,7 @@ bool Tokenizer::simplifyConstTernaryOp()
         if (offset == 2) {
             // go further back before the "("
             tok = tok->tokAt(-2);
-            //simplify the parenthesis
+            //simplify the parentheses
             tok->deleteNext();
             tok->next()->deleteNext();
         }
@@ -4638,7 +4638,7 @@ bool Tokenizer::simplifyFunctionParameters()
                  !(tok->strAt(-1) == ":" || tok->strAt(-1) == ",")) {
             // We have found old style function, now we need to change it
 
-            // First step: Get list of argument names in parenthesis
+            // First step: Get list of argument names in parentheses
             std::map<std::string, Token *> argumentNames;
             bool bailOut = false;
             Token * tokparam = NULL;
@@ -4696,7 +4696,7 @@ bool Tokenizer::simplifyFunctionParameters()
 
             tok1 = tok->link()->next();
 
-            // there should be the sequence '; {' after the round parenthesis
+            // there should be the sequence '; {' after the round parentheses
             for (const Token* tok2 = tok1; tok2; tok2 = tok2->next()) {
                 if (Token::simpleMatch(tok2, "; {"))
                     break;
@@ -4785,7 +4785,7 @@ bool Tokenizer::simplifyFunctionParameters()
                 //remove ';' after declaration
                 declEnd->deleteNext();
 
-                //replace the parameter name in the parenthesis with all the declaration
+                //replace the parameter name in the parentheses with all the declaration
                 Token::replace(tok->next(), declStart, declEnd);
 
                 //since there are changes to tokens, put tok where tok1 is
@@ -5453,7 +5453,7 @@ void Tokenizer::simplifyIfAssign()
         if (isNot)
             tok->next()->deleteNext();
 
-        // Delete parenthesis.. and remember how many there are with
+        // Delete parentheses.. and remember how many there are with
         // their links.
         std::stack<Token *> braces;
         while (tok->next()->str() == "(") {
@@ -6539,7 +6539,7 @@ void Tokenizer::elseif()
 }
 
 
-bool Tokenizer::simplifyRedundantParenthesis()
+bool Tokenizer::simplifyRedundantParentheses()
 {
     bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -6559,14 +6559,14 @@ bool Tokenizer::simplifyRedundantParenthesis()
         while (Token::simpleMatch(tok, "( (") &&
                tok->link()->previous() == tok->next()->link()) {
             // We have "(( *something* ))", remove the inner
-            // parenthesis
+            // parentheses
             tok->deleteNext();
             tok->link()->tokAt(-2)->deleteNext();
             ret = true;
         }
 
         if (Token::Match(tok->previous(), "! ( %var% )")) {
-            // Remove the parenthesis
+            // Remove the parentheses
             tok->deleteThis();
             tok->deleteNext();
             ret = true;
@@ -6575,7 +6575,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
         if (Token::Match(tok->previous(), "[(,;{}] ( %var% (") &&
             tok->link()->previous() == tok->linkAt(2)) {
             // We have "( func ( *something* ))", remove the outer
-            // parenthesis
+            // parentheses
             tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;
@@ -6583,7 +6583,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
 
         if (Token::Match(tok->previous(), "[,;{}] ( delete [| ]| %var% ) ;")) {
             // We have "( delete [| ]| var )", remove the outer
-            // parenthesis
+            // parentheses
             tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;
@@ -6599,7 +6599,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
         }
 
         if (Token::Match(tok->previous(), "[(!*;{}] ( %var% )") && tok->next()->varId() != 0) {
-            // We have "( var )", remove the parenthesis
+            // We have "( var )", remove the parentheses
             tok->deleteThis();
             tok->deleteNext();
             ret = true;
@@ -6612,7 +6612,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
             }
             if (tok2 != tok->link())
                 break;
-            // We have "( var . var . ... . var )", remove the parenthesis
+            // We have "( var . var . ... . var )", remove the parentheses
             tok = tok->previous();
             tok->deleteNext();
             tok2->deleteThis();
@@ -6635,7 +6635,7 @@ bool Tokenizer::simplifyRedundantParenthesis()
         while (Token::Match(tok->previous(), "[{([,:] ( !!{") &&
                Token::Match(tok->link(), ") [;,])]") &&
                !Token::findsimplematch(tok, ",", tok->link())) {
-            // We have "( ... )", remove the parenthesis
+            // We have "( ... )", remove the parentheses
             tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;
@@ -7569,17 +7569,17 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
     const Token *ftok;
 
     // Look at function call, what parameter number is it?
-    unsigned int parenthesis = 1;
+    unsigned int parentheses = 1;
     unsigned int parameter = 1;
     for (ftok = fpar; ftok; ftok = ftok->previous()) {
         if (ftok->str() == "(") {
-            --parenthesis;
-            if (parenthesis == 0) {
+            --parentheses;
+            if (parentheses == 0) {
                 break;
             }
         } else if (ftok->str() == ")") {
-            ++parenthesis;
-        } else if (parenthesis == 1 && ftok->str() == ",") {
+            ++parentheses;
+        } else if (parentheses == 1 && ftok->str() == ",") {
             ++parameter;
         } else if (Token::Match(ftok, "[;{}]")) {
             break;
@@ -7655,7 +7655,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
             continue;
         } else if (tok->next()->str() == ")") {
             if (!roundbraces)
-                break;  //too many ending round parenthesis
+                break;  //too many ending round parentheses
             --roundbraces;
             tok->deleteNext();
             continue;

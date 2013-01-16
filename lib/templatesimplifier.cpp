@@ -1035,7 +1035,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
         std::string templateMatchPattern(name + " < ");
         unsigned int indentlevel = 0;
         for (const Token *tok3 = tok2->tokAt(2); tok3 && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
-            // #2648 - unhandled parenthesis => bail out
+            // #2648 - unhandled parentheses => bail out
             // #2721 - unhandled [ => bail out
             if (tok3->str() == "(" || tok3->str() == "[") {
                 typeForNewNameStr.clear();
@@ -1090,7 +1090,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
         for (Token *tok4 = tok2; tok4; tok4 = tok4->next()) {
             if (Token::simpleMatch(tok4, templateMatchPattern.c_str())) {
                 Token * tok5 = tok4->tokAt(2);
-                unsigned int typeCountInInstantion = 1U; // There is always atleast one type
+                unsigned int typeCountInInstantion = 1U; // There is always at least one type
                 const Token *typetok = (!typesUsedInTemplateInstantion.empty()) ? typesUsedInTemplateInstantion[0] : 0;
                 unsigned int indentlevel5 = 0;  // indentlevel for tok5
                 while (tok5 && (indentlevel5 > 0 || tok5->str() != ">")) {

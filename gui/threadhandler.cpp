@@ -175,10 +175,7 @@ void ThreadHandler::SaveSettings(QSettings &settings) const
 
 bool ThreadHandler::HasPreviousFiles() const
 {
-    if (mLastFiles.size() > 0)
-        return true;
-
-    return false;
+    return !mLastFiles.isEmpty();
 }
 
 int ThreadHandler::GetPreviousFilesCount() const

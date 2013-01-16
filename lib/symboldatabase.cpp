@@ -833,7 +833,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 _variableList[varId] = &(*var);
         }
 
-        // add all function paramaters
+        // add all function parameters
         std::list<Function>::const_iterator func;
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // ignore function without implementations

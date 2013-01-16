@@ -129,7 +129,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         else
             continue;
 
-        // funcname ( => Assert that the end parenthesis isn't followed by {
+        // funcname ( => Assert that the end parentheses isn't followed by {
         if (Token::Match(funcname, "%var% (")) {
             if (Token::Match(funcname->linkAt(1), ") const|throw|{"))
                 funcname = NULL;
