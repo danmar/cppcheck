@@ -85,6 +85,7 @@ public:
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
+    void uninitStructMemberError(const Token *tok, const std::string &membername);
 
 private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -94,6 +95,7 @@ private:
         c.uninitstringError(0, "varname", true);
         c.uninitdataError(0, "varname");
         c.uninitvarError(0, "varname");
+        c.uninitStructMemberError(0, "a.b");
     }
 
     static std::string myName() {

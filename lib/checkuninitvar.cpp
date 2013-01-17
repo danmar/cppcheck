@@ -1082,7 +1082,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
             tok = tok->next();
         if (stdtype || i->isPointer())
             checkScopeForVariable(scope, tok, *i, NULL, NULL, NULL);
-        if (_settings->experimental && Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
+        if (_settings->experimental && _settings->isEnabled("style") && Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
             const std::string structname(i->typeStartToken()->next()->str());
             const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
             for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
@@ -1343,12 +1343,14 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         // variable is seen..
         if (tok->varId() == var.varId()) {
             if (membervar) {
-                if (Token::Match(tok, "%var% . %var% =") && tok->strAt(2) == membervar->name())
+                if (Token::Match(tok, "%var% . %var% [=.[]") && tok->strAt(2) == membervar->name())
                     return true;
-                else if (Token::Match(tok, "%var% ="))
+                else if (tok->strAt(1) == "=")
+                    return true;
+                else if (tok->strAt(-1) == "&")
                     return true;
                 else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(scope, tok, var.isPointer()))
-                    uninitvarError(tok, tok->str() + "." + membervar->name());
+                    uninitStructMemberError(tok, tok->str() + "." + membervar->name());
             } else {
                 // Use variable
                 if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
@@ -1511,4 +1513,15 @@ void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varnam
 void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "uninitvar", "Uninitialized variable: " + varname);
+}
+
+void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
+{
+    reportError(tok,
+                Severity::warning,
+                "uninitStructMember",
+                "Perhaps '" + membername + "' should be initialized before calling function.\n"
+                "The struct is not fully initialized, '" + membername + "' hasn't been initialized. "
+                "Using the struct in function call might be dangerous, unless you know for sure that the member "
+                "will not be used by the function.");
 }

@@ -1944,6 +1944,7 @@ private:
 
         Settings settings;
         settings.experimental = experimental;
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2561,7 +2562,7 @@ private:
                         "    ab.a = 0;\n"
                         "    do_something(ab);\n"
                         "}\n", "test.c", true);
-        ASSERT_EQUALS("[test.c:6]: (error) Uninitialized variable: ab.b\n", errout.str());
+        ASSERT_EQUALS("[test.c:6]: (warning) Perhaps 'ab.b' should be initialized before calling function.\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void do_something(const struct AB ab);\n"
@@ -2579,6 +2580,30 @@ private:
                         "    struct AB ab;\n"
                         "    ab = getAB();\n"
                         "    do_something(ab);\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("struct AB { int a; struct { int b; int c; } s; };\n"
+                        "void do_something(const struct AB ab);\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    ab.a = 1;\n"
+                        "    ab.s.b = 2;\n"
+                        "    ab.s.c = 3;\n"
+                        "    do_something(ab);\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("struct conf {\n"
+                        "    char x;\n"
+                        "};\n"
+                        "\n"
+                        "void do_something(struct conf ant_conf);\n"
+                        "\n"
+                        "void f(void) {\n"
+                        "   struct conf c;\n"
+                        "   initdata(&c);\n"
+                        "   do_something(c);\n"
                         "}\n", "test.c", true);
         ASSERT_EQUALS("", errout.str());
     }
