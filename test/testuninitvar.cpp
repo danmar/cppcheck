@@ -2562,7 +2562,7 @@ private:
                         "    ab.a = 0;\n"
                         "    do_something(ab);\n"
                         "}\n", "test.c", true);
-        ASSERT_EQUALS("[test.c:6]: (warning) Perhaps 'ab.b' should be initialized before calling function.\n", errout.str());
+        ASSERT_EQUALS("[test.c:6]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void do_something(const struct AB ab);\n"
