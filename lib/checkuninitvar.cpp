@@ -1345,10 +1345,10 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             if (membervar) {
                 if (Token::Match(tok, "%var% . %var% =") && tok->strAt(2) == membervar->name())
                     return true;
+                else if (Token::Match(tok, "%var% ="))
+                    return true;
                 else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(scope, tok, var.isPointer()))
                     uninitvarError(tok, tok->str() + "." + membervar->name());
-                else
-                    return true;
             } else {
                 // Use variable
                 if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
