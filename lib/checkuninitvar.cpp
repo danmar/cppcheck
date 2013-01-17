@@ -1347,6 +1347,8 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     return true;
                 else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(scope, tok, var.isPointer()))
                     uninitvarError(tok, tok->str() + "." + membervar->name());
+                else
+                    return true;
             } else {
                 // Use variable
                 if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
