@@ -664,7 +664,7 @@ int main(int argc, char *argv[])
         std::ofstream fout;
         if (!print)
             fout.open(outfilename.c_str());
-        std::ostream &os = stdout ? std::cout : fout;
+        std::ostream &os = print ? std::cout : fout;
         for (std::size_t i = 0; i < filedata.size(); i++) {
             if (!filedata[i].empty())
                 os << filedata[i] << std::endl;
