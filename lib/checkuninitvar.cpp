@@ -1082,7 +1082,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
             tok = tok->next();
         if (stdtype || i->isPointer())
             checkScopeForVariable(scope, tok, *i, NULL, NULL, NULL);
-        if (_settings->experimental && _settings->isEnabled("style") && Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
+        if (_settings->experimental && Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
             const std::string structname(i->typeStartToken()->next()->str());
             const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
             for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
@@ -1518,10 +1518,7 @@ void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
 {
     reportError(tok,
-                Severity::warning,
+                Severity::error,
                 "uninitStructMember",
-                "Perhaps '" + membername + "' should be initialized before calling function.\n"
-                "The struct is not fully initialized, '" + membername + "' hasn't been initialized. "
-                "Using the struct in function call might be dangerous, unless you know for sure that the member "
-                "will not be used by the function.");
+                "Uninitialized struct member: " + membername);
 }
