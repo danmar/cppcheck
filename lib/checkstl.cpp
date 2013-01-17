@@ -707,16 +707,13 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &func, co
 
 void CheckStl::stlBoundries()
 {
-    // containers (not the vector)..
-    static const char STL_CONTAINER_LIST[] = "bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset";
-
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // Declaring iterator..
-            if (tok->str() == "<" && Token::Match(tok->previous(), STL_CONTAINER_LIST)) {
+            if (tok->str() == "<" && Token::Match(tok->previous(), "bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset")) {
                 const std::string& container_name(tok->strAt(-1));
                 if (tok->link())
                     tok = tok->link();
@@ -1004,12 +1001,14 @@ void CheckStl::sizeError(const Token *tok)
                 "guaranteed to take constant time.");
 }
 
+static inline const Token *findRedundantCondition(const Token *start)
+{
+    return Token::findmatch(start, "if ( %var% . find ( %any% ) != %var% . end|rend|cend|crend ( ) ) { %var% . remove ( %any% ) ;");
+}
+
 void CheckStl::redundantCondition()
 {
-    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end|rend|cend|crend ( ) ) "
-                           "{"
-                           "    %var% . remove ( %any% ) ;";
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
+    const Token *tok = findRedundantCondition(_tokenizer->tokens());
     while (tok) {
         // Get tokens for the fields %var% and %any%
         const Token *var1 = tok->tokAt(2);
@@ -1025,7 +1024,7 @@ void CheckStl::redundantCondition()
             redundantIfRemoveError(tok);
         }
 
-        tok = Token::findmatch(tok->next(), pattern);
+        tok = findRedundantCondition(tok->next());
     }
 }
 

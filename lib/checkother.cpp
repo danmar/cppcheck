@@ -823,13 +823,18 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
 //            y = b;        // <- case 2 falls through and sets y twice
 //    }
 //---------------------------------------------------------------------------
+static inline bool isFunctionOrBreakPattern(const Token *tok)
+{
+    if (Token::Match(tok, "%var% (") || Token::Match(tok, "break|continue|return|exit|goto|throw"))
+        return true;
+
+    return false;
+}
+
 void CheckOther::checkRedundantAssignmentInSwitch()
 {
     if (!_settings->isEnabled("style"))
         return;
-
-    const char breakPattern[] = "break|continue|return|exit|goto|throw";
-    const char functionPattern[] = "%var% (";
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
@@ -854,7 +859,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                         if (tok3->varId() != 0) {
                             varsWithBitsSet.erase(tok3->varId());
                             bitOperations.erase(tok3->varId());
-                        } else if (Token::Match(tok3, functionPattern) || Token::Match(tok3, breakPattern)) {
+                        } else if (isFunctionOrBreakPattern(tok3)) {
                             varsWithBitsSet.clear();
                             bitOperations.clear();
                         }
@@ -907,7 +912,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
             // Reset our record of assignments if there is a break or function call. E.g.:
             //    case 3: b = 1; break;
-            if (Token::Match(tok2, functionPattern) || Token::Match(tok2, breakPattern)) {
+            if (isFunctionOrBreakPattern(tok2)) {
                 varsWithBitsSet.clear();
                 bitOperations.clear();
             }
@@ -930,8 +935,6 @@ void CheckOther::checkSwitchCaseFallThrough()
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    const char breakPattern[] = "break|continue|return|exit|goto|throw";
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if (i->type != Scope::eSwitch || !i->classStart) // Find the beginning of a switch
@@ -990,7 +993,7 @@ void CheckOther::checkSwitchCaseFallThrough()
             } else if (Token::simpleMatch(tok2, "switch (")) {
                 // skip over nested switch, we'll come to that soon
                 tok2 = tok2->next()->link()->next()->link();
-            } else if (Token::Match(tok2, breakPattern)) {
+            } else if (Token::Match(tok2, "break|continue|return|exit|goto|throw")) {
                 if (loopnest.empty()) {
                     justbreak = true;
                 }
@@ -1114,6 +1117,11 @@ static bool isTypeWithoutSideEffects(const Tokenizer *tokenizer, const Variable*
     return ((var && (!var->isClass() || var->isPointer() || Token::simpleMatch(var->typeStartToken(), "std ::"))) || !tokenizer->isCPP());
 }
 
+static inline const Token *findSelfAssignPattern(const Token *start)
+{
+    return Token::findmatch(start, "%var% = %var% ;|=|)");
+}
+
 void CheckOther::checkSelfAssignment()
 {
     if (!_settings->isEnabled("style"))
@@ -1121,8 +1129,7 @@ void CheckOther::checkSelfAssignment()
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const char selfAssignmentPattern[] = "%var% = %var% ;|=|)";
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), selfAssignmentPattern);
+    const Token *tok = findSelfAssignPattern(_tokenizer->tokens());
     while (tok) {
         if (Token::Match(tok->previous(), "[;{}.]") &&
             tok->varId() && tok->varId() == tok->tokAt(2)->varId() &&
@@ -1148,7 +1155,7 @@ void CheckOther::checkSelfAssignment()
                 selfAssignmentError(tok, tok->str());
         }
 
-        tok = Token::findmatch(tok->next(), selfAssignmentPattern);
+        tok = findSelfAssignPattern(tok->next());
     }
 }
 
@@ -1162,13 +1169,17 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 //    int a = 1;
 //    assert(a = 2);            // <- assert should not have a side-effect
 //---------------------------------------------------------------------------
+static inline const Token *findAssertPattern(const Token *start)
+{
+    return Token::findmatch(start, "assert ( %any%");
+}
+
 void CheckOther::checkAssignmentInAssert()
 {
     if (!_settings->isEnabled("style"))
         return;
 
-    const char assertPattern[] = "assert ( %any%";
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), assertPattern);
+    const Token *tok = findAssertPattern(_tokenizer->tokens());
     const Token *endTok = tok ? tok->next()->link() : NULL;
 
     while (tok && endTok) {
@@ -1179,7 +1190,7 @@ void CheckOther::checkAssignmentInAssert()
                 assignmentInAssertError(tok, tok->strAt(1));
         }
 
-        tok = Token::findmatch(endTok->next(), assertPattern);
+        tok = findAssertPattern(endTok->next());
         endTok = tok ? tok->next()->link() : NULL;
     }
 }
