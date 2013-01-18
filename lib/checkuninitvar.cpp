@@ -1082,7 +1082,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
             tok = tok->next();
         if (stdtype || i->isPointer())
             checkScopeForVariable(scope, tok, *i, NULL, NULL, NULL);
-        if (_settings->experimental && Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
+        if (Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
             const std::string structname(i->typeStartToken()->next()->str());
             const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
             for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
@@ -1156,7 +1156,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             }
 
             // initialization / usage in condition..
-            if (!alwaysTrue && checkIfForWhileHead(scope, tok->next(), var, suppressErrors, bool(number_of_if == 0)))
+            if (!alwaysTrue && checkIfForWhileHead(scope, tok->next(), var, suppressErrors || (membervar != NULL), bool(number_of_if == 0)))
                 return true;
 
             // checking if a not-zero variable is zero => bail out

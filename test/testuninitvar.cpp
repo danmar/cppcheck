@@ -2606,6 +2606,31 @@ private:
                         "   do_something(c);\n"
                         "}\n", "test.c", true);
         ASSERT_EQUALS("", errout.str());
+
+        // checkIfForWhileHead
+        checkUninitVar2("struct FRED {\n"
+                        "    int a;\n"
+                        "    int b;\n"
+                        "};\n"
+                        "\n"
+                        "void f(void) {\n"
+                        "   struct FRED fred;\n"
+                        "   fred.a = do_something();\n"
+                        "   if (fred.a == 0) { }\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("struct FRED {\n"
+                        "    int a;\n"
+                        "    int b;\n"
+                        "};\n"
+                        "\n"
+                        "void f(void) {\n"
+                        "   struct FRED fred;\n"
+                        "   fred.a = do_something();\n"
+                        "   if (fred.b == 0) { }\n"
+                        "}\n", "test.c", true);
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 };
 
