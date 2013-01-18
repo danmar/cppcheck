@@ -88,6 +88,7 @@ private:
         TEST_CASE(unreachableCode);
 
         TEST_CASE(suspiciousCase);
+        TEST_CASE(suspiciousEqualityComparison);
 
         TEST_CASE(selfAssignment);
         TEST_CASE(trac1132);
@@ -2769,6 +2770,101 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void suspiciousEqualityComparison() {
+        check("void foo(int c) {\n"
+              "    if (c == 1) {\n"
+              "        c == 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int c) {\n"
+              "    if (c == 1) c == 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int* c) {\n"
+              "    if (*c == 1) *c == 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+
+        check("void foo(int c) {\n"
+              "    if (c == 1) {\n"
+              "        c = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int c) {\n"
+              "    c == 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int c) {\n"
+              "    for (int i = 0; i == 10; i ++) {\n"
+              "        a ++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int c) {\n"
+              "    for (i == 0; i < 10; i ++) {\n"
+              "        c ++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int c) {\n"
+              "    for (i == 1; i < 10; i ++) {\n"
+              "        c ++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int c) {\n"
+              "    for (i == 2; i < 10; i ++) {\n"
+              "        c ++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int c) {\n"
+              "    for (int i = 0; i < 10; i == c) {\n"
+              "        c ++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int c) {\n"
+              "    for (; running == 1;) {\n"
+              "        c ++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int c) {\n"
+              "    for (; running == 1;) {\n"
+              "        c ++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int c) {\n"
+              "    printf(\"%i\n\", ({x==0;}));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int x) {\n"
+              "    printf(\"%i\n\", ({int x = do_something(); x == 0;}));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int x) {\n"
+              "    printf(\"%i\n\", ({x == 0; x > 0 ? 10 : 20}));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+    }
 
     void selfAssignment() {
         check("void foo()\n"

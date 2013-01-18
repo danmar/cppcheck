@@ -116,6 +116,7 @@ public:
         checkOther.checkDoubleFree();
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
+        checkOther.checkSuspiciousEqualityComparison();
     }
 
     /** To check the dead code in a program, which is unaccessible due to the counter-conditions check in nested-if statements **/
@@ -190,6 +191,9 @@ public:
 
     /** @brief %Check for code like 'case A||B:'*/
     void checkSuspiciousCaseInSwitch();
+
+    /** @brief %Check for code like 'case A||B:'*/
+    void checkSuspiciousEqualityComparison();
 
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
@@ -320,6 +324,7 @@ private:
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void switchCaseFallThrough(const Token *tok);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
+    void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
@@ -403,6 +408,7 @@ private:
         c.redundantCopyInSwitchError(0, 0, "var");
         c.switchCaseFallThrough(0);
         c.suspiciousCaseInSwitchError(0, "||");
+        c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
         c.assignmentInAssertError(0, "varname");
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
@@ -482,6 +488,7 @@ private:
                "* look for suspicious calculations with sizeof()\n"
                "* assignment of a variable to itself\n"
                "* Suspicious case labels in switch()\n"
+               "* Suspicious equality comparisons\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* Clarify calculation with parentheses\n"
                "* using increment on boolean\n"
