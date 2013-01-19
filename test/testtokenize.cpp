@@ -180,6 +180,7 @@ private:
         TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
         TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
         TEST_CASE(simplifyKnownVariablesFunctionCalls); // Function calls (don't assume pass by reference)
+        TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
         TEST_CASE(simplifyExternC);
 
         TEST_CASE(varid1);
@@ -2780,6 +2781,14 @@ private:
             const char expected[] = "void a ( int & x ) ; void b ( ) { int x ; x = 123 ; a ( x ) ; }";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
         }
+    }
+
+    void simplifyKnownVariablesReturn() {
+        const char code[] = "int a() {"
+                            "    int x = 123;"
+                            "    return (x);"
+                            "}";
+        ASSERT_EQUALS("int a ( ) { return 123 ; }", tokenizeAndStringify(code,true));
     }
 
     void simplifyKnownVariablesClassMember() {

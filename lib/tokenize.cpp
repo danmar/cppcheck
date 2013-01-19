@@ -7588,7 +7588,10 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
 
     // Is this a function call?
     if (ftok && Token::Match(ftok->tokAt(-2), "[;{}=] %var% (")) {
-        const std::string functionName(ftok->previous()->str() + " (");
+        const std::string functionName(ftok->previous()->str());
+
+        if (functionName == "return")
+            return true;
 
         // Locate function declaration..
         unsigned int indentlevel = 0;
@@ -7597,7 +7600,7 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
                 ++indentlevel;
             else if (tok->str() == "}")
                 indentlevel = (indentlevel > 0) ? indentlevel - 1U : 0U;
-            else if (indentlevel == 0 && tok->isName() && Token::simpleMatch(tok, functionName.c_str())) {
+            else if (indentlevel == 0 && Token::Match(tok, "%type% (") && tok->str() == functionName) {
                 // Goto parameter
                 tok = tok->tokAt(2);
                 unsigned int par = 1;
