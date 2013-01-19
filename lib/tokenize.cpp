@@ -6253,6 +6253,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (!Token::Match(tok3->previous(), "( %var% )") &&
             Token::Match(tok3->previous(), "&&|(|%oror% %varid% &&|%oror%|)", varid)) {
             tok3->str(value);
+            tok3->varId(valueVarId);
             ret = true;
         }
 
@@ -6261,6 +6262,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             // If the parameter is passed by value then simplify it
             if (isFunctionParameterPassedByValue(tok3)) {
                 tok3->str(value);
+                tok3->varId(valueVarId);
                 ret = true;
             }
         }
