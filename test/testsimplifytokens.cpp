@@ -591,6 +591,11 @@ private:
             const char code2[] = " void f ( ) { if ( aa ) { a = 0 ; } else { { a = 2 ; } } }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
+
+        {
+            const char code1[] = "static const int x=1; void f() { if(x) { a=0; } }";
+            ASSERT_EQUALS("void f ( ) { a = 0 ; }", tok(code1));
+        }
     }
 
     void combine_strings() {

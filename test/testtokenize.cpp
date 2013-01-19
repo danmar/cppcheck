@@ -5092,9 +5092,9 @@ private:
     void simplify_constants4() {
         const char code[] = "static const int bSize = 4;\n"
                             "static const int aSize = 50;\n"
-                            "const int x = bSize;\n"
-                            "const int y = aSize;\n";
-        ASSERT_EQUALS("const int x = 4 ;\nconst int y = 50 ;", tokenizeAndStringify(code,true));
+                            "x = bSize;\n"
+                            "y = aSize;\n";
+        ASSERT_EQUALS("x = 4 ;\ny = 50 ;", tokenizeAndStringify(code,true));
     }
 
     void simplify_null() {
