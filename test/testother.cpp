@@ -2864,6 +2864,27 @@ private:
               "    printf(\"%i\n\", ({x == 0; x > 0 ? 10 : 20}));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
+
+        check("void foo(int x) {\n"
+              "    for (const Token* const end = tok->link(); tok != end; tok = (tok == end) ? end : tok->next()) {\n"
+              "        x++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int x) {\n"
+              "    for (int i = (x == 0) ? 0 : 5; i < 10; i ++) {\n"
+              "        x++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int x) {\n"
+              "    for (int i = 0; i < 10; i += (x == 5) ? 1 : 2) {\n"
+              "        x++;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void selfAssignment() {

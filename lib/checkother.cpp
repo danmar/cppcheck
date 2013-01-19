@@ -1117,6 +1117,8 @@ void CheckOther::checkSuspiciousEqualityComparison()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
         if (Token::simpleMatch(tok, "for (")) {
+            const Token* const openParen = tok->next();
+            const Token* const closeParen = tok->linkAt(1);
 
             // Search for any suspicious equality comparison in the initialization
             // or increment-decrement parts of the for() loop.
@@ -1124,8 +1126,8 @@ void CheckOther::checkSuspiciousEqualityComparison()
             //    for (i == 2; i < 10; i++)
             // or
             //    for (i = 0; i < 10; i == a)
-            const Token* tok2 = Token::findmatch(tok->next(), "[;(] %var% == %any% [;)]", tok->linkAt(1));
-            if (tok2 && (tok2->str() == "(" || tok2->strAt(4) == ")")) {
+            const Token* tok2 = Token::findmatch(openParen, "[;(] %var% == %any% [;)]", closeParen);
+            if (tok2 && (tok2 == openParen || tok2->tokAt(4) == closeParen)) {
                 suspiciousEqualityComparisonError(tok2->tokAt(2));
             }
 
@@ -1134,14 +1136,14 @@ void CheckOther::checkSuspiciousEqualityComparison()
             // in the initialization or increment-decrement parts of the for() loop.
             // For example:
             //    for (!i; i < 10; i++)
-            const Token* tok3 = Token::findmatch(tok->next(), "[;(] ! %var% [;)]", tok->linkAt(1));
-            if (tok3 && (tok3->str() == "(" || tok3->strAt(3) == ")")) {
+            const Token* tok3 = Token::findmatch(openParen, "[;(] ! %var% [;)]", closeParen);
+            if (tok3 && (tok3 == openParen || tok3->tokAt(3) == closeParen)) {
                 suspiciousEqualityComparisonError(tok3->tokAt(2));
             }
 
             // Skip over for() loop conditions because "for (;running==1;)"
             // is a bit strange, but not necessarily incorrect.
-            tok = tok->linkAt(1);
+            tok = closeParen;
         }
 
         if (Token::Match(tok, "[;{}] *| %var% == %any% ;")) {
