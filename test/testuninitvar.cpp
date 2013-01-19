@@ -2565,6 +2565,20 @@ private:
         ASSERT_EQUALS("[test.c:6]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    int a = ab.a;\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    buf[ab.a] = 0;\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
                         "void do_something(const struct AB ab);\n"
                         "void f(void) {\n"
                         "    struct AB ab;\n"
@@ -2604,6 +2618,23 @@ private:
                         "   struct conf c;\n"
                         "   initdata(&c);\n"
                         "   do_something(c);\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("", errout.str());
+
+        // return
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    ab.a = 0;\n"
+                        "    return ab.b;\n"
+                        "}\n", "test.c", true);
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    ab.a = 0;\n"
+                        "    return ab.a;\n"
                         "}\n", "test.c", true);
         ASSERT_EQUALS("", errout.str());
 

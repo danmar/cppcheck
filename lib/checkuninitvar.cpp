@@ -1321,7 +1321,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
             while (tok && tok->str() != ";") {
                 // variable is seen..
-                if (tok->varId() == var.varId()) {
+                if (tok->varId() == var.varId() && (membervar == NULL)) {
                     // Use variable
                     if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
                         uninitvarError(tok, tok->str());
@@ -1343,8 +1343,14 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         // variable is seen..
         if (tok->varId() == var.varId()) {
             if (membervar) {
-                if (Token::Match(tok, "%var% . %var% [=.[]") && tok->strAt(2) == membervar->name())
-                    return true;
+                if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar->name()) {
+                    if (Token::Match(tok->tokAt(3), "[=.[]"))
+                        return true;
+                    else if (Token::Match(tok->previous(), "%op%") || Token::Match(tok->previous(), "[|="))
+                        uninitStructMemberError(tok, tok->str() + "." + membervar->name());
+                    else
+                        return true;
+                }
                 else if (tok->strAt(1) == "=")
                     return true;
                 else if (tok->strAt(-1) == "&")
