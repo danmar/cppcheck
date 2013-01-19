@@ -1350,8 +1350,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                         uninitStructMemberError(tok, tok->str() + "." + membervar->name());
                     else
                         return true;
-                }
-                else if (tok->strAt(1) == "=")
+                } else if (tok->strAt(1) == "=")
                     return true;
                 else if (tok->strAt(-1) == "&")
                     return true;
