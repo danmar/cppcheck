@@ -2661,7 +2661,7 @@ private:
                         "   fred.a = do_something();\n"
                         "   if (fred.b == 0) { }\n"
                         "}\n", "test.c", true);
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.c:9]: (error) Uninitialized struct member: fred.b\n", errout.str());
     }
 };
 

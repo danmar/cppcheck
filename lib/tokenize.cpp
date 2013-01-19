@@ -6253,6 +6253,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (!Token::Match(tok3->previous(), "( %var% )") &&
             Token::Match(tok3->previous(), "&&|(|%oror% %varid% &&|%oror%|)", varid)) {
             tok3->str(value);
+            tok3->varId(valueVarId);
             ret = true;
         }
 
@@ -6261,6 +6262,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             // If the parameter is passed by value then simplify it
             if (isFunctionParameterPassedByValue(tok3)) {
                 tok3->str(value);
+                tok3->varId(valueVarId);
                 ret = true;
             }
         }
@@ -7588,7 +7590,10 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
 
     // Is this a function call?
     if (ftok && Token::Match(ftok->tokAt(-2), "[;{}=] %var% (")) {
-        const std::string functionName(ftok->previous()->str() + " (");
+        const std::string functionName(ftok->previous()->str());
+
+        if (functionName == "return")
+            return true;
 
         // Locate function declaration..
         unsigned int indentlevel = 0;
@@ -7597,7 +7602,7 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
                 ++indentlevel;
             else if (tok->str() == "}")
                 indentlevel = (indentlevel > 0) ? indentlevel - 1U : 0U;
-            else if (indentlevel == 0 && tok->isName() && Token::simpleMatch(tok, functionName.c_str())) {
+            else if (indentlevel == 0 && Token::Match(tok, "%type% (") && tok->str() == functionName) {
                 // Goto parameter
                 tok = tok->tokAt(2);
                 unsigned int par = 1;
