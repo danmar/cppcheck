@@ -1081,7 +1081,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
         while (tok && tok->str() != ";")
             tok = tok->next();
         if (stdtype || i->isPointer())
-            checkScopeForVariable(scope, tok, *i, NULL, NULL, NULL);
+            checkScopeForVariable(scope, tok, *i, NULL, NULL, "");
         if (Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
             const std::string structname(i->typeStartToken()->next()->str());
             const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1089,7 +1089,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
                 const Scope *scope2 = symbolDatabase->classAndStructScopes[j];
                 if (scope2->className == structname && scope2->numConstructors == 0U) {
                     for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it)
-                        checkScopeForVariable(scope, tok, *i, NULL, NULL, &(*it));
+                        checkScopeForVariable(scope, tok, *i, NULL, NULL, it->name());
                 }
             }
         }
@@ -1101,7 +1101,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
     }
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const Variable * const membervar)
+bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const std::string &membervar)
 {
     const bool suppressErrors(possibleInit && *possibleInit);
 
@@ -1156,7 +1156,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             }
 
             // initialization / usage in condition..
-            if (!alwaysTrue && checkIfForWhileHead(scope, tok->next(), var, suppressErrors || (membervar != NULL), bool(number_of_if == 0)))
+            if (!alwaysTrue && checkIfForWhileHead(scope, tok->next(), var, suppressErrors, bool(number_of_if == 0), membervar))
                 return true;
 
             // checking if a not-zero variable is zero => bail out
@@ -1281,7 +1281,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         // for/while..
         if (Token::Match(tok, "for|while (")) {
             // is variable initialized in for-head (don't report errors yet)?
-            if (checkIfForWhileHead(scope, tok->next(), var, true, false))
+            if (checkIfForWhileHead(scope, tok->next(), var, true, false, membervar))
                 return true;
 
             // goto the {
@@ -1297,7 +1297,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
                 // is variable used in for-head?
                 if (!suppressErrors) {
-                    checkIfForWhileHead(scope, tok->next(), var, false, bool(number_of_if == 0));
+                    checkIfForWhileHead(scope, tok->next(), var, false, bool(number_of_if == 0), membervar);
                 }
 
                 // goto "}"
@@ -1321,7 +1321,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
             while (tok && tok->str() != ";") {
                 // variable is seen..
-                if (tok->varId() == var.varId() && (membervar == NULL)) {
+                if (tok->varId() == var.varId() && (membervar.empty())) {
                     // Use variable
                     if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
                         uninitvarError(tok, tok->str());
@@ -1342,12 +1342,12 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
         // variable is seen..
         if (tok->varId() == var.varId()) {
-            if (membervar) {
-                if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar->name()) {
+            if (!membervar.empty()) {
+                if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar) {
                     if (Token::Match(tok->tokAt(3), "[=.[]"))
                         return true;
                     else if (Token::Match(tok->previous(), "%op%") || Token::Match(tok->previous(), "[|="))
-                        uninitStructMemberError(tok, tok->str() + "." + membervar->name());
+                        uninitStructMemberError(tok, tok->str() + "." + membervar);
                     else
                         return true;
                 } else if (tok->strAt(1) == "=")
@@ -1355,7 +1355,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 else if (tok->strAt(-1) == "&")
                     return true;
                 else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(scope, tok, var.isPointer()))
-                    uninitStructMemberError(tok, tok->str() + "." + membervar->name());
+                    uninitStructMemberError(tok, tok->str() + "." + membervar);
             } else {
                 // Use variable
                 if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
@@ -1371,11 +1371,17 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
     return false;
 }
 
-bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit)
+bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, const std::string &membervar)
 {
     const Token * const endpar = startparentheses->link();
     for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == var.varId()) {
+            if (Token::Match(tok, "%var% . %var%")) {
+                if (tok->strAt(2) == membervar)
+                    uninitStructMemberError(tok, tok->str() + "." + membervar);
+                continue;
+            }
+
             if (isVariableUsage(scope, tok, var.isPointer())) {
                 if (!suppressErrors)
                     uninitvarError(tok, tok->str());

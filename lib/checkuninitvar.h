@@ -64,8 +64,8 @@ public:
     /** Check for uninitialized variables */
     void check();
     void checkScope(const Scope* scope);
-    bool checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const Variable * const membervar);
-    bool checkIfForWhileHead(const Scope *scope, const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit);
+    bool checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const std::string &membervar);
+    bool checkIfForWhileHead(const Scope *scope, const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, const std::string &membervar);
     bool isVariableUsage(const Scope* scope, const Token *vartok, bool ispointer) const;
 
 
