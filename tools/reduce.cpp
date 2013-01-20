@@ -262,21 +262,30 @@ static bool removeBlocksOfCode(const ReduceSettings &settings, std::vector<std::
 
                 // does code block start with "{"
                 std::size_t pos2 = pos;
-                if (filedata[pos].find("(") != std::string::npos && filedata[pos].find(")")==std::string::npos) {
-                    ++pos2;
-                    while (pos2+2U < filedata.size() && !filedata[pos2].empty() && filedata[pos2].find_first_of("(){}") == std::string::npos)
+
+                // struct X { ..
+                if (filedata[pos].find_first_of("();}") == std::string::npos && filedata[pos].at(filedata[pos].size()-1U) == '{') {
+
+                }
+
+                // function declaration ..
+                else {
+                    if (filedata[pos].find("(") != std::string::npos && filedata[pos].find(")")==std::string::npos) {
                         ++pos2;
-                    if (filedata[pos2].find_first_of("({}")!=std::string::npos || filedata[pos2].find(")") == std::string::npos)
+                        while (pos2+2U < filedata.size() && !filedata[pos2].empty() && filedata[pos2].find_first_of("(){}") == std::string::npos)
+                            ++pos2;
+                        if (filedata[pos2].find_first_of("({}")!=std::string::npos || filedata[pos2].find(")") == std::string::npos)
+                            break;
+                    }
+                    pos2++;
+                    if (pos2 < filedata.size() && !filedata[pos2].empty() && filedata[pos2].at(filedata[pos2].find_first_not_of(" ")) == ':') {
+                        pos2++;
+                        while (pos2 < filedata.size() && !filedata[pos2].empty() && filedata[pos2].at(filedata[pos2].find_first_not_of(" ")) == ',')
+                            pos2++;
+                    }
+                    if (pos2+2U >= filedata.size() || filedata[pos2] != "{")
                         break;
                 }
-                pos2++;
-                if (pos2 < filedata.size() && !filedata[pos2].empty() && filedata[pos2].at(filedata[pos2].find_first_not_of(" ")) == ':') {
-                    pos2++;
-                    while (pos2 < filedata.size() && !filedata[pos2].empty() && filedata[pos2].at(filedata[pos2].find_first_not_of(" ")) == ',')
-                        pos2++;
-                }
-                if (pos2+2U >= filedata.size() || filedata[pos2] != "{")
-                    break;
                 pos2++;
 
                 // find end of block..
