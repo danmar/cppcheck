@@ -244,7 +244,7 @@ public:
     }
 
 private:
-    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, bool userheader);
+    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header);
 
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
