@@ -60,6 +60,7 @@ private:
         TEST_CASE(uninitvar2_func);     // function calls
         TEST_CASE(uninitvar2_value);    // value flow
         TEST_CASE(uninitvar2_structmembers); // struct members
+        TEST_CASE(uninitvar2_while);
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -2670,6 +2671,21 @@ private:
                         "}\n", "test.c", true);
         ASSERT_EQUALS("[test.c:9]: (error) Uninitialized struct member: fred.b\n", errout.str());
     }
+
+    void uninitvar2_while() {
+        checkUninitVar2("int f(void) {\n"
+                        "   int x;\n"
+                        "   while (a()) {\n"  // <- condition must always be true or there will be problem
+                        "       if (b()) {\n"
+                        "           x = 1;\n"
+                        "           break;"
+                        "       }\n"
+                        "   }\n"
+                        "   return x;\n"
+                        "}\n", "test.c", true);
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestUninitVar)
