@@ -2578,6 +2578,13 @@ private:
                         "}\n", "test.c", true);
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
+        checkUninitVar2("struct AB { int a; int b; };\n"  // pass struct member by address
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    assign(&ab.a, 0);\n"
+                        "}\n", "test.c", true);
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void do_something(const struct AB ab);\n"
                         "void f(void) {\n"

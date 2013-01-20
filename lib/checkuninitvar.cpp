@@ -1346,6 +1346,8 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar) {
                     if (Token::Match(tok->tokAt(3), "[=.[]"))
                         return true;
+                    else if (Token::Match(tok->tokAt(-2), "[(,=] &"))
+                        return true;
                     else if (Token::Match(tok->previous(), "%op%") || Token::Match(tok->previous(), "[|="))
                         uninitStructMemberError(tok, tok->str() + "." + membervar);
                     else
