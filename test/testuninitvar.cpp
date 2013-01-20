@@ -2635,7 +2635,7 @@ private:
                         "    ab.a = 0;\n"
                         "    return ab.b;\n"
                         "}\n", "test.c", true);
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
