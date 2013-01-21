@@ -8520,7 +8520,7 @@ void Tokenizer::simplifyKeyword()
 
     if (_settings->standards.c >= Standards::C99) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            while (Token::Match(tok, "restrict")) {
+            while (Token::simpleMatch(tok, "restrict")) {
                 tok->deleteThis();
             }
         }
