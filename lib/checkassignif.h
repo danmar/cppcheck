@@ -73,6 +73,8 @@ private:
 
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
 
+    void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
+
     void comparisonError(const Token *tok,
                          const std::string &bitop,
                          MathLib::bigint value1,
@@ -87,6 +89,7 @@ private:
         c.assignIfError(0, 0, "", false);
         c.comparisonError(0, "&", 6, "==", 1, false);
         c.multiConditionError(0,1);
+        c.mismatchingBitAndError(0,0xf0, 0, 1);
     }
 
     static std::string myName() {
@@ -97,7 +100,8 @@ private:
         return "Match assignments and conditions:\n"
                "* Mismatching assignment and comparison => comparison is always true/false\n"
                "* Mismatching lhs and rhs in comparison => comparison is always true/false\n"
-               "* Detect matching 'if' and 'else if' conditions\n";
+               "* Detect matching 'if' and 'else if' conditions\n"
+               "* Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n";
     }
 };
 /// @}

@@ -34,6 +34,7 @@ private:
 
     void run() {
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
+        TEST_CASE(mismatchingBitAnd); // overlapping bitmasks
         TEST_CASE(compare);            // mismatching LHS/RHS in comparison
         TEST_CASE(multicompare);       // mismatching comparisons
     }
@@ -162,6 +163,20 @@ private:
               "    if(x != -1) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void mismatchingBitAnd() {
+        check("void f(int a) {\n"
+              "    int b = a & 0xf0;\n"
+              "    b &= 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching bitmasks. Result is always 0 (X = Y & 0xf0; Z = X & 0x1; => Z=0).\n", errout.str());
+
+        check("void f(int a) {\n"
+              "    int b = a & 0xf0;\n"
+              "    int c = b & 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching bitmasks. Result is always 0 (X = Y & 0xf0; Z = X & 0x1; => Z=0).\n", errout.str());
     }
 
     void compare() {

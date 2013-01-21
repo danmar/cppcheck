@@ -86,8 +86,19 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                                        const MathLib::bigint num)
 {
     for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "%varid% =", varid))
+        if (Token::Match(tok2->tokAt(2), "%varid% %op% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
+            const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
+            if ((bitop == '&') && (0 == (num & num2)))
+                mismatchingBitAndError(assignTok, num, tok2, num2);
+        }
+        if (Token::Match(tok2, "%varid% =", varid)) {
+            if (Token::Match(tok2->tokAt(2), "%varid% %op% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
+                const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
+                if ((bitop == '&') && (0 == (num & num2)))
+                    mismatchingBitAndError(assignTok, num, tok2, num2);
+            }
             return true;
+        }
         if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
             return true;
         if (tok2->str() == "}")
@@ -140,6 +151,21 @@ void CheckAssignIf::assignIfError(const Token *tok1, const Token *tok2, const st
 }
 
 
+void CheckAssignIf::mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2)
+{
+    std::list<const Token *> locations;
+    locations.push_back(tok1);
+    locations.push_back(tok2);
+
+    std::ostringstream msg;
+    msg << "Mismatching bitmasks. Result is always 0 ("
+        << "X = Y & 0x" << std::hex << num1 << "; Z = X & 0x" << std::hex << num2 << "; => Z=0).";
+
+    reportError(locations,
+                Severity::style,
+                "mismatchingBitAnd",
+                msg.str());
+}
 
 
 
