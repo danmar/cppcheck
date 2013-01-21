@@ -37,7 +37,7 @@ struct Standards {
     bool posix;
 
     /** This constructor clear all the variables **/
-    Standards() : c(C11), cpp(CPP11), posix(false) {};
+    Standards() : c(C11), cpp(CPP11), posix(false) {}
 };
 
 /// @}
