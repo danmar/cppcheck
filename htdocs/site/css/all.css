@@ -3,7 +3,7 @@ body {
   padding: 0;
   font-family: Calibri, Verdana, sans-serif;
   color: #000;
-  background: #eee;
+  background-color: #eee;
 }
 
 dt {
@@ -24,7 +24,7 @@ a:active    { color:#369; text-decoration:none; }
 /* Header */
 #header {
   color: #69c;
-  background: #036;
+  background-color: #036;
 }
 
 #header h1 {
@@ -42,7 +42,7 @@ a:active    { color:#369; text-decoration:none; }
 /* Tabs */
 #tabs {
   color: #eee;
-  background: #369;
+  background-color: #369;
   border-top: 1px solid #000;
   border-bottom: 1px solid #000;
 }
@@ -125,7 +125,7 @@ a.downloadnow {
   text-align: center;
   text-decoration: none;
   color: white;
-  background: #060;
+  background-color: #060;
   border: 1px solid #060;
   /* border-radius */
   border-radius: .5em;
@@ -144,7 +144,7 @@ a.downloadnow:focus,
 a.downloadnow:hover {
   text-decoration: none;
   color: white;
-  background: #090;
+  background-color: #090;
 }
 
 a.downloadnow strong {
@@ -162,7 +162,7 @@ a.downloadnow em {
 /* Command */
 pre.cmd {
   padding: .5em;
-  background: #f7f7f7;
+  background-color: #f7f7f7;
   border: 1px solid silver;
   border-left: 10px solid silver;
 }
@@ -171,6 +171,6 @@ pre.cmd {
 @media print {
   #header { color: black; border-bottom: 1px solid black; }
   #tabs   { display: none; }
-  #resultsTable th { background: white; border: 1px solid black; }
-  #resultsTable td { background: white; border: 1px solid black; }
+  #resultsTable th { background-color: white; border: 1px solid black; }
+  #resultsTable td { background-color: white; border: 1px solid black; }
 }
