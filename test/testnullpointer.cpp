@@ -595,6 +595,28 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    int * a=0;\n"
+              "    if (!a) {};\n"
+              "    int c = a ? 0 : 1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        // #3686
+        check("void f() {\n"
+              "    int * a=0;\n"
+              "    if (!a) {};\n"
+              "    int c = a ? b : b+1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * a=0;\n"
+              "    if (!a) {};\n"
+              "    int c = (a) ? b : b+1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(P *p)\n"
               "{\n"
               "  while (p)\n"

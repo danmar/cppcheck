@@ -403,8 +403,15 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
         if (Token::Match(tok->previous(), "!|& %var%"))
             return false;
 
+        // OK to check pointer in "= p ? : "
+        if (Token::Match(tok->next(),"?") &&
+            (Token::Match(tok->previous(), "return|throw|;|{|}|:|[|(|,") || tok->previous()->isAssignmentOp()))
+            return false;
+
         // OK to pass pointer to function
-        if (Token::Match(tok->previous(), "[(,] %var% [,)]"))
+        if (Token::Match(tok->previous(), "[(,] %var% [,)]") &&
+            (!Token::Match(tok->previous(), "( %var%") ||
+             Token::Match(tok->tokAt(-2), "%var% ( %var%")))
             return false;
 
         // Compare pointer
