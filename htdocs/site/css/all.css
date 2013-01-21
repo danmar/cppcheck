@@ -147,6 +147,13 @@ a.downloadnow:hover {
   background-color: #090;
 }
 
+a.downloadnow:hover {
+  -webkit-transition: background-color 0.20s ease-in-out;
+     -moz-transition: background-color 0.20s ease-in-out;
+       -o-transition: background-color 0.20s ease-in-out;
+          transition: background-color 0.20s ease-in-out;
+}
+
 a.downloadnow strong {
   display: block;
   font-size: larger;
