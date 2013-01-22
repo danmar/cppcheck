@@ -1480,9 +1480,9 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     } else
         std::cout << std::endl;
     std::cout << indent << "_start: " << var->typeStartToken() << " " << var->typeStartToken()->str()
-              << " " << _tokenizer->list.fileLine(var->typeStartToken()) << std::endl;;
+              << " " << _tokenizer->list.fileLine(var->typeStartToken()) << std::endl;
     std::cout << indent << "_end: " << var->typeEndToken() << " " << var->typeEndToken()->str()
-              << " " << _tokenizer->list.fileLine(var->typeEndToken()) << std::endl;;
+              << " " << _tokenizer->list.fileLine(var->typeEndToken()) << std::endl;
     std::cout << indent << "_index: " << var->index() << std::endl;
     std::cout << indent << "_access: " <<
               (var->isPublic() ? "Public" :

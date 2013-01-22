@@ -2263,7 +2263,7 @@ void CheckOther::checkVariableScope()
             } else if (tok->str() == "}") {
                 --indentlevel;
                 if (indentlevel == 0)
-                    break;;
+                    break;
             }
 
             if (indentlevel > 0 && Token::Match(tok, "[{};]")) {
