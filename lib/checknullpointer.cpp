@@ -404,7 +404,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
             return false;
 
         // OK to check pointer in "= p ? : "
-        if (Token::Match(tok->next(),"?") &&
+        if (tok->next()->str() == "?" &&
             (Token::Match(tok->previous(), "return|throw|;|{|}|:|[|(|,") || tok->previous()->isAssignmentOp()))
             return false;
 
