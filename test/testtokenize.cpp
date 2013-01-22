@@ -4693,7 +4693,7 @@ private:
             if (tok->str() == "second")
                 ASSERT_EQUALS(5, tok->linenr());
             if (tok->str() == "third")
-                TODO_ASSERT_EQUALS(7, 0, tok->linenr());
+                ASSERT_EQUALS(7, tok->linenr());
             if (tok->str() == "fourth")
                 ASSERT_EQUALS(100, tok->linenr());
             if (tok->str() == "fifth")

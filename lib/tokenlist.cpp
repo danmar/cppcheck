@@ -294,7 +294,8 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                 std::getline(code, line);
 
                 // Update the current line number
-                std::stringstream(line) >> lineno;
+                if (!(std::stringstream(line) >> lineno))
+                    ++lineno;
                 CurrentToken.clear();
                 continue;
             } else if (CurrentToken == "#endfile") {
