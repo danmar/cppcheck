@@ -2380,6 +2380,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgsInScope(const Token *to
 
 const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const
 {
+    // find the scope this function is in
     const Scope* currScope = startScope;
     while (currScope && currScope->isExecutable()) {
         if (currScope->functionOf)
@@ -2387,11 +2388,60 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
         else
             currScope = currScope->nestedIn;
     }
-    while (currScope) {
-        const Function *func = findFunctionByNameAndArgsInScope(tok, currScope);
-        if (func)
-            return func;
-        currScope = currScope->nestedIn;
+
+    // check for a qualified name and use it when given
+    if (tok->strAt(-1) == "::") {
+        // find start of qualified function name
+        const Token *tok1 = tok;
+
+        while (Token::Match(tok1->tokAt(-2), "%type% ::"))
+            tok1 = tok1->tokAt(-2);
+
+        // check for global scope
+        if (tok1->strAt(-1) == "::") {
+            currScope = &scopeList.front();
+
+            currScope = currScope->findRecordInNestedList(tok1->str());
+        }
+
+        // find start of qualification
+        else {
+            while (currScope) {
+                if (currScope->className == tok1->str())
+                    break;
+                else {
+                    const Scope *scope = currScope->findRecordInNestedList(tok1->str());
+
+                    if (scope) {
+                        currScope = scope;
+                        break;
+                    } else
+                        currScope = currScope->nestedIn;
+                }
+            }
+        }
+
+        if (currScope) {
+            while (currScope && !Token::Match(tok1, "%type% :: %any% (")) {
+                currScope = currScope->findRecordInNestedList(tok1->strAt(2));
+                tok1 = tok1->tokAt(2);
+            }
+
+            tok1 = tok1->tokAt(2);
+
+            if (currScope && tok1)
+                return findFunctionByNameAndArgsInScope(tok1, currScope);
+        }
+    }
+
+    // check in enclosing scopes
+    else {
+        while (currScope) {
+            const Function *func = findFunctionByNameAndArgsInScope(tok, currScope);
+            if (func)
+                return func;
+            currScope = currScope->nestedIn;
+        }
     }
     return 0;
 }

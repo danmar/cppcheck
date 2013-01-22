@@ -61,6 +61,7 @@ private:
         TEST_CASE(uninitvar2_value);    // value flow
         TEST_CASE(uninitvar2_structmembers); // struct members
         TEST_CASE(uninitvar2_while);
+        TEST_CASE(uninitvar2_4494);      // #4494
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -2686,6 +2687,34 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
+    void uninitvar2_4494() {
+        checkUninitVar2("namespace N1 {\n"
+                        "    class Fred {\n"
+                        "    public:\n"
+                        "        static void f1(char *p) { *p = 0; }\n"
+                        "    };\n"
+                        "    void fa(void) { char *p; Fred::f1(p); }\n"
+                        "    void fb(void) { char *p; Fred::f2(p); }\n"
+                        "    void fc(void) { char *p; ::N1::Fred::f1(p); }\n"
+                        "    void fd(void) { char *p; ::N1::Fred::f2(p); }\n"
+                        "}\n"
+                        "namespace N2 {\n"
+                        "    static void f1(char *p) { *p = 0; }\n"
+                        "    void fa(void) { char *p; f1(p); }\n"
+                        "    void fb(void) { char *p; f2(p); }\n"
+                        "    void fc(void) { char *p; N1::Fred::f1(p); }\n"
+                        "    void fd(void) { char *p; N1::Fred::f2(p); }\n"
+                        "    void fe(void) { char *p; ::N1::Fred::f1(p); }\n"
+                        "    void ff(void) { char *p; ::N1::Fred::f2(p); }\n"
+                        "    void fg(void) { char *p; Foo::f1(p); }\n"
+                        "    void fh(void) { char *p; Foo::f2(p); }\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: p\n"
+                      "[test.cpp:8]: (error) Uninitialized variable: p\n"
+                      "[test.cpp:13]: (error) Uninitialized variable: p\n"
+                      "[test.cpp:15]: (error) Uninitialized variable: p\n"
+                      "[test.cpp:17]: (error) Uninitialized variable: p\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestUninitVar)
