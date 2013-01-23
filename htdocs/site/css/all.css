@@ -54,18 +54,18 @@ a:active    { color:#369; text-decoration:none; }
   font-size: larger;
 }
 
-#tabs ul li {
+#tabs li {
   display: inline;
   margin: 0;
   padding: 0 .5em;
   border-right: 1px solid #000;
 }
 
-#tabs ul li:first-child {
+#tabs li:first-child {
   padding-left: 0;
 }
 
-#tabs ul li:last-child {
+#tabs li:last-child {
   border: none;
 }
 
@@ -85,13 +85,13 @@ a:active    { color:#369; text-decoration:none; }
   font-size: smaller;
 }
 
-#anchors ul li {
+#anchors li {
   display: inline;
   margin: 0;
   padding: 0 .5em;
 }
 
-#anchors ul li:first-child {
+#anchors li:first-child {
   padding-left: 0;
 }
 
@@ -117,7 +117,7 @@ a:active    { color:#369; text-decoration:none; }
 
 
 /* "Download Now!" link */
-a.downloadnow {
+.downloadnow {
   display: block;
   width: 12em;
   margin: 0;
@@ -127,7 +127,6 @@ a.downloadnow {
   color: white;
   background-color: #060;
   border: 1px solid #060;
-  /* border-radius */
   border-radius: .5em;
   -webkit-border-radius: .5em;
    -khtml-border-radius: .5em;
@@ -154,13 +153,13 @@ a.downloadnow:hover {
           transition: background-color 0.20s ease-in-out;
 }
 
-a.downloadnow strong {
+.downloadnow strong {
   display: block;
   font-size: larger;
   font-weight: bold;
 }
 
-a.downloadnow em {
+.downloadnow em {
   display: block;
   font-size: smaller;
   font-style: normal;
@@ -178,6 +177,6 @@ pre.cmd {
 @media print {
   #header { color: black; border-bottom: 1px solid black; }
   #tabs   { display: none; }
-  #resultsTable th { background-color: white; border: 1px solid black; }
+  #resultsTable th,
   #resultsTable td { background-color: white; border: 1px solid black; }
 }
