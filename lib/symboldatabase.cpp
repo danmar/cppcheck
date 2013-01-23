@@ -2434,6 +2434,19 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
         }
     }
 
+    // check for member function
+    else if (tok->strAt(-1) == ".") {
+        if (Token::Match(tok->tokAt(-2), "%var% .")) {
+            const Token *tok1 = tok->tokAt(-2);
+
+            if (tok1->varId()) {
+                const Variable *var = getVariableFromVarId(tok1->varId());
+                if (var && var->type())
+                    return findFunctionByNameAndArgsInScope(tok, var->type());
+            }
+        }
+    }
+
     // check in enclosing scopes
     else {
         while (currScope) {

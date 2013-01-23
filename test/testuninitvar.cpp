@@ -2714,6 +2714,17 @@ private:
                       "[test.cpp:13]: (error) Uninitialized variable: p\n"
                       "[test.cpp:15]: (error) Uninitialized variable: p\n"
                       "[test.cpp:17]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar2("class Fred {\n"
+                        "public:\n"
+                        "    void f1(char *p) { *p = 0; }\n"
+                        "};\n"
+                        "Fred fred;\n"
+                        "void f(void) {\n"
+                        "    char *p;\n"
+                        "    fred.f1(p);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: p\n", errout.str());
     }
 };
 
