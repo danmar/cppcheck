@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: Calibri, Verdana, sans-serif;
-  color: #000;
+  color: black;
   background-color: #eee;
 }
 
@@ -43,8 +43,8 @@ a:active    { color:#369; text-decoration:none; }
 #tabs {
   color: #eee;
   background-color: #369;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
 }
 
 #tabs ul {
@@ -58,7 +58,7 @@ a:active    { color:#369; text-decoration:none; }
   display: inline;
   margin: 0;
   padding: 0 .5em;
-  border-right: 1px solid #000;
+  border-right: 1px solid black;
 }
 
 #tabs li:first-child {
@@ -74,7 +74,7 @@ a:active    { color:#369; text-decoration:none; }
 
 #tabs a:focus,
 #tabs a:hover,
-#tabs a:active  { color:#fff; text-decoration:underline; }
+#tabs a:active  { color:white; text-decoration:underline; }
 
 
 /* Anchors */
