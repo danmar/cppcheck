@@ -294,8 +294,19 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                 std::getline(code, line);
 
                 // Update the current line number
-                if (!(std::stringstream(line) >> lineno))
+                std::string::size_type n = 0;
+                while (n < line.size() && std::isspace(line[n]))
+                    ++n;
+                if (n == line.size())
                     ++lineno;
+                else {
+                    while (n < line.size() && std::isdigit(line[n]))
+                        ++n;
+                    if (n < line.size() && !std::isspace(line[n]))
+                        ++lineno;
+                    else
+                        std::istringstream(line) >> lineno;
+                }
                 CurrentToken.clear();
                 continue;
             } else if (CurrentToken == "#endfile") {
