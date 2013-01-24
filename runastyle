@@ -32,5 +32,5 @@ astyle $style $options --recursive "samples/*.c"
 astyle $style $options --recursive "samples/*.cpp"
 
 # Convert tabs to spaces.. even in strings
-sed -i "s/\t/ /g" test/test*.cpp
+# sed -i "s/\t/ /g" test/test*.cpp
 
