@@ -3962,6 +3962,10 @@ bool Tokenizer::simplifyIfAddBraces()
         tok = tok->next();
         Token *tempToken = tok;
 
+        // if (cond1) for(;;) if (cond2) ; else ;
+        while (Token::Match(tempToken->next(), "for|while|BOOST_FOREACH ("))
+            tempToken = tempToken->linkAt(2);
+
         bool innerIf = (tempToken->next() && tempToken->next()->str() == "if");
 
         if (Token::simpleMatch(tempToken->next(), "do {"))

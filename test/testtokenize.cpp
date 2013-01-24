@@ -107,6 +107,7 @@ private:
         TEST_CASE(ifAddBraces16); // ticket # 2739 (segmentation fault)
         TEST_CASE(ifAddBraces17); // '} else' should be in the same line
         TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
+        TEST_CASE(ifAddBraces19); // #3928 - if for if else
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -1191,6 +1192,27 @@ private:
                       tokenizeAndStringify("{ if(x) if(y){}else;else;}", false));
     }
 
+    void ifAddBraces19() {
+        // #3928 - if for if else
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    if (a)\n"
+                            "        for (;;)\n"
+                            "            if (b)\n"
+                            "                bar1();\n"
+                            "            else\n"
+                            "                bar2();\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( a ) {\n"
+                      "for ( ; ; ) {\n"
+                      "if ( b ) {\n"
+                      "bar1 ( ) ;\n"
+                      "} else {\n"
+                      "bar2 ( ) ; } } }\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
 
 
     void whileAddBraces() {
