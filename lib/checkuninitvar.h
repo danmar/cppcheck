@@ -66,8 +66,10 @@ public:
     void checkScope(const Scope* scope);
     bool checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const std::string &membervar);
     bool checkIfForWhileHead(const Scope *scope, const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, const std::string &membervar);
+    bool checkLoopBody(const Scope* scope, const Token *tok, const Variable& var, const std::string &membervar);
     bool isVariableUsage(const Scope* scope, const Token *vartok, bool ispointer) const;
-
+    bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
+    bool isMemberVariableUsage(const Scope *scope, const Token *tok, bool isPointer, const std::string &membervar) const;
 
     /**
      * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables

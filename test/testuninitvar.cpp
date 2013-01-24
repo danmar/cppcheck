@@ -2151,41 +2151,6 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
-        // for, while
-        checkUninitVar2("void f() {\n"
-                        "    int x;\n"
-                        "    while (a) {\n"
-                        "        if (b) x++;\n"
-                        "        else x = 0;\n"
-                        "    }\n"
-                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar2("void f() {\n"
-                        "    int x;\n"
-                        "    for (int i = 0; i < 10; i += x) {\n"
-                        "        x = y;\n"
-                        "    }\n"
-                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar2("void f() {\n"
-                        "    int x;\n"
-                        "    for (int i = 0; i < 10; i += x) { }\n"
-                        "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
-
-        checkUninitVar2("int f() {\n"
-                        "    int i;\n"
-                        "    for (i=0;i<9;++i)\n"
-                        "        if (foo()) goto out;\n"
-                        "out:\n"
-                        "    return i;\n"
-                        "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar2(">{ x while (y) z int = }"); // #4175 : don't crash
-
         // try
         checkUninitVar2("void f() {\n"
                         "    int i, *p = &i;\n"
@@ -2674,6 +2639,41 @@ private:
     }
 
     void uninitvar2_while() {
+        // for, while
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    while (a) {\n"
+                        "        if (b) x++;\n"
+                        "        else x = 0;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    for (int i = 0; i < 10; i += x) {\n"
+                        "        x = y;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    for (int i = 0; i < 10; i += x) { }\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("int f() {\n"
+                        "    int i;\n"
+                        "    for (i=0;i<9;++i)\n"
+                        "        if (foo()) goto out;\n"
+                        "out:\n"
+                        "    return i;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2(">{ x while (y) z int = }"); // #4175 : don't crash
+
         checkUninitVar2("int f(void) {\n"
                         "   int x;\n"
                         "   while (a()) {\n"  // <- condition must always be true or there will be problem
@@ -2685,6 +2685,26 @@ private:
                         "   return x;\n"
                         "}\n", "test.c", true);
         TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        checkUninitVar2("void f(void) {\n"
+                        "   int x;\n"
+                        "   for (;;) {\n"
+                        "       int a = x+1;\n"
+                        "       do_something(a);\n"
+                        "   }\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("struct AB {int a; int b;};\n"
+                        "void f(void) {\n"
+                        "   struct AB ab;\n"
+                        "   while (true) {\n"
+                        "       int a = 1+ab.a;\n"
+                        "       do_something(a);\n"
+                        "   }\n"
+                        "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized variable: ab\n"
+                      "[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
     }
 
     void uninitvar2_4494() {
