@@ -389,7 +389,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="main.ui" line="555"/>
         <source>Filter results</source>
-        <translation>Filterergebnisse</translation>
+        <translation>Gefilterte Ergebnisse</translation>
     </message>
     <message>
         <location filename="main.ui" line="571"/>
@@ -637,7 +637,7 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
     <message>
         <location filename="mainwindow.cpp" line="377"/>
         <source>Select files to check</source>
-        <translation type="unfinished">Dateien zum Überprüfen auswählen</translation>
+        <translation>Dateien zum Überprüfen auswählen</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="638"/>
@@ -757,7 +757,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
     <message>
         <location filename="translationhandler.cpp" line="32"/>
         <source>Chinese (Simplified)</source>
-        <translation type="unfinished"></translation>
+        <translation>Chinesisch (vereinfacht)</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="33"/>
