@@ -852,6 +852,34 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
+    // fill in missing variables if possible
+    for (std::size_t i = 1; i <= _tokenizer->varIdCount(); i++) {
+        // check each missing variable
+        if (_variableList[i] == 0) {
+            // find the token with this varid
+            for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+                if (tok->varId() == i) {
+                    // check if it is a member variable
+                    const Token *tok1 = tok->tokAt(-2);
+                    if (tok1 && Token::Match(tok1, "%var% .") && tok1->varId()) {
+                        // check if this varid has a variable
+                        const Variable *var = getVariableFromVarId(tok1->varId());
+                        if (var && var->type()) {
+                            // find the member variable of this variable
+                            const Variable *var1 = var->type()->getVariable(tok->str());
+                            if (var1) {
+                                // add this variable to the look up table
+                                _variableList[i] = var1;
+                            }
+                        }
+                    }
+                    // found varid so stop searching
+                    break;
+                }
+            }
+        }
+    }
+
     /* set all unknown array dimensions that are set by a variable to the maximum size of that variable type */
     for (std::size_t i = 1; i <= _tokenizer->varIdCount(); i++) {
         // check each array variable

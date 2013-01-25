@@ -2745,6 +2745,29 @@ private:
                         "    fred.f1(p);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar2("class Fred {\n"
+                        "public:\n"
+                        "    class Wilma {\n"
+                        "    public:\n"
+                        "        class Barney {\n"
+                        "        public:\n"
+                        "            class Betty {\n"
+                        "            public:\n"
+                        "                void f1(char *p) { *p = 0; }\n"
+                        "            };\n"
+                        "            Betty betty;\n"
+                        "        };\n"
+                        "        Barney barney;\n"
+                        "    };\n"
+                        "    Wilma wilma;\n"
+                        "};\n"
+                        "Fred fred;\n"
+                        "void f(void) {\n"
+                        "    char *p;\n"
+                        "    fred.wilma.barney.betty.f1(p);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:20]: (error) Uninitialized variable: p\n", errout.str());
     }
 };
 
