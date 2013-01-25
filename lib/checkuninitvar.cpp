@@ -1102,6 +1102,47 @@ void CheckUninitVar::checkScope(const Scope* scope)
     }
 }
 
+static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned int, int> &variableValue, bool *alwaysTrue, bool *alwaysFalse)
+{
+    assert(Token::Match(tok, "if ("));
+
+    const Token *vartok = tok->tokAt(2);
+    const bool NOT(vartok->str() == "!");
+    if (NOT)
+        vartok = vartok->next();
+
+    while (Token::Match(vartok, "%var% . %var%"))
+        vartok = vartok->tokAt(2);
+
+    std::map<unsigned int, int>::const_iterator it = variableValue.find(vartok->varId());
+    if (it == variableValue.end())
+        return;
+
+    // always true
+    if (Token::Match(vartok, "%var% %oror%|)")) {
+        if (NOT)
+            *alwaysTrue = bool(it->second == 0);
+        else
+            *alwaysTrue = bool(it->second != 0);
+    } else if (Token::Match(vartok, "%var% == %num% %or%|)")) {
+        *alwaysTrue = bool(it->second == MathLib::toLongNumber(vartok->strAt(2)));
+    } else if (Token::Match(vartok, "%var% != %num% %or%|)")) {
+        *alwaysTrue = bool(it->second != MathLib::toLongNumber(vartok->strAt(2)));
+    }
+
+    // always false
+    if (Token::Match(vartok, "%var% &&|)")) {
+        if (NOT)
+            *alwaysFalse = bool(it->second == 0);
+        else
+            *alwaysFalse = bool(it->second != 0);
+    } else if (Token::Match(vartok, "%var% == %num% &&|)")) {
+        *alwaysFalse = bool(it->second != MathLib::toLongNumber(vartok->strAt(2)));
+    } else if (Token::Match(vartok, "%var% != %num% &&|)")) {
+        *alwaysFalse = bool(it->second == MathLib::toLongNumber(vartok->strAt(2)));
+    }
+}
+
 bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const std::string &membervar)
 {
     const bool suppressErrors(possibleInit && *possibleInit);
@@ -1143,18 +1184,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         // Inner scope..
         if (Token::simpleMatch(tok, "if (")) {
             bool alwaysTrue = false;
+            bool alwaysFalse = false;
 
-            // known variable in condition..
-            if (Token::Match(tok, "if ( !| %var% %oror%")) {
-                const Token *vartok = tok->tokAt(2);
-                if (vartok->str() == "!")
-                    vartok = vartok->next();
-                std::map<unsigned int, int>::const_iterator it = variableValue.find(vartok->varId());
-                if (tok->strAt(2) == "!")
-                    alwaysTrue = bool(it != variableValue.end() && it->second == 0);
-                else
-                    alwaysTrue = bool(it != variableValue.end() && it->second != 0);
-            }
+            conditionAlwaysTrueOrFalse(tok, variableValue, &alwaysTrue, &alwaysFalse);
 
             // initialization / usage in condition..
             if (!alwaysTrue && checkIfForWhileHead(scope, tok->next(), var, suppressErrors, bool(number_of_if == 0), membervar))
@@ -1180,7 +1212,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             if (tok->str() == "{") {
                 bool possibleInitIf(number_of_if > 0 || suppressErrors);
                 bool noreturnIf = false;
-                const bool initif = !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf, membervar);
+                const bool initif = !alwaysFalse && !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf, membervar);
 
                 // bail out for such code:
                 //    if (a) x=0;    // conditional initialization
@@ -1202,9 +1234,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 std::map<unsigned int, int> varValueIf;
                 if (!initif) {
                     for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
-                        if (Token::Match(tok2, "[;{}] %var% = - %var% ;"))
+                        if (Token::Match(tok2, "[;{}.] %var% = - %var% ;"))
                             varValueIf[tok2->next()->varId()] = NOT_ZERO;
-                        if (Token::Match(tok2, "[;{}] %var% = %num% ;"))
+                        if (Token::Match(tok2, "[;{}.] %var% = %num% ;"))
                             varValueIf[tok2->next()->varId()] = (int)MathLib::toLongNumber(tok2->strAt(3));
                     }
                 }
@@ -1232,9 +1264,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     std::map<unsigned int, int> varValueElse;
                     if (!initelse) {
                         for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
-                            if (Token::Match(tok2, "[;{}] %var% = - %var% ;"))
+                            if (Token::Match(tok2, "[;{}.] %var% = - %var% ;"))
                                 varValueElse[tok2->next()->varId()] = NOT_ZERO;
-                            if (Token::Match(tok2, "[;{}] %var% = %num% ;"))
+                            if (Token::Match(tok2, "[;{}.] %var% = %num% ;"))
                                 varValueElse[tok2->next()->varId()] = (int)MathLib::toLongNumber(tok2->strAt(3));
                         }
                     }

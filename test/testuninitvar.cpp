@@ -2230,6 +2230,15 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    if (x) ab = getAB();\n"
+                        "    else ab.a = 0;\n"
+                        "    if (ab.a == 1) b = ab.b;\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
         // asm
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
