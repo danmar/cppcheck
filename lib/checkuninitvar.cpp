@@ -1498,6 +1498,10 @@ bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bo
                     if ((pointer || address) && Token::Match(argStart, "const %type% * %var% [,)]"))
                         return true;
                 }
+
+            } else if (Token::Match(start->previous(), "if|while|for")) {
+                // control-flow statement reading the variable "by value"
+                return true;
             }
         }
     }

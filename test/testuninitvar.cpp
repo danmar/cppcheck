@@ -2010,6 +2010,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // using uninit var in condition
+        checkUninitVar2("void f(void) {\n"
+                        "    int x;\n"
+                        "    if (x) { }\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (1 == (3 & x)) { }\n"
