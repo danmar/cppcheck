@@ -993,7 +993,7 @@ std::string Preprocessor::getdef(std::string line, bool def)
 }
 
 /** Simplify variable in variable map. */
-static void simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> seenVariables)
+static void simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> &seenVariables)
 {
     // TODO: handle function-macros too.
 
@@ -1033,12 +1033,13 @@ static void simplifyVarMapExpandValue(Token *tok, const std::map<std::string, st
 static void simplifyVarMap(std::map<std::string, std::string> &variables)
 {
     for (std::map<std::string, std::string>::iterator i = variables.begin(); i != variables.end(); ++i) {
+        std::set<std::string> seenVariables;
+
         TokenList tokenList(NULL);
         std::istringstream istr(i->second);
         if (tokenList.createTokens(istr)) {
             for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
                 if (tok->isName()) {
-                    std::set<std::string> seenVariables;
                     simplifyVarMapExpandValue(tok, variables, seenVariables);
                 }
             }
@@ -1936,6 +1937,12 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     unsigned int linenr = 0;
 
     std::set<std::string> undefs = _settings ? _settings->userUndefs : std::set<std::string>();
+
+    if (_errorLogger)
+        _errorLogger->reportProgress(filePath, "Preprocessor (handleIncludes)", 0);
+
+    if (_settings && _settings->terminated())
+        return "";
 
     std::ostringstream ostr;
     std::istringstream istr(code);
