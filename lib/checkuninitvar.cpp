@@ -1043,13 +1043,12 @@ void CheckUninitVar::executionPaths()
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator func_scope;
+    std::list<Scope>::const_iterator scope;
 
-    // scan every function
-    for (func_scope = symbolDatabase->scopeList.begin(); func_scope != symbolDatabase->scopeList.end(); ++func_scope) {
-        // only check functions
-        if (func_scope->type == Scope::eFunction) {
-            checkScope(&*func_scope);
+    // check every executable scope
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (scope->isExecutable()) {
+            checkScope(&*scope);
         }
     }
 }
@@ -1067,7 +1066,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
             if (tok->str() == "(") {
                 forHead = true;
                 break;
-            } else if (tok->str() == "{" || tok->str() == ";" || tok->str() == "}")
+            } else if (Token::Match(tok, "[{};]"))
                 break;
         }
         if (forHead)
@@ -1094,11 +1093,6 @@ void CheckUninitVar::checkScope(const Scope* scope)
                 }
             }
         }
-    }
-
-    for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
-        if (!(*i)->isClassOrStruct())
-            checkScope(*i);
     }
 }
 
