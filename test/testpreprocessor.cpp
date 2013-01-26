@@ -226,6 +226,7 @@ private:
         TEST_CASE(define_if2);
         TEST_CASE(define_if3);
         TEST_CASE(define_if4); // #4079 - #define X +123
+        TEST_CASE(define_if5); // #4516 - #define B (A & 0x00f0)
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
@@ -2736,6 +2737,16 @@ private:
                                 "#endif";
         Preprocessor preprocessor(NULL, this);
         ASSERT_EQUALS("\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
+    }
+
+    void define_if5() { // #4516 - #define B (A & 0x00f0)
+        const char filedata[] = "#define A 0x0010\n"
+                                "#define B (A & 0x00f0)\n"
+                                "#if B==0x0010\n"
+                                "FOO\n"
+                                "#endif";
+        Preprocessor preprocessor(NULL, this);
+        ASSERT_EQUALS("\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
     }
 
     void define_ifdef() {
