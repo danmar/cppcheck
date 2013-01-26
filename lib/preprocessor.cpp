@@ -992,6 +992,40 @@ std::string Preprocessor::getdef(std::string line, bool def)
     return line;
 }
 
+/** Simplify variable in variable map. */
+static void simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> seenVariables)
+{
+    // TODO: handle function-macros too.
+
+    // Prevent infinite recursion..
+    if (seenVariables.find(tok->str()) != seenVariables.end())
+        return;
+    seenVariables.insert(tok->str());
+
+    const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
+    if (it != variables.end()) {
+        TokenList tokenList(NULL);
+        std::istringstream istr(it->second);
+        if (tokenList.createTokens(istr)) {
+            // expand token list
+            for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
+                if (tok->isName()) {
+                    simplifyVarMapExpandValue(tok2, variables, seenVariables);
+                }
+            }
+
+            // insert token list into "parent" token list
+            for (const Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
+                if (tok2->previous()) {
+                    tok->insertToken(tok2->str());
+                    tok = tok->next();
+                } else
+                    tok->str(tok2->str());
+            }
+        }
+    }
+}
+
 /**
  * Simplifies the variable map. For example if the map contains A=>B, B=>1, then A=>B is simplified to A=>1.
  * @param [in,out] variables - a map of variable name to variable value. This map will be modified.
@@ -999,32 +1033,20 @@ std::string Preprocessor::getdef(std::string line, bool def)
 static void simplifyVarMap(std::map<std::string, std::string> &variables)
 {
     for (std::map<std::string, std::string>::iterator i = variables.begin(); i != variables.end(); ++i) {
-        std::string& varValue = i->second;
-
-        // TODO: handle function-macros too.
-
-        // Bailout if variable A depends on variable B which depends on A..
-        std::set<std::string> seenVariables;
-
         TokenList tokenList(NULL);
         std::istringstream istr(i->second);
         if (tokenList.createTokens(istr)) {
             for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
                 if (tok->isName()) {
-                    std::map<std::string, std::string>::iterator it = variables.find(tok->str());
-                    while (it != variables.end() && it->first != it->second) {
-                        if (seenVariables.find(it->first) != seenVariables.end()) {
-                            // We have already seen this variable. there is a cycle of #define that we can't process at
-                            // this time. Stop trying to simplify the current variable and leave it as is.
-                            break;
-                        } else {
-                            seenVariables.insert(it->first);
-                            varValue = it->second;
-                            it = variables.find(varValue);
-                        }
-                    }
+                    std::set<std::string> seenVariables;
+                    simplifyVarMapExpandValue(tok, variables, seenVariables);
                 }
             }
+
+            std::string str;
+            for (const Token *tok = tokenList.front(); tok; tok = tok->next())
+                str.append((tok->previous() ? " " : "") + tok->str());
+            i->second = str;
         }
     }
 }

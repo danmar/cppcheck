@@ -2740,13 +2740,25 @@ private:
     }
 
     void define_if5() { // #4516 - #define B (A & 0x00f0)
-        const char filedata[] = "#define A 0x0010\n"
-                                "#define B (A & 0x00f0)\n"
-                                "#if B==0x0010\n"
-                                "FOO\n"
-                                "#endif";
-        Preprocessor preprocessor(NULL, this);
-        ASSERT_EQUALS("\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
+        {
+            const char filedata[] = "#define A 0x0010\n"
+                                    "#define B (A & 0x00f0)\n"
+                                    "#if B==0x0010\n"
+                                    "FOO\n"
+                                    "#endif";
+            Preprocessor preprocessor(NULL, this);
+            ASSERT_EQUALS("\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
+        }
+        {
+            const char filedata[] = "#define A 0x00f0\n"
+                                    "#define B (16)\n"
+                                    "#define C (B & A)\n"
+                                    "#if C==0x0010\n"
+                                    "FOO\n"
+                                    "#endif";
+            Preprocessor preprocessor(NULL, this);
+            ASSERT_EQUALS("\n\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
+        }
     }
 
     void define_ifdef() {
