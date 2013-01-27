@@ -1049,6 +1049,12 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             second = second->next();
     }
 
+    // skip const on type passed by value
+    if (Token::Match(first, "const %type% %var%|,|)"))
+        first = first->next();
+    if (Token::Match(second, "const %type% %var%|,|)"))
+        second = second->next();
+
     while (first->str() == second->str()) {
         // at end of argument list
         if (first->str() == ")") {
@@ -1138,6 +1144,12 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             if (second->str() == "struct")
                 second = second->next();
         }
+
+        // skip const on type passed by value
+        if (Token::Match(first, "const %type% %var%|,|)"))
+            first = first->next();
+        if (Token::Match(second, "const %type% %var%|,|)"))
+            second = second->next();
     }
 
     return false;

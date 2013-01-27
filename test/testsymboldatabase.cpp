@@ -156,6 +156,7 @@ private:
         TEST_CASE(symboldatabase27); // ticket #3543 (segmentation fault)
         TEST_CASE(symboldatabase28);
         TEST_CASE(symboldatabase29); // ticket #4442 (segmentation fault)
+        TEST_CASE(symboldatabase30);
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1349,6 +1350,12 @@ private:
               "    B() : A {}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase30() {
+        GET_SYMBOL_DB("struct A { void foo(const int a); };\n"
+                      "void A::foo(int a) { }");
+        ASSERT(db && db->functionScopes.size() == 1 && db->functionScopes[0]->functionOf);
     }
 
     void isImplicitlyVirtual() {
