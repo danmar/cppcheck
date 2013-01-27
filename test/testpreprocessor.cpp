@@ -2759,6 +2759,14 @@ private:
             Preprocessor preprocessor(NULL, this);
             ASSERT_EQUALS("\n\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
         }
+        {
+            const char filedata[] = "#define A (1+A)\n" // don't hang for recursive macros
+                                    "#if A==1\n"
+                                    "FOO\n"
+                                    "#endif";
+            Preprocessor preprocessor(NULL, this);
+            ASSERT_EQUALS("\n\n\n\n", preprocessor.getcode(filedata,"",""));
+        }
     }
 
     void define_ifdef() {

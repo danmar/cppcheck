@@ -993,13 +993,13 @@ std::string Preprocessor::getdef(std::string line, bool def)
 }
 
 /** Simplify variable in variable map. */
-static void simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> &seenVariables)
+static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> seenVariables)
 {
     // TODO: handle function-macros too.
 
     // Prevent infinite recursion..
     if (seenVariables.find(tok->str()) != seenVariables.end())
-        return;
+        return tok;
     seenVariables.insert(tok->str());
 
     const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
@@ -1024,6 +1024,8 @@ static void simplifyVarMapExpandValue(Token *tok, const std::map<std::string, st
             }
         }
     }
+
+    return tok;
 }
 
 /**
@@ -1033,14 +1035,13 @@ static void simplifyVarMapExpandValue(Token *tok, const std::map<std::string, st
 static void simplifyVarMap(std::map<std::string, std::string> &variables)
 {
     for (std::map<std::string, std::string>::iterator i = variables.begin(); i != variables.end(); ++i) {
-        std::set<std::string> seenVariables;
-
         TokenList tokenList(NULL);
         std::istringstream istr(i->second);
         if (tokenList.createTokens(istr)) {
             for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
                 if (tok->isName()) {
-                    simplifyVarMapExpandValue(tok, variables, seenVariables);
+                    std::set<std::string> seenVariables;
+                    tok = simplifyVarMapExpandValue(tok, variables, seenVariables);
                 }
             }
 
