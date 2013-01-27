@@ -33,7 +33,7 @@ private:
     std::time_t stopTime;
 
 public:
-    CppcheckExecutor(std::size_t linenr, bool hang)
+    CppcheckExecutor(const char *defines, std::size_t linenr, bool hang)
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
@@ -42,6 +42,8 @@ public:
         if (!hang)
             pattern = ":" + MathLib::longToString(linenr) + "]";
 
+        if (defines)
+            cppcheck.settings().userDefines = defines;
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
         cppcheck.settings()._force = true;
@@ -78,6 +80,7 @@ struct ReduceSettings {
     std::size_t linenr;
     bool hang;
     unsigned int maxtime;
+    const char *defines;
 };
 
 static bool test(const ReduceSettings &settings, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
@@ -94,7 +97,7 @@ static bool test(const ReduceSettings &settings, const std::vector<std::string> 
         fout << ((i>=line1 && i<=line2) ? "" : filedata[i]) << std::endl;
     fout.close();
 
-    CppcheckExecutor cppcheck(settings.linenr, settings.hang);
+    CppcheckExecutor cppcheck(settings.defines, settings.linenr, settings.hang);
     return cppcheck.run(tempfilename.c_str(), settings.maxtime);
 }
 
@@ -584,6 +587,8 @@ int main(int argc, char *argv[])
             settings.hang = true;
         } else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
+        else if (strncmp(argv[i],"--cfg=",6)==0)
+            settings.defines = argv[i] + 6;
         else if (settings.filename==NULL && strchr(argv[i],'.'))
             settings.filename = argv[i];
         else if (settings.linenr == 0U && MathLib::isInt(argv[i]))
@@ -596,7 +601,7 @@ int main(int argc, char *argv[])
 
     if ((!settings.hang && settings.linenr == 0U) || settings.filename == NULL) {
         std::cerr << "Syntax:" << std::endl
-                  << argv[0] << " [--stdout] [--hang] filename [linenr]" << std::endl;
+                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] filename [linenr]" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -604,7 +609,7 @@ int main(int argc, char *argv[])
 
     // Execute Cppcheck on the file..
     {
-        CppcheckExecutor cppcheck(settings.linenr, settings.hang);
+        CppcheckExecutor cppcheck(settings.defines, settings.linenr, settings.hang);
         if (!cppcheck.run(settings.filename, settings.maxtime)) {
             std::cerr << "Can't reproduce false positive at line " << settings.linenr << std::endl;
             return EXIT_FAILURE;
