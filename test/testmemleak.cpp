@@ -19,6 +19,7 @@
 
 
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "checkmemoryleak.h"
 #include "testsuite.h"
 #include "symboldatabase.h"
@@ -641,10 +642,10 @@ private:
         Settings settings;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        Token *tokens = const_cast<Token *>(tokenizer.tokens());
+        TokenList list(&settings);
+        list.createTokens(istr,"test.cpp");
+        Token *tokens=list.front();
 
         // replace "if ( ! var )" => "if(!var)"
         for (Token *tok = tokens; tok; tok = tok->next()) {
@@ -659,10 +660,10 @@ private:
             }
         }
 
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
+        CheckMemoryLeakInFunction checkMemoryLeak(NULL, &settings, NULL);
         checkMemoryLeak.simplifycode(tokens);
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return list.front()->stringifyList(0, false);
     }
 
 
@@ -689,9 +690,9 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; if { alloc; } else { return; }"));
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode("; alloc ; if(!var) { alloc ; } dealloc ;"));
         ASSERT_EQUALS("; use ;", simplifycode("; if(var) use ;"));
-        ASSERT_EQUALS(";", simplifycode("; if break ; else break ;"));
+        ASSERT_EQUALS("; break ;", simplifycode("; if break ; else break ;"));
         ASSERT_EQUALS("; alloc ; if return ;", simplifycode("; alloc ; loop { if return ; if continue ; }"));
-        ASSERT_EQUALS("; alloc ; loop return ;", simplifycode("; alloc ; loop { if continue ; else return ; }"));
+        ASSERT_EQUALS("; alloc ; if return ;", simplifycode("; alloc ; loop { if continue ; else return ; }"));
 
         ASSERT_EQUALS("; alloc ; if dealloc ;", simplifycode("; alloc ; if(!var) { return ; } if { dealloc ; }"));
         ASSERT_EQUALS("; if alloc ; else assign ; return use ;", simplifycode("; callfunc ; if callfunc { alloc ; } else { assign ; } return use ;"));
@@ -811,12 +812,13 @@ private:
         settings.debug = settings.debugwarnings = true;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        TokenList list(&settings);
+        list.createTokens(istr,"test.cpp");
+        Token *tokens=list.front();
 
         // replace "if ( ! var )" => "if(!var)"
-        for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next()) {
+        for (Token *tok = tokens; tok; tok = tok->next()) {
             if (tok->str() == "if_var") {
                 tok->str("if(var)");
             }
@@ -832,7 +834,7 @@ private:
             }
         }
 
-        const Token *tok = CheckMemoryLeakInFunction::findleak(tokenizer.tokens());
+        const Token *tok = CheckMemoryLeakInFunction::findleak(tokens);
         return (tok ? tok->linenr() : (unsigned int)(-1));
     }
 
