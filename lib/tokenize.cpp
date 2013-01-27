@@ -1554,8 +1554,7 @@ void Tokenizer::simplifyMulAndParens()
 
 bool Tokenizer::tokenize(std::istream &code,
                          const char FileName[],
-                         const std::string &configuration,
-                         const bool preprocessorCondition)
+                         const std::string &configuration)
 {
     // make sure settings specified
     assert(_settings);
@@ -1743,11 +1742,9 @@ bool Tokenizer::tokenize(std::istream &code,
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();
 
-    if (!preprocessorCondition) {
-        if (hasComplicatedSyntaxErrorsInTemplates()) {
-            list.deallocateTokens();
-            return false;
-        }
+    if (hasComplicatedSyntaxErrorsInTemplates()) {
+        list.deallocateTokens();
+        return false;
     }
 
     simplifyDefaultAndDeleteInsideClass();
@@ -2002,19 +1999,17 @@ bool Tokenizer::tokenize(std::istream &code,
     // Split up variable declarations.
     simplifyVarDecl(false);
 
-    if (!preprocessorCondition) {
-        if (m_timerResults) {
-            Timer t("Tokenizer::tokenize::setVarId", _settings->_showtime, m_timerResults);
-            setVarId();
-        } else {
-            setVarId();
-        }
-
-        createLinks2();
-
-        // Change initialisation of variable to assignment
-        simplifyInitVar();
+    if (m_timerResults) {
+        Timer t("Tokenizer::tokenize::setVarId", _settings->_showtime, m_timerResults);
+        setVarId();
+    } else {
+        setVarId();
     }
+
+    createLinks2();
+
+    // Change initialisation of variable to assignment
+    simplifyInitVar();
 
     // Convert e.g. atol("0") into 0
     simplifyMathFunctions();
@@ -2039,6 +2034,155 @@ bool Tokenizer::tokenize(std::istream &code,
     return valid;
 }
 //---------------------------------------------------------------------------
+
+bool Tokenizer::tokenizeCondition(const std::string &code) {
+    assert(_settings);
+
+    // Fill the map _typeSize..
+    _typeSize.clear();
+    _typeSize["char"] = 1;
+    _typeSize["bool"] = _settings->sizeof_bool;
+    _typeSize["short"] = _settings->sizeof_short;
+    _typeSize["int"] = _settings->sizeof_int;
+    _typeSize["long"] = _settings->sizeof_long;
+    _typeSize["float"] = _settings->sizeof_float;
+    _typeSize["double"] = _settings->sizeof_double;
+    _typeSize["wchar_t"] = _settings->sizeof_wchar_t;
+    _typeSize["size_t"] = _settings->sizeof_size_t;
+    _typeSize["*"] = _settings->sizeof_pointer;
+
+    {
+        std::istringstream istr(code);
+        if (!list.createTokens(istr, "")) {
+            cppcheckError(0);
+            return false;
+        }
+    }
+
+    // Combine wide strings
+    for (Token *tok = list.front();
+         tok;
+         tok = tok->next()) {
+        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
+            // Combine 'L "string"'
+            tok->str(tok->next()->str());
+            tok->deleteNext();
+            tok->isLong(true);
+        }
+    }
+
+    // Combine strings
+    for (Token *tok = list.front();
+         tok;
+         tok = tok->next()) {
+        if (tok->str()[0] != '"')
+            continue;
+
+        tok->str(simplifyString(tok->str()));
+        while (tok->next() && tok->next()->type() == Token::eString) {
+            tok->next()->str(simplifyString(tok->next()->str()));
+
+            // Two strings after each other, combine them
+            tok->concatStr(tok->next()->str());
+            tok->deleteNext();
+        }
+    }
+
+    // Remove "volatile", "inline", "register", and "restrict"
+    simplifyKeyword();
+
+    // convert platform dependent types to standard types
+    // 32 bits: size_t -> unsigned long
+    // 64 bits: size_t -> unsigned long long
+    simplifyPlatformTypes();
+
+    // collapse compound standard types into a single token
+    // unsigned long long int => long _isUnsigned=true,_isLong=true
+    simplifyStdType();
+
+    // Concatenate double sharp: 'a ## b' -> 'ab'
+    concatenateDoubleSharp();
+
+    if (!createLinks()) {
+        // Source has syntax errors, can't proceed
+        return false;
+    }
+
+    // replace 'NULL' and similar '0'-defined macros with '0'
+    simplifyNull();
+
+    // replace 'sin(0)' to '0' and other similar math expressions
+    simplifyMathExpressions();
+
+    // combine "- %num%"
+    concatenateNegativeNumberAndAnyPositive();
+
+    // simplify simple calculations
+    for (Token *tok = list.front() ? list.front()->next() : NULL;
+         tok;
+         tok = tok->next()) {
+        if (tok->isNumber())
+            TemplateSimplifier::simplifyNumericCalculations(tok->previous());
+    }
+
+    // Combine tokens..
+    for (Token *tok = list.front();
+         tok && tok->next();
+         tok = tok->next()) {
+        const char c1 = tok->str()[0];
+
+        if (tok->str().length() == 1 && tok->next()->str().length() == 1) {
+            const char c2 = tok->next()->str()[0];
+
+            // combine +-*/ and =
+            if (c2 == '=' && (std::strchr("+-*/%&|^=!<>", c1))) {
+                tok->str(tok->str() + c2);
+                tok->deleteNext();
+                continue;
+            }
+
+            // replace "->" with "."
+            else if (c1 == '-' && c2 == '>') {
+                tok->str(".");
+                tok->deleteNext();
+                continue;
+            }
+        }
+
+        else if (tok->str() == ">>" && tok->next()->str() == "=") {
+            tok->str(">>=");
+            tok->deleteNext();
+        }
+
+        else if (tok->str() == "<<" && tok->next()->str() == "=") {
+            tok->str("<<=");
+            tok->deleteNext();
+        }
+
+        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":") {
+            if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published") {
+                tok->str(tok->str() + ":");
+                tok->deleteNext();
+                continue;
+            }
+        }
+    }
+
+    simplifyRedundantParentheses();
+    for (Token *tok = list.front();
+         tok;
+         tok = tok->next())
+        while (TemplateSimplifier::simplifyNumericCalculations(tok));
+
+    while (simplifyLogicalOperators()) { }
+
+    // Convert e.g. atol("0") into 0
+    simplifyMathFunctions();
+
+    simplifyDoublePlusAndDoubleMinus();
+
+    return true;
+}
 
 bool Tokenizer::hasComplicatedSyntaxErrorsInTemplates()
 {

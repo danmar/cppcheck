@@ -1335,8 +1335,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (s.find("&&") != std::string::npos) {
             Tokenizer tokenizer(_settings, _errorLogger);
-            std::istringstream tempIstr(s);
-            if (!tokenizer.tokenize(tempIstr, filename.c_str(), "", true)) {
+            if (!tokenizer.tokenizeCondition(s)) {
                 std::ostringstream lineStream;
                 lineStream << __LINE__;
 
@@ -1444,8 +1443,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
 {
     const Settings settings;
     Tokenizer tokenizer(&settings, _errorLogger);
-    std::istringstream istr("(" + condition + ")");
-    if (!tokenizer.tokenize(istr, "", "", true)) {
+    if (!tokenizer.tokenizeCondition("(" + condition + ")")) {
         // If tokenize returns false, then there is syntax error in the
         // code which we can't handle. So stop here.
         return;
@@ -1505,8 +1503,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
             if (!it->second.empty()) {
                 // Tokenize the value
                 Tokenizer tokenizer2(&settings,NULL);
-                std::istringstream istr2(it->second);
-                tokenizer2.tokenize(istr2,"","",true);
+                tokenizer2.tokenizeCondition(it->second);
 
                 // Copy the value tokens
                 std::stack<Token *> link;

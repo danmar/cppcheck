@@ -89,8 +89,14 @@ public:
      */
     bool tokenize(std::istream &code,
                   const char FileName[],
-                  const std::string &configuration = "",
-                  const bool preprocessorCondition = false);
+                  const std::string &configuration = "");
+
+    /**
+     * tokenize condition and run simple simplifications on it
+     * @param code code
+     * @return true if success.
+     */
+    bool tokenizeCondition(const std::string &code);
 
     /** Set variable id */
     void setVarId();

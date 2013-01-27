@@ -5285,7 +5285,7 @@ private:
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", "", false);
+        tokenizer.tokenize(istr, "test.cpp", "");
         ASSERT_EQUALS(true, tokenizer.validate());
     }
 
@@ -5296,7 +5296,7 @@ private:
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", "", false);
+        tokenizer.tokenize(istr, "test.cpp", "");
         ASSERT_EQUALS(true, tokenizer.validate());
     }
 
