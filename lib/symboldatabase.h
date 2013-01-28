@@ -506,6 +506,13 @@ public:
     }
 
     /**
+     * @brief find a function
+     * @param tok token of function call
+     * @return pointer to function if found or NULL if not found
+     */
+    const Function *findFunction(const Token *tok) const;
+
+    /**
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
@@ -598,21 +605,12 @@ public:
      */
     const Scope *findVariableType(const Scope *start, const Token *type) const;
 
-    const Scope *findFunctionScopeByToken(const Token *tok) const;
-
-    const Function *findFunctionByToken(const Token *tok) const;
-
-    const Function *findFunctionByName(const std::string& str, const Scope* startScope) const;
-
     /**
-     * @brief find a function by name and arguments
+     * @brief find a function
      * @param tok token of function call
-     * @param startScope scope to start looking in
      * @return pointer to function if found or NULL if not found
      */
-    const Function *findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const;
-
-    const Function *findFunctionByNameAndArgsInScope(const Token *tok, const Scope *scope) const;
+    const Function *findFunction(const Token *tok) const;
 
     const Scope *findScopeByName(const std::string& name) const;
 

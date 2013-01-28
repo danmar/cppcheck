@@ -625,7 +625,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     // Calling a user function?
     // only 1-dimensional arrays can be checked currently
     else if (arrayInfo.num().size() == 1) {
-        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(tok.str(), tok.scope());
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunction(&tok);
 
         if (func && func->hasBody) {
             // Get corresponding parameter..
@@ -695,7 +695,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
 
     // Check 'float x[10]' arguments in declaration
     if (_settings->isEnabled("style")) {
-        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(tok.str(), tok.scope());
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunction(&tok);
 
         // If argument is '%type% a[num]' then check bounds against num
         if (func) {

@@ -4160,7 +4160,7 @@ private:
     void checkComparisonOfFuncReturningBool1() {
         check("void f(){\n"
               "     int temp = 4;\n"
-              "     if(compare1() > compare2()){\n"
+              "     if(compare1(temp) > compare2(temp)){\n"
               "         printf(\"foo\");\n"
               "     }\n"
               "}\n"
@@ -4244,7 +4244,7 @@ private:
     void checkComparisonOfFuncReturningBool5() {
         check("void f(){\n"
               "     int temp = 4;\n"
-              "     if(compare1() > !compare2()){\n"
+              "     if(compare1(temp) > !compare2(temp)){\n"
               "         printf(\"foo\");\n"
               "     }\n"
               "}\n"
@@ -4272,7 +4272,7 @@ private:
               "}\n"
               "void f(){\n"
               "    int temp = 4;\n"
-              "    if(compare1() > compare2()){\n"
+              "    if(compare1(temp) > compare2(temp)){\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}\n");
@@ -4284,7 +4284,7 @@ private:
               "int compare1(int temp);\n"
               "void f(){\n"
               "    int temp = 4;\n"
-              "    if(compare1() > compare2()){\n"
+              "    if(compare1(temp) > compare2(temp)){\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}\n");
@@ -4294,18 +4294,20 @@ private:
               "namespace Foo {\n"
               "    bool compare1(int temp);\n"
               "    void f(){\n"
-              "        if(compare1() > compare2()){\n"
+              "        int temp = 4;\n"
+              "        if(compare1(temp) > compare2(temp)){\n"
               "            printf(\"foo\");\n"
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
 
         check("int compare1(int temp);\n"
               "namespace Foo {\n"
               "    bool compare1(int temp);\n"
               "    void f(){\n"
-              "        if(::compare1() > compare2()){\n"
+              "        int temp = 4;\n"
+              "        if(::compare1(temp) > compare2(temp)){\n"
               "            printf(\"foo\");\n"
               "        }\n"
               "    }\n"
@@ -4314,7 +4316,8 @@ private:
 
         check("bool compare1(int temp);\n"
               "void f(){\n"
-              "    if(foo.compare1() > compare2()){\n"
+              "    int temp = 4;\n"
+              "    if(foo.compare1(temp) > compare2(temp)){\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}\n");

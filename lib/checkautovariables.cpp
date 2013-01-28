@@ -222,7 +222,7 @@ void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok,
 //---------------------------------------------------------------------------
 
 // return temporary?
-bool CheckAutoVariables::returnTemporary(const Token *tok, const Scope *startScope) const
+bool CheckAutoVariables::returnTemporary(const Token *tok) const
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
@@ -230,7 +230,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok, const Scope *startSco
     bool retref = false;   // is there such a function that returns a reference?
     bool retvalue = false; // is there such a function that returns a value?
 
-    const Function *function = symbolDatabase->findFunctionByNameAndArgs(tok, startScope);
+    const Function *function = symbolDatabase->findFunction(tok);
     if (function) {
         retref = function->tokenDef->strAt(-1) == "&";
         if (!retref) {
@@ -309,7 +309,7 @@ void CheckAutoVariables::returnReference()
                 // return reference to temporary..
                 else if (Token::Match(tok2, "return %var% (") &&
                          Token::simpleMatch(tok2->linkAt(2), ") ;")) {
-                    if (returnTemporary(tok2->next(), scope)) {
+                    if (returnTemporary(tok2->next())) {
                         // report error..
                         errorReturnTempReference(tok2);
                     }

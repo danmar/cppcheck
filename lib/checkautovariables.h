@@ -71,10 +71,9 @@ private:
     /**
      * Returning a temporary object?
      * @param tok pointing at the "return" token
-     * @param startScope indicates the function scope to be checked
      * @return true if a temporary object is returned
      */
-    bool returnTemporary(const Token *tok, const Scope *startScope) const;
+    bool returnTemporary(const Token *tok) const;
 
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnPointerToLocalArray(const Token *tok);

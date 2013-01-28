@@ -2330,66 +2330,13 @@ const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *t
 
 //---------------------------------------------------------------------------
 
-const Scope *SymbolDatabase::findFunctionScopeByToken(const Token *tok) const
-{
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
-        if (scope->type == Scope::eFunction) {
-            if (scope->classDef == tok)
-                return &(*scope);
-        }
-    }
-    return 0;
-}
-
-//---------------------------------------------------------------------------
-
-const Function *SymbolDatabase::findFunctionByToken(const Token *tok) const
-{
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
-        std::list<Function>::const_iterator func;
-
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->token == tok)
-                return &(*func);
-        }
-    }
-    return 0;
-}
-
-//---------------------------------------------------------------------------
-
-const Function* SymbolDatabase::findFunctionByName(const std::string& str, const Scope* startScope) const
-{
-    const Scope* currScope = startScope;
-    while (currScope && currScope->isExecutable()) {
-        if (currScope->functionOf)
-            currScope = currScope->functionOf;
-        else
-            currScope = currScope->nestedIn;
-    }
-    while (currScope) {
-        for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
-            if (i->tokenDef->str() == str)
-                return &*i;
-        }
-        currScope = currScope->nestedIn;
-    }
-    return 0;
-}
-
-//---------------------------------------------------------------------------
-
 /** @todo This function only counts the number of arguments in the function call.
     It does not take into account functions with default arguments.
     It does not take into account argument types.  This can be difficult because of promotion and conversion operators and casts and because the argument can also be a function call.
  */
-const Function* SymbolDatabase::findFunctionByNameAndArgsInScope(const Token *tok, const Scope *scope) const
+const Function* Scope::findFunction(const Token *tok) const
 {
-    for (std::list<Function>::const_iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
+    for (std::list<Function>::const_iterator i = functionList.begin(); i != functionList.end(); ++i) {
         if (i->tokenDef->str() == tok->str()) {
             const Function *func = &*i;
             if (tok->strAt(1) == "(" && tok->tokAt(2)) {
@@ -2418,10 +2365,10 @@ const Function* SymbolDatabase::findFunctionByNameAndArgsInScope(const Token *to
 
 //---------------------------------------------------------------------------
 
-const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, const Scope *startScope) const
+const Function* SymbolDatabase::findFunction(const Token *tok) const
 {
     // find the scope this function is in
-    const Scope* currScope = startScope;
+    const Scope *currScope = tok->scope();
     while (currScope && currScope->isExecutable()) {
         if (currScope->functionOf)
             currScope = currScope->functionOf;
@@ -2470,7 +2417,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
             tok1 = tok1->tokAt(2);
 
             if (currScope && tok1)
-                return findFunctionByNameAndArgsInScope(tok1, currScope);
+                return currScope->findFunction(tok1);
         }
     }
 
@@ -2482,7 +2429,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
             if (tok1->varId()) {
                 const Variable *var = getVariableFromVarId(tok1->varId());
                 if (var && var->type())
-                    return findFunctionByNameAndArgsInScope(tok, var->type());
+                    return var->type()->findFunction(tok);
             }
         }
     }
@@ -2490,7 +2437,7 @@ const Function* SymbolDatabase::findFunctionByNameAndArgs(const Token *tok, cons
     // check in enclosing scopes
     else {
         while (currScope) {
-            const Function *func = findFunctionByNameAndArgsInScope(tok, currScope);
+            const Function *func = currScope->findFunction(tok);
             if (func)
                 return func;
             currScope = currScope->nestedIn;

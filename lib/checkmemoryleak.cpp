@@ -219,7 +219,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         tok2 = tok2->tokAt(2);
 
     // User function
-    const Function* func = tokenizer->getSymbolDatabase()->findFunctionByNameAndArgs(tok2, tok2->scope());
+    const Function* func = tokenizer->getSymbolDatabase()->findFunction(tok2);
     if (func == NULL)
         return No;
 
@@ -643,7 +643,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
     // lock/unlock..
     if (varid == 0) {
-        const Function* func = _tokenizer->getSymbolDatabase()->findFunctionByName(funcname, tok->scope());;
+        const Function* func = _tokenizer->getSymbolDatabase()->findFunction(tok);
         if (!func || !func->hasBody)
             return 0;
 
@@ -677,6 +677,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     const bool dot(tok->previous()->str() == ".");
     const bool eq(tok->previous()->str() == "=");
 
+    const Token *functok = tok;
+
     tok = Token::findsimplematch(tok, "(");
     if (tok)
         tok = tok->next();
@@ -687,7 +689,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (dot)
                 return "use";
 
-            const Function* function = _tokenizer->getSymbolDatabase()->findFunctionByName(funcname, tok->scope());;
+            const Function* function = _tokenizer->getSymbolDatabase()->findFunction(functok);
             if (!function)
                 return "use";
 
@@ -719,7 +721,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             return ret;
         }
         if (varid > 0 && Token::Match(tok, "& %varid% [,()]", varid)) {
-            const Function *func = _tokenizer->getSymbolDatabase()->findFunctionByName(funcname, tok->scope());;
+            const Function *func = _tokenizer->getSymbolDatabase()->findFunction(functok);
             if (func == 0)
                 continue;
             AllocType a;

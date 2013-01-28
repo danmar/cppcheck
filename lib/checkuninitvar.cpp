@@ -1183,7 +1183,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             conditionAlwaysTrueOrFalse(tok, variableValue, &alwaysTrue, &alwaysFalse);
 
             // initialization / usage in condition..
-            if (!alwaysTrue && checkIfForWhileHead(scope, tok->next(), var, suppressErrors, bool(number_of_if == 0), membervar))
+            if (!alwaysTrue && checkIfForWhileHead(tok->next(), var, suppressErrors, bool(number_of_if == 0), membervar))
                 return true;
 
             // checking if a not-zero variable is zero => bail out
@@ -1308,7 +1308,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         // for/while..
         if (Token::Match(tok, "for|while (")) {
             // is variable initialized in for-head (don't report errors yet)?
-            if (checkIfForWhileHead(scope, tok->next(), var, true, false, membervar))
+            if (checkIfForWhileHead(tok->next(), var, true, false, membervar))
                 return true;
 
             // goto the {
@@ -1316,7 +1316,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
             if (tok2 && tok2->str() == "{") {
                 bool possibleinit = false;
-                bool init = checkLoopBody(scope, tok2, var, membervar);
+                bool init = checkLoopBody(tok2, var, membervar);
 
                 // variable is initialized in the loop..
                 if (possibleinit || init)
@@ -1324,7 +1324,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
                 // is variable used in for-head?
                 if (!suppressErrors) {
-                    checkIfForWhileHead(scope, tok->next(), var, false, bool(number_of_if == 0), membervar);
+                    checkIfForWhileHead(tok->next(), var, false, bool(number_of_if == 0), membervar);
                 }
 
                 // goto "}"
@@ -1357,7 +1357,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     }
 
                     // Use variable
-                    else if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
+                    else if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
                         uninitvarError(tok, tok->str());
 
                     else
@@ -1380,12 +1380,12 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 if (isMemberVariableAssignment(tok, membervar))
                     return true;
 
-                if (isMemberVariableUsage(scope, tok, var.isPointer(), membervar))
+                if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                     uninitStructMemberError(tok, tok->str() + "." + membervar);
 
             } else {
                 // Use variable
-                if (!suppressErrors && isVariableUsage(scope, tok, var.isPointer()))
+                if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
                     uninitvarError(tok, tok->str());
 
                 else
@@ -1398,7 +1398,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
     return false;
 }
 
-bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, const std::string &membervar)
+bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, const std::string &membervar)
 {
     const Token * const endpar = startparentheses->link();
     for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
@@ -1409,7 +1409,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startp
                 continue;
             }
 
-            if (isVariableUsage(scope, tok, var.isPointer())) {
+            if (isVariableUsage(tok, var.isPointer())) {
                 if (!suppressErrors)
                     uninitvarError(tok, tok->str());
                 else
@@ -1425,7 +1425,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Scope *scope, const Token *startp
     return false;
 }
 
-bool CheckUninitVar::checkLoopBody(const Scope* scope, const Token *tok, const Variable& var, const std::string &membervar)
+bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const std::string &membervar)
 {
     const Token *usetok = NULL;
 
@@ -1437,10 +1437,10 @@ bool CheckUninitVar::checkLoopBody(const Scope* scope, const Token *tok, const V
                 if (isMemberVariableAssignment(tok, membervar))
                     return true;
 
-                if (isMemberVariableUsage(scope, tok, var.isPointer(), membervar))
+                if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                     usetok = tok;
             } else {
-                if (isVariableUsage(scope, tok, var.isPointer()))
+                if (isVariableUsage(tok, var.isPointer()))
                     usetok = tok;
                 else
                     return true;
@@ -1459,7 +1459,7 @@ bool CheckUninitVar::checkLoopBody(const Scope* scope, const Token *tok, const V
     return false;
 }
 
-bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bool pointer) const
+bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
 {
     if (vartok->previous()->str() == "return")
         return true;
@@ -1482,7 +1482,7 @@ bool CheckUninitVar::isVariableUsage(const Scope* scope, const Token *vartok, bo
         // is this a function call?
         if (start && Token::Match(start->previous(), "%var% (")) {
             // check how function handle uninitialized data arguments..
-            const Function *func = _tokenizer->getSymbolDatabase()->findFunctionByNameAndArgs(start->previous(), scope);
+            const Function *func = _tokenizer->getSymbolDatabase()->findFunction(start->previous());
             if (func) {
                 const Variable *arg = func->getArgumentVar(argumentNumber);
                 if (arg) {
@@ -1593,14 +1593,14 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
     return false;
 }
 
-bool CheckUninitVar::isMemberVariableUsage(const Scope *scope, const Token *tok, bool isPointer, const std::string &membervar) const
+bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, const std::string &membervar) const
 {
     if (isMemberVariableAssignment(tok, membervar))
         return false;
 
     if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar)
         return true;
-    else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(scope, tok, isPointer))
+    else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer))
         return true;
 
     return false;

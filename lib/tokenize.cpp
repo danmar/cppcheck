@@ -2035,7 +2035,8 @@ bool Tokenizer::tokenize(std::istream &code,
 }
 //---------------------------------------------------------------------------
 
-bool Tokenizer::tokenizeCondition(const std::string &code) {
+bool Tokenizer::tokenizeCondition(const std::string &code)
+{
     assert(_settings);
 
     // Fill the map _typeSize..

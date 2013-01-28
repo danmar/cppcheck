@@ -363,7 +363,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 if (ftok->str() != func.name()) {
                     initVar(ftok->str(), scope, usage);
                 } else { // c++11 delegate constructor
-                    const Function *member = symbolDatabase->findFunctionByNameAndArgsInScope(ftok, scope);
+                    const Function *member = scope->findFunction(ftok);
                     // member function found
                     if (member) {
                         // recursive call
@@ -491,7 +491,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Calling member function?
         else if (Token::simpleMatch(ftok, "operator= (") &&
                  ftok->previous()->str() != "::") {
-            const Function *member = symbolDatabase->findFunctionByNameAndArgsInScope(ftok, scope);
+            const Function *member = scope->findFunction(ftok);
             // member function found
             if (member) {
                 // recursive call
@@ -533,7 +533,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             }
 
             // check if member function
-            const Function *member = symbolDatabase->findFunctionByNameAndArgsInScope(ftok, scope);
+            const Function *member = scope->findFunction(ftok);
 
             // member function found
             if (member && member->type != Function::eConstructor) {

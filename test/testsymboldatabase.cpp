@@ -62,6 +62,36 @@ private:
         found = false;
     }
 
+    const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) const {
+        std::list<Scope>::const_iterator scope;
+
+        for (scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
+            if (scope->type == Scope::eFunction) {
+                if (scope->classDef == tok)
+                    return &(*scope);
+            }
+        }
+        return 0;
+    }
+
+    const Function *findFunctionByName(const std::string& str, const Scope* startScope) const {
+        const Scope* currScope = startScope;
+        while (currScope && currScope->isExecutable()) {
+            if (currScope->functionOf)
+                currScope = currScope->functionOf;
+            else
+                currScope = currScope->nestedIn;
+        }
+        while (currScope) {
+            for (std::list<Function>::const_iterator i = currScope->functionList.begin(); i != currScope->functionList.end(); ++i) {
+                if (i->tokenDef->str() == str)
+                    return &*i;
+            }
+            currScope = currScope->nestedIn;
+        }
+        return 0;
+    }
+
     void run() {
         TEST_CASE(array);
 
@@ -513,12 +543,12 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->next());
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->next());
 
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf == 0);
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.front());
+            const Function *function = findFunctionByName("func", &db->scopeList.front());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->next());
@@ -534,12 +564,12 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(4));
 
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
+            const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
@@ -555,11 +585,11 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(4));
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(4));
 
             ASSERT(scope == NULL);
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
+            const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
@@ -574,12 +604,12 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(12));
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(12));
 
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
+            const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(12));
@@ -595,11 +625,11 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(3));
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(3));
 
             ASSERT(scope && scope->className == "func");
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.front());
+            const Function *function = findFunctionByName("func", &db->scopeList.front());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(3));
@@ -614,11 +644,11 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(6));
 
             ASSERT(scope && scope->className == "func");
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
+            const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
@@ -633,11 +663,11 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(6));
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(6));
 
             ASSERT(scope == NULL);
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
+            const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
@@ -652,11 +682,11 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = db->findFunctionScopeByToken(tokenizer.tokens()->tokAt(23));
+            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(23));
 
             ASSERT(scope && scope->className == "func");
 
-            const Function *function = db->findFunctionByName("func", &db->scopeList.back());
+            const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
@@ -686,7 +716,7 @@ private:
         GET_SYMBOL_DB("std::map<int, string> foo() {}")
 
         // 2 scopes: Global and Function
-        ASSERT(db && db->scopeList.size() == 2 && db->findFunctionByName("foo", &db->scopeList.back()));
+        ASSERT(db && db->scopeList.size() == 2 && findFunctionByName("foo", &db->scopeList.back()));
 
         if (db) {
             const Scope *scope = &db->scopeList.front();
@@ -704,7 +734,7 @@ private:
         GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}")
 
         // 2 scopes: Global and Function
-        ASSERT(db && db->scopeList.size() == 2 && db->findFunctionByName("foo", &db->scopeList.back()));
+        ASSERT(db && db->scopeList.size() == 2 && findFunctionByName("foo", &db->scopeList.back()));
 
         if (db) {
             const Scope *scope = &db->scopeList.front();
@@ -752,8 +782,8 @@ private:
         // 3 scopes: Global, function, if
         ASSERT_EQUALS(3, db->scopeList.size());
 
-        ASSERT(db->findFunctionByName("func", &db->scopeList.back()) != NULL);
-        ASSERT(db->findFunctionByName("if", &db->scopeList.back()) == NULL);
+        ASSERT(findFunctionByName("func", &db->scopeList.back()) != NULL);
+        ASSERT(findFunctionByName("if", &db->scopeList.back()) == NULL);
     }
 
     void parseFunctionDeclarationCorrect() {
@@ -1460,7 +1490,7 @@ private:
                 unsigned int index = 0;
                 for (const Token * tok = bar->classStart->next(); tok != bar->classEnd; tok = tok->next()) {
                     if (Token::Match(tok, "%var% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
-                        const Function * function = db->findFunctionByNameAndArgs(tok, bar);
+                        const Function * function = db->findFunction(tok);
                         ASSERT(function != 0);
                         if (function) {
                             std::stringstream expected;
