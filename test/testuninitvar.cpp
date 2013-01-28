@@ -2245,6 +2245,17 @@ private:
                         "}", "test.c");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f(void) {\n"
+                        "    int a;\n"
+                        "    int i;\n"
+                        "    if (x) { noreturn(); }\n"
+                        "    else { i = 0; }\n"
+                        "    if (i==1) { a = 0; }\n"
+                        "    else { a = 1; }\n"
+                        "    return a;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // asm
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

@@ -1157,8 +1157,11 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 *possibleInit = true;
 
             // might be a noreturn function..
-            if (_tokenizer->IsScopeNoReturn(tok))
+            if (_tokenizer->IsScopeNoReturn(tok)) {
+                if (noreturn)
+                    *noreturn = true;
                 return true;
+            }
 
             break;
         }
@@ -1226,7 +1229,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 }
 
                 std::map<unsigned int, int> varValueIf;
-                if (!initif) {
+                if (!initif && !noreturnIf) {
                     for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                         if (Token::Match(tok2, "[;{}.] %var% = - %var% ;"))
                             varValueIf[tok2->next()->varId()] = NOT_ZERO;
@@ -1256,7 +1259,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     const bool initelse = checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, NULL, membervar);
 
                     std::map<unsigned int, int> varValueElse;
-                    if (!initelse) {
+                    if (!initelse && !noreturnElse) {
                         for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                             if (Token::Match(tok2, "[;{}.] %var% = - %var% ;"))
                                 varValueElse[tok2->next()->varId()] = NOT_ZERO;
@@ -1266,7 +1269,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     }
 
 
-                    if (initelse && condVarId > 0U)
+                    if (initelse && condVarId > 0U && !noreturnIf && !noreturnElse)
                         variableValue[condVarId] = condVarValue;
 
                     // goto the }
@@ -1278,7 +1281,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     if ((initif && noreturnElse) || (initelse && noreturnIf))
                         return true;
 
-                    if (initif || initelse || possibleInitElse) {
+                    if ((initif || initelse || possibleInitElse) && !noreturnIf && !noreturnElse) {
                         ++number_of_if;
                         variableValue.insert(varValueIf.begin(), varValueIf.end());
                         variableValue.insert(varValueElse.begin(), varValueElse.end());
