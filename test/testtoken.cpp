@@ -34,7 +34,7 @@ private:
     std::vector<std::string> arithmeticalOps;
     std::vector<std::string> logicalOps;
     std::vector<std::string> bitOps;
-    std::vector<std::string> comparisionOps;
+    std::vector<std::string> comparisonOps;
     std::vector<std::string> extendedOps;
     std::vector<std::string> assignmentOps;
 
@@ -484,12 +484,12 @@ private:
         logicalOps.push_back("&&");
         logicalOps.push_back("||");
         logicalOps.push_back("!");
-        comparisionOps.push_back("==");
-        comparisionOps.push_back("!=");
-        comparisionOps.push_back("<");
-        comparisionOps.push_back("<=");
-        comparisionOps.push_back(">");
-        comparisionOps.push_back(">=");
+        comparisonOps.push_back("==");
+        comparisonOps.push_back("!=");
+        comparisonOps.push_back("<");
+        comparisonOps.push_back("<=");
+        comparisonOps.push_back(">");
+        comparisonOps.push_back(">=");
         bitOps.push_back("&");
         bitOps.push_back("|");
         bitOps.push_back("^");
@@ -520,7 +520,7 @@ private:
         std::vector<std::string> test_ops;
         append_vector(test_ops, arithmeticalOps);
         append_vector(test_ops, bitOps);
-        append_vector(test_ops, comparisionOps);
+        append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
@@ -550,7 +550,7 @@ private:
         // Negative test against other operators
         std::vector<std::string> other_ops;
         append_vector(other_ops, bitOps);
-        append_vector(other_ops, comparisionOps);
+        append_vector(other_ops, comparisonOps);
         append_vector(other_ops, logicalOps);
         append_vector(other_ops, extendedOps);
         append_vector(other_ops, assignmentOps);
@@ -567,7 +567,7 @@ private:
         std::vector<std::string> test_ops;
         append_vector(test_ops, arithmeticalOps);
         append_vector(test_ops, bitOps);
-        append_vector(test_ops, comparisionOps);
+        append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
@@ -594,7 +594,7 @@ private:
         std::vector<std::string> test_ops;
         append_vector(test_ops, arithmeticalOps);
         append_vector(test_ops, bitOps);
-        append_vector(test_ops, comparisionOps);
+        append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
         append_vector(test_ops, extendedOps);
 
@@ -626,7 +626,7 @@ private:
         std::vector<std::string> other_ops;
         append_vector(other_ops, arithmeticalOps);
         append_vector(other_ops, bitOps);
-        append_vector(other_ops, comparisionOps);
+        append_vector(other_ops, comparisonOps);
         append_vector(other_ops, logicalOps);
         append_vector(other_ops, extendedOps);
 
@@ -655,7 +655,7 @@ private:
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eBitOp, tok.type());
         }
-        for (test_op = comparisionOps.begin(); test_op != comparisionOps.end(); ++test_op) {
+        for (test_op = comparisonOps.begin(); test_op != comparisonOps.end(); ++test_op) {
             Token tok(NULL);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eComparisonOp, tok.type());

@@ -589,7 +589,7 @@ void TemplateSimplifier::expandTemplate(
     const std::string &name,
     std::vector<const Token *> &typeParametersInDeclaration,
     const std::string &newName,
-    std::vector<const Token *> &typesUsedInTemplateInstantion,
+    std::vector<const Token *> &typesUsedInTemplateInstantiation,
     std::list<Token *> &templateInstantiations)
 {
     for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3->next()) {
@@ -624,7 +624,7 @@ void TemplateSimplifier::expandTemplate(
 
                 // replace type with given type..
                 if (itype < typeParametersInDeclaration.size()) {
-                    for (const Token *typetok = typesUsedInTemplateInstantion[itype];
+                    for (const Token *typetok = typesUsedInTemplateInstantiation[itype];
                          typetok && !Token::Match(typetok, "[,>]");
                          typetok = typetok->next()) {
                         tokenlist.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
@@ -965,7 +965,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
 }
 
 
-bool TemplateSimplifier::simplifyTemplateInstantions(
+bool TemplateSimplifier::simplifyTemplateInstantiations(
     TokenList& tokenlist,
     ErrorLogger& errorlogger,
     const Settings *_settings,
@@ -1030,7 +1030,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
             continue;
 
         // New type..
-        std::vector<const Token *> typesUsedInTemplateInstantion;
+        std::vector<const Token *> typesUsedInTemplateInstantiation;
         std::string typeForNewNameStr;
         std::string templateMatchPattern(name + " < ");
         unsigned int indentlevel = 0;
@@ -1052,7 +1052,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
             templateMatchPattern += tok3->str();
             templateMatchPattern += " ";
             if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]"))
-                typesUsedInTemplateInstantion.push_back(tok3);
+                typesUsedInTemplateInstantiation.push_back(tok3);
             // add additional type information
             if (tok3->isUnsigned())
                 typeForNewNameStr += "unsigned";
@@ -1065,7 +1065,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
         templateMatchPattern += ">";
         const std::string typeForNewName(typeForNewNameStr);
 
-        if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantion.size()) {
+        if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantiation.size()) {
             if (_settings->debugwarnings) {
                 std::list<const Token *> callstack(1, tok);
                 errorlogger.reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debg",
@@ -1081,7 +1081,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
 
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
-            TemplateSimplifier::expandTemplate(tokenlist, tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantion,templateInstantiations);
+            TemplateSimplifier::expandTemplate(tokenlist, tok,name,typeParametersInDeclaration,newName,typesUsedInTemplateInstantiation,templateInstantiations);
             instantiated = true;
         }
 
@@ -1090,8 +1090,8 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
         for (Token *tok4 = tok2; tok4; tok4 = tok4->next()) {
             if (Token::simpleMatch(tok4, templateMatchPattern.c_str())) {
                 Token * tok5 = tok4->tokAt(2);
-                unsigned int typeCountInInstantion = 1U; // There is always at least one type
-                const Token *typetok = (!typesUsedInTemplateInstantion.empty()) ? typesUsedInTemplateInstantion[0] : 0;
+                unsigned int typeCountInInstantiation = 1U; // There is always at least one type
+                const Token *typetok = (!typesUsedInTemplateInstantiation.empty()) ? typesUsedInTemplateInstantiation[0] : 0;
                 unsigned int indentlevel5 = 0;  // indentlevel for tok5
                 while (tok5 && (indentlevel5 > 0 || tok5->str() != ">")) {
                     if (tok5->str() == "<" && templateParameters(tok5) > 0)
@@ -1109,8 +1109,8 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
 
                             typetok = typetok ? typetok->next() : 0;
                         } else {
-                            typetok = (typeCountInInstantion < typesUsedInTemplateInstantion.size()) ? typesUsedInTemplateInstantion[typeCountInInstantion] : 0;
-                            ++typeCountInInstantion;
+                            typetok = (typeCountInInstantiation < typesUsedInTemplateInstantiation.size()) ? typesUsedInTemplateInstantiation[typeCountInInstantiation] : 0;
+                            ++typeCountInInstantiation;
                         }
                     }
                     tok5 = tok5->next();
@@ -1118,7 +1118,7 @@ bool TemplateSimplifier::simplifyTemplateInstantions(
 
                 // matching template usage => replace tokens..
                 // Foo < int >  =>  Foo<int>
-                if (tok5 && tok5->str() == ">" && typeCountInInstantion == typesUsedInTemplateInstantion.size()) {
+                if (tok5 && tok5->str() == ">" && typeCountInInstantiation == typesUsedInTemplateInstantiation.size()) {
                     tok4->str(newName);
                     for (Token *tok6 = tok4->next(); tok6 != tok5; tok6 = tok6->next()) {
                         if (tok6->isName())
@@ -1191,7 +1191,7 @@ void TemplateSimplifier::simplifyTemplates(
         //done = true;
         std::list<Token *> templates2;
         for (std::list<Token *>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1) {
-            bool instantiated = TemplateSimplifier::simplifyTemplateInstantions(tokenlist,
+            bool instantiated = TemplateSimplifier::simplifyTemplateInstantiations(tokenlist,
                                 errorlogger,
                                 _settings,
                                 *iter1,

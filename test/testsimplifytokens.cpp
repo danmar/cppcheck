@@ -2412,7 +2412,7 @@ private:
     }
 
     void templateParameters1() {
-        // #4169 - semgentation fault (invalid code)
+        // #4169 - segmentation fault (invalid code)
         const char code[] = "volatile true , test < test < #ifdef __ppc__ true ,";
         // do not crash on invalid code
         ASSERT_EQUALS(0, templateParameters(code));

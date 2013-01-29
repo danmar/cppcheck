@@ -114,11 +114,11 @@ public:
         const std::string &name,
         std::vector<const Token *> &typeParametersInDeclaration,
         const std::string &newName,
-        std::vector<const Token *> &typesUsedInTemplateInstantion,
+        std::vector<const Token *> &typesUsedInTemplateInstantiation,
         std::list<Token *> &templateInstantiations);
 
     /**
-     * Simplify templates : expand all instantiatiations for a template
+     * Simplify templates : expand all instantiations for a template
      * @todo It seems that inner templates should be instantiated recursively
      * @param tokenlist token list
      * @param errorlogger error logger
@@ -128,7 +128,7 @@ public:
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      * @return true if the template was instantiated
      */
-    static bool simplifyTemplateInstantions(
+    static bool simplifyTemplateInstantiations(
         TokenList& tokenlist,
         ErrorLogger& errorlogger,
         const Settings *_settings,
@@ -159,7 +159,7 @@ public:
 
     /**
      * Simplify constant calculations such as "1+2" => "3".
-     * This also perform simple cleanup of parantheses etc.
+     * This also performs simple cleanup of parentheses etc.
      * @param _tokens start token
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.

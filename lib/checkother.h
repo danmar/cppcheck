@@ -119,7 +119,7 @@ public:
         checkOther.checkSuspiciousEqualityComparison();
     }
 
-    /** To check the dead code in a program, which is unaccessible due to the counter-conditions check in nested-if statements **/
+    /** To check the dead code in a program, which is inaccessible due to the counter-conditions check in nested-if statements **/
     void oppositeInnerCondition();
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -183,7 +183,7 @@ public:
     /** @brief %Check for suspicious calculations with sizeof results */
     void suspiciousSizeofCalculation();
 
-    /** @brief copying to memory or assigning to a variablen twice */
+    /** @brief copying to memory or assigning to a variable twice */
     void checkRedundantAssignment();
 
     /** @brief %Check for assigning to the same variable twice in a switch statement*/
@@ -467,7 +467,7 @@ private:
                "* subsequent assignment or copying to a variable or buffer\n"
 
                // style
-               "* Find dead code which is unaccessible due to the counter-conditions check in nested if statements\n"
+               "* Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"
                "* C-style pointer cast in cpp file\n"
                "* casting between incompatible pointer types\n"
                "* redundant if\n"
@@ -478,7 +478,7 @@ private:
                "* [[charvar|check how signed char variables are used]]\n"
                "* variable scope can be limited\n"
                "* condition that is always true/false\n"
-               "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
+               "* unusual pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* redundant assignment in a switch statement\n"
                "* redundant pre/post operation in a switch statement\n"
                "* redundant bitwise operation in a switch statement\n"

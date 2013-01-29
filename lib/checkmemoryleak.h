@@ -218,7 +218,7 @@ public:
     /**
      * @brief %Check if there is a "!var" match inside a condition
      * @param tok      first token to match
-     * @param varid    variabla id
+     * @param varid    variable id
      * @param endpar   if this is true the "!var" must be followed by ")"
      * @return true if match
      */
