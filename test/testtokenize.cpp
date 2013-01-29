@@ -5964,20 +5964,20 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             const Token *tok = tokenizer.tokens();
             // template<
-            ASSERT_EQUALS((long long)tok->tokAt(6), (long long)tok->linkAt(4));
-            ASSERT_EQUALS((long long)tok->tokAt(4), (long long)tok->linkAt(6));
+            ASSERT_EQUALS(true, tok->tokAt(6) == tok->linkAt(4));
+            ASSERT_EQUALS(true, tok->tokAt(4) == tok->linkAt(6));
 
             // bar<
-            ASSERT_EQUALS((long long)tok->tokAt(17), (long long)tok->linkAt(10));
-            ASSERT_EQUALS((long long)tok->tokAt(10), (long long)tok->linkAt(17));
+            ASSERT_EQUALS(true, tok->tokAt(17) == tok->linkAt(10));
+            ASSERT_EQUALS(true, tok->tokAt(10) == tok->linkAt(17));
 
             // x<
-            ASSERT_EQUALS((long long)tok->tokAt(16), (long long)tok->linkAt(14));
-            ASSERT_EQUALS((long long)tok->tokAt(14), (long long)tok->linkAt(16));
+            ASSERT_EQUALS(true, tok->tokAt(16) == tok->linkAt(14));
+            ASSERT_EQUALS(true, tok->tokAt(14) == tok->linkAt(16));
 
             // a<b && b>f
-            ASSERT_EQUALS(0, (long long)tok->linkAt(28));
-            ASSERT_EQUALS(0, (long long)tok->linkAt(32));
+            ASSERT_EQUALS(true, 0 == tok->linkAt(28));
+            ASSERT_EQUALS(true, 0 == tok->linkAt(32));
 
             ASSERT_EQUALS("", errout.str());
         }
@@ -5994,8 +5994,8 @@ private:
             const Token *tok = tokenizer.tokens();
 
             // static_cast<
-            ASSERT_EQUALS((long long)tok->tokAt(9), (long long)tok->linkAt(7));
-            ASSERT_EQUALS((long long)tok->tokAt(7), (long long)tok->linkAt(9));
+            ASSERT_EQUALS(true, tok->tokAt(9) == tok->linkAt(7));
+            ASSERT_EQUALS(true, tok->tokAt(7) == tok->linkAt(9));
 
             ASSERT_EQUALS("", errout.str());
         }
@@ -6012,8 +6012,8 @@ private:
             const Token *tok = tokenizer.tokens();
 
             // nvwa<(x > y)>
-            ASSERT_EQUALS((long long)tok->tokAt(12), (long long)tok->linkAt(6));
-            ASSERT_EQUALS((long long)tok->tokAt(6), (long long)tok->linkAt(12));
+            ASSERT_EQUALS(true, tok->tokAt(12) == tok->linkAt(6));
+            ASSERT_EQUALS(true, tok->tokAt(6) == tok->linkAt(12));
 
             ASSERT_EQUALS("", errout.str());
         }

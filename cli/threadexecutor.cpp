@@ -220,7 +220,7 @@ unsigned int ThreadExecutor::check()
                     if (FD_ISSET(*rp, &rfds)) {
                         int readRes = handleRead(*rp, result);
                         if (readRes == -1) {
-                            long size = 0;
+                            std::size_t size = 0;
                             std::map<int, std::string>::iterator p = pipeFile.find(*rp);
                             if (p != pipeFile.end()) {
                                 std::string name = p->second;
@@ -408,7 +408,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
         }
         const std::string &file = it->first;
-        const int fileSize = it->second;
+        const std::size_t fileSize = it->second;
         it++;
 
         LeaveCriticalSection(&threadExecutor->_fileSync);
