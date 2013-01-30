@@ -857,7 +857,9 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                             }
                             back = back->previous();
                         }
-                    } else if (Token::Match(tok1->tokAt(-4), "%varid% = ( * %varid% )", varid)) {
+                    } else if (Token::Match(tok1->tokAt(-4), "%varid% = ( * %varid%", varid)) {
+                        reassign = true;
+                    } else if (Token::Match(tok1->tokAt(-3), "%varid% = * %varid%", varid)) {
                         reassign = true;
                     }
 

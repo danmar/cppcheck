@@ -701,6 +701,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(struct ABC *abc) {\n" // #4523
+              "    abc = (*abc->ptr);\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("int f(Item *item) {\n"
               "    x = item ? ab(item->x) : 0;\n"
               "    if (item) { }\n"
