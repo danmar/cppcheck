@@ -294,6 +294,9 @@ public:
     void checkVarFuncNullUB();
 
 private:
+    bool isUnsigned(const Variable *var) const;
+    bool isSigned(const Variable *var) const;
+
     // Error messages..
     void oppositeInnerConditionError(const Token *tok);
     void clarifyCalculationError(const Token *tok, const std::string &op);

@@ -1808,11 +1808,11 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 //---------------------------------------------------------------------------
 // Check for unsigned divisions
 //---------------------------------------------------------------------------
-static bool isUnsigned(const Variable* var)
+bool CheckOther::isUnsigned(const Variable* var) const
 {
-    return(var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray());
+    return(var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray() && _tokenizer->sizeOfType(var->typeStartToken()) >= _settings->sizeof_int);
 }
-static bool isSigned(const Variable* var)
+bool CheckOther::isSigned(const Variable* var) const
 {
     return(var && !var->typeStartToken()->isUnsigned() && Token::Match(var->typeEndToken(), "int|char|short|long") && !var->isPointer() && !var->isArray());
 }
