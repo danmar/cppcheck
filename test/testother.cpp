@@ -5181,8 +5181,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void duplicateExpression2() { // ticket #2730
-        check("int main()\n"
+    void duplicateExpression2() { // check if float is NaN or Inf
+        check("int main()\n" // ticket #2730
               "{\n"
               "    long double ldbl;\n"
               "    double dbl, in;\n"
@@ -5199,6 +5199,9 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Passing value -1.0 to sqrtl() leads to undefined result.\n"
                       "[test.cpp:8]: (error) Passing value -1.0 to sqrt() leads to undefined result.\n"
                       "[test.cpp:9]: (error) Passing value -1.0 to sqrtf() leads to undefined result.\n", errout.str());
+
+        check("float f(float x) { return x-x; }"); // ticket #4485 (Inf)
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression3() {

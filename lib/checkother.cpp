@@ -3176,7 +3176,8 @@ void CheckOther::checkDuplicateExpression()
             if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% %comp%|- %var% )|&&|%oror%|;|,") &&
                 tok->strAt(1) == tok->strAt(3)) {
                 // float == float and float != float are valid NaN checks
-                if (Token::Match(tok->tokAt(2), "==|!=") && tok->next()->varId()) {
+                // float - float is a valid Inf check
+                if (Token::Match(tok->tokAt(2), "==|!=|-") && tok->next()->varId()) {
                     const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                     if (var && var->typeStartToken() == var->typeEndToken()) {
                         if (Token::Match(var->typeStartToken(), "float|double"))
