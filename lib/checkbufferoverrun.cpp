@@ -1046,7 +1046,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
         } else if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", varid)) ||
                    (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str()))) {
-            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->tokAt(4)->varId());
+            const Variable *var = tok->tokAt(4)->variable();
             if (var && var->isArray() && var->dimensions().size() == 1) {
                 const std::size_t len = (std::size_t)var->dimension(0);
                 if (total_size > 0 && len > (unsigned int)total_size) {
@@ -1915,7 +1915,7 @@ void CheckBufferOverrun::negativeIndex()
                 tok2 = tok2->previous()->link();
 
             if (tok2->previous() && tok2->previous()->varId()) {
-                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->previous()->varId());
+                const Variable *var = tok2->previous()->variable();
                 if (var && var->isArray())
                     negativeIndexError(tok, index);
             }

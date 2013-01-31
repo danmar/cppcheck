@@ -36,15 +36,13 @@ void CheckAssignIf::assignIf()
     if (!_settings->isEnabled("style"))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "=")
             continue;
 
         if (Token::Match(tok->tokAt(-2), "[;{}] %var% =")) {
-            const unsigned int varid(tok->previous()->varId());
-            if (varid == 0)
+            const Variable *var = tok->previous()->variable();
+            if (var == 0)
                 continue;
 
             char bitop = '\0';
@@ -67,12 +65,7 @@ void CheckAssignIf::assignIf()
             if (num < 0 && bitop == '|')
                 continue;
 
-            bool islocal = false;
-            const Variable *var = symbolDatabase->getVariableFromVarId(varid);
-            if (var && var->isLocal())
-                islocal = true;
-
-            assignIfParseScope(tok, tok->tokAt(4), varid, islocal, bitop, num);
+            assignIfParseScope(tok, tok->tokAt(4), var->varId(), var->isLocal(), bitop, num);
         }
     }
 }
