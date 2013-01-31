@@ -241,7 +241,7 @@ private:
         TEST_CASE(allocfunc10);
         TEST_CASE(allocfunc11);
         TEST_CASE(allocfunc12); // #3660: allocating and returning non-local pointer => not allocfunc
-        TEST_CASE(allocfunc13); // Ticket #4494 - class function
+        TEST_CASE(allocfunc13); // Ticket #4494 and #4540 - class function
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -2592,6 +2592,15 @@ private:
               "}\n"
               "void b() {\n"
               "    char *x = n::a();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x\n", errout.str());
+
+        check("class C {\n"  // ¤4540
+              "    char *a() { return malloc(100); }\n"
+              "}\n"
+              "void b() {\n"
+              "    C c;"
+              "    char *x = c.a();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x\n", errout.str());
     }

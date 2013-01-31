@@ -140,7 +140,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     if (! tok2->isName())
         return No;
 
-    if (!Token::Match(tok2, "%type% :: %type%")) {
+    if (!Token::Match(tok2, "%type%|%var% ::|. %type%")) {
         // Does tok2 point on "malloc", "strdup" or "kmalloc"..
         static const char * const mallocfunc[] = {
             "malloc",
@@ -215,7 +215,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 
     }
 
-    while (Token::Match(tok2,"%type% :: %type%"))
+    while (Token::Match(tok2,"%type%|%var% ::|. %type%"))
         tok2 = tok2->tokAt(2);
 
     // User function
