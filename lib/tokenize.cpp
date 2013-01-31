@@ -9264,14 +9264,33 @@ void Tokenizer::createSymbolDatabase()
                 }
             }
         }
+
+        // Set function pointers
+        const std::size_t functions = _symbolDatabase->functionScopes.size();
+        for (std::size_t i = 0; i < functions; ++i) {
+            const Scope * scope = _symbolDatabase->functionScopes[i];
+            for (Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+                if (Token::Match(tok, "%var% (")) {
+                    tok->function(_symbolDatabase->findFunction(tok));
+                }
+            }
+        }
+
+        // Set variable pointers
+        for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
+            if (tok->varId())
+                tok->variable(_symbolDatabase->getVariableFromVarId(tok->varId()));
+        }
     }
 }
 
 void Tokenizer::deleteSymbolDatabase()
 {
-    // Clear scope pointers
+    // Clear scope, function, and variable pointers
     for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
         tok->scope(0);
+        tok->function(0);
+        tok->variable(0);
     }
 
     delete _symbolDatabase;

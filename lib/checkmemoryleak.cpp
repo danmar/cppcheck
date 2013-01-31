@@ -219,7 +219,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         tok2 = tok2->tokAt(2);
 
     // User function
-    const Function* func = tokenizer->getSymbolDatabase()->findFunction(tok2);
+    const Function* func = tok2->function();
     if (func == NULL)
         return No;
 
@@ -643,7 +643,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
     // lock/unlock..
     if (varid == 0) {
-        const Function* func = _tokenizer->getSymbolDatabase()->findFunction(tok);
+        const Function* func = tok->function();
         if (!func || !func->hasBody)
             return 0;
 
@@ -689,7 +689,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (dot)
                 return "use";
 
-            const Function* function = _tokenizer->getSymbolDatabase()->findFunction(functok);
+            const Function* function = functok->function();
             if (!function)
                 return "use";
 
@@ -721,7 +721,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             return ret;
         }
         if (varid > 0 && Token::Match(tok, "& %varid% [,()]", varid)) {
-            const Function *func = _tokenizer->getSymbolDatabase()->findFunction(functok);
+            const Function *func = functok->function();
             if (func == 0)
                 continue;
             AllocType a;

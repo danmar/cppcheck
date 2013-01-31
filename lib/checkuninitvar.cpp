@@ -1485,7 +1485,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
         // is this a function call?
         if (start && Token::Match(start->previous(), "%var% (")) {
             // check how function handle uninitialized data arguments..
-            const Function *func = _tokenizer->getSymbolDatabase()->findFunction(start->previous());
+            const Function *func = start->previous()->function();
             if (func) {
                 const Variable *arg = func->getArgumentVar(argumentNumber);
                 if (arg) {

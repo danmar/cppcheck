@@ -34,6 +34,8 @@ Token::Token(Token **t) :
     _previous(0),
     _link(0),
     _scope(0),
+    _function(0),
+    _variable(0),
     _str(""),
     _varId(0),
     _fileIndex(0),
@@ -198,6 +200,8 @@ void Token::deleteThis()
         _linenr = _next->_linenr;
         _link = _next->_link;
         _scope = _next->_scope;
+        _function = _next->_function;
+        _variable = _next->_variable;
         if (_link)
             _link->link(this);
 
@@ -217,6 +221,8 @@ void Token::deleteThis()
         _linenr = _previous->_linenr;
         _link = _previous->_link;
         _scope = _previous->_scope;
+        _function = _previous->_function;
+        _variable = _previous->_variable;
         if (_link)
             _link->link(this);
 

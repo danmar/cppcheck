@@ -753,7 +753,7 @@ void CheckOther::checkRedundantAssignment()
                         }
                     }
                 } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
-                    const Function* func = symbolDatabase->findFunction(tok);
+                    const Function* func = tok->function();
                     if (!func || !func->hasBody) {
                         varAssignments.clear();
                         memAssignments.clear();
@@ -2379,7 +2379,7 @@ void CheckOther::checkMisusedScopedObject()
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::simpleMatch(tok->linkAt(2), ") ;")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
-                && !symbolDatabase->findFunction(tok->next())) {
+                && !tok->next()->function()) {
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
                 tok = tok->next();
@@ -2422,7 +2422,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
                 first_token = tok->previous();
             }
             if (Token::Match(first_token, "%var% (") && !Token::Match(first_token->previous(), "::|.")) {
-                const Function* func = symbolDatabase->findFunction(first_token);
+                const Function* func = first_token->function();
                 if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
                     first_token_func_of_type_bool = true;
                 }
@@ -2434,7 +2434,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
                 second_token = second_token->next();
             }
             if (Token::Match(second_token, "%var% (") && !Token::Match(second_token->previous(), "::|.")) {
-                const Function* func = symbolDatabase->findFunction(second_token);
+                const Function* func = second_token->function();
                 if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
                     second_token_func_of_type_bool = true;
                 }
@@ -3657,7 +3657,7 @@ void CheckOther::checkRedundantCopy()
         const Token *match_end = (tok->next()->link()!=NULL)?tok->next()->link()->next():NULL;
         if (match_end==NULL || !Token::Match(match_end,expect_end_token)) //avoid usage like "const A a = getA()+3"
             break;
-        const Function* func = _tokenizer->getSymbolDatabase()->findFunction(tok);
+        const Function* func = tok->function();
         if (func && func->tokenDef->previous() && func->tokenDef->previous()->str() == "&") {
             redundantCopyError(var_tok,var_tok->str());
         }
@@ -3842,7 +3842,7 @@ void CheckOther::checkVarFuncNullUB()
                 ftok = ftok ? ftok->previous() : NULL;
                 if (ftok && ftok->isName()) {
                     // If this is a variadic function then report error
-                    const Function *f = symbolDatabase->findFunction(ftok);
+                    const Function *f = ftok->function();
                     if (f && f->argCount() <= argnr) {
                         const Token *tok2 = f->argDef;
                         tok2 = tok2 ? tok2->link() : NULL; // goto ')'

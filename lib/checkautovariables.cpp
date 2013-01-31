@@ -230,7 +230,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
     bool retref = false;   // is there such a function that returns a reference?
     bool retvalue = false; // is there such a function that returns a value?
 
-    const Function *function = symbolDatabase->findFunction(tok);
+    const Function *function = tok->function();
     if (function) {
         retref = function->tokenDef->strAt(-1) == "&";
         if (!retref) {
