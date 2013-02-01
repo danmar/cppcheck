@@ -82,6 +82,7 @@ private:
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
+    void errorUselessAssignmentPtrArg(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckAutoVariables c(0,settings,errorLogger);
@@ -92,6 +93,7 @@ private:
         c.errorReturnTempReference(0);
         c.errorInvalidDeallocation(0);
         c.errorReturnAddressOfFunctionParameter(0, "parameter");
+        c.errorUselessAssignmentPtrArg(0);
     }
 
     static std::string myName() {
@@ -104,7 +106,8 @@ private:
                "* returning a pointer to auto or temporary variable\n"
                "* assigning address of an variable to an effective parameter of a function\n"
                "* returning reference to local/temporary variable\n"
-               "* returning address of function parameter\n";
+               "* returning address of function parameter\n"
+               "* useless assignment of pointer parameter\n";
     }
 };
 /// @}
