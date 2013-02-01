@@ -317,7 +317,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
  * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
  * @return true => there is a dereference
  */
-bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const SymbolDatabase* symbolDatabase)
+bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 {
     const bool inconclusive = unknown;
 
@@ -350,14 +350,14 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
     if (Token::Match(tok->tokAt(-4), "std :: string|wstring ( %var% )"))
         return true;
     if (Token::Match(tok->tokAt(-2), "%var% ( %var% )")) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(tok->tokAt(-2)->varId());
+        const Variable* var = tok->tokAt(-2)->variable();
         if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
             return true;
     }
 
     // streams dereference nullpointers
     if (Token::Match(tok->previous(), "<<|>> %var%")) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+        const Variable* var = tok->variable();
         if (var && var->isPointer() && Token::Match(var->typeStartToken(), "char|wchar_t")) { // Only outputting or reading to char* can cause problems
             const Token* tok2 = tok->previous(); // Find start of statement
             for (; tok2; tok2 = tok2->previous()) {
@@ -367,25 +367,22 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Sym
             if (Token::Match(tok2, "std :: cout|cin|cerr"))
                 return true;
             if (tok2 && tok2->varId() != 0) {
-                const Variable* var2 = symbolDatabase->getVariableFromVarId(tok2->varId());
+                const Variable* var2 = tok2->variable();
                 if (var2 && Token::Match(var2->typeStartToken(), "std :: istream|ifstream|istringstream|wistringstream|ostream|ofstream|ostringstream|wostringstream|stringstream|wstringstream|fstream|iostream"))
                     return true;
             }
         }
     }
 
-    unsigned int ovarid = 0;
+    const Variable *ovar = NULL;
     if (Token::Match(tok, "%var% ==|!= %var%"))
-        ovarid = tok->tokAt(2)->varId();
+        ovar = tok->tokAt(2)->variable();
     else if (Token::Match(tok->tokAt(-2), "%var% ==|!= %var%"))
-        ovarid = tok->tokAt(-2)->varId();
+        ovar = tok->tokAt(-2)->variable();
     else if (Token::Match(tok->tokAt(-2), "%var% =|+ %var% )|]|,|;|+"))
-        ovarid = tok->tokAt(-2)->varId();
-    if (ovarid) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(ovarid);
-        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
-            return true;
-    }
+        ovar = tok->tokAt(-2)->variable();
+    if (ovar && !ovar->isPointer() && !ovar->isArray() && Token::Match(ovar->typeStartToken(), "std :: string|wstring !!::"))
+        return true;
 
     // Check if it's NOT a pointer dereference.
     // This is most useful in inconclusive checking
@@ -875,7 +872,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                         break;
                     } else if (Token::Match(tok1->tokAt(-2), "&&|%oror% !")) {
                         break;
-                    } else if (CheckNullPointer::isPointerDeRef(tok1, unknown, symbolDatabase)) {
+                    } else if (CheckNullPointer::isPointerDeRef(tok1, unknown)) {
                         nullPointerError(tok1, varname, tok, inconclusive);
                         break;
                     } else if (tok1->strAt(-1) == "&") {
@@ -963,7 +960,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 
                 // Pointer is used
                 bool unknown = _settings->inconclusive;
-                if (tok2->varId() == varid && (isPointerDeRef(tok2, unknown, symbolDatabase) || unknown)) {
+                if (tok2->varId() == varid && (isPointerDeRef(tok2, unknown) || unknown)) {
                     nullPointerError(tok2, pointerName, vartok, unknown);
                     break;
                 }
@@ -1020,7 +1017,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 bool unknown = _settings->inconclusive;
                 for (; tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                     if (tok2->varId() == varid) {
-                        if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase))
+                        if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                             nullPointerError(tok2, pointerName, vartok, inconclusive);
                         else if (unknown)
                             nullPointerError(tok2, pointerName, vartok, true);
@@ -1090,7 +1087,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 if (Token::Match(tok2->previous(), "[;{}=] %var% = 0 ;"))
                     ;
 
-                else if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase))
+                else if (CheckNullPointer::isPointerDeRef(tok2, unknown))
                     nullPointerError(tok2, pointerName, vartok, inconclusive);
 
                 else if (unknown && _settings->inconclusive)
@@ -1251,7 +1248,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
                 if (Token::Match(tok, "%var% ="))
                     pointerArgs.erase(tok->varId());
 
-                if (isPointerDeRef(tok, unknown, symbolDatabase))
+                if (isPointerDeRef(tok, unknown))
                     nullPointerDefaultArgError(tok, tok->str());
             }
         }
@@ -1380,7 +1377,7 @@ private:
             // unknown: if isPointerDeRef fails to determine if there
             //          is a dereference this will be set to true.
             bool unknown = owner->inconclusiveFlag();
-            bool deref = CheckNullPointer::isPointerDeRef(&tok, unknown, symbolDatabase);
+            bool deref = CheckNullPointer::isPointerDeRef(&tok, unknown);
 
             if (deref)
                 dereference(checks, &tok);
@@ -1407,7 +1404,7 @@ private:
             const Token* tok2 = &tok;
             for (; tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                 if (tok2->varId()) {
-                    if (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase) || unknown)
+                    if (CheckNullPointer::isPointerDeRef(tok2, unknown) || unknown)
                         dereference(checks, tok2);
                 }
 
@@ -1430,7 +1427,7 @@ private:
             if (tok2->str() == "(" || tok2->str() == ")" || tok2->str() == "&&" || tok2->str() == "||" || tok2->str() == "?")
                 break;
             bool unknown = owner->inconclusiveFlag();
-            if (tok2->varId() && (CheckNullPointer::isPointerDeRef(tok2, unknown, symbolDatabase) || unknown))
+            if (tok2->varId() && (CheckNullPointer::isPointerDeRef(tok2, unknown) || unknown))
                 dereference(checks, tok2);
         }
 
