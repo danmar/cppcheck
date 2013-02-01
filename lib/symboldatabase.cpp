@@ -88,6 +88,16 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         break;
                     }
                 }
+
+                // definition may be different than declaration
+                if (tok->str() == "class") {
+                    access[new_scope] = Private;
+                    new_scope->type = Scope::eClass;
+                } else if (tok->str() == "struct") {
+                    access[new_scope] = Public;
+                    new_scope->type = Scope::eStruct;
+                }
+
                 back[tok2->link()] = scope;
                 new_scope->classDef = tok;
                 new_scope->classStart = tok2;
