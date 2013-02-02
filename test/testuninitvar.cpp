@@ -1020,7 +1020,7 @@ private:
                        "    else c = in + strlen(in) - 1;\n"
                        "    *c = 0;\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Uninitialized variable: c\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     // switch..

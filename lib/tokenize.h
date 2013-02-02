@@ -282,15 +282,21 @@ public:
      */
     void simplifyComma();
 
-    /** Add braces to an if-block
-     * @return true if no syntax errors
+    /** Add braces to an if-block, for-block, etc.
      */
-    bool simplifyIfAddBraces();
+    void simplifyAddBraces();
 
-    /**
-     * Add braces to an do-while block
+    /** Add braces to an if-block, for-block, etc.
+     * for command starting at token including else-block
+     * @return last token of command (or input token in case of error or no braces have been added)
      */
-    void simplifyDoWhileAddBraces();
+    Token * simplifyAddBracesToCommand(Token * tok);
+
+    /** Add pair of braces to an single if-block, else-block, for-block, etc.
+     * for command starting at token
+     * @return last token of command (or input token in case of error or no braces have been added)
+     */
+    Token * simplifyAddBracesPair(Token *tok, bool commandWithCondition);
 
     /**
      * typedef A mytype;
