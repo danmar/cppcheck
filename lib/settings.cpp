@@ -75,6 +75,7 @@ std::string Settings::addEnabled(const std::string &str)
 
     static std::set<std::string> id;
     if (id.empty()) {
+        id.insert("warning");
         id.insert("style");
         id.insert("performance");
         id.insert("portability");

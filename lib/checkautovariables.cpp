@@ -94,6 +94,8 @@ void CheckAutoVariables::autoVariables()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
+    const bool reportWarnings(_settings->isEnabled("warning"));
+
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -107,7 +109,8 @@ void CheckAutoVariables::autoVariables()
                 const Variable * var = tok->tokAt(5)->variable();
                 if (checkRvalueExpression(var, tok->tokAt(6)))
                     errorAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] %var% =") &&
+            } else if (reportWarnings &&
+                       Token::Match(tok, "[;{}] %var% =") &&
                        isPtrArg(tok->next()) &&
                        Token::Match(tok->next()->variable()->typeStartToken(), "struct| %type% * %var% [,)]") &&
                        !pointerIsDereferencedInScope(tok->next()->variable(), scope)) {

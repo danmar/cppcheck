@@ -40,6 +40,7 @@ private:
 
         Settings settings;
         settings.inconclusive = inconclusive;
+        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
