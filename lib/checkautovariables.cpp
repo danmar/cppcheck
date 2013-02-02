@@ -22,7 +22,7 @@
 
 #include "checkautovariables.h"
 #include "symboldatabase.h"
-#include "checknullpointer.h"
+#include "checkuninitvar.h"
 
 #include <list>
 #include <string>
@@ -80,11 +80,10 @@ static bool checkRvalueExpression(const Variable* var, const Token* next)
     return((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
-static bool pointerIsDereferencedInScope(const Variable *var, const Scope *scope)
+static bool pointerIsDereferencedInScope(const Variable *var, const Scope *scope, const bool cpp)
 {
-    bool unknown = false;
     for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-        if (tok->varId() == var->varId() && CheckNullPointer::isPointerDeRef(tok, unknown))
+        if (tok->varId() == var->varId() && CheckUninitVar::isVariableUsage(tok, true, cpp))
             return true;
     }
     return false;
@@ -113,7 +112,7 @@ void CheckAutoVariables::autoVariables()
                        Token::Match(tok, "[;{}] %var% =") &&
                        isPtrArg(tok->next()) &&
                        Token::Match(tok->next()->variable()->typeStartToken(), "struct| %type% * %var% [,)]") &&
-                       !pointerIsDereferencedInScope(tok->next()->variable(), scope)) {
+                       !pointerIsDereferencedInScope(tok->next()->variable(), scope, _tokenizer->isCPP())) {
                 errorUselessAssignmentPtrArg(tok->next());
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)

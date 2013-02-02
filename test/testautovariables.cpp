@@ -252,6 +252,12 @@ private:
               "    *p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char* p) {\n"
+              "    if (!p) p = buf;\n"
+              "    do_something(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_array1() {
