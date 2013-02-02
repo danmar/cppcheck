@@ -186,7 +186,7 @@ void CheckClass::copyconstructors()
             if (func->type == Function::eConstructor && func->functionScope) {
                 for (const Token* tok = func->functionScope->classStart; tok!=func->functionScope->classEnd; tok=tok->next()) {
                     if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
-                        const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                        const Variable* var = tok->variable();
                         if (var && var->isPointer() && var->scope() == &*scope)
                             allocatedVars[tok->varId()] = tok;
                     }
@@ -674,12 +674,12 @@ void CheckClass::initializationListUsage()
             if (Token::Match(tok, "try|do {"))
                 break;
             if (tok->varId() && Token::Match(tok, "%var% = %any%")) {
-                const Variable* var = symbolDatabase->getVariableFromVarId(tok->varId());
+                const Variable* var = tok->variable();
                 if (var && var->scope() == owner && !var->isStatic()) {
                     bool allowed = true;
                     for (const Token* tok2 = tok->tokAt(2); tok2->str() != ";"; tok2 = tok2->next()) {
                         if (tok2->varId()) {
-                            const Variable* var2 = symbolDatabase->getVariableFromVarId(tok2->varId());
+                            const Variable* var2 = tok2->variable();
                             if (var2 && var2->scope() == owner) { // Is there a dependency between two member variables?
                                 allowed = false;
                                 break;
@@ -845,8 +845,7 @@ void CheckClass::noMemset()
             else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
                 typeTok = arg3->tokAt(3);
             else if (Token::Match(arg1, "&| %var% ,")) {
-                unsigned int varid = arg1->str() == "&" ? arg1->next()->varId() : arg1->varId();
-                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                const Variable *var = arg1->str() == "&" ? arg1->next()->variable() : arg1->variable();
                 if (var && (var->typeStartToken() == var->typeEndToken() || Token::Match(var->typeStartToken(), "%type% :: %type%"))
                     && (arg1->str() == "&" || var->isPointer() || var->isArray()))
                     typeTok = var->typeEndToken();
@@ -1565,23 +1564,23 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
     for (const Token *tok1 = func->functionScope->classStart; tok1 && tok1 != func->functionScope->classEnd; tok1 = tok1->next()) {
         if (tok1->isName() && isMemberVar(scope, tok1)) {
             memberAccessed = true;
-            const Variable* v = symbolDatabase->getVariableFromVarId(tok1->varId());
+            const Variable* v = tok1->variable();
             if (v && v->isMutable())
                 continue;
 
             if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
                 return(false);
 
-            unsigned int lastVarId = tok1->varId();
-            const Token* end = tok1;
+            const Token *lastVarTok = tok1;
+            const Token *end = tok1;
             for (;;) {
                 if (Token::Match(end->next(), ". %var%")) {
                     end = end->tokAt(2);
                     if (end->varId())
-                        lastVarId = end->varId();
+                        lastVarTok = end;
                 } else if (end->strAt(1) == "[") {
                     if (end->varId()) {
-                        const Variable *var = symbolDatabase->getVariableFromVarId(end->varId());
+                        const Variable *var = end->variable();
 
                         if (var && Token::simpleMatch(var->typeStartToken(), "std :: map")) // operator[] changes a map
                             return(false);
@@ -1594,7 +1593,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             }
 
             if (end->strAt(1) == "(") {
-                const Variable *var = symbolDatabase->getVariableFromVarId(lastVarId);
+                const Variable *var = lastVarTok->variable();
                 if (!var)
                     return(false);
                 if (Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
@@ -1632,7 +1631,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         // streaming: <<
         else if (Token::simpleMatch(tok1->previous(), ") <<") &&
                  isMemberVar(scope, tok1->tokAt(-2))) {
-            const Variable* var = symbolDatabase->getVariableFromVarId(tok1->tokAt(-2)->varId());
+            const Variable* var = tok1->tokAt(-2)->variable();
             if (!var || !var->isMutable())
                 return(false);
         }
@@ -1651,7 +1650,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 if (tok2->str() == "(")
                     tok2 = tok2->link();
                 else if (tok2->isName() && isMemberVar(scope, tok2)) {
-                    const Variable* var = symbolDatabase->getVariableFromVarId(tok2->varId());
+                    const Variable* var = tok2->variable();
                     if (!var || !var->isMutable())
                         return(false); // TODO: Only bailout if function takes argument as non-const reference
                 }
