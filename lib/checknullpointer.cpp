@@ -1104,9 +1104,13 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
 void CheckNullPointer::nullPointer()
 {
     nullPointerLinkedList();
-    nullPointerStructByDeRefAndChec();
-    nullPointerByDeRefAndChec();
-    nullPointerByCheckAndDeRef();
+
+    if (_settings->isEnabled("warning")) {
+        nullPointerStructByDeRefAndChec();
+        nullPointerByDeRefAndChec();
+        nullPointerByCheckAndDeRef();
+    }
+
     nullPointerDefaultArgument();
 }
 
