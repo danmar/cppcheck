@@ -1360,7 +1360,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     }
 
                     // Use variable
-                    else if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
+                    else if (!suppressErrors && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                         uninitvarError(tok, tok->str());
 
                     else
@@ -1388,7 +1388,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
             } else {
                 // Use variable
-                if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
+                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                     uninitvarError(tok, tok->str());
 
                 else
@@ -1412,7 +1412,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
                 continue;
             }
 
-            if (isVariableUsage(tok, var.isPointer())) {
+            if (isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP())) {
                 if (!suppressErrors)
                     uninitvarError(tok, tok->str());
                 else
@@ -1443,7 +1443,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                 if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                     usetok = tok;
             } else {
-                if (isVariableUsage(tok, var.isPointer()))
+                if (isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                     usetok = tok;
                 else
                     return true;
@@ -1462,7 +1462,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
     return false;
 }
 
-bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
+bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp)
 {
     if (vartok->previous()->str() == "return")
         return true;
@@ -1510,7 +1510,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
     }
 
     if (Token::Match(vartok->previous(), "++|--|%op%")) {
-        if (vartok->previous()->str() == ">>" && _tokenizer->isCPP()) {
+        if (cpp && vartok->previous()->str() == ">>") {
             // assume that variable is initialized
             return false;
         }
@@ -1555,7 +1555,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
             return true;
     }
 
-    if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
+    if (cpp && Token::Match(vartok->next(), "<<|>>")) {
         // Is this calculation done in rhs?
         const Token *tok = vartok;
         while (tok && Token::Match(tok, "%var%|.|::"))
@@ -1565,7 +1565,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
 
         // Is variable a known POD type then this is a variable usage,
         // otherwise we assume it's not.
-        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(vartok->varId());
+        const Variable *var = vartok->variable();
         return (var && var->typeStartToken()->isStandardType());
     }
 
@@ -1603,7 +1603,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, con
 
     if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar)
         return true;
-    else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer))
+    else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer, _tokenizer->isCPP()))
         return true;
 
     return false;
