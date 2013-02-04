@@ -525,7 +525,7 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.c = mSettings->value(SETTINGS_STD_C99, false).toBool() ? Standards::C99 : Standards::C89;
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
-    if (result._jobs <= 0) {
+    if (result._jobs <= 1) {
         result._jobs = 1;
     }
 
