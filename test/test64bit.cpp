@@ -151,6 +151,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void* foo() {\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int foo(int i) {\n"
               "    return i;\n"
               "}\n");
