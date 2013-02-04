@@ -108,6 +108,7 @@ private:
         TEST_CASE(ifAddBraces17); // '} else' should be in the same line
         TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
         TEST_CASE(ifAddBraces19); // #3928 - if for if else
+        TEST_CASE(ifAddBraces20);
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -1214,6 +1215,20 @@ private:
                       "bar1 ( ) ; }\n"
                       "else {\n"
                       "bar2 ( ) ; } } }\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces20() {
+        // if else if
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    if (a);\n"
+                            "    else if (b);\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( a ) { ; }\n"
+                      "else { if ( b ) { ; } }\n"
                       "}", tokenizeAndStringify(code, true));
     }
 
