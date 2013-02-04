@@ -65,11 +65,25 @@ void Check64BitPortability::pointerassignment()
             continue;
 
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "return %var% [;+]")) {
-                const Variable *var = tok->next()->variable();
-                if (retPointer && isint(var))
+            if (Token::Match(tok, "return %var%|%num% [;+]")) {
+                enum { NO, INT, PTR, PTRDIFF } type = NO;
+                for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                    if ((type == NO || type == INT) && isaddr(tok2->variable()))
+                        type = PTR;
+                    else if (type == NO && (tok2->isNumber() || isint(tok2->variable())))
+                        type = INT;
+                    else if (type == PTR && Token::Match(tok2, "- %var%") && isaddr(tok2->next()->variable()))
+                        type = PTRDIFF;
+                    else if (Token::Match(tok2, "%type% (")) {
+                        type = NO;
+                        break;
+                    } else if (tok2->str() == ";")
+                        break;
+                }
+
+                if (retPointer && (type == INT || type == PTRDIFF))
                     returnIntegerError(tok);
-                else if (!retPointer && isaddr(var))
+                else if (!retPointer && type == PTR)
                     returnPointerError(tok);
             }
         }
