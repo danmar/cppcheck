@@ -1407,8 +1407,12 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
     for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == var.varId()) {
             if (Token::Match(tok, "%var% . %var%")) {
-                if (tok->strAt(2) == membervar)
-                    uninitStructMemberError(tok, tok->str() + "." + membervar);
+                if (tok->strAt(2) == membervar) {
+                    if (tok->strAt(3) == "=")
+                        return true;
+                    else
+                        uninitStructMemberError(tok, tok->str() + "." + membervar);
+                }
                 continue;
             }
 

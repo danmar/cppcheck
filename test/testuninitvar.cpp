@@ -2662,6 +2662,13 @@ private:
                         "   if (fred.b == 0) { }\n"
                         "}\n", "test.c", true);
         ASSERT_EQUALS("[test.c:9]: (error) Uninitialized struct member: fred.b\n", errout.str());
+
+        checkUninitVar2("struct S { int n; int m; };\n"
+                        "void f(void) {\n"
+                        " struct S s;\n"
+                        " for (s.n = 0; s.n <= 10; s.n++) { }\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {
