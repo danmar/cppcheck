@@ -226,7 +226,7 @@ private:
                "* useless calls of string and STL functions\n";
     }
 
-    bool isStlContainer(unsigned int varid);
+    bool isStlContainer(const Token *tok) const;
 };
 /// @}
 //---------------------------------------------------------------------------
