@@ -1666,7 +1666,8 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    simplifyAddBraces();
+    if (!simplifyAddBraces())
+        return false;
 
     // Combine tokens..
     for (Token *tok = list.front(); tok && tok->next(); tok = tok->next()) {
@@ -4051,10 +4052,14 @@ void Tokenizer::removeRedundantSemicolons()
 }
 
 
-void Tokenizer::simplifyAddBraces()
+bool Tokenizer::simplifyAddBraces()
 {
-    for (Token *tok = list.front(); tok; tok = tok->next())
-        simplifyAddBracesToCommand(tok);
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        Token const * tokRet=simplifyAddBracesToCommand(tok);
+        if (!tokRet)
+            return false;
+    }
+    return true;
 }
 
 Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
@@ -4082,13 +4087,17 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
             // before the "while"
             if (tokEnd) {
                 tokEnd=tokEnd->next();
-                if (!tokEnd)
+                if (!tokEnd) {
                     // no while return input token
-                    tokEnd=tok;
+                    syntaxError(tok);
+                    return NULL;
+                }
             }
         }
     } else if (tok->str()=="if") {
         tokEnd=simplifyAddBracesPair(tok,true);
+        if (!tokEnd)
+            return NULL;
         Token * tokEndNext=tokEnd->next();
         if (tokEndNext && tokEndNext->str()=="else")
             tokEnd=simplifyAddBracesPair(tokEndNext,false);
@@ -4108,22 +4117,14 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         }
         if (tokCondition->str()=="(")
             tokAfterCondition=tokCondition->link();
-        else if (tokCondition->type()==Token::eName) {
-            // Macro condition without braces, e.g "if FAILED(hr) ...
-            // see for example TestMemleakInFunction::switch4
-            tokAfterCondition=tokCondition;
-            tokAfterCondition=tokAfterCondition->next();
-            if (tokAfterCondition &&
-                tokAfterCondition->str()=="(")
-                tokAfterCondition=tokAfterCondition->link();
+        else
+            tokAfterCondition=NULL;
+        if (!tokAfterCondition) {
+            // Bad condition
+            syntaxError(tok);
+            return NULL;
         }
-        if (tokAfterCondition) {
-            if (tokAfterCondition->str()!=")") {
-                // Bad condition
-                return tok;
-            }
-            tokAfterCondition=tokAfterCondition->next();
-        }
+        tokAfterCondition=tokAfterCondition->next();
     }
     if (!tokAfterCondition ||
         ((tokAfterCondition->type()==Token::eBracket ||

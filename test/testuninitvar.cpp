@@ -561,7 +561,7 @@ private:
                        "{\n"
                        "    return if\n"
                        "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
 
         // Ticket #3873 (false positive)
         checkUninitVar("MachineLoopRange *MachineLoopRanges::getLoopRange(const MachineLoop *Loop) {\n"

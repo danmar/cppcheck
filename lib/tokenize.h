@@ -283,18 +283,23 @@ public:
     void simplifyComma();
 
     /** Add braces to an if-block, for-block, etc.
+     * @return true if no syntax errors
      */
-    void simplifyAddBraces();
+    bool simplifyAddBraces();
 
     /** Add braces to an if-block, for-block, etc.
      * for command starting at token including else-block
-     * @return last token of command (or input token in case of error or no braces have been added)
+     * @return last token of command
+     *         or input token in case of an error where no braces are added
+     *         or NULL when syntaxError is called
      */
     Token * simplifyAddBracesToCommand(Token * tok);
 
     /** Add pair of braces to an single if-block, else-block, for-block, etc.
      * for command starting at token
-     * @return last token of command (or input token in case of error or no braces have been added)
+     * @return last token of command
+     *         or input token in case of an error where no braces are added
+     *         or NULL when syntaxError is called
      */
     Token * simplifyAddBracesPair(Token *tok, bool commandWithCondition);
 

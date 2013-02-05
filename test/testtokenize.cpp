@@ -748,7 +748,7 @@ private:
     }
 
     void wrong_syntax_if_macro() {
-        // #2518
+        // #2518 #4171
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());

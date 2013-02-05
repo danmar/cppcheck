@@ -1353,6 +1353,7 @@ private:
     }
 
     void switch4() {
+        // See tickets #2518 #2555 #4171
         check("void f() {\n"
               "    switch MAKEWORD(1)\n"
               "    {\n"
@@ -1360,7 +1361,7 @@ private:
               "        return;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
     }
 
     void ret5() {
