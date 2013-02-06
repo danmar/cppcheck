@@ -91,7 +91,7 @@ public:
     std::string addSuppressionLine(const std::string &line);
 
     /**
-     * @brief Don't show this error. If file and/or line are optional. In which case
+     * @brief Don't show this error. File and/or line are optional. In which case
      * the errorId alone is used for filtering.
      * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
      * @param file File name with the path, e.g. "src/main.cpp"
