@@ -108,6 +108,7 @@ private:
         TEST_CASE(ifAddBraces17); // '} else' should be in the same line
         TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
         TEST_CASE(ifAddBraces19); // #3928 - if for if else
+        TEST_CASE(ifAddBraces20);
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -747,7 +748,7 @@ private:
     }
 
     void wrong_syntax_if_macro() {
-        // #2518
+        // #2518 #4171
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
@@ -1105,9 +1106,8 @@ private:
             "}";
         const char expected[] =
             "void f ( ) { "
-            "for ( int k = 0 ; k < VectorSize ; k ++ ) { "
+            "for ( int k = 0 ; k < VectorSize ; k ++ ) "
             "LOG_OUT ( ID_Vector [ k ] ) "
-            "} "
             "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
@@ -1115,7 +1115,7 @@ private:
     void ifAddBraces10() {
         // ticket #1361
         const char code[] = "{ DEBUG(if (x) y; else z); }";
-        const char expected[] = "{ DEBUG ( if ( x ) y ; else z ) ; }";
+        const char expected[] = "{ DEBUG ( if ( x ) { y ; } else z ) ; }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
@@ -1156,14 +1156,14 @@ private:
 
     void ifAddBraces16() { // ticket # 2739 (segmentation fault)
         tokenizeAndStringify("if()x");
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // ticket #2873 - the fix is not needed anymore.
         {
             const char code[] = "void f() { "
                                 "(void) ( { if(*p) (*p) = x(); } ) "
                                 "}";
-            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) ( * p ) = x ( ) ; } ) }",
+            ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) { ( * p ) = x ( ) ; } } ) }",
                           tokenizeAndStringify(code));
         }
     }
@@ -1180,8 +1180,9 @@ private:
         ASSERT_EQUALS("void f ( )\n"
                       "{\n"
                       "if ( a ) {\n"
-                      "bar1 ( ) ;\n\n"
-                      "} else {\n"
+                      "bar1 ( ) ; }\n"
+                      "\n"
+                      "else {\n"
                       "bar2 ( ) ; }\n"
                       "}", tokenizeAndStringify(code, true));
     }
@@ -1190,6 +1191,9 @@ private:
         // ticket #3424 - if if { } else else
         ASSERT_EQUALS("{ if ( x ) { if ( y ) { } else { ; } } else { ; } }",
                       tokenizeAndStringify("{ if(x) if(y){}else;else;}", false));
+
+        ASSERT_EQUALS("{ if ( x ) { if ( y ) { if ( z ) { } else { ; } } else { ; } } else { ; } }",
+                      tokenizeAndStringify("{ if(x) if(y) if(z){}else;else;else;}", false));
     }
 
     void ifAddBraces19() {
@@ -1208,9 +1212,23 @@ private:
                       "if ( a ) {\n"
                       "for ( ; ; ) {\n"
                       "if ( b ) {\n"
-                      "bar1 ( ) ;\n"
-                      "} else {\n"
+                      "bar1 ( ) ; }\n"
+                      "else {\n"
                       "bar2 ( ) ; } } }\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces20() {
+        // if else if
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    if (a);\n"
+                            "    else if (b);\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( a ) { ; }\n"
+                      "else { if ( b ) { ; } }\n"
                       "}", tokenizeAndStringify(code, true));
     }
 
@@ -7241,7 +7259,7 @@ private:
     }
 
     void simplifyNull() {
-        ASSERT_EQUALS("if ( p == 0 )", tokenizeAndStringify("if (p==NULL)"));
+        ASSERT_EQUALS("if ( ! p )", tokenizeAndStringify("if (p==NULL)"));
         ASSERT_EQUALS("f ( NULL ) ;", tokenizeAndStringify("f(NULL);"));
     }
 

@@ -40,6 +40,7 @@ private:
 
         Settings settings;
         settings.inconclusive = inconclusive;
+        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -66,6 +67,7 @@ private:
         TEST_CASE(testautovar7); // ticket #3066
         TEST_CASE(testautovar8);
         TEST_CASE(testautovar9);
+        TEST_CASE(testautovar10); // ticket #2930 - void f(char *p) { p = '\0'; }
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -237,6 +239,25 @@ private:
               "    p = &fp.f->i;\n"
               "}", false);
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+    }
+
+    void testautovar10() { // #2930 - assignment of function parameter
+        check("void foo(char* p) {\n"
+              "    p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+
+        check("void foo(char* p) {\n"
+              "    if (!p) p = buf;\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char* p) {\n"
+              "    if (!p) p = buf;\n"
+              "    do_something(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_array1() {

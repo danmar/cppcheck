@@ -753,7 +753,7 @@ void CheckOther::checkRedundantAssignment()
                         }
                     }
                 } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
-                    const Function* func = symbolDatabase->findFunction(tok);
+                    const Function* func = tok->function();
                     if (!func || !func->hasBody) {
                         varAssignments.clear();
                         memAssignments.clear();
@@ -1808,11 +1808,11 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 //---------------------------------------------------------------------------
 // Check for unsigned divisions
 //---------------------------------------------------------------------------
-static bool isUnsigned(const Variable* var)
+bool CheckOther::isUnsigned(const Variable* var) const
 {
-    return(var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray());
+    return(var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray() && _tokenizer->sizeOfType(var->typeStartToken()) >= _settings->sizeof_int);
 }
-static bool isSigned(const Variable* var)
+bool CheckOther::isSigned(const Variable* var) const
 {
     return(var && !var->typeStartToken()->isUnsigned() && Token::Match(var->typeEndToken(), "int|char|short|long") && !var->isPointer() && !var->isArray());
 }
@@ -2379,7 +2379,7 @@ void CheckOther::checkMisusedScopedObject()
             if (Token::Match(tok, "[;{}] %var% (")
                 && Token::simpleMatch(tok->linkAt(2), ") ;")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
-                && !symbolDatabase->findFunction(tok->next())) {
+                && !tok->next()->function()) {
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
                 tok = tok->next();
@@ -2422,7 +2422,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
                 first_token = tok->previous();
             }
             if (Token::Match(first_token, "%var% (") && !Token::Match(first_token->previous(), "::|.")) {
-                const Function* func = symbolDatabase->findFunction(first_token);
+                const Function* func = first_token->function();
                 if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
                     first_token_func_of_type_bool = true;
                 }
@@ -2434,7 +2434,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
                 second_token = second_token->next();
             }
             if (Token::Match(second_token, "%var% (") && !Token::Match(second_token->previous(), "::|.")) {
-                const Function* func = symbolDatabase->findFunction(second_token);
+                const Function* func = second_token->function();
                 if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
                     second_token_func_of_type_bool = true;
                 }
@@ -2620,14 +2620,14 @@ void CheckOther::checkDuplicateIf()
         // save the expression and its location
         expressionMap.insert(std::make_pair(expression, tok));
 
-        // find the next else if (...) statement
+        // find the next else { if (...) statement
         const Token *tok1 = scope->classEnd;
 
-        // check all the else if (...) statements
-        while (Token::simpleMatch(tok1, "} else if (") &&
-               Token::simpleMatch(tok1->linkAt(3), ") {")) {
+        // check all the else { if (...) statements
+        while (Token::simpleMatch(tok1, "} else { if (") &&
+               Token::simpleMatch(tok1->linkAt(4), ") {")) {
             // get the expression from the token stream
-            expression = tok1->tokAt(4)->stringifyList(tok1->linkAt(3));
+            expression = tok1->tokAt(5)->stringifyList(tok1->linkAt(4));
 
             // try to look up the expression to check for duplicates
             std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
@@ -2635,7 +2635,7 @@ void CheckOther::checkDuplicateIf()
             // found a duplicate
             if (it != expressionMap.end()) {
                 // check for expressions that have side effects and ignore them
-                if (!expressionHasSideEffects(tok1->tokAt(4), tok1->linkAt(3)->previous()))
+                if (!expressionHasSideEffects(tok1->tokAt(5), tok1->linkAt(4)->previous()))
                     duplicateIfError(it->second, tok1->next());
             }
 
@@ -2643,8 +2643,8 @@ void CheckOther::checkDuplicateIf()
             else
                 expressionMap.insert(std::make_pair(expression, tok1->next()));
 
-            // find the next else if (...) statement
-            tok1 = tok1->linkAt(3)->next()->link();
+            // find the next else { if (...) statement
+            tok1 = tok1->linkAt(4)->next()->link();
         }
     }
 }
@@ -3176,7 +3176,8 @@ void CheckOther::checkDuplicateExpression()
             if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% %comp%|- %var% )|&&|%oror%|;|,") &&
                 tok->strAt(1) == tok->strAt(3)) {
                 // float == float and float != float are valid NaN checks
-                if (Token::Match(tok->tokAt(2), "==|!=") && tok->next()->varId()) {
+                // float - float is a valid Inf check
+                if (Token::Match(tok->tokAt(2), "==|!=|-") && tok->next()->varId()) {
                     const Variable * var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
                     if (var && var->typeStartToken() == var->typeEndToken()) {
                         if (Token::Match(var->typeStartToken(), "float|double"))
@@ -3657,7 +3658,7 @@ void CheckOther::checkRedundantCopy()
         const Token *match_end = (tok->next()->link()!=NULL)?tok->next()->link()->next():NULL;
         if (match_end==NULL || !Token::Match(match_end,expect_end_token)) //avoid usage like "const A a = getA()+3"
             break;
-        const Function* func = _tokenizer->getSymbolDatabase()->findFunction(tok);
+        const Function* func = tok->function();
         if (func && func->tokenDef->previous() && func->tokenDef->previous()->str() == "&") {
             redundantCopyError(var_tok,var_tok->str());
         }
@@ -3842,7 +3843,7 @@ void CheckOther::checkVarFuncNullUB()
                 ftok = ftok ? ftok->previous() : NULL;
                 if (ftok && ftok->isName()) {
                     // If this is a variadic function then report error
-                    const Function *f = symbolDatabase->findFunction(ftok);
+                    const Function *f = ftok->function();
                     if (f && f->argCount() <= argnr) {
                         const Token *tok2 = f->argDef;
                         tok2 = tok2 ? tok2->link() : NULL; // goto ')'

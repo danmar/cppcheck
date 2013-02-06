@@ -151,6 +151,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void* foo() {\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int foo(int i) {\n"
               "    return i;\n"
               "}\n");
@@ -161,9 +166,19 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
 
+        check("int foo(char* c) {\n"
+              "    return 1+c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
+
         check("std::string foo(char* c) {\n"
               "    return c;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(char *a, char *b) {\n" // #4486
+              "    return a + 1 - b;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

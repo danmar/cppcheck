@@ -25,6 +25,8 @@
 #include "config.h"
 
 class Scope;
+class Function;
+class Variable;
 
 /// @addtogroup Core
 /// @{
@@ -439,15 +441,45 @@ public:
      * Associate this token with given scope
      * @param s Scope to be associated
      */
-    void scope(Scope* s) {
+    void scope(const Scope *s) {
         _scope = s;
     }
 
     /**
      * Returns a pointer to the scope containing this token.
      */
-    Scope* scope() const {
+    const Scope *scope() const {
         return _scope;
+    }
+
+    /**
+     * Associate this token with given function
+     * @param f Function to be associated
+     */
+    void function(const Function *f) {
+        _function = f;
+    }
+
+    /**
+     * Returns a pointer to the Function associated with this token.
+     */
+    const Function *function() const {
+        return _function;
+    }
+
+    /**
+     * Associate this token with given variable
+     * @param v Variable to be associated
+     */
+    void variable(const Variable *v) {
+        _variable = v;
+    }
+
+    /**
+     * Returns a pointer to the variable associated with this token.
+     */
+    const Variable *variable() const {
+        return _variable;
     }
 
     /**
@@ -541,7 +573,10 @@ private:
     Token *_previous;
     Token *_link;
 
-    Scope* _scope;
+    // symbol database information
+    const Scope *_scope;
+    const Function *_function;
+    const Variable *_variable;
 
     std::string _str;
     unsigned int _varId;

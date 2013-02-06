@@ -561,7 +561,7 @@ private:
                        "{\n"
                        "    return if\n"
                        "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
 
         // Ticket #3873 (false positive)
         checkUninitVar("MachineLoopRange *MachineLoopRanges::getLoopRange(const MachineLoop *Loop) {\n"
@@ -1020,7 +1020,7 @@ private:
                        "    else c = in + strlen(in) - 1;\n"
                        "    *c = 0;\n"
                        "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Uninitialized variable: c\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     // switch..
@@ -2662,6 +2662,13 @@ private:
                         "   if (fred.b == 0) { }\n"
                         "}\n", "test.c", true);
         ASSERT_EQUALS("[test.c:9]: (error) Uninitialized struct member: fred.b\n", errout.str());
+
+        checkUninitVar2("struct S { int n; int m; };\n"
+                        "void f(void) {\n"
+                        " struct S s;\n"
+                        " for (s.n = 0; s.n <= 10; s.n++) { }\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {

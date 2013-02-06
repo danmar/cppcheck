@@ -1666,9 +1666,7 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    simplifyDoWhileAddBraces();
-
-    if (!simplifyIfAddBraces())
+    if (!simplifyAddBraces())
         return false;
 
     // Combine tokens..
@@ -4054,181 +4052,130 @@ void Tokenizer::removeRedundantSemicolons()
 }
 
 
-bool Tokenizer::simplifyIfAddBraces()
+bool Tokenizer::simplifyAddBraces()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(" || tok->str() == "[" ||
-            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "=")) {
-            tok = tok->link();
-            continue;
-        }
-
-        if (Token::Match(tok, "if|for|while|BOOST_FOREACH (")) {
-
-            if (tok->strAt(2) == ")") {
-                //no arguments inside round braces, abort
-                syntaxError(tok);
-                return false;
-            }
-            // don't add "{}" around ";" in "do {} while();" (#609)
-            const Token *prev = tok->previous();
-            if (prev && prev->str() == "}" && tok->str() == "while") {
-                prev = prev->link()->previous();
-                if (prev && prev->str() == "do")
-                    continue;
-            }
-
-            // Goto the ending ')'
-            tok = tok->next()->link();
-
-            // there's already '{' after ')', don't bother
-            if (tok->next() && tok->next()->str() == "{")
-                continue;
-        }
-
-        else if (tok->str() == "else") {
-            // An else followed by an if or brace don't need to be processed further
-            if (Token::Match(tok, "else if|{"))
-                continue;
-        }
-
-        else {
-            continue;
-        }
-
-        // If there is no code after the 'if()' or 'else', abort
-        if (!tok->next()) {
-            syntaxError(tok);
+        Token const * tokRet=simplifyAddBracesToCommand(tok);
+        if (!tokRet)
             return false;
-        }
-
-        // insert open brace..
-        tok->insertToken("{");
-        tok = tok->next();
-        Token *tempToken = tok;
-
-        // if (cond1) for(;;) if (cond2) ; else ;
-        while (Token::Match(tempToken->next(), "for|while|BOOST_FOREACH ("))
-            tempToken = tempToken->linkAt(2);
-
-        bool innerIf = (tempToken->next() && tempToken->next()->str() == "if");
-
-        if (Token::simpleMatch(tempToken->next(), "do {"))
-            tempToken = tempToken->linkAt(2);
-
-        // insert close brace..
-        // In most cases it would work to just search for the next ';' and insert a closing brace after it.
-        // But here are special cases..
-        // * if (cond) for (;;) break;
-        // * if (cond1) if (cond2) { }
-        // * if (cond1) if (cond2) ; else ;
-        while (NULL != (tempToken = tempToken->next())) {
-            if (tempToken->str() == "{") {
-                if (tempToken->previous()->str() == "=") {
-                    tempToken = tempToken->link();
-                    continue;
-                }
-
-                if (tempToken->previous()->str() == "else") {
-                    if (innerIf)
-                        tempToken = tempToken->link();
-                    else
-                        tempToken = tempToken->tokAt(-2);
-                    break;
-                }
-                tempToken = tempToken->link();
-                if (!tempToken->next())
-                    break;
-                if (Token::simpleMatch(tempToken, "} else") && !Token::Match(tempToken->tokAt(2), "if|{"))
-                    innerIf = false;
-                else if (tempToken->next()->isName() && tempToken->next()->str() != "else")
-                    break;
-                continue;
-            }
-
-            if (tempToken->str() == "(" || tempToken->str() == "[") {
-                tempToken = tempToken->link();
-                continue;
-            }
-
-            if (tempToken->str() == "}") {
-                // insert closing brace before this token
-                tempToken = tempToken->previous();
-                break;
-            }
-
-            if (tempToken->str() == ";") {
-                if (!innerIf)
-                    break;
-
-                if (Token::simpleMatch(tempToken, "; else")) {
-                    if (tempToken->strAt(2) != "if")
-                        innerIf = false;
-                } else
-                    break;
-            }
-        }
-
-        if (tempToken) {
-            tempToken->insertToken("}");
-            Token::createMutualLinks(tok, tempToken->next());
-
-            // move '}' in the same line as 'else' if there's it after the new token,
-            // except for '}' which is after '{ ; }'
-            tempToken = tempToken->next();
-            if (!Token::simpleMatch(tempToken->link(), "{ ; }") && tempToken->next() && tempToken->next()->str() == "else" &&
-                tempToken->next()->linenr() != tempToken->linenr())
-                tempToken->linenr(tempToken->next()->linenr());
-        } else {
-            // Can't insert matching "}" so give up.  This is fatal because it
-            // causes unbalanced braces.
-            syntaxError(tok);
-            return false;
-        }
     }
     return true;
 }
 
-void Tokenizer::simplifyDoWhileAddBraces()
+Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
 {
-    //start from the last token and proceed backwards
-    for (Token *tok = list.back(); tok; tok = tok->previous()) {
-        // fix for #988
-        if (tok->str() == ")" || tok->str() == "]" ||
-            (tok->str() == "}" && tok->link()->previous() &&
-             tok->link()->previous()->str() == "="))
-            tok = tok->link();
+    Token * tokEnd=tok;
+    if (tok->str()=="for" ||
+        tok->str()=="BOOST_FOREACH" ||
+        tok->str()=="switch") {
+        tokEnd=simplifyAddBracesPair(tok,true);
+    } else if (tok->str()=="while") {
+        Token *tokPossibleDo=tok->previous();
+        if (tokPossibleDo &&
+            tokPossibleDo->str()=="}")
+            tokPossibleDo=tokPossibleDo->link();
+        if (tokPossibleDo)
+            tokPossibleDo=tokPossibleDo->previous();
+        if (!tokPossibleDo ||
+            tokPossibleDo->str()!="do")
+            tokEnd=simplifyAddBracesPair(tok,true);
+    } else if (tok->str()=="do") {
+        tokEnd=simplifyAddBracesPair(tok,false);
+        if (tokEnd!=tok) {
+            // walk on to next token, i.e. "while"
+            // such that simplifyAddBracesPair does not close other braces
+            // before the "while"
+            if (tokEnd) {
+                tokEnd=tokEnd->next();
+                if (!tokEnd) {
+                    // no while return input token
+                    syntaxError(tok);
+                    return NULL;
+                }
+            }
+        }
+    } else if (tok->str()=="if") {
+        tokEnd=simplifyAddBracesPair(tok,true);
+        if (!tokEnd)
+            return NULL;
+        Token * tokEndNext=tokEnd->next();
+        if (tokEndNext && tokEndNext->str()=="else")
+            tokEnd=simplifyAddBracesPair(tokEndNext,false);
+    }
 
-        if (!Token::Match(tok, "do !!{"))
-            continue;
+    return tokEnd;
+}
 
-        Token *tok1 = tok;  // token with "do"
-        Token *tok2 = NULL; // token with "while"
-
-        for (Token *tok3 = tok->next(); tok3; tok3 = tok3->next()) {
-            if (tok3->str() == "(" || tok3->str() == "[" || tok3->str() == "{") {
-                tok3 = tok3->link();
-            } else if (tok3->str() == "while") {
-                tok2 = tok3;
-                break;
-            } else if (Token::simpleMatch(tok3, "do {")) {
-                // Skip 'do { } while' inside the current "do"
-                tok3 = tok3->next()->link();
-                if (tok3->strAt(1) == "while")
-                    tok3 = tok3->next();
+Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
+{
+    Token * tokCondition=tok->next();
+    Token *tokAfterCondition=tokCondition;
+    if (commandWithCondition) {
+        if (!tokCondition) {
+            // Missing condition
+            return tok;
+        }
+        if (tokCondition->str()=="(")
+            tokAfterCondition=tokCondition->link();
+        else
+            tokAfterCondition=NULL;
+        if (!tokAfterCondition) {
+            // Bad condition
+            syntaxError(tok);
+            return NULL;
+        }
+        tokAfterCondition=tokAfterCondition->next();
+    }
+    if (!tokAfterCondition ||
+        ((tokAfterCondition->type()==Token::eBracket ||
+          tokAfterCondition->type()==Token::eExtendedOp)&&
+         Token::Match(tokAfterCondition,")|}|>|,"))) {
+        // No tokens left where to add braces around
+        return tok;
+    }
+    Token * tokBracesEnd=NULL;
+    if (tokAfterCondition->str()=="{") {
+        // already surounded by braces
+        tokBracesEnd=tokAfterCondition->link();
+    } else {
+        Token * tokEnd = simplifyAddBracesToCommand(tokAfterCondition);
+        if (tokEnd->str()!="}") {
+            // Token does not end with brace
+            // Look for ; to add own closing brace after it
+            while (tokEnd &&
+                   tokEnd->str()!=";" &&
+                   !((tokEnd->type()==Token::eBracket ||
+                      tokEnd->type()==Token::eExtendedOp)&&
+                     Token::Match(tokEnd,")|}|>"))) {
+                if (tokEnd->type()==Token::eBracket ||
+                    (tokEnd->type()==Token::eExtendedOp && tokEnd->str()=="(")) {
+                    Token *tokInnerCloseBraket=tokEnd->link();
+                    if (!tokInnerCloseBraket) {
+                        // Inner bracket does not close
+                        return tok;
+                    }
+                    tokEnd=tokInnerCloseBraket;
+                }
+                tokEnd=tokEnd->next();
+            }
+            if (!tokEnd ||
+                tokEnd->str()!=";") {
+                // No trailing ;
+                return tok;
             }
         }
 
-        if (tok2) {
-            // insert "{" after "do"
-            tok1->insertToken("{");
+        tokAfterCondition->previous()->insertToken("{");
+        Token * tokOpenBrace=tokAfterCondition->previous();
 
-            // insert "}" before "while"
-            tok2->previous()->insertToken("}");
+        tokEnd->insertToken("}");
+        Token * TokCloseBrace=tokEnd->next();
 
-            Token::createMutualLinks(tok1->next(), tok2->previous());
-        }
+        Token::createMutualLinks(tokOpenBrace,TokCloseBrace);
+        tokBracesEnd=TokCloseBrace;
     }
+
+    return tokBracesEnd;
 }
 
 void Tokenizer::simplifyCompoundAssignment()
@@ -9264,14 +9211,33 @@ void Tokenizer::createSymbolDatabase()
                 }
             }
         }
+
+        // Set function pointers
+        const std::size_t functions = _symbolDatabase->functionScopes.size();
+        for (std::size_t i = 0; i < functions; ++i) {
+            const Scope * scope = _symbolDatabase->functionScopes[i];
+            for (Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+                if (Token::Match(tok, "%var% (")) {
+                    tok->function(_symbolDatabase->findFunction(tok));
+                }
+            }
+        }
+
+        // Set variable pointers
+        for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
+            if (tok->varId())
+                tok->variable(_symbolDatabase->getVariableFromVarId(tok->varId()));
+        }
     }
 }
 
 void Tokenizer::deleteSymbolDatabase()
 {
-    // Clear scope pointers
+    // Clear scope, function, and variable pointers
     for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
         tok->scope(0);
+        tok->function(0);
+        tok->variable(0);
     }
 
     delete _symbolDatabase;

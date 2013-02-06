@@ -317,8 +317,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 PrintMessage(errmsg);
                 return false;
             }
-            // when "style" is enabled, also enable "performance" and "portability"
+            // when "style" is enabled, also enable "warning", "performance" and "portability"
             if (_settings->isEnabled("style")) {
+                _settings->addEnabled("warning");
                 _settings->addEnabled("performance");
                 _settings->addEnabled("portability");
             }

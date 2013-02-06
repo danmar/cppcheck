@@ -61,7 +61,7 @@ void CheckPostfixOperator::postfixOperator()
                 }
 
                 if (result && tok->previous()->varId()) {
-                    const Variable *var = symbolDatabase->getVariableFromVarId(tok->previous()->varId());
+                    const Variable *var = tok->previous()->variable();
                     if (!var || var->isPointer() || var->isArray() || var->isReference())
                         continue;
 

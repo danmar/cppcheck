@@ -59,6 +59,7 @@ private:
         TEST_CASE(simple4);
         TEST_CASE(simple5); // ticket #2560
         TEST_CASE(simple6); // ticket #4085 - uninstantiated template class
+        TEST_CASE(simple7); // ticket #4531
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -300,6 +301,14 @@ private:
               "};");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Member variable 'A::y' is not initialized in the constructor.\n"
                       "[test.cpp:3]: (warning) Member variable 'A::y' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void simple7() { // ticket #4531
+        check("class Fred;\n"
+              "struct Fred {\n"
+              "    int x;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_with_this() {

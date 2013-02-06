@@ -63,6 +63,7 @@ private:
         TEST_CASE(division8);
         TEST_CASE(division9);
         TEST_CASE(division10);
+        TEST_CASE(division11);  // no error when using "unsigned char" (it is promoted)
     }
 
     void division1() {
@@ -195,6 +196,13 @@ private:
     void division10() {
         // Ticket: #2932 - don't segfault
         check("i / i", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void division11() {
+        check("void f(int x, unsigned char y) {\n"
+              "    int z = x / y;\n"  // no error, y is promoted
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 };

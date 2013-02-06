@@ -81,7 +81,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
 
         // Tokenize..
@@ -693,6 +693,18 @@ private:
               "    if (!abc)\n"
               "        ;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(struct ABC *abc) {\n" // #4523
+              "    abc = (*abc).next;\n"
+              "    if (abc) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(struct ABC *abc) {\n" // #4523
+              "    abc = (*abc->ptr);\n"
+              "    if (abc) { }\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f(Item *item) {\n"

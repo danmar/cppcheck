@@ -117,7 +117,7 @@ void CheckStl::iterators()
                 // report an error
                 if (container && tok2->varId() != container->varId()) {
                     // skip error message if container is a set..
-                    const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->varId());
+                    const Variable *variableInfo = tok2->variable();
                     const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
 
                     if (Token::simpleMatch(decltok, "std :: set"))
@@ -153,7 +153,7 @@ void CheckStl::iterators()
             // Reassign the iterator
             else if (Token::Match(tok2, "%varid% = %var% . begin|rbegin|cbegin|crbegin|find (", iteratorId)) {
                 validatingToken = tok2->linkAt(5);
-                container = symbolDatabase->getVariableFromVarId(tok2->tokAt(2)->varId());
+                container = tok2->tokAt(2)->variable();
                 containerAssignScope = tok2->scope();
 
                 // skip ahead
@@ -290,18 +290,18 @@ void CheckStl::stlOutOfBounds()
         // check if the for loop condition is wrong
         for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != tok->next()->link(); tok2 = tok2->next()) {
             if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;")) {
+                // Is it a vector?
+                const Variable *container = tok2->tokAt(3)->variable();
+                if (!container)
+                    continue;
+                if (!Token::simpleMatch(container->typeStartToken(), "std :: vector <"))
+                    continue;
+
                 // variable id for loop variable.
                 unsigned int numId = tok2->next()->varId();
 
                 // variable id for the container variable
                 unsigned int varId = tok2->tokAt(3)->varId();
-
-                // Is it a vector?
-                const Variable *container = symbolDatabase->getVariableFromVarId(varId);
-                if (!container)
-                    continue;
-                if (!Token::simpleMatch(container->typeStartToken(), "std :: vector <"))
-                    continue;
 
                 for (const Token *tok3 = tok2->tokAt(8); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
                     if (tok3->varId() == varId) {
@@ -480,7 +480,7 @@ void CheckStl::erase()
                 if (tok2->str() == ";") {
                     if (Token::Match(tok2, "; %var% !=")) {
                         // Get declaration token for var..
-                        const Variable *variableInfo = symbolDatabase->getVariableFromVarId(tok2->next()->varId());
+                        const Variable *variableInfo = tok2->next()->variable();
                         const Token *decltok = variableInfo ? variableInfo->typeEndToken() : NULL;
 
                         // Is variable an iterator?
@@ -801,11 +801,11 @@ void CheckStl::if_find()
                 if (if_findCompare(tok->linkAt(3)))
                     continue;
 
-                const unsigned int varid = tok->varId();
-                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                const Variable *var = tok->variable();
                 if (var) {
                     // Is the variable a std::string or STL container?
                     const Token * decl = var->typeStartToken();
+                    const unsigned int varid = tok->varId();
 
                     // stl container
                     if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
@@ -830,11 +830,11 @@ void CheckStl::if_find()
                 if (if_findCompare(tok2->linkAt(2)))
                     continue;
 
-                const unsigned int varid = tok->varId();
-                const Variable *var = symbolDatabase->getVariableFromVarId(varid);
+                const Variable *var = tok->variable();
                 if (var) {
                     // Is the variable a std::string or STL container?
                     const Token * decl = var->typeStartToken();
+                    const unsigned int varid = tok->varId();
 
                     //pretty bad limitation.. but it is there in order to avoid
                     //own implementations of 'find' or any container
@@ -895,30 +895,27 @@ void CheckStl::if_findError(const Token *tok, bool str)
 
 
 
-bool CheckStl::isStlContainer(unsigned int varid)
+bool CheckStl::isStlContainer(const Token *tok) const
 {
-    // check if this token is defined
-    if (varid) {
-        // find where this token is defined
-        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
+    // find where this token is defined
+    const Variable *var = tok->variable();
 
-        if (!var)
-            return false;
+    if (!var)
+        return false;
 
-        // find where this tokens type starts
-        const Token *type = var->typeStartToken();
+    // find where this tokens type starts
+    const Token *type = var->typeStartToken();
 
-        // discard namespace if supplied
-        if (Token::simpleMatch(type, "std ::"))
-            type = type->tokAt(2);
+    // discard namespace if supplied
+    if (Token::simpleMatch(type, "std ::"))
+        type = type->tokAt(2);
 
-        // all possible stl containers as a token
-        static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
+    // all possible stl containers as a token
+    static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
 
-        // check if it's an stl template
-        if (Token::Match(type, STL_CONTAINER_LIST))
-            return true;
-    }
+    // check if it's an stl template
+    if (Token::Match(type, STL_CONTAINER_LIST))
+        return true;
 
     return false;
 }
@@ -936,52 +933,32 @@ void CheckStl::size()
             if (Token::Match(tok, "%var% . size ( )") ||
                 Token::Match(tok, "%var% . %var% . size ( )")) {
                 const Token *tok1 = tok;
-                unsigned int varid = 0;
 
-                // get the variable id
-                if (tok->strAt(2) != "size") {
+                // get the variable
+                if (tok->strAt(2) != "size")
                     tok1 = tok1->tokAt(2);
-
-                    // found a.b.size(), lookup class/struct variable
-                    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
-                    if (var && var->type()) {
-                        // get class/struct variable type
-                        const Scope *type = var->type();
-
-                        // lookup variable member
-                        std::list<Variable>::const_iterator it;
-                        for (it = type->varlist.begin(); it != type->varlist.end(); ++it) {
-                            if (it->name() == tok1->str()) {
-                                // found member variable, save varid
-                                varid = it->varId();
-                                break;
-                            }
-                        }
-                    }
-                } else
-                    varid = tok1->varId();
 
                 const Token* const end = tok1->tokAt(5);
 
-                if (varid) {
+                if (tok1->varId()) {
                     // check for comparison to zero
                     if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
                         (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<"))) {
-                        if (isStlContainer(varid))
+                        if (isStlContainer(tok1))
                             sizeError(tok1);
                     }
 
                     // check for comparison to one
                     if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1")) ||
                         (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>"))) {
-                        if (isStlContainer(varid))
+                        if (isStlContainer(tok1))
                             sizeError(tok1);
                     }
 
                     // check for using as boolean expression
                     else if ((Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
                              (tok->previous()->type() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {
-                        if (isStlContainer(varid))
+                        if (isStlContainer(tok1))
                             sizeError(tok1);
                     }
                 }
@@ -1116,9 +1093,9 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
 }
 
 
-static bool isLocal(const SymbolDatabase* symbolDatabase, unsigned int varid)
+static bool isLocal(const Token *tok)
 {
-    const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+    const Variable *var = tok->variable();
     return var && !var->isStatic() && var->isLocal();
 }
 
@@ -1162,16 +1139,16 @@ void CheckStl::string_c_str()
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Invalid usage..
-            if (Token::Match(tok, "throw %var% . c_str ( ) ;") && isLocal(symbolDatabase, tok->next()->varId())) {
+            if (Token::Match(tok, "throw %var% . c_str ( ) ;") && isLocal(tok->next())) {
                 string_c_strThrowError(tok);
             } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;")) {
-                const Variable* var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                const Variable* var = tok->next()->variable();
                 if (var && var->isPointer())
                     string_c_strError(tok);
             } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
                        Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;") &&
                        Token::findmatch(_tokenizer->tokens(), ("std :: string|wstring " + tok->strAt(3) + " (").c_str())) {
-                const Variable* var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                const Variable* var = tok->next()->variable();
                 if (var && var->isPointer())
                     string_c_strError(tok);
             } else if (Token::Match(tok, "%var% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() &&
@@ -1194,7 +1171,7 @@ void CheckStl::string_c_str()
                     else
                         tok2 = tok2->previous();
                     if (tok2 && Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
-                        const Variable* var = symbolDatabase->getVariableFromVarId(tok2->tokAt(-5)->varId());
+                        const Variable* var = tok2->tokAt(-5)->variable();
                         if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
                             string_c_strParam(tok, i->second);
                     }
@@ -1203,15 +1180,15 @@ void CheckStl::string_c_str()
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
             if (returnType == charPtr) {
-                if (Token::Match(tok, "return %var% . c_str ( ) ;") && isLocal(symbolDatabase, tok->next()->varId())) {
+                if (Token::Match(tok, "return %var% . c_str ( ) ;") && isLocal(tok->next())) {
                     string_c_strError(tok);
-                } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") && isLocal(symbolDatabase, tok->next()->varId())) {
+                } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") && isLocal(tok->next())) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return std :: string|wstring (") &&
                            Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;")) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return %var% (") && Token::simpleMatch(tok->linkAt(2), ") . c_str ( ) ;")) {
-                    const Function* func =_tokenizer->getSymbolDatabase()->findFunction(tok->next());
+                    const Function* func = tok->next()->function();
                     if (func && Token::Match(func->tokenDef->tokAt(-3), "std :: string|wstring"))
                         string_c_strError(tok);
                 } else if (Token::simpleMatch(tok, "return (") &&
@@ -1220,7 +1197,7 @@ void CheckStl::string_c_str()
                     bool is_implicit_std_string = _settings->inconclusive;
                     const Token *search_end = tok->next()->link();
                     for (const Token *search_tok = tok->tokAt(2); search_tok != search_end; search_tok = search_tok->next()) {
-                        if (Token::Match(search_tok, "+ %var%") && isLocal(symbolDatabase, search_tok->next()->varId())) {
+                        if (Token::Match(search_tok, "+ %var%") && isLocal(search_tok->next())) {
                             is_implicit_std_string = true;
                             break;
                         } else if (Token::Match(search_tok, "+ std :: string|wstring (")) {
@@ -1240,7 +1217,7 @@ void CheckStl::string_c_str()
                     if (Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
                         tok2 = tok2->tokAt(-5);
                         if (tok2->isName()) {  // return var.c_str(); => check if var is a std type
-                            const Variable* var = symbolDatabase->getVariableFromVarId(tok2->varId());
+                            const Variable *var = tok2->variable();
                             if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
                                 string_c_strReturn(tok);
                         } else {
@@ -1403,7 +1380,7 @@ void CheckStl::uselessCalls()
                 if (Token::Match(tok->tokAt(3), "0| )"))
                     uselessCallsSubstrError(tok, false);
                 else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos") {
-                    if (!symbolDatabase->getVariableFromVarId(tok->linkAt(2)->previous()->varId())) // Make sure that its no variable
+                    if (!tok->linkAt(2)->previous()->variable()) // Make sure that its no variable
                         uselessCallsSubstrError(tok, false);
                 } else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                     uselessCallsSubstrError(tok, true);

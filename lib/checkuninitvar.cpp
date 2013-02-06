@@ -401,7 +401,7 @@ private:
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const {
         // Variable declaration..
         if (tok.varId() && Token::Match(&tok, "%var% [[;]")) {
-            const Variable* var2 = symbolDatabase->getVariableFromVarId(tok.varId());
+            const Variable* var2 = tok.variable();
             if (var2 && var2->nameToken() == &tok && !var2->isStatic() && !var2->isExtern() && !var2->isConst()) {
                 if (tok.linkAt(1)) { // array
                     const Token* endtok = tok.next();
@@ -1360,7 +1360,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     }
 
                     // Use variable
-                    else if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
+                    else if (!suppressErrors && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                         uninitvarError(tok, tok->str());
 
                     else
@@ -1388,7 +1388,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
             } else {
                 // Use variable
-                if (!suppressErrors && isVariableUsage(tok, var.isPointer()))
+                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                     uninitvarError(tok, tok->str());
 
                 else
@@ -1407,12 +1407,16 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
     for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == var.varId()) {
             if (Token::Match(tok, "%var% . %var%")) {
-                if (tok->strAt(2) == membervar)
-                    uninitStructMemberError(tok, tok->str() + "." + membervar);
+                if (tok->strAt(2) == membervar) {
+                    if (tok->strAt(3) == "=")
+                        return true;
+                    else
+                        uninitStructMemberError(tok, tok->str() + "." + membervar);
+                }
                 continue;
             }
 
-            if (isVariableUsage(tok, var.isPointer())) {
+            if (isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP())) {
                 if (!suppressErrors)
                     uninitvarError(tok, tok->str());
                 else
@@ -1443,7 +1447,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                 if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                     usetok = tok;
             } else {
-                if (isVariableUsage(tok, var.isPointer()))
+                if (isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                     usetok = tok;
                 else
                     return true;
@@ -1462,7 +1466,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
     return false;
 }
 
-bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
+bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp)
 {
     if (vartok->previous()->str() == "return")
         return true;
@@ -1485,7 +1489,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
         // is this a function call?
         if (start && Token::Match(start->previous(), "%var% (")) {
             // check how function handle uninitialized data arguments..
-            const Function *func = _tokenizer->getSymbolDatabase()->findFunction(start->previous());
+            const Function *func = start->previous()->function();
             if (func) {
                 const Variable *arg = func->getArgumentVar(argumentNumber);
                 if (arg) {
@@ -1510,7 +1514,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
     }
 
     if (Token::Match(vartok->previous(), "++|--|%op%")) {
-        if (vartok->previous()->str() == ">>" && _tokenizer->isCPP()) {
+        if (cpp && vartok->previous()->str() == ">>") {
             // assume that variable is initialized
             return false;
         }
@@ -1544,7 +1548,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
     }
 
     bool unknown = false;
-    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown, _tokenizer->getSymbolDatabase())) {
+    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
         // function parameter?
         bool functionParameter = false;
         if (Token::Match(vartok->tokAt(-2), "%var% (") || vartok->previous()->str() == ",")
@@ -1555,7 +1559,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
             return true;
     }
 
-    if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
+    if (cpp && Token::Match(vartok->next(), "<<|>>")) {
         // Is this calculation done in rhs?
         const Token *tok = vartok;
         while (tok && Token::Match(tok, "%var%|.|::"))
@@ -1565,7 +1569,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer) const
 
         // Is variable a known POD type then this is a variable usage,
         // otherwise we assume it's not.
-        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(vartok->varId());
+        const Variable *var = vartok->variable();
         return (var && var->typeStartToken()->isStandardType());
     }
 
@@ -1603,7 +1607,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, con
 
     if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar)
         return true;
-    else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer))
+    else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer, _tokenizer->isCPP()))
         return true;
 
     return false;
