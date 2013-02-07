@@ -218,6 +218,12 @@ protected slots:
     void HideResult();
 
     /**
+    * @brief Slot for context menu item to hide all messages with the current message Id
+    *
+    */
+    void HideAllIdResult();
+
+    /**
     * @brief Slot for selection change in the results tree.
     *
     * @param current Model index to specify new selected item.
