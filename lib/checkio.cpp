@@ -516,7 +516,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
                         // Perform type checks
                         if (argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
-                            const Variable* variableInfo = symbolDatabase->getVariableFromVarId(argListTok->varId());
+                            const Variable *variableInfo = argListTok->variable();
                             const Token* varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
                             if (varTypeTok && varTypeTok->str() == "static")
                                 varTypeTok = varTypeTok->next();

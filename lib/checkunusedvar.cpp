@@ -775,7 +775,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         if (Token::Match(tok->previous(), "[;{}]")) {
             for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->varId()) {
-                    const Variable* var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->varId());
+                    const Variable *var = tok2->variable();
                     if (var && var->nameToken() == tok2) { // Declaration: Skip
                         tok = tok2->next();
                         if (Token::Match(tok, "( %var% )")) // Simple initialization through copy ctor
@@ -889,7 +889,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
                         // is it a user defined type?
                         if (!type->isStandardType()) {
-                            const Variable* variable = _tokenizer->getSymbolDatabase()->getVariableFromVarId(start->varId());
+                            const Variable *variable = start->variable();
                             if (!variable || !isRecordTypeWithoutSideEffects(variable->type()))
                                 allocate = false;
                         }
@@ -1176,7 +1176,7 @@ void CheckUnusedVar::checkStructMemberUsage()
                  tok2 && tok2->next();
                  tok2 = Token::findmatch(tok2->next(), (structname + " %var%").c_str())) {
 
-                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok2->next()->varId());
+                const Variable *var = tok2->next()->variable();
                 if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic()))) {
                     structname.clear();
                     break;

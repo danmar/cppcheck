@@ -1401,7 +1401,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             std::string type;
 
             // varid : The variable id for the array
-            unsigned int varid = 0;
+            const Variable *var = 0;
 
             // nextTok : number of tokens used in variable declaration - used to skip to next statement.
             int nextTok = 0;
@@ -1413,48 +1413,44 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
                 size = MathLib::toLongNumber(tok->strAt(6));
                 type = tok->strAt(4);
-                varid = tok->next()->varId();
+                var = tok->next()->variable();
                 nextTok = 8;
             } else if (Token::Match(tok, "[*;{}] %var% = new %type% ( %num% )")) {
                 size = 1;
                 type = tok->strAt(4);
-                varid = tok->next()->varId();
+                var = tok->next()->variable();
                 nextTok = 8;
             } else if (Token::Match(tok, "[;{}] %var% = %str% ;") &&
                        tok->next()->varId() > 0 &&
                        NULL != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId())) {
                 size = 1 + int(tok->tokAt(3)->strValue().size());
                 type = "char";
-                varid = tok->next()->varId();
+                var = tok->next()->variable();
                 nextTok = 4;
             } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;")) {
                 size = MathLib::toLongNumber(tok->strAt(5));
                 type = "char";   // minimum type, typesize=1
-                varid = tok->next()->varId();
+                var = tok->next()->variable();
                 nextTok = 7;
 
-                if (varid > 0) {
-                    // get type of variable
-                    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
-                    /** @todo false negatives: this may be too conservative */
-                    if (!var || var->typeEndToken()->str() != "*" || var->typeStartToken()->next() != var->typeEndToken())
-                        continue;
+                /** @todo false negatives: this may be too conservative */
+                if (!var || var->typeEndToken()->str() != "*" || var->typeStartToken()->next() != var->typeEndToken())
+                    continue;
 
-                    // get name of variable
-                    type = var->typeStartToken()->str();
+                // get name of variable
+                type = var->typeStartToken()->str();
 
-                    // malloc() gets count of bytes and not count of
-                    // elements, so we should calculate count of elements
-                    // manually
-                    unsigned int sizeOfType = _tokenizer->sizeOfType(var->typeStartToken());
-                    if (sizeOfType > 0)
-                        size /= static_cast<int>(sizeOfType);
-                }
+                // malloc() gets count of bytes and not count of
+                // elements, so we should calculate count of elements
+                // manually
+                unsigned int sizeOfType = _tokenizer->sizeOfType(var->typeStartToken());
+                if (sizeOfType > 0)
+                    size /= static_cast<int>(sizeOfType);
             } else {
                 continue;
             }
 
-            if (varid == 0)
+            if (var == 0)
                 continue;
 
             Token sizeTok(0);
@@ -1464,7 +1460,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 continue;
 
             std::vector<std::string> v;
-            ArrayInfo temp(varid, tok->next()->str(), total_size / size, size);
+            ArrayInfo temp(var->varId(), tok->next()->str(), total_size / size, size);
             checkScope(tok->tokAt(nextTok), v, temp);
         }
     }

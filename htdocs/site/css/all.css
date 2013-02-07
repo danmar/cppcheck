@@ -127,10 +127,10 @@ a:active    { color:#369; text-decoration:none; }
   color: white;
   background-color: #060;
   border: 1px solid #060;
-  border-radius: .5em;
   -webkit-border-radius: .5em;
    -khtml-border-radius: .5em;
      -moz-border-radius: .5em;
+          border-radius: .5em;
 }
 
 a.downloadnow:link,

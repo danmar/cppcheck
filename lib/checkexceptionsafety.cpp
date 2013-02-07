@@ -89,14 +89,13 @@ void CheckExceptionSafety::deallocThrow()
                 break;
             if (!Token::Match(tok, "%var% ;"))
                 continue;
-            const unsigned int varid(tok->varId());
-            if (varid == 0)
-                continue;
 
             // we only look for global variables
-            const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+            const Variable *var = tok->variable();
             if (!var || !(var->isGlobal() || var->isStatic()))
                 continue;
+
+            const unsigned int varid(tok->varId());
 
             // Token where throw occurs
             const Token *ThrowToken = 0;
@@ -172,7 +171,7 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
 
         // Find a pass-by-value declaration in the catch(), excluding basic types
         // e.g. catch (std::exception err)
-        const Variable* var = symbolDatabase->getVariableFromVarId(i->classStart->tokAt(-2)->varId());
+        const Variable *var = i->classStart->tokAt(-2)->variable();
         if (var && var->isClass() && !var->isPointer() && !var->isReference())
             catchExceptionByValueError(i->classDef);
     }

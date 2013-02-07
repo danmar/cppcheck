@@ -311,7 +311,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             varInfo->erase(tok->varId());
 
             // not a local variable nor argument?
-            const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(tok->varId());
+            const Variable *var = tok->variable();
             if (var && !var->isArgument() && !var->isLocal()) {
                 continue;
             }
