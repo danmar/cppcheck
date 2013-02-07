@@ -419,6 +419,7 @@ private:
         TEST_CASE(bitfields11); // ticket #2845 (segmentation fault)
         TEST_CASE(bitfields12); // ticket #3485 (segmentation fault)
         TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
+        TEST_CASE(bitfields14); // ticket #4561 (segfault for 'class a { signals: };')
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -6845,6 +6846,11 @@ private:
     void bitfields13() { // ticket #3502 (segmentation fault)
         ASSERT_EQUALS("x y ;", tokenizeAndStringify("struct{x y:};\n",false));
     }
+
+    void bitfields14() { // #4561 - crash for 'signals:'
+        ASSERT_EQUALS("class x { signals : } ;", tokenizeAndStringify("class x { signals: };\n",false));
+    }
+
 
     void simplifyNamespaceStd() {
         static const char code1[] = "map<foo, bar> m;"; // namespace std is not used

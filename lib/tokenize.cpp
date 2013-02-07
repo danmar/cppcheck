@@ -8790,7 +8790,7 @@ void Tokenizer::simplifyBitfields()
                    tok->next()->str() != "default") {
             const bool offset = (tok->next()->str() == "const");
 
-            if (tok->strAt(3 + (offset ? 1 : 0)) != "{") {
+            if (!Token::Match(tok->tokAt(3 + (offset ? 1 : 0)), "[{};]")) {
                 tok->deleteNext(4 + (offset ? 1 : 0));
                 goback = true;
             }
