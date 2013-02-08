@@ -2945,11 +2945,9 @@ namespace {
 
     class Expressions {
     public:
-        Expressions(const SymbolDatabase *symbolDatabase, const
-                    std::list<const Function*> &constFunctions)
+        Expressions(const std::list<const Function*> &constFunctions)
             : _start(0),
               _lastTokens(0),
-              _symbolDatabase(symbolDatabase),
               _constFunctions(constFunctions) { }
 
         void endExpr(const Token *end) {
@@ -2989,7 +2987,6 @@ namespace {
         std::ostringstream _expression;
         const Token *_start;
         ExpressionTokens *_lastTokens;
-        const SymbolDatabase *_symbolDatabase;
         const std::list<const Function*> &_constFunctions;
     };
 
@@ -3030,7 +3027,7 @@ void CheckOther::checkExpressionRange(const std::list<const Function*> &constFun
 {
     if (!start || !end)
         return;
-    Expressions expressions(_tokenizer->getSymbolDatabase(), constFunctions);
+    Expressions expressions(constFunctions);
     std::string opName;
     int level = 0;
     for (const Token *tok = start->next(); tok && tok != end; tok = tok->next()) {

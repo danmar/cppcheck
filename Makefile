@@ -28,6 +28,10 @@ ifdef COMSPEC
     ifndef CPPCHK_GLIBCXX_DEBUG
         CPPCHK_GLIBCXX_DEBUG=
     endif # !CPPCHK_GLIBCXX_DEBUG
+
+    ifeq ($(MSYSTEM),MINGW32)
+        LDFLAGS=-lshlwapi
+    endif
 else # !COMSPEC
     uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
