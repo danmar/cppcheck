@@ -391,7 +391,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     if (mode == QFileDialog::ExistingFiles) {
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
-                   mSettings->value(SETTINGS_CHECK_PATH, "").toString());
+                   GetPath(SETTINGS_LAST_CHECK_PATH));
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {
@@ -402,7 +402,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     } else if (mode == QFileDialog::DirectoryOnly) {
         QString dir = QFileDialog::getExistingDirectory(this,
                       tr("Select directory to check"),
-                      mSettings->value(SETTINGS_CHECK_PATH, "").toString());
+                      GetPath(SETTINGS_LAST_CHECK_PATH));
         if (!dir.isEmpty()) {
             qDebug() << "Setting current directory to: " << dir;
             mCurrentDirectory = dir;
@@ -411,7 +411,9 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
             FormatAndSetTitle(dir);
         }
     }
-
+    
+    SetPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
+    
     return selected;
 }
 
@@ -670,7 +672,7 @@ void MainWindow::OpenResults()
     const QString filter(tr("XML files (*.xml)"));
     QString selectedFile = QFileDialog::getOpenFileName(this,
                            tr("Open the report file"),
-                           QString(),
+                           GetPath(SETTINGS_LAST_RESULT_PATH),
                            filter,
                            &selectedFilter);
 
@@ -684,6 +686,7 @@ void MainWindow::LoadResults(const QString selectedFile)
     if (!selectedFile.isEmpty()) {
         mUI.mResults->Clear(true);
         mUI.mResults->ReadErrorsXml(selectedFile);
+        SetPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
 }
 
@@ -815,7 +818,7 @@ void MainWindow::Save()
     const QString filter(tr("XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                            tr("Save the report file"),
-                           QString(),
+                           GetPath(SETTINGS_LAST_RESULT_PATH),
                            filter,
                            &selectedFilter);
 
@@ -847,6 +850,7 @@ void MainWindow::Save()
         }
 
         mUI.mResults->Save(selectedFile, type);
+        SetPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
 }
 
@@ -935,13 +939,13 @@ void MainWindow::OpenProjectFile()
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     const QString filepath = QFileDialog::getOpenFileName(this,
                              tr("Select Project File"),
-                             lastPath,
+                             GetPath(SETTINGS_LAST_PROJECT_PATH),
                              filter);
 
     if (!filepath.isEmpty()) {
         const QFileInfo fi(filepath);
         if (fi.exists() && fi.isFile() && fi.isReadable()) {
-            mSettings->setValue(SETTINGS_LAST_PROJECT_PATH, fi.path());
+            SetPath(SETTINGS_LAST_PROJECT_PATH, filepath);
             LoadProjectFile(filepath);
         }
     }
@@ -1018,12 +1022,14 @@ void MainWindow::NewProjectFile()
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     QString filepath = QFileDialog::getSaveFileName(this,
                        tr("Select Project Filename"),
-                       QString(),
+                       GetPath(SETTINGS_LAST_PROJECT_PATH),
                        filter);
 
     if (filepath.isEmpty())
         return;
 
+    SetPath(SETTINGS_LAST_PROJECT_PATH, filepath);
+    
     EnableProjectActions(true);
     QFileInfo inf(filepath);
     const QString filename = inf.fileName();

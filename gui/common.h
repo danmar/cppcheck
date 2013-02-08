@@ -19,6 +19,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <QString>
+
 /// @addtogroup GUI
 /// @{
 
@@ -59,7 +61,6 @@
 #define SETTINGS_STD_POSIX              "Platform Posix"
 
 // Other settings
-#define SETTINGS_CHECK_PATH             "Check path"
 #define SETTINGS_CHECK_FORCE            "Check force"
 #define SETTINGS_CHECK_THREADS          "Check threads"
 #define SETTINGS_SHOW_FULL_PATH         "Show full path"
@@ -82,7 +83,18 @@
 #define PROGRESS_MAX                    1024.0
 
 #define SETTINGS_CHECKED_PLATFORM       "Checked platform"
+
+#define SETTINGS_LAST_USED_PATH         "Last used path"
+#define SETTINGS_LAST_CHECK_PATH        "Last check path"
 #define SETTINGS_LAST_PROJECT_PATH      "Last project path"
+#define SETTINGS_LAST_RESULT_PATH       "Last result path"
+#define SETTINGS_LAST_SOURCE_PATH       "Last source path"
+#define SETTINGS_LAST_INCLUDE_PATH      "Last include path"
+#define SETTINGS_LAST_APP_PATH          "Last application path"
+
+
+QString GetPath(const QString &type);
+void SetPath(const QString &type, const QString &value, bool storeAsLastUsed = true);
 
 /// @}
 #endif
