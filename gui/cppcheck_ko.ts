@@ -901,6 +901,10 @@ Please select the directory where file is located.</source>
         <source>Copy message id</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Hide all with id</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>

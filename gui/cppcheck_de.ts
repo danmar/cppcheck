@@ -981,22 +981,22 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Severity</source>
         <translation>Schweregrad</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Line</source>
         <translation>Zeile</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Summary</source>
         <translation>Zusammenfassung</translation>
     </message>
@@ -1007,7 +1007,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
     </message>
     <message>
         <location filename="resultstree.cpp" line="205"/>
-        <location filename="resultstree.cpp" line="721"/>
+        <location filename="resultstree.cpp" line="725"/>
         <source>[Inconclusive]</source>
         <translation>[unklar]</translation>
     </message>
@@ -1042,13 +1042,18 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
         <translation>Verstecken</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="582"/>
-        <location filename="resultstree.cpp" line="596"/>
+        <location filename="resultstree.cpp" line="537"/>
+        <source>Hide all with id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultstree.cpp" line="586"/>
+        <location filename="resultstree.cpp" line="600"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="583"/>
+        <location filename="resultstree.cpp" line="587"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1057,7 +1062,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Konfigurieren Sie diese unter Einstellungen/Anwendungen.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="597"/>
+        <location filename="resultstree.cpp" line="601"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -1066,12 +1071,12 @@ Please select the default editor application in preferences/Applications.</sourc
  Bitte wählen Sie eine Standardanwendung unter Einstellungen/Anwendungen.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="626"/>
+        <location filename="resultstree.cpp" line="630"/>
         <source>Could not find the file!</source>
         <translation>Datei konnte nicht gefunden werden!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="672"/>
+        <location filename="resultstree.cpp" line="676"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1080,7 +1085,7 @@ Please check the application path and parameters are correct.</source>
 Bitte überprüfen Sie ob der Pfad und die Parameter der Anwendung richtig eingestellt sind.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="686"/>
+        <location filename="resultstree.cpp" line="690"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
@@ -1089,12 +1094,12 @@ Please select the directory where file is located.</source>
 Bitte wählen Sie das Verzeichnis, in dem sich die Datei befindet.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="693"/>
+        <location filename="resultstree.cpp" line="697"/>
         <source>Select Directory</source>
         <translation>Wähle Verzeichnis</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
