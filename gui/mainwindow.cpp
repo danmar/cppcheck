@@ -314,12 +314,11 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     mUI.mResults->CheckingStarted(fileNames.count());
 
     mThread->SetFiles(fileNames);
-    QDir inf(mCurrentDirectory);
-    const QString checkPath = inf.canonicalPath();
-    mSettings->setValue(SETTINGS_CHECK_PATH, checkPath);
 
     CheckLockDownUI(); // lock UI while checking
 
+    QDir inf(mCurrentDirectory);
+    const QString checkPath = inf.canonicalPath();
     mUI.mResults->SetCheckDirectory(checkPath);
     Settings checkSettings = GetCppcheckSettings();
 
@@ -375,7 +374,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     if (mode == QFileDialog::ExistingFiles) {
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
-                   mSettings->value(SETTINGS_CHECK_PATH, "").toString());
+                   mSettings->value(SETTINGS_LAST_USED_PATH, "").toString());
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {
@@ -386,7 +385,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     } else if (mode == QFileDialog::DirectoryOnly) {
         QString dir = QFileDialog::getExistingDirectory(this,
                       tr("Select directory to check"),
-                      mSettings->value(SETTINGS_CHECK_PATH, "").toString());
+                      mSettings->value(SETTINGS_LAST_USED_PATH, "").toString());
         if (!dir.isEmpty()) {
             qDebug() << "Setting current directory to: " << dir;
             mCurrentDirectory = dir;
@@ -395,6 +394,8 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
             FormatAndSetTitle(dir);
         }
     }
+
+    mSettings->setValue(SETTINGS_LAST_USED_PATH, selected);
 
     return selected;
 }
@@ -653,13 +654,14 @@ void MainWindow::OpenXML()
     const QString filter(tr("XML files (*.xml)"));
     QString selectedFile = QFileDialog::getOpenFileName(this,
                            tr("Open the report file"),
-                           QString(),
+                           mSettings->value(SETTINGS_LAST_USED_PATH, "").toString(),
                            filter,
                            &selectedFilter);
 
     if (!selectedFile.isEmpty()) {
         mUI.mResults->Clear(true);
         mUI.mResults->ReadErrorsXml(selectedFile);
+        mSettings->setValue(SETTINGS_LAST_USED_PATH, selectedFile);
     }
 }
 
@@ -785,7 +787,7 @@ void MainWindow::Save()
     const QString filter(tr("XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                            tr("Save the report file"),
-                           QString(),
+                           mSettings->value(SETTINGS_LAST_USED_PATH, "").toString(),
                            filter,
                            &selectedFilter);
 
@@ -817,6 +819,7 @@ void MainWindow::Save()
         }
 
         mUI.mResults->Save(selectedFile, type);
+        mSettings->setValue(SETTINGS_LAST_USED_PATH, selectedFile);
     }
 }
 
@@ -901,17 +904,16 @@ void MainWindow::OpenOnlineHelp()
 
 void MainWindow::OpenProjectFile()
 {
-    const QString lastPath = mSettings->value(SETTINGS_LAST_PROJECT_PATH, QString()).toString();
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     const QString filepath = QFileDialog::getOpenFileName(this,
                              tr("Select Project File"),
-                             lastPath,
+                             mSettings->value(SETTINGS_LAST_USED_PATH, "").toString(),
                              filter);
 
     if (!filepath.isEmpty()) {
         const QFileInfo fi(filepath);
         if (fi.exists() && fi.isFile() && fi.isReadable()) {
-            mSettings->setValue(SETTINGS_LAST_PROJECT_PATH, fi.path());
+            mSettings->setValue(SETTINGS_LAST_USED_PATH, fi.path());
             LoadProjectFile(filepath);
         }
     }
@@ -988,12 +990,14 @@ void MainWindow::NewProjectFile()
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     QString filepath = QFileDialog::getSaveFileName(this,
                        tr("Select Project Filename"),
-                       QString(),
+                       mSettings->value(SETTINGS_LAST_USED_PATH, "").toString(),
                        filter);
 
     if (filepath.isEmpty())
         return;
-
+    
+    mSettings->setValue(SETTINGS_LAST_USED_PATH, filepath);
+    
     EnableProjectActions(true);
     QFileInfo inf(filepath);
     const QString filename = inf.fileName();
