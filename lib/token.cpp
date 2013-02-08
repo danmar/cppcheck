@@ -980,7 +980,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
     std::ostringstream ret;
 
     unsigned int lineNumber = _linenr;
-    int fileInd = files?-1:_fileIndex;
+    int fileInd = files ? -1 : static_cast<int>(_fileIndex);
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
         bool fileChange = false;

@@ -2308,8 +2308,8 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
         tok = tok->next();
 
     // Check if the variable is used in this indentlevel..
-    bool used1 = false;   // used in one sub-scope -> reducable
-    bool used2 = false;   // used in more sub-scopes -> not reducable
+    bool used1 = false;   // used in one sub-scope -> reducible
+    bool used2 = false;   // used in more sub-scopes -> not reducible
     int indentlevel = 0;
     int parlevel = 0;
     bool for_or_while = false;  // is sub-scope a "for/while/etc". anything that is not "if"

@@ -21,6 +21,8 @@
 #include "path.h"
 
 #include <algorithm>
+#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <stack>
 #include <cctype>   // std::isdigit, std::isalnum, etc
@@ -139,7 +141,7 @@ bool Suppressions::FileMatcher::match(const std::string &pattern, const std::str
             return true;
         }
 
-        // If there are no other paths to tray, then fail
+        // If there are no other paths to try, then fail
         if (backtrack.empty()) {
             return false;
         }
@@ -223,8 +225,14 @@ std::string Suppressions::addSuppression(const std::string &errorId, const std::
         return "Failed to add suppression. No id.";
     }
     if (errorId != "*") {
+        // Support "stlBoundries" for the time being, as that was a valid errorId until v1.59.
+        if (errorId == "stlBoundries") {
+            std::cout << "cppcheck: warning: error id \"stlBoundries\" is deprecated. Please use \"stlBoundaries\" instead." << std::endl;
+            return _suppressions["stlBoundaries"].addFile(file, line);
+        }
+
         for (std::string::size_type pos = 0; pos < errorId.length(); ++pos) {
-            if (errorId[pos] < 0 || (!std::isalnum(errorId[pos]) &&  errorId[pos] != '_')) {
+            if (errorId[pos] < 0 || (!std::isalnum(errorId[pos]) && errorId[pos] != '_')) {
                 return "Failed to add suppression. Invalid id \"" + errorId + "\"";
             }
             if (pos == 0 && std::isdigit(errorId[pos])) {

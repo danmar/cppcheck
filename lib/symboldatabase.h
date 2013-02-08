@@ -50,7 +50,7 @@ struct Dimension {
 
     const Token *start;  // size start token
     const Token *end;    // size end token
-    MathLib::bigint num; // (assumpted) dimension length when size is a number, 0 if not known
+    MathLib::bigint num; // (assumed) dimension length when size is a number, 0 if not known
     bool known;          // Known size
 };
 
@@ -162,7 +162,7 @@ public:
 
     /**
      * Get index of variable in declared order.
-     * @return varaible index
+     * @return variable index
      */
     std::size_t index() const {
         return _index;

@@ -246,7 +246,7 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
 }
 
 //---------------------------------------------------------------------------
-// Clarify (meaningless) statements like *foo++; with parantheses.
+// Clarify (meaningless) statements like *foo++; with parentheses.
 //---------------------------------------------------------------------------
 void CheckOther::clarifyStatement()
 {
@@ -1933,8 +1933,8 @@ void CheckOther::lookupVar(const Token *tok, const Variable* var)
         tok = tok->next();
 
     // Check if the variable is used in this indentlevel..
-    bool used1 = false;   // used in one sub-scope -> reducable
-    bool used2 = false;   // used in more sub-scopes -> not reducable
+    bool used1 = false;   // used in one sub-scope -> reducible
+    bool used2 = false;   // used in more sub-scopes -> not reducible
     unsigned int indentlevel = 0;
     int parlevel = 0;
     bool for_or_while = false;  // is sub-scope a "for/while/etc". anything that is not "if"

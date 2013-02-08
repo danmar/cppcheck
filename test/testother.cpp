@@ -3072,7 +3072,7 @@ private:
     }
 
     void testMisusedScopeObjectDoesNotPickConstructorDeclaration() {
-        check("class Something : public SomthingElse\n"
+        check("class Something : public SomethingElse\n"
               "{\n"
               "public:\n"
               "~Something ( ) ;\n"
