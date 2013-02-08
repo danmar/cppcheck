@@ -66,7 +66,8 @@ void CheckClass::constructors()
             // If there is a private variable, there should be a constructor..
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                if (var->isPrivate() && !var->isClass() && !var->isStatic()) {
+                if (var->isPrivate() && !var->isStatic() &&
+                    (!var->isClass() || (var->type() && var->type()->needInitialization == Scope::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;
                 }
