@@ -534,12 +534,14 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copymessage    = new QAction(tr("Copy message"), &menu);
             QAction *copymessageid  = new QAction(tr("Copy message id"), &menu);
             QAction *hide           = new QAction(tr("Hide"), &menu);
-
+            QAction *hideallid      = new QAction(tr("Hide all with id"), &menu);
+            
             if (multipleSelection) {
                 copyfilename->setDisabled(true);
                 copypath->setDisabled(true);
                 copymessage->setDisabled(true);
                 copymessageid->setDisabled(true);
+                hideallid->setDisabled(true);
             }
 
             menu.addAction(copyfilename);
@@ -547,12 +549,14 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(copymessage);
             menu.addAction(copymessageid);
             menu.addAction(hide);
+            menu.addAction(hideallid);
 
             connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
             connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
             connect(copymessage, SIGNAL(triggered()), this, SLOT(CopyMessage()));
             connect(copymessageid, SIGNAL(triggered()), this, SLOT(CopyMessageId()));
             connect(hide, SIGNAL(triggered()), this, SLOT(HideResult()));
+            connect(hideallid, SIGNAL(triggered()), this, SLOT(HideAllIdResult()));
         }
 
         //Start the menu
@@ -758,6 +762,48 @@ void ResultsTree::HideResult()
         QVariantMap data = item->data().toMap();
         data["hide"] = true;
         item->setData(QVariant(data));
+
+        RefreshTree();
+        emit ResultsHidden(true);
+    }
+}
+
+void ResultsTree::HideAllIdResult()
+{
+    if (mContextItem) {
+        // Make sure we are working with the first column
+        if (mContextItem->column() != 0)
+            mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
+        QVariantMap data = mContextItem->data().toMap();
+
+        QString messageId = data["id"].toString();
+
+        // hide all errors with that message Id
+        int filecount = mModel.rowCount();
+        for (int i = 0; i < filecount; i++) {
+            //Get file i
+            QStandardItem *file = mModel.item(i, 0);
+            if (!file) {
+                continue;
+            }
+            
+            //Get the amount of errors this file contains
+            int errorcount = file->rowCount();
+
+            for (int j = 0; j < errorcount; j++) {
+                //Get the error itself
+                QStandardItem *child = file->child(j, 0);
+                if (!child) {
+                  continue;
+                }
+                
+                QVariantMap userdata = child->data().toMap();
+                if (userdata["id"].toString() == messageId) {
+                    userdata["hide"] = true;
+                    child->setData(QVariant(userdata));
+                }
+            }
+        }
 
         RefreshTree();
         emit ResultsHidden(true);
