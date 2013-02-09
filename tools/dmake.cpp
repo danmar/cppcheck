@@ -253,6 +253,10 @@ int main(int argc, char **argv)
          << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
          << "        CPPCHK_GLIBCXX_DEBUG=\n"
          << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
+         << "\n"
+         << "    ifeq ($(MSYSTEM),MINGW32)\n"
+         << "        LDFLAGS=-lshlwapi\n"
+         << "    endif\n"
          << "else # !COMSPEC\n"
          << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
          << "\n"
@@ -351,7 +355,7 @@ int main(int argc, char **argv)
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
     fout << "dmake:\ttools/dmake.cpp\n";
-    fout << "\t$(CXX) -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib\n\n";
+    fout << "\t$(CXX) -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib $(LDFLAGS)\n\n";
     fout << "reduce:\ttools/reduce.cpp\n";
     fout << "\t$(CXX) -g -o reduce tools/reduce.cpp -Ilib lib/*.cpp\n\n";
     fout << "clean:\n";
