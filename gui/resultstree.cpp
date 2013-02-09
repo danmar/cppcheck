@@ -689,7 +689,7 @@ QString ResultsTree::AskFileDir(const QString &file)
     msgbox.setText(text);
     msgbox.setIcon(QMessageBox::Warning);
     msgbox.exec();
-    
+
     QSettings settings;
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
                   settings.value(SETTINGS_LAST_USED_PATH, "").toString(),

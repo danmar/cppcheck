@@ -995,9 +995,9 @@ void MainWindow::NewProjectFile()
 
     if (filepath.isEmpty())
         return;
-    
+
     mSettings->setValue(SETTINGS_LAST_USED_PATH, filepath);
-    
+
     EnableProjectActions(true);
     QFileInfo inf(filepath);
     const QString filename = inf.fileName();
