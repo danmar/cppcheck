@@ -93,7 +93,25 @@
 #define SETTINGS_LAST_APP_PATH          "Last application path"
 
 
+/** 
+ * @brief Obtains the path of specified type
+ * Returns the path of specifed type if not empty. Otherwise returns
+ * common last used path set previously by any other file dialog window.
+ * @param type Type of path to obtain
+ * @return Best path fo provided type
+ */
 QString GetPath(const QString &type);
+
+/** 
+ * @brief Stores last used path of specified type
+ * Stores provided path as last used path for specified type and if
+ * @p storeAsLastUsed is enabled its directory is also set as common last used
+ * path that will later be used to initialize the value of paths of other types.
+ * @param type Type of the path to store
+ * @param value Path to store
+ * @param storeAsLastUsed Specifies if directory of that path should also be
+ *                        stored as common last used path.
+ */
 void SetPath(const QString &type, const QString &value, bool storeAsLastUsed = true);
 
 /// @}
