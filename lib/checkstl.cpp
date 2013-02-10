@@ -705,7 +705,7 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &func, co
 
 
 
-void CheckStl::stlBoundries()
+void CheckStl::stlBoundaries()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -729,9 +729,9 @@ void CheckStl::stlBoundries()
                     const Token* const end = tok->scope()->classEnd;
                     for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
                         if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
-                            stlBoundriesError(tok2, container_name);
+                            stlBoundariesError(tok2, container_name);
                         } else if (Token::Match(tok2, "> %varid% !!.", iteratorid)) {
-                            stlBoundriesError(tok2, container_name);
+                            stlBoundariesError(tok2, container_name);
                         }
                     }
                 }
@@ -741,9 +741,9 @@ void CheckStl::stlBoundries()
 }
 
 // Error message for bad boundary usage..
-void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_name)
+void CheckStl::stlBoundariesError(const Token *tok, const std::string &container_name)
 {
-    reportError(tok, Severity::error, "stlBoundries",
+    reportError(tok, Severity::error, "stlBoundaries",
                 "Dangerous iterator comparison using operator< on 'std::" + container_name + "'.\n"
                 "Iterator of container 'std::" + container_name + "' compared with operator<. "
                 "This is dangerous since the order of items in the container is not guaranteed. "
@@ -885,7 +885,7 @@ void CheckStl::if_findError(const Token *tok, bool str)
     if (str)
         reportError(tok, Severity::performance, "stlIfStrFind",
                     "Inefficient usage of string::find() in condition; string::compare() would be faster.\n"
-                    "Either inefficent or wrong usage of string::find(). string::compare() will be faster if "
+                    "Either inefficient or wrong usage of string::find(). string::compare() will be faster if "
                     "string::find's result is compared with 0, because it will not scan the whole "
                     "string. If your intention is to check that there are no findings in the string, "
                     "you should compare with std::string::npos.");

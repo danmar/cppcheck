@@ -62,7 +62,7 @@ public:
      * @param istr The (file/string) stream to read from.
      * @param result The map that will get the results
      * @param filename The name of the file to check e.g. "src/main.cpp"
-     * @param includePaths List of paths where incude files should be searched from,
+     * @param includePaths List of paths where include files should be searched from,
      * single path can be e.g. in format "include/".
      * There must be a path separator at the end. Default parameter is empty list.
      * Note that if path from given filename is also extracted and that is used as
@@ -81,7 +81,7 @@ public:
      * @param resultConfigurations List of configurations. Pass these one by one
      * to getcode() with processedFile.
      * @param filename The name of the file to check e.g. "src/main.cpp"
-     * @param includePaths List of paths where incude files should be searched from,
+     * @param includePaths List of paths where include files should be searched from,
      * single path can be e.g. in format "include/".
      * There must be a path separator at the end. Default parameter is empty list.
      * Note that if path from given filename is also extracted and that is used as
@@ -253,7 +253,7 @@ private:
      * file
      * @param code The source code to modify
      * @param filePath Relative path to file to check e.g. "src/main.cpp"
-     * @param includePaths List of paths where incude files should be searched from,
+     * @param includePaths List of paths where include files should be searched from,
      * single path can be e.g. in format "include/".
      * There must be a path separator at the end. Default parameter is empty list.
      * Note that if path from given filename is also extracted and that is used as

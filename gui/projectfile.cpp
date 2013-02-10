@@ -27,7 +27,7 @@
 static const char ProjectElementName[] = "project";
 static const char ProjectVersionAttrib[] = "version";
 static const char ProjectFileVersion[] = "1";
-static const char IncludDirElementName[] = "includedir";
+static const char IncludeDirElementName[] = "includedir";
 static const char DirElementName[] = "dir";
 static const char DirNameAttrib[] = "name";
 static const char DefinesElementName[] = "defines";
@@ -84,7 +84,7 @@ bool ProjectFile::Read(const QString &filename)
                 ReadCheckPaths(xmlReader);
 
             // Find include directory from inside project element
-            if (insideProject && xmlReader.name() == IncludDirElementName)
+            if (insideProject && xmlReader.name() == IncludeDirElementName)
                 ReadIncludeDirs(xmlReader);
 
             // Find preprocessor define from inside project element
@@ -187,7 +187,7 @@ void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
             break;
 
         case QXmlStreamReader::EndElement:
-            if (reader.name().toString() == IncludDirElementName)
+            if (reader.name().toString() == IncludeDirElementName)
                 allRead = true;
             break;
 
@@ -369,7 +369,7 @@ bool ProjectFile::Write(const QString &filename)
     }
 
     if (!mIncludeDirs.isEmpty()) {
-        xmlWriter.writeStartElement(IncludDirElementName);
+        xmlWriter.writeStartElement(IncludeDirElementName);
         foreach(QString incdir, mIncludeDirs) {
             xmlWriter.writeStartElement(DirElementName);
             xmlWriter.writeAttribute(DirNameAttrib, incdir);
