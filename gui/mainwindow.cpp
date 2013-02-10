@@ -524,6 +524,7 @@ Settings MainWindow::GetCppcheckSettings()
         AddIncludeDirs(includes, result);
     }
 
+    result.addEnabled("warning");
     result.addEnabled("style");
     result.addEnabled("performance");
     result.addEnabled("portability");
