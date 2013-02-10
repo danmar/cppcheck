@@ -411,7 +411,7 @@ private:
             ASSERT_EQUALS(Settings::C, settings.enforcedLang);
         }
         {
-            const char *argv[] = {"cppcheck", "--language=unknwonLanguage", "file.cpp"};
+            const char *argv[] = {"cppcheck", "--language=unknownLanguage", "file.cpp"};
             Settings settings;
             CmdLineParser parser(&settings);
             ASSERT(!parser.ParseFromArgs(3, argv));

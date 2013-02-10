@@ -89,10 +89,10 @@ private:
 
         TEST_CASE(invalidcode);
 
-        TEST_CASE(stlBoundries1);
-        TEST_CASE(stlBoundries2);
-        TEST_CASE(stlBoundries3);
-        TEST_CASE(stlBoundries4); // #4364
+        TEST_CASE(stlBoundaries1);
+        TEST_CASE(stlBoundaries2);
+        TEST_CASE(stlBoundaries3);
+        TEST_CASE(stlBoundaries4); // #4364
 
         // if (str.find("ab"))
         TEST_CASE(if_find);
@@ -1200,7 +1200,7 @@ private:
 
 
 
-    void stlBoundries1() {
+    void stlBoundaries1() {
         const int STL_CONTAINER_LIST = 9;
         const std::string stlCont[STL_CONTAINER_LIST] = {
             "deque", "list", "set", "multiset", "map",
@@ -1225,7 +1225,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
     }
 
-    void stlBoundries2() {
+    void stlBoundaries2() {
         check("void f()\n"
               "{\n"
               "    std::vector<std::string> files;\n"
@@ -1237,7 +1237,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void stlBoundries3() {
+    void stlBoundaries3() {
         check("void f()\n"
               "{\n"
               "    set<int> files;\n"
@@ -1257,7 +1257,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid iterator 'current' used.\n", errout.str());
     }
 
-    void stlBoundries4() {
+    void stlBoundaries4() {
 
         check("void f() {\n"
               "    std::forward_list<std::vector<std::vector<int>>>::iterator it;\n"
