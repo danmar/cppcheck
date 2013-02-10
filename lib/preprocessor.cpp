@@ -1923,14 +1923,14 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
 
     // current #if indent level.
-    unsigned int indent = 0;
+    std::stack<bool>::size_type indent = 0;
 
     // how deep does the #if match? this can never be bigger than "indent".
-    unsigned int indentmatch = 0;
+    std::stack<bool>::size_type indentmatch = 0;
 
     // has there been a true #if condition at the current indentmatch level?
     // then no more #elif or #else can be true before the #endif is seen.
-    std::vector<bool> elseIsTrueStack;
+    std::stack<bool> elseIsTrueStack;
 
     unsigned int linenr = 0;
 
@@ -1951,8 +1951,15 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
         // has there been a true #if condition at the current indentmatch level?
         // then no more #elif or #else can be true before the #endif is seen.
-        elseIsTrueStack.resize(1U + indentmatch, true);
-        std::vector<bool>::reference elseIsTrue = elseIsTrueStack[indentmatch];
+        while (elseIsTrueStack.size() != indentmatch + 1) {
+            if (elseIsTrueStack.size() < indentmatch + 1) {
+                elseIsTrueStack.push(true);
+            } else {
+                elseIsTrueStack.pop();
+            }
+        }
+
+        std::stack<bool>::reference elseIsTrue = elseIsTrueStack.top();
 
         if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch) {
