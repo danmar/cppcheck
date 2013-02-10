@@ -308,14 +308,12 @@ bool SettingsDialog::ShowErrorId() const
 
 void SettingsDialog::AddIncludePath()
 {
-    QSettings settings;
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           tr("Select include directory"),
-                          settings.value(SETTINGS_LAST_USED_PATH, "").toString());
+                          QString());
 
     if (!selectedDir.isEmpty()) {
         AddIncludePath(selectedDir);
-        settings.setValue(SETTINGS_LAST_USED_PATH, selectedDir);
     }
 }
 

@@ -59,7 +59,7 @@
 #define SETTINGS_STD_POSIX              "Platform Posix"
 
 // Other settings
-#define SETTINGS_LAST_USED_PATH         "Last used path"
+#define SETTINGS_CHECK_PATH             "Check path"
 #define SETTINGS_CHECK_FORCE            "Check force"
 #define SETTINGS_CHECK_THREADS          "Check threads"
 #define SETTINGS_SHOW_FULL_PATH         "Show full path"
@@ -82,6 +82,7 @@
 #define PROGRESS_MAX                    1024.0
 
 #define SETTINGS_CHECKED_PLATFORM       "Checked platform"
+#define SETTINGS_LAST_PROJECT_PATH      "Last project path"
 
 /// @}
 #endif
