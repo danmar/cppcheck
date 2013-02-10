@@ -79,7 +79,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
     connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
     connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
-    connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(OpenXML()));
+    connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(OpenResults()));
 
     connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
     connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
@@ -194,6 +194,24 @@ void MainWindow::HandleCLIParams(const QStringList &params)
         const int ind = params.indexOf("-p");
         if ((ind + 1) < params.length())
             LoadProjectFile(params[ind + 1]);
+    } else if (params.contains("-l")) {
+        QString logFile;
+        const int ind = params.indexOf("-l");
+        if ((ind + 1) < params.length())
+            logFile = params[ind + 1];
+
+        if (params.contains("-d")) {
+            QString checkedDir;
+            const int ind = params.indexOf("-d");
+            if ((ind + 1) < params.length())
+                checkedDir = params[ind + 1];
+
+            LoadResults(logFile, checkedDir);
+        }
+        else
+        {
+            LoadResults(logFile);
+        }
     } else
         DoCheckFiles(params);
 }
@@ -631,7 +649,7 @@ void MainWindow::ClearResults()
     mUI.mActionSave->setEnabled(false);
 }
 
-void MainWindow::OpenXML()
+void MainWindow::OpenResults()
 {
     if (mUI.mResults->HasResults()) {
         QMessageBox msgBox(this);
@@ -659,10 +677,23 @@ void MainWindow::OpenXML()
                            &selectedFilter);
 
     if (!selectedFile.isEmpty()) {
+        LoadResults(selectedFile);
+    }
+}
+
+void MainWindow::LoadResults(const QString selectedFile)
+{
+    if (!selectedFile.isEmpty()) {
         mUI.mResults->Clear(true);
         mUI.mResults->ReadErrorsXml(selectedFile);
         mSettings->setValue(SETTINGS_LAST_USED_PATH, selectedFile);
     }
+}
+
+void MainWindow::LoadResults(const QString selectedFile, const QString sourceDirectory)
+{
+    LoadResults(selectedFile);
+    mUI.mResults->SetCheckDirectory(sourceDirectory);
 }
 
 void MainWindow::EnableCheckButtons(bool enable)

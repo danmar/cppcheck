@@ -94,7 +94,7 @@ public slots:
     * @brief Slot to open XML report file
     *
     */
-    void OpenXML();
+    void OpenResults();
 
     /**
     * @brief Show errors with type "style"
@@ -404,6 +404,19 @@ private:
     * @param params List of string given to command line.
     */
     void HandleCLIParams(const QStringList &params);
+    
+    /**
+    * @brief Load XML file to the GUI.
+    * @param file Filename (inc. path) of XML file to load.
+    */
+    void LoadResults(const QString file);
+
+    /**
+    * @brief Load XML file to the GUI.
+    * @param file Filename (inc. path) of XML file to load.
+    * @param checkedDirectory Path to the directory that the results were generated for.
+    */
+    void LoadResults(const QString file, const QString checkedDirectory);
 
     /**
     * @brief Load project file to the GUI.
