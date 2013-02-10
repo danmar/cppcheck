@@ -45,6 +45,7 @@ private:
         TEST_CASE(uninitvar_return);    // return
         TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always null-terminate
         TEST_CASE(uninitvar_memset);    // not null-terminated
+        TEST_CASE(uninitvar_memset_nonchar);
         TEST_CASE(uninitvar_func);      // analyse functions
         TEST_CASE(func_uninit_var);     // analyse function calls for: 'int a(int x) { return x+x; }'
         TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
@@ -1636,6 +1637,15 @@ private:
                        "    strcat(a, s);\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous usage of 'a' (not null-terminated).\n", errout.str());
+    }
+
+    void uninitvar_memset_nonchar() {
+        checkUninitVar("void f() {\n"
+                       "    int a[20];\n"
+                       "    memset(a, 1, 20);\n"
+                       "    a[0] |= 2;\n"
+                       "}\n");
+        ASSERT_EQUALS(errout.str(), "");
     }
 
     std::string analyseFunctions(const char code[]) {
