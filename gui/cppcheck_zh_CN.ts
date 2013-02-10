@@ -982,22 +982,22 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Severity</source>
         <translation>严重性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Line</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Summary</source>
         <translation>概要</translation>
     </message>
@@ -1008,7 +1008,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="205"/>
-        <location filename="resultstree.cpp" line="721"/>
+        <location filename="resultstree.cpp" line="725"/>
         <source>[Inconclusive]</source>
         <translation>[不确定的]</translation>
     </message>
@@ -1043,13 +1043,18 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation>隐藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="582"/>
-        <location filename="resultstree.cpp" line="596"/>
+        <location filename="resultstree.cpp" line="537"/>
+        <source>Hide all with id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultstree.cpp" line="586"/>
+        <location filename="resultstree.cpp" line="600"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="583"/>
+        <location filename="resultstree.cpp" line="587"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1059,7 +1064,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 在“首先项 / 应用程序”中为 Cppcheck 配置编辑应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="597"/>
+        <location filename="resultstree.cpp" line="601"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -1068,12 +1073,12 @@ Please select the default editor application in preferences/Applications.</sourc
 请在“首先项 / 应用程序”中选择默认应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="626"/>
+        <location filename="resultstree.cpp" line="630"/>
         <source>Could not find the file!</source>
         <translation>找不到文件！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="672"/>
+        <location filename="resultstree.cpp" line="676"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1082,7 +1087,7 @@ Please check the application path and parameters are correct.</source>
 请检查此应用程序的路径与参数是否正确。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="686"/>
+        <location filename="resultstree.cpp" line="690"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
@@ -1091,12 +1096,12 @@ Please select the directory where file is located.</source>
 请选择文件所在目录。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="693"/>
+        <location filename="resultstree.cpp" line="697"/>
         <source>Select Directory</source>
         <translation>选择目录</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="997"/>
+        <location filename="resultstree.cpp" line="1043"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
