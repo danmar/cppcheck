@@ -404,7 +404,7 @@ private:
     * @param params List of string given to command line.
     */
     void HandleCLIParams(const QStringList &params);
-    
+
     /**
     * @brief Load XML file to the GUI.
     * @param file Filename (inc. path) of XML file to load.

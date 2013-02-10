@@ -535,7 +535,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copymessageid  = new QAction(tr("Copy message id"), &menu);
             QAction *hide           = new QAction(tr("Hide"), &menu);
             QAction *hideallid      = new QAction(tr("Hide all with id"), &menu);
-            
+
             if (multipleSelection) {
                 copyfilename->setDisabled(true);
                 copypath->setDisabled(true);
@@ -784,7 +784,7 @@ void ResultsTree::HideAllIdResult()
             if (!file) {
                 continue;
             }
-            
+
             //Get the amount of errors this file contains
             int errorcount = file->rowCount();
 
@@ -792,9 +792,9 @@ void ResultsTree::HideAllIdResult()
                 //Get the error itself
                 QStandardItem *child = file->child(j, 0);
                 if (!child) {
-                  continue;
+                    continue;
                 }
-                
+
                 QVariantMap userdata = child->data().toMap();
                 if (userdata["id"].toString() == messageId) {
                     userdata["hide"] = true;

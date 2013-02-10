@@ -207,9 +207,7 @@ void MainWindow::HandleCLIParams(const QStringList &params)
                 checkedDir = params[ind + 1];
 
             LoadResults(logFile, checkedDir);
-        }
-        else
-        {
+        } else {
             LoadResults(logFile);
         }
     } else

@@ -278,12 +278,11 @@ private:
                 CheckUninitVar *checkUninitVar = dynamic_cast<CheckUninitVar *>(c->owner);
                 if (checkUninitVar) {
                     if (c->strncpy_ || c->memset_nonzero) {
-                        if(!Token::Match(c->var->typeStartToken(), "char|wchar_t")) {
+                        if (!Token::Match(c->var->typeStartToken(), "char|wchar_t")) {
                             continue;
                         }
                         checkUninitVar->uninitstringError(tok, c->var->name(), c->strncpy_);
-                    }
-                    else if (c->var->isPointer() && !c->var->isArray() && c->alloc)
+                    } else if (c->var->isPointer() && !c->var->isArray() && c->alloc)
                         checkUninitVar->uninitdataError(tok, c->var->name());
                     else
                         checkUninitVar->uninitvarError(tok, c->var->name());
