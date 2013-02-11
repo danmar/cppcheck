@@ -2758,6 +2758,16 @@ private:
                         "}\n", "test.c");
         ASSERT_EQUALS("[test.c:5]: (error) Uninitialized variable: ab\n"
                       "[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+        checkUninitVar2("void f(int i) {\n" // #4569 fp
+                        "    float *buffer;\n"
+                        "    if(i>10) buffer = f;\n"
+                        "    if(i>10) {\n"
+                        "        for (int i=0;i<10;i++)\n"
+                        "            buffer[i] = 0;\n" // <- fp
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_4494() {

@@ -1322,7 +1322,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
             if (tok2 && tok2->str() == "{") {
                 bool possibleinit = false;
-                bool init = checkLoopBody(tok2, var, membervar);
+                bool init = checkLoopBody(tok2, var, membervar, suppressErrors);
 
                 // variable is initialized in the loop..
                 if (possibleinit || init)
@@ -1435,7 +1435,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
     return false;
 }
 
-bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const std::string &membervar)
+bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const std::string &membervar, const bool suppressErrors)
 {
     const Token *usetok = NULL;
 
@@ -1458,7 +1458,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
         }
     }
 
-    if (usetok) {
+    if (!suppressErrors && usetok) {
         if (membervar.empty())
             uninitvarError(usetok, usetok->str());
         else

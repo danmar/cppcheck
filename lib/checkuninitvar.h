@@ -66,7 +66,7 @@ public:
     void checkScope(const Scope* scope);
     bool checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const std::string &membervar);
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, const std::string &membervar);
-    bool checkLoopBody(const Token *tok, const Variable& var, const std::string &membervar);
+    bool checkLoopBody(const Token *tok, const Variable& var, const std::string &membervar, const bool suppressErrors);
     static bool isVariableUsage(const Token *vartok, bool ispointer, bool cpp);
     bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
     bool isMemberVariableUsage(const Token *tok, bool isPointer, const std::string &membervar) const;
