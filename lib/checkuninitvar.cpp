@@ -1130,9 +1130,9 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
     // always false
     if (Token::Match(vartok, "%var% &&|)")) {
         if (NOT)
-            *alwaysFalse = bool(it->second == 0);
-        else
             *alwaysFalse = bool(it->second != 0);
+        else
+            *alwaysFalse = bool(it->second == 0);
     } else if (Token::Match(vartok, "%var% == %num% &&|)")) {
         *alwaysFalse = bool(it->second != MathLib::toLongNumber(vartok->strAt(2)));
     } else if (Token::Match(vartok, "%var% != %num% &&|)")) {
@@ -1212,7 +1212,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             if (tok->str() == "{") {
                 bool possibleInitIf(number_of_if > 0 || suppressErrors);
                 bool noreturnIf = false;
-                const bool initif = !alwaysFalse && !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf, membervar);
+                const bool initif = !alwaysFalse && checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf, membervar);
 
                 // bail out for such code:
                 //    if (a) x=0;    // conditional initialization

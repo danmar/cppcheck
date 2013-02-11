@@ -2266,6 +2266,16 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int* f(int a) {\n" // #4560
+                        "    int x = 0, y;\n"
+                        "    if (a) x = 1;\n"
+                        "    else return;\n"
+                        "    if (x) y = 123;\n" // <- y is always initialized
+                        "    else y = 456;\n"
+                        "    return y;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // asm
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
