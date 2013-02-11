@@ -8,4 +8,12 @@ script:
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch -q cli gui lib -igui/test
   - mkdir build
   - make test SRCDIR=build
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.org#cppcheck"
+    template:
+      - "[%{commit} : %{author}] %{message}"
+      - "%{build_url}"
+    skip_join: true
 
