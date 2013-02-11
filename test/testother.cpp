@@ -123,6 +123,8 @@ private:
         TEST_CASE(sizeofForArrayParameter);
         TEST_CASE(sizeofForNumericParameter);
 
+        TEST_CASE(redundantGetAndSetUserId);
+
         TEST_CASE(suspiciousSizeofCalculation);
 
         TEST_CASE(clarifyCalculation);
@@ -193,16 +195,18 @@ private:
         TEST_CASE(varFuncNullUB);
     }
 
-    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true) {
+    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
+        settings.addEnabled("warning");
         settings.addEnabled("portability");
         settings.addEnabled("performance");
         settings.inconclusive = inconclusive;
         settings.experimental = experimental;
+        settings.standards.posix = posix;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -4381,6 +4385,26 @@ private:
               NULL, true
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
+    }
+
+    void redundantGetAndSetUserId() {
+        check("seteuid(geteuid());\n", NULL, false , false, true);
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
+        check("setuid(getuid());\n", NULL, false , false, true);
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
+        check("setgid(getgid());\n", NULL, false , false, true);
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
+        check("setegid(getegid());\n", NULL, false , false, true);
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
+
+        check("seteuid(getuid());\n", NULL, false , false, true);
+        ASSERT_EQUALS("", errout.str());
+        check("seteuid(getuid());\n", NULL, false , false, true);
+        ASSERT_EQUALS("", errout.str());
+        check("seteuid(foo());\n", NULL, false , false, true);
+        ASSERT_EQUALS("", errout.str());
+        check("foo(getuid());\n", NULL, false , false, true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void suspiciousSizeofCalculation() {

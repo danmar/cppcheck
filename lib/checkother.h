@@ -99,6 +99,7 @@ public:
         checkOther.checkMathFunctions();
         checkOther.checkCCTypeFunctions();
 
+        checkOther.redundantGetAndSetUserId();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkComparisonOfFuncReturningBool();
@@ -179,6 +180,9 @@ public:
 
     /** @brief %Check for calculations inside sizeof */
     void sizeofCalculation();
+
+    /** @brief % Check for seteuid(geteuid()) or setuid(getuid())*/
+    void redundantGetAndSetUserId();
 
     /** @brief %Check for suspicious calculations with sizeof results */
     void suspiciousSizeofCalculation();
@@ -304,6 +308,7 @@ private:
     void clarifyStatementError(const Token* tok);
     void sizeofsizeofError(const Token *tok);
     void sizeofCalculationError(const Token *tok, bool inconclusive);
+    void redundantGetAndSetUserIdError(const Token *tok);
     void multiplySizeofError(const Token *tok);
     void divideSizeofError(const Token *tok);
     void cstyleCastError(const Token *tok);
@@ -512,6 +517,7 @@ private:
                "* incorrect usage of functions from ctype library.\n"
                "* Comparisons of modulo results that are always true/false.\n"
                "* Array filled incompletely using memset/memcpy/memmove.\n"
+               "* redundant get and set function of user id (--std=posix).\n"
                "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n";
     }
 

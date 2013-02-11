@@ -3393,6 +3393,35 @@ void CheckOther::sizeofCalculationError(const Token *tok, bool inconclusive)
 }
 
 //-----------------------------------------------------------------------------
+// Check for code like:
+// seteuid(geteuid()) or setuid(getuid()), which first gets and then sets the
+// (effective) user id to itself. Very often this indicates a copy and paste
+// error.
+//-----------------------------------------------------------------------------
+void CheckOther::redundantGetAndSetUserId()
+{
+    if (_settings->isEnabled("warning")
+        && _settings->standards.posix) {
+
+        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "setuid ( getuid ( ) )")
+                ||  Token::simpleMatch(tok, "seteuid ( geteuid ( ) )")
+                ||  Token::simpleMatch(tok, "setgid ( getgid ( ) )")
+                ||  Token::simpleMatch(tok, "setegid ( getegid ( ) )")) {
+                redundantGetAndSetUserIdError(tok);
+            }
+        }
+    }
+}
+void CheckOther::redundantGetAndSetUserIdError(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "redundantGetAndSetUserId", "Redundant get and set of user id.\n"
+                "Redundant statement without any effect. First the user id is retrieved"
+                "by get(e)uid() and then set with set(e)uid().", false);
+}
+
+//-----------------------------------------------------------------------------
 // Check for code like sizeof()*sizeof() or sizeof(ptr)/value
 //-----------------------------------------------------------------------------
 void CheckOther::suspiciousSizeofCalculation()
