@@ -2269,7 +2269,7 @@ private:
         checkUninitVar2("int* f(int a) {\n" // #4560
                         "    int x = 0, y;\n"
                         "    if (a) x = 1;\n"
-                        "    else return;\n"
+                        "    else return 0;\n"
                         "    if (x) y = 123;\n" // <- y is always initialized
                         "    else y = 456;\n"
                         "    return y;\n"
