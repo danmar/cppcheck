@@ -2696,6 +2696,14 @@ private:
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    while (a) {\n"
+                        "        x = x + 1;\n"
+                        "    }\n"
+                        "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    while (a) {\n"
                         "        if (b) x++;\n"
                         "        else x = 0;\n"
                         "    }\n"
@@ -2767,6 +2775,15 @@ private:
                         "            buffer[i] = 0;\n" // <- fp
                         "    }\n"
                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(){\n" // #4519 - fp: inline assembler in loop
+                        "    int x;\n"
+                        "    for (int i = 0; i < 10; i++) {\n"
+                        "        asm(\"foo\");\n"
+                        "        if (x & 0xf1) { }\n"
+                        "    }\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -1456,6 +1456,9 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                     return true;
             }
         }
+
+        if (Token::Match(tok, "asm ( %str% ) ;"))
+            return true;
     }
 
     if (!suppressErrors && usetok) {
