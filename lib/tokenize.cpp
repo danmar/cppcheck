@@ -4137,7 +4137,7 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
     }
     Token * tokBracesEnd=NULL;
     if (tokAfterCondition->str()=="{") {
-        // already surounded by braces
+        // already surrounded by braces
         tokBracesEnd=tokAfterCondition->link();
     } else {
         Token * tokEnd = simplifyAddBracesToCommand(tokAfterCondition);

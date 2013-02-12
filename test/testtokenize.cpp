@@ -236,7 +236,7 @@ private:
         TEST_CASE(varid50); // #3760 - explicit
         TEST_CASE(varid51); // don't set varid for template function
         TEST_CASE(varid52); // Set varid for nested templates
-        TEST_CASE(varid53); // #4172 - Template instanciation: T<&functionName> list[4];
+        TEST_CASE(varid53); // #4172 - Template instantiation: T<&functionName> list[4];
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
@@ -3630,7 +3630,7 @@ private:
                       tokenizeDebugListing(code, false, "test.cpp"));
     }
 
-    void varid53() { // #4172 - Template instanciation: T<&functionName> list[4];
+    void varid53() { // #4172 - Template instantiation: T<&functionName> list[4];
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: A < & f > list@1 [ 4 ] ;\n",
                       tokenizeDebugListing("A<&f> list[4];", false, "test.cpp"));
