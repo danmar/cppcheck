@@ -67,6 +67,7 @@ private:
         TEST_CASE(varScope12);
         TEST_CASE(varScope13);      // variable usage in inner loop
         TEST_CASE(varScope14);
+        TEST_CASE(varScope15);      // #4573 if-else-if
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -844,6 +845,18 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope15() {
+        // #4573
+        varScope("void f() {\n"
+                 "    int a,b,c;\n"
+                 "    if (a);\n"
+                 "    else if(b);\n"
+                 "    else if(c);\n"
+                 "    else;\n"
+                 "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
