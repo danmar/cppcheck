@@ -2620,10 +2620,13 @@ void CheckOther::checkDuplicateIf()
         const Token *tok1 = scope->classEnd;
 
         // check all the else if (...) statements
-        while (Token::simpleMatch(tok1, "} else if (") &&
-               Token::simpleMatch(tok1->linkAt(3), ") {")) {
+        while ((Token::simpleMatch(tok1, "} else if (") &&
+                Token::simpleMatch(tok1->linkAt(3), ") {")) ||
+               (Token::simpleMatch(tok1, "} else { if (") &&
+                Token::simpleMatch(tok1->linkAt(4), ") {"))) {
+            int conditionIndex=(tok1->strAt(3)=="(") ? 3 : 4;
             // get the expression from the token stream
-            expression = tok1->tokAt(4)->stringifyList(tok1->linkAt(3));
+            expression = tok1->tokAt(conditionIndex+1)->stringifyList(tok1->linkAt(conditionIndex));
 
             // try to look up the expression to check for duplicates
             std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
@@ -2631,7 +2634,7 @@ void CheckOther::checkDuplicateIf()
             // found a duplicate
             if (it != expressionMap.end()) {
                 // check for expressions that have side effects and ignore them
-                if (!expressionHasSideEffects(tok1->tokAt(4), tok1->linkAt(3)->previous()))
+                if (!expressionHasSideEffects(tok1->tokAt(conditionIndex+1), tok1->linkAt(conditionIndex)->previous()))
                     duplicateIfError(it->second, tok1->next());
             }
 
@@ -2640,7 +2643,7 @@ void CheckOther::checkDuplicateIf()
                 expressionMap.insert(std::make_pair(expression, tok1->next()));
 
             // find the next else if (...) statement
-            tok1 = tok1->linkAt(3)->next()->link();
+            tok1 = tok1->linkAt(conditionIndex)->next()->link();
         }
     }
 }
