@@ -668,57 +668,55 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
             // count { and } using tok2
             const Token* const end2 = tok1->scope()->classEnd;
             for (const Token *tok2 = tok1->tokAt(3); tok2 != end2; tok2 = tok2->next()) {
+                bool unknown = false;
 
                 // label / ?:
                 if (tok2->str() == ":")
                     break;
 
                 // function call..
-                else {
-                    bool unknown = false;
-                    if (Token::Match(tok2, "[;{}] %var% (") && CanFunctionAssignPointer(tok2->next(), varid1, unknown)) {
-                        if (!_settings->inconclusive || !unknown)
-                            break;
-                        inconclusive = true;
-                    }
-
-                    // Reassignment of the struct
-                    else if (tok2->varId() == varid1) {
-                        if (tok2->next()->str() == "=") {
-                            // Avoid false positives when there is 'else if'
-                            // TODO: can this be handled better?
-                            if (tok1->strAt(-2) == "if")
-                                skipvar.insert(varid1);
-                            break;
-                        }
-                        if (Token::Match(tok2->tokAt(-2), "[,(] &"))
-                            break;
-                    }
-
-                    // Loop..
-                    /** @todo don't bail out if the variable is not used in the loop */
-                    else if (tok2->str() == "do")
+                else if (Token::Match(tok2, "[;{}] %var% (") && CanFunctionAssignPointer(tok2->next(), varid1, unknown)) {
+                    if (!_settings->inconclusive || !unknown)
                         break;
+                    inconclusive = true;
+                }
 
-                    // return/break at base level => stop checking
-                    else if (tok2->scope()->classEnd == end2 && (tok2->str() == "return" || tok2->str() == "break"))
-                        break;
-
-                    // Function call: If the pointer is not a local variable it
-                    // might be changed by the call.
-                    else if (Token::Match(tok2, "[;{}] %var% (") &&
-                             Token::simpleMatch(tok2->linkAt(2), ") ;") && !isLocal) {
+                // Reassignment of the struct
+                else if (tok2->varId() == varid1) {
+                    if (tok2->next()->str() == "=") {
+                        // Avoid false positives when there is 'else if'
+                        // TODO: can this be handled better?
+                        if (tok1->strAt(-2) == "if")
+                            skipvar.insert(varid1);
                         break;
                     }
-
-                    // Check if pointer is null.
-                    // TODO: false negatives for "if (!p || .."
-                    else if (!tok2->isExpandedMacro() && Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
-                        // Is this variable a pointer?
-                        if (var->isPointer())
-                            nullPointerError(tok1, varname, tok2, inconclusive);
+                    if (Token::Match(tok2->tokAt(-2), "[,(] &"))
                         break;
-                    }
+                }
+
+                // Loop..
+                /** @todo don't bail out if the variable is not used in the loop */
+                else if (tok2->str() == "do")
+                    break;
+
+                // return/break at base level => stop checking
+                else if (tok2->scope()->classEnd == end2 && (tok2->str() == "return" || tok2->str() == "break"))
+                    break;
+
+                // Function call: If the pointer is not a local variable it
+                // might be changed by the call.
+                else if (Token::Match(tok2, "[;{}] %var% (") &&
+                         Token::simpleMatch(tok2->linkAt(2), ") ;") && !isLocal) {
+                    break;
+                }
+
+                // Check if pointer is null.
+                // TODO: false negatives for "if (!p || .."
+                else if (!tok2->isExpandedMacro() && Token::Match(tok2, "if ( !| %varid% )|&&", varid1)) {
+                    // Is this variable a pointer?
+                    if (var->isPointer())
+                        nullPointerError(tok1, varname, tok2, inconclusive);
+                    break;
                 }
             }
         }

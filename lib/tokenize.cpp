@@ -4101,8 +4101,14 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
         if (!tokEnd)
             return NULL;
         Token * tokEndNext=tokEnd->next();
-        if (tokEndNext && tokEndNext->str()=="else")
-            tokEnd=simplifyAddBracesPair(tokEndNext,false);
+        if (tokEndNext && tokEndNext->str()=="else") {
+            Token * tokEndNextNext=tokEndNext->next();
+            if (tokEndNextNext && tokEndNextNext->str()=="if") {
+                // do not change "else if ..." to "else { if ... }"
+                tokEnd=simplifyAddBracesToCommand(tokEndNextNext);
+            } else
+                tokEnd=simplifyAddBracesPair(tokEndNext,false);
+        }
     }
 
     return tokEnd;
