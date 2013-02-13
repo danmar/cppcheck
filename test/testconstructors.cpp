@@ -61,6 +61,7 @@ private:
         TEST_CASE(simple6); // ticket #4085 - uninstantiated template class
         TEST_CASE(simple7); // ticket #4531
         TEST_CASE(simple8);
+        TEST_CASE(simple9); // ticket #4574
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -318,6 +319,16 @@ private:
               "class Wilma { struct Betty { int x; } betty; };\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) The class 'Barney' does not have a constructor.\n"
                       "[test.cpp:3]: (style) The class 'Wilma' does not have a constructor.\n", errout.str());
+    }
+
+    void simple9() { // ticket #4574
+        check("class Unknown::Fred {\n"
+              "public:\n"
+              "    Fred() : x(0) { }\n"
+              "private:\n"
+              "    int x;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_with_this() {

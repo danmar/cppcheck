@@ -1975,7 +1975,11 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
         type = Scope::eGlobal;
     } else if (classDef->str() == "class") {
         type = Scope::eClass;
-        className = classDef->next()->str();
+        // skip over qualification if present
+        const Token *nameTok = classDef->next();
+        while (nameTok && Token::Match(nameTok, "%type% ::"))
+            nameTok = nameTok->tokAt(2);
+        className = nameTok->str();
     } else if (classDef->str() == "struct") {
         type = Scope::eStruct;
         // anonymous and unnamed structs don't have a name
