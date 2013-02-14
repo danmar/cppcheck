@@ -910,12 +910,12 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfile.ui" line="134"/>
         <source>Includes</source>
-        <translation>Включенные пути</translation>
+        <translation>Пути для заголовочных файлов</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="140"/>
         <source>Include directories:</source>
-        <translation>Директории:</translation>
+        <translation>Пути для поиска заголовочных файлов:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="192"/>
@@ -948,7 +948,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="projectfiledialog.cpp" line="209"/>
         <source>Select include directory</source>
-        <translation>Выберите директорию</translation>
+        <translation>Выберите директорию для поиска заголовочных файлов</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="232"/>
@@ -1047,7 +1047,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="resultstree.cpp" line="537"/>
         <source>Hide all with id</source>
-        <translation type="unfinished"></translation>
+        <translation>Скрыть все с id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="586"/>
@@ -1226,7 +1226,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="169"/>
         <source>Include paths:</source>
-        <translation>Пути:</translation>
+        <translation>Пути для поиска заголовочных файлов:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="187"/>
