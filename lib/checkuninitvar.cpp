@@ -1101,7 +1101,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
 
 static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned int, int> &variableValue, bool *alwaysTrue, bool *alwaysFalse)
 {
-    assert(Token::Match(tok, "if ("));
+    assert(Token::simpleMatch(tok, "if ("));
 
     const Token *vartok = tok->tokAt(2);
     const bool NOT(vartok->str() == "!");
