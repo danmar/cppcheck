@@ -1436,6 +1436,11 @@ private:
               "    if (define.find(\"=\") + 1U == define.size());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string a, std::string b) {\n"  // #4480
+              "    if (a.find(\"<\") < b.find(\">\")) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

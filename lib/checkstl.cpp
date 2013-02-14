@@ -750,7 +750,7 @@ void CheckStl::stlBoundariesError(const Token *tok, const std::string &container
                 "One should use operator!= instead to compare iterators.");
 }
 
-static bool if_findCompare(const Token * const tokBack)
+static bool if_findCompare(const Token * const tokBack, bool str)
 {
     const Token *tok = tokBack;
     while (tok && tok->str() == ")") {
@@ -764,6 +764,8 @@ static bool if_findCompare(const Token * const tokBack)
     }
 
     if (Token::Match(tok,",|==|!="))
+        return true;
+    if (str && tok->isComparisonOp())
         return true;
     if (tok->isArithmeticalOp()) // result is used in some calculation
         return true;  // TODO: check if there is a comparison of the result somewhere
@@ -798,19 +800,20 @@ void CheckStl::if_find()
                 tok = tok->next();
 
             if (Token::Match(tok, "%var% . find (")) {
-                if (if_findCompare(tok->linkAt(3)))
-                    continue;
-
                 const Variable *var = tok->variable();
                 if (var) {
                     // Is the variable a std::string or STL container?
                     const Token * decl = var->typeStartToken();
                     const unsigned int varid = tok->varId();
 
+                    bool str = Token::Match(decl, "std :: string|wstring &| %varid%", varid);
+                    if (if_findCompare(tok->linkAt(3), str))
+                        continue;
+
                     // stl container
                     if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
                         if_findError(tok, false);
-                    else if (Token::Match(decl, "std :: string|wstring &| %varid%", varid))
+                    else if (str)
                         if_findError(tok, true);
                 }
             }
@@ -827,7 +830,7 @@ void CheckStl::if_find()
 
                 if (!Token::simpleMatch(tok2, ". find ("))
                     continue;
-                if (if_findCompare(tok2->linkAt(2)))
+                if (if_findCompare(tok2->linkAt(2), false))
                     continue;
 
                 const Variable *var = tok->variable();
@@ -871,7 +874,7 @@ void CheckStl::if_find()
 
             else if (Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
-                if (!if_findCompare(tok->linkAt(3))) {
+                if (!if_findCompare(tok->linkAt(3), false)) {
                     if_findError(tok, false);
                 }
             }
