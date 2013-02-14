@@ -192,7 +192,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
 
         // using namespace
-        else if (Token::Match(tok, "using namespace %type% ;|::")) {
+        else if (Token::Match(tok, "using namespace ::| %type% ;|::")) {
             Scope::UsingInfo using_info;
 
             using_info.start = tok; // save location
@@ -200,7 +200,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
             scope->usingList.push_back(using_info);
 
-            tok = tok->tokAt(3);
+            // check for global namespace
+            if (tok->strAt(2) == "::")
+                tok = tok->tokAt(4);
+            else
+                tok = tok->tokAt(3);
+
+            // skip over qualification
+            while (tok && Token::Match(tok, "%type% ::"))
+                tok = tok->tokAt(2);
         }
 
         // unnamed struct and union

@@ -149,6 +149,7 @@ private:
         TEST_CASE(localvarNULL);     // #4203 - Setting NULL value is not redundant - it is safe
 
         TEST_CASE(crash1);
+        TEST_CASE(usingNamespace);     // #4585
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -3569,6 +3570,22 @@ private:
                               "void convertToTokenArray() {\n"
                               "}\n"
                               "SAL_WNODEPRECATED_DECLARATIONS_POP"); // #4033
+    }
+
+    void usingNamespace() {
+        functionVariableUsage("int foo() {\n"
+                              "   using namespace ::com::sun::star::i18n;\n"
+                              "   bool b = false;\n"
+                              "   int j = 0;\n"
+                              "   for (int i = 0; i < 3; i++) {\n"
+                              "          if (!b) {\n"
+                              "             j = 3;\n"
+                              "             b = true;\n"
+                              "          }\n"
+                              "   }\n"
+                              "   return j;\n"
+                              "}\n"); // #4585
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
