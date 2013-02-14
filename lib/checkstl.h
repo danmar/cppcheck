@@ -225,8 +225,6 @@ private:
                "* using auto pointer (auto_ptr)\n"
                "* useless calls of string and STL functions\n";
     }
-
-    bool isStlContainer(const Token *tok) const;
 };
 /// @}
 //---------------------------------------------------------------------------

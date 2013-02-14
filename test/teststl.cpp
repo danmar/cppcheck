@@ -101,6 +101,7 @@ private:
         TEST_CASE(size1);
         TEST_CASE(size2);
         TEST_CASE(size3);
+        TEST_CASE(size4); // #2652 - don't warn about vector/deque
 
         // Redundant conditions..
         // if (ints.find(123) != ints.end()) ints.remove(123);
@@ -1618,6 +1619,18 @@ private:
               "    if (zzz->x.size() > 0) { }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+    }
+
+    void size4() { // #2652 - don't warn about vector/deque
+        check("void f(std::vector<int> &v) {\n"
+              "    if (v.size() > 0U) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::deque<int> &v) {\n"
+              "    if (v.size() > 0U) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantCondition2() {

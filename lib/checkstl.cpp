@@ -894,8 +894,10 @@ void CheckStl::if_findError(const Token *tok, bool str)
 }
 
 
-
-bool CheckStl::isStlContainer(const Token *tok) const
+/**
+ * Is container.size() slow?
+ */
+static bool isContainerSizeSlow(const Token *tok)
 {
     // find where this token is defined
     const Variable *var = tok->variable();
@@ -910,11 +912,8 @@ bool CheckStl::isStlContainer(const Token *tok) const
     if (Token::simpleMatch(type, "std ::"))
         type = type->tokAt(2);
 
-    // all possible stl containers as a token
-    static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
-
     // check if it's an stl template
-    if (Token::Match(type, STL_CONTAINER_LIST))
+    if (Token::Match(type, "array|bitset|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string"))
         return true;
 
     return false;
@@ -944,21 +943,21 @@ void CheckStl::size()
                     // check for comparison to zero
                     if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
                         (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<"))) {
-                        if (isStlContainer(tok1))
+                        if (isContainerSizeSlow(tok1))
                             sizeError(tok1);
                     }
 
                     // check for comparison to one
                     if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1")) ||
                         (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>"))) {
-                        if (isStlContainer(tok1))
+                        if (isContainerSizeSlow(tok1))
                             sizeError(tok1);
                     }
 
                     // check for using as boolean expression
                     else if ((Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
                              (tok->previous()->type() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {
-                        if (isStlContainer(tok1))
+                        if (isContainerSizeSlow(tok1))
                             sizeError(tok1);
                     }
                 }
