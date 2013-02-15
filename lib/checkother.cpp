@@ -663,7 +663,7 @@ void CheckOther::sizeofForPointerError(const Token *tok, const std::string &varn
 
 static bool nonLocal(const Variable* var)
 {
-    return (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
+    return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
 }
 
 static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, const SymbolDatabase* symbolDatabase)
@@ -717,6 +717,12 @@ void CheckOther::checkRedundantAssignment()
                                 break;
                             else if (tok2->varId() == tok->varId())
                                 error = false;
+                            else if (Token::Match(tok2, "%var% (") && nonLocal(tok->variable())) { // Called function might use the variable
+                                const Function* func = symbolDatabase->findFunction(tok2);
+                                const Variable* var = tok->variable();
+                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->functionScope->functionOf) && tok2->strAt(-1) != ".")) // Global variable, or member function
+                                    error = false;
+                            }
                         }
                         if (error) {
                             if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
