@@ -1745,8 +1745,6 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
-    simplifyDefaultAndDeleteInsideClass();
-
     // Remove __declspec()
     simplifyDeclspec();
 
@@ -2194,47 +2192,6 @@ bool Tokenizer::hasComplicatedSyntaxErrorsInTemplates()
     }
 
     return false;
-}
-
-void Tokenizer::simplifyDefaultAndDeleteInsideClass()
-{
-    if (isC())
-        return;
-
-    // Remove "= default|delete" inside class|struct definitions
-    // Todo: Remove it if it is used "externally" too.
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "struct|class %var% :|{")) {
-            for (Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "{")
-                    tok2 = tok2->link();
-                else if (tok2->str() == "}")
-                    break;
-                else if (Token::Match(tok2, ") = delete|default ;")) {
-                    Token * const end = tok2->tokAt(4);
-                    tok2 = tok2->link()->previous();
-
-                    // operator ==|>|<|..
-                    if (Token::Match(tok2->previous(), "operator %any%"))
-                        tok2 = tok2->previous();
-                    else if (Token::simpleMatch(tok2->tokAt(-2), "operator [ ]"))
-                        tok2 = tok2->tokAt(-2);
-                    else if (Token::simpleMatch(tok2->tokAt(-2), "operator ( )"))
-                        tok2 = tok2->tokAt(-2);
-                    else if (Token::simpleMatch(tok2->tokAt(-3), "operator delete [ ]"))
-                        tok2 = tok2->tokAt(-3);
-
-                    while ((tok2->isName() && tok2->str().find(":") == std::string::npos) ||
-                           Token::Match(tok2, "[&*~]"))
-                        tok2 = tok2->previous();
-                    if (Token::Match(tok2, "[;{}]") || tok2->isName())
-                        Token::eraseTokens(tok2, end);
-                    else
-                        tok2 = end->previous();
-                }
-            }
-        }
-    }
 }
 
 bool Tokenizer::hasEnumsWithTypedef()

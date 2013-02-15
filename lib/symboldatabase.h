@@ -390,6 +390,8 @@ public:
           isStatic(false),
           isFriend(false),
           isExplicit(false),
+          isDefault(false),
+          isDelete(false),
           isOperator(false),
           retFuncPtr(false) {
     }
@@ -427,6 +429,8 @@ public:
     bool isStatic;         // is static
     bool isFriend;         // is friend
     bool isExplicit;       // is explicit
+    bool isDefault;        // is default
+    bool isDelete;         // is delete
     bool isOperator;       // is operator
     bool retFuncPtr;       // returns function pointer
 

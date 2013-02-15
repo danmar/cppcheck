@@ -398,7 +398,6 @@ private:
         TEST_CASE(cpp0xtemplate1);
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
-        TEST_CASE(cpp0xdefault);
 
         TEST_CASE(arraySize);
 
@@ -6312,48 +6311,6 @@ private:
                            "{ } ;\n"
                            "S < int , ( T ) 0 > s ;",     // current result
                            tokenizeAndStringify(code));
-    }
-
-    void cpp0xdefault() {
-        {
-            const char *code = "struct foo {"
-                               "    foo() = default;"
-                               "}";
-            ASSERT_EQUALS("struct foo { }", tokenizeAndStringify(code));
-        }
-
-        {
-            const char *code = "struct A {"
-                               "  void operator delete (void *) = delete;"
-                               "  void operator delete[] (void *) = delete;"
-                               "}";
-            ASSERT_EQUALS("struct A { }", tokenizeAndStringify(code));
-        }
-
-        {
-            const char *code = "struct A {"
-                               "  void operator = (void *) = delete;"
-                               "}";
-            ASSERT_EQUALS("struct A { }", tokenizeAndStringify(code));
-        }
-
-        {
-            const char *code = "struct foo {"
-                               "    foo();"
-                               "}"
-                               "foo::foo() = delete;";
-            TODO_ASSERT_EQUALS("struct foo { }",
-                               "struct foo { foo ( ) ; } foo :: foo ( ) = delete ;", tokenizeAndStringify(code));
-        }
-
-        //ticket #3448 (segmentation fault)
-        {
-            const char *code = "struct A {"
-                               "  void bar () = delete;"
-                               "};"
-                               "void baz () = delete;";
-            ASSERT_EQUALS("struct A { } ; void baz ( ) = delete ;", tokenizeAndStringify(code));
-        }
     }
 
     std::string arraySize_(const std::string &code) {
