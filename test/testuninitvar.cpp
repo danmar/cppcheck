@@ -2569,33 +2569,40 @@ private:
 
     void uninitvar2_structmembers() { // struct members
         checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    int a = ab.a;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
                         "void do_something(const struct AB ab);\n"
                         "void f(void) {\n"
                         "    struct AB ab;\n"
                         "    ab.a = 0;\n"
                         "    do_something(ab);\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("[test.c:6]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
                         "    struct AB ab;\n"
                         "    int a = ab.a;\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
                         "    struct AB ab;\n"
                         "    buf[ab.a] = 0;\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"  // pass struct member by address
                         "void f(void) {\n"
                         "    struct AB ab;\n"
                         "    assign(&ab.a, 0);\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
@@ -2605,7 +2612,7 @@ private:
                         "    ab.a = 0;\n"
                         "    ab.b = 0;\n"
                         "    do_something(ab);\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
@@ -2614,7 +2621,7 @@ private:
                         "    struct AB ab;\n"
                         "    ab = getAB();\n"
                         "    do_something(ab);\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("struct AB { int a; struct { int b; int c; } s; };\n"
@@ -2625,7 +2632,7 @@ private:
                         "    ab.s.b = 2;\n"
                         "    ab.s.c = 3;\n"
                         "    do_something(ab);\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("struct conf {\n"
@@ -2638,7 +2645,7 @@ private:
                         "   struct conf c;\n"
                         "   initdata(&c);\n"
                         "   do_something(c);\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         // return
@@ -2647,7 +2654,7 @@ private:
                         "    struct AB ab;\n"
                         "    ab.a = 0;\n"
                         "    return ab.b;\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
         checkUninitVar2("struct AB { int a; int b; };\n"
@@ -2655,7 +2662,7 @@ private:
                         "    struct AB ab;\n"
                         "    ab.a = 0;\n"
                         "    return ab.a;\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         // checkIfForWhileHead
@@ -2668,7 +2675,7 @@ private:
                         "   struct FRED fred;\n"
                         "   fred.a = do_something();\n"
                         "   if (fred.a == 0) { }\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("struct FRED {\n"
@@ -2680,7 +2687,7 @@ private:
                         "   struct FRED fred;\n"
                         "   fred.a = do_something();\n"
                         "   if (fred.b == 0) { }\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         ASSERT_EQUALS("[test.c:9]: (error) Uninitialized struct member: fred.b\n", errout.str());
 
         checkUninitVar2("struct S { int n; int m; };\n"
