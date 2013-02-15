@@ -90,10 +90,10 @@ QStandardItem *ResultsTree::CreateLineNumberItem(const QString &linenumber)
     return item;
 }
 
-void ResultsTree::AddErrorItem(const ErrorItem &item)
+bool ResultsTree::AddErrorItem(const ErrorItem &item)
 {
     if (item.files.isEmpty()) {
-        return;
+        return false;
     }
 
     QString realfile = StripPath(item.files[0], false);
@@ -136,7 +136,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
                              SeverityToIcon(line.severity));
 
     if (!stditem)
-        return;
+        return false;
 
     //Add user data to that item
     QMap<QString, QVariant> data;
@@ -178,6 +178,7 @@ void ResultsTree::AddErrorItem(const ErrorItem &item)
     if (!hide) {
         ShowFileItem(realfile);
     }
+    return true;
 }
 
 QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
