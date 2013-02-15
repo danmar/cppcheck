@@ -6818,12 +6818,21 @@ private:
               "    bar = x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    Foo& bar = foo();\n"
               "    bar = x;\n"
               "    bar = y();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'bar' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "    Foo& bar = foo();\n" // #4425. bar might refer to something global, etc.
+              "    bar = y();\n"
+              "    foo();\n"
+              "    bar = y();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // Tests with function call between assignment
         check("void f(int i) {\n"
