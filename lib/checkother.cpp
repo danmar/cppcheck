@@ -661,11 +661,16 @@ void CheckOther::sizeofForPointerError(const Token *tok, const std::string &varn
 // Detect redundant assignments: x = 0; x = 4;
 //---------------------------------------------------------------------------
 
+static bool nonLocal(const Variable* var)
+{
+    return (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
+}
+
 static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, const SymbolDatabase* symbolDatabase)
 {
     for (std::map<unsigned int, const Token*>::iterator i = container.begin(); i != container.end();) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-        if (!var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference()) {
+        if (!var || nonLocal(var)) {
             container.erase(i++);
             if (i == container.end())
                 break;
@@ -717,7 +722,7 @@ void CheckOther::checkRedundantAssignment()
                             if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, tok->str());
                             else
-                                redundantAssignmentError(it->second, tok, tok->str());
+                                redundantAssignmentError(it->second, tok, tok->str(), nonLocal(it->second->variable())); // Inconclusive for non-local variables
                         }
                         it->second = tok;
                     }
@@ -794,13 +799,18 @@ void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2
                 "Buffer '" + var + "' is being written before its old content has been used. 'break;' missing?");
 }
 
-void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var)
+void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
     std::list<const Token*> callstack;
     callstack.push_back(tok1);
     callstack.push_back(tok2);
-    reportError(callstack, Severity::performance, "redundantAssignment",
-                "Variable '" + var + "' is reassigned a value before the old one has been used.");
+    if (inconclusive)
+        reportError(callstack, Severity::performance, "redundantAssignment",
+                    "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
+                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", true);
+    else
+        reportError(callstack, Severity::performance, "redundantAssignment",
+                    "Variable '" + var + "' is reassigned a value before the old one has been used.");
 }
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)

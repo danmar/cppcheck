@@ -325,7 +325,7 @@ private:
     void zerodivError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
-    void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var);
+    void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
     void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
@@ -396,7 +396,7 @@ private:
         //performance
         c.redundantCopyError(0, "varname");
         c.redundantCopyError(0, 0, "var");
-        c.redundantAssignmentError(0, 0, "var");
+        c.redundantAssignmentError(0, 0, "var", false);
 
         // style/warning
         c.oppositeInnerConditionError(0);
