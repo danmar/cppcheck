@@ -324,6 +324,19 @@ private:
               "  fprintf(fp, \"Here's the output.\\n\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:11]: (error) Used file that is not opened.\n", errout.str());
+
+        // #4466
+        check("void chdcd_parse_nero(FILE *infile) {\n"
+              "    switch (mode) {\n"
+              "        case 0x0300:\n"
+              "            fclose(infile);\n"
+              "            return;\n"
+              "        case 0x0500:\n"
+              "            fclose(infile);\n"
+              "            return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {
