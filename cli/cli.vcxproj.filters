@@ -32,10 +32,7 @@
     <ClInclude Include="pathmatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\externals\tinyxml\tinystr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\externals\tinyxml\tinyxml.h">
+    <ClInclude Include="..\externals\tinyxml\tinyxml2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -58,16 +55,7 @@
     <ClCompile Include="cmdlineparser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\externals\tinyxml\tinystr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp">
+    <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
