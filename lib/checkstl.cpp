@@ -951,8 +951,8 @@ void CheckStl::size()
                     }
 
                     // check for comparison to one
-                    if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1")) ||
-                        (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>"))) {
+                    if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1") && !end->tokAt(2)->isArithmeticalOp()) ||
+                        (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>") && !tok->tokAt(-3)->isArithmeticalOp())) {
                         if (isContainerSizeSlow(tok1))
                             sizeError(tok1);
                     }
