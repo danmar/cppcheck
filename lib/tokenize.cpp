@@ -6664,14 +6664,15 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "[(!*;{}] ( %var% )") && tok->next()->varId() != 0) {
+        if (Token::Match(tok->previous(), "[(!*;{}] ( %var% )") &&
+            (tok->next()->varId() != 0 || Token::Match(tok->tokAt(3), "[+-/=]"))) {
             // We have "( var )", remove the parentheses
             tok->deleteThis();
             tok->deleteNext();
             ret = true;
         }
 
-        while (Token::Match(tok->previous(), ";|{|}|[|]|(|)|.|,|! ( %var% .")) {
+        while (Token::Match(tok->previous(), "[;{}[]().,!*] ( %var% .")) {
             Token *tok2 = tok->tokAt(2);
             while (Token::Match(tok2, ". %var%")) {
                 tok2 = tok2->tokAt(2);

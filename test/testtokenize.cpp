@@ -314,6 +314,7 @@ private:
         TEST_CASE(removeParentheses13);
         TEST_CASE(removeParentheses14);      // Ticket #3309
         TEST_CASE(removeParentheses15);      // Ticket #4142
+        TEST_CASE(removeParentheses16);      // Ticket #4423 '*(x.y)='
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -5004,6 +5005,12 @@ private:
 
         // #4316
         ASSERT_EQUALS("a = b ? c : ( d = 1 , 0 ) ;", tokenizeAndStringify("a = b ? c : (d=1,0);", false));
+    }
+
+    void removeParentheses16() { // *(x.y)=
+        // #4423
+        ASSERT_EQUALS("* x = 0 ;", tokenizeAndStringify("*(x)=0;", false));
+        ASSERT_EQUALS("* x . y = 0 ;", tokenizeAndStringify("*(x.y)=0;", false));
     }
 
     void tokenize_double() {
