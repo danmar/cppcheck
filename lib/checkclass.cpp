@@ -1546,6 +1546,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
                 return(false);
 
+            const Token* jumpBackToken = 0;
             const Token *lastVarTok = tok1;
             const Token *end = tok1;
             for (;;) {
@@ -1560,6 +1561,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                         if (var && Token::simpleMatch(var->typeStartToken(), "std :: map")) // operator[] changes a map
                             return(false);
                     }
+                    if (!jumpBackToken)
+                        jumpBackToken = end->next(); // Check inside the [] brackets
                     end = end->linkAt(1);
                 } else if (end->strAt(1) == ")")
                     end = end->next();
@@ -1600,7 +1603,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (start->strAt(-1) == "delete")
                 return(false);
 
-            tok1 = end;
+            tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
         }
 
         // streaming: <<
