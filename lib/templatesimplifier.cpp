@@ -793,7 +793,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         // keep parentheses here: operator new [] (size_t);
         // keep parentheses here: Functor()(a ... )
         // keep parentheses here: ) ( var ) ;
-        if (Token::Match(tok->next(), "( %var% ) ;|)|,|]|%op%") &&
+        if ((Token::Match(tok->next(), "( %var% ) ;|)|,|]") ||
+             (Token::Match(tok->next(), "( %var% ) %op%") && (tok->tokAt(2)->varId()>0 || !Token::Match(tok->tokAt(4), "[*&]")))) &&
             !tok->isName() &&
             tok->str() != ">" &&
             tok->str() != "]" &&

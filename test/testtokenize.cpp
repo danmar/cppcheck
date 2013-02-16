@@ -933,7 +933,9 @@ private:
     }
 
     void removeCast9() {
-        ASSERT_EQUALS("f ( ( double ) v1 * v2 )", tokenizeAndStringify("f((double)(v1)*v2)", true));
+        ASSERT_EQUALS("f ( ( double ) ( v1 ) * v2 )", tokenizeAndStringify("f((double)(v1)*v2)", true));
+        ASSERT_EQUALS("int v1 ; f ( ( double ) v1 * v2 )", tokenizeAndStringify("int v1; f((double)(v1)*v2)", true));
+        ASSERT_EQUALS("f ( ( A ) ( B ) & x )", tokenizeAndStringify("f((A)(B)&x)", true)); // #4439
     }
 
     void removeCast10() {
