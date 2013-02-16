@@ -8471,7 +8471,7 @@ void Tokenizer::simplifyStructDecl()
             tok = tok->next()->link();
 
             // unnamed anonymous struct/union so possibly remove it
-            if (tok->next() && tok->next()->str() == ";") {
+            if (tok && tok->next() && tok->next()->str() == ";") {
                 if (tok1->str() == "union" && inFunction) {
                     // Try to create references in the union..
                     Token *tok2 = tok1->tokAt(2);
