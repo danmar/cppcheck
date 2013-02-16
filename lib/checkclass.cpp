@@ -732,7 +732,7 @@ static bool checkFunctionUsage(const std::string& name, const Scope* scope)
             return true;
     }
 
-    for (std::list<Scope*>::const_iterator i = scope->nestedList.cbegin(); i != scope->nestedList.end(); ++i) {
+    for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
         if ((*i)->isClassOrStruct())
             if (checkFunctionUsage(name, *i)) // Check nested classes, which can access private functions of their base
                 return true;
