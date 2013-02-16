@@ -178,7 +178,7 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
 
 void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
 {
-    reportError(tok, Severity::style, "argumentSize", "the array " + varname + " is too small, the function " + functionName + " expects a bigger array");
+    reportError(tok, Severity::warning, "argumentSize", "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.");
 }
 
 //---------------------------------------------------------------------------
