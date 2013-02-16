@@ -1906,7 +1906,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return true;
     else if (access == Private || access == Public || access == Protected) {
         bool safe = true;
-        bool hasVirt = isImplicitlyVirtual_rec(functionScope->functionOf, safe);
+        bool hasVirt = isImplicitlyVirtual_rec(nestedIn, safe);
         if (hasVirt)
             return true;
         else if (safe)

@@ -720,7 +720,7 @@ void CheckOther::checkRedundantAssignment()
                             else if (Token::Match(tok2, "%var% (") && nonLocal(tok->variable())) { // Called function might use the variable
                                 const Function* func = symbolDatabase->findFunction(tok2);
                                 const Variable* var = tok->variable();
-                                if (!var || var->isGlobal() || var->isReference() || ((!func || !func->functionScope || func->functionScope->functionOf) && tok2->strAt(-1) != ".")) // Global variable, or member function
+                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && tok2->strAt(-1) != ".")) // Global variable, or member function
                                     error = false;
                             }
                         }
