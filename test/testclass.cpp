@@ -2014,6 +2014,15 @@ private:
                       "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
+        checkNoMemset("class Fred {\n"
+                      "    std::string b;\n"
+                      "    void f();\n"
+                      "};\n"
+                      "void Fred::f() {\n"
+                      "    memset(this, 0, sizeof(*this));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
+
         checkNoMemset("class Fred\n"
                       "{\n"
                       "};\n"

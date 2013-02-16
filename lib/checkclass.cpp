@@ -797,6 +797,16 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
+const Scope* findFunctionOf(const Scope* scope)
+{
+    while (scope) {
+        if (scope->type == Scope::eFunction)
+            return scope->functionOf;
+        scope = scope->nestedIn;
+    }
+    return 0;
+}
+
 void CheckClass::noMemset()
 {
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -813,27 +823,30 @@ void CheckClass::noMemset()
                 arg3 = arg3->nextArgument();
 
             const Token *typeTok = 0;
+            const Scope *type = 0;
             if (Token::Match(arg3, "sizeof ( %type% ) )"))
                 typeTok = arg3->tokAt(2);
             else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
                 typeTok = arg3->tokAt(4);
             else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
                 typeTok = arg3->tokAt(3);
-            else if (Token::Match(arg1, "&| %var% ,")) {
+            else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
+                type = findFunctionOf(arg3->scope());
+            } else if (Token::Match(arg1, "&| %var% ,")) {
                 const Variable *var = arg1->str() == "&" ? arg1->next()->variable() : arg1->variable();
-                if (var && (var->typeStartToken() == var->typeEndToken() || Token::Match(var->typeStartToken(), "%type% :: %type%"))
-                    && (arg1->str() == "&" || var->isPointer() || var->isArray()))
-                    typeTok = var->typeEndToken();
+                if (var && (arg1->str() == "&" || var->isPointer() || var->isArray()))
+                    type = var->type();
             }
 
             // No type defined => The tokens didn't match
-            if (!typeTok)
+            if (!typeTok && !type)
                 continue;
 
-            if (typeTok->str() == "(")
+            if (typeTok && typeTok->str() == "(")
                 typeTok = typeTok->next();
 
-            const Scope *type = symbolDatabase->findVariableType(&(*scope), typeTok);
+            if (!type)
+                type = symbolDatabase->findVariableType(&(*scope), typeTok);
 
             if (type)
                 checkMemsetType(&(*scope), tok, type);
