@@ -1572,6 +1572,18 @@ private:
               "    fun(width % x.size() != 0);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4584
+        check("void f() {\n"
+              "    std::list<int> x;\n"
+              "    if (foo + 1 > x.size()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f() {\n"
+              "    std::list<int> x;\n"
+              "    if (x.size() < 1 + foo) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantCondition1() {

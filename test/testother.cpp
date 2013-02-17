@@ -6798,7 +6798,7 @@ private:
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
 
         check("void f() {\n"
               "    int i;\n"
@@ -6812,7 +6812,7 @@ private:
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
 
         // Testing different types
         check("void f() {\n"
@@ -6820,12 +6820,21 @@ private:
               "    bar = x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    Foo& bar = foo();\n"
               "    bar = x;\n"
+              "    bar = y;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'bar' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+
+        check("void f() {\n"
+              "    Foo& bar = foo();\n" // #4425. bar might refer to something global, etc.
+              "    bar = y();\n"
+              "    foo();\n"
               "    bar = y();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'bar' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // Tests with function call between assignment
         check("void f(int i) {\n"
@@ -6882,6 +6891,57 @@ private:
               "    i = 2;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        // #4513
+        check("int x;\n"
+              "int g() {\n"
+              "    return x*x;\n"
+              "}\n"
+              "void f() {\n"
+              "    x = 2;\n"
+              "    x = g();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g() {\n"
+              "    return x*x;\n"
+              "}\n"
+              "void f(int x) {\n"
+              "    x = 2;\n"
+              "    x = g();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "    Foo& bar = foo();\n"
+              "    bar = x;\n"
+              "    bar = y();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    int x;\n"
+              "    void g() { return x*x; }\n"
+              "    void f();\n"
+              "};\n"
+              "\n"
+              "void C::f() {\n"
+              "    x = 2;\n"
+              "    x = g();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    int x;\n"
+              "    void g() { return x*x; }\n"
+              "    void f();\n"
+              "};\n"
+              "\n"
+              "void C::f(Foo z) {\n"
+              "    x = 2;\n"
+              "    x = z.g();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (performance, inconclusive) Variable 'x' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
     }
 
     void redundantMemWrite() {

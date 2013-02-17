@@ -718,15 +718,24 @@ void CheckClass::suggestInitializationList(const Token* tok, const std::string& 
 static bool checkFunctionUsage(const std::string& name, const Scope* scope)
 {
     if (!scope)
-        return true; // Assume its used, if scope is not seen
+        return true; // Assume it is used, if scope is not seen
 
     for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if (func->functionScope) {
-            for (const Token *ftok = func->functionScope->classStart; ftok != func->functionScope->classEnd; ftok = ftok->next()) {
-                if (ftok->str() == name && ftok->next()->str() == "(") // Function called. TODO: Handle overloads
+            for (const Token *ftok = func->functionScope->classDef->linkAt(1); ftok != func->functionScope->classEnd; ftok = ftok->next()) {
+                if (ftok->str() == name) // Function used. TODO: Handle overloads
                     return true;
             }
-        }
+        } else if ((func->type != Function::eCopyConstructor &&
+                    func->type != Function::eOperatorEqual) ||
+                   func->access != Private) // Assume it is used, if a function implementation isn't seen, but empty private copy constructors and assignment operators are OK
+            return true;
+    }
+
+    for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
+        if ((*i)->isClassOrStruct())
+            if (checkFunctionUsage(name, *i)) // Check nested classes, which can access private functions of their base
+                return true;
     }
 
     return false; // Unused in this scope
@@ -745,31 +754,11 @@ void CheckClass::privateFunctions()
         if (Token::findsimplematch(scope->classStart, "; __property ;", scope->classEnd))
             continue;
 
-        // check that the whole class implementation is seen
-        bool whole = true;
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (!func->hasBody) {
-                // empty private copy constructors and assignment operators are OK
-                if ((func->type == Function::eCopyConstructor ||
-                     func->type == Function::eOperatorEqual) &&
-                    func->access == Private)
-                    continue;
-
-                whole = false;
-                break;
-            }
-        }
-        if (!whole)
-            continue;
-
         std::list<const Function*> FuncList;
-        /** @todo embedded class have access to private functions */
-        if (!scope->getNestedNonFunctions()) {
-            for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-                // Get private functions..
-                if (func->type == Function::eFunction && func->access == Private)
-                    FuncList.push_back(&*func);
-            }
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            // Get private functions..
+            if (func->type == Function::eFunction && func->access == Private)
+                FuncList.push_back(&*func);
         }
 
         // Bailout for overridden virtual functions of base classes
@@ -791,23 +780,8 @@ void CheckClass::privateFunctions()
             for (std::list<Scope::FriendInfo>::const_iterator it = scope->friendList.begin(); !used && it != scope->friendList.end(); ++it)
                 used = checkFunctionUsage(funcName, it->scope);
 
-            if (!used) {
-                // Final check; check if the function pointer is used somewhere..
-                const std::string _pattern("return|throw|(|)|,|= &|" + funcName);
-
-                // or if the function address is used somewhere...
-                // eg. sigc::mem_fun(this, &className::classFunction)
-                const std::string _pattern2("& " + scope->className + " :: " + funcName);
-                const std::string methodAsArgument("(|, " + scope->className + " :: " + funcName + " ,|)");
-                const std::string methodAssigned("%var% = &| " + scope->className + " :: " + funcName);
-
-                if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()) &&
-                    !Token::findmatch(_tokenizer->tokens(), _pattern2.c_str()) &&
-                    !Token::findmatch(_tokenizer->tokens(), methodAsArgument.c_str()) &&
-                    !Token::findmatch(_tokenizer->tokens(), methodAssigned.c_str())) {
-                    unusedPrivateFunctionError(FuncList.front()->tokenDef, scope->className, funcName);
-                }
-            }
+            if (!used)
+                unusedPrivateFunctionError(FuncList.front()->tokenDef, scope->className, funcName);
 
             FuncList.pop_front();
         }
@@ -822,6 +796,16 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 //---------------------------------------------------------------------------
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
+
+const Scope* findFunctionOf(const Scope* scope)
+{
+    while (scope) {
+        if (scope->type == Scope::eFunction)
+            return scope->functionOf;
+        scope = scope->nestedIn;
+    }
+    return 0;
+}
 
 void CheckClass::noMemset()
 {
@@ -839,27 +823,30 @@ void CheckClass::noMemset()
                 arg3 = arg3->nextArgument();
 
             const Token *typeTok = 0;
+            const Scope *type = 0;
             if (Token::Match(arg3, "sizeof ( %type% ) )"))
                 typeTok = arg3->tokAt(2);
             else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
                 typeTok = arg3->tokAt(4);
             else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
                 typeTok = arg3->tokAt(3);
-            else if (Token::Match(arg1, "&| %var% ,")) {
+            else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
+                type = findFunctionOf(arg3->scope());
+            } else if (Token::Match(arg1, "&| %var% ,")) {
                 const Variable *var = arg1->str() == "&" ? arg1->next()->variable() : arg1->variable();
-                if (var && (var->typeStartToken() == var->typeEndToken() || Token::Match(var->typeStartToken(), "%type% :: %type%"))
-                    && (arg1->str() == "&" || var->isPointer() || var->isArray()))
-                    typeTok = var->typeEndToken();
+                if (var && (arg1->str() == "&" || var->isPointer() || var->isArray()))
+                    type = var->type();
             }
 
             // No type defined => The tokens didn't match
-            if (!typeTok)
+            if (!typeTok && !type)
                 continue;
 
-            if (typeTok->str() == "(")
+            if (typeTok && typeTok->str() == "(")
                 typeTok = typeTok->next();
 
-            const Scope *type = symbolDatabase->findVariableType(&(*scope), typeTok);
+            if (!type)
+                type = symbolDatabase->findVariableType(&(*scope), typeTok);
 
             if (type)
                 checkMemsetType(&(*scope), tok, type);
@@ -1572,6 +1559,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
                 return(false);
 
+            const Token* jumpBackToken = 0;
             const Token *lastVarTok = tok1;
             const Token *end = tok1;
             for (;;) {
@@ -1586,6 +1574,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                         if (var && Token::simpleMatch(var->typeStartToken(), "std :: map")) // operator[] changes a map
                             return(false);
                     }
+                    if (!jumpBackToken)
+                        jumpBackToken = end->next(); // Check inside the [] brackets
                     end = end->linkAt(1);
                 } else if (end->strAt(1) == ")")
                     end = end->next();
@@ -1626,7 +1616,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (start->strAt(-1) == "delete")
                 return(false);
 
-            tok1 = end;
+            tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
         }
 
         // streaming: <<

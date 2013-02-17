@@ -102,19 +102,18 @@
         <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='InnoSetupCleanup' />
       </Feature>
-      <Feature Id='CLI' Title='Command line interface' AllowAdvertise='no' Description='Command line tool' Level='1'>
+      <Feature Id='CLI' Title='Command line interface' AllowAdvertise='no' Description='Cppcheck as a command line tool' Level='1'>
         <ComponentRef Id='cppcheck.exe' />
       </Feature>
-      <Feature Id='GUI' Title='Graphical interface' AllowAdvertise='no' Description='GUI for cppcheck' Level='1'>
+      <Feature Id='GUI' Title='Graphical interface' AllowAdvertise='no' Description='Cppcheck with a graphical user interface' Level='1'>
         <ComponentRef Id='RegistryEntries' />
         <ComponentRef Id='GuiExecutable' />
-        <Feature Id='Translations' Title='GUI Translations' AllowAdvertise='no' Description='Translations for cppcheck GUI' Level='1'>
+        <Feature Id='Translations' Title='GUI Translations' AllowAdvertise='no' Description='Translations for graphical user interface' Level='1'>
           <ComponentRef Id='GuiTranslations' />
         </Feature>
-        <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='ProgramMenuDir' />
       </Feature>
-      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2010 Runtime Components ">
+      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2010 Runtime Components">
         <MergeRef Id="CRT"/>
       </Feature>
     </Feature>

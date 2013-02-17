@@ -29,10 +29,6 @@
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\pathmatch.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinystr.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinyxml.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinyxmlerror.cpp" />
-    <ClCompile Include="..\externals\tinyxml\tinyxmlparser.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testassignif.cpp" />
@@ -83,8 +79,6 @@
     <ClInclude Include="..\cli\filelister.h" />
     <ClInclude Include="..\cli\pathmatch.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
-    <ClInclude Include="..\externals\tinyxml\tinystr.h" />
-    <ClInclude Include="..\externals\tinyxml\tinyxml.h" />
     <ClInclude Include="..\lib\config.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="redirect.h" />

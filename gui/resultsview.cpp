@@ -102,9 +102,10 @@ void ResultsView::Progress(int value, const QString& description)
 void ResultsView::Error(const ErrorItem &item)
 {
     mErrorsFound = true;
-    mUI.mTree->AddErrorItem(item);
-    emit GotResults();
-    mStatistics->AddItem(ShowTypes::SeverityToShowType(item.severity));
+    if (mUI.mTree->AddErrorItem(item)) {
+        emit GotResults();
+        mStatistics->AddItem(ShowTypes::SeverityToShowType(item.severity));
+    }
 }
 
 void ResultsView::ShowResults(ShowTypes::ShowType type, bool show)

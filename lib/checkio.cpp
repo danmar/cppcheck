@@ -140,6 +140,13 @@ void CheckIO::checkFileUsage()
                         i->second.lastOperation = Filepointer::UNKNOWN_OP;
                     }
                 }
+            } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break") { // Reset upon return, continue or break
+                for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
+                    i->second.mode_indent = 0;
+                    i->second.mode = UNKNOWN;
+                    i->second.op_indent = 0;
+                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                }
             } else if (tok->varId() && Token::Match(tok, "%var% =") && (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile")) {
                 std::map<unsigned int, Filepointer>::iterator i = filepointers.find(tok->varId());
                 if (i != filepointers.end()) {
@@ -187,7 +194,7 @@ void CheckIO::checkFileUsage()
                     if (tok->str() == "ungetc" && fileTok)
                         fileTok = fileTok->nextArgument();
                     operation = Filepointer::UNIMPORTANT;
-                } else if (!Token::Match(tok, "if|for|while|catch|return")) {
+                } else if (!Token::Match(tok, "if|for|while|catch|switch")) {
                     const Token* const end2 = tok->linkAt(1);
                     for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
                         if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {

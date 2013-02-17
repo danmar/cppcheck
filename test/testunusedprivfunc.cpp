@@ -339,11 +339,11 @@ private:
               "    {\n"
               "    private:\n"
               "    };\n"
-              "\n"
+              "private:\n"
               "    static void f()\n"
               "    { }\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'A::f'\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -449,6 +449,16 @@ private:
               "private:\n"
               "    friend Bar;\n" // Unknown friend class
               "    void f() { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Bar {\n"
+              "    void g() { f(); }\n" // Friend class seen, but f not seen
+              "};\n"
+              "class Foo {\n"
+              "private:\n"
+              "    friend Bar;\n"
+              "    void f();\n"
               "};");
         ASSERT_EQUALS("", errout.str());
 

@@ -56,7 +56,7 @@ public:
     *
     * @param item Error item data
     */
-    void AddErrorItem(const ErrorItem &item);
+    bool AddErrorItem(const ErrorItem &item);
 
     /**
     * @brief Clear all errors from the tree

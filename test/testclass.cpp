@@ -163,6 +163,7 @@ private:
         TEST_CASE(constIfCfg);  // ticket #1881 - fp when there are #if
         TEST_CASE(constFriend); // ticket #1921 - fp for friend function
         TEST_CASE(constUnion);  // ticket #2111 - fp when there is a union
+        TEST_CASE(constArrayOperator); // #4406
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -2012,6 +2013,15 @@ private:
                       "    memset(&fred, 0, sizeof(Fred));\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
+
+        checkNoMemset("class Fred {\n"
+                      "    std::string b;\n"
+                      "    void f();\n"
+                      "};\n"
+                      "void Fred::f() {\n"
+                      "    memset(this, 0, sizeof(*this));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -5334,6 +5344,23 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void constArrayOperator() {
+        checkConst("struct foo {\n"
+                   "    int x;\n"
+                   "    int y[5][724];\n"
+                   "    T a() {\n"
+                   "        return y[x++][6];\n"
+                   "    }\n"
+                   "    T b() {\n"
+                   "        return y[1][++x];\n"
+                   "    }\n"
+                   "    T c() {\n"
+                   "        return y[1][6];\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:10]: (style, inconclusive) Technically the member function 'foo::c' can be const.\n", errout.str());
     }
 
     void checkInitializerListOrder(const char code[]) {

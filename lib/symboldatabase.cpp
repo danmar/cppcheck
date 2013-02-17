@@ -410,10 +410,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (end->next()->str() == "const")
                         function.isConst = true;
 
-                    // pure virtual function
-                    if (Token::Match(end, ") const| = %any%"))
-                        function.isPure = true;
-
                     // count the number of constructors
                     if (function.type == Function::eConstructor ||
                         function.type == Function::eCopyConstructor)
@@ -424,10 +420,35 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     function.arg = function.argDef;
 
                     // out of line function
-                    if (Token::Match(end, ") const| ;") ||
-                        Token::Match(end, ") const| = %any%")) {
+                    if (Token::Match(end, ") const| ;")) {
                         // find the function implementation later
                         tok = end->next();
+                        if (tok->str() != ";")
+                            tok = tok->next();
+
+                        scope->functionList.push_back(function);
+                    }
+
+                    // default or delete
+                    else if (Token::Match(end, ") = default|delete ;")) {
+                        if (end->strAt(2) == "default")
+                            function.isDefault = true;
+                        else
+                            function.isDelete = true;
+
+                        tok = end->tokAt(3);
+
+                        scope->functionList.push_back(function);
+                    }
+
+                    // pure virtual function
+                    else if (Token::Match(end, ") const| = %any% ;")) {
+                        function.isPure = true;
+
+                        if (end->next()->str() == "const")
+                            tok = end->tokAt(4);
+                        else
+                            tok = end->tokAt(3);
 
                         scope->functionList.push_back(function);
                     }
@@ -981,7 +1002,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct()) && // or a ctor/dtor
              (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
-              Token::Match(tok->next()->link(), ") : ::| %var% (|::|<|{"))) {
+              Token::Match(tok->next()->link(), ") : ::| %var% (|::|<|{") ||
+              Token::Match(tok->next()->link(), ") = delete|default ;"))) {
         *funcStart = tok;
         *argStart = tok->next();
         return true;
@@ -1642,6 +1664,8 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isStatic: " << (func->isStatic ? "true" : "false") << std::endl;
             std::cout << "        isFriend: " << (func->isFriend ? "true" : "false") << std::endl;
             std::cout << "        isExplicit: " << (func->isExplicit ? "true" : "false") << std::endl;
+            std::cout << "        isDefault: " << (func->isDefault ? "true" : "false") << std::endl;
+            std::cout << "        isDelete: " << (func->isDelete ? "true" : "false") << std::endl;
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
             std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
             std::cout << "        tokenDef: " << _tokenizer->list.fileLine(func->tokenDef) << std::endl;
@@ -1882,7 +1906,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return true;
     else if (access == Private || access == Public || access == Protected) {
         bool safe = true;
-        bool hasVirt = isImplicitlyVirtual_rec(functionScope->functionOf, safe);
+        bool hasVirt = isImplicitlyVirtual_rec(nestedIn, safe);
         if (hasVirt)
             return true;
         else if (safe)

@@ -314,6 +314,7 @@ private:
         TEST_CASE(removeParentheses13);
         TEST_CASE(removeParentheses14);      // Ticket #3309
         TEST_CASE(removeParentheses15);      // Ticket #4142
+        TEST_CASE(removeParentheses16);      // Ticket #4423 '*(x.y)='
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -398,7 +399,6 @@ private:
         TEST_CASE(cpp0xtemplate1);
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
-        TEST_CASE(cpp0xdefault);
 
         TEST_CASE(arraySize);
 
@@ -933,7 +933,9 @@ private:
     }
 
     void removeCast9() {
-        ASSERT_EQUALS("f ( ( double ) v1 * v2 )", tokenizeAndStringify("f((double)(v1)*v2)", true));
+        ASSERT_EQUALS("f ( ( double ) ( v1 ) * v2 )", tokenizeAndStringify("f((double)(v1)*v2)", true));
+        ASSERT_EQUALS("int v1 ; f ( ( double ) v1 * v2 )", tokenizeAndStringify("int v1; f((double)(v1)*v2)", true));
+        ASSERT_EQUALS("f ( ( A ) ( B ) & x )", tokenizeAndStringify("f((A)(B)&x)", true)); // #4439
     }
 
     void removeCast10() {
@@ -5007,6 +5009,12 @@ private:
         ASSERT_EQUALS("a = b ? c : ( d = 1 , 0 ) ;", tokenizeAndStringify("a = b ? c : (d=1,0);", false));
     }
 
+    void removeParentheses16() { // *(x.y)=
+        // #4423
+        ASSERT_EQUALS("* x = 0 ;", tokenizeAndStringify("*(x)=0;", false));
+        ASSERT_EQUALS("* x . y = 0 ;", tokenizeAndStringify("*(x.y)=0;", false));
+    }
+
     void tokenize_double() {
         const char code[] = "void f()\n"
                             "{\n"
@@ -6312,48 +6320,6 @@ private:
                            "{ } ;\n"
                            "S < int , ( T ) 0 > s ;",     // current result
                            tokenizeAndStringify(code));
-    }
-
-    void cpp0xdefault() {
-        {
-            const char *code = "struct foo {"
-                               "    foo() = default;"
-                               "}";
-            ASSERT_EQUALS("struct foo { }", tokenizeAndStringify(code));
-        }
-
-        {
-            const char *code = "struct A {"
-                               "  void operator delete (void *) = delete;"
-                               "  void operator delete[] (void *) = delete;"
-                               "}";
-            ASSERT_EQUALS("struct A { }", tokenizeAndStringify(code));
-        }
-
-        {
-            const char *code = "struct A {"
-                               "  void operator = (void *) = delete;"
-                               "}";
-            ASSERT_EQUALS("struct A { }", tokenizeAndStringify(code));
-        }
-
-        {
-            const char *code = "struct foo {"
-                               "    foo();"
-                               "}"
-                               "foo::foo() = delete;";
-            TODO_ASSERT_EQUALS("struct foo { }",
-                               "struct foo { foo ( ) ; } foo :: foo ( ) = delete ;", tokenizeAndStringify(code));
-        }
-
-        //ticket #3448 (segmentation fault)
-        {
-            const char *code = "struct A {"
-                               "  void bar () = delete;"
-                               "};"
-                               "void baz () = delete;";
-            ASSERT_EQUALS("struct A { } ; void baz ( ) = delete ;", tokenizeAndStringify(code));
-        }
     }
 
     std::string arraySize_(const std::string &code) {
