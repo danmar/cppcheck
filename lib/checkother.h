@@ -110,6 +110,7 @@ public:
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
         checkOther.checkModuloAlwaysTrueFalse();
+        checkOther.checkPipeParameterSize();
 
         checkOther.checkAssignBoolToPointer();
         checkOther.checkBitwiseOnBoolean();
@@ -297,11 +298,15 @@ public:
     /** @brief %Check that variadic function calls don't use NULL. If NULL is #defined as 0 and the function expects a pointer, the behaviour is undefined. */
     void checkVarFuncNullUB();
 
+    /** @brief %Check that calling the POSIX pipe() system call is called with an integer array of size two. */
+    void checkPipeParameterSize();
+
 private:
     bool isUnsigned(const Variable *var) const;
     bool isSigned(const Variable *var) const;
 
     // Error messages..
+    void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void oppositeInnerConditionError(const Token *tok);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
@@ -392,6 +397,7 @@ private:
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
+        c.checkPipeParameterSizeError(0, "varname", "dimension");
 
         //performance
         c.redundantCopyError(0, "varname");
@@ -469,6 +475,7 @@ private:
                "* free() or delete of an invalid memory location\n"
                "* double free() or double closedir()\n"
                "* bitwise operation with negative right operand\n"
+               "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
 
                //performance
                "* redundant data copying for const variable\n"

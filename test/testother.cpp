@@ -194,6 +194,8 @@ private:
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
+
+        TEST_CASE(checkPipeParameterSize); // ticket #3521
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false) {
@@ -6975,6 +6977,56 @@ private:
 
         check("void a(char *p, ...);\n"
               "void b() { a(NULL, 2); }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkPipeParameterSize() { // #3521
+        check("void f(){\n"
+              "int pipefd[1];\n" //<--  array of two integers is needed
+              "if (pipe(pipefd) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Variable pipefd must have size 2 when it is used as parameter of pipe() command.\n", errout.str());
+
+        check("void f(){\n"
+              "int pipefd[2];\n"
+              "if (pipe(pipefd) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "int pipefd[20];\n"
+              "if (pipe(pipefd) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "int pipefd[1];\n" //<--  array of two integers is needed
+              "if (pipe2(pipefd,0) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Variable pipefd must have size 2 when it is used as parameter of pipe() command.\n", errout.str());
+
+        check("void f(){\n"
+              "int pipefd[2];\n"
+              "if (pipe2(pipefd,0) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "int pipefd[20];\n"
+              "if (pipe2(pipefd,0) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}",NULL,false,false,true);
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -524,6 +524,51 @@ void CheckOther::sizeofForNumericParameterError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
+// This check detects errors on POSIX systems, when a pipe command called
+// with a wrong dimensioned file descriptor array. The pipe command requires
+// exactly an integer array of dimension two as parameter.
+//
+// References:
+//  - http://linux.die.net/man/2/pipe
+//  - ticket #3521
+//---------------------------------------------------------------------------
+void CheckOther::checkPipeParameterSize()
+{
+    if (!_settings->isEnabled("warning")
+        || !_settings->standards.posix)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "pipe ( %var% )") ||
+                Token::Match(tok, "pipe2 ( %var% ,")) {
+                const Token * const varTok = tok->tokAt(2);
+
+                const Variable *var = varTok->variable();
+                MathLib::bigint dim;
+                if (var && (var->isArray() || var->isPointer()) && ((dim=var->dimension(0U)) < 2)) {
+                    const std::string strDim = MathLib::longToString(dim);
+                    checkPipeParameterSizeError(varTok,varTok->str(), strDim);
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim)
+{
+    reportError(tok, Severity::error,
+                "wrongPipeParameterSize", "Variable " + strVarName + " must have size 2 when it is used as parameter of pipe() command.\n"
+                "The pipe()/pipe2() system command takes an argument, which is an array of exactly two integers."
+                "\nThe variable " + strVarName + " is an array of size "
+                + strDim + ", which does not match."
+               );
+}
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckOther::checkSizeofForArrayParameter()
 {
