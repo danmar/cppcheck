@@ -332,7 +332,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     mThread->SetFiles(fileNames);
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
-    mSettings->setValue(SETTINGS_CHECK_PATH, checkPath);
+    SetPath(SETTINGS_LAST_CHECK_PATH, checkPath);
 
     CheckLockDownUI(); // lock UI while checking
 

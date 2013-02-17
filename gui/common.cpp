@@ -26,24 +26,19 @@
 QString GetPath(const QString &type)
 {
     QSettings settings;
-    const QString path = settings.value(type, "").toString();
-    if (path.isEmpty())
-        return settings.value(SETTINGS_LAST_USED_PATH, "").toString();
+    QString path = settings.value(type, "").toString();
+    if (path.isEmpty()) {
+        // if not set, fallback to last check path hoping that it will be close enough
+        path = settings.value(SETTINGS_LAST_CHECK_PATH, "").toString();
+        if (path.isEmpty())
+            // if not set, return user's home directory as the best we can do for now
+            return QDir::homePath();
+    }
     return path;
 }
 
-void SetPath(const QString &type, const QString &value, bool storeAsLastUsed /* = true */)
+void SetPath(const QString &type, const QString &value)
 {
     QSettings settings;
     settings.setValue(type, value);
-    if (storeAsLastUsed) {
-        // file name and especially its extension is not portable between types so strip it
-        const QFileInfo fi(value);
-        if (fi.isFile()) {
-            settings.setValue(SETTINGS_LAST_USED_PATH, fi.dir().path());
-        }
-        else {
-            settings.setValue(SETTINGS_LAST_USED_PATH, value);
-        }
-    }
 }

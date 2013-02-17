@@ -64,7 +64,7 @@ void ApplicationDialog::Browse()
                            filter);
 
     if (!selectedFile.isEmpty()) {
-        SetPath(SETTINGS_LAST_APP_PATH, selectedFile, false);
+        SetPath(SETTINGS_LAST_APP_PATH, selectedFile);
         QString path(QDir::toNativeSeparators(selectedFile));
         mUI.mPath->setText(path);
     }
