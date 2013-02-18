@@ -2740,6 +2740,18 @@ void CheckOther::checkDuplicateBranch()
 
         // check all the code in the function for if (..) else
         if (Token::simpleMatch(scope->classEnd, "} else {")) {
+            // Make sure there are no macros (different macros might be expanded
+            // to the same code)
+            bool macro = false;
+            for (const Token *tok = scope->classStart; tok != scope->classEnd->linkAt(2); tok = tok->next()) {
+                if (tok->isExpandedMacro()) {
+                    macro = true;
+                    break;
+                }
+            }
+            if (macro)
+                continue;
+
             // save if branch code
             std::string branch1 = scope->classStart->next()->stringifyList(scope->classEnd);
 

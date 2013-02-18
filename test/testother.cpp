@@ -166,6 +166,7 @@ private:
         TEST_CASE(duplicateIf1); // ticket 3689
         TEST_CASE(duplicateBranch);
         TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
+        TEST_CASE(duplicateBranch2); // empty macro
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
@@ -5113,6 +5114,18 @@ private:
               "    frac = (front)/((front-back));\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+    }
+
+    void duplicateBranch2() {
+        Preprocessor::macroChar = '$';
+
+        check("void f(int x) {\n" // #4329
+              "  if (x)\n"
+              "    $;\n"
+              "  else\n"
+              "    $;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression1() {
