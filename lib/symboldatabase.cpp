@@ -1075,6 +1075,12 @@ void Variable::evaluate()
             tok = tok->link();
         setFlag(fHasDefault, tok->str() == "=");
     }
+    // check for C++11 member initialization
+    if (_scope && _scope->isClassOrStruct()) {
+        // type var = x; gets simplified to: type var ; var = x ;
+        if (Token::Match(_name, "%var% ; %var% = %any% ;") && _name->strAt(2) == _name->str())
+            setFlag(fHasDefault, true);
+    }
 }
 
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth)

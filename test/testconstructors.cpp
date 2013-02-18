@@ -63,6 +63,7 @@ private:
         TEST_CASE(simple8);
         TEST_CASE(simple9); // ticket #4574
         TEST_CASE(simple10); // ticket #4388
+        TEST_CASE(simple11); // ticket #4536
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -338,6 +339,16 @@ private:
               "    Fred() = default;\n"
               "private:\n"
               "    int x;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple11() { // ticket #4536
+        check("class Fred {\n"
+              "public:\n"
+              "    Fred() {}\n"
+              "private:\n"
+              "    int x = 0;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }

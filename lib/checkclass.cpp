@@ -109,6 +109,10 @@ void CheckClass::constructors()
             std::list<Variable>::const_iterator var;
             unsigned int count = 0;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
+                // check for C++11 initializer
+                if (var->hasDefault())
+                    usage[count].init = true;
+
                 bool inconclusive = false;
 
                 if (usage[count].assign || usage[count].init || var->isStatic())
