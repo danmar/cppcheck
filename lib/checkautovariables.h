@@ -63,10 +63,11 @@ public:
     void returnReference();
 
 private:
-    bool isRefPtrArg(const Token *tok);
-    bool isPtrArg(const Token *tok);
-    bool isAutoVar(const Token *tok);
-    bool isAutoVarArray(const Token *tok);
+    static bool isPtrArg(const Token *tok);
+    static bool isRefPtrArg(const Token *tok);
+    static bool isNonReferenceArg(const Token *tok);
+    static bool isAutoVar(const Token *tok);
+    static bool isAutoVarArray(const Token *tok);
 
     /**
      * Returning a temporary object?

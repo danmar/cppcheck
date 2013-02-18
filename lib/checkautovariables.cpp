@@ -36,6 +36,13 @@ namespace {
 }
 
 
+bool CheckAutoVariables::isPtrArg(const Token *tok)
+{
+    const Variable *var = tok->variable();
+
+    return(var && var->isArgument() && var->isPointer());
+}
+
 bool CheckAutoVariables::isRefPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
@@ -43,11 +50,11 @@ bool CheckAutoVariables::isRefPtrArg(const Token *tok)
     return(var && var->isArgument() && var->isReference() && var->isPointer());
 }
 
-bool CheckAutoVariables::isPtrArg(const Token *tok)
+bool CheckAutoVariables::isNonReferenceArg(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return(var && var->isArgument() && var->isPointer());
+    return(var && var->isArgument() && !var->isReference() && (var->isPointer() || var->typeStartToken()->isStandardType() || var->type()));
 }
 
 bool CheckAutoVariables::isAutoVar(const Token *tok)
@@ -80,10 +87,14 @@ static bool checkRvalueExpression(const Variable* var, const Token* next)
     return((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
-static bool pointerIsDereferencedInScope(const Variable *var, const Scope *scope, const bool cpp)
+static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)
 {
-    for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-        if (tok->varId() == var->varId() && CheckUninitVar::isVariableUsage(tok, true, cpp))
+    for (const Token *tok = start; tok != scope->classEnd; tok = tok->next()) {
+        if (tok->varId() == varId)
+            return true;
+        if (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eDo || tok->scope()->type == Scope::eWhile) // In case of loops, better checking would be necessary
+            return true;
+        if (Token::simpleMatch(tok, "asm ("))
             return true;
     }
     return false;
@@ -110,9 +121,8 @@ void CheckAutoVariables::autoVariables()
                     errorAutoVariableAssignment(tok->next(), false);
             } else if (reportWarnings &&
                        Token::Match(tok, "[;{}] %var% =") &&
-                       isPtrArg(tok->next()) &&
-                       Token::Match(tok->next()->variable()->typeStartToken(), "struct| %type% * %var% [,)]") &&
-                       !pointerIsDereferencedInScope(tok->next()->variable(), scope, _tokenizer->isCPP())) {
+                       isNonReferenceArg(tok->next()) &&
+                       !variableIsUsedInScope(Token::findsimplematch(tok->tokAt(2), ";"), tok->next()->varId(), scope)) {
                 errorUselessAssignmentPtrArg(tok->next());
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)

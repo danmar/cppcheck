@@ -112,7 +112,7 @@ private:
               "    int num = 2;\n"
               "    res = &num;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
 
         check("void func1(int **res)\n"
               "{\n"
@@ -141,7 +141,7 @@ private:
               "    int num = 2;\n"
               "    res = &num;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
 
         check("class Fred {\n"
               "    void func1(int **res);\n"
@@ -247,6 +247,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
 
+        check("void foo(int b) {\n"
+              "    b = foo(b);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+
         check("void foo(char* p) {\n"
               "    if (!p) p = buf;\n"
               "    *p = 0;\n"
@@ -256,6 +261,38 @@ private:
         check("void foo(char* p) {\n"
               "    if (!p) p = buf;\n"
               "    do_something(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char* p) {\n"
+              "    while (!p) p = buf;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char* p) {\n"
+              "    p = 0;\n"
+              "    asm(\"somecmd\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(Foo* p) {\n"
+              "    p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+
+        check("class Foo {};\n"
+              "void foo(Foo p) {\n"
+              "    p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+
+        check("void foo(Foo p) {\n"
+              "    p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int& p) {\n"
+              "    p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
