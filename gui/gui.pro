@@ -106,6 +106,7 @@ SOURCES += aboutdialog.cpp \
            applicationlist.cpp \
            checkstatistics.cpp \
            checkthread.cpp \
+           common.cpp \
            csvreport.cpp \
            erroritem.cpp \
            filelist.cpp \
