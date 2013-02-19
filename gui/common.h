@@ -92,7 +92,7 @@
 #define SETTINGS_LAST_APP_PATH          "Last application path"
 
 
-/** 
+/**
  * @brief Obtains the path of specified type
  * Returns the path of specified type if not empty. Otherwise returns last check
  * path if valid or user's home directory.
@@ -101,7 +101,7 @@
  */
 QString GetPath(const QString &type);
 
-/** 
+/**
  * @brief Stores last used path of specified type
  * Stores provided path as last used path for specified type.
  * @param type Type of the path to store

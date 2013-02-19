@@ -411,9 +411,9 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
             FormatAndSetTitle(dir);
         }
     }
-    
+
     SetPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
-    
+
     return selected;
 }
 
@@ -1029,7 +1029,7 @@ void MainWindow::NewProjectFile()
         return;
 
     SetPath(SETTINGS_LAST_PROJECT_PATH, filepath);
-    
+
     EnableProjectActions(true);
     QFileInfo inf(filepath);
     const QString filename = inf.fileName();
