@@ -59,6 +59,7 @@ private:
         TEST_CASE(tokenize24);  // #4195 (segmentation fault)
         TEST_CASE(tokenize25);  // #4239 (segmentation fault)
         TEST_CASE(tokenize26);  // #4245 (segmentation fault)
+        TEST_CASE(tokenize27);  // #4525 (segmentation fault)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -688,6 +689,16 @@ private:
     // #4245 - segfault
     void tokenize26() {
         tokenizeAndStringify("class x { protected : template < int y = } ;");
+    }
+
+    // #4525 - segfault
+    void tokenize27() {
+        tokenizeAndStringify("struct except_spec_d_good : except_spec_a, except_spec_b {\n"
+                             "~except_spec_d_good();\n"
+                             "};\n"
+                             "struct S { S(); };\n"
+                             "S::S() __attribute((pure)) = default;"
+                            );
     }
 
     void wrong_syntax1() {
