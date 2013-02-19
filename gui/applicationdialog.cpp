@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include "applicationdialog.h"
 #include "application.h"
+#include "common.h"
 
 
 ApplicationDialog::ApplicationDialog(const QString &title,
@@ -59,10 +60,11 @@ void ApplicationDialog::Browse()
 #endif // Q_WS_WIN
     QString selectedFile = QFileDialog::getOpenFileName(this,
                            tr("Select viewer application"),
-                           QString(),
+                           GetPath(SETTINGS_LAST_APP_PATH),
                            filter);
 
     if (!selectedFile.isEmpty()) {
+        SetPath(SETTINGS_LAST_APP_PATH, selectedFile);
         QString path(QDir::toNativeSeparators(selectedFile));
         mUI.mPath->setText(path);
     }
