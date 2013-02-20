@@ -3752,7 +3752,7 @@ void Tokenizer::simplifyEmptyNamespaces()
         return;
 
     bool goback = false;
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token *tok = list.front(); tok; tok = tok ? tok->next() : NULL) {
         if (goback) {
             tok = tok->previous();
             goback = false;

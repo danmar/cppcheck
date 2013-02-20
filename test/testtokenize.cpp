@@ -68,7 +68,8 @@ private:
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
         TEST_CASE(syntax_case_default);
-        TEST_CASE(garbageCode);
+        TEST_CASE(garbageCode1);
+        TEST_CASE(garbageCode2); // #4300
 
         TEST_CASE(foreach);     // #3690
 
@@ -835,8 +836,12 @@ private:
         }
     }
 
-    void garbageCode() {
+    void garbageCode1() {
         tokenizeAndStringify("struct x foo_t; foo_t typedef y;");
+    }
+
+    void garbageCode2() { //#4300 (segmentation fault)
+        tokenizeAndStringify("enum { D = 1  struct  { } ; }  s.b = D;");
     }
 
     void foreach() {
