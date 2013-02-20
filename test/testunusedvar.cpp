@@ -103,6 +103,7 @@ private:
         TEST_CASE(localvaralias9); // ticket #1996
         TEST_CASE(localvaralias10); // ticket #2004
         TEST_CASE(localvaralias11); // ticket #4423 - iterator
+        TEST_CASE(localvaralias12); // ticket #4394
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -2723,6 +2724,15 @@ private:
         functionVariableUsage("void f(Foo &foo) {\n"
                               "    std::set<int>::iterator x = foo.dostuff();\n"
                               "    *(x) = 0;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias12() { // #4394
+        functionVariableUsage("void f(void) {\n"
+                              "    int a[4];\n"
+                              "    int *b = (int*)((int*)a+1);\n"
+                              "    x(b);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

@@ -427,9 +427,13 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
         }
         tok = tok->next();
 
-        if (Token::Match(tok, "&| %var%") ||
-            Token::Match(tok, "( const| struct|union| %type% *| ) &| %var%") ||
-            Token::Match(tok, "( const| struct|union| %type% *| ) ( &| %var%") ||
+        if (Token::Match(tok, "( const| struct|union| %type% * ) ( ("))
+            tok = tok->link()->next();
+
+        if (Token::Match(tok, "( [(<] const| struct|union| %type% *| [>)]"))
+            tok = tok->next();
+
+        if (Token::Match(tok, "(| &| %var%") ||
             Token::Match(tok->next(), "< const| struct|union| %type% *| > ( &| %var%")) {
             bool addressOf = false;
 
