@@ -783,7 +783,7 @@ void CmdLineParser::PrintHelp()
               "                         Force inclusion of a file before the checked file. Can\n"
               "                         be used for example when checking the Linux kernel,\n"
               "                         where autoconf.h needs to be included for every file\n"
-              "                         compiled. Works the same way as the GCC -include"
+              "                         compiled. Works the same way as the GCC -include\n"
               "                         option.\n"
               "    -i <dir or file>     Give a source file or source file directory to exclude\n"
               "                         from the check. This applies only to source files so\n"
