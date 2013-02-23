@@ -37,7 +37,7 @@ There are multiple compilation choices:
 
 You can use the gui/gui.pro file to build the GUI.
 
-```
+```shell
 cd gui
 qmake
 make
@@ -63,13 +63,13 @@ http://software-download.name/pcre-library-windows/
 
 To build Cppcheck with rules (PCRE dependency):
 
-```
+```shell
 make HAVE_RULES=yes
 ```
 
 To build Cppcheck without rules (no dependencies):
 
-```
+```shell
 make
 ```
 
@@ -77,25 +77,25 @@ make
 
 If you just want to build Cppcheck without dependencies then you can use this command:
 
-```
+```shell
 g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
 ```
 
 If you want to use `--rule` and `--rule-file` then dependencies are needed:
 
-```
+```shell
 g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 ```
 
 ### MinGW
 
-```
+```shell
 make LDFLAGS=-lshlwapi
 ```
 
 ### Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
-```
+```shell
 sudo apt-get install mingw32
 make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
 mv cppcheck cppcheck.exe
