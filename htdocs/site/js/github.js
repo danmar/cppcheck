@@ -12,7 +12,9 @@ jQuery.fn.listCommits = function(username, repository, branch) {
     $(commits).each(function(i) {
       var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha;
       var shortMessage = cutLines(this.commit.message);
-      var author = this.author.login;
+      if (this.author !== null) {
+        var author = this.author.login;
+      }
       if (author === '') {
         author = this.author.name;
       }
