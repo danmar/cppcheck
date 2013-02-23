@@ -2696,6 +2696,12 @@ private:
                         " for (s.n = 0; s.n <= 10; s.n++) { }\n"
                         "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void test2() {\n"
+                        "  struct { char type; } s_d;\n"
+                        "  if (foo(&s_d.type)){}\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {

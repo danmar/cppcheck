@@ -1412,9 +1412,10 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
         if (tok->varId() == var.varId()) {
             if (Token::Match(tok, "%var% . %var%")) {
                 if (tok->strAt(2) == membervar) {
-                    if (tok->strAt(3) == "=")
+                    if (isMemberVariableAssignment(tok, membervar))
                         return true;
-                    else
+
+                    if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                         uninitStructMemberError(tok, tok->str() + "." + membervar);
                 }
                 continue;
