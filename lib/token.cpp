@@ -1066,12 +1066,16 @@ void Token::astFunctionCall()
 
 void Token::astHandleParentheses()
 {
+    // Assumptions:
+    // * code is valid
+    // * _str is one of: ( ) ]
+
     Token *innerTop;
-    if (_str != "(")
+    if (Token::Match(this, ")|]"))
         innerTop = _previous;
     else if (_next && _next->_str == ")")
         return;
-    else
+    else  // _str = "("
         innerTop = _next;
     while (innerTop->_astParent)
         innerTop = innerTop->_astParent;

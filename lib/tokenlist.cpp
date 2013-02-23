@@ -412,7 +412,7 @@ void TokenList::createAst()
 
     // parentheses..
     for (Token *tok = _front; tok; tok = tok->next()) {
-        if (tok->str() == "(" || tok->str() == ")" || tok->str() == "]") {
+        if (Token::Match(tok, "(|)|]")) {
             tok->astHandleParentheses();
         }
     }
