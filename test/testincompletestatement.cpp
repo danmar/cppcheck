@@ -176,6 +176,10 @@ private:
         // #2482 - false positive for empty struct
         check("struct A {};");
         ASSERT_EQUALS("", errout.str());
+
+        // #4387 - C++11 initializer list
+        check("A::A() : abc{0} {}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnstruct() {
