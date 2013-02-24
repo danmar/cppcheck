@@ -167,7 +167,7 @@ private:
     }
 
     void structinit() {
-        // #2462 - C++0x struct initialization
+        // #2462 - C++11 struct initialization
         check("void f() {\n"
               "    ABC abc{1,2,3};\n"
               "}\n");
@@ -179,6 +179,10 @@ private:
 
         // #4387 - C++11 initializer list
         check("A::A() : abc{0} {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #4503 - vector init
+        check("void f() { vector<int> v{1}; }");
         ASSERT_EQUALS("", errout.str());
     }
 
