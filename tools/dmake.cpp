@@ -125,9 +125,9 @@ static void makeExtObj(std::ostream &fout, const std::vector<std::string> &exter
     for (unsigned int i = 0; i < externalfiles.size(); ++i) {
         if (start) {
             libName = getLibName(externalfiles[i]);
-            fout << "ifndef " << libName << std::endl;
+            fout << "ifndef " << libName << "\n";
             fout << "    " << libName << " = " << objfile(externalfiles[i]);
-            libNames << "EXTOBJ += $(" << libName << ")" << std::endl;
+            libNames << "EXTOBJ += $(" << libName << ")\n";
             start = false;
         } else {
             fout << std::string(14, ' ') << objfile(externalfiles[i]);
@@ -135,12 +135,11 @@ static void makeExtObj(std::ostream &fout, const std::vector<std::string> &exter
 
         if (i+1 >= externalfiles.size() || libName != getLibName(externalfiles[i+1])) {
             // This was the last file for this library
-            fout << std::endl << "endif" << std::endl;
-            fout << "\n\n";
+            fout << "\nendif\n\n\n";
             start = true;
         } else {
             // There are more files for this library
-            fout << " \\" << std::endl;
+            fout << " \\\n";
         }
     }
 
@@ -331,15 +330,15 @@ int main(int argc, char **argv)
     fout << "\n###### Object Files\n\n";
     fout << "LIBOBJ =      " << objfile(libfiles[0]);
     for (unsigned int i = 1; i < libfiles.size(); ++i)
-        fout << " \\" << std::endl << std::string(14, ' ') << objfile(libfiles[i]);
+        fout << " \\\n" << std::string(14, ' ') << objfile(libfiles[i]);
     fout << "\n\n";
     fout << "CLIOBJ =      " << objfile(clifiles[0]);
     for (unsigned int i = 1; i < clifiles.size(); ++i)
-        fout << " \\" << std::endl << std::string(14, ' ') << objfile(clifiles[i]);
+        fout << " \\\n" << std::string(14, ' ') << objfile(clifiles[i]);
     fout << "\n\n";
     fout << "TESTOBJ =     " << objfile(testfiles[0]);
     for (unsigned int i = 1; i < testfiles.size(); ++i)
-        fout << " \\" << std::endl << std::string(14, ' ') << objfile(testfiles[i]);
+        fout << " \\\n" << std::string(14, ' ') << objfile(testfiles[i]);
     fout << "\n\n";
 
     makeExtObj(fout, externalfiles);
@@ -359,9 +358,6 @@ int main(int argc, char **argv)
     fout << "reduce:\ttools/reduce.cpp\n";
     fout << "\t$(CXX) -g -o reduce tools/reduce.cpp -Ilib lib/*.cpp\n\n";
     fout << "clean:\n";
-#ifdef _WIN32
-    fout << "\tdel build\\*.o\n\tdel lib\\*.o\n\tdel cli\\*.o\n\tdel test\\*.o\n\tdel *.exe\n";
-#else
     fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
@@ -371,7 +367,6 @@ int main(int argc, char **argv)
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n\n";
-#endif
 
     fout << "\n###### Build\n\n";
 
