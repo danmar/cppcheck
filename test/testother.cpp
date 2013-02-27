@@ -197,6 +197,8 @@ private:
         TEST_CASE(varFuncNullUB);
 
         TEST_CASE(checkPipeParameterSize); // ticket #3521
+
+        TEST_CASE(checkCastIntToCharAndBack); // ticket #160
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false) {
@@ -7100,6 +7102,131 @@ private:
               "    return;\n"
               "  }\n"
               "}",NULL,false,false,true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkCastIntToCharAndBack() { // #160
+
+        // check getchar
+        check("void f(){  \n"
+              "unsigned char c;\n"
+              "  while( (c = getchar()) != EOF)\n"
+              "  {\n"
+              "    bar(c);\n"
+              "  } ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f(){  \n"
+              "unsigned char c = getchar();\n"
+              "  while( EOF != c)\n"
+              "  {\n"
+              "    bar(c);\n"
+              "  } ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f(){  \n"
+              "unsigned char c;\n"
+              "  while( EOF != (c = getchar()) )\n"
+              "  {\n"
+              "    bar(c);\n"
+              "  } ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f(){  \n"
+              "int i;\n"
+              "  while( (i = getchar()) != EOF)\n"
+              "  {\n"
+              "    bar(i);\n"
+              "  } ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){  \n"
+              "int i;\n"
+              "  while( EOF != (i = getchar()) )\n"
+              "  {\n"
+              "    bar(i);\n"
+              "  } ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // check getc
+        check("voif f (FILE * pFile){\n"
+              "unsigned char c;\n"
+              "do {\n"
+              "  c = getc (pFile);\n"
+              "} while (c != EOF)"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Storing getc() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("voif f (FILE * pFile){\n"
+              "unsigned char c;\n"
+              "do {\n"
+              "  c = getc (pFile);\n"
+              "} while (EOF != c)"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Storing getc() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("voif f (FILE * pFile){\n"
+              "int i;\n"
+              "do {\n"
+              "  i = getc (pFile);\n"
+              "} while (i != EOF)"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("voif f (FILE * pFile){\n"
+              "int i;\n"
+              "do {\n"
+              "  i = getc (pFile);\n"
+              "} while (EOF != i)"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // check fgetc
+        check("voif f (FILE * pFile){\n"
+              "unsigned char c;\n"
+              "do {\n"
+              "  c = fgetc (pFile);\n"
+              "} while (c != EOF)"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Storing fgetc() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("voif f (FILE * pFile){\n"
+              "char c;\n"
+              "do {\n"
+              "  c = fgetc (pFile);\n"
+              "} while (EOF != c)"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Storing fgetc() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("voif f (FILE * pFile){\n"
+              "signed char c;\n"
+              "do {\n"
+              "  c = fgetc (pFile);\n"
+              "} while (EOF != c)"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("voif f (FILE * pFile){\n"
+              "int i;\n"
+              "do {\n"
+              "  i = fgetc (pFile);\n"
+              "} while (i != EOF)"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("voif f (FILE * pFile){\n"
+              "int i;\n"
+              "do {\n"
+              "  i = fgetc (pFile);\n"
+              "} while (EOF != i)"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

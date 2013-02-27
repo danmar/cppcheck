@@ -32,6 +32,77 @@ namespace {
     CheckOther instance;
 }
 
+//----------------------------------------------------------------------------------
+// The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
+// If this return value is stored in a character variable and then compared
+// to compared to EOF, which is an integer, the comparison maybe be false.
+//
+// Reference:
+// - Ticket #160
+// - http://www.cplusplus.com/reference/cstdio/fgetc/
+// - http://www.cplusplus.com/reference/cstdio/getc/
+// - http://www.cplusplus.com/reference/cstdio/getchar/
+// - http://www.cplusplus.com/reference/cstdio/ungetc/ ....
+//----------------------------------------------------------------------------------
+void CheckOther::checkCastIntToCharAndBack()
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope     = symbolDatabase->functionScopes[i];
+        unsigned int uiVarId    = 0;
+        std::string strFunctionName;
+        const std::string strFunctionsToSearch();
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
+                if (tok->varId()) {
+                    const Variable *var = tok->variable();
+                    if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
+                        uiVarId = tok->varId();
+                        strFunctionName = tok->tokAt(2)->str();
+                    }
+                }
+            } else if (Token::Match(tok, "EOF %comp% ( %var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
+                tok = tok->tokAt(3);
+                if (tok && tok->varId()) {
+                    const Variable *var = tok->variable();
+                    if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
+                        checkCastIntToCharAndBackError(tok, tok->tokAt(2)->str());
+                    }
+                }
+            }
+            if (Token::Match(tok, "%var% %comp% EOF")) {
+                if (uiVarId && tok->varId() == uiVarId) {
+                    checkCastIntToCharAndBackError(tok, strFunctionName);
+                }
+            } else if (Token::Match(tok, "EOF %comp% %var%")) {
+                tok = tok->tokAt(2);
+                if (uiVarId && tok->varId() == uiVarId) {
+                    checkCastIntToCharAndBackError(tok, strFunctionName);
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName)
+{
+    reportError(
+        tok,
+        Severity::warning,
+        "checkCastIntToCharAndBack",
+        "Storing "+ strFunctionName +"() return value in char variable and then comparing with EOF.\n"
+        "When saving "+ strFunctionName +"() return value in char variable there is loss of precision. "
+        " When "+ strFunctionName +"() returns EOF this value is truncated. Comparing the char "
+        "variable with EOF can have unexpected results. For instance a loop \"while (EOF != (c = "+ strFunctionName +"());\" "
+        "loops forever on some compilers/platforms and on other compilers/platforms it will stop "
+        "when the file contains a matching character."
+    );
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckOther::checkIncrementBoolean()

@@ -93,6 +93,7 @@ public:
         checkOther.clarifyStatement();
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
+        checkOther.checkCastIntToCharAndBack();
 
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
@@ -301,11 +302,15 @@ public:
     /** @brief %Check that calling the POSIX pipe() system call is called with an integer array of size two. */
     void checkPipeParameterSize();
 
+    /** @brief %Check to avoid casting a return value to unsigned char and then back to integer type.  */
+    void checkCastIntToCharAndBack();
+
 private:
     bool isUnsigned(const Variable *var) const;
     bool isSigned(const Variable *var) const;
 
     // Error messages..
+    void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void oppositeInnerConditionError(const Token *tok);
     void clarifyCalculationError(const Token *tok, const std::string &op);
@@ -405,6 +410,7 @@ private:
         c.redundantAssignmentError(0, 0, "var", false);
 
         // style/warning
+        c.checkCastIntToCharAndBackError(0,"func_name");
         c.oppositeInnerConditionError(0);
         c.cstyleCastError(0);
         c.dangerousUsageStrtolError(0, "strtol");
@@ -476,6 +482,7 @@ private:
                "* double free() or double closedir()\n"
                "* bitwise operation with negative right operand\n"
                "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
+               "* cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
 
                //performance
                "* redundant data copying for const variable\n"
