@@ -364,10 +364,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
         if (initList) {
-            if (level == 0 && Token::Match(ftok, "%var% (")) {
-                if (ftok->str() != func.name()) {
-                    initVar(ftok->str(), scope, usage);
-                } else { // c++11 delegate constructor
+            if (level == 0 && Token::Match(ftok, "%type% (")) {
+                if (ftok->str() == func.name()) { // c++11 delegate constructor
                     const Function *member = scope->findFunction(ftok);
                     // member function found
                     if (member) {
@@ -392,7 +390,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                             assignAllVar(usage);
                         }
                     }
+                } else { // base class constructor
                 }
+            } else if (level == 0 && Token::Match(ftok, "%var% (")) {
+                initVar(ftok->str(), scope, usage);
             } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const" && Token::Match(ftok->next()->link()->next(), ",|{|%type%")) {
                 initVar(ftok->str(), scope, usage);
                 ftok = ftok->linkAt(1);
@@ -496,9 +497,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Calling member function?
         else if (Token::simpleMatch(ftok, "operator= (") &&
                  ftok->previous()->str() != "::") {
-            const Function *member = scope->findFunction(ftok);
-            // member function found
-            if (member) {
+            if (ftok->function() && ftok->function()->nestedIn == scope) {
+                const Function *member = ftok->function();
                 // recursive call
                 // assume that all variables are initialized
                 if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
@@ -538,10 +538,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             }
 
             // check if member function
-            const Function *member = scope->findFunction(ftok);
+            if (ftok->function() && ftok->function()->nestedIn == scope &&
+                ftok->function()->type != Function::eConstructor) {
+                const Function *member = ftok->function();
 
-            // member function found
-            if (member && member->type != Function::eConstructor) {
                 // recursive call
                 // assume that all variables are initialized
                 if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
@@ -801,7 +801,7 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-const Scope* findFunctionOf(const Scope* scope)
+static const Scope* findFunctionOf(const Scope* scope)
 {
     while (scope) {
         if (scope->type == Scope::eFunction)

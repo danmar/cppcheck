@@ -403,6 +403,9 @@ public:
     std::size_t argCount() const {
         return argumentList.size();
     }
+    std::size_t minArgCount() const {
+        return argumentList.size() - initArgCount;
+    }
     const Variable* getArgumentVar(unsigned int num) const;
     unsigned int initializedArgCount() const {
         return initArgCount;

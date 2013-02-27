@@ -1885,7 +1885,6 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             // skip default values
             if (tok->str() == "=") {
-                initArgCount++;
                 while (tok->str() != "," && tok->str() != ")") {
                     if (tok->link() && Token::Match(tok, "[{[(<]"))
                         tok = tok->link();
@@ -1897,6 +1896,12 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             if (tok->str() == ")")
                 break;
+        }
+
+        // count deafult arguments
+        for (const Token* tok = argDef->next(); tok && tok != argDef->link(); tok = tok->next()) {
+            if (tok->str() == "=")
+                initArgCount++;
         }
     }
 }
@@ -2378,7 +2383,7 @@ const Scope *SymbolDatabase::findVariableType(const Scope *start, const Token *t
 //---------------------------------------------------------------------------
 
 /** @todo This function only counts the number of arguments in the function call.
-    It does not take into account functions with default arguments.
+    It does not take into account function constantness.
     It does not take into account argument types.  This can be difficult because of promotion and conversion operators and casts and because the argument can also be a function call.
  */
 const Function* Scope::findFunction(const Token *tok) const
@@ -2388,7 +2393,7 @@ const Function* Scope::findFunction(const Token *tok) const
             const Function *func = &*i;
             if (tok->strAt(1) == "(" && tok->tokAt(2)) {
                 // check if function has no arguments
-                if (tok->strAt(2) == ")" && (func->argCount() == 0 || func->argCount() == func->initializedArgCount()))
+                if (tok->strAt(2) == ")" && (func->argCount() == 0 || func->minArgCount() == 0))
                     return func;
 
                 // check the arguments
@@ -2396,12 +2401,13 @@ const Function* Scope::findFunction(const Token *tok) const
                 const Token *arg = tok->tokAt(2);
                 while (arg && arg->str() != ")") {
                     /** @todo check argument type for match */
-                    /** @todo check for default arguments */
                     args++;
                     arg = arg->nextArgument();
                 }
 
-                if (args == func->argCount())
+                // check for argument count match or default arguments
+                if (args == func->argCount() ||
+                    (args < func->argCount() && args >= func->minArgCount()))
                     return func;
             }
         }

@@ -64,6 +64,7 @@ private:
         TEST_CASE(simple9); // ticket #4574
         TEST_CASE(simple10); // ticket #4388
         TEST_CASE(simple11); // ticket #4536
+        TEST_CASE(simple12); // ticket #4620
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -350,6 +351,27 @@ private:
               "private:\n"
               "    int x = 0;\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple12() { // ticket #4620
+        check("class Fred {\n"
+              "    int x;\n"
+              "public:\n"
+              "    Fred() { Init(); }\n"
+              "    void Init(int i = 0);\n"
+              "};\n"
+              "void Fred::Init(int i) { x = i; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred {\n"
+              "    int x;\n"
+              "    int y;\n"
+              "public:\n"
+              "    Fred() { Init(0); }\n"
+              "    void Init(int i, int j = 0);\n"
+              "};\n"
+              "void Fred::Init(int i, int j) { x = i; y = j; }\n");
         ASSERT_EQUALS("", errout.str());
     }
 
