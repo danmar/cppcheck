@@ -84,7 +84,6 @@ public:
      *
      * @param FileName The filename
      * @param configuration E.g. "A" for code where "#ifdef A" is true
-     * @param preprocessorCondition Set this flag to true if the code is a preprocessor condition. It disables some simplifications
      * @return false if source code contains syntax errors
      */
     bool tokenize(std::istream &code,

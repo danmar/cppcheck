@@ -296,7 +296,7 @@ public:
     /** @brief %Check for buffers that are filled incompletely with memset and similar functions */
     void checkIncompleteArrayFill();
 
-    /** @brief %Check that variadic function calls don't use NULL. If NULL is #defined as 0 and the function expects a pointer, the behaviour is undefined. */
+    /** @brief %Check that variadic function calls don't use NULL. If NULL is \#defined as 0 and the function expects a pointer, the behaviour is undefined. */
     void checkVarFuncNullUB();
 
     /** @brief %Check that calling the POSIX pipe() system call is called with an integer array of size two. */
