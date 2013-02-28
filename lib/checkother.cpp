@@ -55,7 +55,6 @@ void CheckOther::checkCastIntToCharAndBack()
         const Scope * scope     = symbolDatabase->functionScopes[i];
         unsigned int uiVarId    = 0;
         std::string strFunctionName;
-        const std::string strFunctionsToSearch();
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
                 if (tok->varId()) {
