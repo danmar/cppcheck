@@ -692,7 +692,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
                      (Token::simpleMatch(i->typeStartToken(), "std ::") &&
-                      i->typeStartToken()->strAt(2) != "lock_guard"))
+                      i->typeStartToken()->strAt(2) != "lock_guard" &&
+                      i->typeStartToken()->strAt(2) != "unique_lock"))
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
