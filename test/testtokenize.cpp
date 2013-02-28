@@ -380,6 +380,7 @@ private:
         TEST_CASE(removeExceptionSpecification3);
         TEST_CASE(removeExceptionSpecification4);
         TEST_CASE(removeExceptionSpecification5);
+        TEST_CASE(removeExceptionSpecification6); // #4617
 
         TEST_CASE(gt);      // use "<" comparisons instead of ">"
 
@@ -6132,6 +6133,46 @@ private:
                       tokenizeAndStringify("void foo (struct S1, struct S2) throw();"));
     }
 
+    void removeExceptionSpecification6() { // #4617
+        ASSERT_EQUALS("void foo ( ) ;",
+                      tokenizeAndStringify("void foo () noexcept;"));
+        ASSERT_EQUALS("void foo ( ) { }",
+                      tokenizeAndStringify("void foo () noexcept { }"));
+        ASSERT_EQUALS("void foo ( ) ;",
+                      tokenizeAndStringify("void foo () noexcept(true);"));
+        ASSERT_EQUALS("void foo ( ) { }",
+                      tokenizeAndStringify("void foo () noexcept(true) { }"));
+        ASSERT_EQUALS("void foo ( ) ;",
+                      tokenizeAndStringify("void foo () noexcept(noexcept(true));"));
+        ASSERT_EQUALS("void foo ( ) { }",
+                      tokenizeAndStringify("void foo () noexcept(noexcept(true)) { }"));
+
+        ASSERT_EQUALS("void foo ( ) const ;",
+                      tokenizeAndStringify("void foo () const noexcept;"));
+        ASSERT_EQUALS("void foo ( ) const { }",
+                      tokenizeAndStringify("void foo () const noexcept { }"));
+        ASSERT_EQUALS("void foo ( ) const ;",
+                      tokenizeAndStringify("void foo () const noexcept(true);"));
+        ASSERT_EQUALS("void foo ( ) const { }",
+                      tokenizeAndStringify("void foo () const noexcept(true) { }"));
+        ASSERT_EQUALS("void foo ( ) const ;",
+                      tokenizeAndStringify("void foo () const noexcept(noexcept(true));"));
+        ASSERT_EQUALS("void foo ( ) const { }",
+                      tokenizeAndStringify("void foo () const noexcept(noexcept(true)) { }"));
+
+        ASSERT_EQUALS("void foo ( ) const ;",
+                      tokenizeAndStringify("void foo () noexcept const;"));
+        ASSERT_EQUALS("void foo ( ) const { }",
+                      tokenizeAndStringify("void foo () noexcept const { }"));
+        ASSERT_EQUALS("void foo ( ) const ;",
+                      tokenizeAndStringify("void foo () noexcept(true) const;"));
+        ASSERT_EQUALS("void foo ( ) const { }",
+                      tokenizeAndStringify("void foo () noexcept(true) const { }"));
+        ASSERT_EQUALS("void foo ( ) const ;",
+                      tokenizeAndStringify("void foo () noexcept(noexcept(true)) const;"));
+        ASSERT_EQUALS("void foo ( ) const { }",
+                      tokenizeAndStringify("void foo () noexcept(noexcept(true)) const { }"));
+    }
 
     void gt() {
         ASSERT_EQUALS("( i < 10 )", tokenizeAndStringify("(10>i)"));

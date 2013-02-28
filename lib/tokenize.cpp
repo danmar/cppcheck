@@ -8065,13 +8065,18 @@ void Tokenizer::removeExceptionSpecifications()
         return;
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, ") const| throw (")) {
+        if (Token::Match(tok, ") const| throw|noexcept (")) {
             if (tok->next()->str() == "const") {
                 Token::eraseTokens(tok->next(), tok->linkAt(3));
                 tok = tok->next();
             } else
                 Token::eraseTokens(tok, tok->linkAt(2));
             tok->deleteNext();
+        } else if (Token::Match(tok, ") const| noexcept ;|{|const")) {
+            if (tok->next()->str() == "const")
+                tok->next()->deleteNext();
+            else
+                tok->deleteNext();
         }
     }
 }
