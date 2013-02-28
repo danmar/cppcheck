@@ -2253,6 +2253,33 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(int *p = 0) {\n"
+              "    if (p == 0) {\n"
+              "        return 0;\n"
+              "    }\n"
+              "    return *p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    std::cout << p ? *p : 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    std::cout << (p && p[0] ? *p : 42);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void isEmpty(int *p = 0) {\n"
+              "    return (p && *p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int *p = 0) {\n"
+              "    return (!p || *p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
