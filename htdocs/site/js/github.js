@@ -9,17 +9,21 @@ jQuery.fn.listCommits = function(username, repository, branch) {
 
     var list = $('<ul class="rssfeeditems"/>');
     target.empty().append(list);
+
     $(commits).each(function(i) {
-      var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha;
-      var shortMessage = cutLines(this.commit.message);
+      var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha,
+          shortMessage = cutLines(this.commit.message),
+          commitAuthor;
+
       if (this.author !== null) {
-        var author = this.author.login;
-      }
-      if (author === '') {
-        author = this.author.name;
+        commitAuthor = this.author.login;
       }
 
-      list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> <em>by <strong>' + author + '</strong></em></li>');
+      if (commitAuthor) {
+        list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> <em>by <strong>' + commitAuthor + '</strong></em></li>');
+      } else {
+        list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a></li>');
+      }
 
       if (i === 9) {
         return false;
@@ -29,6 +33,7 @@ jQuery.fn.listCommits = function(username, repository, branch) {
 
   function cutLines(message) {
     var lineFeed = message.indexOf("\n");
+
     if (lineFeed > -1) {
       return message.slice(0, lineFeed);
     }
