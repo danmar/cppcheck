@@ -393,7 +393,7 @@ void TokenList::createAst()
             const std::string op(operators[i]);
             for (Token *tok = _front; tok; tok = tok->next()) {
                 if (tok->astOperand1()==NULL && op.find(" "+tok->str()+" ")!=std::string::npos) {
-                    if (tok->str() != "++" && tok->str() != "--") {
+                    if (tok->type() != Token::eIncDecOp) {
                         tok->astOperand1(tok->previous());
                         tok->astOperand2(tok->next());
                     } else if (tok->previous() && !tok->previous()->isOp()) {

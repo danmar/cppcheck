@@ -135,7 +135,7 @@ public:
      * - "%comp%" Any token such that isComparisonOp() returns true.
      * - "%str%" Any token starting with &quot;-character (C-string).
      * - "%varid%" Match with parameter varid
-     * - "%op%" Any token such that isOp() returns true.
+     * - "%op%" Any token such that isConstOp() returns true.
      * - "%or%" A bitwise-or operator '|'
      * - "%oror%" A logical-or operator '||'
      * - "[abc]" Any of the characters 'a' or 'b' or 'c'
@@ -204,18 +204,23 @@ public:
     bool isNumber() const {
         return _type == eNumber;
     }
-    bool isArithmeticalOp() const {
-        return _type == eArithmeticalOp;
-    }
     bool isOp() const {
+        return (isConstOp() ||
+                isAssignmentOp() ||
+                _type == eIncDecOp);
+    }
+    bool isConstOp() const {
         return (isArithmeticalOp() ||
                 _type == eLogicalOp ||
                 _type == eComparisonOp ||
                 _type == eBitOp);
     }
     bool isExtendedOp() const {
-        return isOp() ||
+        return isConstOp() ||
                _type == eExtendedOp;
+    }
+    bool isArithmeticalOp() const {
+        return _type == eArithmeticalOp;
     }
     bool isComparisonOp() const {
         return _type == eComparisonOp;

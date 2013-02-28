@@ -68,6 +68,7 @@ private:
 
         TEST_CASE(isArithmeticalOp);
         TEST_CASE(isOp);
+        TEST_CASE(isConstOp);
         TEST_CASE(isExtendedOp);
         TEST_CASE(isAssignmentOp);
         TEST_CASE(isStandardType);
@@ -569,6 +570,7 @@ private:
         append_vector(test_ops, bitOps);
         append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
+        append_vector(test_ops, assignmentOps);
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
@@ -580,13 +582,39 @@ private:
         // Negative test against other operators
         std::vector<std::string> other_ops;
         append_vector(other_ops, extendedOps);
-        append_vector(other_ops, assignmentOps);
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             Token tok(NULL);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isOp(), "Failing normal operator: " + *other_op);
+        }
+    }
+
+    void isConstOp() {
+        std::vector<std::string> test_ops;
+        append_vector(test_ops, arithmeticalOps);
+        append_vector(test_ops, bitOps);
+        append_vector(test_ops, comparisonOps);
+        append_vector(test_ops, logicalOps);
+
+        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
+        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+            Token tok(NULL);
+            tok.str(*test_op);
+            ASSERT_EQUALS(true, tok.isConstOp());
+        }
+
+        // Negative test against other operators
+        std::vector<std::string> other_ops;
+        append_vector(other_ops, extendedOps);
+        append_vector(other_ops, assignmentOps);
+
+        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
+        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+            Token tok(NULL);
+            tok.str(*other_op);
+            ASSERT_EQUALS_MSG(false, tok.isConstOp(), "Failing normal operator: " + *other_op);
         }
     }
 

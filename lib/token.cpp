@@ -312,7 +312,7 @@ static int multiComparePercent(const Token *tok, const char * * haystack_p,
         if (haystack[1] == 'o' && // "%op%"
             haystack[2] == 'p' &&
             haystack[3] == '%') {
-            if (tok->isOp())
+            if (tok->isConstOp())
                 return 1;
             *haystack_p = haystack = haystack + 4;
         } else if (haystack[1] == 'o' && // "%or%"
@@ -349,7 +349,7 @@ int Token::multiCompare(const Token *tok, const char *haystack, const char *need
             haystack[3] == '%' &&
             haystack[4] == '|') {
             haystack = haystack + 5;
-            if (tok->isOp())
+            if (tok->isConstOp())
                 return 1;
         } else if (haystack[2] == 'r' && // "%or%|"
                    haystack[3] == '%' &&
@@ -627,7 +627,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     // Op (%op%)
                     if (p[0] == 'p') {
                         p += 2;
-                        multicompare(p,tok->isOp(),ismulticomp);
+                        multicompare(p,tok->isConstOp(),ismulticomp);
                     }
                     // Or (%or%)
                     else {

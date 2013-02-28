@@ -324,7 +324,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     unknown = false;
 
     // Dereferencing pointer..
-    if (tok->strAt(-1) == "*" && (Token::Match(tok->tokAt(-2), "return|throw|;|{|}|:|[|(|,") || tok->tokAt(-2)->isOp() || tok->tokAt(-2)->isAssignmentOp()) && !Token::Match(tok->tokAt(-3), "sizeof|decltype"))
+    if (tok->strAt(-1) == "*" && (Token::Match(tok->tokAt(-2), "return|throw|;|{|}|:|[|(|,") || tok->tokAt(-2)->isOp()) && !Token::Match(tok->tokAt(-3), "sizeof|decltype"))
         return true;
 
     // read/write member variable
@@ -1129,7 +1129,7 @@ void CheckNullPointer::nullConstantDereference()
                 tok = tok->next()->link();
 
             else if (Token::simpleMatch(tok, "* 0")) {
-                if (Token::Match(tok->previous(), "return|throw|;|{|}|:|[|(|,") || tok->previous()->isOp() || tok->previous()->isAssignmentOp()) {
+                if (Token::Match(tok->previous(), "return|throw|;|{|}|:|[|(|,") || tok->previous()->isOp()) {
                     nullPointerError(tok);
                 }
             }
@@ -1406,8 +1406,8 @@ private:
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
             else if (!deref &&
-                     (!tok.previous()->isOp() || tok.previous()->str() == "&") && !tok.previous()->isAssignmentOp() &&
-                     (!tok.next()->isOp() || tok.next()->str() == ">>"))
+                     (!tok.previous()->isOp() || tok.previous()->str() == "&") &&
+                     (!tok.next()->isConstOp() || tok.next()->str() == ">>"))
                 bailOutVar(checks, tok.varId()); // If its possible that the pointers value changes, bail out.
         }
 
