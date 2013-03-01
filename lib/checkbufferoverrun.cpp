@@ -669,7 +669,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                         Token::Match(ftok, "%var% --"))
                         break;
 
-                    if (Token::Match(ftok->previous(), "=|;|{|}|%op% %var% [ %num% ]")) {
+                    if (Token::Match(ftok->previous(), ";|{|}|%op% %var% [ %num% ]")) {
                         const MathLib::bigint index = MathLib::toLongNumber(ftok->strAt(2));
                         if (index >= 0 && arrayInfo.num(0) > 0 && index >= arrayInfo.num(0)) {
                             std::list<const Token *> callstack2(callstack);

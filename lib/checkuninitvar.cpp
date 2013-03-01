@@ -486,7 +486,7 @@ private:
             }
 
             // Used..
-            if (Token::Match(tok.previous(), "[[(,+-*/|=] %var% ]|)|,|;|%op%")) {
+            if (Token::Match(tok.previous(), "[[(,+-*/|=] %var% ]|)|,|;|%op%") && !tok.next()->isAssignmentOp()) {
                 // Taking address of array..
                 std::list<ExecutionPath *>::const_iterator it;
                 for (it = checks.begin(); it != checks.end(); ++it) {
@@ -1357,7 +1357,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 // variable is seen..
                 if (tok->varId() == var.varId()) {
                     if (!membervar.empty()) {
-                        if (Token::Match(tok, "%var% . %var% ;|%op%") && tok->strAt(2) == membervar)
+                        if (Token::Match(tok, "%var% . %var% ;|%cop%") && tok->strAt(2) == membervar)
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
                         else
                             return true;
@@ -1521,7 +1521,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
         }
     }
 
-    if (Token::Match(vartok->previous(), "++|--|%op%")) {
+    if (Token::Match(vartok->previous(), "++|--|%cop%")) {
         if (cpp && vartok->previous()->str() == ">>") {
             // assume that variable is initialized
             return false;
@@ -1581,7 +1581,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
         return (var && var->typeStartToken()->isStandardType());
     }
 
-    if (Token::Match(vartok->next(), "++|--|%op%"))
+    if (vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())
         return true;
 
     if (vartok->strAt(1) == "]")
@@ -1597,7 +1597,7 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             return true;
         else if (Token::Match(tok->tokAt(-2), "[(,=] &"))
             return true;
-        else if (Token::Match(tok->previous(), "%op%") || Token::Match(tok->previous(), "[|="))
+        else if ((tok->previous() && tok->previous()->isConstOp()) || Token::Match(tok->previous(), "[|="))
             ; // member variable usage
         else
             return true;

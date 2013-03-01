@@ -65,6 +65,7 @@ private:
         TEST_CASE(matchBoolean);
         TEST_CASE(matchOr);
         TEST_CASE(matchOp);
+        TEST_CASE(matchConstOp);
 
         TEST_CASE(isArithmeticalOp);
         TEST_CASE(isOp);
@@ -453,7 +454,7 @@ private:
 
         givenACodeSampleToTokenize bitwiseOrAssignment("|=");
         ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "%or%"));
-        ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "%op%"));
+        ASSERT_EQUALS(true,  Token::Match(bitwiseOrAssignment.tokens(), "%op%"));
         ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.tokens(), "%oror%"));
 
         givenACodeSampleToTokenize logicalOr("||", true);
@@ -523,6 +524,7 @@ private:
         append_vector(test_ops, bitOps);
         append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
+        append_vector(test_ops, assignmentOps);
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
@@ -532,13 +534,36 @@ private:
         // Negative test against other operators
         std::vector<std::string> other_ops;
         append_vector(other_ops, extendedOps);
-        append_vector(other_ops, assignmentOps);
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             ASSERT_EQUALS_MSG(false, Match(*other_op, "%op%"), "Failing other operator: " + *other_op);
         }
     }
+
+    void matchConstOp() {
+        std::vector<std::string> test_ops;
+        append_vector(test_ops, arithmeticalOps);
+        append_vector(test_ops, bitOps);
+        append_vector(test_ops, comparisonOps);
+        append_vector(test_ops, logicalOps);
+
+        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
+        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+            ASSERT_EQUALS(true, Match(*test_op, "%cop%"));
+        }
+
+        // Negative test against other operators
+        std::vector<std::string> other_ops;
+        append_vector(other_ops, extendedOps);
+        append_vector(other_ops, assignmentOps);
+
+        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
+        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+            ASSERT_EQUALS_MSG(false, Match(*other_op, "%cop%"), "Failing other operator: " + *other_op);
+        }
+    }
+
 
     void isArithmeticalOp() {
         std::vector<std::string>::const_iterator test_op, test_ops_end = arithmeticalOps.end();

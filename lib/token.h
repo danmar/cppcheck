@@ -136,6 +136,7 @@ public:
      * - "%str%" Any token starting with &quot;-character (C-string).
      * - "%varid%" Match with parameter varid
      * - "%op%" Any token such that isConstOp() returns true.
+     * - "%cop%" Any token such that isConstOp() returns true.
      * - "%or%" A bitwise-or operator '|'
      * - "%oror%" A logical-or operator '||'
      * - "[abc]" Any of the characters 'a' or 'b' or 'c'

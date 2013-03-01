@@ -312,9 +312,16 @@ static int multiComparePercent(const Token *tok, const char * * haystack_p,
         if (haystack[1] == 'o' && // "%op%"
             haystack[2] == 'p' &&
             haystack[3] == '%') {
-            if (tok->isConstOp())
+            if (tok->isOp())
                 return 1;
             *haystack_p = haystack = haystack + 4;
+        } else if (haystack[1] == 'c' && // "%cop%"
+                   haystack[2] == 'o' &&
+                   haystack[3] == 'p' &&
+                   haystack[4] == '%') {
+            if (tok->isConstOp())
+                return 1;
+            *haystack_p = haystack = haystack + 5;
         } else if (haystack[1] == 'o' && // "%or%"
                    haystack[2] == 'r' &&
                    haystack[3] == '%') {
@@ -349,7 +356,7 @@ int Token::multiCompare(const Token *tok, const char *haystack, const char *need
             haystack[3] == '%' &&
             haystack[4] == '|') {
             haystack = haystack + 5;
-            if (tok->isConstOp())
+            if (tok->isOp())
                 return 1;
         } else if (haystack[2] == 'r' && // "%or%|"
                    haystack[3] == '%' &&
@@ -366,6 +373,12 @@ int Token::multiCompare(const Token *tok, const char *haystack, const char *need
             if (needle[0] == '|' && needle[1] == '|')
                 return 1;
         }
+    } else if (haystack[0] == '%' && haystack[1] == 'c' && haystack[2] == 'o' && // "%cop%|"
+               haystack[3] == 'p' && haystack[4] == '%' &&
+               haystack[5] == '|') {
+        haystack = haystack + 6;
+        if (tok->isConstOp())
+            return 1;
     }
 
     bool emptyStringFound = false;
@@ -600,6 +613,11 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     p += 4;
                     multicompare(p,tok->type() == eChar,ismulticomp);
                 }
+                // Const operator (%cop%)
+                else if (p[1] == 'p') {
+                    p += 3;
+                    multicompare(p,tok->isConstOp(),ismulticomp);
+                }
                 // Comparison operator (%comp%)
                 else {
                     p += 4;
@@ -627,7 +645,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     // Op (%op%)
                     if (p[0] == 'p') {
                         p += 2;
-                        multicompare(p,tok->isConstOp(),ismulticomp);
+                        multicompare(p,tok->isOp(),ismulticomp);
                     }
                     // Or (%or%)
                     else {

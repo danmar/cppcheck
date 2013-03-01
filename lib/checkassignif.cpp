@@ -79,13 +79,13 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                                        const MathLib::bigint num)
 {
     for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
-        if (Token::Match(tok2->tokAt(2), "%varid% %op% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
+        if (Token::Match(tok2->tokAt(2), "%varid% %cop% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
             const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
             if ((bitop == '&') && (0 == (num & num2)))
                 mismatchingBitAndError(assignTok, num, tok2, num2);
         }
         if (Token::Match(tok2, "%varid% =", varid)) {
-            if (Token::Match(tok2->tokAt(2), "%varid% %op% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
+            if (Token::Match(tok2->tokAt(2), "%varid% %cop% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
                 const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
                 if ((bitop == '&') && (0 == (num & num2)))
                     mismatchingBitAndError(assignTok, num, tok2, num2);

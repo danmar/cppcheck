@@ -2255,7 +2255,7 @@ void Tokenizer::simplifyNull()
 void Tokenizer::concatenateNegativeNumberAndAnyPositive()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "?|:|,|(|[|{|=|return|case|sizeof|%op% +|-"))
+        if (!Token::Match(tok, "?|:|,|(|[|{|return|case|sizeof|%op% +|-") || tok->type() == Token::eIncDecOp)
             continue;
         if (tok->next()->str() == "+")
             tok->deleteNext();
@@ -4955,7 +4955,7 @@ bool Tokenizer::simplifyFunctionReturn()
         else if (Token::Match(tok, "%var% ( ) { return %bool%|%char%|%num%|%str% ; }")) {
             const Token* const any = tok->tokAt(5);
 
-            const std::string pattern("(|[|=|%op% " + tok->str() + " ( ) ;|]|)|%op%");
+            const std::string pattern("(|[|=|%cop% " + tok->str() + " ( ) ;|]|)|%cop%");
             for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
                 if (Token::Match(tok2, pattern.c_str())) {
                     tok2 = tok2->next();
@@ -5944,7 +5944,7 @@ bool Tokenizer::simplifyKnownVariables()
                     //check if there's not a reference usage inside the code
                     bool withreference = false;
                     for (const Token *tok2 = valuetok->tokAt(2); tok2; tok2 = tok2->next()) {
-                        if (Token::Match(tok2,"(|[|,|{|=|return|%op% & %varid%", vartok->varId())) {
+                        if (Token::Match(tok2,"(|[|,|{|return|%op% & %varid%", vartok->varId())) {
                             withreference = true;
                             break;
                         }
@@ -6444,7 +6444,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         }
 
         // array usage
-        if (value[0] != '\"' && Token::Match(tok3, ("[(,] " + structname + " %varid% [|%op%").c_str(), varid)) {
+        if (value[0] != '\"' && Token::Match(tok3, ("[(,] " + structname + " %varid% [|%cop%").c_str(), varid)) {
             if (!structname.empty()) {
                 tok3->deleteNext(2);
             }
@@ -6468,7 +6468,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (((tok3->previous()->varId() > 0) && Token::Match(tok3, ("& " + structname + " %varid%").c_str(), varid)) ||
             (Token::Match(tok3, ("[=+-*/%^|[] " + structname + " %varid% [=?+-*/%^|;])]").c_str(), varid) && !Token::Match(tok3, ("= " + structname + " %var% =").c_str())) ||
             Token::Match(tok3, ("[(=+-*/%^|[] " + structname + " %varid% <<|>>").c_str(), varid) ||
-            Token::Match(tok3, ("<<|>> " + structname + " %varid% %op%|;|]|)").c_str(), varid) ||
+            Token::Match(tok3, ("<<|>> " + structname + " %varid% %cop%|;|]|)").c_str(), varid) ||
             Token::Match(tok3->previous(), ("[=+-*/%^|[] ( " + structname + " %varid% !!=").c_str(), varid)) {
             if (value[0] == '\"')
                 break;
@@ -6716,7 +6716,7 @@ bool Tokenizer::simplifyRedundantParentheses()
         }
 
         // Simplify "!!operator !!(%var%|)) ( %num%|%bool% ) %op%|;|,|)"
-        if (Token::Match(tok, "( %bool%|%num% ) %op%|;|,|)") &&
+        if (Token::Match(tok, "( %bool%|%num% ) %cop%|;|,|)") &&
             !Token::simpleMatch(tok->tokAt(-2), "operator") &&
             tok->previous() &&
             !tok->previous()->isName() &&
@@ -9244,7 +9244,7 @@ void Tokenizer::simplifyOperatorName()
                     }
                     done = false;
                 }
-                if (Token::Match(par, "=|.|++|--|%op%")) {
+                if (Token::Match(par, ".|%op%")) {
                     op += par->str();
                     par = par->next();
                     done = false;

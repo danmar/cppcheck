@@ -794,7 +794,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         // keep parentheses here: Functor()(a ... )
         // keep parentheses here: ) ( var ) ;
         if ((Token::Match(tok->next(), "( %var% ) ;|)|,|]") ||
-             (Token::Match(tok->next(), "( %var% ) %op%") && (tok->tokAt(2)->varId()>0 || !Token::Match(tok->tokAt(4), "[*&]")))) &&
+             (Token::Match(tok->next(), "( %var% ) %cop%") && (tok->tokAt(2)->varId()>0 || !Token::Match(tok->tokAt(4), "[*&]")))) &&
             !tok->isName() &&
             tok->str() != ">" &&
             tok->str() != "]" &&
@@ -853,19 +853,19 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok->deleteNext();
                     tok->deleteThis();
                     ret = true;
-                } else if (Token::Match(tok->previous(), "[=[(,] 0 * %var% ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "[=[(,] 0 * %num% ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "[=[(,] 0 * ( ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 0 *|&& %var% ,|:|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 0 *|&& %num% ,|:|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 0 *|&& ( ,|:|;|=|%op%")) {
+                } else if (Token::Match(tok->previous(), "[=[(,] 0 * %var% ,|]|)|;|=|%cop%") ||
+                           Token::Match(tok->previous(), "[=[(,] 0 * %num% ,|]|)|;|%op%") ||
+                           Token::Match(tok->previous(), "[=[(,] 0 * (") ||
+                           Token::Match(tok->previous(), "return|case 0 *|&& %var% ,|:|;|=|%cop%") ||
+                           Token::Match(tok->previous(), "return|case 0 *|&& %num% ,|:|;|%op%") ||
+                           Token::Match(tok->previous(), "return|case 0 *|&& (")) {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
                         Token::eraseTokens(tok, tok->next()->link());
                     tok->deleteNext();
                     ret = true;
-                } else if (Token::Match(tok->previous(), "[=[(,] 0 && *|& %any% ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 0 && *|& %any% ,|:|;|=|%op%")) {
+                } else if (Token::Match(tok->previous(), "[=[(,] 0 && *|& %any% ,|]|)|;|=|%cop%") ||
+                           Token::Match(tok->previous(), "return|case 0 && *|& %any% ,|:|;|=|%cop%")) {
                     tok->deleteNext();
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
@@ -876,15 +876,15 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             }
 
             if (tok->str() == "1") {
-                if (Token::Match(tok->previous(), "[=[(,] 1 %oror% %any% ,|]|)|;|=|%op%") ||
-                    Token::Match(tok->previous(), "return|case 1 %oror% %any% ,|:|;|=|%op%")) {
+                if (Token::Match(tok->previous(), "[=[(,] 1 %oror% %any% ,|]|)|;|=|%cop%") ||
+                    Token::Match(tok->previous(), "return|case 1 %oror% %any% ,|:|;|=|%cop%")) {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
                         Token::eraseTokens(tok, tok->next()->link());
                     tok->deleteNext();
                     ret = true;
-                } else if (Token::Match(tok->previous(), "[=[(,] 1 %oror% *|& %any% ,|]|)|;|=|%op%") ||
-                           Token::Match(tok->previous(), "return|case 1 %oror% *|& %any% ,|:|;|=|%op%")) {
+                } else if (Token::Match(tok->previous(), "[=[(,] 1 %oror% *|& %any% ,|]|)|;|=|%cop%") ||
+                           Token::Match(tok->previous(), "return|case 1 %oror% *|& %any% ,|:|;|=|%cop%")) {
                     tok->deleteNext();
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
