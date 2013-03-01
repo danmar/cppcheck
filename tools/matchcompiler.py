@@ -89,6 +89,8 @@ class MatchCompiler:
             return 'tok->isComparisonOp()'
         elif tok == '%num%':
             return 'tok->isNumber()'
+        elif tok == '%cop%':
+            return 'tok->isConstOp()'
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
