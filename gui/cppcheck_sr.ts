@@ -705,67 +705,67 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="44"/>
         <source>Finnish</source>
         <translation>Finski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>English</source>
         <translation>Engleski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="41"/>
         <source>Chinese (Simplified)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Dutch</source>
         <translation>Holandski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="45"/>
         <source>French</source>
         <translation>Francuski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="47"/>
         <source>Italian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="49"/>
         <source>Korean</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="44"/>
+        <location filename="translationhandler.cpp" line="52"/>
         <source>Spanish</source>
         <translation>Španski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="45"/>
+        <location filename="translationhandler.cpp" line="53"/>
         <source>Swedish</source>
         <translation>Švedski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="46"/>
         <source>German</source>
         <translation>Nemački</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="50"/>
         <source>Russian</source>
         <translation>Ruski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="48"/>
         <source>Japanese</source>
         <translation>Japanski</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="43"/>
+        <location filename="translationhandler.cpp" line="51"/>
         <source>Serbian</source>
         <translation>Srpski</translation>
     </message>
@@ -941,19 +941,37 @@ Options:
     </message>
 </context>
 <context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <location filename="translationhandler.cpp" line="29"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="30"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="31"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="82"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Unknown language specified!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="94"/>
+        <location filename="translationhandler.cpp" line="102"/>
         <source>Language file %1 not found!</source>
         <translation type="unfinished">Could not find the file: %1!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="100"/>
+        <location filename="translationhandler.cpp" line="108"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation type="unfinished">Failed to load translation for language %1 from file %2</translation>
     </message>
@@ -1561,7 +1579,7 @@ To toggle what kind of errors are shown, open view menu.</translation>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="106"/>
+        <location filename="translationhandler.cpp" line="114"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -1570,7 +1588,7 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="112"/>
+        <location filename="translationhandler.cpp" line="120"/>
         <source>Cppcheck</source>
         <translation type="unfinished">Cppcheck</translation>
     </message>

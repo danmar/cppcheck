@@ -23,6 +23,14 @@
 #include <QMessageBox>
 #include "translationhandler.h"
 
+// Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
+static void unused()
+{
+    QT_TRANSLATE_NOOP("QDialogButtonBox", "OK");
+    QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel");
+    QT_TRANSLATE_NOOP("QDialogButtonBox", "Close");
+}
+
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
     mCurrentLanguage("en"),

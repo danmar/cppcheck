@@ -787,6 +787,21 @@ Options:
     </message>
 </context>
 <context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished">닫기</translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <source>Unknown language specified!</source>
