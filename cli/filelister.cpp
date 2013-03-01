@@ -69,39 +69,39 @@ static BOOL MyFileExists(const std::string& path)
 
 void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path)
 {
-    // oss is the search string passed into FindFirst and FindNext.
-    // bdir is the base directory which is used to form pathnames.
+    const std::string cleanedPath = Path::toNativeSeparators(path);
+
+    // basedir is the base directory which is used to form pathnames.
     // It always has a trailing backslash available for concatenation.
-    std::ostringstream bdir, oss;
+    std::string basedir;
 
-    std::string cleanedPath = Path::toNativeSeparators(path);
-
-    oss << cleanedPath;
+    // searchPattern is the search string passed into FindFirst and FindNext.
+    std::string searchPattern = cleanedPath;
 
     if (MyIsDirectory(cleanedPath)) {
         char c = cleanedPath[ cleanedPath.size()-1 ];
         switch (c) {
         case '\\':
-            oss << '*';
-            bdir << cleanedPath;
+            searchPattern += '*';
+            basedir = cleanedPath;
             break;
         case '*':
-            bdir << cleanedPath.substr(0, cleanedPath.length() - 1);
+            basedir = cleanedPath.substr(0, cleanedPath.length() - 1);
             break;
         default:
-            oss << "\\*";
+            searchPattern += "\\*";
             if (cleanedPath != ".")
-                bdir << cleanedPath << '\\';
+                basedir = cleanedPath + '\\';
         }
     } else {
         std::string::size_type pos = cleanedPath.find_last_of('\\');
         if (std::string::npos != pos) {
-            bdir << cleanedPath.substr(0, pos + 1);
+            basedir = cleanedPath.substr(0, pos + 1);
         }
     }
 
     WIN32_FIND_DATAA ffd;
-    HANDLE hFind = MyFindFirstFile(oss.str(), &ffd);
+    HANDLE hFind = MyFindFirstFile(searchPattern, &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
         return;
 
@@ -114,25 +114,21 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             ansiFfd = ffd.cAlternateFileName;
         }
 
-        std::ostringstream fname;
-        fname << bdir.str() << ansiFfd;
+        const std::string fname(basedir + ansiFfd);
 
         if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
             // File
+            const std::string nativename = Path::fromNativeSeparators(fname);
 
-            // If recursive is not used, accept all files given by user
-            if (Path::sameFileName(path, ansiFfd) || Path::acceptFile(ansiFfd)) {
-                const std::string nativename = Path::fromNativeSeparators(fname.str());
-                // Limitation: file sizes are assumed to fit in a 'size_t'
+            // Limitation: file sizes are assumed to fit in a 'size_t'
 #ifdef _WIN64
-                files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
+            files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
 #else
-                files[nativename] = ffd.nFileSizeLow;
+            files[nativename] = ffd.nFileSizeLow;
 #endif
-            }
         } else {
             // Directory
-            FileLister::recursiveAddFiles(files, fname.str());
+            FileLister::recursiveAddFiles(files, fname);
         }
     } while (FindNextFileA(hFind, &ffd) != FALSE);
 
