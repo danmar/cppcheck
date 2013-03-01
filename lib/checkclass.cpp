@@ -817,53 +817,57 @@ void CheckClass::noMemset()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "memset|memcpy|memmove ( %any%"))
-                continue;
-
-            const Token* arg1 = tok->tokAt(2);
-            const Token* arg3 = arg1;
-            arg3 = arg3->nextArgument();
-            if (arg3)
+            if (Token::Match(tok, "memset|memcpy|memmove ( %any%")) {
+                const Token* arg1 = tok->tokAt(2);
+                const Token* arg3 = arg1;
                 arg3 = arg3->nextArgument();
+                if (arg3)
+                    arg3 = arg3->nextArgument();
 
-            const Token *typeTok = 0;
-            const Scope *type = 0;
-            if (Token::Match(arg3, "sizeof ( %type% ) )"))
-                typeTok = arg3->tokAt(2);
-            else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
-                typeTok = arg3->tokAt(4);
-            else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
-                typeTok = arg3->tokAt(3);
-            else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
-                type = findFunctionOf(arg3->scope());
-            } else if (Token::Match(arg1, "&| %var% ,")) {
-                const Variable *var = arg1->str() == "&" ? arg1->next()->variable() : arg1->variable();
-                if (var && (arg1->str() == "&" || var->isPointer() || var->isArray()))
-                    type = var->type();
+                const Token *typeTok = 0;
+                const Scope *type = 0;
+                if (Token::Match(arg3, "sizeof ( %type% ) )"))
+                    typeTok = arg3->tokAt(2);
+                else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
+                    typeTok = arg3->tokAt(4);
+                else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
+                    typeTok = arg3->tokAt(3);
+                else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
+                    type = findFunctionOf(arg3->scope());
+                } else if (Token::Match(arg1, "&| %var% ,")) {
+                    const Variable *var = arg1->str() == "&" ? arg1->next()->variable() : arg1->variable();
+                    if (var && (arg1->str() == "&" || var->isPointer() || var->isArray()))
+                        type = var->type();
+                }
+
+                // No type defined => The tokens didn't match
+                if (!typeTok && !type)
+                    continue;
+
+                if (typeTok && typeTok->str() == "(")
+                    typeTok = typeTok->next();
+
+                if (!type)
+                    type = symbolDatabase->findVariableType(&(*scope), typeTok);
+
+                if (type)
+                    checkMemsetType(&(*scope), tok, type, false);
+            } else if (tok->variable() && tok->variable()->type() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
+                checkMemsetType(&(*scope), tok->tokAt(2), tok->variable()->type(), true);
+
+                if (tok->variable()->type()->numConstructors > 0 && _settings->isEnabled("warning"))
+                    mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->type()->classDef);
             }
-
-            // No type defined => The tokens didn't match
-            if (!typeTok && !type)
-                continue;
-
-            if (typeTok && typeTok->str() == "(")
-                typeTok = typeTok->next();
-
-            if (!type)
-                type = symbolDatabase->findVariableType(&(*scope), typeTok);
-
-            if (type)
-                checkMemsetType(&(*scope), tok, type);
         }
     }
 }
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type)
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation)
 {
     // recursively check all parent classes
     for (std::size_t i = 0; i < type->derivedFrom.size(); i++) {
         if (type->derivedFrom[i].scope)
-            checkMemsetType(start, tok, type->derivedFrom[i].scope);
+            checkMemsetType(start, tok, type->derivedFrom[i].scope, allocation);
     }
 
     // Warn if type is a class that contains any virtual functions
@@ -871,7 +875,10 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
     for (func = type->functionList.begin(); func != type->functionList.end(); ++func) {
         if (func->isVirtual)
-            memsetError(tok, tok->str(), "virtual method", type->classDef->str());
+            if (allocation)
+                mallocOnClassError(tok, tok->str(), type->classDef, "virtual method");
+            else
+                memsetError(tok, tok->str(), "virtual method", type->classDef->str());
     }
 
     // Warn if type is a class or struct that contains any std::* variables
@@ -884,13 +891,38 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
             // check for std:: type
             if (Token::simpleMatch(tok1, "std ::"))
-                memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
+                if (allocation)
+                    mallocOnClassError(tok, tok->str(), type->classDef, "'std::" + tok1->strAt(2) + "'");
+                else
+                    memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
 
             // check for known type
             else if (var->type())
-                checkMemsetType(start, tok, var->type());
+                checkMemsetType(start, tok, var->type(), allocation);
         }
     }
+}
+
+void CheckClass::mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok);
+    toks.push_back(classTok);
+    reportError(toks, Severity::warning, "mallocOnClassWarning",
+                "Memory for class instance allocated with " + memfunc + "(), but class provides constructors.\n"
+                "Memory for class instance allocated with " + memfunc + "(), but class provides constructors. This is unsafe, "
+                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.");
+}
+
+void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok);
+    toks.push_back(classTok);
+    reportError(toks, Severity::error, "mallocOnClassError",
+                "Memory for class instance allocated with " + memfunc + "(), but class contains a " + classname + ".\n"
+                "Memory for class instance allocated with " + memfunc + "(), but class a " + classname + ". This is unsafe, "
+                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.");
 }
 
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)

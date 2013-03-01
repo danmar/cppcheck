@@ -91,7 +91,7 @@ public:
      * Important: The checking doesn't work on simplified tokens list.
      */
     void noMemset();
-    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type);
+    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation);
 
     /** @brief 'operator=' should return something and it should not be const. */
     void operatorEq();
@@ -130,6 +130,8 @@ private:
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
+    void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
+    void mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok);
     void operatorEqReturnError(const Token *tok, const std::string &className);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
     void thisSubtractionError(const Token *tok);
@@ -150,6 +152,8 @@ private:
         c.operatorEqVarError(0, "classname", "", false);
         c.unusedPrivateFunctionError(0, "classname", "funcname");
         c.memsetError(0, "memfunc", "classname", "class");
+        c.mallocOnClassWarning(0, "malloc", 0);
+        c.mallocOnClassError(0, "malloc", 0, "std::string");
         c.operatorEqReturnError(0, "class");
         c.virtualDestructorError(0, "Base", "Derived");
         c.thisSubtractionError(0);
@@ -172,6 +176,7 @@ private:
                "* Are all variables initialized by the constructors?\n"
                "* Are all variables assigned by 'operator='?\n"
                "* Warn if memset, memcpy etc are used on a class\n"
+               "* Warn if memory for classes is allocated with malloc()\n"
                "* If it's a base class, check that the destructor is virtual\n"
                "* Are there unused private functions?\n"
                "* 'operator=' should return reference to self\n"

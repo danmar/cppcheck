@@ -76,9 +76,11 @@ private:
         TEST_CASE(operatorEqToSelf7);
         TEST_CASE(operatorEqToSelf8);   // ticket #2179
         TEST_CASE(operatorEqToSelf9);   // ticket #2592
+
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
+        TEST_CASE(mallocOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
 
@@ -1948,6 +1950,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2302,6 +2305,62 @@ private:
                       "    memset(a, 0, 100);\n"
                       "}");
         ASSERT_EQUALS("", errout.str()); // #4460
+    }
+
+    void mallocOnClass() {
+        checkNoMemset("class C { C() {} };\n"
+                      "void foo(C*& p) {\n"
+                      "    p = malloc(sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with malloc(), but class provides constructors.\n", errout.str());
+
+        checkNoMemset("class C { C(int z, Foo bar) { bar(); } };\n"
+                      "void foo(C*& p) {\n"
+                      "    p = malloc(sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with malloc(), but class provides constructors.\n", errout.str());
+
+        checkNoMemset("struct C { C() {} };\n"
+                      "void foo(C*& p) {\n"
+                      "    p = realloc(p, sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with realloc(), but class provides constructors.\n", errout.str());
+
+        checkNoMemset("struct C { C() {} };\n"
+                      "void foo(C*& p) {\n"
+                      "    p = realloc(p, sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with realloc(), but class provides constructors.\n", errout.str());
+
+        checkNoMemset("struct C { virtual void bar(); };\n"
+                      "void foo(C*& p) {\n"
+                      "    p = malloc(sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a virtual method.\n", errout.str());
+
+        checkNoMemset("struct C { std::string s; };\n"
+                      "void foo(C*& p) {\n"
+                      "    p = malloc(sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a 'std::string'.\n", errout.str());
+
+        checkNoMemset("class C { };\n" // C-Style class/struct
+                      "void foo(C*& p) {\n"
+                      "    p = malloc(sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("struct C { C() {} };\n"
+                      "void foo(C*& p) {\n"
+                      "    p = new C();\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("class C { C() {} };\n"
+                      "void foo(D*& p) {\n" // Unknown type
+                      "    p = malloc(sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
