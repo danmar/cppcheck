@@ -90,22 +90,22 @@ Parameters: -l(line) (file)</source>
         <translation>Просмотреть</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="58"/>
+        <location filename="applicationdialog.cpp" line="59"/>
         <source>Executable files (*.exe);;All files(*.*)</source>
         <translation>Выполняемые файлы  (*.exe);;Все файлы(*.*)</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="61"/>
+        <location filename="applicationdialog.cpp" line="62"/>
         <source>Select viewer application</source>
         <translation>Выберите приложение</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="75"/>
+        <location filename="applicationdialog.cpp" line="77"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="76"/>
+        <location filename="applicationdialog.cpp" line="78"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
         <translation>Вы должны задать название и путь к приложению!</translation>
     </message>
@@ -178,17 +178,17 @@ Parameters: -l(line) (file)</source>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="248"/>
-        <location filename="mainwindow.cpp" line="306"/>
-        <location filename="mainwindow.cpp" line="362"/>
-        <location filename="mainwindow.cpp" line="423"/>
-        <location filename="mainwindow.cpp" line="445"/>
-        <location filename="mainwindow.cpp" line="637"/>
-        <location filename="mainwindow.cpp" line="728"/>
-        <location filename="mainwindow.cpp" line="847"/>
-        <location filename="mainwindow.cpp" line="867"/>
-        <location filename="mainwindow.cpp" line="1024"/>
-        <location filename="mainwindow.cpp" line="1105"/>
+        <location filename="mainwindow.cpp" line="264"/>
+        <location filename="mainwindow.cpp" line="322"/>
+        <location filename="mainwindow.cpp" line="378"/>
+        <location filename="mainwindow.cpp" line="441"/>
+        <location filename="mainwindow.cpp" line="463"/>
+        <location filename="mainwindow.cpp" line="656"/>
+        <location filename="mainwindow.cpp" line="761"/>
+        <location filename="mainwindow.cpp" line="881"/>
+        <location filename="mainwindow.cpp" line="901"/>
+        <location filename="mainwindow.cpp" line="1060"/>
+        <location filename="mainwindow.cpp" line="1141"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -565,12 +565,12 @@ Parameters: -l(line) (file)</source>
         <translation>Помощь</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="388"/>
+        <location filename="mainwindow.cpp" line="404"/>
         <source>Select directory to check</source>
         <translation>Выберите каталог для проверки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="307"/>
+        <location filename="mainwindow.cpp" line="323"/>
         <source>No suitable files found to check!</source>
         <translation>Не найдено подходящих файлов для проверки!</translation>
     </message>
@@ -580,7 +580,7 @@ Parameters: -l(line) (file)</source>
         <translation>Быстрый фильтр:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="424"/>
+        <location filename="mainwindow.cpp" line="442"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -589,40 +589,40 @@ Do you want to load this project file instead?</source>
 Вы хотите загрузить этот проект?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="446"/>
+        <location filename="mainwindow.cpp" line="464"/>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="770"/>
+        <location filename="mainwindow.cpp" line="803"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="777"/>
+        <location filename="mainwindow.cpp" line="810"/>
         <source>Authors</source>
         <translation>Авторы</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="785"/>
+        <location filename="mainwindow.cpp" line="818"/>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
         <translation>XML файлы версии 2 (*.xml);;XML файлы версии 1 (*.xml);;Текстовые файлы  (*.txt);;CSV файлы (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="787"/>
+        <location filename="mainwindow.cpp" line="820"/>
         <source>Save the report file</source>
         <translation>Сохранить файл с отчетом</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="653"/>
+        <location filename="mainwindow.cpp" line="672"/>
         <source>XML files (*.xml)</source>
         <translation>XML-файлы (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="243"/>
+        <location filename="mainwindow.cpp" line="259"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
@@ -631,17 +631,17 @@ This is probably because the settings were changed between the Cppcheck versions
 Возможно, это связано с изменениями в версии программы. Пожалуйста, проверьте (и исправьте) настройки приложения.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="363"/>
+        <location filename="mainwindow.cpp" line="379"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>Вы должны закрыть проект перед выбором новых файлов или директорий!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="377"/>
+        <location filename="mainwindow.cpp" line="393"/>
         <source>Select files to check</source>
         <translation>Выберите файлы для проверки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="638"/>
+        <location filename="mainwindow.cpp" line="657"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
@@ -650,12 +650,12 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 Открытые нового XML файла приведет к очистке текущих результатов. Продолжить?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="655"/>
+        <location filename="mainwindow.cpp" line="674"/>
         <source>Open the report file</source>
         <translation>Открыть файл с отчетом</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="724"/>
+        <location filename="mainwindow.cpp" line="757"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?.</source>
@@ -664,32 +664,32 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 Вы хотите завершить проверку и выйти?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="794"/>
+        <location filename="mainwindow.cpp" line="827"/>
         <source>XML files version 1 (*.xml)</source>
         <translation>XML файлы версии 1 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="798"/>
+        <location filename="mainwindow.cpp" line="831"/>
         <source>XML files version 2 (*.xml)</source>
         <translation>XML файлы версии 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="802"/>
+        <location filename="mainwindow.cpp" line="835"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="806"/>
+        <location filename="mainwindow.cpp" line="839"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV файлы(*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="849"/>
+        <location filename="mainwindow.cpp" line="883"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="861"/>
+        <location filename="mainwindow.cpp" line="895"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -702,34 +702,34 @@ The user interface language has been reset to English. Open the Preferences-dial
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="905"/>
-        <location filename="mainwindow.cpp" line="988"/>
+        <location filename="mainwindow.cpp" line="939"/>
+        <location filename="mainwindow.cpp" line="1022"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Файлы проекта (*.cppcheck);;Все файлы(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="907"/>
+        <location filename="mainwindow.cpp" line="941"/>
         <source>Select Project File</source>
         <translation>Выберите файл проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="935"/>
-        <location filename="mainwindow.cpp" line="1000"/>
+        <location filename="mainwindow.cpp" line="969"/>
+        <location filename="mainwindow.cpp" line="1036"/>
         <source>Project:</source>
         <translation>Проект:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="990"/>
+        <location filename="mainwindow.cpp" line="1024"/>
         <source>Select Project Filename</source>
         <translation>Выберите имя файла для проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1025"/>
+        <location filename="mainwindow.cpp" line="1061"/>
         <source>No project file loaded</source>
         <translation>Файл с проектом на загружен</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1100"/>
+        <location filename="mainwindow.cpp" line="1136"/>
         <source>The project file
 
 %1
@@ -984,22 +984,22 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1043"/>
+        <location filename="resultstree.cpp" line="1045"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1043"/>
+        <location filename="resultstree.cpp" line="1045"/>
         <source>Severity</source>
         <translation>Важность</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1043"/>
+        <location filename="resultstree.cpp" line="1045"/>
         <source>Line</source>
         <translation>Строка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1043"/>
+        <location filename="resultstree.cpp" line="1045"/>
         <source>Summary</source>
         <translation>Кратко</translation>
     </message>
@@ -1009,54 +1009,54 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="205"/>
-        <location filename="resultstree.cpp" line="725"/>
+        <location filename="resultstree.cpp" line="206"/>
+        <location filename="resultstree.cpp" line="727"/>
         <source>[Inconclusive]</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="263"/>
+        <location filename="resultstree.cpp" line="264"/>
         <source>debug</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="532"/>
+        <location filename="resultstree.cpp" line="533"/>
         <source>Copy filename</source>
         <translation>Скопировать имя файла</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="533"/>
+        <location filename="resultstree.cpp" line="534"/>
         <source>Copy full path</source>
         <translation>Скопировать полный путь</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="534"/>
+        <location filename="resultstree.cpp" line="535"/>
         <source>Copy message</source>
         <translation>Скопировать сообщение</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="535"/>
+        <location filename="resultstree.cpp" line="536"/>
         <source>Copy message id</source>
         <translation>Скопировать номер сообщения</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="536"/>
+        <location filename="resultstree.cpp" line="537"/>
         <source>Hide</source>
         <translation>Скрыть</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="537"/>
+        <location filename="resultstree.cpp" line="538"/>
         <source>Hide all with id</source>
         <translation>Скрыть все с id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="586"/>
-        <location filename="resultstree.cpp" line="600"/>
+        <location filename="resultstree.cpp" line="587"/>
+        <location filename="resultstree.cpp" line="601"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="587"/>
+        <location filename="resultstree.cpp" line="588"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1064,68 +1064,68 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="601"/>
+        <location filename="resultstree.cpp" line="602"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="630"/>
+        <location filename="resultstree.cpp" line="631"/>
         <source>Could not find the file!</source>
         <translation>Не удается найти файл!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="676"/>
+        <location filename="resultstree.cpp" line="677"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="690"/>
+        <location filename="resultstree.cpp" line="691"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="697"/>
+        <location filename="resultstree.cpp" line="698"/>
         <source>Select Directory</source>
         <translation>Выберите директорию</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1043"/>
+        <location filename="resultstree.cpp" line="1045"/>
         <source>Id</source>
         <translation type="unfinished">Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="245"/>
+        <location filename="resultstree.cpp" line="246"/>
         <source>style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="248"/>
+        <location filename="resultstree.cpp" line="249"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="251"/>
+        <location filename="resultstree.cpp" line="252"/>
         <source>warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="254"/>
+        <location filename="resultstree.cpp" line="255"/>
         <source>performance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="257"/>
+        <location filename="resultstree.cpp" line="258"/>
         <source>portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="260"/>
+        <location filename="resultstree.cpp" line="261"/>
         <source>information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1133,57 +1133,57 @@ Please select the directory where file is located.</source>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.cpp" line="200"/>
+        <location filename="resultsview.cpp" line="201"/>
         <source>%p% (%1 of %2 files checked)</source>
         <translation>%p% (%1 из %2 файлов проверено)</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="213"/>
-        <location filename="resultsview.cpp" line="224"/>
+        <location filename="resultsview.cpp" line="214"/>
+        <location filename="resultsview.cpp" line="225"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="214"/>
+        <location filename="resultsview.cpp" line="215"/>
         <source>No errors found.</source>
         <translation>Ошибок не найдено.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="221"/>
+        <location filename="resultsview.cpp" line="222"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="267"/>
-        <location filename="resultsview.cpp" line="285"/>
-        <location filename="resultsview.cpp" line="293"/>
+        <location filename="resultsview.cpp" line="268"/>
+        <location filename="resultsview.cpp" line="286"/>
+        <location filename="resultsview.cpp" line="294"/>
         <source>Failed to read the report.</source>
         <translation>Не удалост прочитать отчет.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="330"/>
+        <location filename="resultsview.cpp" line="331"/>
         <source>Summary</source>
         <translation>Кратко</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="331"/>
+        <location filename="resultsview.cpp" line="332"/>
         <source>Message</source>
         <translation>Сообщение</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="333"/>
+        <location filename="resultsview.cpp" line="334"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="139"/>
+        <location filename="resultsview.cpp" line="140"/>
         <source>No errors found, nothing to save.</source>
         <translation>Ошибки не найдены, нечего сохранять.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="166"/>
-        <location filename="resultsview.cpp" line="174"/>
+        <location filename="resultsview.cpp" line="167"/>
+        <location filename="resultsview.cpp" line="175"/>
         <source>Failed to save the report.</source>
         <translation>Не удалось сохранить отчет.</translation>
     </message>

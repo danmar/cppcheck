@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
+        <source>Copyright © 2007-2013 Daniel Marjamäki and cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -930,13 +930,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     <message>
         <source>Check</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>SelectFilesDialog</name>
-    <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Sélectionner les fichiers à vérifier</translation>
     </message>
 </context>
 <context>

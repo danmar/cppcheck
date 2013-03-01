@@ -17,7 +17,7 @@
     </message>
     <message utf8="true">
         <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
-        <translation>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</translation>
+        <translation type="obsolete">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</translation>
     </message>
     <message>
         <source>This program is licensed under the terms
@@ -28,6 +28,10 @@ of the GNU General Public License version 3</source>
     <message>
         <source>Visit Cppcheck homepage at %1</source>
         <translation>Cppcheck 홈페이지(%1)를 방문해보세요</translation>
+    </message>
+    <message utf8="true">
+        <source>Copyright © 2007-2013 Daniel Marjamäki and cppcheck team.</source>
+        <translation type="unfinished">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?}</translation>
     </message>
 </context>
 <context>
@@ -968,17 +972,6 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <source>Check</source>
         <translation type="unfinished">검사</translation>
-    </message>
-</context>
-<context>
-    <name>SelectFilesDialog</name>
-    <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">검사할 파일 선택</translation>
-    </message>
-    <message>
-        <source>Check</source>
-        <translation type="obsolete">검사</translation>
     </message>
 </context>
 <context>
