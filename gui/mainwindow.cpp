@@ -892,6 +892,8 @@ void MainWindow::SetLanguage(const QString &code)
         //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->Translate();
+        delete mLogView;
+        mLogView = 0;
     }
 }
 

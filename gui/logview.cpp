@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QTextStream>
+#include <QPushButton>
 #include "common.h"
 #include "logview.h"
 
@@ -30,9 +31,10 @@ LogView::LogView(QWidget *parent)
     mUI.setupUi(this);
     setWindowFlags(Qt::Tool);
 
-    connect(mUI.mCloseButton, SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
-    connect(mUI.mClearButton, SIGNAL(clicked()), this, SLOT(ClearButtonClicked()));
-    connect(mUI.mSaveButton, SIGNAL(clicked()), this, SLOT(SaveButtonClicked()));
+    mUI.mButtonBox->button(QDialogButtonBox::Reset)->setText(tr("Clear"));
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()), this, SLOT(ClearButtonClicked()));
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(SaveButtonClicked()));
 
     QSettings settings;
     resize(settings.value(SETTINGS_LOG_VIEW_WIDTH, 400).toInt(),

@@ -123,16 +123,8 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>로그 확인</translation>
     </message>
     <message>
-        <source>&amp;Save</source>
-        <translation>저장(&amp;S)</translation>
-    </message>
-    <message>
         <source>Clear</source>
         <translation>지우기</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>닫기</translation>
     </message>
     <message>
         <source>Save Log</source>
@@ -799,6 +791,10 @@ Options:
     <message>
         <source>Close</source>
         <translation type="unfinished">닫기</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

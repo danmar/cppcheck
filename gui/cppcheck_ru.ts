@@ -139,37 +139,27 @@ Parameters: -l(line) (file)</source>
         <translation>Лог проверки</translation>
     </message>
     <message>
-        <location filename="logview.ui" line="48"/>
-        <source>&amp;Save</source>
-        <translation>&amp;Сохранить</translation>
-    </message>
-    <message>
-        <location filename="logview.ui" line="55"/>
+        <location filename="logview.cpp" line="34"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="logview.ui" line="62"/>
-        <source>Close</source>
-        <translation>Закрыть</translation>
-    </message>
-    <message>
-        <location filename="logview.cpp" line="66"/>
+        <location filename="logview.cpp" line="68"/>
         <source>Save Log</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="logview.cpp" line="67"/>
+        <location filename="logview.cpp" line="69"/>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
         <translation>Текстовые файлы (*.txt *.log);;Все файлы (*.*)</translation>
     </message>
     <message>
-        <location filename="logview.cpp" line="71"/>
+        <location filename="logview.cpp" line="73"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="logview.cpp" line="72"/>
+        <location filename="logview.cpp" line="74"/>
         <source>Could not open file for writing: &quot;%1&quot;</source>
         <translation>Не удалось записать в файл: &quot;%1&quot;</translation>
     </message>
@@ -186,8 +176,8 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="654"/>
         <location filename="mainwindow.cpp" line="759"/>
         <location filename="mainwindow.cpp" line="879"/>
-        <location filename="mainwindow.cpp" line="1045"/>
-        <location filename="mainwindow.cpp" line="1126"/>
+        <location filename="mainwindow.cpp" line="1047"/>
+        <location filename="mainwindow.cpp" line="1128"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -700,34 +690,34 @@ The user interface language has been reset to English. Open the Preferences-dial
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="924"/>
-        <location filename="mainwindow.cpp" line="1007"/>
+        <location filename="mainwindow.cpp" line="926"/>
+        <location filename="mainwindow.cpp" line="1009"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Файлы проекта (*.cppcheck);;Все файлы(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="926"/>
+        <location filename="mainwindow.cpp" line="928"/>
         <source>Select Project File</source>
         <translation>Выберите файл проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="954"/>
-        <location filename="mainwindow.cpp" line="1021"/>
+        <location filename="mainwindow.cpp" line="956"/>
+        <location filename="mainwindow.cpp" line="1023"/>
         <source>Project:</source>
         <translation>Проект:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1009"/>
+        <location filename="mainwindow.cpp" line="1011"/>
         <source>Select Project Filename</source>
         <translation>Выберите имя файла для проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1046"/>
+        <location filename="mainwindow.cpp" line="1048"/>
         <source>No project file loaded</source>
         <translation>Файл с проектом на загружен</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1121"/>
+        <location filename="mainwindow.cpp" line="1123"/>
         <source>The project file
 
 %1
@@ -743,68 +733,68 @@ Do you want to remove the file from the recently used projects -list?</source>
 Хотите удалить его из списка проектов?</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="44"/>
+        <location filename="translationhandler.cpp" line="45"/>
         <source>Finnish</source>
         <translation>Финский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="43"/>
+        <location filename="translationhandler.cpp" line="44"/>
         <source>English</source>
         <translation>Английский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Chinese (Simplified)</source>
         <translation>Китайский (упрощенный)</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>Dutch</source>
         <translation>Голландский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="45"/>
+        <location filename="translationhandler.cpp" line="46"/>
         <source>French</source>
         <translation>Французский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="47"/>
+        <location filename="translationhandler.cpp" line="48"/>
         <source>Italian</source>
         <translation>Итальянский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="49"/>
+        <location filename="translationhandler.cpp" line="50"/>
         <source>Korean</source>
         <translation>Корейский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="52"/>
+        <location filename="translationhandler.cpp" line="53"/>
         <source>Spanish</source>
         <translation>Испанский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="53"/>
+        <location filename="translationhandler.cpp" line="54"/>
         <source>Swedish</source>
         <translation>Шведский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="46"/>
+        <location filename="translationhandler.cpp" line="47"/>
         <source>German</source>
         <translation>Немецкий</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="50"/>
+        <location filename="translationhandler.cpp" line="51"/>
         <source>Russian</source>
         <translation>Русский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="48"/>
+        <location filename="translationhandler.cpp" line="49"/>
         <source>Japanese</source>
         <oldsource>Japanease</oldsource>
         <translation>Японский</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="51"/>
+        <location filename="translationhandler.cpp" line="52"/>
         <source>Serbian</source>
         <translation>Сербский</translation>
     </message>
@@ -996,22 +986,27 @@ Options:
         <source>Close</source>
         <translation type="unfinished">Закрыть</translation>
     </message>
+    <message>
+        <location filename="translationhandler.cpp" line="32"/>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="90"/>
+        <location filename="translationhandler.cpp" line="91"/>
         <source>Unknown language specified!</source>
         <translation>Неизвестный язык!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="102"/>
+        <location filename="translationhandler.cpp" line="103"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Языковой файл %1 не найден!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="108"/>
+        <location filename="translationhandler.cpp" line="109"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Ошибка загрузки переводов для языка %1 из файла %2</translation>
@@ -1619,7 +1614,7 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="114"/>
+        <location filename="translationhandler.cpp" line="115"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -1632,7 +1627,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="120"/>
+        <location filename="translationhandler.cpp" line="121"/>
         <source>Cppcheck</source>
         <translation type="unfinished">Cppcheck</translation>
     </message>

@@ -136,37 +136,27 @@ Parameters: -l(line) (file)</source>
         <translation>正在检查记录</translation>
     </message>
     <message>
-        <location filename="logview.ui" line="48"/>
-        <source>&amp;Save</source>
-        <translation>保存(&amp;S)</translation>
-    </message>
-    <message>
-        <location filename="logview.ui" line="55"/>
+        <location filename="logview.cpp" line="34"/>
         <source>Clear</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="logview.ui" line="62"/>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <location filename="logview.cpp" line="66"/>
+        <location filename="logview.cpp" line="68"/>
         <source>Save Log</source>
         <translation>保存记录</translation>
     </message>
     <message>
-        <location filename="logview.cpp" line="67"/>
+        <location filename="logview.cpp" line="69"/>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
         <translation>文本文件(*.txt *.log);;所有文件(*.*)</translation>
     </message>
     <message>
-        <location filename="logview.cpp" line="71"/>
+        <location filename="logview.cpp" line="73"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="logview.cpp" line="72"/>
+        <location filename="logview.cpp" line="74"/>
         <source>Could not open file for writing: &quot;%1&quot;</source>
         <translation>无法打开并写入文件: “%1”</translation>
     </message>
@@ -183,8 +173,8 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="654"/>
         <location filename="mainwindow.cpp" line="759"/>
         <location filename="mainwindow.cpp" line="879"/>
-        <location filename="mainwindow.cpp" line="1045"/>
-        <location filename="mainwindow.cpp" line="1126"/>
+        <location filename="mainwindow.cpp" line="1047"/>
+        <location filename="mainwindow.cpp" line="1128"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -699,34 +689,34 @@ The user interface language has been reset to English. Open the Preferences-dial
 用户界面语言已被重置为英语。打开“首选项”对话框，选择任何可用的语言。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="924"/>
-        <location filename="mainwindow.cpp" line="1007"/>
+        <location filename="mainwindow.cpp" line="926"/>
+        <location filename="mainwindow.cpp" line="1009"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>项目文件(*.cppcheck);;所有文件(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="926"/>
+        <location filename="mainwindow.cpp" line="928"/>
         <source>Select Project File</source>
         <translation>选择项目文件</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="954"/>
-        <location filename="mainwindow.cpp" line="1021"/>
+        <location filename="mainwindow.cpp" line="956"/>
+        <location filename="mainwindow.cpp" line="1023"/>
         <source>Project:</source>
         <translation>项目:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1009"/>
+        <location filename="mainwindow.cpp" line="1011"/>
         <source>Select Project Filename</source>
         <translation>选择项目文件名</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1046"/>
+        <location filename="mainwindow.cpp" line="1048"/>
         <source>No project file loaded</source>
         <translation>项目文件未加载</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1121"/>
+        <location filename="mainwindow.cpp" line="1123"/>
         <source>The project file
 
 %1
@@ -743,68 +733,68 @@ Do you want to remove the file from the recently used projects -list?</source>
 你要从最近使用的项目列表中删除此文件吗？</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="43"/>
+        <location filename="translationhandler.cpp" line="44"/>
         <source>English</source>
         <translation>英語</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>Dutch</source>
         <translation>荷兰语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Chinese (Simplified)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="44"/>
+        <location filename="translationhandler.cpp" line="45"/>
         <source>Finnish</source>
         <translation>芬兰语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="45"/>
+        <location filename="translationhandler.cpp" line="46"/>
         <source>French</source>
         <translation>法语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="47"/>
+        <location filename="translationhandler.cpp" line="48"/>
         <source>Italian</source>
         <translation>意大利语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="49"/>
+        <location filename="translationhandler.cpp" line="50"/>
         <source>Korean</source>
         <translation>韩文</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="52"/>
+        <location filename="translationhandler.cpp" line="53"/>
         <source>Spanish</source>
         <translation>西班牙语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="53"/>
+        <location filename="translationhandler.cpp" line="54"/>
         <source>Swedish</source>
         <translation>瑞典语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="46"/>
+        <location filename="translationhandler.cpp" line="47"/>
         <source>German</source>
         <translation>德语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="50"/>
+        <location filename="translationhandler.cpp" line="51"/>
         <source>Russian</source>
         <translation>俄语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="48"/>
+        <location filename="translationhandler.cpp" line="49"/>
         <source>Japanese</source>
         <oldsource>Japanease</oldsource>
         <translation>日语</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="51"/>
+        <location filename="translationhandler.cpp" line="52"/>
         <source>Serbian</source>
         <translation>塞尔维亚语</translation>
     </message>
@@ -996,21 +986,26 @@ Options:
         <source>Close</source>
         <translation type="unfinished">关闭</translation>
     </message>
+    <message>
+        <location filename="translationhandler.cpp" line="32"/>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="90"/>
+        <location filename="translationhandler.cpp" line="91"/>
         <source>Unknown language specified!</source>
         <translation>指定了未知语言！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="102"/>
+        <location filename="translationhandler.cpp" line="103"/>
         <source>Language file %1 not found!</source>
         <translation>语言文件 %1 不存在！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="108"/>
+        <location filename="translationhandler.cpp" line="109"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>无法从文件 %2 中为语言 %1 加载翻译文件</translation>
     </message>
@@ -1626,7 +1621,7 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="114"/>
+        <location filename="translationhandler.cpp" line="115"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -1639,7 +1634,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 用户界面语言已被重置为英语。打开“首选项”对话框，选择任何可用的语言。</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="120"/>
+        <location filename="translationhandler.cpp" line="121"/>
         <source>Cppcheck</source>
         <translation type="unfinished">Cppcheck</translation>
     </message>

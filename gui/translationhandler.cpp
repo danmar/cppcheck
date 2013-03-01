@@ -29,6 +29,7 @@ static void unused()
     QT_TRANSLATE_NOOP("QDialogButtonBox", "OK");
     QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel");
     QT_TRANSLATE_NOOP("QDialogButtonBox", "Close");
+    QT_TRANSLATE_NOOP("QDialogButtonBox", "Save");
 }
 
 TranslationHandler::TranslationHandler(QObject *parent) :
