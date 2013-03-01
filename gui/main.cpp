@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <QApplication>
 #include <QCoreApplication>
 #include <QTextCodec>
@@ -29,8 +28,11 @@
 #endif
 #include "mainwindow.h"
 #include "erroritem.h"
+#include "cppcheck.h"
+
 
 void ShowUsage();
+void ShowVersion();
 bool CheckArgs(const QStringList &args);
 
 int main(int argc, char *argv[])
@@ -65,6 +67,10 @@ bool CheckArgs(const QStringList &args)
         ShowUsage();
         return false;
     }
+    if (args.contains("-v") || args.contains("--version")) {
+        ShowVersion();
+        return false;
+    }
     return true;
 }
 
@@ -78,7 +84,8 @@ void ShowUsage()
         "    -h, --help    Print this help\n"
         "    -p <file>      Open given project file and start checking it\n"
         "    -l <file>      Open given results xml file\n"
-        "    -d <directory> Specify the directory that was checked to generate the results xml specified with -l\n";
+        "    -d <directory> Specify the directory that was checked to generate the results xml specified with -l\n"
+        "    -v, --version  Show program version\n";
 #if defined(_WIN32)
     QMessageBox msgBox(QMessageBox::Information,
                        "Cppcheck GUI",
@@ -88,5 +95,25 @@ void ShowUsage()
     (void)msgBox.exec();
 #else
     std::cout << helpMessage;
+#endif
+}
+
+void ShowVersion()
+{
+    std::string versionMessage("Cppcheck ");
+    versionMessage += CppCheck::version();
+    const char * extraVersion = CppCheck::extraVersion();
+    if (*extraVersion != 0)
+        versionMessage += std::string(" (") + extraVersion + ")";
+
+#if defined(_WIN32)
+    QMessageBox msgBox(QMessageBox::Information,
+                       "Cppcheck GUI",
+                       versionMessage.c_str(),
+                       QMessageBox::Ok
+                      );
+    (void)msgBox.exec();
+#else
+    std::cout << versionMessage << std::endl;
 #endif
 }
