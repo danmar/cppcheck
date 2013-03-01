@@ -453,6 +453,7 @@ private:
         TEST_CASE(simplifyOperatorName4);
         TEST_CASE(simplifyOperatorName5);
         TEST_CASE(simplifyOperatorName6); // ticket #3194
+        TEST_CASE(simplifyOperatorName7); // ticket #4619
 
         TEST_CASE(simplifyNull);
 
@@ -7270,6 +7271,12 @@ private:
         const char code2[] = "value_type * operator -- (int);";
         const char result2[] = "value_type * operator-- ( int ) ;";
         ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+    }
+
+    void simplifyOperatorName7() { // ticket #4619
+        const char code1[] = "value_type * operator += (int);";
+        const char result1[] = "value_type * operator+= ( int ) ;";
+        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
     }
 
     void simplifyNull() {
