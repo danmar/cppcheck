@@ -20,6 +20,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QLocale>
+#include <QMessageBox>
 #include "translationhandler.h"
 
 TranslationHandler::TranslationHandler(QObject *parent) :
@@ -57,8 +58,11 @@ const QStringList TranslationHandler::GetNames() const
     return names;
 }
 
-bool TranslationHandler::SetLanguage(const QString &code, QString &error)
+bool TranslationHandler::SetLanguage(const QString &code)
 {
+    bool failure = false;
+    QString error;
+
     //If English is the language
     if (code == "en") {
         //Just remove all extra translators
@@ -76,26 +80,39 @@ bool TranslationHandler::SetLanguage(const QString &code, QString &error)
     int index = GetLanguageIndexByCode(code);
     if (index == -1) {
         error = QObject::tr("Unknown language specified!");
-        return false;
+        failure = true;
     }
 
     // Make sure there is a translator
-    if (!mTranslator)
+    if (!mTranslator && !failure)
         mTranslator = new QTranslator(this);
 
     //Load the new language
-    if (!mTranslator->load(mTranslations[index].mFilename)) {
+    if (!mTranslator->load(mTranslations[index].mFilename) && !failure) {
         //If it failed, lets check if the default file exists
         if (!QFile::exists(mTranslations[index].mFilename + ".qm")) {
             error = QObject::tr("Language file %1 not found!");
             error = error.arg(mTranslations[index].mFilename + ".qm");
-            return false;
+            failure = true;
         }
 
         //If file exists, there's something wrong with it
         error = QObject::tr("Failed to load translation for language %1 from file %2");
         error = error.arg(mTranslations[index].mName);
         error = error.arg(mTranslations[index].mFilename + ".qm");
+    }
+
+    if (failure) {
+        const QString msg(tr("Failed to change the user interface language:"
+                             "\n\n%1\n\n"
+                             "The user interface language has been reset to English. Open "
+                             "the Preferences-dialog to select any of the available "
+                             "languages.").arg(error));
+        QMessageBox msgBox(QMessageBox::Warning,
+                           tr("Cppcheck"),
+                           msg,
+                           QMessageBox::Ok);
+        msgBox.exec();
         return false;
     }
 

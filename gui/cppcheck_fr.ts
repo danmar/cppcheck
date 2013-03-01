@@ -500,14 +500,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to change the user interface language:
-
-%1
-
-The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Spanish</source>
         <translation type="unfinished"></translation>
     </message>
@@ -614,6 +606,24 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     <message>
         <source>Select files to check</source>
         <translation type="unfinished">Sélectionner les fichiers à vérifier</translation>
+    </message>
+    <message>
+        <source>Cppcheck GUI.
+
+Syntax:
+    cppcheck-gui [OPTIONS] [files or paths]
+
+Options:
+    -h, --help     Print this help
+    -p &lt;file&gt;      Open given project file and start checking it
+    -l &lt;file&gt;      Open given results xml file
+    -d &lt;directory&gt; Specify the directory that was checked to generate the results xml specified with -l
+    -v, --version  Show program version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cppcheck GUI - Command line parameters</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1221,6 +1231,21 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     <name>ThreadResult</name>
     <message>
         <source>%1 of %2 files checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TranslationHandler</name>
+    <message>
+        <source>Failed to change the user interface language:
+
+%1
+
+The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

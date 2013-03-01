@@ -177,17 +177,16 @@ Parametri: -l(line) (file)
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="264"/>
-        <location filename="mainwindow.cpp" line="322"/>
-        <location filename="mainwindow.cpp" line="378"/>
-        <location filename="mainwindow.cpp" line="441"/>
-        <location filename="mainwindow.cpp" line="463"/>
-        <location filename="mainwindow.cpp" line="656"/>
-        <location filename="mainwindow.cpp" line="761"/>
-        <location filename="mainwindow.cpp" line="881"/>
-        <location filename="mainwindow.cpp" line="901"/>
-        <location filename="mainwindow.cpp" line="1060"/>
-        <location filename="mainwindow.cpp" line="1141"/>
+        <location filename="mainwindow.cpp" line="262"/>
+        <location filename="mainwindow.cpp" line="320"/>
+        <location filename="mainwindow.cpp" line="376"/>
+        <location filename="mainwindow.cpp" line="439"/>
+        <location filename="mainwindow.cpp" line="461"/>
+        <location filename="mainwindow.cpp" line="654"/>
+        <location filename="mainwindow.cpp" line="759"/>
+        <location filename="mainwindow.cpp" line="879"/>
+        <location filename="mainwindow.cpp" line="1045"/>
+        <location filename="mainwindow.cpp" line="1126"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -564,12 +563,12 @@ Parametri: -l(line) (file)
         <translation>&amp;Aiuto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="404"/>
+        <location filename="mainwindow.cpp" line="402"/>
         <source>Select directory to check</source>
         <translation>Seleziona una cartella da scansionare</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="323"/>
+        <location filename="mainwindow.cpp" line="321"/>
         <source>No suitable files found to check!</source>
         <translation>Nessun file trovato idoneo alla scansione!</translation>
     </message>
@@ -579,7 +578,7 @@ Parametri: -l(line) (file)
         <translation>Rapido filtro:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="442"/>
+        <location filename="mainwindow.cpp" line="440"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -588,7 +587,7 @@ Do you want to load this project file instead?</source>
 Vuoi piuttosto caricare questo file di progetto?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="464"/>
+        <location filename="mainwindow.cpp" line="462"/>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
@@ -597,32 +596,32 @@ Do you want to proceed checking without using any of these project files?</sourc
 Vuoi procedere alla scansione senza usare qualcuno di questi file di progetto?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="803"/>
+        <location filename="mainwindow.cpp" line="801"/>
         <source>License</source>
         <translation>Licenza</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="810"/>
+        <location filename="mainwindow.cpp" line="808"/>
         <source>Authors</source>
         <translation>Autori</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="818"/>
+        <location filename="mainwindow.cpp" line="816"/>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>File XML Versione 2 (*.xml);;File XML Versione 1 (*.xml);;File di testo (*.txt);;File CSV (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="820"/>
+        <location filename="mainwindow.cpp" line="818"/>
         <source>Save the report file</source>
         <translation>Salva il file di rapporto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="672"/>
+        <location filename="mainwindow.cpp" line="670"/>
         <source>XML files (*.xml)</source>
         <translation>File XML (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="259"/>
+        <location filename="mainwindow.cpp" line="257"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
@@ -631,17 +630,17 @@ This is probably because the settings were changed between the Cppcheck versions
 Probabilmente ciò è avvenuto perché le impostazioni sono state modificate tra le versioni di Cppcheck. Per favore controlla (e sistema) le impostazioni delle applicazioni editor, altrimenti il programma editor può non partire correttamente.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="379"/>
+        <location filename="mainwindow.cpp" line="377"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>Devi chiudere il file di progetto prima di selezionare nuovi file o cartelle!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="393"/>
+        <location filename="mainwindow.cpp" line="391"/>
         <source>Select files to check</source>
         <translation type="unfinished">Seleziona i file da scansionare</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="657"/>
+        <location filename="mainwindow.cpp" line="655"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
@@ -650,12 +649,12 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 L&apos;apertura di un nuovo file XML ripulirà i risultati correnti. Vuoi procedere?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="674"/>
+        <location filename="mainwindow.cpp" line="672"/>
         <source>Open the report file</source>
         <translation>Apri il file di rapporto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="757"/>
+        <location filename="mainwindow.cpp" line="755"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?.</source>
@@ -664,72 +663,71 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 Vuoi fermare la scansione ed uscire da Cppcheck?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="827"/>
+        <location filename="mainwindow.cpp" line="825"/>
         <source>XML files version 1 (*.xml)</source>
         <translation>Files XML versione 1 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="831"/>
+        <location filename="mainwindow.cpp" line="829"/>
         <source>XML files version 2 (*.xml)</source>
         <translation>Files XML versione 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="835"/>
+        <location filename="mainwindow.cpp" line="833"/>
         <source>Text files (*.txt)</source>
         <translation>File di testo (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="839"/>
+        <location filename="mainwindow.cpp" line="837"/>
         <source>CSV files (*.csv)</source>
         <translation>Files CSV (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="883"/>
+        <location filename="mainwindow.cpp" line="881"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="895"/>
         <source>Failed to change the user interface language:
 
 %1
 
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
-        <translation>Fallito il tentativo di cambio della lingua dell&apos;interfaccia utente:
+        <translation type="obsolete">Fallito il tentativo di cambio della lingua dell&apos;interfaccia utente:
 
 %1
 
 L&apos;interfaccia utente è stata risettata in Inglese. Apri la finestra di dialogo Preferenze per selezionare una qualunque lingua a disposizione.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="939"/>
-        <location filename="mainwindow.cpp" line="1022"/>
+        <location filename="mainwindow.cpp" line="924"/>
+        <location filename="mainwindow.cpp" line="1007"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Files di progetto (*.cppcheck);;Tutti i files(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="941"/>
+        <location filename="mainwindow.cpp" line="926"/>
         <source>Select Project File</source>
         <translation>Seleziona il file di progetto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="969"/>
-        <location filename="mainwindow.cpp" line="1036"/>
+        <location filename="mainwindow.cpp" line="954"/>
+        <location filename="mainwindow.cpp" line="1021"/>
         <source>Project:</source>
         <translation>Progetto:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1024"/>
+        <location filename="mainwindow.cpp" line="1009"/>
         <source>Select Project Filename</source>
         <translation>Seleziona il nome del file di progetto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1061"/>
+        <location filename="mainwindow.cpp" line="1046"/>
         <source>No project file loaded</source>
         <translation>Nessun file di progetto caricato</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1136"/>
+        <location filename="mainwindow.cpp" line="1121"/>
         <source>The project file
 
 %1
@@ -746,69 +744,89 @@ Do you want to remove the file from the recently used projects -list?</source>
 Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>Finnish</source>
         <translation>Finnish</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="32"/>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>Chinese (Simplified)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="34"/>
         <source>Dutch</source>
         <translation>Dutch</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>French</source>
         <translation>French</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Italian</source>
         <translation>Italian</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="41"/>
         <source>Korean</source>
         <translation>Korean</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="43"/>
+        <location filename="translationhandler.cpp" line="44"/>
         <source>Spanish</source>
         <translation>Spanish</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="44"/>
+        <location filename="translationhandler.cpp" line="45"/>
         <source>Swedish</source>
         <translation>Swedish</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>German</source>
         <translation>German</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="41"/>
+        <location filename="translationhandler.cpp" line="42"/>
         <source>Russian</source>
         <translation>Russian</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="40"/>
         <source>Japanese</source>
         <translation>Japanese</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="42"/>
+        <location filename="translationhandler.cpp" line="43"/>
         <source>Serbian</source>
         <translation>Serbian</translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="87"/>
+        <source>Cppcheck GUI.
+
+Syntax:
+    cppcheck-gui [OPTIONS] [files or paths]
+
+Options:
+    -h, --help     Print this help
+    -p &lt;file&gt;      Open given project file and start checking it
+    -l &lt;file&gt;      Open given results xml file
+    -d &lt;directory&gt; Specify the directory that was checked to generate the results xml specified with -l
+    -v, --version  Show program version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="99"/>
+        <source>Cppcheck GUI - Command line parameters</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -964,17 +982,17 @@ Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="78"/>
+        <location filename="translationhandler.cpp" line="82"/>
         <source>Unknown language specified!</source>
         <translation>Lingua specificata sconosciuta!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="90"/>
+        <location filename="translationhandler.cpp" line="94"/>
         <source>Language file %1 not found!</source>
         <translation>Il file di lingua %1 non trovato!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="96"/>
+        <location filename="translationhandler.cpp" line="100"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>Fallito il tentativo di aprire la traduzione per la lingua %1 dal file %2</translation>
     </message>
@@ -1583,6 +1601,27 @@ Per vedere il tipo di errori che sono mostrati, apri il menu Visualizza.</transl
         <location filename="threadresult.cpp" line="54"/>
         <source>%1 of %2 files checked</source>
         <translation>%1 su %2 file scansionati</translation>
+    </message>
+</context>
+<context>
+    <name>TranslationHandler</name>
+    <message>
+        <location filename="translationhandler.cpp" line="106"/>
+        <source>Failed to change the user interface language:
+
+%1
+
+The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
+        <translation type="unfinished">Fallito il tentativo di cambio della lingua dell&apos;interfaccia utente:
+
+%1
+
+L&apos;interfaccia utente è stata risettata in Inglese. Apri la finestra di dialogo Preferenze per selezionare una qualunque lingua a disposizione.</translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="112"/>
+        <source>Cppcheck</source>
+        <translation type="unfinished">Cppcheck</translation>
     </message>
 </context>
 <context>

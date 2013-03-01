@@ -83,11 +83,10 @@ public:
     /**
     * @brief Set active translation.
     * @param code ISO 639 language code for new selected translation.
-    * @param error Returns error string if selection fails.
     * @return true if succeeds, false otherwise.
     *
     */
-    bool SetLanguage(const QString &code, QString &error);
+    bool SetLanguage(const QString &code);
 
     /**
     * @brief Get currently selected translation.

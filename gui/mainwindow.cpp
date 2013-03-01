@@ -46,10 +46,10 @@
 
 static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
-MainWindow::MainWindow() :
-    mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
+MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
+    mSettings(settings),
     mApplications(new ApplicationList(this)),
-    mTranslation(new TranslationHandler(this)),
+    mTranslation(th),
     mLogView(NULL),
     mScratchPad(NULL),
     mProject(NULL),
@@ -251,8 +251,6 @@ void MainWindow::LoadSettings()
     const bool showFilterToolbar = mSettings->value(SETTINGS_TOOLBARS_FILTER_SHOW, true).toBool();
     mUI.mActionToolBarFilter->setChecked(showFilterToolbar);
     mUI.mToolBarFilter->setVisible(showFilterToolbar);
-
-    SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toString());
 
     bool succeeded = mApplications->LoadSettings();
     if (!succeeded) {
@@ -890,20 +888,7 @@ void MainWindow::SetLanguage(const QString &code)
     if (currentLang == code)
         return;
 
-    QString error;
-    if (!mTranslation->SetLanguage(code, error)) {
-        const QString msg(tr("Failed to change the user interface language:"
-                             "\n\n%1\n\n"
-                             "The user interface language has been reset to English. Open "
-                             "the Preferences-dialog to select any of the available "
-                             "languages.").arg(error));
-        QMessageBox msgBox(QMessageBox::Warning,
-                           tr("Cppcheck"),
-                           msg,
-                           QMessageBox::Ok,
-                           this);
-        msgBox.exec();
-    } else {
+    if (mTranslation->SetLanguage(code)) {
         //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->Translate();

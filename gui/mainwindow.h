@@ -54,7 +54,7 @@ public:
     */
     enum { MaxRecentProjects = 5 };
 
-    MainWindow();
+    MainWindow(TranslationHandler* th, QSettings* settings);
     virtual ~MainWindow();
 
     /**
