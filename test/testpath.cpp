@@ -74,6 +74,10 @@ private:
         ASSERT(Path::acceptFile("index")==false);
         ASSERT(Path::acceptFile("")==false);
         ASSERT(Path::acceptFile("C")==false);
+
+        // don't accept any headers
+        ASSERT_EQUALS(false, Path::acceptFile("index.h"));
+        ASSERT_EQUALS(false, Path::acceptFile("index.hpp"));
     }
 
     void getRelative() const {

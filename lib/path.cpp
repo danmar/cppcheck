@@ -206,7 +206,13 @@ bool Path::isCPP(const std::string &path)
     return(getFilenameExtension(path) == ".C");
 }
 
-bool Path::acceptFile(const std::string &filename)
+bool Path::acceptFile(const std::string &path)
 {
-    return(Path::isCPP(filename) || Path::isC(filename));
+    return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path));
+}
+
+bool Path::isHeader(const std::string &path)
+{
+    const std::string extension = getFilenameExtensionInLowerCase(path);
+    return (extension.compare(0, 2, ".h") == 0);
 }

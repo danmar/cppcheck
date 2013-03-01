@@ -104,24 +104,32 @@ public:
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
-     * @param filename filename to check
+     * @param path filename to check. path info is optional
      * @return returns true if the file extension indicates it should be checked
      */
     static bool acceptFile(const std::string &filename);
 
     /**
      * @brief Identify language based on file extension.
-     * @param extensionInLowerCase e.g. ".c"
+     * @param path filename to check. path info is optional
      * @return true if extension is meant for C files
      */
-    static bool isC(const std::string &extensionInLowerCase);
+    static bool isC(const std::string &path);
 
     /**
      * @brief Identify language based on file extension.
-     * @param extensionInLowerCase e.g. ".cpp"
+     * @param path filename to check. path info is optional
      * @return true if extension is meant for C++ files
      */
     static bool isCPP(const std::string &extensionInLowerCase);
+
+private:
+    /**
+     * @brief Is filename a header based on file extension
+     * @param path filename to check. path info is optional
+     * @return true if filename extension is meant for headers
+     */
+    static bool isHeader(const std::string &path);
 };
 
 /// @}
