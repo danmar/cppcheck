@@ -239,7 +239,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // 2nd parameter..
-    if (secondParam && ((value == 0 && secondParam->str() == "0") || (Token::Match(secondParam, "%var%") && secondParam->varId() > 0))) {
+    if (secondParam && ((value == 0 && secondParam->str() == "0") || (secondParam->varId() > 0))) {
         if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
             var.push_back(secondParam);
         else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())

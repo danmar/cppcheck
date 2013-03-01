@@ -2269,7 +2269,7 @@ const Variable *Scope::getVariable(const std::string &varname) const
 
 static const Token* skipScopeIdentifiers(const Token* tok)
 {
-    if (Token::simpleMatch(tok, "::")) {
+    if (tok && tok->str() == "::") {
         tok = tok->next();
     }
     while (Token::Match(tok, "%type% ::")) {

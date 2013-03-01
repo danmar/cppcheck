@@ -798,7 +798,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             !tok->isName() &&
             tok->str() != ">" &&
             tok->str() != "]" &&
-            !Token::simpleMatch(tok->previous(), "operator") &&
+            tok->strAt(-1) != "operator" &&
             !Token::simpleMatch(tok->previous(), "* )") &&
             !Token::simpleMatch(tok->previous(), ") )") &&
             !Token::Match(tok->tokAt(-2), "* %var% )") &&

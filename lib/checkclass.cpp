@@ -610,7 +610,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         else if (Token::Match(ftok, "%var% [|.")) {
             const Token *tok2 = ftok;
             while (tok2) {
-                if (Token::simpleMatch(tok2->next(), "["))
+                if (tok2->strAt(1) == "[")
                     tok2 = tok2->next()->link();
                 else if (Token::Match(tok2->next(), ". %var%"))
                     tok2 = tok2->tokAt(2);

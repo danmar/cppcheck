@@ -593,7 +593,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     // check for alias to struct member
     // char c[10]; a.b = c;
     else if (Token::Match(tok->tokAt(-2), "%var% .")) {
-        if (Token::Match(tok->tokAt(2), "%var%")) {
+        if (tok->tokAt(2)->varId()) {
             unsigned int varid2 = tok->tokAt(2)->varId();
             Variables::VariableUsage *var2 = variables.find(varid2);
 
@@ -717,7 +717,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (defValTok && defValTok->str() == "=") {
                 if (defValTok->next() && defValTok->next()->str() == "{") {
                     for (const Token* tok = defValTok; tok && tok != defValTok->linkAt(1); tok = tok->next())
-                        if (Token::Match(tok, "%var%")) // Variables used to initialize the array read.
+                        if (tok->varId()) // Variables used to initialize the array read.
                             variables.read(tok->varId(), i->nameToken());
                 } else
                     doAssignment(variables, i->nameToken(), false, scope);
@@ -873,7 +873,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.read(varid1, tok);
             } else {
                 Variables::VariableUsage *var = variables.find(varid1);
-                if (var && Token::simpleMatch(start->previous(), ",")) {
+                if (var && start->strAt(-1) == ",") {
                     variables.use(varid1, tok);
                 } else if (var && var->_type == Variables::reference) {
                     variables.writeAliases(varid1, tok);
@@ -1007,12 +1007,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.use(tok->varId(), tok);   // use = read + write
         }
 
-        else if (tok->isExtendedOp() &&
-                 Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new") && tok->strAt(2) != "=") {
+        else if (tok->isExtendedOp() && tok->next() &&
+                 tok->next()->varId() && !Token::Match(tok->next(), "true|false|new") && tok->strAt(2) != "=") {
             variables.readAll(tok->next()->varId(), tok);
         }
 
-        else if (Token::Match(tok, "%var%") && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp())) {
+        else if (tok->varId() && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp())) {
             variables.readAll(tok->varId(), tok);
         }
 

@@ -61,7 +61,7 @@ void CheckOther::checkCastIntToCharAndBack()
                     const Variable *var = tok->variable();
                     if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
                         uiVarId = tok->varId();
-                        strFunctionName = tok->tokAt(2)->str();
+                        strFunctionName = tok->strAt(2);
                     }
                 }
             } else if (Token::Match(tok, "EOF %comp% ( %var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
@@ -69,7 +69,7 @@ void CheckOther::checkCastIntToCharAndBack()
                 if (tok && tok->varId()) {
                     const Variable *var = tok->variable();
                     if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
-                        checkCastIntToCharAndBackError(tok, tok->tokAt(2)->str());
+                        checkCastIntToCharAndBackError(tok, tok->strAt(2));
                     }
                 }
             }
@@ -2548,7 +2548,7 @@ void CheckOther::checkComparisonOfFuncReturningBool()
                 continue;
             const Token *first_token;
             bool first_token_func_of_type_bool = false;
-            if (Token::simpleMatch(tok->previous(), ")")) {
+            if (tok->strAt(-1) == ")") {
                 first_token = tok->previous()->link()->previous();
             } else {
                 first_token = tok->previous();
@@ -2996,12 +2996,10 @@ void CheckOther::checkDoubleFree()
             // If it is a function call, then clear those variables in its argument list
             else if (Token::simpleMatch(tok->next()->link(), ") ;")) {
                 for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-                    if (Token::Match(tok2, "%var%")) {
+                    if (tok2->varId()) {
                         unsigned int var = tok2->varId();
-                        if (var) {
-                            freedVariables.erase(var);
-                            closeDirVariables.erase(var);
-                        }
+                        freedVariables.erase(var);
+                        closeDirVariables.erase(var);
                     }
                 }
             }

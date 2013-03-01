@@ -2616,7 +2616,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         if (executableScope && ref) {
             if (tok2->str() == "(" || tok2->str() == "=")
                 ;   // reference is assigned => ok
-            else if (tok2->str() != ")" || !Token::simpleMatch(tok2->link()->previous(), "catch"))
+            else if (tok2->str() != ")" || tok2->link()->strAt(-1) != "catch")
                 return false;   // not catching by reference => not declaration
         }
     }
@@ -2790,9 +2790,9 @@ void Tokenizer::setVarId()
         } else if (tok->str() == "{") {
             initlist = false;
             // parse anonymous unions as part of the current scope
-            if (!(Token::simpleMatch(tok->previous(), "union") && Token::simpleMatch(tok->link(), "} ;"))) {
+            if (!(tok->strAt(-1) == "union" && Token::simpleMatch(tok->link(), "} ;"))) {
                 scopestartvarid.push(_varId);
-                if (Token::simpleMatch(tok->previous(), ")") || Token::Match(tok->tokAt(-2), ") %type%")) {
+                if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%")) {
                     executableScope.push(true);
                 } else {
                     executableScope.push(executableScope.top());
@@ -5055,7 +5055,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
             else
                 break;
 
-            if (Token::simpleMatch(tok2->next(), "*"))
+            if (tok2->strAt(1) == "*")
                 break;
 
             tok2 = tok2->next();
@@ -6139,7 +6139,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
     } else {
         value = tok2->strAt(2);
         valueVarId = tok2->tokAt(2)->varId();
-        if (Token::simpleMatch(tok2->next(), "[")) {
+        if (tok2->strAt(1) == "[") {
             value = tok2->next()->link()->strAt(2);
             valueVarId = 0;
         } else if (value == "&") {
@@ -6717,7 +6717,7 @@ bool Tokenizer::simplifyRedundantParentheses()
 
         // Simplify "!!operator !!(%var%|)) ( %num%|%bool% ) %op%|;|,|)"
         if (Token::Match(tok, "( %bool%|%num% ) %cop%|;|,|)") &&
-            !Token::simpleMatch(tok->tokAt(-2), "operator") &&
+            tok->strAt(-2) != "operator" &&
             tok->previous() &&
             !tok->previous()->isName() &&
             tok->previous()->str() != ")" &&
@@ -8587,7 +8587,7 @@ void Tokenizer::simplifyKeyword()
 
     if (_settings->standards.c >= Standards::C99) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            while (Token::simpleMatch(tok, "restrict")) {
+            while (tok && tok->str() == "restrict") {
                 tok->deleteThis();
             }
         }

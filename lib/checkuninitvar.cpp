@@ -370,7 +370,7 @@ private:
             if (tok2->varId() &&
                 !Token::Match(tok2->previous(), "&|::") &&
                 !Token::simpleMatch(tok2->tokAt(-2), "& (") &&
-                !Token::simpleMatch(tok2->next(), "=")) {
+                tok2->strAt(1) != "=") {
                 // Multiple assignments..
                 if (Token::Match(tok2->next(), ".|[")) {
                     const Token * tok3 = tok2;
@@ -547,12 +547,12 @@ private:
                 }
             }
 
-            if (Token::simpleMatch(tok.next(), "(")) {
+            if (tok.strAt(1) == "(") {
                 use_pointer(checks, &tok);
             }
 
             if (Token::Match(tok.tokAt(-2), "[;{}] *")) {
-                if (Token::simpleMatch(tok.next(), "=")) {
+                if (tok.strAt(1) == "=") {
                     // is the pointer used in the rhs?
                     bool used = false;
                     for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next()) {
@@ -580,22 +580,22 @@ private:
             }
 
             else if ((!isC && (Token::Match(tok.previous(), "<<|>>") || Token::Match(tok.previous(), "[;{}] %var% <<"))) ||
-                     Token::simpleMatch(tok.next(), "=")) {
+                     tok.strAt(1) == "=") {
                 // TODO: Don't bail out for "<<" and ">>" if these are
                 // just computations
                 ExecutionPath::bailOutVar(checks, tok.varId());
                 return &tok;
             }
 
-            if (Token::simpleMatch(tok.next(), "[")) {
+            if (tok.strAt(1) == "[" && tok.next()->link()) {
                 const Token *tok2 = tok.next()->link();
-                if (Token::simpleMatch(tok2 ? tok2->next() : 0, "=")) {
+                if (tok2->strAt(1) == "=") {
                     ExecutionPath::bailOutVar(checks, tok.varId());
                     return &tok;
                 }
             }
 
-            if (Token::simpleMatch(tok.previous(), "delete") ||
+            if (tok.strAt(-1) == "delete" ||
                 Token::simpleMatch(tok.tokAt(-3), "delete [ ]")) {
                 dealloc_pointer(checks, &tok);
                 return &tok;
@@ -764,7 +764,7 @@ private:
         }
 
         if (tok.varId()) {
-            if (Token::simpleMatch(tok.previous(), "=")) {
+            if (tok.strAt(-1) == "=") {
                 if (Token::Match(tok.tokAt(-3), "& %var% =")) {
                     bailOutVar(checks, tok.varId());
                     return &tok;
@@ -786,12 +786,12 @@ private:
                 }
             }
 
-            if (Token::simpleMatch(tok.next(), ".")) {
+            if (tok.strAt(1) == ".") {
                 bailOutVar(checks, tok.varId());
                 return &tok;
             }
 
-            if (Token::simpleMatch(tok.next(), "[")) {
+            if (tok.strAt(1) == "[") {
                 ExecutionPath::bailOutVar(checks, tok.varId());
                 return &tok;
             }
@@ -801,7 +801,7 @@ private:
                 return &tok;
             }
 
-            if (Token::simpleMatch(tok.previous(), "&")) {
+            if (tok.strAt(-1) == "&") {
                 ExecutionPath::bailOutVar(checks, tok.varId());
             }
         }
@@ -1532,7 +1532,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
             const Token *tok2 = vartok->tokAt(-2);
             if (tok2 && (tok2->isConstOp() || tok2->str() == "("))
                 return false; // address of
-            if (Token::simpleMatch(tok2,")"))
+            if (tok2 && tok2->str() == ")")
                 tok2 = tok2->link()->previous();
             while (tok2 && tok2->str() == "(")
                 tok2 = tok2->previous();

@@ -1232,7 +1232,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     if (tok2->varId() == varid) {
                         // Read data..
                         if (!Token::Match(tok2->previous(), "&|(") &&
-                            Token::simpleMatch(tok2->next(), "[")) {
+                            tok2->strAt(1) == "[") {
                         } else if (f.empty() ||
                                    !test_white_list(f.top()->str()) ||
                                    getDeallocationType(f.top(),varid)) {

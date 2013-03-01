@@ -247,7 +247,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     deallocUseError(tok, tok->str());
                 } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                     varInfo->erase(tok->varId());
-                } else if (Token::simpleMatch(tok->previous(), "=")) {
+                } else if (tok->strAt(-1) == "=") {
                     varInfo->erase(tok->varId());
                 }
             } else if (Token::Match(tok->previous(), "& %var% = %var% ;")) {
