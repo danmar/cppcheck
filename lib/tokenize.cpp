@@ -8587,7 +8587,7 @@ void Tokenizer::simplifyKeyword()
 
     if (_settings->standards.c >= Standards::C99) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            while (tok && tok->str() == "restrict") {
+            while (tok->str() == "restrict") {
                 tok->deleteThis();
             }
         }
