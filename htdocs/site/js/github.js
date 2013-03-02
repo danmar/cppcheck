@@ -14,13 +14,9 @@ jQuery.fn.listCommits = function(username, repository, branch) {
     $(commits).each(function(i) {
       var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha,
           shortMessage = cutLines(this.commit.message),
-          commitAuthor = (this.author !== null) ? this.author.login : '';
+          commitAuthor = (this.author !== null) ? this.author.login : this.commit.author.name;
 
-      if (commitAuthor) {
-        list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> <em>by <strong>' + commitAuthor + '</strong></em></li>');
-      } else {
-        list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a></li>');
-      }
+      list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a> <em>by <strong>' + commitAuthor + '</strong></em></li>');
 
       if (i === 9) {
         return false;
