@@ -448,6 +448,8 @@ gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisti
     <programlisting>Checking gui/test.cpp...
 gui/test.cpp,31,error,memleak,Memory leak: b
 gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
+
+    <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and \t (horizontal tab) are supported.</para>
   </chapter>
 
   <chapter>
