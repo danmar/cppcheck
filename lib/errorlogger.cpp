@@ -298,12 +298,12 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     // template is given. Reformat the output according to it
     else {
         std::string result = outputFormat;
-	// Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814 
-	// Substitution should be done first so messages from cppcheck never get translated.
-	findAndReplace(result, "\\b", "\b");
-	findAndReplace(result, "\\n", "\n");
-	findAndReplace(result, "\\r", "\r");
-	findAndReplace(result, "\\t", "\t");
+        // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
+        // Substitution should be done first so messages from cppcheck never get translated.
+        findAndReplace(result, "\\b", "\b");
+        findAndReplace(result, "\\n", "\n");
+        findAndReplace(result, "\\r", "\r");
+        findAndReplace(result, "\\t", "\t");
 
         findAndReplace(result, "{id}", _id);
         findAndReplace(result, "{severity}", Severity::toString(_severity));
