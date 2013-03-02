@@ -873,11 +873,12 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     std::list<Function>::const_iterator func;
 
     for (func = type->functionList.begin(); func != type->functionList.end(); ++func) {
-        if (func->isVirtual)
+        if (func->isVirtual) {
             if (allocation)
                 mallocOnClassError(tok, tok->str(), type->classDef, "virtual method");
             else
                 memsetError(tok, tok->str(), "virtual method", type->classDef->str());
+        }
     }
 
     // Warn if type is a class or struct that contains any std::* variables
