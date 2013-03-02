@@ -25,6 +25,7 @@ import os
 import sys
 import re
 
+
 class Extract:
     """
     Read Cppcheck test file and create data
@@ -34,14 +35,14 @@ class Extract:
     # array that stores all the test cases
     nodes = []
 
-    def parseFile(self,filename):
+    def parseFile(self, filename):
         """
         parse test file and add info to the nodes
         variable
         """
 
         name = '[0-9a-zA-Z_]+'
-        string =  '\\"(.+)\\"'
+        string = '\\"(.+)\\"'
 
         testclass = None
         functionName = None
@@ -50,50 +51,52 @@ class Extract:
         for line in fin:
             # testclass starts
             res = re.match('class ('+name+')', line)
-            if res != None:
+            if res is not None:
                 testclass = res.group(1)
 
             # end of testclass
-            if re.match('};', line) != None:
+            if re.match('};', line) is not None:
                 testclass = None
 
             # function start
             res = re.match('\\s+void ('+name+')\\(\\)', line)
-            if res != None:
+            if res is not None:
                 functionName = res.group(1)
 
-            elif re.match('\\s+}', line) != None:
+            elif re.match('\\s+}', line) is not None:
                 functionName = None
 
-            if functionName == None:
+            if functionName is None:
                 continue
 
             # check
             res = re.match('\s+check.*\('+string, line)
-            if res != None:
+            if res is not None:
                 code = res.group(1)
 
             # code..
             res = re.match('\\s+'+string, line)
-            if res != None:
+            if res is not None:
                 code = code + res.group(1)
 
             # assert
             res = re.match('\\s+ASSERT_EQUALS\\(\\"([^"]*)\\",', line)
-            if res != None and len(code) > 10:
-                node = { 'testclass':testclass,
-                         'functionName':functionName,
-                         'code':code,
-                         'expected':res.group(1) }
+            if res is not None and len(code) > 10:
+                node = {'testclass': testclass,
+                        'functionName': functionName,
+                        'code': code,
+                        'expected': res.group(1)}
                 self.nodes.append(node)
                 code = ''
 
         # close test file
         fin.close()
 
+
 def strtoxml(s):
     """Convert string to xml/html format"""
-    return s.replace('&','&amp;').replace('"', '&quot;').replace('<','&lt;').replace('>','&gt;')
+    return s.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
+
 
 def trimname(name):
     """Trim test name. Trailing underscore and digits are removed"""
@@ -128,7 +131,7 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
     testclass = None
     num = 0
     for node in nodes:
-        if errorsOnly and node['expected']=='':
+        if errorsOnly and node['expected'] == '':
             continue
         if trimname(node['functionName']) == functionName:
             num = num + 1
@@ -144,8 +147,8 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
             fout.write('<td>' + strtoxml(node['expected']).replace('\\n', '<br>') + '</td>')
             fout.write('</tr>\n')
 
-    if testclass != None:
-        fout.write('</table>\n');
+    if testclass is not None:
+        fout.write('</table>\n')
     fout.write('</body></html>\n')
     fout.close()
 
@@ -175,7 +178,7 @@ for arg in sys.argv[1:]:
 
 
 # extract test cases
-if filename != None:
+if filename is not None:
     # parse test file
     e = Extract()
     e.parseFile(filename)
@@ -193,7 +196,7 @@ if filename != None:
             s += '/>'
             print (s)
         print ('</tree>')
-    elif htmldir != None:
+    elif htmldir is not None:
         if not htmldir.endswith('/'):
             htmldir += '/'
         if not os.path.exists(htmldir):
@@ -280,7 +283,7 @@ if filename != None:
             filename += functionName + '.cpp'
 
             # source code
-            fout = open(codedir+filename,'w')
+            fout = open(codedir + filename, 'w')
             fout.write(code)
             fout.close()
 

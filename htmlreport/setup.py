@@ -6,5 +6,5 @@ if __name__ == '__main__':
         name="cppcheck",
         scripts=[
             "cppcheck-htmlreport",
-            ]
-        )
+        ]
+    )

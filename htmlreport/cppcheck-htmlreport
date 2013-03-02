@@ -148,6 +148,7 @@ HTML_FOOTER = """
 
 HTML_ERROR = "<span style=\"border-width: 2px;border-color: black;border-style: solid;background: #ffaaaa;padding: 3px;\">&lt;--- %s</span>\n"
 
+
 class AnnotateCodeFormatter(HtmlFormatter):
     errors = []
 
@@ -161,6 +162,7 @@ class AnnotateCodeFormatter(HtmlFormatter):
                         t = t.replace("\n", HTML_ERROR % error["msg"])
                 line_no = line_no + 1
             yield i, t
+
 
 class CppCheckHandler(XmlContentHandler):
     """Parses the cppcheck xml file and produces a list of all its errors."""

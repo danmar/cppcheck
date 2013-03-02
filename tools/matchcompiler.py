@@ -22,6 +22,7 @@ import re
 import glob
 import argparse
 
+
 class MatchCompiler:
     def __init__(self, verify_mode=False):
         self._verifyMode = verify_mode
@@ -105,7 +106,7 @@ class MatchCompiler:
             return 'tok->isName()'
         elif tok == '%varid%':
             return '(tok->isName() && tok->varId()==varid)'
-        elif (len(tok)>2) and (tok[0]=="%"):
+        elif (len(tok) > 2) and (tok[0] == "%"):
             print ("unhandled:" + tok)
 
         return '(tok->str()==' + self._insertMatchStr(tok) + ')/* ' + tok + ' */'
@@ -136,7 +137,7 @@ class MatchCompiler:
             gotoNextToken = '    tok = tok->next();\n'
 
             # if varid is provided, check that it's non-zero on first use
-            if varid and tok.find('%varid%') != -1 and checked_varid == False:
+            if varid and tok.find('%varid%') != -1 and checked_varid is False:
                 ret += '    if (varid==0U)\n'
                 ret += '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");\n'
                 checked_varid = True
@@ -313,7 +314,7 @@ class MatchCompiler:
         # Compile function or use previously compiled one
         patternNumber = self._lookupMatchFunctionId(pattern, None, varId, False)
 
-        if patternNumber == None:
+        if patternNumber is None:
             patternNumber = len(self._rawMatchFunctions) + 1
             self._insertMatchFunctionId(patternNumber, pattern, None, varId, False)
             self._rawMatchFunctions.append(self._compilePattern(pattern, patternNumber, varId))
@@ -340,10 +341,10 @@ class MatchCompiler:
                 break
 
             res = self.parseMatch(line, pos1)
-            if res == None:
+            if res is None:
                 break
 
-            assert(len(res)==3 or len(res)==4)  # assert that Token::Match has either 2 or 3 arguments
+            assert(len(res) == 3 or len(res) == 4)  # assert that Token::Match has either 2 or 3 arguments
 
             end_pos = len(res[0])
             tok = res[1]
@@ -353,7 +354,7 @@ class MatchCompiler:
                 varId = res[3]
 
             res = re.match(r'\s*"([^"]*)"\s*$', raw_pattern)
-            if res == None:
+            if res is None:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -410,7 +411,7 @@ class MatchCompiler:
         # Compile function or use previously compiled one
         findMatchNumber = self._lookupMatchFunctionId(pattern, endToken, varId, True)
 
-        if findMatchNumber == None:
+        if findMatchNumber is None:
             findMatchNumber = len(self._rawMatchFunctions) + 1
             self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
             self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
@@ -438,10 +439,10 @@ class MatchCompiler:
                 break
 
             res = self.parseMatch(line, pos1)
-            if res == None:
+            if res is None:
                 break
 
-            assert(len(res)>=3 or len(res) < 6)  # assert that Token::find(simple)match has either 2, 3 or four arguments
+            assert(len(res) >= 3 or len(res) < 6)  # assert that Token::find(simple)match has either 2, 3 or four arguments
 
             g0 = res[0]
             tok = res[1]
@@ -462,16 +463,16 @@ class MatchCompiler:
             #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
             #     Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
             endToken = None
-            if is_findsimplematch == True and len(res) == 4:
+            if is_findsimplematch is True and len(res) == 4:
                 endToken = res[3]
-            elif is_findsimplematch == False:
+            elif is_findsimplematch is False:
                 if varId and len(res) == 5:
                     endToken = res[3]
-                elif varId == None and len(res) == 4:
+                elif varId is None and len(res) == 4:
                     endToken = res[3]
 
             res = re.match(r'\s*"([^"]*)"\s*$', pattern)
-            if res == None:
+            if res is None:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -488,7 +489,7 @@ class MatchCompiler:
                 break
 
             res = self._parseStringComparison(line, match.start())
-            if res == None:
+            if res is None:
                 break
 
             startPos = res[0]
@@ -538,6 +539,7 @@ class MatchCompiler:
         fout.write(header+stringList+strFunctions+code)
         fout.close()
 
+
 def main():
     # Main program
     build_dir = 'build'
@@ -556,7 +558,7 @@ def main():
     # Argument handling
     parser = argparse.ArgumentParser(description='Compile Token::Match() calls into native C++ code')
     parser.add_argument('--verify', action='store_true', default=False,
-                    help='verify compiled matches against on-the-fly parser. Slow!')
+                        help='verify compiled matches against on-the-fly parser. Slow!')
     args = parser.parse_args()
 
     mc = MatchCompiler(verify_mode=args.verify)

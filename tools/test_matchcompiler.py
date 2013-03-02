@@ -19,14 +19,15 @@
 import unittest
 import matchcompiler
 
+
 class MatchCompilerTest(unittest.TestCase):
     def setUp(self):
         self.mc = matchcompiler.MatchCompiler(verify_mode=False)
 
     def test_parseMatch(self):
-        self.assertEqual(self.mc.parseMatch('  Token::Match(tok, ";") ',2), ['Token::Match(tok, ";")','tok',' ";"'])
-        self.assertEqual(self.mc.parseMatch('  Token::Match(tok,', 2), None) # multiline Token::Match is not supported yet
-        self.assertEqual(self.mc.parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), ['Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"']) # inner function call
+        self.assertEqual(self.mc.parseMatch('  Token::Match(tok, ";") ', 2), ['Token::Match(tok, ";")', 'tok', ' ";"'])
+        self.assertEqual(self.mc.parseMatch('  Token::Match(tok,', 2), None)    # multiline Token::Match is not supported yet
+        self.assertEqual(self.mc.parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), ['Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"'])  # inner function call
 
     def test_replaceTokenMatch(self):
         input = 'if (Token::Match(tok, "foobar")) {'
