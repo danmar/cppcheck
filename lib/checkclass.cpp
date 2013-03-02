@@ -364,8 +364,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
         if (initList) {
-            if (level == 0 && Token::Match(ftok, "%type% (")) {
-                if (ftok->str() == func.name()) { // c++11 delegate constructor
+            if (level == 0 && Token::Match(ftok, "%var% (")) {
+                if (ftok->str() != func.name()) {
+                    initVar(ftok->str(), scope, usage);
+                } else { // c++11 delegate constructor
                     const Function *member = scope->findFunction(ftok);
                     // member function found
                     if (member) {
@@ -390,10 +392,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                             assignAllVar(usage);
                         }
                     }
-                } else { // base class constructor
                 }
-            } else if (level == 0 && Token::Match(ftok, "%var% (")) {
-                initVar(ftok->str(), scope, usage);
             } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const" && Token::Match(ftok->next()->link()->next(), ",|{|%type%")) {
                 initVar(ftok->str(), scope, usage);
                 ftok = ftok->linkAt(1);
