@@ -1560,17 +1560,7 @@ bool Tokenizer::tokenize(std::istream &code,
     assert(_settings);
 
     // Fill the map _typeSize..
-    _typeSize.clear();
-    _typeSize["char"] = 1;
-    _typeSize["bool"] = _settings->sizeof_bool;
-    _typeSize["short"] = _settings->sizeof_short;
-    _typeSize["int"] = _settings->sizeof_int;
-    _typeSize["long"] = _settings->sizeof_long;
-    _typeSize["float"] = _settings->sizeof_float;
-    _typeSize["double"] = _settings->sizeof_double;
-    _typeSize["wchar_t"] = _settings->sizeof_wchar_t;
-    _typeSize["size_t"] = _settings->sizeof_size_t;
-    _typeSize["*"] = _settings->sizeof_pointer;
+    fillTypeSizes();
 
     _configuration = configuration;
 
@@ -1595,30 +1585,8 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove MACRO in variable declaration: MACRO int x;
     removeMacroInVarDecl();
 
-    // Combine wide strings
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
-            // Combine 'L "string"'
-            tok->str(tok->next()->str());
-            tok->deleteNext();
-            tok->isLong(true);
-        }
-    }
-
     // Combine strings
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str()[0] != '"')
-            continue;
-
-        tok->str(simplifyString(tok->str()));
-        while (tok->next() && tok->next()->type() == Token::eString) {
-            tok->next()->str(simplifyString(tok->next()->str()));
-
-            // Two strings after each other, combine them
-            tok->concatStr(tok->next()->str());
-            tok->deleteNext();
-        }
-    }
+    combineStrings();
 
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     simplifySQL();
@@ -1670,45 +1638,7 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
 
     // Combine tokens..
-    for (Token *tok = list.front(); tok && tok->next(); tok = tok->next()) {
-        const char c1 = tok->str()[0];
-
-        if (tok->str().length() == 1 && tok->next()->str().length() == 1) {
-            const char c2 = tok->next()->str()[0];
-
-            // combine +-*/ and =
-            if (c2 == '=' && (std::strchr("+-*/%&|^=!<>", c1))) {
-                tok->str(tok->str() + c2);
-                tok->deleteNext();
-                continue;
-            }
-
-            // replace "->" with "."
-            else if (c1 == '-' && c2 == '>') {
-                tok->str(".");
-                tok->deleteNext();
-                continue;
-            }
-        }
-
-        else if (tok->str() == ">>" && tok->next()->str() == "=") {
-            tok->str(">>=");
-            tok->deleteNext();
-        }
-
-        else if (tok->str() == "<<" && tok->next()->str() == "=") {
-            tok->str("<<=");
-            tok->deleteNext();
-        }
-
-        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":") {
-            if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published") {
-                tok->str(tok->str() + ":");
-                tok->deleteNext();
-                continue;
-            }
-        }
-    }
+    combineOperators();
 
     // Simplify: 0[foo] -> *(foo)
     for (Token* tok = list.front(); tok; tok = tok->next()) {
@@ -2037,17 +1967,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     assert(_settings);
 
     // Fill the map _typeSize..
-    _typeSize.clear();
-    _typeSize["char"] = 1;
-    _typeSize["bool"] = _settings->sizeof_bool;
-    _typeSize["short"] = _settings->sizeof_short;
-    _typeSize["int"] = _settings->sizeof_int;
-    _typeSize["long"] = _settings->sizeof_long;
-    _typeSize["float"] = _settings->sizeof_float;
-    _typeSize["double"] = _settings->sizeof_double;
-    _typeSize["wchar_t"] = _settings->sizeof_wchar_t;
-    _typeSize["size_t"] = _settings->sizeof_size_t;
-    _typeSize["*"] = _settings->sizeof_pointer;
+    fillTypeSizes();
 
     {
         std::istringstream istr(code);
@@ -2057,34 +1977,8 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
         }
     }
 
-    // Combine wide strings
-    for (Token *tok = list.front();
-         tok;
-         tok = tok->next()) {
-        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
-            // Combine 'L "string"'
-            tok->str(tok->next()->str());
-            tok->deleteNext();
-            tok->isLong(true);
-        }
-    }
-
     // Combine strings
-    for (Token *tok = list.front();
-         tok;
-         tok = tok->next()) {
-        if (tok->str()[0] != '"')
-            continue;
-
-        tok->str(simplifyString(tok->str()));
-        while (tok->next() && tok->next()->type() == Token::eString) {
-            tok->next()->str(simplifyString(tok->next()->str()));
-
-            // Two strings after each other, combine them
-            tok->concatStr(tok->next()->str());
-            tok->deleteNext();
-        }
-    }
+    combineStrings();
 
     // Remove "volatile", "inline", "register", and "restrict"
     simplifyKeyword();
@@ -2123,48 +2017,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
             TemplateSimplifier::simplifyNumericCalculations(tok->previous());
     }
 
-    // Combine tokens..
-    for (Token *tok = list.front();
-         tok && tok->next();
-         tok = tok->next()) {
-        const char c1 = tok->str()[0];
-
-        if (tok->str().length() == 1 && tok->next()->str().length() == 1) {
-            const char c2 = tok->next()->str()[0];
-
-            // combine +-*/ and =
-            if (c2 == '=' && (std::strchr("+-*/%&|^=!<>", c1))) {
-                tok->str(tok->str() + c2);
-                tok->deleteNext();
-                continue;
-            }
-
-            // replace "->" with "."
-            else if (c1 == '-' && c2 == '>') {
-                tok->str(".");
-                tok->deleteNext();
-                continue;
-            }
-        }
-
-        else if (tok->str() == ">>" && tok->next()->str() == "=") {
-            tok->str(">>=");
-            tok->deleteNext();
-        }
-
-        else if (tok->str() == "<<" && tok->next()->str() == "=") {
-            tok->str("<<=");
-            tok->deleteNext();
-        }
-
-        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":") {
-            if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published") {
-                tok->str(tok->str() + ":");
-                tok->deleteNext();
-                continue;
-            }
-        }
-    }
+    combineOperators();
 
     simplifyRedundantParentheses();
     for (Token *tok = list.front();
@@ -2208,6 +2061,99 @@ bool Tokenizer::hasEnumsWithTypedef()
     }
 
     return false;
+}
+
+void Tokenizer::fillTypeSizes()
+{
+    _typeSize.clear();
+    _typeSize["char"] = 1;
+    _typeSize["bool"] = _settings->sizeof_bool;
+    _typeSize["short"] = _settings->sizeof_short;
+    _typeSize["int"] = _settings->sizeof_int;
+    _typeSize["long"] = _settings->sizeof_long;
+    _typeSize["float"] = _settings->sizeof_float;
+    _typeSize["double"] = _settings->sizeof_double;
+    _typeSize["wchar_t"] = _settings->sizeof_wchar_t;
+    _typeSize["size_t"] = _settings->sizeof_size_t;
+    _typeSize["*"] = _settings->sizeof_pointer;
+}
+
+void Tokenizer::combineOperators()
+{
+    // Combine tokens..
+    for (Token *tok = list.front();
+         tok && tok->next();
+         tok = tok->next()) {
+        const char c1 = tok->str()[0];
+
+        if (tok->str().length() == 1 && tok->next()->str().length() == 1) {
+            const char c2 = tok->next()->str()[0];
+
+            // combine +-*/ and =
+            if (c2 == '=' && (std::strchr("+-*/%&|^=!<>", c1))) {
+                tok->str(tok->str() + c2);
+                tok->deleteNext();
+                continue;
+            }
+
+            // replace "->" with "."
+            else if (c1 == '-' && c2 == '>') {
+                tok->str(".");
+                tok->deleteNext();
+                continue;
+            }
+        }
+
+        else if (tok->str() == ">>" && tok->next()->str() == "=") {
+            tok->str(">>=");
+            tok->deleteNext();
+        }
+
+        else if (tok->str() == "<<" && tok->next()->str() == "=") {
+            tok->str("<<=");
+            tok->deleteNext();
+        }
+
+        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":") {
+            if (tok->str() == "private" || tok->str() == "protected" || tok->str() == "public" || tok->str() == "__published") {
+                tok->str(tok->str() + ":");
+                tok->deleteNext();
+                continue;
+            }
+        }
+    }
+}
+
+void Tokenizer::combineStrings()
+{
+    // Combine wide strings
+    for (Token *tok = list.front();
+         tok;
+         tok = tok->next()) {
+        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
+            // Combine 'L "string"'
+            tok->str(tok->next()->str());
+            tok->deleteNext();
+            tok->isLong(true);
+        }
+    }
+
+    // Combine strings
+    for (Token *tok = list.front();
+         tok;
+         tok = tok->next()) {
+        if (tok->str()[0] != '"')
+            continue;
+
+        tok->str(simplifyString(tok->str()));
+        while (tok->next() && tok->next()->type() == Token::eString) {
+            tok->next()->str(simplifyString(tok->next()->str()));
+
+            // Two strings after each other, combine them
+            tok->concatStr(tok->next()->str());
+            tok->deleteNext();
+        }
+    }
 }
 
 void Tokenizer::concatenateDoubleSharp()

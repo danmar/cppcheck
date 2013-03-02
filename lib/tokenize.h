@@ -441,6 +441,12 @@ public:
 
     void simplifyParameterVoid();
 
+    void fillTypeSizes();
+
+    void combineOperators();
+
+    void combineStrings();
+
     void concatenateDoubleSharp();
 
     void simplifyFileAndLineMacro();
