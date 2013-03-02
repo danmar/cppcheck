@@ -126,13 +126,28 @@
     <property name="title">
      <string>&amp;Check</string>
     </property>
+    <widget class="QMenu" name="menuCpp_standard">
+     <property name="title">
+      <string>C++ standard</string>
+     </property>
+     <addaction name="mActionCpp03"/>
+     <addaction name="mActionCpp11"/>
+    </widget>
+    <widget class="QMenu" name="menuC_standard">
+     <property name="title">
+      <string>C standard</string>
+     </property>
+     <addaction name="mActionC89"/>
+     <addaction name="mActionC99"/>
+     <addaction name="mActionC11"/>
+    </widget>
     <addaction name="mActionCheckFiles"/>
     <addaction name="mActionCheckDirectory"/>
     <addaction name="mActionRecheck"/>
     <addaction name="mActionStop"/>
     <addaction name="separator"/>
-    <addaction name="mActionCplusplus11"/>
-    <addaction name="mActionC99"/>
+    <addaction name="menuC_standard"/>
+    <addaction name="menuCpp_standard"/>
     <addaction name="mActionPosix"/>
     <addaction name="separator"/>
     <addaction name="mActionPlatforms"/>
@@ -423,14 +438,13 @@
    </property>
   </action>
   <action name="mActionShowScratchpad">
-    <property name="icon">
-      <iconset resource="gui.qrc">
-        <normaloff>:/images/scratchpad.png</normaloff>:/images/scratchpad.png
-      </iconset>
-    </property>
-    <property name="text">
-      <string>Show S&amp;cratchpad...</string>
-    </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/scratchpad.png</normaloff>:/images/scratchpad.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show S&amp;cratchpad...</string>
+   </property>
   </action>
   <action name="mActionNewProjectFile">
    <property name="text">
@@ -614,8 +628,11 @@
     <bool>false</bool>
    </property>
   </action>
-  <action name="mActionCplusplus11">
+  <action name="mActionCpp11">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -624,6 +641,9 @@
   </action>
   <action name="mActionC99">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -636,6 +656,30 @@
    </property>
    <property name="text">
     <string>Posix</string>
+   </property>
+  </action>
+  <action name="mActionC11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C11</string>
+   </property>
+  </action>
+  <action name="mActionC89">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C89</string>
+   </property>
+  </action>
+  <action name="mActionCpp03">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++03</string>
    </property>
   </action>
  </widget>

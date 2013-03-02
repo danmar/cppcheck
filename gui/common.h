@@ -56,8 +56,11 @@
 #define SETTINGS_SHOW_PORTABILITY       "Show portability"
 
 // Standards support
+#define SETTINGS_STD_CPP03              "Platform CPP03"
 #define SETTINGS_STD_CPP11              "Platform CPP11"
+#define SETTINGS_STD_C89                "Platform C89"
 #define SETTINGS_STD_C99                "Platform C99"
+#define SETTINGS_STD_C11                "Platform C11"
 #define SETTINGS_STD_POSIX              "Platform Posix"
 
 // Other settings

@@ -54,6 +54,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mScratchPad(NULL),
     mProject(NULL),
     mPlatformActions(new QActionGroup(this)),
+    mCStandardActions(new QActionGroup(this)),
+    mCppStandardActions(new QActionGroup(this)),
     mExiting(false)
 {
     mUI.setupUi(this);
@@ -169,6 +171,13 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         connect(act, SIGNAL(triggered()), this, SLOT(SelectPlatform()));
     }
 
+    mUI.mActionC89->setActionGroup(mCStandardActions);
+    mUI.mActionC99->setActionGroup(mCStandardActions);
+    mUI.mActionC11->setActionGroup(mCStandardActions);
+
+    mUI.mActionCpp03->setActionGroup(mCppStandardActions);
+    mUI.mActionCpp11->setActionGroup(mCppStandardActions);
+
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
@@ -232,10 +241,16 @@ void MainWindow::LoadSettings()
     mUI.mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
     mUI.mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
 
-    const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, false).toBool();
-    mUI.mActionCplusplus11->setChecked(stdCpp11);
-    const bool stdC99 = mSettings->value(SETTINGS_STD_C99, false).toBool();
-    mUI.mActionC99->setChecked(stdC99);
+    const bool stdCpp03 = mSettings->value(SETTINGS_STD_CPP03, false).toBool();
+    mUI.mActionCpp03->setChecked(stdCpp03);
+    const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, true).toBool();
+    mUI.mActionCpp11->setChecked(stdCpp11 || !stdCpp03);
+    const bool stdC89 = mSettings->value(SETTINGS_STD_C89, false).toBool();
+    mUI.mActionC89->setChecked(stdC89);
+    const bool stdC11 = mSettings->value(SETTINGS_STD_C11, false).toBool();
+    mUI.mActionC11->setChecked(stdC11);
+    const bool stdC99 = mSettings->value(SETTINGS_STD_C99, true).toBool();
+    mUI.mActionC99->setChecked(stdC99 || (!stdC89 && !stdC11));
     const bool stdPosix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
     mUI.mActionPosix->setChecked(stdPosix);
 
@@ -284,8 +299,11 @@ void MainWindow::SaveSettings() const
     mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
     mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
 
-    mSettings->setValue(SETTINGS_STD_CPP11, mUI.mActionCplusplus11->isChecked());
+    mSettings->setValue(SETTINGS_STD_CPP03, mUI.mActionCpp03->isChecked());
+    mSettings->setValue(SETTINGS_STD_CPP11, mUI.mActionCpp11->isChecked());
+    mSettings->setValue(SETTINGS_STD_C89, mUI.mActionC89->isChecked());
     mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
+    mSettings->setValue(SETTINGS_STD_C11, mUI.mActionC11->isChecked());
     mSettings->setValue(SETTINGS_STD_POSIX, mUI.mActionPosix->isChecked());
 
     // Main window settings
@@ -538,8 +556,8 @@ Settings MainWindow::GetCppcheckSettings()
     result._inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
     result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
-    result.standards.cpp = mSettings->value(SETTINGS_STD_CPP11, false).toBool() ? Standards::CPP11 : Standards::CPP03;
-    result.standards.c = mSettings->value(SETTINGS_STD_C99, false).toBool() ? Standards::C99 : Standards::C89;
+    result.standards.cpp = mSettings->value(SETTINGS_STD_CPP11, true).toBool() ? Standards::CPP11 : Standards::CPP03;
+    result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
     if (result._jobs <= 1) {
@@ -563,8 +581,8 @@ void MainWindow::CheckDone()
     EnableProjectActions(true);
     EnableProjectOpenActions(true);
     mPlatformActions->setEnabled(true);
-    mUI.mActionCplusplus11->setEnabled(true);
-    mUI.mActionC99->setEnabled(true);
+    mCStandardActions->setEnabled(true);
+    mCppStandardActions->setEnabled(true);
     mUI.mActionPosix->setEnabled(true);
     if (mScratchPad)
         mScratchPad->setEnabled(true);
@@ -591,8 +609,8 @@ void MainWindow::CheckLockDownUI()
     EnableProjectActions(false);
     EnableProjectOpenActions(false);
     mPlatformActions->setEnabled(false);
-    mUI.mActionCplusplus11->setEnabled(false);
-    mUI.mActionC99->setEnabled(false);
+    mCStandardActions->setEnabled(false);
+    mCppStandardActions->setEnabled(false);
     mUI.mActionPosix->setEnabled(false);
     if (mScratchPad)
         mScratchPad->setEnabled(false);
