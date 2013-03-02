@@ -376,6 +376,10 @@ void TokenList::createAst()
         " [ "
     };
 
+    // No tokens => bail out
+    if (!_front)
+        return;
+
     for (unsigned int i = 0; i < sizeof(operators) / sizeof(*operators); ++i) {
         // TODO: extract operators to std::set - that should be faster
         if (*operators[i] == '>') {  // Unary operators, parse from right to left
