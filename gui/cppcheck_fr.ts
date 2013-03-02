@@ -617,6 +617,26 @@ Options:
         <source>Cppcheck GUI - Command line parameters</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>C++ standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C11</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C89</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C++03</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
