@@ -2077,7 +2077,6 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
 {
     const Scope* scope = tok->next()->scope();
     bool loopVariable = scope->type == Scope::eFor || scope->type == Scope::eWhile || scope->type == Scope::eDo;
-    bool header = false;
     bool noContinue = true;
     const Token* forHeadEnd = 0;
     const Token* end = tok->link();
@@ -2089,7 +2088,6 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         end = end->linkAt(2);
     } else if (loopVariable && tok->strAt(-1) == ")") {
         tok = tok->linkAt(-1); // Jump to opening ( of for/while statement
-        header = true;
     } else if (scope->type == Scope::eSwitch)
         return false; // TODO: Support switch properly
 
