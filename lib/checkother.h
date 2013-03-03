@@ -154,7 +154,7 @@ public:
 
     /** @brief %Check scope of variables */
     void checkVariableScope();
-    void lookupVar(const Token *tok, const Variable* var);
+    bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
 
     /** @brief %Check for constant function parameter */
     void checkConstantFunctionParameter();

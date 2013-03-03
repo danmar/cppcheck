@@ -68,6 +68,7 @@ private:
         TEST_CASE(varScope13);      // variable usage in inner loop
         TEST_CASE(varScope14);
         TEST_CASE(varScope15);      // #4573 if-else-if
+        TEST_CASE(varScope16);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -863,6 +864,42 @@ private:
                  "    else;\n"
                  "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope16() {
+        varScope("void f() {\n"
+                 "    int a = 0;\n"
+                 "    while((++a) < 56) {\n"
+                 "        foo();\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("void f() {\n"
+                 "    int a = 0;\n"
+                 "    do {\n"
+                 "        foo();\n"
+                 "    } while((++a) < 56);\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("void f() {\n"
+                 "    int a = 0;\n"
+                 "    do {\n"
+                 "        a = 64;\n"
+                 "        foo(a);\n"
+                 "    } while((++a) < 56);\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("void f() {\n"
+                 "    int a = 0;\n"
+                 "    do {\n"
+                 "        a = 64;\n"
+                 "        foo(a);\n"
+                 "    } while(z());\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'a' can be reduced.\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {

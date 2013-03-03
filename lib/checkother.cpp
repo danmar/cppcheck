@@ -2052,101 +2052,91 @@ void CheckOther::checkVariableScope()
         } else if ((tok->str() == "=" || tok->str() == "(") &&
                    ((!tok->next()->isNumber() && tok->next()->type() != Token::eString && tok->next()->type() != Token::eChar && !tok->next()->isBoolean()) || tok->strAt(2) != ";"))
             continue;
-        lookupVar(tok, var);
+
+        bool reduce = true;
+        bool used = false; // Don't warn about unused variables
+        for (; tok != var->scope()->classEnd; tok = tok->next()) {
+            if (tok->str() == "{" && tok->strAt(-1) != "=") {
+                if (used || !checkInnerScope(tok, var, used)) {
+                    reduce = false;
+                    break;
+                }
+                tok = tok->link();
+            } else if (tok->varId() == var->varId() || tok->str() == "goto") {
+                reduce = false;
+                break;
+            }
+        }
+
+        if (reduce && used)
+            variableScopeError(var->nameToken(), var->name());
     }
 }
 
-void CheckOther::lookupVar(const Token *tok, const Variable* var)
+bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used)
 {
-    // Skip the variable declaration..
-    while (tok && tok->str() != ";")
-        tok = tok->next();
+    const Scope* scope = tok->next()->scope();
+    bool loopVariable = scope->type == Scope::eFor || scope->type == Scope::eWhile || scope->type == Scope::eDo;
+    bool header = false;
+    bool noContinue = true;
+    const Token* forHeadEnd = 0;
+    const Token* end = tok->link();
 
-    // Check if the variable is used in this indentlevel..
-    bool used1 = false;   // used in one sub-scope -> reducible
-    bool used2 = false;   // used in more sub-scopes -> not reducible
-    unsigned int indentlevel = 0;
-    int parlevel = 0;
-    bool for_or_while = false;  // is sub-scope a "for/while/etc". anything that is not "if"
-    while (tok) {
-        if (tok->str() == "{") {
-            if (tok->strAt(-1) == "=") {
-                if (Token::findmatch(tok, "%varid%", tok->link(), var->varId())) {
-                    return;
+    if (scope->type == Scope::eUnconditional && (tok->strAt(-1) == ")" || tok->previous()->isName())) // Might be an unknown macro like BOOST_FOREACH
+        loopVariable = true;
+
+    if (scope->type == Scope::eDo) {
+        end = end->linkAt(2);
+    } else if (loopVariable && tok->strAt(-1) == ")") {
+        tok = tok->linkAt(-1); // Jump to opening ( of for/while statement
+        header = true;
+    } else if (scope->type == Scope::eSwitch)
+        return false; // TODO: Support switch properly
+
+    for (; tok != end; tok = tok->next()) {
+        if (tok->str() == "goto")
+            return false;
+        if (tok->str() == "continue")
+            noContinue = false;
+
+        if (Token::simpleMatch(tok, "for ("))
+            forHeadEnd = tok->linkAt(1);
+        if (tok == forHeadEnd)
+            forHeadEnd = 0;
+
+        if (noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->varId())) { // Assigned in outer scope.
+            loopVariable = false;
+            unsigned int indent = 0;
+            for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) { // Ensure that variable isn't used on right side of =, too
+                if (tok2->str() == "(")
+                    indent++;
+                else if (tok2->str() == ")") {
+                    if (indent == 0)
+                        break;
+                    indent--;
+                } else if (tok2->str() == ";")
+                    break;
+                else if (tok2->varId() == var->varId()) {
+                    loopVariable = true;
+                    break;
                 }
-
-                tok = tok->link();
-            } else
-                ++indentlevel;
-        }
-
-        else if (tok->str() == "}") {
-            if (indentlevel == 0)
-                break;
-            --indentlevel;
-            if (indentlevel == 0) {
-                if (for_or_while && used2)
-                    return;
-                used2 |= used1;
-                used1 = false;
             }
         }
 
-        else if (tok->str() == "(") {
-            ++parlevel;
-        }
+        if (loopVariable && Token::Match(tok, "%varid% !!=", var->varId())) // Variable used in loop
+            return false;
 
-        else if (tok->str() == ")") {
-            --parlevel;
-        }
+        if (Token::Match(tok, "& %varid%", var->varId())) // Taking address of variable
+            return false;
 
-        // Bail out if references are used
-        else if (Token::Match(tok, "& %varid%", var->varId())) {
-            return;
-        }
+        if (Token::Match(tok, "= %varid%", var->varId()) && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
+            return false;
 
-        else if (tok->varId() == var->varId()) {
-            if (indentlevel == 0)
-                return;
-            if (tok->strAt(-1) == "=" && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
-                return;
-            used1 = true;
-            if (for_or_while && tok->strAt(1) != "=")
-                used2 = true;
-            if (used1 && used2)
-                return;
-        }
-
-        else if (indentlevel == 0) {
-            // %unknown% ( %any% ) {
-            // If %unknown% is anything except if, we assume
-            // that it is a for or while loop or a macro hiding either one
-            if (tok->strAt(1) == "(" &&
-                Token::simpleMatch(tok->next()->link(), ") {")) {
-                if (tok->str() != "if")
-                    for_or_while = true;
-            }
-
-            else if (Token::simpleMatch(tok, "do {"))
-                for_or_while = true;
-
-            // possible unexpanded macro hiding for/while..
-            else if (tok->str() != "else" && Token::Match(tok->previous(), "[;{}] %type% {")) {
-                for_or_while = true;
-            }
-
-            if (parlevel == 0 && (tok->str() == ";"))
-                for_or_while = false;
-        }
-
-        tok = tok->next();
+        if (tok->varId() == var->varId())
+            used = true;
     }
 
-    // Warning if this variable:
-    // * not used in this indentlevel
-    // * used in lower indentlevel
-    if (used1 || used2)
-        variableScopeError(var->nameToken(), var->name());
+    return true;
 }
 
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
