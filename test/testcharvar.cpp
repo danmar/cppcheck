@@ -50,7 +50,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

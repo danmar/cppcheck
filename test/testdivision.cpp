@@ -40,7 +40,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
 
         // Tokenize..

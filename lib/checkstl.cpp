@@ -774,7 +774,9 @@ static bool if_findCompare(const Token * const tokBack, bool str)
 
 void CheckStl::if_find()
 {
-    if (!_settings->isEnabled("style"))
+    bool warning = _settings->isEnabled("warning");
+    bool performance = _settings->isEnabled("performance");
+    if (!warning && !performance)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -811,9 +813,9 @@ void CheckStl::if_find()
                         continue;
 
                     // stl container
-                    if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
+                    if (Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid) && warning)
                         if_findError(tok, false);
-                    else if (str)
+                    else if (str && performance)
                         if_findError(tok, true);
                 }
             }
@@ -849,24 +851,24 @@ void CheckStl::if_find()
                     if (Token::Match(decl, "%var% <")) {
                         decl = decl->tokAt(2);
                         //stl-like
-                        if (Token::Match(decl, "std :: %var% < %type% > > &| %varid%", varid))
+                        if (Token::Match(decl, "std :: %var% < %type% > > &| %varid%", varid) && warning)
                             if_findError(tok, false);
                         //not stl-like, then let's hope it's a pointer or an array
                         else if (Token::Match(decl, "%type% >")) {
                             decl = decl->tokAt(2);
-                            if (Token::Match(decl, "* &| %varid%", varid) ||
-                                Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid))
+                            if ((Token::Match(decl, "* &| %varid%", varid) ||
+                                 Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid)) && warning)
                                 if_findError(tok, false);
                         }
 
-                        else if (Token::Match(decl, "std :: string|wstring > &| %varid%", varid))
+                        else if (Token::Match(decl, "std :: string|wstring > &| %varid%", varid) && performance)
                             if_findError(tok, true);
                     }
 
                     else if (decl && decl->str() == "string") {
                         decl = decl->next();
                         if (Token::Match(decl, "* &| %varid%", varid) ||
-                            Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid))
+                            Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid) && performance)
                             if_findError(tok, true);
                     }
                 }
@@ -874,7 +876,7 @@ void CheckStl::if_find()
 
             else if (Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
-                if (!if_findCompare(tok->linkAt(3), false)) {
+                if (!if_findCompare(tok->linkAt(3), false) && warning) {
                     if_findError(tok, false);
                 }
             }
@@ -1017,6 +1019,9 @@ void CheckStl::redundantIfRemoveError(const Token *tok)
 
 void CheckStl::missingComparison()
 {
+    if (!_settings->isEnabled("warning"))
+        return;
+
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
@@ -1363,8 +1368,8 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 void CheckStl::uselessCalls()
 {
     bool performance = _settings->isEnabled("performance");
-    bool style = _settings->isEnabled("style");
-    if (!performance && !style)
+    bool warning = _settings->isEnabled("warning");
+    if (!performance && !warning)
         return;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1373,7 +1378,7 @@ void CheckStl::uselessCalls()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId() && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %var% [,)]") &&
-                tok->varId() == tok->tokAt(4)->varId() && style) {
+                tok->varId() == tok->tokAt(4)->varId() && warning) {
                 uselessCallsReturnValueError(tok->tokAt(4), tok->str(), tok->strAt(2));
             } else if (tok->varId() && Token::Match(tok, "%var% . swap ( %var% )") &&
                        tok->varId() == tok->tokAt(4)->varId() && performance) {
@@ -1386,7 +1391,7 @@ void CheckStl::uselessCalls()
                         uselessCallsSubstrError(tok, false);
                 } else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                     uselessCallsSubstrError(tok, true);
-            } else if (Token::Match(tok, "[{};] %var% . empty ( ) ;") && style)
+            } else if (Token::Match(tok, "[{};] %var% . empty ( ) ;") && warning)
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));

@@ -119,7 +119,7 @@ void CheckBufferOverrun::possibleReadlinkBufferOverrunError(const Token* tok, co
 
 void CheckBufferOverrun::strncatUsageError(const Token *tok)
 {
-    if (_settings && !_settings->isEnabled("style"))
+    if (_settings && !_settings->isEnabled("warning"))
         return;
 
     reportError(tok, Severity::warning, "strncatUsage",
@@ -147,7 +147,7 @@ void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const std::st
 
 void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 {
-    if (_settings && !_settings->isEnabled("style"))
+    if (_settings && !_settings->isEnabled("warning"))
         return;
     reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant.");
 }
@@ -694,7 +694,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     }
 
     // Check 'float x[10]' arguments in declaration
-    if (_settings->isEnabled("style")) {
+    if (_settings->isEnabled("warning")) {
         const Function* func = tok.function();
 
         // If argument is '%type% a[num]' then check bounds against num
@@ -1041,7 +1041,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
             const std::size_t len = Token::getStrLength(tok->tokAt(varc + 4));
             if (total_size > 0 && len >= (unsigned int)total_size) {
-                bufferOverrunError(tok, varid > 0 ? std::string("") : varnames);
+                bufferOverrunError(tok, varid > 0 ? std::string() : varnames);
                 continue;
             }
         } else if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", varid)) ||
@@ -1229,7 +1229,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 unsigned int num = (unsigned int)MathLib::toLongNumber(param3->str());
 
                 // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
-                if (num >= total_size && _settings->isEnabled("style") && _settings->inconclusive) {
+                if (num >= total_size && _settings->isEnabled("warning") && _settings->inconclusive) {
                     const Token *tok2 = tok->next()->link()->next();
                     for (; tok2; tok2 = tok2->next()) {
                         if (tok2->varId() == tok->tokAt(2)->varId()) {

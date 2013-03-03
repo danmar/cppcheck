@@ -253,6 +253,7 @@ private:
             filename = "test.cpp";
 
         Settings settings;
+        settings.addEnabled("warning");
         settings.addEnabled("style");
         settings.addEnabled("performance");
         settings.experimental = true;
@@ -944,7 +945,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled("warning");
         if (portability)
             settings.addEnabled("portability");
         settings.inconclusive = inconclusive;

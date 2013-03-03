@@ -307,7 +307,7 @@ void CheckIO::useClosedFileError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckIO::invalidScanf()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning") && !_settings->isEnabled("portability"))
         return;
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -343,7 +343,7 @@ void CheckIO::invalidScanf()
                 }
 
                 else if (std::isalpha(formatstr[i]) || formatstr[i] == '[') {
-                    if (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's'))  // #3490 - field width limits are only necessary for string input
+                    if ((formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's')) && _settings->isEnabled("warning"))  // #3490 - field width limits are only necessary for string input
                         invalidScanfError(tok, false);
                     else if (formatstr[i] != 'n' && formatstr[i] != 'c' && _settings->platformType != Settings::Win32A && _settings->platformType != Settings::Win32W && _settings->platformType != Settings::Win64 && _settings->isEnabled("portability"))
                         invalidScanfError(tok, true); // Warn about libc bug in versions prior to 2.13-25
@@ -425,7 +425,7 @@ static bool isKnownType(const Variable* var, const Token* varTypeTok)
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    bool warning = _settings->isEnabled("style");
+    bool warning = _settings->isEnabled("warning");
 
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {

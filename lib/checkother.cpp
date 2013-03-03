@@ -320,7 +320,7 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
 //---------------------------------------------------------------------------
 void CheckOther::clarifyStatement()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -407,7 +407,7 @@ void CheckOther::bitwiseOnBooleanError(const Token *tok, const std::string &varn
 
 void CheckOther::checkSuspiciousSemicolon()
 {
-    if (!_settings->inconclusive || !_settings->isEnabled("style"))
+    if (!_settings->inconclusive || !_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -486,7 +486,7 @@ static std::string analyzeType(const Token* tok)
 
 void CheckOther::invalidPointerCast()
 {
-    if (!_settings->isEnabled("style") && !_settings->isEnabled("portability"))
+    if (!_settings->isEnabled("warning") && !_settings->isEnabled("portability"))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -568,7 +568,7 @@ void CheckOther::invalidPointerCastError(const Token* tok, const std::string& fr
 //---------------------------------------------------------------------------
 void CheckOther::checkSizeofForNumericParameter()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -604,8 +604,7 @@ void CheckOther::sizeofForNumericParameterError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkPipeParameterSize()
 {
-    if (!_settings->isEnabled("warning")
-        || !_settings->standards.posix)
+    if (!_settings->standards.posix)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -682,7 +681,7 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
 
 void CheckOther::checkSizeofForPointerSize()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -796,7 +795,9 @@ static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, co
 
 void CheckOther::checkRedundantAssignment()
 {
-    if (!_settings->isEnabled("performance"))
+    bool performance = _settings->isEnabled("performance");
+    bool warning = _settings->isEnabled("warning");
+    if (!warning && !performance)
         return;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -840,9 +841,9 @@ void CheckOther::checkRedundantAssignment()
                             }
                         }
                         if (error) {
-                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok) && warning)
                                 redundantAssignmentInSwitchError(it->second, tok, tok->str());
-                            else
+                            else if (performance)
                                 redundantAssignmentError(it->second, tok, tok->str(), nonLocal(it->second->variable())); // Inconclusive for non-local variables
                         }
                         it->second = tok;
@@ -871,9 +872,9 @@ void CheckOther::checkRedundantAssignment()
                         if (it == memAssignments.end())
                             memAssignments[param1->varId()] = tok;
                         else {
-                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok) && warning)
                                 redundantCopyInSwitchError(it->second, tok, param1->str());
-                            else
+                            else if (performance)
                                 redundantCopyError(it->second, tok, param1->str());
                         }
                     }
@@ -963,7 +964,7 @@ static inline bool isFunctionOrBreakPattern(const Token *tok)
 
 void CheckOther::checkRedundantAssignmentInSwitch()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1196,7 +1197,7 @@ void CheckOther::switchCaseFallThrough(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkSuspiciousCaseInSwitch()
 {
-    if (!_settings->inconclusive || !_settings->isEnabled("style"))
+    if (!_settings->inconclusive || !_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1241,7 +1242,7 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
 //---------------------------------------------------------------------------
 void CheckOther::checkSuspiciousEqualityComparison()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -1274,9 +1275,7 @@ void CheckOther::checkSuspiciousEqualityComparison()
             // Skip over for() loop conditions because "for (;running==1;)"
             // is a bit strange, but not necessarily incorrect.
             tok = closeParen;
-        }
-
-        if (Token::Match(tok, "[;{}] *| %var% == %any% ;")) {
+        } else if (Token::Match(tok, "[;{}] *| %var% == %any% ;")) {
 
             // Exclude compound statements surrounded by parentheses, such as
             //    printf("%i\n", ({x==0;}));
@@ -1314,7 +1313,7 @@ static inline const Token *findSelfAssignPattern(const Token *start)
 
 void CheckOther::checkSelfAssignment()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const Token *tok = findSelfAssignPattern(_tokenizer->tokens());
@@ -1364,7 +1363,7 @@ static inline const Token *findAssertPattern(const Token *start)
 
 void CheckOther::checkAssignmentInAssert()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const Token *tok = findAssertPattern(_tokenizer->tokens());
@@ -1457,7 +1456,9 @@ static bool analyzeLogicOperatorCondition(const Condition& c1, const Condition& 
 
 void CheckOther::checkIncorrectLogicOperator()
 {
-    if (!_settings->isEnabled("style"))
+    bool style = _settings->isEnabled("style");
+    bool warning = _settings->isEnabled("warning");
+    if (!style && !warning)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1646,12 +1647,16 @@ void CheckOther::checkIncorrectLogicOperator()
 
                     if (error) {
                         if (conditions[i].error == AlwaysFalse || conditions[i].error == AlwaysTrue) {
-                            const std::string text = cond1str + " " + op2Tok->str() + " " + cond2str;
-                            incorrectLogicOperatorError(term1Tok, text, conditions[i].error == AlwaysTrue);
+                            if (warning) {
+                                const std::string text = cond1str + " " + op2Tok->str() + " " + cond2str;
+                                incorrectLogicOperatorError(term1Tok, text, conditions[i].error == AlwaysTrue);
+                            }
                         } else {
-                            const std::string text = "If " + cond1str + ", the comparison " + cond2str +
-                                                     " is always " + ((conditions[i].error == SecondTrue || conditions[i].error == AlwaysTrue) ? "true" : "false") + ".";
-                            redundantConditionError(term1Tok, text);
+                            if (style) {
+                                const std::string text = "If " + cond1str + ", the comparison " + cond2str +
+                                                         " is always " + ((conditions[i].error == SecondTrue || conditions[i].error == AlwaysTrue) ? "true" : "false") + ".";
+                                redundantConditionError(term1Tok, text);
+                            }
                         }
                         break;
                     }
@@ -1772,7 +1777,7 @@ static bool isNonBoolStdType(const Variable* var)
 }
 void CheckOther::checkComparisonOfBoolWithInt()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1947,7 +1952,7 @@ bool CheckOther::isSigned(const Variable* var) const
 
 void CheckOther::checkUnsignedDivision()
 {
-    bool style = _settings->isEnabled("style");
+    bool warning = _settings->isEnabled("warning");
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1968,7 +1973,7 @@ void CheckOther::checkUnsignedDivision()
                 if (tok->strAt(1)[0] == '-' && isUnsigned(tok->tokAt(3)->variable())) {
                     udivError(tok->next(), false);
                 }
-            } else if (Token::Match(tok->next(), "%var% / %var%") && _settings->inconclusive && style && !ifTok) {
+            } else if (Token::Match(tok->next(), "%var% / %var%") && _settings->inconclusive && warning && !ifTok) {
                 const Variable* var1 = tok->next()->variable();
                 const Variable* var2 = tok->tokAt(3)->variable();
                 if ((isUnsigned(var1) && isSigned(var2)) || (isUnsigned(var2) && isSigned(var1))) {
@@ -1995,7 +2000,7 @@ void CheckOther::udivError(const Token *tok, bool inconclusive)
 //---------------------------------------------------------------------------
 void CheckOther::checkMemsetZeroBytes()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2227,7 +2232,7 @@ static bool isSignedChar(const Variable* var)
 
 void CheckOther::checkCharVariable()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2310,7 +2315,7 @@ void CheckOther::charBitOpError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkIncompleteStatement()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -2661,7 +2666,7 @@ void CheckOther::comparisonOfBoolWithBoolError(const Token *tok, const std::stri
 //---------------------------------------------------------------------------
 void CheckOther::checkIncorrectStringCompare()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3364,7 +3369,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 //---------------------------------------------------------------------------
 void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const Token *tok = _tokenizer->tokens();
@@ -3426,7 +3431,7 @@ void CheckOther::alwaysTrueStringVariableCompareError(const Token *tok, const st
 //-----------------------------------------------------------------------------
 void CheckOther::checkSuspiciousStringCompare()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3469,6 +3474,9 @@ void CheckOther::suspiciousStringCompareError(const Token* tok, const std::strin
 //-----------------------------------------------------------------------------
 void CheckOther::checkModuloAlwaysTrueFalse()
 {
+    if (!_settings->isEnabled("warning"))
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -3493,8 +3501,9 @@ void CheckOther::moduloAlwaysTrueFalseError(const Token* tok, const std::string&
 //-----------------------------------------------------------------------------
 void CheckOther::sizeofsizeof()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof (| sizeof")) {
             sizeofsizeofError(tok);
@@ -3516,7 +3525,7 @@ void CheckOther::sizeofsizeofError(const Token *tok)
 //-----------------------------------------------------------------------------
 void CheckOther::sizeofCalculation()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -3575,7 +3584,7 @@ void CheckOther::redundantGetAndSetUserIdError(const Token *tok)
 //-----------------------------------------------------------------------------
 void CheckOther::suspiciousSizeofCalculation()
 {
-    if (!_settings->isEnabled("style") || !_settings->inconclusive)
+    if (!_settings->isEnabled("warning") || !_settings->inconclusive)
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -3635,7 +3644,7 @@ void CheckOther::assignBoolToPointerError(const Token *tok)
 //-----------------------------------------------------------------------------
 void CheckOther::checkComparisonOfBoolExpressionWithInt()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3879,7 +3888,9 @@ void CheckOther::negativeBitwiseShiftError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkIncompleteArrayFill()
 {
-    if (!_settings->inconclusive || !_settings->isEnabled("style"))
+    bool warning = _settings->isEnabled("warning");
+    bool portability = _settings->isEnabled("portability");
+    if (!_settings->inconclusive || (!portability && !warning))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3895,9 +3906,10 @@ void CheckOther::checkIncompleteArrayFill()
 
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
                     unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
-                    if ((size != 1 && size != 100 && size != 0) || var->typeEndToken()->str() == "*")
-                        incompleteArrayFillError(tok, var->name(), tok->str(), false);
-                    else if (var->typeStartToken()->str() == "bool" && _settings->isEnabled("portability")) // sizeof(bool) is not 1 on all platforms
+                    if ((size != 1 && size != 100 && size != 0) || var->typeEndToken()->str() == "*") {
+                        if (warning)
+                            incompleteArrayFillError(tok, var->name(), tok->str(), false);
+                    } else if (var->typeStartToken()->str() == "bool" && portability) // sizeof(bool) is not 1 on all platforms
                         incompleteArrayFillError(tok, var->name(), tok->str(), true);
                 }
             }
@@ -3921,7 +3933,7 @@ void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& b
 void CheckOther::oppositeInnerCondition()
 {
     // FIXME: This check is experimental because of #4170 and #4186. Fix those tickets and remove the "experimental".
-    if (!_settings->isEnabled("style") || !_settings->inconclusive || !_settings->experimental)
+    if (!_settings->isEnabled("warning") || !_settings->inconclusive || !_settings->experimental)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

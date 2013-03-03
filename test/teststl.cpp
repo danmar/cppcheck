@@ -130,6 +130,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.addEnabled("warning");
         settings.addEnabled("style");
         settings.addEnabled("performance");
         settings.inconclusive = inconclusive;

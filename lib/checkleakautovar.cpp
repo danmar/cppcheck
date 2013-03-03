@@ -100,7 +100,7 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &v
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (((!cfgalloc.empty() || !cfgdealloc.empty()) && _settings->isEnabled("style")) || _settings->experimental) {
+    if (((!cfgalloc.empty() || !cfgdealloc.empty()) && _settings->isEnabled("information")) || _settings->experimental) {
         reportError(tok,
                     Severity::information,
                     "leakconfiguration",

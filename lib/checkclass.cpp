@@ -50,7 +50,9 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 
 void CheckClass::constructors()
 {
-    if (!_settings->isEnabled("style"))
+    bool style = _settings->isEnabled("style");
+    bool warnings = _settings->isEnabled("warning");
+    if (!style && !warnings)
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -62,7 +64,7 @@ void CheckClass::constructors()
             continue;
 
         // There are no constructors.
-        if (scope->numConstructors == 0) {
+        if (scope->numConstructors == 0 && style) {
             // If there is a private variable, there should be a constructor..
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
@@ -73,6 +75,9 @@ void CheckClass::constructors()
                 }
             }
         }
+
+        if (!warnings)
+            continue;
 
         // #3196 => bailout if there are nested unions
         // TODO: handle union variables better
@@ -1071,7 +1076,7 @@ void CheckClass::operatorEqRetRefThisError(const Token *tok)
 
 void CheckClass::operatorEqToSelf()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -1311,7 +1316,7 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
 
 void CheckClass::thisSubtraction()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
 
     const Token *tok = _tokenizer->tokens();

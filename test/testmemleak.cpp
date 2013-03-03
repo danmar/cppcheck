@@ -3898,6 +3898,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.addEnabled("warning");
         settings.addEnabled("style");
 
         // Tokenize..
