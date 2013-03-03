@@ -52,17 +52,13 @@ void CheckOther::checkCastIntToCharAndBack()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope     = symbolDatabase->functionScopes[i];
-        unsigned int uiVarId    = 0;
-        std::string strFunctionName;
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        std::map<unsigned int, std::string> vars;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
-                if (tok->varId()) {
-                    const Variable *var = tok->variable();
-                    if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
-                        uiVarId = tok->varId();
-                        strFunctionName = tok->strAt(2);
-                    }
+                const Variable *var = tok->variable();
+                if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
+                    vars[tok->varId()] = tok->strAt(2);
                 }
             } else if (Token::Match(tok, "EOF %comp% ( %var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
                 tok = tok->tokAt(3);
@@ -74,13 +70,13 @@ void CheckOther::checkCastIntToCharAndBack()
                 }
             }
             if (Token::Match(tok, "%var% %comp% EOF")) {
-                if (uiVarId && tok->varId() == uiVarId) {
-                    checkCastIntToCharAndBackError(tok, strFunctionName);
+                if (vars.find(tok->varId()) != vars.end()) {
+                    checkCastIntToCharAndBackError(tok, vars[tok->varId()]);
                 }
             } else if (Token::Match(tok, "EOF %comp% %var%")) {
                 tok = tok->tokAt(2);
-                if (uiVarId && tok->varId() == uiVarId) {
-                    checkCastIntToCharAndBackError(tok, strFunctionName);
+                if (vars.find(tok->varId()) != vars.end()) {
+                    checkCastIntToCharAndBackError(tok, vars[tok->varId()]);
                 }
             }
         }
@@ -420,7 +416,7 @@ void CheckOther::checkSuspiciousSemicolon()
             if (Token::simpleMatch(i->classStart, "{ ; } {") &&
                 i->classStart->previous()->linenr() == i->classStart->tokAt(2)->linenr()
                 && i->classStart->linenr()+1 >= i->classStart->tokAt(3)->linenr()) {
-                SuspiciousSemicolonError(i->classStart);
+                SuspiciousSemicolonError(i->classDef);
             }
         }
     }
@@ -429,7 +425,7 @@ void CheckOther::checkSuspiciousSemicolon()
 void CheckOther::SuspiciousSemicolonError(const Token* tok)
 {
     reportError(tok, Severity::warning, "suspiciousSemicolon",
-                "Suspicious use of ; at the end of 'if/for/while' statement.", true);
+                "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", true);
 }
 
 
@@ -630,11 +626,9 @@ void CheckOther::checkPipeParameterSize()
 void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim)
 {
     reportError(tok, Severity::error,
-                "wrongPipeParameterSize", "Variable " + strVarName + " must have size 2 when it is used as parameter of pipe() command.\n"
-                "The pipe()/pipe2() system command takes an argument, which is an array of exactly two integers."
-                "\nThe variable " + strVarName + " is an array of size "
-                + strDim + ", which does not match."
-               );
+                "wrongPipeParameterSize", "Buffer '" + strVarName + "' must have size of 2 integers if used as parameter of pipe().\n"
+                "The pipe()/pipe2() system command takes an argument, which is an array of exactly two integers.\n"
+                "The variable '" + strVarName + "' is an array of size " + strDim + ", which does not match.");
 }
 
 //---------------------------------------------------------------------------

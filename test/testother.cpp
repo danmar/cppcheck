@@ -763,7 +763,6 @@ private:
     }
 
     void varScope10() {
-        // classes may have extra side effects
         varScope("int f()\n"
                  "{\n"
                  "    int x = 0;\n"
@@ -6024,7 +6023,7 @@ private:
             "  for(int i = 0; i < 10; ++i); {\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'for' statement.\n", errout.str());
 
         // Block with some tokens to make sure the tokenizer output
         // stays the same for "for(); {}"
@@ -6034,7 +6033,7 @@ private:
             "  int j = 123;\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'for' statement.\n", errout.str());
 
         check(
             "void foo() {\n"
@@ -6042,7 +6041,7 @@ private:
             "    do_something();\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'while' statement.\n", errout.str());
     }
 
     void checkForSuspiciousSemicolon2() {
@@ -6052,7 +6051,7 @@ private:
             "    do_something();\n"
             "  }\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if/for/while' statement.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'if' statement.\n", errout.str());
 
         // Seen this in the wild
         check(
@@ -7063,7 +7062,7 @@ private:
               "    return;\n"
               "  }\n"
               "}",NULL,false,false,true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Variable pipefd must have size 2 when it is used as parameter of pipe() command.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
 
         check("void f(){\n"
               "int pipefd[2];\n"
@@ -7087,7 +7086,7 @@ private:
               "    return;\n"
               "  }\n"
               "}",NULL,false,false,true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Variable pipefd must have size 2 when it is used as parameter of pipe() command.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
 
         check("void f(){\n"
               "int pipefd[2];\n"
