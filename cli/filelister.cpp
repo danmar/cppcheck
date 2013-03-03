@@ -78,7 +78,10 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
     // searchPattern is the search string passed into FindFirst and FindNext.
     std::string searchPattern = cleanedPath;
 
-    if (MyIsDirectory(cleanedPath)) {
+    // The user wants to check all files in a dir
+    const bool checkAllFilesInDir = (MyIsDirectory(cleanedPath) != FALSE);
+
+    if (checkAllFilesInDir) {
         char c = cleanedPath[ cleanedPath.size()-1 ];
         switch (c) {
         case '\\':
@@ -120,12 +123,14 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             // File
             const std::string nativename = Path::fromNativeSeparators(fname);
 
-            // Limitation: file sizes are assumed to fit in a 'size_t'
+            if (!checkAllFilesInDir || Path::acceptFile(fname)) {
+                // Limitation: file sizes are assumed to fit in a 'size_t'
 #ifdef _WIN64
-            files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
+                files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
 #else
-            files[nativename] = ffd.nFileSizeLow;
+                files[nativename] = ffd.nFileSizeLow;
 #endif
+            }
         } else {
             // Directory
             FileLister::recursiveAddFiles(files, fname);
