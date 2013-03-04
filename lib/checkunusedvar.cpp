@@ -449,11 +449,9 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                 if (Token::Match(tok, "struct|union"))
                     tok = tok->next();
 
-                tok = tok->next();
-                if (tok->str() == "*")
+                while ((tok->isName() && tok->varId() == 0) || (tok->str() == "*") || (tok->str() == ")"))
                     tok = tok->next();
 
-                tok = tok->next();
                 if (tok->str() == "&") {
                     addressOf = true;
                     tok = tok->next();

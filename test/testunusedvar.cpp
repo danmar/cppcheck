@@ -2735,6 +2735,13 @@ private:
                               "    x(b);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f(void) {\n" // #4628
+                              "    int x=1,y;\n"
+                              "    y = (x * a) / 100;\n"
+                              "    return y;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarasm() {
