@@ -638,7 +638,7 @@ void CheckStl::pushback()
                         if (tok3->str() == "break" || tok3->str() == "return") {
                             pushbackTok = 0;
                             break;
-                        } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve|resize|clear (", varId)) {
+                        } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve|resize|clear (", varId) && !tok3->previous()->isAssignmentOp()) {
                             pushbackTok = tok3->tokAt(2);
                         }
                     }
@@ -649,9 +649,13 @@ void CheckStl::pushback()
 
                 // Assigning iterator..
                 if (Token::Match(tok2, "%varid% =", iteratorid)) {
-                    if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend|cbegin|cend|crbegin|crend ( )")) {
+                    if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend|cbegin|cend|crbegin|crend|insert (")) {
+                        if (!invalidIterator.empty() && Token::Match(tok2->tokAt(4), "insert ( %varid% ,", iteratorid)) {
+                            invalidIteratorError(tok2, invalidIterator, tok2->strAt(6));
+                            break;
+                        }
                         vectorid = tok2->tokAt(2)->varId();
-                        tok2 = tok2->tokAt(6);
+                        tok2 = tok2->linkAt(5);
                     } else {
                         vectorid = 0;
                     }

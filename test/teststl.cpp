@@ -1161,6 +1161,31 @@ private:
               "    return i->foo;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
+
+        check("void f(const std::vector<Bar>& bars) {\n"
+              "    for(std::vector<Bar>::iterator i = bars.begin(); i != bars.end(); ++i) {\n"
+              "        i = bars.insert(i, bar);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::vector<Bar>& bars) {\n"
+              "    for(std::vector<Bar>::iterator i = bars.begin(); i != bars.end(); ++i) {\n"
+              "        bars.insert(i, bar);\n"
+              "        i = bars.insert(i, bar);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) After insert(), the iterator 'i' may be invalid.\n"
+                      "[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
+
+        check("void* f(const std::vector<Bar>& bars) {\n"
+              "    std::vector<Bar>::iterator i = bars.begin();\n"
+              "    bars.insert(i, Bar());\n"
+              "    i = bars.insert(i, Bar());\n"
+              "    void* v = &i->foo;\n"
+              "    return v;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
     }
 
     void insert2() {
