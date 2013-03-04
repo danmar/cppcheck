@@ -1752,7 +1752,7 @@ private:
                               "extern void SomeTestFunc(float);\n"
                               "void MyFuncNoError2()\n"
                               "{\n"
-                              "    const float floatC = 2.2f;  \n"
+                              "    const float floatC = 2.2f;\n"
                               "    float floatTot = g_float * floatC;\n"
                               "    SomeTestFunc(floatTot);\n"
                               "}\n");

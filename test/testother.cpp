@@ -4505,9 +4505,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '*' and '?'.\n", errout.str());
 
         // Ticket #2585 - segmentation fault for invalid code
-        check("abcdef?" "?<"
-              "123456?" "?>"
-              "+?" "?=");
+        check("abcdef??<"
+              "123456??>"
+              "+??=");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char c) {\n"
@@ -7145,7 +7145,7 @@ private:
     void checkCastIntToCharAndBack() { // #160
 
         // check getchar
-        check("void f(){  \n"
+        check("void f() {\n"
               "unsigned char c;\n"
               "  while( (c = getchar()) != EOF)\n"
               "  {\n"
@@ -7154,7 +7154,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
-        check("void f(){  \n"
+        check("void f() {\n"
               "unsigned char c = getchar();\n"
               "  while( EOF != c)\n"
               "  {\n"
@@ -7163,7 +7163,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
-        check("void f(){  \n"
+        check("void f() {\n"
               "unsigned char c;\n"
               "  while( EOF != (c = getchar()) )\n"
               "  {\n"
@@ -7172,7 +7172,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
-        check("void f(){  \n"
+        check("void f() {\n"
               "int i;\n"
               "  while( (i = getchar()) != EOF)\n"
               "  {\n"
@@ -7181,7 +7181,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(){  \n"
+        check("void f() {\n"
               "int i;\n"
               "  while( EOF != (i = getchar()) )\n"
               "  {\n"
