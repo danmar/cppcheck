@@ -838,10 +838,28 @@ void CheckClass::noMemset()
                     typeTok = arg3->tokAt(3);
                 else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
                     type = findFunctionOf(arg3->scope());
-                } else if (Token::Match(arg1, "&| %var% ,")) {
-                    const Variable *var = arg1->str() == "&" ? arg1->next()->variable() : arg1->variable();
-                    if (var && (arg1->str() == "&" || var->isPointer() || var->isArray()))
-                        type = var->type();
+                } else if (Token::Match(arg1, "&|*|%var%")) {
+                    int derefs = 1;
+                    for (;; arg1 = arg1->next()) {
+                        if (arg1->str() == "&")
+                            derefs--;
+                        else if (arg1->str() == "*")
+                            derefs++;
+                        else
+                            break;
+                    }
+
+                    const Variable *var = arg1->variable();
+                    if (var && arg1->strAt(1) == ",") {
+                        if (var->isPointer())
+                            derefs--;
+                        if (var->isArray())
+                            derefs -= var->dimensions().size();
+
+                        if (derefs == 0)
+                            type = var->type();
+                    }
+
                 }
 
                 // No type defined => The tokens didn't match
