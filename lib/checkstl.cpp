@@ -871,8 +871,8 @@ void CheckStl::if_find()
 
                     else if (decl && decl->str() == "string") {
                         decl = decl->next();
-                        if (Token::Match(decl, "* &| %varid%", varid) ||
-                            Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid) && performance)
+                        if ((Token::Match(decl, "* &| %varid%", varid) ||
+                             Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid)) && performance)
                             if_findError(tok, true);
                     }
                 }
