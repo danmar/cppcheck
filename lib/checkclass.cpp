@@ -854,12 +854,11 @@ void CheckClass::noMemset()
                         if (var->isPointer())
                             derefs--;
                         if (var->isArray())
-                            derefs -= var->dimensions().size();
+                            derefs -= (int)var->dimensions().size();
 
                         if (derefs == 0)
                             type = var->type();
                     }
-
                 }
 
                 // No type defined => The tokens didn't match
