@@ -2305,6 +2305,24 @@ private:
                       "    memset(a, 0, 100);\n"
                       "}");
         ASSERT_EQUALS("", errout.str()); // #4460
+
+        checkNoMemset("struct C {\n"
+                      "    std::string s;\n"
+                      "};\n"
+                      "int foo() {\n"
+                      "    C* c1[10][10];\n"
+                      "    C* c2[10];\n"
+                      "    C c3[10][10];\n"
+                      "    memset(**c1, 0, 10);\n"
+                      "    memset(*c1, 0, 10);\n"
+                      "    memset(*c2, 0, 10);\n"
+                      "    memset(*c3, 0, 10);\n"
+                      "    memset(c2, 0, 10);\n"
+                      "    memset(c3, 0, 10);\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
     }
 
     void mallocOnClass() {
