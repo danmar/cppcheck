@@ -7265,6 +7265,72 @@ private:
               "} while (EOF != i)"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // cin.get()
+        check("void f(){\n"
+              "   char ch;\n"
+              "   while ((ch = std::cin.get()) != EOF) {\n"
+              " 	   std::cout << ch;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f(){\n"
+              "   char ch;\n"
+              "   while ((ch = cin.get()) != EOF) {\n"
+              " 	   std::cout << ch;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f(){\n"
+              "   int i;\n"
+              "   while ((i = cin.get()) != EOF) {\n"
+              " 	   std::cout << i;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "   int i;\n"
+              "   while ((i = std::cin.get()) != EOF) {\n"
+              " 	   std::cout << i;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "   char ch;\n"
+              "   while ( EOF != (ch = std::cin.get()) ) {\n"
+              " 	   std::cout << ch;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f(){\n"
+              "   char ch;\n"
+              "   while ( EOF != (ch = cin.get()) ) {\n"
+              " 	   std::cout << ch;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
+
+        check("void f(){\n"
+              "   int i;\n"
+              "    while ( EOF != (i = cin.get()) ) {\n"
+              " 	   std::cout << i;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "   int i;\n"
+              "   while ( EOF != (i = std::cin.get()) ) {\n"
+              " 	   std::cout << i;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 
