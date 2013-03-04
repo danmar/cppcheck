@@ -506,6 +506,28 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo.at(ii) is out of bounds.\n", errout.str());
 
+        check("void foo(const std::string& foo) {\n"
+              "    for (unsigned int ii = 0; ii <= foo.length(); ++ii) {\n"
+              "       foo[ii] = 'x';\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
+
+        check("void foo(const std::string& foo, unsigned int ii) {\n"
+              "    if (ii <= foo.length()) {\n"
+              "       foo[ii] = 'x';\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
+
+        check("void foo(const std::string& foo, unsigned int ii) {\n"
+              "    if (anything()) {\n"
+              "    } else if (ii <= foo.length()) {\n"
+              "       foo[ii] = 'x';\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
+
         check("void foo()\n"
               "{\n"
               "    std::vector<int> foo;\n"

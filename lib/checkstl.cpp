@@ -282,39 +282,44 @@ void CheckStl::stlOutOfBounds()
 
     // Scan through all scopes..
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        const Token* const tok = i->classDef;
-        // only interested in "for" loops
-        if (i->type != Scope::eFor || !tok)
+        const Token* tok = i->classDef;
+        // only interested in conditions
+        if ((i->type != Scope::eFor && i->type != Scope::eWhile && i->type != Scope::eIf && i->type != Scope::eElseIf) || !tok)
             continue;
 
+        if (i->type == Scope::eElseIf)
+            tok = tok->tokAt(2);
+        else if (i->type == Scope::eFor)
+            tok = Token::findsimplematch(tok->tokAt(2), ";");
+        else
+            tok = tok->next();
+
         // check if the for loop condition is wrong
-        for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != tok->next()->link(); tok2 = tok2->next()) {
-            if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;")) {
-                // Is it a vector?
-                const Variable *container = tok2->tokAt(3)->variable();
-                if (!container)
-                    continue;
-                if (!Token::simpleMatch(container->typeStartToken(), "std :: vector <"))
-                    continue;
+        if (Token::Match(tok, ";|( %var% <= %var% . size|length ( ) ;|)|%oror%")) {
+            // Is it a vector?
+            const Variable *container = tok->tokAt(3)->variable();
+            if (!container)
+                continue;
+            if (!Token::Match(container->typeStartToken(), "std :: vector|deque|array|string|wstring|basic_string"))
+                continue;
 
-                // variable id for loop variable.
-                unsigned int numId = tok2->next()->varId();
+            // variable id for loop variable.
+            unsigned int numId = tok->next()->varId();
 
-                // variable id for the container variable
-                unsigned int varId = tok2->tokAt(3)->varId();
+            // variable id for the container variable
+            unsigned int varId = container->varId();
 
-                for (const Token *tok3 = tok2->tokAt(8); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
-                    if (tok3->varId() == varId) {
-                        if (Token::simpleMatch(tok3->next(), ". size ( )"))
-                            break;
-                        else if (Token::Match(tok3->next(), "[ %varid% ]", numId))
-                            stlOutOfBoundsError(tok3, tok3->strAt(2), tok3->str(), false);
-                        else if (Token::Match(tok3->next(), ". at ( %varid% )", numId))
-                            stlOutOfBoundsError(tok3, tok3->strAt(4), tok3->str(), true);
-                    }
+            for (const Token *tok3 = tok->tokAt(8); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
+                if (tok3->varId() == varId) {
+                    if (Token::Match(tok3->next(), ". size|length ( )"))
+                        break;
+                    else if (Token::Match(tok3->next(), "[ %varid% ]", numId))
+                        stlOutOfBoundsError(tok3, tok3->strAt(2), tok3->str(), false);
+                    else if (Token::Match(tok3->next(), ". at ( %varid% )", numId))
+                        stlOutOfBoundsError(tok3, tok3->strAt(4), tok3->str(), true);
                 }
-                break;
             }
+            break;
         }
     }
 }
