@@ -58,7 +58,7 @@ void ThreadHandler::Check(const Settings &settings, bool recheck)
         mResults.SetFiles(GetReCheckFiles());
     }
 
-    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs <= 0) {
+    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
         emit Done();
         return;

@@ -1907,13 +1907,13 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return false;
 }
 
-bool Function::isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const
+bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
 {
     // check each base class
-    for (unsigned int i = 0; i < type->derivedFrom.size(); ++i) {
+    for (unsigned int i = 0; i < baseType->derivedFrom.size(); ++i) {
         // check if base class exists in database
-        if (type->derivedFrom[i].type && type->derivedFrom[i].type->classScope) {
-            const Scope *parent = type->derivedFrom[i].type->classScope;
+        if (baseType->derivedFrom[i].type && baseType->derivedFrom[i].type->classScope) {
+            const Scope *parent = baseType->derivedFrom[i].type->classScope;
 
             std::list<Function>::const_iterator func;
 
@@ -1936,14 +1936,14 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const
                     }
 
                     // check for matching function parameters
-                    if (returnMatch && argsMatch(type->classScope, func->argDef, argDef, "", 0)) {
+                    if (returnMatch && argsMatch(baseType->classScope, func->argDef, argDef, "", 0)) {
                         return true;
                     }
                 }
             }
 
-            if (!type->derivedFrom[i].type->derivedFrom.empty())
-                if (isImplicitlyVirtual_rec(type->derivedFrom[i].type, safe))
+            if (!baseType->derivedFrom[i].type->derivedFrom.empty())
+                if (isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))
                     return true;
         } else {
             // unable to find base class so assume it has no virtual function
