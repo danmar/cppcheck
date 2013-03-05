@@ -3805,40 +3805,38 @@ void CheckOther::checkRedundantCopy()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok=tok->next()) {
-        const char *expect_end_token;
-        if (Token::Match(tok, "const %type% %var% =")) {
-            //match "const A a =" usage
-            expect_end_token = ";";
-        } else if (Token::Match(tok, "const %type% %var% (")) {
-            //match "const A a (" usage
-            expect_end_token = ")";
-        } else {
-            continue;
-        }
+    for (std::size_t i = 0; i < symbolDatabase->getVariableListSize(); i++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(i);
 
-        if (tok->strAt(1) == tok->strAt(4)) //avoid "const A a = A();"
+        if (!var || var->isReference() || !var->isConst() || var->isPointer() || !var->type()) // bailout if var is of standard type, if it is a pointer or non-const
             continue;
-        if (!symbolDatabase->isClassOrStruct(tok->next()->str())) //avoid when %type% is standard type
+
+        const Token* startTok = var->nameToken();
+        const Token* endToken;
+        if (startTok->strAt(1) == "=") // %type% %var% = ... ;
+            endToken = Token::findsimplematch(startTok->tokAt(2), ";");
+        else if (startTok->strAt(1) == "(") // %type% %var%(...)
+            endToken = startTok->linkAt(1);
+        else
             continue;
-        const Token *var_tok = tok->tokAt(2);
-        tok = tok->tokAt(4);
-        while (tok &&Token::Match(tok,"%var% ."))
+
+        const Token* tok = startTok->tokAt(2);
+        while (tok && Token::Match(tok, "%var% .|::"))
             tok = tok->tokAt(2);
         if (!Token::Match(tok, "%var% ("))
-            break;
-        const Token *match_end = (tok->next()->link()!=NULL)?tok->next()->link()->next():NULL;
-        if (match_end==NULL || !Token::Match(match_end,expect_end_token)) //avoid usage like "const A a = getA()+3"
-            break;
+            continue;
+        if (tok->linkAt(1)->next() != endToken) // bailout for usage like "const A a = getA()+3"
+            continue;
+
         const Function* func = tok->function();
-        if (func && func->tokenDef->previous() && func->tokenDef->previous()->str() == "&") {
-            redundantCopyError(var_tok,var_tok->str());
+        if (func && func->tokenDef->strAt(-1) == "&") {
+            redundantCopyError(startTok, startTok->str());
         }
     }
 }
 void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 {
-    reportError(tok, Severity::performance,"redundantCopyLocalConst",
+    reportError(tok, Severity::performance, "redundantCopyLocalConst",
                 "Use const reference for '" + varname + "' to avoid unnecessary data copying.\n"
                 "The const variable '"+varname+"' is assigned a copy of the data. You can avoid "
                 "the unnecessary data copying by converting '" + varname + "' to const reference.");
