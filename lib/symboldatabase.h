@@ -54,6 +54,29 @@ struct Dimension {
     bool known;          // Known size
 };
 
+/** @brief Information about a class type. */
+class CPPCHECKLIB Type {
+public:
+    const Token* classDef; // Points to "class" token
+    const Scope* classScope;
+    const Scope* enclosingScope;
+    enum NeedInitialization {
+        Unknown, True, False
+    } needInitialization;
+
+    Type(const Token* classDef_ = 0, const Scope* classScope_ = 0, const Scope* enclosingScope_ = 0) :
+        classDef(classDef_),
+        classScope(classScope_),
+        enclosingScope(enclosingScope_),
+        needInitialization(Unknown) {
+    }
+
+    const std::string& name() const {
+        static const std::string empty;
+        return classDef->next()->isName() ? classDef->strAt(1) : empty;
+    }
+};
+
 /** @brief Information about a member variable. */
 class CPPCHECKLIB Variable {
     /** @brief flags mask used to access specific bit. */
@@ -97,7 +120,7 @@ class CPPCHECKLIB Variable {
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
-             std::size_t index_, AccessControl access_, const Scope *type_,
+             std::size_t index_, AccessControl access_, const Type *type_,
              const Scope *scope_)
         : _name(name_),
           _start(start_),
@@ -305,11 +328,19 @@ public:
     }
 
     /**
-     * Get Scope pointer of known type.
+     * Get Type pointer of known type.
      * @return pointer to type if known, NULL if not known
      */
-    const Scope *type() const {
+    const Type *type() const {
         return _type;
+    }
+
+    /**
+     * Get Scope pointer of known type.
+     * @return pointer to type scope if known, NULL if not known
+     */
+    const Scope *typeScope() const {
+        return _type ? _type->classScope : 0;
     }
 
     /**
@@ -356,7 +387,7 @@ private:
     int _flags;
 
     /** @brief pointer to user defined type info (for known types) */
-    const Scope *_type;
+    const Type *_type;
 
     /** @brief pointer to scope this variable is in */
     const Scope *_scope;
@@ -468,7 +499,6 @@ public:
     };
 
     enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch };
-    enum NeedInitialization { Unknown, True, False };
 
     Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);
     Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_);
@@ -486,8 +516,9 @@ public:
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
     std::list<UsingInfo> usingList;
-    NeedInitialization needInitialization;
     ScopeType type;
+    Type* definedType;
+    std::list<Type*> definedTypes;
 
     // function specific fields
     Scope *functionOf; // scope this function belongs to
@@ -508,10 +539,6 @@ public:
                 type == eTry || type == eCatch);
     }
 
-    bool isForwardDeclaration() const {
-        return isClassOrStruct() && classStart == NULL;
-    }
-
     /**
      * @brief find a function
      * @param tok token of function call
@@ -530,6 +557,8 @@ public:
         return const_cast<Scope *>(static_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
 
+    const Type *findType(const std::string & name) const;
+
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
@@ -539,7 +568,7 @@ public:
     const Scope *findQualifiedScope(const std::string & name) const;
 
     void addVariable(const Token *token_, const Token *start_,
-                     const Token *end_, AccessControl access_, const Scope *type_,
+                     const Token *end_, AccessControl access_, const Type *type_,
                      const Scope *scope_) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_,
@@ -604,13 +633,16 @@ public:
     /** @brief Fast access to class and struct scopes */
     std::vector<const Scope *> classAndStructScopes;
 
+    /** @brief Fast access to types */
+    std::list<Type> typeList;
+
     /**
      * @brief find a variable type if it's a user defined type
      * @param start scope to start looking in
      * @param type token containing variable type
      * @return pointer to type if found or NULL if not found
      */
-    const Scope *findVariableType(const Scope *start, const Token *type) const;
+    const Type *findVariableType(const Scope *start, const Token *type) const;
 
     /**
      * @brief find a function
@@ -621,13 +653,21 @@ public:
 
     const Scope *findScopeByName(const std::string& name) const;
 
+    const Type *findType(const Token *tok, const Scope *startScope) const;
+    Type *findType(const Token *tok, Scope *startScope) const {
+        return const_cast<Type *>(this->findType(tok, static_cast<const Scope *>(startScope)));
+    }
+
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
     Scope *findScope(const Token *tok, Scope *startScope) const {
         return const_cast<Scope *>(this->findScope(tok, static_cast<const Scope *>(startScope)));
     }
 
     bool isClassOrStruct(const std::string &type) const {
-        return bool(classAndStructTypes.find(type) != classAndStructTypes.end());
+        for (std::list<Type>::const_iterator i = typeList.begin(); i != typeList.end(); ++i)
+            if (i->name() == type)
+                return true;
+        return false;
     }
 
     const Variable *getVariableFromVarId(std::size_t varId) const {
@@ -658,9 +698,6 @@ private:
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
     static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
-
-    /** class/struct types */
-    std::set<std::string> classAndStructTypes;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;

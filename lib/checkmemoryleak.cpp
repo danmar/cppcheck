@@ -115,9 +115,9 @@ bool CheckMemoryLeak::isclass(const Token *tok, unsigned int varid) const
     // a type that has no side effects (no constructors and no members with constructors)
     /** @todo false negative: check base class for side effects */
     /** @todo false negative: check constructors for side effects */
-    if (var && var->type() && var->type()->numConstructors == 0 &&
-        (var->type()->varlist.empty() || var->type()->needInitialization == Scope::True) &&
-        var->type()->derivedFrom.empty())
+    if (var && var->typeScope() && var->typeScope()->numConstructors == 0 &&
+        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::True) &&
+        var->typeScope()->derivedFrom.empty())
         return false;
 
     return true;
@@ -2279,7 +2279,7 @@ void CheckMemoryLeakInFunction::check()
             continue;
 
         // check for known class without implementation (forward declaration)
-        if (var->isPointer() && var->type() && var->type()->isForwardDeclaration())
+        if (var->isPointer() && var->type() && !var->typeScope())
             continue;
 
         unsigned int sz = _tokenizer->sizeOfType(var->typeStartToken());
@@ -2349,9 +2349,9 @@ void CheckMemoryLeakInClass::check()
                 }
 
                 // known class?
-                else if (var->type()) {
+                else if (var->typeScope()) {
                     // not derived?
-                    if (var->type()->derivedFrom.empty()) {
+                    if (var->typeScope()->derivedFrom.empty()) {
                         if (var->isPrivate())
                             checkPublicFunctions(&(*scope), var->nameToken());
 

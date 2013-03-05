@@ -59,17 +59,13 @@ void CheckClass::constructors()
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
-        // skip forward declarations
-        if (scope->isForwardDeclaration())
-            continue;
-
         // There are no constructors.
         if (scope->numConstructors == 0 && style) {
             // If there is a private variable, there should be a constructor..
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
                 if (var->isPrivate() && !var->isStatic() &&
-                    (!var->isClass() || (var->type() && var->type()->needInitialization == Scope::True))) {
+                    (!var->isClass() || (var->type() && var->type()->needInitialization == Type::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;
                 }
@@ -134,18 +130,18 @@ void CheckClass::constructors()
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
-                    else if (var->type()->needInitialization != Scope::True)
+                    else if (var->type()->needInitialization != Type::True)
                         continue;
                 }
 
                 // Check if type can't be copied
-                if (!var->isPointer() && var->type() && canNotCopy(var->type()))
+                if (!var->isPointer() && var->typeScope() && canNotCopy(var->typeScope()))
                     continue;
 
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
                 if (!var->isPointer() &&
-                    !(var->type() && var->type()->needInitialization != Scope::True) &&
+                    !(var->type() && var->type()->needInitialization != Type::True) &&
                     (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
                     bool stdtype = false;
                     for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next())
@@ -173,7 +169,7 @@ void CheckClass::constructors()
                     if (classNameUsed)
                         operatorEqVarError(func->token, scope->className, var->name(), inconclusive);
                 } else if (func->access != Private) {
-                    const Scope *varType = var->type();
+                    const Scope *varType = var->typeScope();
                     if (!varType || varType->type != Scope::eUnion)
                         uninitVarError(func->token, scope->className, var->name(), inconclusive);
                 }
@@ -857,7 +853,7 @@ void CheckClass::noMemset()
                             derefs -= (int)var->dimensions().size();
 
                         if (derefs == 0)
-                            type = var->type();
+                            type = var->typeScope();
                     }
                 }
 
@@ -868,16 +864,19 @@ void CheckClass::noMemset()
                 if (typeTok && typeTok->str() == "(")
                     typeTok = typeTok->next();
 
-                if (!type)
-                    type = symbolDatabase->findVariableType(&(*scope), typeTok);
+                if (!type) {
+                    const Type* t = symbolDatabase->findVariableType(&(*scope), typeTok);
+                    if (t)
+                        type = t->classScope;
+                }
 
                 if (type)
                     checkMemsetType(&(*scope), tok, type, false);
-            } else if (tok->variable() && tok->variable()->type() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
-                checkMemsetType(&(*scope), tok->tokAt(2), tok->variable()->type(), true);
+            } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
+                checkMemsetType(&(*scope), tok->tokAt(2), tok->variable()->typeScope(), true);
 
-                if (tok->variable()->type()->numConstructors > 0 && _settings->isEnabled("warning"))
-                    mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->type()->classDef);
+                if (tok->variable()->typeScope()->numConstructors > 0 && _settings->isEnabled("warning"))
+                    mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->typeScope()->classDef);
             }
         }
     }
@@ -919,8 +918,8 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
                     memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
 
             // check for known type
-            else if (var->type())
-                checkMemsetType(start, tok, var->type(), allocation);
+            else if (var->typeScope())
+                checkMemsetType(start, tok, var->typeScope(), allocation);
         }
     }
 }
@@ -1648,7 +1647,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 if (Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy")))
                     ;
-                else if (!var->type() || !isConstMemberFunc(var->type(), end))
+                else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return(false);
             }
 

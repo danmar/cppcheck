@@ -3083,7 +3083,7 @@ namespace {
                         return false;
                     std::list<const Function*>::const_iterator it = std::find_if(constFunctions.begin(),
                             constFunctions.end(),
-                            FuncFilter(v ? v->type(): 0, prev));
+                            FuncFilter(v ? v->typeScope(): 0, prev));
                     if (it == constFunctions.end())
                         return true;
                 }

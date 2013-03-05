@@ -1059,7 +1059,7 @@ void CheckUninitVar::check()
 void CheckUninitVar::checkScope(const Scope* scope)
 {
     for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
-        if ((_tokenizer->isCPP() && i->type() && !i->isPointer() && i->type()->needInitialization != Scope::True) ||
+        if ((_tokenizer->isCPP() && i->type() && !i->isPointer() && i->type()->needInitialization != Type::True) ||
             i->isStatic() || i->isExtern() || i->isConst() || i->isArray() || i->isReference())
             continue;
         if (i->nameToken()->strAt(1) == "(")

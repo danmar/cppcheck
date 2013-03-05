@@ -613,7 +613,7 @@ static bool isRecordTypeWithoutSideEffects(const Scope* type)
     // a type that has no side effects (no constructors and no members with constructors)
     /** @todo false negative: check constructors for side effects */
     if (type && type->numConstructors == 0 &&
-        (type->varlist.empty() || type->needInitialization == Scope::True)) {
+        (type->varlist.empty() || type->definedType->needInitialization == Type::True)) {
         bool yes = true;
         for (std::vector<Scope::BaseInfo>::const_iterator i = type->derivedFrom.begin(); yes && i != type->derivedFrom.end(); ++i)
             yes = isRecordTypeWithoutSideEffects(i->scope);
@@ -688,7 +688,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointer;
             else if (_tokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
-                     isRecordTypeWithoutSideEffects(i->type()) ||
+                     isRecordTypeWithoutSideEffects(i->typeScope()) ||
                      (Token::simpleMatch(i->typeStartToken(), "std ::") &&
                       i->typeStartToken()->strAt(2) != "lock_guard" &&
                       i->typeStartToken()->strAt(2) != "unique_lock"))
@@ -893,7 +893,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         // is it a user defined type?
                         if (!type->isStandardType()) {
                             const Variable *variable = start->variable();
-                            if (!variable || !isRecordTypeWithoutSideEffects(variable->type()))
+                            if (!variable || !isRecordTypeWithoutSideEffects(variable->typeScope()))
                                 allocate = false;
                         }
                     }

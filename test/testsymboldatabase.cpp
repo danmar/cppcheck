@@ -187,6 +187,7 @@ private:
         TEST_CASE(symboldatabase28);
         TEST_CASE(symboldatabase29); // ticket #4442 (segmentation fault)
         TEST_CASE(symboldatabase30);
+        TEST_CASE(symboldatabase31);
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1371,7 +1372,7 @@ private:
     void symboldatabase28() {
         GET_SYMBOL_DB("struct S {};\n"
                       "void foo(struct S s) {}");
-        ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->className == "S");
+        ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->typeScope() && db->getVariableFromVarId(1)->typeScope()->className == "S");
     }
 
     // #ticket #4442 (segmentation fault)
@@ -1386,6 +1387,51 @@ private:
         GET_SYMBOL_DB("struct A { void foo(const int a); };\n"
                       "void A::foo(int a) { }");
         ASSERT(db && db->functionScopes.size() == 1 && db->functionScopes[0]->functionOf);
+    }
+
+    void symboldatabase31() {
+        GET_SYMBOL_DB("class Foo;\n"
+                      "class Bar;\n"
+                      "class Sub;\n"
+                      "class Foo { class Sub; };\n"
+                      "class Bar { class Sub; };\n"
+                      "class Bar::Sub {\n"
+                      "    int b;\n"
+                      "public:\n"
+                      "    Sub() { }\n"
+                      "    Sub(int);\n"
+                      "};\n"
+                      "Bar::Sub::Sub(int) { };\n"
+                      "class ::Foo::Sub {\n"
+                      "    int f;\n"
+                      "public:\n"
+                      "    ~Sub();\n"
+                      "    Sub();\n"
+                      "};\n"
+                      "::Foo::Sub::~Sub() { }\n"
+                      "::Foo::Sub::Sub() { }\n"
+                      "class Foo;\n"
+                      "class Bar;\n"
+                      "class Sub;\n");
+        ASSERT(db && db->typeList.size() == 5);
+        ASSERT(db && db->isClassOrStruct("Foo"));
+        ASSERT(db && db->isClassOrStruct("Bar"));
+        ASSERT(db && db->isClassOrStruct("Sub"));
+        if (!db || db->typeList.size() < 5)
+            return;
+        std::list<Type>::const_iterator i = db->typeList.begin();
+        const Type* Foo = &(*i++);
+        const Type* Bar = &(*i++);
+        const Type* Sub = &(*i++);
+        const Type* Foo_Sub = &(*i++);
+        const Type* Bar_Sub = &(*i);
+        ASSERT(Foo && Foo->classDef && Foo->classScope && Foo->enclosingScope && Foo->name() == "Foo");
+        ASSERT(Bar && Bar->classDef && Bar->classScope && Bar->enclosingScope && Bar->name() == "Bar");
+        ASSERT(Sub && Sub->classDef && !Sub->classScope && Sub->enclosingScope && Sub->name() == "Sub");
+        ASSERT(Foo_Sub && Foo_Sub->classDef && Foo_Sub->classScope && Foo_Sub->enclosingScope == Foo->classScope && Foo_Sub->name() == "Sub");
+        ASSERT(Bar_Sub && Bar_Sub->classDef && Bar_Sub->classScope && Bar_Sub->enclosingScope == Bar->classScope && Bar_Sub->name() == "Sub");
+        ASSERT(Foo_Sub && Foo_Sub->classScope && Foo_Sub->classScope->numConstructors == 1 && Foo_Sub->classScope->className == "Sub");
+        ASSERT(Bar_Sub && Bar_Sub->classScope && Bar_Sub->classScope->numConstructors == 2 && Bar_Sub->classScope->className == "Sub");
     }
 
     void isImplicitlyVirtual() {

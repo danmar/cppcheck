@@ -1783,9 +1783,9 @@ private:
               "class Bar;\n"
               "class Sub;\n");
 
-        ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'Sub::f' is not initialized in the constructor.\n"
-                      "[test.cpp:9]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n"
-                      "[test.cpp:12]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n"
+                      "[test.cpp:12]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n"
+                      "[test.cpp:20]: (warning) Member variable 'Sub::f' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {
