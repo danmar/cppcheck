@@ -464,13 +464,17 @@ public:
      */
     void function(const Function *f) {
         _function = f;
+        if (f)
+            _type = eFunction;
+        else if (_type == eFunction)
+            _type = eName;
     }
 
     /**
      * Returns a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return _function;
+        return _type == eFunction ? _function : 0;
     }
 
     /**
@@ -479,13 +483,17 @@ public:
      */
     void variable(const Variable *v) {
         _variable = v;
+        if (v || _varId)
+            _type = eVariable;
+        else if (_type == eVariable)
+            _type = eName;
     }
 
     /**
      * Returns a pointer to the variable associated with this token.
      */
     const Variable *variable() const {
-        return _variable;
+        return _type == eVariable ? _variable : 0;
     }
 
     /**
@@ -581,8 +589,10 @@ private:
 
     // symbol database information
     const Scope *_scope;
-    const Function *_function;
-    const Variable *_variable;
+    union {
+        const Function *_function;
+        const Variable *_variable;
+    };
 
     std::string _str;
     unsigned int _varId;

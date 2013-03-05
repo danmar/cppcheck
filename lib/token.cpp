@@ -34,8 +34,7 @@ Token::Token(Token **t) :
     _previous(0),
     _link(0),
     _scope(0),
-    _function(0),
-    _variable(0),
+    _function(0), // Initialize whole union
     _str(""),
     _varId(0),
     _fileIndex(0),
@@ -68,7 +67,8 @@ void Token::update_property_info()
         else if (_str[0] == '_' || std::isalpha(_str[0])) { // Name
             if (_varId)
                 _type = eVariable;
-            _type = eName;
+            else if (_type != eVariable && _type != eFunction && _type != eType)
+                _type = eName;
         } else if (std::isdigit(_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1])))
             _type = eNumber;
         else if (_str.length() > 1 && _str[0] == '"' && _str[_str.length()-1] == '"')
