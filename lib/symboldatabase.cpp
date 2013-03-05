@@ -147,8 +147,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
 
                 // make the new scope the current scope
+                scope->nestedList.push_back(new_scope);
                 scope = new_scope;
-                scope->nestedIn->nestedList.push_back(scope);
 
                 tok = tok2;
             }
@@ -176,8 +176,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
 
             // make the new scope the current scope
+            scope->nestedList.push_back(new_scope);
             scope = &scopeList.back();
-            scope->nestedIn->nestedList.push_back(scope);
 
             tok = tok2;
         }
@@ -246,8 +246,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
 
             // make the new scope the current scope
+            scope->nestedList.push_back(new_scope);
             scope = new_scope;
-            scope->nestedIn->nestedList.push_back(scope);
 
             tok = tok2;
         }
@@ -276,8 +276,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
 
             // make the new scope the current scope
+            scope->nestedList.push_back(new_scope);
             scope = new_scope;
-            scope->nestedIn->nestedList.push_back(scope);
 
             tok = tok2;
         }
@@ -289,7 +289,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope = back[tok];
                     back.erase(tok);
                 } else
-                    scope = scope->nestedIn;
+                    scope = const_cast<Scope*>(scope->nestedIn);
                 continue;
             }
 
@@ -476,12 +476,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                         scope->functionList.push_back(function);
 
+                        Function* funcptr = &scope->functionList.back();
                         const Token *tok2 = funcStart;
 
                         addNewFunction(&scope, &tok2);
                         if (scope) {
                             scope->functionOf = function.nestedIn;
-                            scope->function = &function.nestedIn->functionList.back();
+                            scope->function = funcptr;
                             scope->function->functionScope = scope;
                         }
 
@@ -620,21 +621,21 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     const Token *tok1 = tok->next()->link()->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eIf, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "else {")) {
                     const Token *tok1 = tok->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eElse, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "else if (") &&
                            Token::simpleMatch(tok->linkAt(2), ") {")) {
                     const Token *tok1 = tok->linkAt(2)->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eElseIf, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "for (") &&
                            Token::simpleMatch(tok->next()->link(), ") {")) {
                     // save location of initialization
@@ -642,8 +643,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     const Token *tok2 = tok->tokAt(2);
                     scopeList.push_back(Scope(this, tok, scope, Scope::eFor, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                     // check for variable declaration and add it to new scope if found
                     scope->checkVariable(tok2, Local);
                 } else if (Token::simpleMatch(tok, "while (") &&
@@ -651,42 +652,42 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     const Token *tok1 = tok->next()->link()->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eWhile, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "do {")) {
                     const Token *tok1 = tok->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eDo, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "switch (") &&
                            Token::simpleMatch(tok->next()->link(), ") {")) {
                     const Token *tok1 = tok->next()->link()->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eSwitch, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "try {")) {
                     const Token *tok1 = tok->next();
                     scopeList.push_back(Scope(this, tok, scope, Scope::eTry, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                 } else if (Token::simpleMatch(tok, "catch (") &&
                            Token::simpleMatch(tok->next()->link(), ") {")) {
                     const Token *tok1 = tok->next()->link()->next();
                     const Token *tok2 = tok->tokAt(2);
                     scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, tok1));
                     tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                    scope->nestedIn->nestedList.push_back(scope);
                     // check for variable declaration and add it to new scope if found
                     scope->checkVariable(tok2, Throw);
                 } else if (tok->str() == "{") {
                     if (!Token::Match(tok->previous(), "=|,")) {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
+                        scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
-                        scope->nestedIn->nestedList.push_back(scope);
                     } else {
                         tok = tok->link();
                     }
@@ -1370,9 +1371,9 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
             return;
         }
 
+        (*scope)->nestedList.push_back(new_scope);
         *scope = new_scope;
         *tok = tok1;
-        (*scope)->nestedIn->nestedList.push_back(*scope);
     } else {
         scopeList.pop_back();
         *scope = NULL;
@@ -1968,7 +1969,7 @@ const Variable* Function::getArgumentVar(unsigned int num) const
 
 //---------------------------------------------------------------------------
 
-Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_) :
+Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_) :
     check(check_),
     classDef(classDef_),
     classStart(start_),
@@ -1982,7 +1983,7 @@ Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, S
 {
 }
 
-Scope::Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_) :
+Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
     check(check_),
     classDef(classDef_),
     classStart(NULL),

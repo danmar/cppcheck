@@ -672,7 +672,7 @@ void CheckClass::initializationListUsage()
         if (!scope->function || (scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor))
             continue;
 
-        Scope* owner = scope->functionOf;
+        const Scope* owner = scope->functionOf;
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% (")) // Assignments might depend on this function call or if/for/while/switch statement from now on.
                 break;

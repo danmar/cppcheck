@@ -469,8 +469,8 @@ public:
     const Token *argDef;   // function argument start '(' in class definition
     const Token *token;    // function name token in implementation
     const Token *arg;      // function argument start '('
-    Scope *functionScope;  // scope of function body
-    Scope* nestedIn;       // Scope the function is declared in
+    const Scope *functionScope; // scope of function body
+    const Scope* nestedIn; // Scope the function is declared in
     std::list<Variable> argumentList; // argument list
     unsigned int initArgCount; // number of args with default values
     Type type;             // constructor, destructor, ...
@@ -501,22 +501,22 @@ class CPPCHECKLIB Scope {
 public:
     struct UsingInfo {
         const Token *start;
-        Scope *scope;
+        const Scope *scope;
     };
 
     enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch };
 
-    Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_);
-    Scope(SymbolDatabase *check_, const Token *classDef_, Scope *nestedIn_, ScopeType type_, const Token *start_);
+    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
+    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
 
-    SymbolDatabase *check;
+    const SymbolDatabase *check;
     std::string className;
     const Token *classDef;   // class/struct/union/namespace token
     const Token *classStart; // '{' token
     const Token *classEnd;   // '}' token
     std::list<Function> functionList;
     std::list<Variable> varlist;
-    Scope *nestedIn;
+    const Scope *nestedIn;
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
     std::list<UsingInfo> usingList;
@@ -525,7 +525,7 @@ public:
     std::list<Type*> definedTypes;
 
     // function specific fields
-    Scope *functionOf; // scope this function belongs to
+    const Scope *functionOf; // scope this function belongs to
     Function *function; // function info for this function
 
     bool isClassOrStruct() const {
