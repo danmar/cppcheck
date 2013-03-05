@@ -4505,9 +4505,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '*' and '?'.\n", errout.str());
 
         // Ticket #2585 - segmentation fault for invalid code
-        check("abcdef??<"
-              "123456??>"
-              "+??=");
+        check("abcdef?""?<"
+              "123456?""?>"
+              "+?""?=");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char c) {\n"
