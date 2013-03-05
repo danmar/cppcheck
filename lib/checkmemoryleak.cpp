@@ -117,7 +117,7 @@ bool CheckMemoryLeak::isclass(const Token *tok, unsigned int varid) const
     /** @todo false negative: check constructors for side effects */
     if (var && var->typeScope() && var->typeScope()->numConstructors == 0 &&
         (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::True) &&
-        var->typeScope()->derivedFrom.empty())
+        var->type()->derivedFrom.empty())
         return false;
 
     return true;
@@ -2349,9 +2349,9 @@ void CheckMemoryLeakInClass::check()
                 }
 
                 // known class?
-                else if (var->typeScope()) {
+                else if (var->type()) {
                     // not derived?
-                    if (var->typeScope()->derivedFrom.empty()) {
+                    if (var->type()->derivedFrom.empty()) {
                         if (var->isPrivate())
                             checkPublicFunctions(&(*scope), var->nameToken());
 

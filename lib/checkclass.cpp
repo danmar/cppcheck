@@ -232,7 +232,7 @@ void CheckClass::copyconstructors()
             }
         }
         if (!copyCtor) {
-            if (!allocatedVars.empty() && scope->derivedFrom.empty()) // TODO: Check if base class is non-copyable
+            if (!allocatedVars.empty() && scope->definedType->derivedFrom.empty()) // TODO: Check if base class is non-copyable
                 noCopyConstructorError(scope->classDef, scope->className, scope->type == Scope::eStruct);
         } else {
             if (!copiedVars.empty()) {
@@ -335,14 +335,14 @@ void CheckClass::clearAllVar(std::vector<Usage> &usage)
 bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 {
     // Iterate through each base class...
-    for (std::size_t i = 0; i < scope->derivedFrom.size(); ++i) {
-        const Scope *derivedFrom = scope->derivedFrom[i].scope;
+    for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
         // Check if base class exists in database
-        if (derivedFrom) {
+        if (derivedFrom && derivedFrom->classScope) {
             std::list<Function>::const_iterator func;
 
-            for (func = derivedFrom->functionList.begin(); func != derivedFrom->functionList.end(); ++func) {
+            for (func = derivedFrom->classScope->functionList.begin(); func != derivedFrom->classScope->functionList.end(); ++func) {
                 if (func->tokenDef->str() == tok->str())
                     return true;
             }
@@ -586,7 +586,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 }
 
                 // has friends, so we assume it initializes everything
-                if (!scope->friendList.empty())
+                if (!scope->definedType->friendList.empty())
                     assignAllVar(usage);
 
                 // the function is external and it's neither friend nor inherited virtual function.
@@ -766,7 +766,7 @@ void CheckClass::privateFunctions()
         }
 
         // Bailout for overridden virtual functions of base classes
-        if (!scope->derivedFrom.empty()) {
+        if (!scope->definedType->derivedFrom.empty()) {
             // Check virtual functions
             for (std::list<const Function*>::iterator it = FuncList.begin(); it != FuncList.end();) {
                 if ((*it)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
@@ -781,8 +781,11 @@ void CheckClass::privateFunctions()
             // Check that all private functions are used
             bool used = checkFunctionUsage(funcName, &*scope); // Usage in this class
             // Check in friend classes
-            for (std::list<Scope::FriendInfo>::const_iterator it = scope->friendList.begin(); !used && it != scope->friendList.end(); ++it)
-                used = checkFunctionUsage(funcName, it->scope);
+            for (std::list<Type::FriendInfo>::const_iterator it = scope->definedType->friendList.begin(); !used && it != scope->definedType->friendList.end(); ++it)
+                if (it->type)
+                    used = checkFunctionUsage(funcName, it->type->classScope);
+                else
+                    used = true; // Assume, it is used if we do not see friend class
 
             if (!used)
                 unusedPrivateFunctionError(FuncList.front()->tokenDef, scope->className, funcName);
@@ -885,9 +888,9 @@ void CheckClass::noMemset()
 void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation)
 {
     // recursively check all parent classes
-    for (std::size_t i = 0; i < type->derivedFrom.size(); i++) {
-        if (type->derivedFrom[i].scope)
-            checkMemsetType(start, tok, type->derivedFrom[i].scope, allocation);
+    for (std::size_t i = 0; i < type->definedType->derivedFrom.size(); i++) {
+        if (type->definedType->derivedFrom[i].type && type->definedType->derivedFrom[i].type->classScope)
+            checkMemsetType(start, tok, type->definedType->derivedFrom[i].type->classScope, allocation);
     }
 
     // Warn if type is a class that contains any virtual functions
@@ -1101,7 +1104,7 @@ void CheckClass::operatorEqToSelf()
         std::list<Function>::const_iterator func;
 
         // skip classes with multiple inheritance
-        if (scope->derivedFrom.size() > 1)
+        if (scope->definedType->derivedFrom.size() > 1)
             continue;
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
@@ -1215,7 +1218,7 @@ void CheckClass::virtualDestructor()
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
         // Skip base classes
-        if (scope->derivedFrom.empty())
+        if (scope->definedType->derivedFrom.empty())
             continue;
 
         // Find the destructor
@@ -1233,13 +1236,13 @@ void CheckClass::virtualDestructor()
         const Token *derivedClass = derived->next();
 
         // Iterate through each base class...
-        for (unsigned int j = 0; j < scope->derivedFrom.size(); ++j) {
+        for (unsigned int j = 0; j < scope->definedType->derivedFrom.size(); ++j) {
             // Check if base class is public and exists in database
-            if (scope->derivedFrom[j].access != Private && scope->derivedFrom[j].scope) {
-                const Scope *derivedFrom = scope->derivedFrom[j].scope;
-
-                // Name of base class..
-                const std::string& baseName = derivedFrom->className;
+            if (scope->definedType->derivedFrom[j].access != Private && scope->definedType->derivedFrom[j].type) {
+                const Type *derivedFrom = scope->definedType->derivedFrom[j].type;
+                const Scope *derivedFromScope = derivedFrom->classScope;
+                if (!derivedFromScope)
+                    continue;
 
                 // Check for this pattern:
                 // 1. Base class pointer is given the address of derived class instance
@@ -1250,6 +1253,12 @@ void CheckClass::virtualDestructor()
                     // pointer variables of type 'Base *'
                     std::set<unsigned int> basepointer;
 
+                    for (std::size_t i = 0; i < symbolDatabase->getVariableListSize(); i++) {
+                        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+                        if (var && var->isPointer() && var->type() == derivedFrom)
+                            basepointer.insert(var->varId());
+                    }
+
                     // pointer variables of type 'Base *' that should not be deleted
                     std::set<unsigned int> dontDelete;
 
@@ -1257,16 +1266,9 @@ void CheckClass::virtualDestructor()
                     bool ok = true;
 
                     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-                        // Declaring base class pointer
-                        if (Token::simpleMatch(tok, baseName.c_str())) {
-                            if (Token::Match(tok->previous(), ("[;{}] " + baseName + " * %var% ;").c_str()))
-                                basepointer.insert(tok->tokAt(2)->varId());
-                        }
-
-                        // Assign base class pointer with pointer to derived class instance
-                        else if (Token::Match(tok, "[;{}] %var% =") &&
-                                 tok->next()->varId() > 0 &&
-                                 basepointer.find(tok->next()->varId()) != basepointer.end()) {
+                        if (Token::Match(tok, "[;{}] %var% =") &&
+                            tok->next()->varId() > 0 &&
+                            basepointer.find(tok->next()->varId()) != basepointer.end()) {
                             // new derived class..
                             if (Token::simpleMatch(tok->tokAt(3), ("new " + derivedClass->str()).c_str())) {
                                 dontDelete.insert(tok->next()->varId());
@@ -1288,7 +1290,7 @@ void CheckClass::virtualDestructor()
                 }
 
                 // Find the destructor declaration for the base class.
-                const Function *base_destructor = derivedFrom->getDestructor();
+                const Function *base_destructor = derivedFromScope->getDestructor();
                 const Token *base = 0;
                 if (base_destructor)
                     base = base_destructor->token;
@@ -1296,7 +1298,7 @@ void CheckClass::virtualDestructor()
                 // Check that there is a destructor..
                 if (!base_destructor) {
                     if (derivedFrom->derivedFrom.empty())
-                        virtualDestructorError(derivedFrom->classDef, baseName, derivedClass->str());
+                        virtualDestructorError(derivedFrom->classDef, derivedFrom->name(), derivedClass->str());
                 } else if (!base_destructor->isVirtual) {
                     // TODO: This is just a temporary fix, better solution is needed.
                     // Skip situations where base class has base classes of its own, because
@@ -1309,7 +1311,7 @@ void CheckClass::virtualDestructor()
                         // would not compile if inheritance is used in a way that would
                         // cause the bug we are trying to find here.)
                         if (base_destructor->access == Public)
-                            virtualDestructorError(base, baseName, derivedClass->str());
+                            virtualDestructorError(base, derivedFrom->name(), derivedClass->str());
                     }
                 }
             }
@@ -1409,7 +1411,7 @@ void CheckClass::checkConst()
                 }
 
                 // check if base class function is virtual
-                if (!scope->derivedFrom.empty()) {
+                if (!scope->definedType->derivedFrom.empty()) {
                     if (func->isImplicitlyVirtual(true))
                         continue;
                 }
@@ -1479,15 +1481,15 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
     }
 
     // not found in this class
-    if (!scope->derivedFrom.empty()) {
+    if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
+        for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
-            const Scope *derivedFrom = scope->derivedFrom[i].scope;
+            const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
             // find the function in the base class
-            if (derivedFrom) {
-                if (isMemberVar(derivedFrom, tok))
+            if (derivedFrom && derivedFrom->classScope) {
+                if (isMemberVar(derivedFrom->classScope, tok))
                     return true;
             }
         }
@@ -1545,15 +1547,15 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
     }
 
     // not found in this class
-    if (!scope->derivedFrom.empty()) {
+    if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
+        for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
-            const Scope *derivedFrom = scope->derivedFrom[i].scope;
+            const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
             // find the function in the base class
-            if (derivedFrom) {
-                if (isMemberFunc(derivedFrom, tok))
+            if (derivedFrom && derivedFrom->classScope) {
+                if (isMemberFunc(derivedFrom->classScope, tok))
                     return true;
             }
         }
@@ -1585,15 +1587,15 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
         return true;
 
     // not found in this class
-    if (!scope->derivedFrom.empty()) {
+    if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
+        for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
-            const Scope *derivedFrom = scope->derivedFrom[i].scope;
+            const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
             // find the function in the base class
-            if (derivedFrom) {
-                if (isConstMemberFunc(derivedFrom, tok))
+            if (derivedFrom && derivedFrom->classScope) {
+                if (isConstMemberFunc(derivedFrom->classScope, tok))
                     return true;
             }
         }

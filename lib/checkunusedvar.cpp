@@ -608,15 +608,15 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     return tok;
 }
 
-static bool isRecordTypeWithoutSideEffects(const Scope* type)
+static bool isRecordTypeWithoutSideEffects(const Type* type)
 {
     // a type that has no side effects (no constructors and no members with constructors)
     /** @todo false negative: check constructors for side effects */
-    if (type && type->numConstructors == 0 &&
-        (type->varlist.empty() || type->definedType->needInitialization == Type::True)) {
+    if (type && type->classScope && type->classScope->numConstructors == 0 &&
+        (type->classScope->varlist.empty() || type->needInitialization == Type::True)) {
         bool yes = true;
-        for (std::vector<Scope::BaseInfo>::const_iterator i = type->derivedFrom.begin(); yes && i != type->derivedFrom.end(); ++i)
-            yes = isRecordTypeWithoutSideEffects(i->scope);
+        for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); yes && i != type->derivedFrom.end(); ++i)
+            yes = isRecordTypeWithoutSideEffects(i->type);
         return yes;
     }
     return false;
@@ -688,7 +688,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointer;
             else if (_tokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
-                     isRecordTypeWithoutSideEffects(i->typeScope()) ||
+                     isRecordTypeWithoutSideEffects(i->type()) ||
                      (Token::simpleMatch(i->typeStartToken(), "std ::") &&
                       i->typeStartToken()->strAt(2) != "lock_guard" &&
                       i->typeStartToken()->strAt(2) != "unique_lock"))
@@ -893,7 +893,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         // is it a user defined type?
                         if (!type->isStandardType()) {
                             const Variable *variable = start->variable();
-                            if (!variable || !isRecordTypeWithoutSideEffects(variable->typeScope()))
+                            if (!variable || !isRecordTypeWithoutSideEffects(variable->type()))
                                 allocate = false;
                         }
                     }

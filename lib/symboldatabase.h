@@ -64,6 +64,24 @@ public:
         Unknown, True, False
     } needInitialization;
 
+    struct BaseInfo {
+        std::string name;
+        const Type* type;
+        const Token* nameTok;
+        AccessControl access;  // public/protected/private
+        bool isVirtual;
+    };
+
+    struct FriendInfo {
+        const Token* nameStart;
+        const Token* nameEnd;
+        std::string name;
+        const Type* type;
+    };
+
+    std::vector<BaseInfo> derivedFrom;
+    std::list<FriendInfo> friendList;
+
     Type(const Token* classDef_ = 0, const Scope* classScope_ = 0, const Scope* enclosingScope_ = 0) :
         classDef(classDef_),
         classScope(classScope_),
@@ -75,6 +93,8 @@ public:
         static const std::string empty;
         return classDef->next()->isName() ? classDef->strAt(1) : empty;
     }
+
+    const Token *initBaseInfo(const Token *tok, const Token *tok1);
 };
 
 /** @brief Information about a member variable. */
@@ -471,7 +491,7 @@ public:
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
 private:
-    bool isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const;
+    bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const;
 };
 
 class CPPCHECKLIB Scope {
@@ -479,20 +499,6 @@ class CPPCHECKLIB Scope {
     friend class TestSymbolDatabase;
 
 public:
-    struct BaseInfo {
-        std::string name;
-        Scope *scope;
-        AccessControl access;  // public/protected/private
-        bool isVirtual;
-    };
-
-    struct FriendInfo {
-        const Token *nameStart;
-        const Token *nameEnd;
-        std::string name;
-        Scope *scope;
-    };
-
     struct UsingInfo {
         const Token *start;
         Scope *scope;
@@ -510,8 +516,6 @@ public:
     const Token *classEnd;   // '}' token
     std::list<Function> functionList;
     std::list<Variable> varlist;
-    std::vector<BaseInfo> derivedFrom;
-    std::list<FriendInfo> friendList;
     Scope *nestedIn;
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
@@ -557,15 +561,16 @@ public:
         return const_cast<Scope *>(static_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
 
-    const Type *findType(const std::string & name) const;
+    const Type* findType(const std::string& name) const;
+    Type* findType(const std::string& name) {
+        return const_cast<Type*>(static_cast<const Scope *>(this)->findType(name));
+    }
 
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
     Scope *findInNestedListRecursive(const std::string & name);
-
-    const Scope *findQualifiedScope(const std::string & name) const;
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
@@ -574,8 +579,6 @@ public:
                                    access_,
                                    type_, scope_));
     }
-
-    const Token *initBaseInfo(const Token *tok, const Token *tok1);
 
     /** @brief initialize varlist */
     void getVariableList();
@@ -653,9 +656,9 @@ public:
 
     const Scope *findScopeByName(const std::string& name) const;
 
-    const Type *findType(const Token *tok, const Scope *startScope) const;
-    Type *findType(const Token *tok, Scope *startScope) const {
-        return const_cast<Type *>(this->findType(tok, static_cast<const Scope *>(startScope)));
+    const Type* findType(const Token *tok, const Scope *startScope) const;
+    Type* findType(const Token *tok, Scope *startScope) const {
+        return const_cast<Type*>(this->findType(tok, static_cast<const Scope *>(startScope)));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;

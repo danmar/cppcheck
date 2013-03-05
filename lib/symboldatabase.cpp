@@ -81,7 +81,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 // only create base list for classes and structures
                 if (new_scope->isClassOrStruct()) {
                     // goto initial '{'
-                    tok2 = new_scope->initBaseInfo(tok, tok2);
+                    tok2 = new_scope->definedType->initBaseInfo(tok, tok2);
 
                     // make sure we have valid code
                     if (!tok2) {
@@ -113,10 +113,22 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 else if (tok->str() == "struct")
                     access[new_scope] = Public;
 
+                // fill typeList...
+                if (new_scope->isClassOrStruct() || new_scope->type == Scope::eUnion) {
+                    Type* new_type = findType(tok->next(), scope);
+                    if (!new_type) {
+                        typeList.push_back(Type(new_scope->classDef, new_scope, scope));
+                        new_type = &typeList.back();
+                        scope->definedTypes.push_back(new_type);
+                    } else
+                        new_type->classScope = new_scope;
+                    new_scope->definedType = new_type;
+                }
+
                 // only create base list for classes and structures
                 if (new_scope->isClassOrStruct()) {
                     // goto initial '{'
-                    tok2 = new_scope->initBaseInfo(tok, tok2);
+                    tok2 = new_scope->definedType->initBaseInfo(tok, tok2);
 
                     // make sure we have valid code
                     if (!tok2) {
@@ -132,18 +144,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 if (!new_scope->classEnd) {
                     scopeList.pop_back();
                     break;
-                }
-
-                // fill typeList...
-                if (new_scope->isClassOrStruct() || new_scope->type == Scope::eUnion) {
-                    Type* new_type = findType(tok->next(), scope);
-                    if (!new_type) {
-                        typeList.push_back(Type(new_scope->classDef, new_scope, scope));
-                        new_type = &typeList.back();
-                        scope->definedTypes.push_back(new_type);
-                    } else
-                        new_type->classScope = new_scope;
-                    new_scope->definedType = new_type;
                 }
 
                 // make the new scope the current scope
@@ -503,7 +503,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // friend class declaration?
                 else if (Token::Match(tok, "friend class| ::| %any% ;|::")) {
-                    Scope::FriendInfo friendInfo;
+                    Type::FriendInfo friendInfo;
 
                     // save the name start
                     friendInfo.nameStart = tok->strAt(1) == "class" ? tok->tokAt(2) : tok->tokAt(1);
@@ -522,9 +522,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         friendInfo.name = friendInfo.nameEnd->str();
 
                     // fill this in after parsing is complete
-                    friendInfo.scope = 0;
+                    friendInfo.type = 0;
 
-                    scope->friendList.push_back(friendInfo);
+                    scope->definedType->friendList.push_back(friendInfo);
                 }
             } else if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal) {
                 const Token *funcStart = 0;
@@ -695,54 +695,22 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
-    std::list<Scope>::iterator it;
-
     // fill in base class info
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
-        scope = &(*it);
-
-        // skip namespaces and functions
-        if (!scope->isClassOrStruct())
-            continue;
-
+    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
         // finish filling in base class info
-        for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
-            std::list<Scope>::const_iterator it1;
-
-            // check all scopes for match
-            for (it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
-                // check scope for match
-                const Scope *scope1 = it1->findQualifiedScope(scope->derivedFrom[i].name);
-
-                // found match?
-                if (scope1) {
-                    // set found scope
-                    scope->derivedFrom[i].scope = const_cast<Scope *>(scope1);
-                    break;
-                }
-            }
-        }
+        for (unsigned int i = 0; i < it->derivedFrom.size(); ++i)
+            it->derivedFrom[i].type = findType(it->derivedFrom[i].nameTok, it->enclosingScope);
     }
 
     // fill in friend info
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
-        for (std::list<Scope::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
-            for (std::list<Scope>::iterator j = scopeList.begin(); j != scopeList.end(); ++j) {
-                // check scope for match
-                scope = findScope(i->nameStart, it->nestedIn);
-
-                // found match?
-                if (scope && scope->isClassOrStruct()) {
-                    // set found scope
-                    i->scope = scope;
-                    break;
-                }
-            }
+    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
+        for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
+            i->type = findType(i->nameStart, it->enclosingScope);
         }
     }
 
     // fill in using info
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
             // check scope for match
             scope = findScope(i->start->tokAt(2), &(*it));
@@ -755,13 +723,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     }
 
     // fill in variable info
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         // find variables
         it->getVariableList();
     }
 
     // fill in function arguments
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         std::list<Function>::iterator func;
 
         for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
@@ -771,13 +739,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     }
 
     // fill in function scopes
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->type == Scope::eFunction)
             functionScopes.push_back(&*it);
     }
 
     // fill in class and struct scopes
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->isClassOrStruct())
             classAndStructScopes.push_back(&*it);
     }
@@ -789,7 +757,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     do {
         unknowns = 0;
 
-        for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
             scope = &(*it);
 
             if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
@@ -830,9 +798,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         if (var->isClass()) {
                             if (var->type()) {
                                 // does this type need initialization?
-                                if (var->typeScope()->definedType->needInitialization == Type::True)
+                                if (var->type()->needInitialization == Type::True)
                                     needInitialization = true;
-                                else if (var->typeScope()->definedType->needInitialization == Type::Unknown)
+                                else if (var->type()->needInitialization == Type::Unknown)
                                     unknown = true;
                             }
                         } else
@@ -858,7 +826,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     // this shouldn't happen so output a debug warning
     if (retry == 100 && _settings->debugwarnings) {
-        for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
             scope = &(*it);
 
             if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown)
@@ -871,7 +839,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     std::fill_n(_variableList.begin(), _variableList.size(), (const Variable*)NULL);
 
     // check all scopes for variables
-    for (it = scopeList.begin(); it != scopeList.end(); ++it) {
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         scope = &(*it);
 
         // add all variables
@@ -1412,7 +1380,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
 }
 
-const Token *Scope::initBaseInfo(const Token *tok, const Token *tok1)
+const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
 {
     // goto initial '{'
     const Token *tok2 = tok1;
@@ -1423,7 +1391,7 @@ const Token *Scope::initBaseInfo(const Token *tok, const Token *tok1)
 
         // check for base classes
         else if (Token::Match(tok2, ":|,")) {
-            Scope::BaseInfo base;
+            Type::BaseInfo base;
 
             base.isVirtual = false;
 
@@ -1459,21 +1427,20 @@ const Token *Scope::initBaseInfo(const Token *tok, const Token *tok1)
                 tok2 = tok2->next();
             }
 
+            base.nameTok = tok2;
+
             // handle global namespace
             if (tok2->str() == "::") {
-                base.name = ":: ";
                 tok2 = tok2->next();
             }
 
             // handle derived base classes
             while (Token::Match(tok2, "%var% ::")) {
-                base.name += tok2->str();
-                base.name += " :: ";
                 tok2 = tok2->tokAt(2);
             }
 
-            base.name += tok2->str();
-            base.scope = NULL;
+            base.name = tok2->str();
+            base.type = NULL;
 
             // add unhandled templates
             if (tok2->next() && tok2->next()->str() == "<") {
@@ -1628,9 +1595,7 @@ void SymbolDatabase::printOut(const char *title) const
     if (title)
         std::cout << "\n### " << title << " ###\n";
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
         std::cout << "Scope: " << &*scope << std::endl;
         std::cout << "    type: " << scope->type << std::endl;
         std::cout << "    className: " << scope->className << std::endl;
@@ -1718,48 +1683,6 @@ void SymbolDatabase::printOut(const char *title) const
             printVariable(&*var, "        ");
         }
 
-        std::cout << "    derivedFrom[" << scope->derivedFrom.size() << "] = (";
-
-        std::size_t count = scope->derivedFrom.size();
-        for (std::size_t i = 0; i < scope->derivedFrom.size(); ++i) {
-            if (scope->derivedFrom[i].isVirtual)
-                std::cout << "Virtual ";
-
-            std::cout << (scope->derivedFrom[i].access == Public    ? " Public " :
-                          scope->derivedFrom[i].access == Protected ? " Protected " :
-                          scope->derivedFrom[i].access == Private   ? " Private " :
-                          " Unknown");
-
-            if (scope->derivedFrom[i].scope)
-                std::cout << scope->derivedFrom[i].scope->type;
-            else
-                std::cout << " Unknown";
-
-            std::cout << " " << scope->derivedFrom[i].name;
-            if (count-- > 1)
-                std::cout << ",";
-        }
-
-        std::cout << " )" << std::endl;
-
-        std::cout << "    friendList[" << scope->friendList.size() << "] = (";
-
-        std::list<Scope::FriendInfo>::const_iterator fii;
-
-        count = scope->friendList.size();
-        for (fii = scope->friendList.begin(); fii != scope->friendList.end(); ++fii) {
-            if (fii->scope)
-                std::cout << fii->scope->type;
-            else
-                std::cout << " Unknown";
-
-            std::cout << " " << fii->name;
-            if (count-- > 1)
-                std::cout << ",";
-        }
-
-        std::cout << " )" << std::endl;
-
         std::cout << "    nestedIn: " << scope->nestedIn;
         if (scope->nestedIn) {
             std::cout << " " << scope->nestedIn->type << " "
@@ -1767,11 +1690,13 @@ void SymbolDatabase::printOut(const char *title) const
         }
         std::cout << std::endl;
 
+        std::cout << "    definedType: " << scope->definedType;
+
         std::cout << "    nestedList[" << scope->nestedList.size() << "] = (";
 
         std::list<Scope *>::const_iterator nsi;
 
-        count = scope->nestedList.size();
+        std::size_t count = scope->nestedList.size();
         for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
             std::cout << " " << (*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
             if (count-- > 1)
@@ -1779,11 +1704,6 @@ void SymbolDatabase::printOut(const char *title) const
         }
 
         std::cout << " )" << std::endl;
-
-        std::cout << "    needInitialization: " << (scope->definedType->needInitialization == Type::Unknown ? "Unknown" :
-                  scope->definedType->needInitialization == Type::True ? "True" :
-                  scope->definedType->needInitialization == Type::False ? "False" :
-                  "Invalid") << std::endl;
 
         std::list<Scope::UsingInfo>::const_iterator use;
 
@@ -1813,7 +1733,59 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << std::endl;
     }
 
-    for (std::size_t i = 0; i < _variableList.size(); i++) {
+    for (std::list<Type>::const_iterator type = typeList.begin(); type != typeList.end(); ++type) {
+        std::cout << "Type: " << type->name() << std::endl;
+        std::cout << "    classDef: " << _tokenizer->list.fileLine(type->classDef) << std::endl;
+        std::cout << "    classScope: " << type->classScope << std::endl;
+        std::cout << "    enclosingScope: " << type->enclosingScope << std::endl;
+        std::cout << "    needInitialization: " << (type->needInitialization == Type::Unknown ? "Unknown" :
+                  type->needInitialization == Type::True ? "True" :
+                  type->needInitialization == Type::False ? "False" :
+                  "Invalid") << std::endl;
+
+        std::cout << "    derivedFrom[" << type->derivedFrom.size() << "] = (";
+        std::size_t count = type->derivedFrom.size();
+        for (std::size_t i = 0; i < type->derivedFrom.size(); ++i) {
+            if (type->derivedFrom[i].isVirtual)
+                std::cout << "Virtual ";
+
+            std::cout << (type->derivedFrom[i].access == Public    ? " Public " :
+                          type->derivedFrom[i].access == Protected ? " Protected " :
+                          type->derivedFrom[i].access == Private   ? " Private " :
+                          " Unknown");
+
+            if (type->derivedFrom[i].type)
+                std::cout << type->derivedFrom[i].type;
+            else
+                std::cout << " Unknown";
+
+            std::cout << " " << type->derivedFrom[i].name;
+            if (count-- > 1)
+                std::cout << ",";
+        }
+
+        std::cout << " )" << std::endl;
+
+        std::cout << "    friendList[" << type->friendList.size() << "] = (";
+
+        std::list<Type::FriendInfo>::const_iterator fii;
+
+        count = type->friendList.size();
+        for (fii = type->friendList.begin(); fii != type->friendList.end(); ++fii) {
+            if (fii->type)
+                std::cout << fii->type;
+            else
+                std::cout << " Unknown";
+
+            std::cout << " " << fii->name;
+            if (count-- > 1)
+                std::cout << ",";
+        }
+
+        std::cout << " )" << std::endl;
+    }
+
+    for (std::size_t i = 0; i < typeList.size(); i++) {
         std::cout << "_variableList[" << i << "] = " << _variableList[i] << std::endl;
     }
 }
@@ -1924,7 +1896,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return true;
     else if (access == Private || access == Public || access == Protected) {
         bool safe = true;
-        bool hasVirt = isImplicitlyVirtual_rec(nestedIn, safe);
+        bool hasVirt = isImplicitlyVirtual_rec(nestedIn->definedType, safe);
         if (hasVirt)
             return true;
         else if (safe)
@@ -1935,13 +1907,13 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return false;
 }
 
-bool Function::isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const
+bool Function::isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const
 {
     // check each base class
-    for (unsigned int i = 0; i < scope->derivedFrom.size(); ++i) {
+    for (unsigned int i = 0; i < type->derivedFrom.size(); ++i) {
         // check if base class exists in database
-        if (scope->derivedFrom[i].scope) {
-            const Scope *parent = scope->derivedFrom[i].scope;
+        if (type->derivedFrom[i].type && type->derivedFrom[i].type->classScope) {
+            const Scope *parent = type->derivedFrom[i].type->classScope;
 
             std::list<Function>::const_iterator func;
 
@@ -1964,14 +1936,14 @@ bool Function::isImplicitlyVirtual_rec(const Scope* scope, bool& safe) const
                     }
 
                     // check for matching function parameters
-                    if (returnMatch && argsMatch(scope, func->argDef, argDef, "", 0)) {
+                    if (returnMatch && argsMatch(type->classScope, func->argDef, argDef, "", 0)) {
                         return true;
                     }
                 }
             }
 
-            if (!parent->derivedFrom.empty())
-                if (isImplicitlyVirtual_rec(parent, safe))
+            if (!type->derivedFrom[i].type->derivedFrom.empty())
+                if (isImplicitlyVirtual_rec(type->derivedFrom[i].type, safe))
                     return true;
         } else {
             // unable to find base class so assume it has no virtual function
@@ -2577,31 +2549,6 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 //---------------------------------------------------------------------------
 
-const Scope *Scope::findQualifiedScope(const std::string & name) const
-{
-    if (type == Scope::eClass || type == Scope::eStruct || type == Scope::eNamespace) {
-        if (name.compare(0, className.size(), className) == 0) {
-            std::string path = name;
-            path.erase(0, className.size());
-            if (path.compare(0, 4, " :: ") == 0)
-                path.erase(0, 4);
-            else if (path.empty())
-                return this;
-
-            std::list<Scope *>::const_iterator it;
-
-            for (it = nestedList.begin() ; it != nestedList.end(); ++it) {
-                const Scope *scope1 = (*it)->findQualifiedScope(path);
-                if (scope1)
-                    return scope1;
-            }
-        }
-    }
-    return 0;
-}
-
-//---------------------------------------------------------------------------
-
 const Function *Scope::getDestructor() const
 {
     std::list<Function>::const_iterator it;
@@ -2660,23 +2607,29 @@ const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope
     return 0;
 }
 
-const Type *SymbolDatabase::findType(const Token *tok, const Scope *startScope) const
+const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startScope) const
 {
-    const Scope *scope = 0;
-    // absolute path
-    if (tok->str() == "::") {
-        tok = tok->next();
-        scope = &scopeList.front();
+    // absolute path - directly start in global scope
+    if (startTok->str() == "::") {
+        startTok = startTok->next();
+        startScope = &scopeList.front();
     }
-    // relative path
-    else if (tok->isName()) {
-        scope = startScope;
-    }
+
+    const Token* tok = startTok;
+    const Scope* scope = startScope;
 
     while (scope && tok && tok->isName()) {
         if (tok->strAt(1) == "::") {
             scope = scope->findRecordInNestedList(tok->str());
-            tok = tok->tokAt(2);
+            if (scope) {
+                tok = tok->tokAt(2);
+            } else {
+                startScope = startScope->nestedIn;
+                if (!startScope)
+                    break;
+                scope = startScope;
+                tok = startTok;
+            }
         } else
             return scope->findType(tok->str());
     }
