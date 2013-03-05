@@ -769,8 +769,8 @@ private:
             ASSERT(bar2 != 0);
 
             if (foo && bar1 && bar2) {
-                ASSERT(bar1->friendList.size() == 1 && bar1->friendList.front().name == "Foo" && bar1->friendList.front().scope == foo);
-                ASSERT(bar2->friendList.size() == 1 && bar2->friendList.front().name == "Foo" && bar2->friendList.front().scope == foo);
+                ASSERT(bar1->definedType->friendList.size() == 1 && bar1->definedType->friendList.front().name == "Foo" && bar1->definedType->friendList.front().type == foo->definedType);
+                ASSERT(bar2->definedType->friendList.size() == 1 && bar2->definedType->friendList.front().name == "Foo" && bar2->definedType->friendList.front().type == foo->definedType);
             }
         }
     }
