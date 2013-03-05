@@ -507,7 +507,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     Type::FriendInfo friendInfo;
 
                     // save the name start
-                    friendInfo.nameStart = tok->strAt(1) == "class" ? tok->tokAt(2) : tok->tokAt(1);
+                    friendInfo.nameStart = tok->strAt(1) == "class" ? tok->tokAt(2) : tok->next();
                     friendInfo.nameEnd = friendInfo.nameStart;
 
                     // skip leading "::"
@@ -616,73 +616,40 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
                 }
             } else if (scope->isExecutable()) {
-                if (Token::simpleMatch(tok, "if (") &&
-                    Token::simpleMatch(tok->next()->link(), ") {")) {
+                if (Token::Match(tok, "else|try|do {")) {
+                    const Token* tok1 = tok->next();
+                    if (tok->str() == "else")
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eElse, tok1));
+                    if (tok->str() == "do")
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eDo, tok1));
+                    else if (tok->str() == "try")
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eTry, tok1));
+
+                    tok = tok1;
+                    scope->nestedList.push_back(&scopeList.back());
+                    scope = &scopeList.back();
+                } else if (Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                     const Token *tok1 = tok->next()->link()->next();
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eIf, tok1));
-                    tok = tok1;
+                    if (tok->str() == "if" && tok->strAt(-1) == "else")
+                        scopeList.push_back(Scope(this, tok->previous(), scope, Scope::eElseIf, tok1));
+                    else if (tok->str() == "if")
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eIf, tok1));
+                    else if (tok->str() == "for") {
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eFor, tok1));
+                    } else if (tok->str() == "while")
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eWhile, tok1));
+                    else if (tok->str() == "catch") {
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, tok1));
+                    } else if (tok->str() == "switch")
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eSwitch, tok1));
+
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                } else if (Token::simpleMatch(tok, "else {")) {
-                    const Token *tok1 = tok->next();
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eElse, tok1));
+                    if (scope->type == Scope::eFor)
+                        scope->checkVariable(tok->tokAt(2), Local); // check for variable declaration and add it to new scope if found
+                    else if (scope->type == Scope::eCatch)
+                        scope->checkVariable(tok->tokAt(2), Throw); // check for variable declaration and add it to new scope if found
                     tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                } else if (Token::simpleMatch(tok, "else if (") &&
-                           Token::simpleMatch(tok->linkAt(2), ") {")) {
-                    const Token *tok1 = tok->linkAt(2)->next();
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eElseIf, tok1));
-                    tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                } else if (Token::simpleMatch(tok, "for (") &&
-                           Token::simpleMatch(tok->next()->link(), ") {")) {
-                    // save location of initialization
-                    const Token *tok1 = tok->next()->link()->next();
-                    const Token *tok2 = tok->tokAt(2);
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eFor, tok1));
-                    tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                    // check for variable declaration and add it to new scope if found
-                    scope->checkVariable(tok2, Local);
-                } else if (Token::simpleMatch(tok, "while (") &&
-                           Token::simpleMatch(tok->next()->link(), ") {")) {
-                    const Token *tok1 = tok->next()->link()->next();
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eWhile, tok1));
-                    tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                } else if (Token::simpleMatch(tok, "do {")) {
-                    const Token *tok1 = tok->next();
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eDo, tok1));
-                    tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                } else if (Token::simpleMatch(tok, "switch (") &&
-                           Token::simpleMatch(tok->next()->link(), ") {")) {
-                    const Token *tok1 = tok->next()->link()->next();
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eSwitch, tok1));
-                    tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                } else if (Token::simpleMatch(tok, "try {")) {
-                    const Token *tok1 = tok->next();
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eTry, tok1));
-                    tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                } else if (Token::simpleMatch(tok, "catch (") &&
-                           Token::simpleMatch(tok->next()->link(), ") {")) {
-                    const Token *tok1 = tok->next()->link()->next();
-                    const Token *tok2 = tok->tokAt(2);
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, tok1));
-                    tok = tok1;
-                    scope->nestedList.push_back(&scopeList.back());
-                    scope = &scopeList.back();
-                    // check for variable declaration and add it to new scope if found
-                    scope->checkVariable(tok2, Throw);
                 } else if (tok->str() == "{") {
                     if (!Token::Match(tok->previous(), "=|,")) {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
