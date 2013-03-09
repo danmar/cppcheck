@@ -261,8 +261,8 @@ private:
               "Fred::Fred(int _i)\n"
               "{\n"
               "    i = _i;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:7]: (warning, inconclusive) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
     }
 
     void simple5() { // ticket #2560
@@ -835,9 +835,9 @@ private:
               "public:\n"
               "    A(int n) : A() { }\n"
               "    A() {}\n"
-              "};");
+              "};", true);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::number' is not initialized in the constructor.\n"
-                      "[test.cpp:5]: (warning) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
+                      "[test.cpp:5]: (warning, inconclusive) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
 
         check("class A {\n"
               "    int number;\n"
@@ -1781,9 +1781,9 @@ private:
               "::Foo::Sub::Sub() { }\n"
               "class Foo;\n"
               "class Bar;\n"
-              "class Sub;\n");
+              "class Sub;\n", true);
 
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n"
+        ASSERT_EQUALS("[test.cpp:9]: (warning, inconclusive) Member variable 'Sub::b' is not initialized in the constructor.\n"
                       "[test.cpp:12]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n"
                       "[test.cpp:20]: (warning) Member variable 'Sub::f' is not initialized in the constructor.\n", errout.str());
     }

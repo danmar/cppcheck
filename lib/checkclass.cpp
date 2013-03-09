@@ -170,8 +170,18 @@ void CheckClass::constructors()
                         operatorEqVarError(func->token, scope->className, var->name(), inconclusive);
                 } else if (func->access != Private) {
                     const Scope *varType = var->typeScope();
-                    if (!varType || varType->type != Scope::eUnion)
-                        uninitVarError(func->token, scope->className, var->name(), inconclusive);
+                    if (!varType || varType->type != Scope::eUnion) {
+                        if (func->type == Function::eConstructor &&
+                            func->nestedIn && (func->nestedIn->numConstructors - func->nestedIn->numCopyConstructors) > 1 &&
+                            func->argCount() == 0 && func->functionScope &&
+                            func->arg && func->arg->link()->next() == func->functionScope->classStart &&
+                            func->functionScope->classStart->link() == func->functionScope->classStart->next()) {
+                            // don't warn about user defined default constructor when there are other constructors
+                            if (_settings->inconclusive)
+                                uninitVarError(func->token, scope->className, var->name(), true);
+                        } else
+                            uninitVarError(func->token, scope->className, var->name(), inconclusive);
+                    }
                 }
             }
         }

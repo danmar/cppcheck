@@ -519,6 +519,7 @@ public:
     const Scope *nestedIn;
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
+    unsigned int numCopyConstructors;
     std::list<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;
