@@ -2816,7 +2816,7 @@ void Tokenizer::setVarId()
                     continue;
 
                 const Token *tok3 = tok2->next();
-                if (!tok3->isStandardType() && !Token::Match(tok3,"struct|union|class %type%") && tok3->str() != "." && !setVarIdParseDeclaration(&tok3,variableId,executableScope.top())) {
+                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3,"struct|union|class %type%") && tok3->str() != "." && !setVarIdParseDeclaration(&tok3,variableId,executableScope.top())) {
                     variableId[tok2->previous()->str()] = ++_varId;
                     tok = tok2->previous();
                 }

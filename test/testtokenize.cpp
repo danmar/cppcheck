@@ -259,6 +259,7 @@ private:
         TEST_CASE(varid_in_class9);     // #4291 - id for variables accessed through 'this'
         TEST_CASE(varid_in_class10);
         TEST_CASE(varid_in_class11);    // #4277 - anonymous union
+        TEST_CASE(varid_in_class12);    // #4637 - method
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -4120,6 +4121,18 @@ private:
                       tokenizeDebugListing(code2));
     }
 
+    void varid_in_class12() { // #4637 - method
+        const char code[] = "class Foo {\n"
+                            "private:\n"
+                            "    void f(void);\n"
+                            "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo {\n"
+                      "2: private:\n"
+                      "3: void f ( ) ;\n"
+                      "4: } ;\n",
+                      tokenizeDebugListing(code));
+    }
 
     void varid_initList() {
         const char code1[] = "class A {\n"
