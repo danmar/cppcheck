@@ -2712,7 +2712,7 @@ void Tokenizer::setVarId()
     notstart.insert("return");
     notstart.insert("sizeof");
     if (!isC()) {
-        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit"};
+        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit","typename"};
         notstart.insert(str, str+(sizeof(str)/sizeof(*str)));
     }
 

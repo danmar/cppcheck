@@ -270,6 +270,7 @@ private:
         TEST_CASE(varid_templatePtr); // #4319
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_variadicFunc);
+        TEST_CASE(varid_typename); // #4644
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4281,6 +4282,11 @@ private:
     void varid_variadicFunc() {
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: int foo ( . . . ) ;\n", tokenizeDebugListing("int foo(...);"));
+    }
+
+    void varid_typename() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: template < int d , typename A , typename B >\n", tokenizeDebugListing("template<int d, typename A, typename B>"));
     }
 
     void varidclass1() {
