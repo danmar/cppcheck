@@ -7337,7 +7337,6 @@ private:
     void checkSleepTimeIntervall() {
         // check usleep(), which is allowed to be called with in a range of [0,1000000]
         check("void f(){\n"
-              "unsigned int Intervall = ;"
               "usleep(10000);\n"
               "}",NULL,false,false,true);
         ASSERT_EQUALS("", errout.str());
