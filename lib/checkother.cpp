@@ -645,7 +645,7 @@ void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string
 }
 
 //-----------------------------------------------------------------------------
-// check usleep(), which is allowed to be called with in a range of [0,1000000]
+// check usleep(), which is allowed to be called with in a range of [0,999999]
 //
 // Reference:
 // - http://man7.org/linux/man-pages/man3/usleep.3.html
@@ -663,7 +663,7 @@ void CheckOther::checkSleepTimeInterval()
             if (Token::Match(tok, "usleep ( %num% )")) {
                 const Token * const numTok = tok->tokAt(2);
                 MathLib::bigint value = MathLib::toLongNumber(numTok->str());
-                if (value > 1000000) {
+                if (value > 999999) { // less than 1 million
                     checkSleepTimeError(numTok, numTok->str());
                 }
             }

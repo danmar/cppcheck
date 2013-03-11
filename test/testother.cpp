@@ -7335,11 +7335,21 @@ private:
     }
 
     void checkSleepTimeIntervall() {
-        // check usleep(), which is allowed to be called with in a range of [0,1000000]
+        // check usleep(), which is allowed to be called with in a range of [0,999999]
         check("void f(){\n"
               "usleep(10000);\n"
               "}",NULL,false,false,true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "usleep(999999);\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "usleep(1000000);\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("[test.cpp:2]: (error) The argument of usleep must be less than 1000000.\n", errout.str());
 
         check("void f(){\n"
               "usleep(1000001);\n"
