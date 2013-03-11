@@ -200,6 +200,8 @@ private:
         TEST_CASE(checkPipeParameterSize); // ticket #3521
 
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
+
+        TEST_CASE(checkSleepTimeIntervall)
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false) {
@@ -7330,7 +7332,20 @@ private:
               "   }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void checkSleepTimeIntervall() {
+        // check usleep(), which is allowed to be called with in a range of [0,1000000]
+        check("void f(){\n"
+              "unsigned int Intervall = ;"
+              "usleep(10000);\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "usleep(1000001);\n"
+              "}",NULL,false,false,true);
+        ASSERT_EQUALS("[test.cpp:2]: (error) The argument of usleep must be less than 1000000.\n", errout.str());
     }
 };
 

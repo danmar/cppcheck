@@ -644,6 +644,40 @@ void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string
                 "The variable '" + strVarName + "' is an array of size " + strDim + ", which does not match.");
 }
 
+//-----------------------------------------------------------------------------
+// check usleep(), which is allowed to be called with in a range of [0,1000000]
+//
+// Reference:
+// - http://man7.org/linux/man-pages/man3/usleep.3.html
+//-----------------------------------------------------------------------------
+void CheckOther::checkSleepTimeInterval()
+{
+    if (!_settings->standards.posix)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "usleep ( %num% )")) {
+                const Token * const numTok = tok->tokAt(2);
+                MathLib::bigint value = MathLib::toLongNumber(numTok->str());
+                if (value > 1000000) {
+                    checkSleepTimeError(numTok, numTok->str());
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::checkSleepTimeError(const Token *tok, const std::string &strDim)
+{
+    reportError(tok, Severity::error,
+                "tooBigSleepTime", "The argument of usleep must be less than 1000000.\n"
+                "The argument of usleep must be less than 1000000, but " + strDim + " is provided.");
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckOther::checkSizeofForArrayParameter()

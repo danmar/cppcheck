@@ -120,6 +120,7 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
         checkOther.checkSuspiciousEqualityComparison();
+        checkOther.checkSleepTimeInterval();
     }
 
     /** To check the dead code in a program, which is inaccessible due to the counter-conditions check in nested-if statements **/
@@ -305,11 +306,15 @@ public:
     /** @brief %Check to avoid casting a return value to unsigned char and then back to integer type.  */
     void checkCastIntToCharAndBack();
 
+    /** @brief %Check providing too big sleep time intervals on POSIX systems. */
+    void checkSleepTimeInterval();
+
 private:
     bool isUnsigned(const Variable *var) const;
     bool isSigned(const Variable *var) const;
 
     // Error messages..
+    void checkSleepTimeError(const Token *tok, const std::string &strDim);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void oppositeInnerConditionError(const Token *tok);
@@ -403,6 +408,7 @@ private:
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
         c.checkPipeParameterSizeError(0, "varname", "dimension");
+        c.checkSleepTimeError(0,"dimension");
 
         //performance
         c.redundantCopyError(0, "varname");
@@ -483,6 +489,7 @@ private:
                "* bitwise operation with negative right operand\n"
                "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "* cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
+               "* provide too big sleep times on POSIX systems\n"
 
                //performance
                "* redundant data copying for const variable\n"
