@@ -757,8 +757,9 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // bailout when for_each is used
         if (Token::Match(tok,"%var% (") && Token::simpleMatch(tok->linkAt(1),") {")) {
             // does the name contain "for_each" or "foreach"?
-            std::string nameTok(tok->str());
-            std::transform(nameTok.begin(),nameTok.end(),nameTok.begin(),::tolower);
+            std::string nameTok;
+            nameTok.resize(tok->str().size());
+            std::transform(tok->str().begin(), tok->str().end(), nameTok.begin(), ::tolower);
             if (nameTok.find("foreach") != std::string::npos || nameTok.find("for_each") != std::string::npos) {
                 // bailout all variables in the body that are used more than once.
                 // TODO: there is no need to bailout if variable is only read or only written

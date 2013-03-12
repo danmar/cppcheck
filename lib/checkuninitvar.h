@@ -47,13 +47,6 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger)
     { }
 
-    /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
