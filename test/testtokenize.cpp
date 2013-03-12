@@ -4287,6 +4287,9 @@ private:
     void varid_typename() {
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: template < int d , typename A , typename B >\n", tokenizeDebugListing("template<int d, typename A, typename B>"));
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: typename A a@1 ;\n", tokenizeDebugListing("typename A a;"));
     }
 
     void varidclass1() {

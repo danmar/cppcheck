@@ -2529,7 +2529,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     bool hasstruct = false;   // Is there a "struct" or "class"?
     while (tok2) {
         if (tok2->isName()) {
-            if (tok2->str() == "class" || tok2->str() == "struct" || tok2->str() == "union") {
+            if (tok2->str() == "class" || tok2->str() == "struct" || tok2->str() == "union" || tok2->str() == "typename") {
                 hasstruct = true;
                 typeCount = 0;
             } else if (tok2->str() == "const") {
@@ -2712,7 +2712,7 @@ void Tokenizer::setVarId()
     notstart.insert("return");
     notstart.insert("sizeof");
     if (!isC()) {
-        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit","typename"};
+        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit"};
         notstart.insert(str, str+(sizeof(str)/sizeof(*str)));
     }
 
