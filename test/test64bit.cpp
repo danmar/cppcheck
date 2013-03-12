@@ -180,6 +180,14 @@ private:
               "    return a + 1 - b;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct s {\n" // 4642
+              "   int i;\n"
+              "};\n"
+              "int func(struct s *p) {\n"
+              " return 1 + p->i;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

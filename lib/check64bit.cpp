@@ -77,7 +77,9 @@ void Check64BitPortability::pointerassignment()
                     else if (Token::Match(tok2, "%type% (")) {
                         type = NO;
                         break;
-                    } else if (tok2->str() == ";")
+                    } else if (type == PTR && Token::simpleMatch(tok2, "."))
+                        type = NO; // Reset after pointer reference, see #4642
+                    else if (tok2->str() == ";")
                         break;
                 }
 
