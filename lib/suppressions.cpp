@@ -87,7 +87,7 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
     }
 
     // We could perhaps check if the id is valid and return error if it is not
-    const std::string errmsg(addSuppression(id, file, lineNumber));
+    const std::string errmsg(addSuppression(id, Path::fromNativeSeparators(file), lineNumber));
     if (!errmsg.empty())
         return errmsg;
 

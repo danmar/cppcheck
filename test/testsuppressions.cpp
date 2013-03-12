@@ -41,6 +41,7 @@ private:
         TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsMultiFile);
+        TEST_CASE(suppressionsPathSeparator);
 
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
     }
@@ -66,9 +67,9 @@ private:
         Suppressions suppressions;
         std::istringstream s("errorid:c:\\foo.cpp\nerrorid:c:\\bar.cpp:12");
         ASSERT_EQUALS("", suppressions.parseFile(s));
-        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\foo.cpp", 1111));
-        ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 10));
-        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 12));
+        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:/foo.cpp", 1111));
+        ASSERT_EQUALS(false, suppressions.isSuppressed("errorid", "c:/bar.cpp", 10));
+        ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:/bar.cpp", 12));
     }
 
     void suppressionsGlob() const {
@@ -311,6 +312,12 @@ private:
         // suppress uninitvar for this file and line
         checkSuppression(names, codes, "uninitvar:xyz.cpp:3");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void suppressionsPathSeparator() const {
+        Suppressions suppressions;
+        suppressions.addSuppressionLine("*:test\\*");
+        ASSERT_EQUALS(true, suppressions.isSuppressed("someid", "test/foo/bar.cpp", 142));
     }
 
     void inlinesuppress_unusedFunction() const { // #4210 - wrong report of "unmatchedSuppression" for "unusedFunction"

@@ -814,7 +814,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
             fin.open(cur.c_str());
             if (!fin.is_open()) {
-                if (_settings && !_settings->nomsg.isSuppressed("missingInclude", cur, 1)) {
+                if (_settings && !_settings->nomsg.isSuppressed("missingInclude", Path::fromNativeSeparators(cur), 1)) {
                     missingIncludeFlag = true;
                     if (_settings->checkConfiguration) {
                         missingInclude(Path::toNativeSeparators(Path::getPathFromFilename(cur)),
@@ -2088,7 +2088,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                     filepath = path;
                 std::ifstream fin;
                 if (!openHeader(filename, includePaths, filepath, fin)) {
-                    if (_settings && !_settings->nomsg.isSuppressed("missingInclude", filename, linenr)) {
+                    if (_settings && !_settings->nomsg.isSuppressed("missingInclude", Path::fromNativeSeparators(filename), linenr)) {
                         missingIncludeFlag = true;
 
                         if (_settings->checkConfiguration)
@@ -2216,7 +2216,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                 }
             }
 
-            if (!_settings->nomsg.isSuppressed("missingInclude", f, linenr)) {
+            if (!_settings->nomsg.isSuppressed("missingInclude", Path::fromNativeSeparators(f), linenr)) {
                 missingIncludeFlag = true;
                 if (_errorLogger && _settings->checkConfiguration) {
                     missingInclude(Path::toNativeSeparators(f),
