@@ -45,7 +45,7 @@ private:
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
     }
 
-    void suppressionsBadId1() {
+    void suppressionsBadId1() const {
         Suppressions suppressions;
         std::istringstream s1("123");
         ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s1));
@@ -54,7 +54,7 @@ private:
         ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 
-    void suppressionsDosFormat() {
+    void suppressionsDosFormat() const {
         Suppressions suppressions;
         std::istringstream s("abc\r\ndef\r\n");
         ASSERT_EQUALS("", suppressions.parseFile(s));
@@ -62,7 +62,7 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed("def", "test.cpp", 1));
     }
 
-    void suppressionsFileNameWithColon() {
+    void suppressionsFileNameWithColon() const {
         Suppressions suppressions;
         std::istringstream s("errorid:c:\\foo.cpp\nerrorid:c:\\bar.cpp:12");
         ASSERT_EQUALS("", suppressions.parseFile(s));
@@ -71,7 +71,7 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "c:\\bar.cpp", 12));
     }
 
-    void suppressionsGlob() {
+    void suppressionsGlob() const {
         // Check for syntax errors in glob
         {
             Suppressions suppressions;
@@ -105,7 +105,7 @@ private:
         }
     }
 
-    void suppressionsFileNameWithExtraPath() {
+    void suppressionsFileNameWithExtraPath() const {
         // Ticket #2797
         Suppressions suppressions;
         suppressions.addSuppression("errorid", "./a.c", 123);
@@ -313,7 +313,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void inlinesuppress_unusedFunction() { // #4210 - wrong report of "unmatchedSuppression" for "unusedFunction"
+    void inlinesuppress_unusedFunction() const { // #4210 - wrong report of "unmatchedSuppression" for "unusedFunction"
         Suppressions suppressions;
         suppressions.addSuppression("unusedFunction", "test.c", 3U);
         ASSERT_EQUALS(true, suppressions.getUnmatchedLocalSuppressions("test.c").empty());

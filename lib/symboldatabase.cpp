@@ -1009,7 +1009,7 @@ void Variable::evaluate()
             while (tok && tok->str() == "]")
                 tok = tok->link()->previous();
             // add array dimensions if present
-            if (tok->next()->str() == "[")
+            if (tok && tok->next()->str() == "[")
                 setFlag(fIsArray, arrayDimensions(_dimensions, tok->next()));
         }
         if (!tok)

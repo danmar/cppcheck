@@ -1986,7 +1986,7 @@ bool CheckOther::isUnsigned(const Variable* var) const
 {
     return(var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray() && _tokenizer->sizeOfType(var->typeStartToken()) >= _settings->sizeof_int);
 }
-bool CheckOther::isSigned(const Variable* var) const
+bool CheckOther::isSigned(const Variable* var)
 {
     return(var && !var->typeStartToken()->isUnsigned() && Token::Match(var->typeEndToken(), "int|char|short|long") && !var->isPointer() && !var->isArray());
 }
@@ -2943,7 +2943,7 @@ void CheckOther::checkInvalidFree()
         // as a parameter, it might be modified, so we shouldn't report an error
         // if it is later used to free memory
         else if (Token::Match(tok, "%var% (")) {
-            const Token* tok2 = Token::findmatch(tok->tokAt(1), "%var%", tok->linkAt(1));
+            const Token* tok2 = Token::findmatch(tok->next(), "%var%", tok->linkAt(1));
             while (tok2 != NULL) {
                 allocatedVariables.erase(tok2->varId());
                 tok2 = Token::findmatch(tok2->next(), "%var%", tok->linkAt(1));
@@ -3011,7 +3011,7 @@ void CheckOther::checkDoubleFree()
         // of previously freed variables.
         // TODO: There are false negatives. This bailout is only needed when the
         // loop will exit without free()'ing the memory on the last iteration.
-        else if (tok->str() == "}" && tok->link() && tok->link()->tokAt(-1) &&
+        else if (tok->str() == "}" && tok->link() && tok->link()->previous() &&
                  tok->link()->linkAt(-1) &&
                  Token::Match(tok->link()->linkAt(-1)->previous(), "while|for") &&
                  Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != NULL) {

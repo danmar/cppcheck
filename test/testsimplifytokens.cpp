@@ -7297,7 +7297,7 @@ private:
 
     void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
         const Settings settings;
-        Tokenizer tokenizer(&settings, NULL);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr("x ; return a not_eq x;");
         tokenizer.tokenize(istr, "test.c");
         Token *x_token = tokenizer.list.front()->tokAt(5);

@@ -3355,7 +3355,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void counter_test() {
+    void counter_test() const {
         std::list<const Token*> unknownParameter;
         unknownParameter.push_back(0);
 

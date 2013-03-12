@@ -155,7 +155,7 @@ public:
 
     /** @brief %Check scope of variables */
     void checkVariableScope();
-    bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
+    static bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
 
     /** @brief %Check for constant function parameter */
     void checkConstantFunctionParameter();
@@ -311,7 +311,7 @@ public:
 
 private:
     bool isUnsigned(const Variable *var) const;
-    bool isSigned(const Variable *var) const;
+    static bool isSigned(const Variable *var);
 
     // Error messages..
     void checkSleepTimeError(const Token *tok, const std::string &strDim);

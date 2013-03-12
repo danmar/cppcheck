@@ -50,7 +50,7 @@ public:
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split = false);
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
 
-    void insertTokens(Token *dest, const Token *src, unsigned int n);
+    static void insertTokens(Token *dest, const Token *src, unsigned int n);
 
     /**
      * Create tokens from code.

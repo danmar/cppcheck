@@ -58,7 +58,7 @@ private:
         TEST_CASE(getErrorMessages);
     }
 
-    void instancesSorted() {
+    void instancesSorted() const {
         for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
             std::list<Check *>::const_iterator j = i;
             ++j;
@@ -68,7 +68,7 @@ private:
         }
     }
 
-    void classInfoFormat() {
+    void classInfoFormat() const {
         for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
             const std::string info = (*i)->classInfo();
             if (!info.empty()) {
@@ -80,7 +80,7 @@ private:
         }
     }
 
-    void getErrorMessages() {
+    void getErrorMessages() const {
         ErrorLogger2 errorLogger;
         CppCheck cppCheck(errorLogger, true);
         cppCheck.getErrorMessages();

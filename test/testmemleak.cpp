@@ -660,7 +660,7 @@ private:
             }
         }
 
-        CheckMemoryLeakInFunction checkMemoryLeak(NULL, &settings, NULL);
+        CheckMemoryLeakInFunction checkMemoryLeak(NULL, &settings, this);
         checkMemoryLeak.simplifycode(tokens);
 
         return list.front()->stringifyList(0, false);
@@ -804,7 +804,7 @@ private:
 
 
     // is there a leak in given code? if so, return the linenr
-    unsigned int dofindleak(const char code[]) {
+    static unsigned int dofindleak(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -838,7 +838,7 @@ private:
         return (tok ? tok->linenr() : (unsigned int)(-1));
     }
 
-    void findleak() {
+    void findleak() const {
         static const unsigned int notfound = (unsigned int)(-1);
 
         ASSERT_EQUALS(1,  dofindleak("alloc;"));

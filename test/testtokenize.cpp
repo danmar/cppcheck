@@ -4736,7 +4736,7 @@ private:
     }
 
 
-    void line1() {
+    void line1() const {
         // Test for Ticket #4408
         const char code[] = "#file \"c:\\a.h\"\n"
                             "first\n"
@@ -7865,7 +7865,7 @@ private:
 
 
 
-    std::string testAst(const char code[]) {
+    static std::string testAst(const char code[]) {
         // tokenize given code..
         TokenList tokenList(NULL);
         std::istringstream istr(code);
@@ -7878,7 +7878,7 @@ private:
         return tokenList.front()->astTop()->astString();
     }
 
-    void astexpr() { // simple expressions with arithmetical ops
+    void astexpr() const { // simple expressions with arithmetical ops
         ASSERT_EQUALS("12+3+", testAst("1+2+3"));
         ASSERT_EQUALS("12*3+", testAst("1*2+3"));
         ASSERT_EQUALS("123*+", testAst("1+2*3"));
@@ -7892,29 +7892,29 @@ private:
 
     }
 
-    void astpar() { // parentheses
+    void astpar() const { // parentheses
         ASSERT_EQUALS("12+3*", testAst("(1+2)*3"));
         ASSERT_EQUALS("123+*", testAst("1*(2+3)"));
         ASSERT_EQUALS("123+*4*", testAst("1*(2+3)*4"));
     }
 
-    void astbrackets() { // []
+    void astbrackets() const { // []
         ASSERT_EQUALS("123+[4+", testAst("1[2+3]+4"));
     }
 
-    void astunaryop() { // unary operators
+    void astunaryop() const { // unary operators
         ASSERT_EQUALS("1a--+", testAst("1 + --a"));
         ASSERT_EQUALS("1a--+", testAst("1 + a--"));
         ASSERT_EQUALS("ab+!", testAst("!(a+b)"));
     }
 
-    void astfunction() { // function calls
+    void astfunction() const { // function calls
         ASSERT_EQUALS("1(f+2+", testAst("1+f()+2"));
         ASSERT_EQUALS("12f+3+", testAst("1+f(2)+3"));
         ASSERT_EQUALS("123,f+4+", testAst("1+f(2,3)+4"));
     }
 
-    void asttemplate() { // uninstantiated templates will have <,>,etc.. how do we handle them?
+    void asttemplate() const { // uninstantiated templates will have <,>,etc.. how do we handle them?
         //ASSERT_EQUALS("", testAst("a<int>()==3"));
     }
 };

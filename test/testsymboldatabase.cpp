@@ -62,7 +62,7 @@ private:
         found = false;
     }
 
-    const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) const {
+    static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
         std::list<Scope>::const_iterator scope;
 
         for (scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
@@ -74,7 +74,7 @@ private:
         return 0;
     }
 
-    const Function *findFunctionByName(const std::string& str, const Scope* startScope) const {
+    static const Function *findFunctionByName(const std::string& str, const Scope* startScope) {
         const Scope* currScope = startScope;
         while (currScope && currScope->isExecutable()) {
             if (currScope->functionOf)
@@ -196,7 +196,7 @@ private:
         TEST_CASE(findFunction1);
     }
 
-    void array() {
+    void array() const {
         std::istringstream code("int a[10+2];");
         TokenList list(NULL);
         list.createTokens(code, "test.c");
