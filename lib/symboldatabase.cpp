@@ -1756,8 +1756,13 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << " )" << std::endl;
     }
 
-    for (std::size_t i = 0; i < typeList.size(); i++) {
-        std::cout << "_variableList[" << i << "] = " << _variableList[i] << std::endl;
+    for (std::size_t i = 1; i < _variableList.size(); i++) {
+        std::cout << "_variableList[" << i << "]: " << _variableList[i];
+        if (_variableList[i]) {
+            std::cout << " " << _variableList[i]->name() << " "
+                      << _tokenizer->list.fileLine(_variableList[i]->nameToken());
+        }
+        std::cout << std::endl;
     }
 }
 
