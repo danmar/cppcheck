@@ -814,14 +814,11 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
             fin.open(cur.c_str());
             if (!fin.is_open()) {
-                if (_settings && !_settings->nomsg.isSuppressed("missingInclude", Path::fromNativeSeparators(cur), 1)) {
-                    missingIncludeFlag = true;
-                    if (_settings->checkConfiguration) {
-                        missingInclude(Path::toNativeSeparators(Path::getPathFromFilename(cur)),
-                                       1,
-                                       cur);
-                    }
-                }
+                missingInclude(cur,
+                               1,
+                               cur,
+                               UserHeader
+                              );
                 continue;
             }
             std::string fileData = read(fin, filename);
@@ -2088,14 +2085,11 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                     filepath = path;
                 std::ifstream fin;
                 if (!openHeader(filename, includePaths, filepath, fin)) {
-                    if (_settings && !_settings->nomsg.isSuppressed("missingInclude", Path::fromNativeSeparators(filename), linenr)) {
-                        missingIncludeFlag = true;
-
-                        if (_settings->checkConfiguration)
-                            missingInclude(Path::toNativeSeparators(filePath),
-                                           linenr,
-                                           filename);
-                    }
+                    missingInclude(Path::toNativeSeparators(filePath),
+                                   linenr,
+                                   filename,
+                                   headerType
+                                  );
                     ostr << std::endl;
                     continue;
                 }
@@ -2216,31 +2210,35 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
                 }
             }
 
-            if (!_settings->nomsg.isSuppressed("missingInclude", Path::fromNativeSeparators(f), linenr)) {
-                missingIncludeFlag = true;
-                if (_errorLogger && _settings->checkConfiguration) {
-                    missingInclude(Path::toNativeSeparators(f),
-                                   linenr,
-                                   filename);
-                }
-            }
+            missingInclude(Path::toNativeSeparators(f),
+                           linenr,
+                           filename,
+                           headerType);
         }
     }
 }
 
 // Report that include is missing
-void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header)
+void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    if (!filename.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = linenr;
-        loc.setfile(filename);
-        locationList.push_back(loc);
+    const std::string msgtype = (headerType==SystemHeader)?"missingIncludeSystem":"missingInclude";
+    if (!_settings->nomsg.isSuppressed(msgtype, Path::fromNativeSeparators(filename), linenr)) {
+        missingIncludeFlag = true;
+        if (_errorLogger && _settings->checkConfiguration) {
+
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            if (!filename.empty()) {
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.line = linenr;
+                loc.setfile(Path::toNativeSeparators(filename));
+                locationList.push_back(loc);
+            }
+            ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Include file: \"" + header + "\" not found.",
+                                             msgtype, false);
+            errmsg.file0 = file0;
+            _errorLogger->reportInfo(errmsg);
+        }
     }
-    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Include file: \"" + header + "\" not found.", "missingInclude", false);
-    errmsg.file0 = file0;
-    _errorLogger->reportInfo(errmsg);
 }
 
 /**
@@ -3039,7 +3037,8 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
 {
     Settings settings2(*settings);
     Preprocessor preprocessor(&settings2, errorLogger);
-    preprocessor.missingInclude("", 1, "");
+    preprocessor.missingInclude("", 1, "", UserHeader);
+    preprocessor.missingInclude("", 1, "", SystemHeader);
     preprocessor.validateCfgError("X");
     preprocessor.error("", 1, "#error message");   // #error ..
 }

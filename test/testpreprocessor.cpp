@@ -3362,7 +3362,7 @@ private:
             ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing-include!!.h\" not found.\n", errout.str());
 
             errout.str("");
-            settings.nomsg.addSuppression("missingInclude");
+            settings.nomsg.addSuppression("missingIncludeSystem");
             preprocessor.handleIncludes(code,"test.c",includePaths,defs);
             ASSERT_EQUALS("", errout.str());
         }
