@@ -2233,7 +2233,8 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                 loc.setfile(Path::toNativeSeparators(filename));
                 locationList.push_back(loc);
             }
-            ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Include file: \"" + header + "\" not found.",
+            ErrorLogger::ErrorMessage errmsg(locationList, Severity::information,
+                                             (headerType==SystemHeader) ? "Include file: <" + header + "> not found." : "Include file: \"" + header + "\" not found.",
                                              msgtype, false);
             errmsg.file0 = file0;
             _errorLogger->reportInfo(errmsg);
@@ -3037,6 +3038,7 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
 {
     Settings settings2(*settings);
     Preprocessor preprocessor(&settings2, errorLogger);
+    settings2.checkConfiguration=true;
     preprocessor.missingInclude("", 1, "", UserHeader);
     preprocessor.missingInclude("", 1, "", SystemHeader);
     preprocessor.validateCfgError("X");

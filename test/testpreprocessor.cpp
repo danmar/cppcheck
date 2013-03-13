@@ -3359,7 +3359,7 @@ private:
             errout.str("");
             settings.checkConfiguration = true;
             preprocessor.handleIncludes(code,"test.c",includePaths,defs);
-            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: <missing-include!!.h> not found.\n", errout.str());
 
             errout.str("");
             settings.nomsg.addSuppression("missingIncludeSystem");
