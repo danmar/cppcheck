@@ -2344,6 +2344,12 @@ private:
                         "    if (&a == &b);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"  // #4439 - cast address of uninitialized variable
+                        "    int a;\n"
+                        "    x((A)(B)&a);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #3869 - reference variable
