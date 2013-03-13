@@ -202,6 +202,7 @@ private:
 
         TEST_CASE(memfunc1);  // memchr/memset/memcpy
         TEST_CASE(memfunc2);
+        TEST_CASE(memfunc3);  // ticket #1659
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -3156,6 +3157,30 @@ private:
               "    memset(buf, 0, 100);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // ticket #1659 - overflowing variable when using memcpy
+    void memfunc3() {
+        check("void f() { \n"
+              "char str1[]=\"Sample string\";\n"
+              "char str2;\n"
+              "memcpy (&str2,str1,strlen(str1)+1);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str1\n","", errout.str());
+
+        check("void f() {\n"
+              "    char a[10];\n"
+              "    char str1[] = \"abcdef\";\n"
+              "    memset(a, 0, strlen(str1)+5);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str1\n","", errout.str());
+
+        check("void f() { \n"
+              "char str1[]=\"Sample string\";\n"
+              "char str2;\n"
+              "memcpy (&str2,str1,15);\n" // <-- strlen(str1) + 1 = 15
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str1\n", errout.str());
     }
 
     void varid1() {
