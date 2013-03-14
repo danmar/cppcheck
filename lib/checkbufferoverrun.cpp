@@ -1224,7 +1224,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             }
         }
 
-        if ((Token::Match(tok, "strncpy|strncat ( %varid% , %var%", arrayInfo.varid()) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )"))) {
+        if ((Token::Match(tok, "strncpy|strncat ( %varid% ,", arrayInfo.varid()) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )"))) {
             const Token* param3 = tok->linkAt(1)->previous();
 
             // check for strncpy which is not terminated

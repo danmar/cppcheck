@@ -195,6 +195,7 @@ private:
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
         TEST_CASE(strncat3);
+        TEST_CASE(strncat4);
 
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
@@ -3138,6 +3139,14 @@ private:
               "  strncat(x.a, a, 5);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: x.a\n", errout.str());
+    }
+
+    void strncat4() {
+        check("void f(char *a) {\n"
+              "    char str[5];\n"
+              "    strncat(str, \"foobar\", 5);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
     }
 
 
