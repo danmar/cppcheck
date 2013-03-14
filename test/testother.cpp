@@ -173,6 +173,7 @@ private:
         TEST_CASE(duplicateExpression3); // ticket #3317
         TEST_CASE(duplicateExpression4); // ticket #3354 (++)
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
+        TEST_CASE(duplicateExpression6); // ticket #4639
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(suspiciousStringCompare);
@@ -5382,6 +5383,13 @@ private:
         check("void f() {\n"
               "    if ($a == $a) { }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression6() {  // #4639
+        check("float IsNan(float value) { return !(value == value); }\n"
+              "double IsNan(double value) { return !(value == value); }\n"
+              "long double IsNan(long double value) { return !(value == value); }\n");
         ASSERT_EQUALS("", errout.str());
     }
 

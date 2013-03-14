@@ -1045,7 +1045,9 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     if (Token::Match(second, "const %type% %var%|,|)"))
         second = second->next();
 
-    while (first->str() == second->str()) {
+    while (first->str() == second->str() &&
+           first->isLong() == second->isLong() &&
+           first->isUnsigned() == second->isUnsigned()) {
         // at end of argument list
         if (first->str() == ")") {
             return true;
