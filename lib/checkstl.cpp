@@ -67,8 +67,16 @@ void CheckStl::iterators()
         const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
         // Check that its an iterator
-        if (!var || !var->isLocal() || !Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
+        if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
             continue;
+
+        if (var->type()) { // If it is defined, ensure that it is defined like an iterator
+            // look for operator* and operator++
+            const Function* end = var->type()->getFunction("operator*");
+            const Function* incOperator = var->type()->getFunction("operator++");
+            if (!end || end->argCount() > 0 || !incOperator)
+                continue;
+        }
 
         // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = Token::Match(var->nameToken()->next(), "[(=]");

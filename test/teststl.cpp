@@ -93,6 +93,7 @@ private:
         TEST_CASE(stlBoundaries2);
         TEST_CASE(stlBoundaries3);
         TEST_CASE(stlBoundaries4); // #4364
+        TEST_CASE(stlBoundaries5); // #4352
 
         // if (str.find("ab"))
         TEST_CASE(if_find);
@@ -1327,6 +1328,26 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
+    }
+
+    void stlBoundaries5() {
+        check("class iterator { int foo(); };\n"
+              "int foo() {\n"
+              "    iterator i;\n"
+              "    return i.foo();;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class iterator {\n"
+              "    Class operator*();\n"
+              "    iterator& operator++();\n"
+              "    int foo();\n"
+              "};\n"
+              "int foo() {\n"
+              "    iterator i;\n"
+              "    return i.foo();;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Invalid iterator 'i' used.\n", errout.str());
     }
 
 

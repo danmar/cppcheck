@@ -576,6 +576,8 @@ private:
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
             ASSERT(function && function->hasBody && function->isInline);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
+
+            ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
         }
     }
 
@@ -1432,6 +1434,15 @@ private:
         ASSERT(Bar_Sub && Bar_Sub->classDef && Bar_Sub->classScope && Bar_Sub->enclosingScope == Bar->classScope && Bar_Sub->name() == "Sub");
         ASSERT(Foo_Sub && Foo_Sub->classScope && Foo_Sub->classScope->numConstructors == 1 && Foo_Sub->classScope->className == "Sub");
         ASSERT(Bar_Sub && Bar_Sub->classScope && Bar_Sub->classScope->numConstructors == 2 && Bar_Sub->classScope->className == "Sub");
+    }
+
+    void symboldatabase32() {
+        GET_SYMBOL_DB("struct Base {\n"
+                      "    void foo() {}\n"
+                      "};\n"
+                      "class Deri : Base {\n"
+                      "};");
+        ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->definedType->getFunction("foo"));
     }
 
     void isImplicitlyVirtual() {

@@ -95,6 +95,8 @@ public:
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
+
+    const Function* getFunction(const std::string& funcName) const;
 };
 
 /** @brief Information about a member variable. */

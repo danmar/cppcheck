@@ -1456,6 +1456,24 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) cons
     }
 }
 
+const Function* Type::getFunction(const std::string& funcName) const
+{
+    if (classScope) {
+        for (std::list<Function>::const_iterator i = classScope->functionList.begin(); i != classScope->functionList.end(); ++i)
+            if (i->name() == funcName)
+                return &*i;
+    }
+
+    for (std::size_t i = 0; i < derivedFrom.size(); i++) {
+        if (derivedFrom[i].type) {
+            const Function* func = derivedFrom[i].type->getFunction(funcName);
+            if (func)
+                return func;
+        }
+    }
+    return 0;
+}
+
 bool Variable::arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok)
 {
     bool isArray = false;
