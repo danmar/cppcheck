@@ -143,6 +143,7 @@ private:
         TEST_CASE(const56); // ticket #3149
         TEST_CASE(const57); // tickets #2669 and #2477
         TEST_CASE(const58); // ticket #2698
+        TEST_CASE(const59); // ticket #4646
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -4695,6 +4696,18 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+    }
+
+    void const59() { // ticket #4646
+        checkConst("class C {\n"
+                   "public:\n"
+                   "    inline void operator += (const int &x ) { re += x; }\n"
+                   "    friend inline void exp(C & c, const C & x) { }\n"
+                   "protected:\n"
+                   "    int   re;\n"
+                   "    int   im;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {

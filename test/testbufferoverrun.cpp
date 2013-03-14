@@ -1429,23 +1429,64 @@ private:
               "   var[ 0 ].arr[ 0 ] = 0;\n"
               "   var[ 0 ].arr[ 1 ] = 1;\n"
               "   var[ 0 ].arr[ 2 ] = 2;\n"
-              "   y = var[ 0 ].arr[ 3 ];\n"
+              "   y = var[ 0 ].arr[ 3 ];\n" // <-- array access out of bounds
               "   return y;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var[0].arr[3]' index 3 out of bounds.\n","", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var.arr[3]' accessed at index 3, which is out of bounds.\n", errout.str());
 
         check("int f( )\n"
               "{\n"
               "  struct {\n"
               "    int arr[ 3 ];\n"
               "  } var[ 1 ];\n"
-              "   int y;\n"
+              "   int y=1;\n"
               "   var[ 0 ].arr[ 0 ] = 0;\n"
               "   var[ 0 ].arr[ 1 ] = 1;\n"
               "   var[ 0 ].arr[ 2 ] = 2;\n"
               "   y = var[ 0 ].arr[ 2 ];\n"
               "   return y;\n"
-              "}\n");
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("int f( ){ \n"
+              "struct Struct{\n"
+              "    int arr[ 3 ];\n"
+              "};\n"
+              "int y;\n"
+              "Struct var;\n"
+              "var.arr[ 0 ] = 0;\n"
+              "var.arr[ 1 ] = 1;\n"
+              "var.arr[ 2 ] = 2;\n"
+              "var.arr[ 3 ] = 3;\n" // <-- array access out of bounds
+              "y=var.arr[ 3 ];\n"   // <-- array access out of bounds
+              "return y;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var.arr[3]' accessed at index 3, which is out of bounds.\n"
+                      "[test.cpp:11]: (error) Array 'var.arr[3]' accessed at index 3, which is out of bounds.\n", errout.str());
+
+
+        check("void f( ) {\n"
+              "struct S{\n"
+              "    int var[ 3 ];\n"
+              "} ;\n"
+              "S var[2];\n"
+              "var[0].var[ 0 ] = 0;\n"
+              "var[0].var[ 1 ] = 1;\n"
+              "var[0].var[ 2 ] = 2;\n"
+              "var[0].var[ 4 ] = 4;\n" // <-- array access out of bounds
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'var.var[3]' accessed at index 4, which is out of bounds.\n", errout.str());
+
+        check("void f( ) {\n"
+              "struct S{\n"
+              "    int var[ 3 ];\n"
+              "} ;\n"
+              "S var[2];\n"
+              "var[0].var[ 0 ] = 0;\n"
+              "var[0].var[ 1 ] = 1;\n"
+              "var[0].var[ 2 ] = 2;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

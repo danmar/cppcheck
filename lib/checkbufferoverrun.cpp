@@ -945,11 +945,15 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         // Array index..
         if ((varid > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [ %num% ]", varid))) ||
-            (varid == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), (varnames + " [ %num% ]").c_str())))) {
+            (varid == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()) || Token::Match(tok->next(), (varname[0] +" [ %num% ] . " + varname[1] + " [ %num% ]").c_str()))))) {
             std::vector<MathLib::bigint> indexes;
             const Token *tok2 = tok->tokAt(2 + varc);
             for (; Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3)) {
                 const MathLib::bigint index = MathLib::toLongNumber(tok2->strAt(1));
+                indexes.push_back(index);
+            }
+            for (; Token::Match(tok2->tokAt(3), "[ %num% ]"); tok2 = tok2->tokAt(3)) {
+                const MathLib::bigint index = MathLib::toLongNumber(tok2->strAt(4));
                 indexes.push_back(index);
             }
 
@@ -1312,6 +1316,29 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
     }
 }
 
+//---------------------------------------------------------------------------
+// Checking member variables of structs..
+//---------------------------------------------------------------------------
+bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
+{
+    if (Token::Match(tok->next(), "%var% [ %num% ] ")) {
+        tok = tok->tokAt(4);
+        int i = 1;
+        while (true) {
+            if (Token::Match(tok->next(), "[ %num% ] ")) {
+                i++;
+                tok = tok->tokAt(4);
+            } else
+                break;
+        }
+        if (Token::Match(tok->next(),";")) {
+            position = i;
+            return true;
+        }
+    }
+    return false;
+}
+
 void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token *scope_begin, const MathLib::bigint total_size, const bool is_readlinkat)
 {
     const Token* bufParam = tok->tokAt(2)->nextArgument();
@@ -1485,6 +1512,8 @@ void CheckBufferOverrun::checkStructVariable()
         std::list<Variable>::const_iterator var;
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             // find all array variables
+            int numOfDimension = -1;
+
             if (var->isArray()) {
                 // create ArrayInfo from the array variable
                 ArrayInfo arrayInfo(&*var, _tokenizer);
@@ -1529,6 +1558,17 @@ void CheckBufferOverrun::checkStructVariable()
                         // Declare variable: Fred fred1;
                         if (Token::Match(tok3->next(), "%var% ;"))
                             varname[0] = tok3->strAt(1);
+
+                        else if (isArrayOfStruct(tok3,numOfDimension)) {
+                            varname[0] = tok3->strAt(1);
+
+                            int pos = 2;
+                            for (int k = 0 ; k < numOfDimension; k++) {
+                                for (int index = pos; index < (pos + 3); index++)
+                                    tok3->strAt(index);
+                                pos += 3;
+                            }
+                        }
 
                         // Declare pointer or reference: Fred *fred1
                         else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
@@ -1619,6 +1659,7 @@ void CheckBufferOverrun::checkStructVariable()
                         std::string varnames; // use class and member name for messages
                         for (unsigned int k = 0; k < varname.size(); ++k)
                             varnames += (k == 0 ? "" : ".") + varname[k];
+
                         temp.varname(varnames);
                         checkScope(CheckTok, varname, temp);
                     }

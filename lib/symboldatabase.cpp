@@ -1661,7 +1661,7 @@ void SymbolDatabase::printOut(const char *title) const
         }
         std::cout << std::endl;
 
-        std::cout << "    definedType: " << scope->definedType;
+        std::cout << "    definedType: " << scope->definedType << std::endl;
 
         std::cout << "    nestedList[" << scope->nestedList.size() << "] = (";
 
@@ -2165,8 +2165,12 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     }
 
     // friend?
-    if (Token::Match(tok, "friend %type%") && tok->next()->varId() == 0)
-        return Token::findsimplematch(tok->tokAt(2), ";");
+    if (Token::Match(tok, "friend %type%") && tok->next()->varId() == 0) {
+        const Token *next = Token::findmatch(tok->tokAt(2), ";|{");
+        if (next && next->str() == "{")
+            next = next->link();
+        return next;
+    }
 
     // skip const|static|mutable|extern
     while (Token::Match(tok, "const|static|mutable|extern")) {
