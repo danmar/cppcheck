@@ -5830,6 +5830,24 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
         }
+
+        // code is ok, don't show syntax error
+        {
+            errout.str("");
+            std::istringstream istr("struct A {int a;int b};\n"
+                                    "class Fred {"
+                                    "public:\n"
+                                    "    Fred() : a({1,2}) {\n"
+                                    "        for (int i=0;i<6;i++);\n" // <- no syntax error
+                                    "    }\n"
+                                    "private:\n"
+                                    "    A a;\n"
+                                    "};\n");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void syntax_error_templates_2() {
