@@ -1498,20 +1498,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-		check("struct AB { int a[10]; int b[10]; };\n"
-			  "int main() {\n"
-			  "    struct AB ab[1];\n"
-			  "    int * p = &ab[0].a[10]; \n"
-			  "    return 0;\n"
-			  "}");
+        check("struct AB { int a[10]; int b[10]; };\n"
+              "int main() {\n"
+              "    struct AB ab[1];\n"
+              "    int * p = &ab[0].a[10]; \n"
+              "    return 0;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-		check("struct AB { int a[10]; int b[10]; };\n"
-			  "int main() {\n"
-			  "    struct AB ab[1];\n"
-			  "    int * p = &ab[10].a[0]; \n"
-			  "    return 0;\n"
-			  "}");
+        check("struct AB { int a[10]; int b[10]; };\n"
+              "int main() {\n"
+              "    struct AB ab[1];\n"
+              "    int * p = &ab[10].a[0]; \n"
+              "    return 0;\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'ab[1]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
