@@ -1488,6 +1488,15 @@ private:
               "var[0].var[ 2 ] = 2;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // avoid FP (example taken from #3838)
+        check("struct AB { int a[10]; int b[10]; };\n"
+              "int main() {\n"
+              "    struct AB ab;\n"
+              "    int * p = &ab[0].a[10]; \n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_44() { // #3979 (false positive)
