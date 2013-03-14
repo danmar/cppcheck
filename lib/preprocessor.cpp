@@ -3004,7 +3004,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     line.erase(pos1, pos2 - pos1);
 
                     // Don't glue this macro into variable or number after it
-                    if (std::isalnum(line[pos1]) || line[pos1] == '_')
+                    if (!line.empty() && (std::isalnum(line[pos1]) || line[pos1] == '_'))
                         macrocode.append(1,' ');
 
                     // insert expanded macro code
