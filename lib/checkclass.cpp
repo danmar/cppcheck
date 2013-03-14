@@ -200,7 +200,15 @@ void CheckClass::copyconstructors()
 
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eConstructor && func->functionScope) {
-                for (const Token* tok = func->functionScope->classStart; tok!=func->functionScope->classEnd; tok=tok->next()) {
+                const Token* tok = func->functionScope->classDef->linkAt(1);
+                for (const Token* const end = func->functionScope->classStart; tok != end; tok = tok->next()) {
+                    if (Token::Match(tok, "%var% ( new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
+                        const Variable* var = tok->variable();
+                        if (var && var->isPointer() && var->scope() == &*scope)
+                            allocatedVars[tok->varId()] = tok;
+                    }
+                }
+                for (const Token* const end = func->functionScope->classEnd; tok != end; tok = tok->next()) {
                     if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
                         const Variable* var = tok->variable();
                         if (var && var->isPointer() && var->scope() == &*scope)

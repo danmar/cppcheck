@@ -374,7 +374,7 @@ private:
                              "      p = malloc(100);\n"
                              "   }\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) 'class F' does not have a copy constructor which is required since the class contains a pointer to allocated memory.\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) 'class F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", "", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
@@ -384,6 +384,12 @@ private:
                              "   F(F& f);\n" // non-copyable
                              "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class F {\n"
+                             "   char *p;\n"
+                             "   F() : p(malloc(100)) {}\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) 'class F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
     }
 
 
