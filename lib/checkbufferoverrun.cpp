@@ -1511,9 +1511,6 @@ void CheckBufferOverrun::checkStructVariable()
         // check all variables to see if they are arrays
         std::list<Variable>::const_iterator var;
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-            // find all array variables
-            int numOfDimension = -1;
-
             if (var->isArray()) {
                 // create ArrayInfo from the array variable
                 ArrayInfo arrayInfo(&*var, _tokenizer);
@@ -1555,15 +1552,18 @@ void CheckBufferOverrun::checkStructVariable()
                         if (tok3->str() != scope->className)
                             continue;
 
+                        // find all array variables
+                        int posOfSemicolon = -1;
+
                         // Declare variable: Fred fred1;
                         if (Token::Match(tok3->next(), "%var% ;"))
                             varname[0] = tok3->strAt(1);
 
-                        else if (isArrayOfStruct(tok3,numOfDimension)) {
+                        else if (isArrayOfStruct(tok3,posOfSemicolon)) {
                             varname[0] = tok3->strAt(1);
 
                             int pos = 2;
-                            for (int k = 0 ; k < numOfDimension; k++) {
+                            for (int k = 0 ; k < posOfSemicolon; k++) {
                                 for (int index = pos; index < (pos + 3); index++)
                                     tok3->strAt(index);
                                 pos += 3;
