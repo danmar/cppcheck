@@ -28,7 +28,7 @@
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 class Settings;
