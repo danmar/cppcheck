@@ -69,6 +69,7 @@ private:
         TEST_CASE(varScope14);
         TEST_CASE(varScope15);      // #4573 if-else-if
         TEST_CASE(varScope16);
+        TEST_CASE(varScope17);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -903,6 +904,17 @@ private:
                  "    } while(z());\n"
                  "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'a' can be reduced.\n", errout.str());
+    }
+
+    void varScope17() {
+        varScope("void f() {\n"
+                 "    int x;\n"
+                 "    if (a) {\n"
+                 "        x = stuff(x);\n"
+                 "        morestuff(x);\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {
