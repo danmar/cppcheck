@@ -9353,8 +9353,8 @@ void Tokenizer::printUnknownTypes()
     for (unsigned int i = 1; i <= _varId; ++i) {
         const Variable *var = _symbolDatabase->getVariableFromVarId(i);
 
-        // is unknown record type?
-        if (var && var->isClass() && !var->type()) {
+        // is unknown type?
+        if (var && !var->type() && !var->typeStartToken()->isStandardType()) {
             std::string    name;
 
             // single token type?
