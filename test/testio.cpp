@@ -338,6 +338,16 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4649
+        check("void foo() {\n"
+              "    struct {FILE *f1; FILE *f2;} a;\n"
+              "    a.f1 = fopen(name,mode);\n"
+              "    a.f2 = fopen(name,mode);\n"
+              "    fclose(a.f1);\n"
+              "    fclose(a.f2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {

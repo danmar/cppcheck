@@ -205,6 +205,9 @@ void CheckIO::checkFileUsage()
                     }
                 }
 
+                while (Token::Match(fileTok, "%var% ."))
+                    fileTok = fileTok->tokAt(2);
+
                 if (!fileTok || !fileTok->varId())
                     continue;
 
