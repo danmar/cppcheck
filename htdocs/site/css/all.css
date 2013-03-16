@@ -115,6 +115,15 @@ a:active    { color:#369; text-decoration:none; }
   font-size: smaller;
 }
 
+a.author:link,
+a.author:visited,
+a.author:link:hover,
+a.author:visited:hover,
+a.author:focus,
+a.author:active {
+  color: #888;
+}
+
 
 /* "Download Now!" link */
 .downloadnow {
