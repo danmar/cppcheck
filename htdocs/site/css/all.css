@@ -13,12 +13,12 @@ dt {
 
 /* Default link style */
 a:link,
-a:visited   { color:#036; text-decoration:underline; }
+a:visited   { color: #036; text-decoration: underline; }
 
 a:link:hover,
 a:visited:hover,
 a:focus,
-a:active    { color:#369; text-decoration:none; }
+a:active    { color: #369; text-decoration: none; }
 
 
 /* Header */
@@ -56,7 +56,6 @@ a:active    { color:#369; text-decoration:none; }
 
 #tabs li {
   display: inline;
-  margin: 0;
   padding: 0 .5em;
   border-right: 1px solid black;
 }
@@ -70,11 +69,11 @@ a:active    { color:#369; text-decoration:none; }
 }
 
 #tabs a:link,
-#tabs a:visited { color:#eee; text-decoration:none; }
+#tabs a:visited { color: #eee; text-decoration: none; }
 
 #tabs a:focus,
 #tabs a:hover,
-#tabs a:active  { color:white; text-decoration:underline; }
+#tabs a:active  { color: white; text-decoration: underline; }
 
 
 /* Anchors */
@@ -87,7 +86,6 @@ a:active    { color:#369; text-decoration:none; }
 
 #anchors li {
   display: inline;
-  margin: 0;
   padding: 0 .5em;
 }
 
