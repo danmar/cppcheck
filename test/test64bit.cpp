@@ -95,6 +95,11 @@ private:
               "    *p = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer to a pointer is not portable.\n", errout.str());
+
+        check("int f(const char *p) {\n" // #4659
+              "    return 6 + p[2] * 256;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember() {
