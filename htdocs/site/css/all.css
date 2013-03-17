@@ -103,6 +103,9 @@ a:active    { color: #369; text-decoration: none; }
   width: 50em;
   margin: 0 auto;
   padding: .5em;
+  -webkit-box-sizing: content-box;
+     -moz-box-sizing: content-box;
+          box-sizing: content-box;
 }
 
 
@@ -138,6 +141,9 @@ a.author:active {
    -khtml-border-radius: .5em;
      -moz-border-radius: .5em;
           border-radius: .5em;
+  -webkit-box-sizing: content-box;
+     -moz-box-sizing: content-box;
+          box-sizing: content-box;
 }
 
 a.downloadnow:link,
