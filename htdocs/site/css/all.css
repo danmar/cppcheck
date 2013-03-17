@@ -179,7 +179,7 @@ a.downloadnow:hover {
 }
 
 /* Command */
-pre.cmd {
+.cmd {
   padding: .5em;
   background-color: #f7f7f7;
   border: 1px solid silver;
