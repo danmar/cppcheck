@@ -13,12 +13,12 @@ dt {
 
 /* Default link style */
 a:link,
-a:visited   { color:#036; text-decoration:underline; }
+a:visited   { color: #036; text-decoration: underline; }
 
 a:link:hover,
 a:visited:hover,
 a:focus,
-a:active    { color:#369; text-decoration:none; }
+a:active    { color: #369; text-decoration: none; }
 
 
 /* Header */
@@ -56,7 +56,6 @@ a:active    { color:#369; text-decoration:none; }
 
 #tabs li {
   display: inline;
-  margin: 0;
   padding: 0 .5em;
   border-right: 1px solid black;
 }
@@ -70,11 +69,11 @@ a:active    { color:#369; text-decoration:none; }
 }
 
 #tabs a:link,
-#tabs a:visited { color:#eee; text-decoration:none; }
+#tabs a:visited { color: #eee; text-decoration: none; }
 
 #tabs a:focus,
 #tabs a:hover,
-#tabs a:active  { color:white; text-decoration:underline; }
+#tabs a:active  { color: white; text-decoration: underline; }
 
 
 /* Anchors */
@@ -87,7 +86,6 @@ a:active    { color:#369; text-decoration:none; }
 
 #anchors li {
   display: inline;
-  margin: 0;
   padding: 0 .5em;
 }
 
@@ -105,6 +103,9 @@ a:active    { color:#369; text-decoration:none; }
   width: 50em;
   margin: 0 auto;
   padding: .5em;
+  -webkit-box-sizing: content-box;
+     -moz-box-sizing: content-box;
+          box-sizing: content-box;
 }
 
 
@@ -140,6 +141,9 @@ a.author:active {
    -khtml-border-radius: .5em;
      -moz-border-radius: .5em;
           border-radius: .5em;
+  -webkit-box-sizing: content-box;
+     -moz-box-sizing: content-box;
+          box-sizing: content-box;
 }
 
 a.downloadnow:link,
@@ -175,7 +179,7 @@ a.downloadnow:hover {
 }
 
 /* Command */
-pre.cmd {
+.cmd {
   padding: .5em;
   background-color: #f7f7f7;
   border: 1px solid silver;
