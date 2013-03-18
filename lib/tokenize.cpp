@@ -4980,7 +4980,6 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 
         bool isconst = false;
         bool isstatic = false;
-        bool ispointer = false;
         Token *tok2 = type0;
         unsigned int typelen = 1;
 
@@ -5084,6 +5083,7 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
         //pattern: "%type% *| ... *| const| %var% ,|="
         if (Token::Match(tok2, "%type%") ||
             (tok2 && tok2->previous() && tok2->previous()->str() == ">")) {
+            bool ispointer = false;
             Token *varName = tok2;
             if (!tok2->previous() || tok2->previous()->str() != ">")
                 varName = varName->next();
