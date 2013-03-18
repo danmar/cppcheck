@@ -1734,6 +1734,15 @@ bool Tokenizer::tokenize(std::istream &code,
             tok = tok->next();
     }
 
+    // class x y {
+    if (_settings->isEnabled("information")) {
+        for (const Token *tok = list.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "class %type% %type% [:{]")) {
+                unhandled_macro_class_x_y(tok);
+            }
+        }
+    }
+
     // catch bad typedef canonicalization
     //
     // to reproduce bad typedef, download upx-ucl from:
@@ -7844,6 +7853,18 @@ void Tokenizer::syntaxError(const Token *tok, char c) const
     reportError(tok, Severity::error, "syntaxError",
                 std::string("Invalid number of character (") + c + ") " +
                 "when these macros are defined: '" + _configuration + "'.");
+}
+
+void Tokenizer::unhandled_macro_class_x_y(const Token *tok)
+{
+    reportError(tok,
+                Severity::information,
+                "class_X_Y",
+                "The code '" +
+                tok->str() + " " +
+                tok->strAt(1) + " " +
+                tok->strAt(2) + " " +
+                tok->strAt(3) + "' is not handled. You can use -I or --include to add handling of this code.");
 }
 
 void Tokenizer::cppcheckError(const Token *tok) const

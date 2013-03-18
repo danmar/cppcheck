@@ -560,6 +560,9 @@ public:
     /** Syntax error. Example: invalid number of ')' */
     void syntaxError(const Token *tok, char c) const;
 
+    /** Report that there is an unhandled "class x y {" code */
+    void unhandled_macro_class_x_y(const Token *tok);
+
     /**
      * assert that tokens are ok - used during debugging for example
      * to catch problems in simplifyTokenList.

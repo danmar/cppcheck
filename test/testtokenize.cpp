@@ -67,6 +67,7 @@ private:
         TEST_CASE(wrong_syntax3); // #3544
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
+        TEST_CASE(wrong_syntax_class_x_y); // #3585 - class x y { };
         TEST_CASE(syntax_case_default);
         TEST_CASE(garbageCode1);
         TEST_CASE(garbageCode2); // #4300
@@ -769,6 +770,22 @@ private:
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void wrong_syntax_class_x_y() {
+        // #3585
+        const char code[] = "class x y { };";
+
+        errout.str("");
+
+        Settings settings;
+        settings.addEnabled("information");
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.c");
+        tokenizer.simplifyTokenList();
+
+        ASSERT_EQUALS("[test.c:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
     }
 
     void syntax_case_default() {
