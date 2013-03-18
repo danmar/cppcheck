@@ -1324,7 +1324,7 @@ bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
     if (Token::Match(tok->next(), "%var% [ %num% ] ")) {
         tok = tok->tokAt(4);
         int i = 1;
-        while (true) {
+        for (;;) {
             if (Token::Match(tok->next(), "[ %num% ] ")) {
                 i++;
                 tok = tok->tokAt(4);
