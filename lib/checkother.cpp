@@ -2104,10 +2104,17 @@ void CheckOther::checkVariableScope()
         bool used = false; // Don't warn about unused variables
         for (; tok != var->scope()->classEnd; tok = tok->next()) {
             if (tok->str() == "{" && tok->strAt(-1) != "=") {
-                if (used || !checkInnerScope(tok, var, used)) {
+                if (used) {
+                    bool used2 = false;
+                    if (!checkInnerScope(tok, var, used2) || used2) {
+                        reduce = false;
+                        break;
+                    }
+                } else if (!checkInnerScope(tok, var, used)) {
                     reduce = false;
                     break;
                 }
+
                 tok = tok->link();
             } else if (tok->varId() == var->varId() || tok->str() == "goto") {
                 reduce = false;
@@ -2127,7 +2134,6 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
     bool noContinue = true;
     const Token* forHeadEnd = 0;
     const Token* end = tok->link();
-
     if (scope->type == Scope::eUnconditional && (tok->strAt(-1) == ")" || tok->previous()->isName())) // Might be an unknown macro like BOOST_FOREACH
         loopVariable = true;
 

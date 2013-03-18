@@ -915,6 +915,16 @@ private:
                  "    }\n"
                  "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
+
+        varScope("void f() {\n"
+                 "    int x;\n"
+                 "    if (a) {\n"
+                 "        x = stuff(x);\n"
+                 "        morestuff(x);\n"
+                 "    }\n"
+                 "    if (b) {}\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {
