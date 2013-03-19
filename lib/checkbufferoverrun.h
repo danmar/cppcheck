@@ -67,6 +67,7 @@ public:
 
         /** ExecutionPath checking.. */
         checkBufferOverrun.executionPaths();
+        checkBufferOverrun.writeOutsideBufferSize();
     }
 
     /** @brief %Check for buffer overruns */
@@ -77,6 +78,9 @@ public:
 
     /** @brief %Check for buffer overruns by inspecting execution paths */
     void executionPaths();
+
+    /** @brief %Check using POSIX write function and writing outside buffer size */
+    void writeOutsideBufferSize();
 
     /**
      * @brief Get minimum length of format string result
@@ -229,6 +233,7 @@ private:
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
     void argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname);
+    void writeOutsideBufferSizeError(const Token *tok, const std::size_t stringLength, const MathLib::bigint writeLength, const std::string& functionName);
 
 public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -249,6 +254,7 @@ public:
         c.possibleBufferOverrunError(0, "source", "destination", false);
         c.possibleReadlinkBufferOverrunError(0, "readlink", "buffer");
         c.argumentSizeError(0, "function", "array");
+        c.writeOutsideBufferSizeError(0,2,3,"write");
     }
 private:
 

@@ -58,6 +58,7 @@ private:
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.negativeIndex();
         checkBufferOverrun.arrayIndexThenCheck();
+        checkBufferOverrun.writeOutsideBufferSize();
     }
 
     void run() {
@@ -252,6 +253,8 @@ private:
         TEST_CASE(bufferNotZeroTerminated);
         TEST_CASE(readlink);
         TEST_CASE(readlinkat);
+
+        TEST_CASE(writeOutsideBufferSize)
     }
 
 
@@ -4087,6 +4090,18 @@ private:
               "        return;\n"
               "    }\n"
               "    buf[len] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void writeOutsideBufferSize() {
+        check("void f(void){\n"
+              "write(1, \"Dump string \\n\", 100);\n"
+              "}");                       // ^ number of bytes too big
+        ASSERT_EQUALS("[test.cpp:2]: (error) Writing '87' bytes outside buffer size.\n", errout.str());
+
+        check("void f(void){\n"
+              "write(1, \"Dump string \\n\", 10);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
