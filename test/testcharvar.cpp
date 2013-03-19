@@ -68,7 +68,7 @@ private:
               "{\n"
               "    unsigned char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int buf[256];\n"
@@ -76,7 +76,7 @@ private:
               "{\n"
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("int buf[256];\n"
@@ -84,20 +84,20 @@ private:
               "{\n"
               "    signed char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("int buf[256];\n"
               "void foo(char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("void foo(const char str[])\n"
               "{\n"
               "    map[str] = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -140,7 +140,7 @@ private:
               "    int result = 0;\n"
               "    char ch;\n"
               "    result = a | ch;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
@@ -149,14 +149,14 @@ private:
               "{\n"
               "    char ch;\n"
               "    func(&ch);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void bitop3() {
         check("void f(int& i, char& c) {\n"
               "    i &= c;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
@@ -165,7 +165,7 @@ private:
               "{\n"
               "    char c;\n"
               "    return &c;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -175,7 +175,7 @@ private:
               "{\n"
               "    char c;\n"
               "    c = c & 0x123;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -184,7 +184,7 @@ private:
               "{\n"
               "    char c;\n"
               "    int i = c & 0x03;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

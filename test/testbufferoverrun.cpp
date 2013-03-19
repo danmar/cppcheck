@@ -1196,7 +1196,7 @@ private:
               "       m_x[1] = 0;\n"
               "    }\n"
               "    int m_x[1];\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'm_x[1]' accessed at index 1, which is out of bounds.\n", errout.str());
     }
 
@@ -3788,7 +3788,7 @@ private:
                 "    }\n"
                 "\n"
                 "    int arr[2*BSize + 2];\n"
-                "};\n");
+                "};");
         ASSERT_EQUALS("", errout.str());
     }
 

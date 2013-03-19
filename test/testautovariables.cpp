@@ -371,7 +371,7 @@ private:
               "{\n"
               "    extern struct foo f;\n"
               "    return &f;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -409,7 +409,7 @@ private:
               "        abc(0, psz_title);\n"
               "        free(psz_title);\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
@@ -417,7 +417,7 @@ private:
         check("void f(EventPtr *eventP, ActionPtr **actionsP) {\n"
               "    EventPtr event = *eventP;\n"
               "    *actionsP = &event->actions;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -425,7 +425,7 @@ private:
         check("static void function(unsigned long **datap) {\n"
               "    struct my_s *mr = global_structure_pointer;\n"
               "    *datap = &mr->value;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -434,7 +434,7 @@ private:
               "{\n"
               "    char str[100] = {0};\n"
               "    return str;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Pointer to local array variable returned.\n", errout.str());
 
         check("class Fred {\n"
@@ -444,7 +444,7 @@ private:
               "{\n"
               "    char str[100] = {0};\n"
               "    return str;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Pointer to local array variable returned.\n", errout.str());
     }
 
@@ -453,7 +453,7 @@ private:
               "{\n"
               "    char str[100] = {0};\n"
               "    return str;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred {\n"
@@ -463,7 +463,7 @@ private:
               "{\n"
               "    char str[100] = {0};\n"
               "    return str;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -472,21 +472,21 @@ private:
               "{\n"
               "    std::string s;\n"
               "    return s;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
               "    std::vector<int> v;\n"
               "    return v;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
               "    static std::vector<int> v;\n"
               "    return v;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("std::string hello()\n"
@@ -497,7 +497,7 @@ private:
               "std::string &f()\n"
               "{\n"
               "    return hello();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:8]: (error) Reference to temporary returned.\n", errout.str());
 
         // make sure scope is used in function lookup
@@ -572,7 +572,7 @@ private:
               "{\n"
               "    std::string s;\n"
               "    return s;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("class Fred {\n"
@@ -582,7 +582,7 @@ private:
               "{\n"
               "    std::vector<int> v;\n"
               "    return v;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
 
         check("class Fred {\n"
@@ -592,7 +592,7 @@ private:
               "{\n"
               "    static std::vector<int> v;\n"
               "    return v;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred {\n"
@@ -605,7 +605,7 @@ private:
               "std::string &Fred::f()\n"
               "{\n"
               "    return hello();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:10]: (error) Reference to temporary returned.\n", errout.str());
 
         check("class Fred {\n"
@@ -619,7 +619,7 @@ private:
               "std::string &Fred::f()\n"
               "{\n"
               "    return hello();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:11]: (error) Reference to temporary returned.\n", errout.str());
 
         check("class Bar;\n"
@@ -659,7 +659,7 @@ private:
               "    double ret = getValue();\n"
               "    rd = ret;\n"
               "    return rd;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -669,7 +669,7 @@ private:
               "double & f() {\n"
               "    double & ref = a;\n"
               "    return ref;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -736,21 +736,21 @@ private:
         check("int* foo(int y)\n"
               "{\n"
               "  return &y;\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of function parameter 'y' returned.\n", errout.str());
 
         check("int ** foo(int * y)\n"
               "{\n"
               "  return &y;\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of function parameter 'y' returned.\n", errout.str());
 
         check("const int * foo(const int & y)\n"
               "{\n"
               "  return &y;\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }

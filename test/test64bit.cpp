@@ -63,7 +63,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    a = p;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -72,28 +72,28 @@ private:
               "{\n"
               "    int a = p;\n"
               "    return a + 4;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
 
         check("int foo(int p[])\n"
               "{\n"
               "    int a = p;\n"
               "    return a + 4;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
 
         check("int foo(int p[])\n"
               "{\n"
               "    int *a = p;\n"
               "    return a;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    int *p = x;\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer to a pointer is not portable.\n", errout.str());
 
         check("int f(const char *p) {\n" // #4659
@@ -106,7 +106,7 @@ private:
         check("struct Foo { int *p };\n"
               "void f(struct Foo *foo) {\n"
               "    int i = foo->p;\n"
-              "}\n");
+              "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", "", errout.str());
     }
 
@@ -114,7 +114,7 @@ private:
         // Ticket #2892
         check("void foo(int *p) {\n"
               "    int a = (p != NULL);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -123,62 +123,62 @@ private:
         check("void foo(int *p) {\n"
               "    int x = 10;\n"
               "    int *a = p + x;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int *p) {\n"
               "    int x = 10;\n"
               "    int *a = x + p;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int *p) {\n"
               "    int x = 10;\n"
               "    int *a = x * x;\n"
-              "}\n");
+              "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
         check("void foo(int *start, int *end) {\n"
               "    int len;\n"
               "    int len = end + 10 - start;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void returnIssues() {
         check("void* foo(int i) {\n"
               "    return i;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an integer in a function with pointer return type is not portable.\n", errout.str());
 
         check("void* foo(int* i) {\n"
               "    return i;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void* foo() {\n"
               "    return 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int foo(int i) {\n"
               "    return i;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int foo(char* c) {\n"
               "    return c;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
 
         check("int foo(char* c) {\n"
               "    return 1+c;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
 
         check("std::string foo(char* c) {\n"
               "    return c;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int foo(char *a, char *b) {\n" // #4486
