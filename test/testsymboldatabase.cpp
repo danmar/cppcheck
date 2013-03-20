@@ -966,7 +966,7 @@ private:
                       "        class X { X(int); };\n"
                       "    }\n"
                       "}\n"
-                      "namespace barney { X::X(int) { } }\n");
+                      "namespace barney { X::X(int) { } }");
 
         // Locate the scope for the class..
         const Scope *scope = NULL;
@@ -1000,7 +1000,7 @@ private:
                       "    namespace barney {\n"
                       "        X::X(int) { }\n"
                       "    }\n"
-                      "}\n");
+                      "}");
 
         // Locate the scope for the class..
         const Scope *scope = NULL;
@@ -1026,7 +1026,7 @@ private:
 
     void namespaces3() { // #3854 - namespace with unknown macro
         GET_SYMBOL_DB("namespace fred UNKNOWN_MACRO(default) {\n"
-                      "}\n");
+                      "}");
         ASSERT_EQUALS(2U, db->scopeList.size());
         ASSERT_EQUALS(Scope::eGlobal, db->scopeList.front().type);
         ASSERT_EQUALS(Scope::eNamespace, db->scopeList.back().type);
@@ -1039,7 +1039,7 @@ private:
                               "    catch (const X::Error2 & x) { }\n"
                               "    catch (Error3 x) { }\n"
                               "    catch (X::Error4 x) { }\n"
-                              "}\n");
+                              "}");
         GET_SYMBOL_DB(str.c_str())
         check(str.c_str(), false);
         ASSERT_EQUALS("", errout.str());
@@ -1077,7 +1077,7 @@ private:
         check("typedef void (func_type)();\n"
               "struct A {\n"
               "    friend func_type f : 2;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1088,7 +1088,7 @@ private:
               "static void function_declaration_after(void) __attribute__((__used__));\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("main(int argc, char *argv[]) { }\n");
+        check("main(int argc, char *argv[]) { }");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace boost {\n"
@@ -1096,7 +1096,7 @@ private:
               "    {\n"
               "        return std::locale();\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace X {\n"
@@ -1104,12 +1104,12 @@ private:
               "    static void function_declaration_before(void) {}\n"
               "    static void function_declaration_after(void) {}\n"
               "    static void function_declaration_after(void) __attribute__((__used__));\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("testing::testing()\n"
               "{\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1117,7 +1117,7 @@ private:
         // ticket #2178 - segmentation fault
         check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
               "    return (sign ? cl_I() : 0);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1144,7 +1144,7 @@ private:
               "{\n"
               "public:\n"
               "    int f() { return C< ::D,int>::f(); }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1157,7 +1157,7 @@ private:
               "    {\n"
               "        return vcl::unotools::createStandardColorSpace();\n"
               "    }\n"
-              "};\n");
+              "};");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1184,7 +1184,7 @@ private:
               "};\n"
               "class B {\n"
               "  friend void A::f();\n"
-              "};\n");
+              "};");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1194,7 +1194,7 @@ private:
         check("int g ();\n"
               "struct S {\n"
               "  int i : (false ? g () : 1);\n"
-              "};\n");
+              "};");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1203,7 +1203,7 @@ private:
         // ticket #2547 - segmentation fault
         check("class foo {\n"
               "    void bar2 () = __null;\n"
-              "};\n");
+              "};");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1212,7 +1212,7 @@ private:
         // ticket #2577 - segmentation fault
         check("class foo {\n"
               "    void bar2 () = A::f;\n"
-              "};\n");
+              "};");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1240,7 +1240,7 @@ private:
 
     void symboldatabase17() {
         // ticket #2657 - segmentation fault
-        check("return f(){}\n");
+        check("return f(){}");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1254,7 +1254,7 @@ private:
 
     void symboldatabase19() {
         // ticket #2991 - segmentation fault
-        check("::y(){x}\n");
+        check("::y(){x}");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1273,7 +1273,7 @@ private:
               "};\n"
               "Fred::func() const {\n"
               "    Foo foo;\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -1287,7 +1287,7 @@ private:
 
     // #ticket 3435 (std::vector)
     void symboldatabase23() {
-        GET_SYMBOL_DB("class A { std::vector<int*> ints; };\n");
+        GET_SYMBOL_DB("class A { std::vector<int*> ints; };");
         ASSERT_EQUALS(2U, db->scopeList.size());
         const Scope &scope = db->scopeList.back();
         ASSERT_EQUALS(1U, scope.varlist.size());
@@ -1367,7 +1367,7 @@ private:
               "{\n"
               "    B1()\n"
               "    {} C(int) : B1() class\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

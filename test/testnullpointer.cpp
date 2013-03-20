@@ -105,7 +105,7 @@ private:
               "{\n"
               "    while (tok);\n"
               "    tok = tok->next();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check it against null.\n", errout.str());
 
         // #2681
@@ -133,7 +133,7 @@ private:
               "        while (tok && tok->str() != \";\")\n"
               "            tok = tok->next();\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(Token &tok)\n"
@@ -143,7 +143,7 @@ private:
               "        while (!tok)\n"
               "            char c = tok.read();\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
@@ -154,7 +154,7 @@ private:
               "            tok = tok->next();\n"
               "        if( !tok ) break;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
@@ -164,7 +164,7 @@ private:
               "        while (tok && tok->str() != \";\")\n"
               "            tok = tok->next();\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(A*a)\n"
@@ -179,7 +179,7 @@ private:
               "      a->b();\n"
               "      break;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // dereference in outer scope..
@@ -222,7 +222,7 @@ private:
               "    }\n"
               "    else if (a->x == 2) { }\n"
               "    if (a) { }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // ticket #2134 - sizeof doesn't dereference
@@ -266,14 +266,14 @@ private:
               "    int a = abc->a;\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(struct ABC *abc) {\n"
               "    bar(abc->a);\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(ABC *abc) {\n"
@@ -297,14 +297,14 @@ private:
               "    abc->next->a = 0;\n"
               "    if (abc->next)\n"
               "        ;\n"
-              "}\n");
+              "}");
         TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", "", errout.str());
 
         check("void foo(ABC *abc) {\n"
               "    abc->a = 0;\n"
               "    if (abc && abc->b == 0)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", errout.str());
 
         // ok dereferencing in a condition
@@ -313,7 +313,7 @@ private:
               "    if (abc && abc->a);\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(struct ABC *abc) {\n"
@@ -367,7 +367,7 @@ private:
               "out:\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // loops..
@@ -381,7 +381,7 @@ private:
               "        --a;\n"
               "    }\n"
               "    while (a > 0);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
@@ -393,7 +393,7 @@ private:
               "        if (!tok)\n"
               "            return;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // dynamic_cast..
@@ -402,7 +402,7 @@ private:
               "    int a = abc->a;\n"
               "    if (!dynamic_cast<DEF *>(abc))\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // #2641 - global pointer, function call
@@ -486,21 +486,21 @@ private:
               "    *p = 0;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(int *p)\n"
               "{\n"
               "    *p = 0;\n"
               "    if (p) { }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(int *p)\n"
               "{\n"
               "    *p = 0;\n"
               "    if (p || q) { }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(int *p)\n"
@@ -508,7 +508,7 @@ private:
               "    bar(*p);\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p)\n"
@@ -516,14 +516,14 @@ private:
               "    strcpy(p, \"abc\");\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p)\n"
               "{\n"
               "    if (*p == 0) { }\n"
               "    if (!p) { }\n"
-              "}\n");
+              "}");
         TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", "", errout.str());
 
         // no error
@@ -533,7 +533,7 @@ private:
               "    f(&p);\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
@@ -552,7 +552,7 @@ private:
               "        *p = 0;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int x)\n"
@@ -568,7 +568,7 @@ private:
               "    int var1 = p ? *p : 0;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int *p)\n"
@@ -576,7 +576,7 @@ private:
               "    int var1 = x ? *p : 5;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
         // Ticket #3125
@@ -585,7 +585,7 @@ private:
               "    int var1 = p ? (p->a) : 0;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(ABC *p)\n"
@@ -593,7 +593,7 @@ private:
               "    int var1 = p ? (1 + p->a) : 0;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
@@ -625,7 +625,7 @@ private:
               "      break;\n"
               "    else\n"
               "      p = p->next();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(Document *doc) {\n"
@@ -661,7 +661,7 @@ private:
               "    p = p->next;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(x *p)\n"
@@ -669,7 +669,7 @@ private:
               "    p = bar(p->next);\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(x *p)\n"
@@ -677,7 +677,7 @@ private:
               "    p = aa->bar(p->next);\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(x *p)\n"
@@ -685,7 +685,7 @@ private:
               "    p = *p2 = p->next;\n"
               "    if (!p)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(struct ABC *abc)\n"
@@ -693,7 +693,7 @@ private:
               "    abc = abc ? abc->next : 0;\n"
               "    if (!abc)\n"
               "        ;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(struct ABC *abc) {\n" // #4523
@@ -711,14 +711,14 @@ private:
         check("int f(Item *item) {\n"
               "    x = item ? ab(item->x) : 0;\n"
               "    if (item) { }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f(Item *item) {\n"
               "    item->x = 0;\n"
               "    a = b ? c : d;\n"
               "    if (item) { }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Possible null pointer dereference: item - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("BOOL GotoFlyAnchor()\n"  // #2243
@@ -730,7 +730,7 @@ private:
               "\n"
               "    if( !pFrm )\n"
               "        return FALSE;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #2463
@@ -750,7 +750,7 @@ private:
               "                break;\n"
               "        }\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // #2525 - sizeof
@@ -796,7 +796,7 @@ private:
               " char c = a.c();\n"
               " if (!a)\n"
               "   return;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -811,7 +811,7 @@ private:
               "    else if (a == 2)\n"
               "        p = new FooCar;\n"
               "    p->abcd();\n"
-              "}\n");
+              "}");
         TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Possible null pointer dereference: p\n",
                            "", errout.str());
 
@@ -820,21 +820,21 @@ private:
               "    int *p = 0;\n"
               "    int *q = p;\n"
               "    q[0] = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: q\n", errout.str());
 
         check("static void foo()\n"
               "{\n"
               "    int *p = 0;\n"
               "    int &r = *p;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
         check("static void foo(int x)\n"
               "{\n"
               "    int *p = 0;\n"
               "    int y = 5 + *p;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
         {
@@ -857,7 +857,7 @@ private:
               "{\n"
               "    int *p(0);\n"
               "    std::cout << *p;"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
         check("void f()\n"
@@ -867,14 +867,14 @@ private:
               "        delete c;\n"
               "    }\n"
               "    c[0] = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Possible null pointer dereference: c\n", errout.str());
 
         check("static void foo()\n"
               "{\n"
               "    int *p = 0;\n"
               "    if (3 > *p);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
         check("void f()\n"
@@ -883,7 +883,7 @@ private:
               "        char *c = 0;\n"
               "        *c = 0;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n", errout.str());
 
         // no false positive..
@@ -892,7 +892,7 @@ private:
               "    Foo *p = 0;\n"
               "    p = new Foo;\n"
               "    p->abcd();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("static void foo()\n"
@@ -901,7 +901,7 @@ private:
               "    if (!p)\n"
               "        return;\n"
               "    p->abcd();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("static void foo()\n"
@@ -909,7 +909,7 @@ private:
               "    int *p = 0;\n"
               "    exit();\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("static void foo(int a)\n"
@@ -917,26 +917,26 @@ private:
               "    Foo *p = 0;\n"
               "    if (a && p)\n"
               "        p->do_something();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    Foo *p = 0;\n"
               "    bool b = (p && (p->type() == 1));\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    int sz = sizeof((*(struct dummy *)0).x);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void get_offset(long &offset)\n"
               "{\n"
               "    mystruct * temp; temp = 0;\n"
               "    offset = (long)(&(temp->z));\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #1893 - try/catch inside else
@@ -955,7 +955,7 @@ private:
               "    }\n"
               "    *Q=1;\n"
               "    return Q;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int *test(int *Z)\n"
@@ -971,7 +971,7 @@ private:
               "    }\n"
               "    *Q=1;\n"
               "    return Q;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:12]: (error) Possible null pointer dereference: Q\n", errout.str());
 
         // Ticket #2052 (false positive for 'else continue;')
@@ -991,7 +991,7 @@ private:
               "    void (*f)();\n"
               "    f = 0;\n"
               "    f();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: f\n", errout.str());
 
         check("static void foo()\n"
@@ -1000,7 +1000,7 @@ private:
               "    int *p2 = 0;\n"
               "    int r = *p;\n"
               "    int r2 = *p2;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:6]: (error) Null pointer dereference\n", errout.str());
 
@@ -1010,7 +1010,7 @@ private:
               "    for (int i = 0; i < 10; ++i) {\n"
               "        int x = *p + 1;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("void f(int a) {\n"
@@ -1078,7 +1078,7 @@ private:
               "    for (int i = 0; i < n; i++) {\n"
               "        argv32[i] = 0;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // No false negative:
@@ -1093,7 +1093,7 @@ private:
               "    for (int i = 0; i < n; i++) {\n"
               "        argv32[i] = 0;\n"
               "    }\n"
-              "}\n");
+              "}");
         TODO_ASSERT_EQUALS("error",
                            "", errout.str());
 
@@ -1127,13 +1127,13 @@ private:
               "{\n"
               "  const char * x = 0;\n"
               "  strdup(x);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
         check("void foo()\n"
               "{\n"
               "  char const * x = 0;\n"
               "  strdup(x);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
     }
 
@@ -1142,7 +1142,7 @@ private:
               "{\n"
               "  std::string * x = 0;\n"
               "  *x = \"test\";\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
     }
 
@@ -1151,7 +1151,7 @@ private:
               "{\n"
               "  struct my_type* p = 0;\n"
               "  p->x = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("void foo()\n"
@@ -1159,7 +1159,7 @@ private:
               "  struct my_type* p;\n"
               "  p = 0;\n"
               "  p->x = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
@@ -1168,14 +1168,14 @@ private:
               "{\n"
               "  my_type* p = 0;\n"
               "  return p->x;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("int foo()\n"
               "{\n"
               "  struct my_type* p = 0;\n"
               "  return p->x;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("int foo()\n"
@@ -1183,7 +1183,7 @@ private:
               "  my_type* p;\n"
               "  p = 0;\n"
               "  return p->x;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
 
         check("int foo()\n"
@@ -1191,7 +1191,7 @@ private:
               "  struct my_type* p;\n"
               "  p = 0;\n"
               "  return p->x;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
@@ -1221,7 +1221,7 @@ private:
               "    s.d=NULL;\n"
               "  double *pd = s.d;\n"
               "         *pd = 10;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:10]: (error) Null pointer dereference\n", errout.str());
     }
 
@@ -1229,13 +1229,13 @@ private:
         check("void foo()\n"
               "{\n"
               "  strcpy(bar, 0);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "  memcmp(bar(xyz()), 0, 123);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
 
         check("void foo(const char *s)\n"
@@ -1244,7 +1244,7 @@ private:
               "    frexp(1.0, p);\n"
               "    char *q = 0;\n"
               "    frexp(1.0, q);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: q\n", errout.str());
     }
 
@@ -1358,48 +1358,48 @@ private:
               "    if (!p) {\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (NULL == p) {\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (p == NULL) {\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (p == NULL) {\n"
               "    }\n"
               "    printf(\"%c\", *p);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (p && *p == 0) {\n"
               "    }\n"
               "    printf(\"%c\", *p);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (p && *p == 0) {\n"
               "    } else { *p = 0; }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "    if (p) {\n"
               "    }\n"
               "    strcpy(p, \"abc\");\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(char *p) {\n"
@@ -1407,7 +1407,7 @@ private:
               "    }\n"
               "    bar();\n"
               "    strcpy(p, \"abc\");\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(abc *p) {\n"
@@ -1415,7 +1415,7 @@ private:
               "    }\n"
               "    else if (!p->x) {\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(char *p) {\n"
@@ -1423,7 +1423,7 @@ private:
               "        abort();\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(char *p) {\n"
@@ -1439,7 +1439,7 @@ private:
               "        (*bail)();\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(char *p) {\n"
@@ -1447,7 +1447,7 @@ private:
               "        throw x;\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(char *p) {\n"
@@ -1455,7 +1455,7 @@ private:
               "        ab.abort();\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(char *p) {\n"
@@ -1487,7 +1487,7 @@ private:
               "    if (!a) {\n"
               "        a.x();\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // This is why this check can't be used on the simplified token list
@@ -1495,7 +1495,7 @@ private:
               "    if (!dynamic_cast<bar *>(foo)) {\n"
               "        *foo = 0;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // ticket: #2300 - calling unknown function that may initialize the pointer
@@ -1505,7 +1505,7 @@ private:
               "        initfred();\n"
               "        fred->x = 0;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // ticket #1219
@@ -1514,7 +1514,7 @@ private:
               "        return;\n"
               "    }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         // #2467 - unknown macro may terminate the application
@@ -1618,7 +1618,7 @@ private:
         check("int foo(struct Fred *fred) {\n"
               "    if (fred) { int a = 0; }\n"
               "    return fred->a;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (error) Possible null pointer dereference: fred - otherwise it is redundant to check it against null.\n", errout.str());
 
         // #2789 - assign and check pointer
@@ -1626,7 +1626,7 @@ private:
               "    char *p;\n"
               "    if (!(p=x())) { }\n"
               "    *p = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (error) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         // check, assign and use
@@ -1707,7 +1707,7 @@ private:
         check("void f(char *s) {\n"   // #3358
               "    if (s==0);\n"
               "    strcpy(a, s?b:c);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // sizeof
@@ -1743,7 +1743,7 @@ private:
         check("void foo() {\n"
               "  char *p = 0;\n"
               "  strcpy(p, \"abcd\");\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
 
         // Ticket #1171
@@ -1816,7 +1816,7 @@ private:
         check("void f() {\n"
               "    char *s = 0;\n"
               "    printf(\"%s\", s == 0 ? a : s);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"

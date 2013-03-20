@@ -1319,7 +1319,7 @@ private:
             "{\n"
             "    int *n;\n"
             "    sizeof *(n);\n"
-            "}\n");
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5537,7 +5537,7 @@ private:
                              "{\n"
                              "  B * b = new B;\n"
                              "  b->f = new A::F * [ 10 ];\n"
-                             "}\n");
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 

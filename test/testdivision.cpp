@@ -131,8 +131,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
-              "    int i = val / -2; }\n"
-             );
+              "    int i = val / -2; }");
         ASSERT_EQUALS("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n", errout.str());
     }
 
@@ -140,7 +139,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
-              "    int i = -96 / val; }\n");
+              "    int i = -96 / val; }");
         ASSERT_EQUALS("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n", errout.str());
     }
 

@@ -127,7 +127,7 @@ private:
               "    char *p = malloc(10);\n"
               "    p = NULL;\n"
               "    free(p);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
     }
 
@@ -136,7 +136,7 @@ private:
               "    char *p = malloc(10);\n"
               "    char *q = p;\n"
               "    free(q);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -145,7 +145,7 @@ private:
               "    char *p = malloc(10);\n"
               "    char *q = p + 1;\n"
               "    free(q - 1);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -154,7 +154,7 @@ private:
               "    char *a = malloc(10);\n"
               "    a += 10;\n"
               "    free(a - 10);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -163,7 +163,7 @@ private:
               "{\n"
               "    char *p = new char[100];\n"
               "    list += p;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -172,7 +172,7 @@ private:
               "    char *p = malloc(10);\n"
               "    p = strcpy(p,q);\n"
               "    free(p);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -180,7 +180,7 @@ private:
         check("void foo(struct str *d) {\n"
               "    struct str *p = malloc(10);\n"
               "    d->p = p;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -188,7 +188,7 @@ private:
         check("void foo(struct str *d) {\n"
               "    struct str *p = malloc(10);\n"
               "    d->p = &p->x;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -197,7 +197,7 @@ private:
               "    char *p = x();\n"
               "    free(p);\n"
               "    p = NULL;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -207,7 +207,7 @@ private:
               "    if (x) { p = malloc(10); }\n"
               "    if (!x) { p = NULL; }\n"
               "    free(p);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -436,7 +436,7 @@ private:
               "        free(a);\n"
               "    else\n"
               "        a = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.c:6]: (error) Memory leak: a\n", errout.str());
     }
 
@@ -459,7 +459,7 @@ private:
               "    for (i=0;i<5;i++) { }\n"
               "    if (x) { free(p) }\n"
               "    else { a = p; }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

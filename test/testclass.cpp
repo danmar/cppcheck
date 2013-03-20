@@ -577,7 +577,7 @@ private:
             "public:\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & A::operator=(const A &a) { return *this; }\n");
+            "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         checkOpertorEqRetRefThis(
@@ -586,7 +586,7 @@ private:
             "public:\n"
             "    A & operator=(const A &a);\n"
             "};\n"
-            "A & A::operator=(const A &a) { return *this; }\n");
+            "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         checkOpertorEqRetRefThis(
@@ -595,7 +595,7 @@ private:
             "public:\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & A::operator=(const A &a) { return a; }\n");
+            "A & A::operator=(const A &a) { return a; }");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
@@ -604,7 +604,7 @@ private:
             "public:\n"
             "    A & operator=(const A &a);\n"
             "};\n"
-            "A & A::operator=(const A &a) { return a; }\n");
+            "A & A::operator=(const A &a) { return a; }");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
         checkOpertorEqRetRefThis(
@@ -641,7 +641,7 @@ private:
             "        B & operator=(const B &);\n"
             "    };\n"
             "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return *this; }\n");
+            "A::B & A::B::operator=(const A::B &b) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         checkOpertorEqRetRefThis(
@@ -654,7 +654,7 @@ private:
             "        B & operator=(const B &);\n"
             "    };\n"
             "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return b; }\n");
+            "A::B & A::B::operator=(const A::B &b) { return b; }");
         ASSERT_EQUALS("[test.cpp:10]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
     }
 
@@ -847,7 +847,7 @@ private:
             "public:\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & A::operator=(const A &a) { if (&a != this) { } return *this; }\n");
+            "A & A::operator=(const A &a) { if (&a != this) { } return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test doesn't have an assignment test but doesn't need it
@@ -857,7 +857,7 @@ private:
             "public:\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & A::operator=(const A &a) { return *this; }\n");
+            "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test and has it
@@ -992,7 +992,7 @@ private:
             "        B & operator=(const B &);\n"
             "    };\n"
             "};\n"
-            "A::B & A::B::operator=(const A::B &b) { if (&b != this) { } return *this; }\n");
+            "A::B & A::B::operator=(const A::B &b) { if (&b != this) { } return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test doesn't have an assignment test but doesn't need it
@@ -1006,7 +1006,7 @@ private:
             "        B & operator=(const B &);\n"
             "    };\n"
             "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return *this; }\n");
+            "A::B & A::B::operator=(const A::B &b) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test and has it
@@ -1029,7 +1029,7 @@ private:
             "        s = strdup(b.s);\n"
             "    }\n"
             "    return *this;\n"
-            " }\n");
+            " }");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test but doesn't have it
@@ -1049,7 +1049,7 @@ private:
             "    free(s);\n"
             "    s = strdup(b.s);\n"
             "    return *this;\n"
-            " }\n");
+            " }");
         ASSERT_EQUALS("[test.cpp:11]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
     }
 
@@ -1085,7 +1085,7 @@ private:
             "public:\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & A::operator=(const A &a) { return *this; }\n");
+            "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
@@ -1149,7 +1149,7 @@ private:
             "        B & operator=(const B &);\n"
             "    };\n"
             "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return *this; }\n");
+            "A::B & A::B::operator=(const A::B &b) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
@@ -1882,7 +1882,7 @@ private:
                            "};\n"
                            "\n"
                            "void Fred::foobar()\n"
-                           "{ }\n");
+                           "{ }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2870,7 +2870,7 @@ private:
                    "    };\n"
                    "};\n"
                    "int Fred::B::A::getA() { return a; }\n"
-                   "int Fred::B::getB() { return b; }\n");
+                   "int Fred::B::getB() { return b; }");
         ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
                       "[test.cpp:11] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n" , errout.str());
     }
@@ -4023,7 +4023,7 @@ private:
                    "                int var;\n"
                    "        };\n"
                    "}\n"
-                   "int N::Base::getResourceName() { return var; }\n");
+                   "int N::Base::getResourceName() { return var; }");
         ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
 
         checkConst("namespace N\n"
@@ -4051,7 +4051,7 @@ private:
                    "        };\n"
                    "}\n"
                    "using namespace N;\n"
-                   "int Base::getResourceName() { return var; }\n");
+                   "int Base::getResourceName() { return var; }");
         TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n",
                            "", errout.str());
     }
@@ -5191,7 +5191,7 @@ private:
                    "   B() : b(0) { }\n"
                    "   int func();\n"
                    "};\n"
-                   "int B::func() { return b; }\n");
+                   "int B::func() { return b; }");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'B::func' can be const.\n", errout.str());
 
         // base class has no virtual function
@@ -5217,7 +5217,7 @@ private:
                    "    B() : b(0) { }\n"
                    "    int func();\n"
                    "};\n"
-                   "int B::func() { return b; }\n");
+                   "int B::func() { return b; }");
         ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:9]: (style, inconclusive) Technically the member function 'B::func' can be const.\n", errout.str());
 
         // base class has virtual function
@@ -5243,7 +5243,7 @@ private:
                    "    B() : b(0) { }\n"
                    "    int func();\n"
                    "};\n"
-                   "int B::func() { return b; }\n");
+                   "int B::func() { return b; }");
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class A {\n"
@@ -5256,7 +5256,7 @@ private:
                    "    B() : b(0) { }\n"
                    "    int func();\n"
                    "};\n"
-                   "int B::func() { return b; }\n");
+                   "int B::func() { return b; }");
         ASSERT_EQUALS("", errout.str());
 
         // base class has no virtual function
@@ -5302,7 +5302,7 @@ private:
                    "    C() : c(0) { }\n"
                    "    int func();\n"
                    "};\n"
-                   "int C::func() { return c; }\n");
+                   "int C::func() { return c; }");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'A::func' can be const.\n"
                       "[test.cpp:14] -> [test.cpp:12]: (style, inconclusive) Technically the member function 'B::func' can be const.\n"
                       "[test.cpp:21] -> [test.cpp:19]: (style, inconclusive) Technically the member function 'C::func' can be const.\n", errout.str());
@@ -5348,7 +5348,7 @@ private:
                    "    C() : c(0) { }\n"
                    "    int func();\n"
                    "};\n"
-                   "int C::func() { return c; }\n");
+                   "int C::func() { return c; }");
         ASSERT_EQUALS("", errout.str());
 
         // ticket #1311
@@ -5394,7 +5394,7 @@ private:
                    "    Z(int x, int y, int z) : Y(x, y), z(z) { }\n"
                    "    int getZ();\n"
                    "};\n"
-                   "int Z::getZ() { return z; }\n");
+                   "int Z::getZ() { return z; }");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'X::getX' can be const.\n"
                       "[test.cpp:14] -> [test.cpp:12]: (style, inconclusive) Technically the member function 'Y::getY' can be const.\n"
                       "[test.cpp:21] -> [test.cpp:19]: (style, inconclusive) Technically the member function 'Z::getZ' can be const.\n", errout.str());

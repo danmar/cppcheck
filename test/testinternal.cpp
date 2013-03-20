@@ -309,7 +309,7 @@ private:
               "   Z(){\n"
               "      z[0] = 0;\n"
               "   }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 };

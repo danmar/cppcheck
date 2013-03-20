@@ -160,7 +160,7 @@ private:
               "    {\n"
               "        throw err;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
     }
 
@@ -174,7 +174,7 @@ private:
               "    {\n"
               "        throw err;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
     }
 
@@ -201,7 +201,7 @@ private:
               "        exception err2;\n"
               "        throw err2;\n"
               "    }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -78,7 +78,7 @@ private:
               "{\n"
               "    if (f1())\n"
               "    { }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -86,7 +86,7 @@ private:
         check("int f1()\n"
               "{\n"
               "    return f1();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -94,7 +94,7 @@ private:
         check("char * foo()\n"
               "{\n"
               "    return *foo();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -102,7 +102,7 @@ private:
         check("void f1()\n"
               "{\n"
               "    void (*f)() = cond ? f1 : NULL;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -111,7 +111,7 @@ private:
               "{\n"
               "    if (cond) ;\n"
               "    else f1();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -124,7 +124,7 @@ private:
               "{\n"
               "    f(&abc::foo);\n"
               "    return 0\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace abc {\n"
@@ -135,7 +135,7 @@ private:
               "{\n"
               "    f = &abc::foo;\n"
               "    return 0\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace abc {\n"  // #3875
@@ -146,7 +146,7 @@ private:
               "{\n"
               "    f(abc::foo);\n"
               "    return 0\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -157,7 +157,7 @@ private:
               "{\n"
               "    foo<int>();\n"
               "    return 0\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -167,12 +167,12 @@ private:
               "template<class T> void g()\n"
               "{\n"
               "    f();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void throwIsNotAFunction() {
-        check("struct A {void f() const throw () {}}; int main() {A a; a.f();}\n");
+        check("struct A {void f() const throw () {}}; int main() {A a; a.f();}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -195,20 +195,20 @@ private:
     }
 
     void unusedMain() {
-        check("int main() { }\n");
+        check("int main() { }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }\n");
+        check("int _tmain() { }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int WinMain() { }\n");
+        check("int WinMain() { }");
         ASSERT_EQUALS("", errout.str());
     }
 
     void initializationIsNotAFunction() {
         check("struct B: N::A {\n"
               "  B(): N::A() {};\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

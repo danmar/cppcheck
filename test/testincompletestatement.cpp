@@ -75,7 +75,7 @@ private:
               "{\n"
               "    const char def[] =\n"
               "    \"abc\";\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -84,7 +84,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    \"abc\";\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with string constant.\n", errout.str());
     }
@@ -93,7 +93,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    const char *str[] = { \"abc\" };\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -107,7 +107,7 @@ private:
               "\"more \"\n"
               "\"world\"\n"
               "};\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -116,7 +116,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    50;\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n", errout.str());
     }
@@ -133,13 +133,13 @@ private:
               "{\n"
               "{ 346.1,114.1 }, { 347.1,111.1 }\n"
               "};\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }
 
     void intarray() {
-        check("int arr[] = { 100/2, 1*100 };\n");
+        check("int arr[] = { 100/2, 1*100 };");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -147,7 +147,7 @@ private:
         check("struct st arr[] = {\n"
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -155,14 +155,14 @@ private:
         check("struct st arr[] = {\n"
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
     void conditionalcall() {
         check("void f() {\n"
               "    0==x ? X() : Y();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -170,7 +170,7 @@ private:
         // #2462 - C++11 struct initialization
         check("void f() {\n"
               "    ABC abc{1,2,3};\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // #2482 - false positive for empty struct

@@ -61,7 +61,7 @@ private:
               "{\n"
               "    char *cpwd;"
               "    crypt(pwd, cpwd);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'crypt' called. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'.\n", errout.str());
 
         check("void f()\n"
@@ -69,14 +69,14 @@ private:
               "    char *pwd = getpass(\"Password:\");"
               "    char *cpwd;"
               "    crypt(pwd, cpwd);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'crypt' called. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'.\n", errout.str());
 
         check("int f()\n"
               "{\n"
               "    int crypt = 0;"
               "    return crypt;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -85,14 +85,14 @@ private:
               "{\n"
               "    time_t t = 0;"
               "    std::localtime(&t);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 
         // Passed as function argument
         check("int f()\n"
               "{\n"
               "    printf(\"Magic guess: %d\n\", getpwent());\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'getpwent' called. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'.\n", errout.str());
 
         // Pass return value
@@ -100,35 +100,35 @@ private:
               "{\n"
               "    time_t t = 0;"
               "    struct tm *foo = localtime(&t);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 
         // Access via global namespace
         check("int f()\n"
               "{\n"
               "    ::getpwent();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'getpwent' called. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'.\n", errout.str());
 
         // Be quiet on function definitions
         check("int getpwent()\n"
               "{\n"
               "    return 123;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // Be quiet on other namespaces
         check("int f()\n"
               "{\n"
               "    foobar::getpwent();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // Be quiet on class member functions
         check("int f()\n"
               "{\n"
               "    foobar.getpwent();\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -106,7 +106,7 @@ private:
               "{ }\n"
               "\n"
               "unsigned int Fred::f()\n"
-              "{ }\n");
+              "{ }");
 
         ASSERT_EQUALS("[test.cpp:4]: (style) Unused private function: 'Fred::f'\n", errout.str());
 
@@ -124,7 +124,7 @@ private:
               "{ }\n"
               "\n"
               "unsigned int Fred::f()\n"
-              "{ }\n");
+              "{ }");
 
         ASSERT_EQUALS("[p.h:4]: (style) Unused private function: 'Fred::f'\n", errout.str());
 
@@ -140,7 +140,7 @@ private:
               "\n"
               "void Fred::f()\n"
               "{\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[p.h:4]: (style) Unused private function: 'Fred::f'\n", errout.str());
 
         // Don't warn about include files which implementation we don't see
@@ -156,7 +156,7 @@ private:
               "\n"
               "int main()\n"
               "{\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -174,7 +174,7 @@ private:
               "};\n"
               "\n"
               "A::A()\n"
-              "{ }\n");
+              "{ }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -189,7 +189,7 @@ private:
               "};\n"
               "\n"
               "A::~A()\n"
-              "{ B(); }\n");
+              "{ B(); }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -204,7 +204,7 @@ private:
               "};\n"
               "\n"
               "A::A() : _owner(false)\n"
-              "{ b(); }\n");
+              "{ b(); }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -215,14 +215,14 @@ private:
               "    A() : lock(new Lock())\n"
               "    { }\n"
               "    Lock *lock;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
     void test6() { // ticket #2602 segmentation fault
         check("class A {\n"
               "    A& operator=(const A&);\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -249,7 +249,7 @@ private:
               "};\n"
               "\n"
               "Fred::Fred()\n"
-              "{}\n");
+              "{}");
 
         ASSERT_EQUALS("[test.cpp:6]: (style) Unused private function: 'Fred::get'\n", errout.str());
     }
@@ -268,7 +268,7 @@ private:
               "    void callback(const& unsigned) const {}\n"
               "\n"
               "    Observer<UnusedPrivateFunctionMemberPointer, unsigned> mObserver;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -282,7 +282,7 @@ private:
               "\n"
               "private:\n"
               "    void f1() const {}\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -296,7 +296,7 @@ private:
               "    void (*fptr)();\n"
               "};\n"
               "myclass::myclass() { fptr = &f; }\n"
-              "void myclass::f() {}\n");
+              "void myclass::f() {}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -308,7 +308,7 @@ private:
               "    void (*f)();\n"
               "private:\n"
               "    static void func() { }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -324,7 +324,7 @@ private:
               "    }\n"
               "\n"
               "    int numOfThreads;\n"
-              "};\n");
+              "};");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -342,7 +342,7 @@ private:
               "private:\n"
               "    static void f()\n"
               "    { }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'A::f'\n", errout.str());
 
         check("class A\n"
@@ -361,7 +361,7 @@ private:
               "        B(A *a)\n"
               "        { a->f(); }\n"
               "    };\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -396,7 +396,7 @@ private:
               "};\n"
               "#endfile\n"
               "A::A() { }\n"
-              "void A::b() { }\n");
+              "void A::b() { }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -408,7 +408,7 @@ private:
               "    derived() : base() { }\n"
               "private:\n"
               "    void f();\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
 
         check("class base {\n"
@@ -522,7 +522,7 @@ private:
               "template <class T>\n"
               "T A::getVal() const {\n"
               "    return internalGetVal();\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -538,7 +538,7 @@ private:
               "private:\n"
               "    void startListening() {\n"
               "    }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred\n"
@@ -550,7 +550,7 @@ private:
               "private:\n"
               "    void startListening() {\n"
               "    }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function: 'Fred::startListening'\n", errout.str());
     }
 
@@ -649,7 +649,7 @@ private:
               "#endfile\n"
               "void Fred::Init()\n"
               "{\n"
-              "}\n");
+              "}");
 
         ASSERT_EQUALS("", errout.str());
     }

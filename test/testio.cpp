@@ -474,7 +474,7 @@ private:
               "{\n"
               "  char str [8];\n"
               "  scanf (\"%70s\",str);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it.\n", errout.str());
     }
 

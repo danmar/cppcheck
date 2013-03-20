@@ -226,7 +226,7 @@ private:
               "    int i;\n"
               "};\n"
               "Fred::Fred() :i(0)\n"
-              "{ }\n");
+              "{ }");
         ASSERT_EQUALS("", errout.str());
 
         check("struct Fred\n"
@@ -235,7 +235,7 @@ private:
               "    int i;\n"
               "};\n"
               "Fred::Fred()\n"
-              "{ i = 0; }\n");
+              "{ i = 0; }");
         ASSERT_EQUALS("", errout.str());
 
         check("struct Fred\n"
@@ -244,7 +244,7 @@ private:
               "    int i;\n"
               "};\n"
               "Fred::Fred()\n"
-              "{ }\n");
+              "{ }");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
     }
 
@@ -321,7 +321,7 @@ private:
     void simple8() {
         check("struct Fred { int x; };\n"
               "class Barney { Fred fred; };\n"
-              "class Wilma { struct Betty { int x; } betty; };\n");
+              "class Wilma { struct Betty { int x; } betty; };");
         ASSERT_EQUALS("[test.cpp:2]: (style) The class 'Barney' does not have a constructor.\n"
                       "[test.cpp:3]: (style) The class 'Wilma' does not have a constructor.\n", errout.str());
     }
@@ -363,7 +363,7 @@ private:
               "    Fred() { Init(); }\n"
               "    void Init(int i = 0);\n"
               "};\n"
-              "void Fred::Init(int i) { x = i; }\n");
+              "void Fred::Init(int i) { x = i; }");
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred {\n"
@@ -373,7 +373,7 @@ private:
               "    Fred() { Init(0); }\n"
               "    void Init(int i, int j = 0);\n"
               "};\n"
-              "void Fred::Init(int i, int j) { x = i; y = j; }\n");
+              "void Fred::Init(int i, int j) { x = i; y = j; }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -881,7 +881,7 @@ private:
               "    Fred(const Fred &);\n"
               "};\n"
               "Fred::Fred() { };\n"
-              "Fred::Fred(const Fred &) { };\n");
+              "Fred::Fred(const Fred &) { };");
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred\n"
@@ -930,7 +930,7 @@ private:
               "A::A(){}\n"
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
-              "A::B::C::D::D(int z){}\n");
+              "A::B::C::D::D(int z){}");
         // Note that the example code is not compilable. The A constructor must
         // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
@@ -960,7 +960,7 @@ private:
               "A::A(){}\n"
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
-              "A::B::C::D::D(const A::B::C::D & d){}\n");
+              "A::B::C::D::D(const A::B::C::D & d){}");
         // Note that the example code is not compilable. The A constructor must
         // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
@@ -991,7 +991,7 @@ private:
               "A::A(){}\n"
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
-              "A::B::C::D::D(const A::B::C::D::E & e){}\n");
+              "A::B::C::D::D(const A::B::C::D::E & e){}");
         // Note that the example code is not compilable. The A constructor must
         // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:21]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
@@ -1998,7 +1998,7 @@ private:
               "    Fred() : f{0, true} { }\n"
               "    float get() const\n"
               "};\n"
-              "float Fred::get() const { return g; }\n");
+              "float Fred::get() const { return g; }");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::g' is not initialized in the constructor.\n", errout.str());
     }
 
