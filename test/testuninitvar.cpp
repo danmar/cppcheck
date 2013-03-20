@@ -2708,6 +2708,14 @@ private:
                         "  if (foo(&s_d.type)){}\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // address of member
+        checkUninitVar2("struct AB { int a[10]; int b; };\n"
+                        "void f() {\n"
+                        "    struct AB ab;\n"
+                        "    int *p = ab.a;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {
