@@ -605,6 +605,16 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
         }
     }
 
+    // Possible pointer alias
+    else if (Token::Match(tok, "%var% = %var% ;")) {
+        const unsigned int varid2 = tok->tokAt(2)->varId();
+        Variables::VariableUsage *var2 = variables.find(varid2);
+        if (var2 && (var2->_type == Variables::array ||
+                     var2->_type == Variables::pointer)) {
+            variables.use(varid2,tok);
+        }
+    }
+
     return tok;
 }
 
