@@ -2248,8 +2248,8 @@ void CheckBufferOverrun::writeOutsideBufferSize()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "pwrite|write ( %any% , %str% , %num%")) {
-                const std::string functionName(tok->str());
+            if (Token::Match(tok, "pwrite|write (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str% , %num%")) {
+                const std::string & functionName(tok->str());
                 tok = tok->tokAt(4); // set tokenptr to %str% parameter
                 const std::size_t stringLength = Token::getStrLength(tok);
                 tok = tok->tokAt(2); // set tokenptr to %num% parameter
