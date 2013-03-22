@@ -2812,6 +2812,13 @@ private:
                         "    }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("static void f(void) {\n"
+                        "    struct ABC *abc;\n"
+                        "    for (i = 0; i < 10; i++)\n"
+                        "        x += sizeof(*abc);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_4494() {

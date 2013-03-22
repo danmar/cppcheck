@@ -1462,6 +1462,9 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
             }
         }
 
+        if (Token::Match(tok, "sizeof|typeof ("))
+            tok = tok->next()->link();
+
         if (Token::Match(tok, "asm ( %str% ) ;"))
             return true;
     }
