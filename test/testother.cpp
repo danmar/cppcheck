@@ -70,6 +70,7 @@ private:
         TEST_CASE(varScope15);      // #4573 if-else-if
         TEST_CASE(varScope16);
         TEST_CASE(varScope17);
+        TEST_CASE(varScope18);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -925,6 +926,77 @@ private:
                  "    if (b) {}\n"
                  "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
+    }
+
+    void varScope18() {
+        varScope("void f() {\n"
+                 "    short x;\n"
+                 "\n"
+                 "    switch (ab) {\n"
+                 "        case A:\n"
+                 "            break;\n"
+                 "        case B:\n"
+                 "        default:\n"
+                 "            break;\n"
+                 "    }\n"
+                 "\n"
+                 "    if (c) {\n"
+                 "        x = foo();\n"
+                 "        do_something(x);\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
+
+        varScope("void f() {\n"
+                 "    short x;\n"
+                 "\n"
+                 "    switch (ab) {\n"
+                 "        case A:\n"
+                 "            x = 10;\n"
+                 "            break;\n"
+                 "        case B:\n"
+                 "        default:\n"
+                 "            break;\n"
+                 "    }\n"
+                 "\n"
+                 "    if (c) {\n"
+                 "        x = foo();\n"
+                 "        do_something(x);\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("void f() {\n"
+                 "    short x;\n"
+                 "\n"
+                 "    switch (ab) {\n"
+                 "        case A:\n"
+                 "            if(c)\n"
+                 "                do_something(x);\n"
+                 "            break;\n"
+                 "        case B:\n"
+                 "        default:\n"
+                 "            break;\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
+
+        varScope("void f() {\n"
+                 "    short x;\n"
+                 "\n"
+                 "    switch (ab) {\n"
+                 "        case A:\n"
+                 "            if(c)\n"
+                 "                do_something(x);\n"
+                 "            break;\n"
+                 "        case B:\n"
+                 "        default:\n"
+                 "            if(d)\n"
+                 "                do_something(x);\n"
+                 "            break;\n"
+                 "    }\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {

@@ -2141,8 +2141,18 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         end = end->linkAt(2);
     } else if (loopVariable && tok->strAt(-1) == ")") {
         tok = tok->linkAt(-1); // Jump to opening ( of for/while statement
-    } else if (scope->type == Scope::eSwitch)
-        return false; // TODO: Support switch properly
+    } else if (scope->type == Scope::eSwitch) {
+        for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
+            if (used) {
+                bool used2 = false;
+                if (!checkInnerScope((*i)->classStart, var, used2) || used2) {
+                    return false;
+                }
+            } else if (!checkInnerScope((*i)->classStart, var, used)) {
+                return false;
+            }
+        }
+    }
 
     for (; tok != end; tok = tok->next()) {
         if (tok->str() == "goto")
@@ -2183,8 +2193,11 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (Token::Match(tok, "= %varid%", var->varId()) && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
             return false;
 
-        if (tok->varId() == var->varId())
+        if (tok->varId() == var->varId()) {
             used = true;
+            if (scope->type == Scope::eSwitch && scope == tok->scope())
+                return false; // Used in outer switch scope - unsafe or impossible to reduce scope
+        }
     }
 
     return true;
