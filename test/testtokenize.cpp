@@ -770,6 +770,12 @@ private:
         const std::string code("void f() { if MACRO(); }");
         tokenizeAndStringify(code.c_str(), false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        // #4668
+        errout.str("");
+        const char code2[] = "void f() { if (x) MACRO() {} }";
+        tokenizeAndStringify(code2, false);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 
     void wrong_syntax_class_x_y() {

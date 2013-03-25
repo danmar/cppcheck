@@ -1579,6 +1579,32 @@ bool Tokenizer::tokenize(std::istream &code,
                 syntaxError(tok);
                 return false;
             }
+        } else if (Token::simpleMatch(tok, "if (")) {
+            bool macro = false;
+            unsigned int parlevel = 0;
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (parlevel > 0 && tok2->str() == ")") {
+                    --parlevel;
+                    if (parlevel == 0) {
+                        if (Token::Match(tok2, ") %var% [({]") && tok2->next()->isUpperCaseName())
+                            macro = true;
+                        else if (!macro)
+                            break;
+                    }
+                }
+                if (tok2->str() == ";")
+                    break;
+                if (tok2->str() == "{") {
+                    if (macro) {
+                        syntaxError(tok2);
+                        return false;
+                    } else {
+                        break;
+                    }
+                }
+            }
         }
     }
 
