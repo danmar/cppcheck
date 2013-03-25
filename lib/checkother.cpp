@@ -311,12 +311,13 @@ void CheckOther::clarifyConditionError(const Token *tok, bool assign, bool boolo
 
     else if (boolop)
         errmsg = "Boolean result is used in bitwise operation. Clarify expression with parentheses.\n"
-                 "Suspicious expression. Boolean result is used in bitwise operation. The operator '!'"
+                 "Suspicious expression. Boolean result is used in bitwise operation. The operator '!' "
                  "and the comparison operators have higher precedence than bitwise operators. "
                  "It is recommended that the expression is clarified with parentheses.";
     else
         errmsg = "Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
-                 "Suspicious condition. Comparison operators have higher precedence than bitwise operators. Please clarify the condition with parentheses.";
+                 "Suspicious condition. Comparison operators have higher precedence than bitwise operators. "
+                 "Please clarify the condition with parentheses.";
 
     reportError(tok,
                 Severity::style,
