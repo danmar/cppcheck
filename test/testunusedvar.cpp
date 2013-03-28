@@ -150,6 +150,7 @@ private:
         TEST_CASE(localvarAnd);      // #3672
         TEST_CASE(localvarSwitch);   // #3744 - false positive when localvar is used in switch
         TEST_CASE(localvarNULL);     // #4203 - Setting NULL value is not redundant - it is safe
+        TEST_CASE(localvarUnusedGoto);    // #4447, #4558 goto
 
         TEST_CASE(crash1);
         TEST_CASE(usingNamespace);     // #4585
@@ -3610,6 +3611,37 @@ private:
                               "    foo(p);\n"
                               "    free(p);\n"
                               "    p = NULL;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarUnusedGoto() {
+	// #4447
+        functionVariableUsage("bool f(const int &i) {\n"
+                              "	int X = i;\n"
+                              "label:\n"
+                              "	if ( X == 0 ) {\n"
+                              "    X -= 101;\n"
+                              "    return true;\n"
+                              "	}\n"
+                              "	if ( X < 1001 )  {\n"
+                              "    X += 1;\n"
+                              "    goto label;\n"
+                              "	}\n"
+                              "	return false;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+	// #4558
+        functionVariableUsage("int f() {\n"
+                              "	int i,j=0;\n"
+                              "	start:\n"
+                              "	i=j;\n"
+                              "	i++;\n"
+                              "	j=i;\n"
+                              "	if (i<3)\n"
+                              "	    goto start;\n"
+                              "	return i;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

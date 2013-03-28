@@ -763,6 +763,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.clear();
             break;
         }
+        if (Token::Match(tok, "goto")) { // https://sourceforge.net/apps/trac/cppcheck/ticket/4447
+            variables.clear();
+            break;
+        }
+
 
         // bailout when for_each is used
         if (Token::Match(tok,"%var% (") && Token::simpleMatch(tok->linkAt(1),") {")) {
