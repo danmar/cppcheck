@@ -72,8 +72,23 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 tok2 = tok2->tokAt(2);
 
             // make sure we have valid code
-            if (!tok2 || !Token::Match(tok2, "{|:"))
-                break;
+            if (!tok2 || !Token::Match(tok2, "{|:")) {
+                // check for qualified variable
+                if (tok2 && tok2->next()) {
+                    if (tok2->next()->str() == ";")
+                        tok = tok2->next();
+                    else if (Token::Match(tok2->next(), "= {") &&
+                             tok2->linkAt(2)->next()->str() == ";")
+                        tok = tok2->linkAt(2)->next();
+                    else if (Token::Match(tok2->next(), "(|{")  &&
+                             tok2->next()->link()->next()->str() == ";")
+                        tok = tok2->next()->link()->next();
+                    else
+                        break; // bail
+                    continue;
+                }
+                break; // bail
+            }
 
             Scope *new_scope = findScope(tok->next(), scope);
 

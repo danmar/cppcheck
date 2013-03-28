@@ -188,6 +188,7 @@ private:
         TEST_CASE(symboldatabase29); // ticket #4442 (segmentation fault)
         TEST_CASE(symboldatabase30);
         TEST_CASE(symboldatabase31);
+        TEST_CASE(symboldatabase33); // ticket #4682 (false negatives)
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1443,6 +1444,16 @@ private:
                       "class Deri : Base {\n"
                       "};");
         ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->definedType->getFunction("foo"));
+    }
+
+    void symboldatabase33() { // ticket #4682
+        GET_SYMBOL_DB("static struct A::B s;\n"
+                      "static struct A::B t = { 0 };\n"
+                      "static struct A::B u(0);\n"
+                      "static struct A::B v{0};\n"
+                      "static struct A::B w({0});\n"
+                      "void foo() { }");
+        ASSERT(db && db->functionScopes.size() == 1);
     }
 
     void isImplicitlyVirtual() {
