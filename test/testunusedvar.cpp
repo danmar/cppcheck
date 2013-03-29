@@ -3616,7 +3616,7 @@ private:
     }
 
     void localvarUnusedGoto() {
-	// #4447
+        // #4447
         functionVariableUsage("bool f(const int &i) {\n"
                               "	int X = i;\n"
                               "label:\n"
@@ -3632,7 +3632,7 @@ private:
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-	// #4558
+        // #4558
         functionVariableUsage("int f() {\n"
                               "	int i,j=0;\n"
                               "	start:\n"
