@@ -439,7 +439,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 
 
 // check if function can assign pointer
-bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid, bool& unknown) const
+bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid, bool& unknown)
 {
     if (Token::Match(functiontoken, "if|while|for|switch|sizeof|catch"))
         return false;
