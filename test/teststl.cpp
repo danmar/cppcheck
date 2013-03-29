@@ -123,6 +123,7 @@ private:
         TEST_CASE(autoPointer);
 
         TEST_CASE(uselessCalls);
+        TEST_CASE(stabilityOfChecks); // #4684 cppcheck crash in template function call
 
     }
 
@@ -2228,6 +2229,21 @@ private:
         check("bool f() {\n"
               "    return x ? true : (y.empty());\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void stabilityOfChecks() {
+        // Stability test: 4684 cppcheck crash in template function call.
+        check("template<class T>\n"
+              "class EffectivityRangeData {};\n"
+              "template<class T>\n"
+              "class EffectivityRange {\n"
+              "    void unite() {\n"
+              "        x < vector < EffectivityRangeData<int >> >();\n"
+              "        EffectivityRange<int> er;\n"
+              "    }\n"
+              "    void shift() { EffectivityRangeData<int>::iterator it;  } \n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
