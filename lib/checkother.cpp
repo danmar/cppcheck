@@ -2062,7 +2062,7 @@ void CheckOther::checkMemsetZeroBytes()
 void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varname)
 {
     const std::string summary("memset() called to fill 0 bytes of '" + varname + "'.");
-    const std::string verbose(summary + ". Second and third arguments might be inverted.");
+    const std::string verbose(summary + " Second and third arguments might be inverted.");
     reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose);
 }
 
