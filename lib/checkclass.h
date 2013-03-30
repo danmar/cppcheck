@@ -73,6 +73,7 @@ public:
         checkClass.virtualDestructor();
         checkClass.checkConst();
         checkClass.copyconstructors();
+        checkClass.checkPureVirtualFunctionCall();
     }
 
 
@@ -118,6 +119,9 @@ public:
 
     void copyconstructors();
 
+    /** @brief call of pure virtual funcion */
+    void checkPureVirtualFunctionCall();
+
 private:
     const SymbolDatabase *symbolDatabase;
 
@@ -141,6 +145,7 @@ private:
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
+    void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
@@ -184,7 +189,8 @@ private:
                "* Constness for member functions\n"
                "* Order of initializations\n"
                "* Suggest usage of initialization list\n"
-               "* Suspicious subtraction from 'this'\n";
+               "* Suspicious subtraction from 'this'\n"
+               "* Call of pure virtual function in constructor/desctructor\n";
     }
 
     // operatorEqRetRefThis helper function
@@ -250,6 +256,27 @@ private:
      * @param usage reference to usage vector
      */
     void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage);
+
+    /**
+     * @brief gives a list of tokens where pure virtual functions are called directly or indirectly
+     * @param function function to be checked
+     * @param callsPureVirtualFunctionMap map of results for already checked functions
+     * @return list of tokens where pure virtual functions are called
+     */
+    const std::list<const Token *> & callsPureVirtualFunction(
+        const Function & function,
+        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap);
+
+    /**
+     * @brief looks for the first pure virtual function call stack
+     * @param callsPureVirtualFunctionMap map of results obtained from callsPureVirtualFunction
+     * @param pureCall token where pure virtual function is called directly or indirectly
+     * @param[in,out] pureFuncStack list to append the stack
+     */
+    void getFirstPureVirtualFunctionCallStack(
+        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap,
+        const Token & pureCall,
+        std::list<const Token *> & pureFuncStack);
 
     static bool canNotCopy(const Scope *scope);
 };

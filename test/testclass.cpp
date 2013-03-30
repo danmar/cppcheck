@@ -172,6 +172,10 @@ private:
         TEST_CASE(initializerListUsage);
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
+
+        TEST_CASE(pureVirtualFunctionCall);
+        TEST_CASE(pureVirtualFunctionCallOtherClass);
+        TEST_CASE(pureVirtualFunctionCallWithBody);
     }
 
     void checkCopyConstructor(const char code[]) {
@@ -5616,6 +5620,146 @@ private:
                    "class foo;\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void checkPureVirtualFunctionCall(const char code[], const Settings *s = 0, bool inconclusive = true) {
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        if (s)
+            settings = *s;
+        else
+            settings.addEnabled("style");
+        settings.inconclusive = inconclusive;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkPureVirtualFunctionCall();
+    }
+
+    void pureVirtualFunctionCall() {
+        checkPureVirtualFunctionCall("class A\n"
+                                     "{\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    A();\n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{pure();}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     "{\n"
+                                     "    virtual int pure()=0;\n"
+                                     "    A();\n"
+                                     "    int m;\n"
+                                     "};\n"
+                                     "A::A():m(A::pure())\n"
+                                     "{}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", "", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pure()=0; \n"
+                                     "    virtual ~A(); \n"
+                                     "    int m; \n"
+                                     "};\n"
+                                     "A::~A()\n"
+                                     "{pure();}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    void nonpure()\n"
+                                     "    {pure();}\n"
+                                     "    A(); \n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{nonpure();}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual int pure()=0;\n"
+                                     "    int nonpure()\n"
+                                     "    {return pure();}\n"
+                                     "    A(); \n"
+                                     "    int m;\n"
+                                     "};\n"
+                                     "A::A():m(nonpure())\n"
+                                     "{}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", "", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pure()=0; \n"
+                                     "    void nonpure()\n"
+                                     "    {pure();}\n"
+                                     "    virtual ~A();\n"
+                                     "    int m;\n"
+                                     "};\n"
+                                     "A::~A()\n"
+                                     "{nonpure();}\n");
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
+    }
+
+    void pureVirtualFunctionCallOtherClass() {
+        checkPureVirtualFunctionCall("class A\n"
+                                     "{\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    A(const A & a);\n"
+                                     "};\n"
+                                     "A::A(const A & a)\n"
+                                     "{a.pure();}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     "{\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    A();\n"
+                                     "};\n"
+                                     "class B\n"
+                                     "{\n"
+                                     "    virtual void pure()=0;\n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{B b; b.pure();}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void pureVirtualFunctionCallWithBody() {
+        checkPureVirtualFunctionCall("class A\n"
+                                     "{\n"
+                                     "    virtual void pureWithBody()=0;\n"
+                                     "    A();\n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{pureWithBody();}\n"
+                                     "void A::pureWithBody()\n"
+                                     "{}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pureWithBody()=0;\n"
+                                     "    void nonpure()\n"
+                                     "    {pureWithBody();}\n"
+                                     "    A(); \n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{nonpure();}\n"
+                                     "void A::pureWithBody()\n"
+                                     "{}\n");
+        ASSERT_EQUALS("", errout.str());
+
+    }
+
 };
 
 REGISTER_TEST(TestClass)
