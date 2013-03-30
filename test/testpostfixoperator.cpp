@@ -62,6 +62,7 @@ private:
         TEST_CASE(test2168);
         TEST_CASE(pointer);   // #2321 - postincrement of pointer is OK
         TEST_CASE(testHangWithInvalidCode); // #2847 - cppcheck hangs with 100% cpu load
+        TEST_CASE(testtemplate); // #4686
     }
 
     void testHangWithInvalidCode() {
@@ -344,6 +345,14 @@ private:
               "int * p;\n"
               "p++;\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testtemplate() {
+        check("bool foo() {\n"
+              "    std::vector<FilterConfigCacheEntry>::iterator aIter(aImport.begin());\n"
+              "    aIter++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
     }
 };
 

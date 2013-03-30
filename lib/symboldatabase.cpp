@@ -2302,9 +2302,12 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         if (found) {
             localVarTok = skipPointers(closeTok->next());
 
-            if (Token::Match(localVarTok, ":: %type% %var% ;|=")) {
-                localTypeTok = localVarTok->next();
-                localVarTok = localVarTok->tokAt(2);
+            if (Token::Match(localVarTok, ":: %type% %var% ;|=|(")) {
+                if (localVarTok->strAt(3) != "(" ||
+                    Token::simpleMatch(localVarTok->linkAt(3), ") ;")) {
+                    localTypeTok = localVarTok->next();
+                    localVarTok = localVarTok->tokAt(2);
+                }
             }
         }
     } else if (Token::Match(localTypeTok, "%type%")) {

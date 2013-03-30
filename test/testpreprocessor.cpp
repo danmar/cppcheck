@@ -322,6 +322,7 @@ private:
     void readCode4() {
         const char code[] = "char c = '\\ ';";
         Settings settings;
+        errout.str("");
         Preprocessor preprocessor(&settings, this);
         std::istringstream istr(code);
         ASSERT_EQUALS("char c = '\\ ';", preprocessor.read(istr,"test.c"));
