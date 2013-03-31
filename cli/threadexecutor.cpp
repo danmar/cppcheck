@@ -409,13 +409,14 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
         }
         const std::string &file = it->first;
         const std::size_t fileSize = it->second;
-        it++;
+        ++it;
 
         LeaveCriticalSection(&threadExecutor->_fileSync);
 
-        if (!threadExecutor->_fileContents.empty() && threadExecutor->_fileContents.find(file) != threadExecutor->_fileContents.end()) {
+        std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
+        if (fileContent != threadExecutor->_fileContents.end()) {
             // File content was given as a string
-            result += fileChecker.check(file, threadExecutor->_fileContents[file]);
+            result += fileChecker.check(file, fileContent->second);
         } else {
             // Read file from a file
             result += fileChecker.check(file);
