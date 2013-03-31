@@ -2,7 +2,6 @@
 <Project DefaultTargets="All" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <DefineSolutionProperties>false</DefineSolutionProperties>
-    <WixToolPath Condition="'$(WixToolPath)' == ''">$(PROGRAMFILES)\WiX Toolset v3.7\bin\</WixToolPath>
     <WixTargetsPath Condition="'$(WixTargetsPath)' == ''">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
 
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
@@ -18,7 +17,6 @@
 
   <ItemGroup>
     <WixExtension Include="WixUIExtension">
-      <HintPath>C:\Programme\WiX Toolset v3.6\bin\WixUIExtension.dll</HintPath>
       <Name>WixUIExtension</Name>
     </WixExtension>
     <Compile Include="cppcheck.wxs" />
