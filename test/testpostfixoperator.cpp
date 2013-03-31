@@ -56,13 +56,14 @@ private:
     void run() {
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
-        TEST_CASE(teststream);
         TEST_CASE(testvolatile);
         TEST_CASE(testiterator);
         TEST_CASE(test2168);
         TEST_CASE(pointer);   // #2321 - postincrement of pointer is OK
         TEST_CASE(testHangWithInvalidCode); // #2847 - cppcheck hangs with 100% cpu load
         TEST_CASE(testtemplate); // #4686
+        TEST_CASE(testmember);
+        TEST_CASE(testcomma);
     }
 
     void testHangWithInvalidCode() {
@@ -102,6 +103,13 @@ private:
               "void foo()\n"
               "{\n"
               "    K k(0);\n"
+              "    k++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
+
+        check("struct K {};\n"
+              "void foo(K& k)\n"
+              "{\n"
               "    k++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
@@ -230,39 +238,6 @@ private:
 
     }
 
-    void teststream() {
-        check("int main()\n"
-              "{\n"
-              "    int k(0);\n"
-              "    std::cout << k << std::endl;\n"
-              "    std::cout << k++ << std::endl;\n"
-              "    std::cout << k-- << std::endl;\n"
-              "    return 0;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("class K {};\n"
-              "int main()\n"
-              "{\n"
-              "    K k(0);\n"
-              "    std::cout << k << std::endl;\n"
-              "    std::cout << k-- << std::endl;\n"
-              "    return 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
-
-        check("class K {};\n"
-              "int main()\n"
-              "{\n"
-              "    K k(0);\n"
-              "    std::cout << k << std::endl;\n"
-              "    std::cout << ++k << std::endl;\n"
-              "    std::cout << --k << std::endl;\n"
-              "    return 0;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void testvolatile() {
         check("class K {};\n"
               "int main()\n"
@@ -353,6 +328,39 @@ private:
               "    aIter++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
+    }
+
+    void testmember() {
+        check("bool foo() {\n"
+              "    class A {}; class B {A a;};\n"
+              "    B b;\n"
+              "    b.a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
+
+        check("bool foo() {\n"
+              "    class A {}; class B {A a;};\n"
+              "    B b;\n"
+              "    foo(b.a++);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testcomma() {
+        check("bool foo(int i) {\n"
+              "    class A {};\n"
+              "    A a;\n"
+              "    i++, a++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
+
+        check("bool foo(int i) {\n"
+              "    class A {};\n"
+              "    A a;\n"
+              "    foo(i, a++);\n"
+              "    foo(a++, i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
