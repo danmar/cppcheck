@@ -22,10 +22,13 @@
 #define CheckUnusedVarH
 //---------------------------------------------------------------------------
 
+#include <map>
+
 #include "config.h"
 #include "check.h"
 #include "settings.h"
 
+class Type;
 class Token;
 class Scope;
 class Variables;
@@ -72,6 +75,8 @@ public:
     void checkStructMemberUsage();
 
 private:
+    bool isRecordTypeWithoutSideEffects(const Type* type);
+
     // Error messages..
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname);
     void unusedVariableError(const Token *tok, const std::string &varname);
@@ -104,6 +109,8 @@ private:
                "* unassigned variable\n"
                "* unused struct member\n";
     }
+
+    std::map<const Type *,bool> isRecordTypeWithoutSideEffectsMap;
 };
 /// @}
 //---------------------------------------------------------------------------

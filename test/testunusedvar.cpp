@@ -153,6 +153,7 @@ private:
         TEST_CASE(localvarUnusedGoto);    // #4447, #4558 goto
 
         TEST_CASE(crash1);
+        TEST_CASE(crash2);
         TEST_CASE(usingNamespace);     // #4585
     }
 
@@ -3651,6 +3652,16 @@ private:
                               "void convertToTokenArray() {\n"
                               "}\n"
                               "SAL_WNODEPRECATED_DECLARATIONS_POP"); // #4033
+    }
+
+    void crash2() {
+        functionVariableUsage("template<unsigned dim>\n"
+                              "struct Y: Y<dim-1> { };\n"
+                              "template<>\n"
+                              "struct Y<0> {};\n"
+                              "void f() {\n"
+                              "    Y y;\n"
+                              "}"); // #4695
     }
 
     void usingNamespace() {

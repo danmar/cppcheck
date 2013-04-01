@@ -22,6 +22,7 @@
 #include "symboldatabase.h"
 #include <algorithm>
 #include <cctype>
+#include <utility>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -616,20 +617,6 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     }
 
     return tok;
-}
-
-static bool isRecordTypeWithoutSideEffects(const Type* type)
-{
-    // a type that has no side effects (no constructors and no members with constructors)
-    /** @todo false negative: check constructors for side effects */
-    if (type && type->classScope && type->classScope->numConstructors == 0 &&
-        (type->classScope->varlist.empty() || type->needInitialization == Type::True)) {
-        bool yes = true;
-        for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); yes && i != type->derivedFrom.end(); ++i)
-            yes = isRecordTypeWithoutSideEffects(i->type);
-        return yes;
-    }
-    return false;
 }
 
 static bool isPartOfClassStructUnion(const Token* tok)
@@ -1253,4 +1240,31 @@ void CheckUnusedVar::checkStructMemberUsage()
 void CheckUnusedVar::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
 {
     reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used.");
+}
+
+bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
+{
+    // a type that has no side effects (no constructors and no members with constructors)
+    /** @todo false negative: check constructors for side effects */
+
+    std::pair<std::map<Type const *,bool>::iterator,bool> found=isRecordTypeWithoutSideEffectsMap.insert(
+                std::pair<const Type *,bool>(type,false)); //Initialize with side effects for possilbe recursions
+    bool & withoutSideEffects=found.first->second;
+    if (!found.second)
+        return withoutSideEffects;
+
+    if (type && type->classScope && type->classScope->numConstructors == 0 &&
+        (type->classScope->varlist.empty() || type->needInitialization == Type::True)) {
+        for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); i != type->derivedFrom.end(); ++i) {
+            if (!isRecordTypeWithoutSideEffects(i->type)) {
+                withoutSideEffects=false;
+                return withoutSideEffects;
+            }
+        }
+        withoutSideEffects=true;
+        return withoutSideEffects;
+    }
+
+    withoutSideEffects=false;   // unknown types are assumed to have side effects
+    return withoutSideEffects;
 }
