@@ -70,6 +70,7 @@ private:
 #ifndef NDEBUG
         TEST_CASE(enabledInternal);
 #endif
+        TEST_CASE(enabledMultiple);
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
         TEST_CASE(errorExitcodeStr);
@@ -477,6 +478,7 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.isEnabled("style"));
+        ASSERT(settings.isEnabled("warning"));
         ASSERT(settings.isEnabled("unusedFunction"));
         ASSERT(settings.isEnabled("missingInclude"));
         ASSERT(!settings.isEnabled("internal"));
@@ -489,6 +491,7 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(settings.isEnabled("style"));
+        ASSERT(settings.isEnabled("warning"));
         ASSERT(settings.isEnabled("performance"));
         ASSERT(settings.isEnabled("portability"));
         ASSERT(!settings.isEnabled("unusedFunction"));
@@ -502,6 +505,7 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(!settings.isEnabled("style"));
+        ASSERT(!settings.isEnabled("warning"));
         ASSERT(settings.isEnabled("performance"));
         ASSERT(!settings.isEnabled("portability"));
         ASSERT(!settings.isEnabled("unusedFunction"));
@@ -515,6 +519,7 @@ private:
         CmdLineParser parser(&settings);
         ASSERT(parser.ParseFromArgs(3, argv));
         ASSERT(!settings.isEnabled("style"));
+        ASSERT(!settings.isEnabled("warning"));
         ASSERT(!settings.isEnabled("performance"));
         ASSERT(settings.isEnabled("portability"));
         ASSERT(!settings.isEnabled("unusedFunction"));
@@ -549,6 +554,20 @@ private:
         ASSERT(settings.isEnabled("internal"));
     }
 #endif
+
+    void enabledMultiple() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--enable=missingInclude,portability,warning", "file.cpp"};
+        settings = Settings();
+        CmdLineParser parser(&settings);
+        ASSERT(parser.ParseFromArgs(3, argv));
+        ASSERT(!settings.isEnabled("style"));
+        ASSERT(settings.isEnabled("warning"));
+        ASSERT(!settings.isEnabled("performance"));
+        ASSERT(settings.isEnabled("portability"));
+        ASSERT(!settings.isEnabled("unusedFunction"));
+        ASSERT(settings.isEnabled("missingInclude"));
+    }
 
     void errorExitcode() {
         REDIRECT;
