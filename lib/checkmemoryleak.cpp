@@ -23,8 +23,6 @@
 #include "tokenize.h"
 
 #include <algorithm>
-#include <cstring>
-#include <cstdlib>
 #include <sstream>
 #include <set>
 #include <stack>
@@ -91,16 +89,6 @@ static const char * const call_func_white_list[] = {
     , "utime", "utimes", "vasprintf", "vfprintf", "vfscanf", "vprintf"
     , "vscanf", "vsnprintf", "vsprintf", "vsscanf", "while", "wordexp","write", "writev"
 };
-
-extern "C"
-{
-    int call_func_white_list_compare(const void *a, const void *b);
-
-    int call_func_white_list_compare(const void *a, const void *b)
-    {
-        return std::strcmp((const char *)a, *(const char * const *)b);
-    }
-}
 
 //---------------------------------------------------------------------------
 
@@ -584,9 +572,9 @@ bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, boo
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
 {
-    return (std::bsearch(funcname.c_str(), call_func_white_list,
-                         sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
-                         sizeof(call_func_white_list[0]), call_func_white_list_compare) != NULL);
+    return (std::binary_search(call_func_white_list,
+                               call_func_white_list+sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
+                               funcname));
 }
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz)
