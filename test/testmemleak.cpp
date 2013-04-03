@@ -348,6 +348,7 @@ private:
 
         TEST_CASE(trac1949);
         TEST_CASE(trac2540);
+        TEST_CASE(trac3888); // #3888 False negative: memory leak through member function
 
         // #2662: segfault because of endless recursion (call_func -> getAllocationType -> functionReturnType -> call_func ..)
         TEST_CASE(trac2662);
@@ -3801,6 +3802,21 @@ private:
               "    char *name = strtok(str, \" \");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
+    }
+
+    void trac3888() {
+        check("class Pool{\n"
+              "    int* GetNewObj()\n"
+              "    {\n"
+              " 	   return new int;\n"
+              "    }\n"
+              "};\n"
+              "void foo(){\n"
+              "    Pool pool;\n"
+              "    int* a = pool.GetNewObj();\n"
+              "    int* b = GetNewObj();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: a\n", errout.str());
     }
 
     void trac2662() {
