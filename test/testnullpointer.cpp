@@ -57,6 +57,7 @@ private:
         TEST_CASE(nullpointer21); // #4038 (fp: if (x) p=q; else return;)
         TEST_CASE(nullpointer22); // #4007 (fp: (uri != NULL) && (*uri == 0))
         TEST_CASE(nullpointer23); // #4665 (false positive)
+        TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
         TEST_CASE(nullConstantDereference);  // Dereference NULL constant
@@ -1342,6 +1343,16 @@ private:
               "    sprintf(cBuf, \"%s\", c ? c : \"0\" );\n"
               "}");
         TODO_ASSERT_EQUALS("","[test.cpp:4]: (error) Possible null pointer dereference: c\n", errout.str());
+    }
+
+    void nullpointer_cast() { // #4692
+        check("char *nasm_skip_spaces(const char *p) {\n"
+              "    if (p)\n"
+              "        while (*p && nasm_isspace(*p))\n"
+              "            p++;\n"
+              "    return (char *)p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_castToVoid() {  // #3771
