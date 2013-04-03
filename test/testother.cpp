@@ -7098,6 +7098,25 @@ private:
               "    x = z.g();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (performance, inconclusive) Variable 'x' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+
+        // from #3103 (avoid a false negative)
+        check("int foo(){\n"
+              "    int x;\n"
+              "    x = 1;\n"
+              "    x = 1;\n"
+              "    return x + 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+
+        // from #3103 (avoid a false positive)
+        check("int foo(){\n"
+              "    int x;\n"
+              "    x = 1;\n"
+              "    if (y)\n" // <-- cppcheck does not know anything about 'y'
+              " 	   x = 2;\n"
+              "    return x + 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
