@@ -69,7 +69,7 @@ private:
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
-        checkUnusedFunctions.parseTokens(tokenizer);
+        checkUnusedFunctions.parseTokens(tokenizer, &settings);
         checkUnusedFunctions.check(this);
     }
 
@@ -243,7 +243,7 @@ private:
             std::istringstream istr(code);
             tokenizer.tokenize(istr, fname.str().c_str());
 
-            c.parseTokens(tokenizer);
+            c.parseTokens(tokenizer, &settings);
         }
 
         // Check for unused functions..

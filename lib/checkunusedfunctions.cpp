@@ -31,7 +31,7 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Settings *settings)
 {
     // Function declarations..
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
@@ -92,6 +92,50 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
     // Function usage..
     const Token *scopeEnd = NULL;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+
+        if(settings->isEnabled("qt")) {
+            // parsing of QT QML calls
+            if (tok->str() == "onClicked" || tok->str() == "onFinished" || tok->str() == "onTriggered") {
+                const Token * qmlVarToken = tok->tokAt(3);
+                int scope = 1;
+                // find all function calls in qml code (starts with '(', not if or while etc)
+                while (scope)
+                {
+                    if(qmlVarToken->str() == "{") {
+                        scope++;
+                    } else if(qmlVarToken->str() == "}")
+                        scope--;
+                    else if(qmlVarToken->next()->str() == "(" &&
+                        (qmlVarToken->str() != "if" &&
+                         qmlVarToken->str() != "while" &&
+                         qmlVarToken->str() != "typeof" &&
+                         qmlVarToken->str() != "for"))
+                    {
+                        if (_functions.find(qmlVarToken->str()) != _functions.end())
+                            _functions[qmlVarToken->str()].usedOtherFile = true;
+                    }
+                    qmlVarToken = qmlVarToken->next();
+                }
+            }
+
+            // look for QT properties (read/write/notify)
+            if (tok->str() == "Q_PROPERTY") {
+                const Token * qPropToken = tok;
+                while(qPropToken->str() != ")") {
+                    if(qPropToken->str() == "READ" ||
+                       qPropToken->str() == "WRITE" ||
+                       qPropToken->str() == "NOTIFY")
+                    {
+                        qPropToken = qPropToken->next();
+                        if (_functions.find(qPropToken->str()) != _functions.end())
+                            _functions[qPropToken->str()].usedOtherFile = true;
+                        continue;
+                    }
+                    qPropToken = qPropToken->next();
+                }
+            }
+        }
+
         if (scopeEnd == NULL) {
             if (!Token::Match(tok, ")|= const| {"))
                 continue;

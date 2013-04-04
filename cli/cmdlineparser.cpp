@@ -751,6 +751,8 @@ void CmdLineParser::PrintHelp()
               "                          * missingInclude\n"
               "                                  Warn if there are missing includes. For\n"
               "                                  detailed information, use '--check-config'.\n"
+              "                          * qt\n"
+              "                                  Parse QT QML files to resolve unused functions.\n"
               "                         Several ids can be given if you separate them with\n"
               "                         commas. See also --std\n"
               "    --error-exitcode=<n> If errors are found, integer [n] is returned instead of\n"

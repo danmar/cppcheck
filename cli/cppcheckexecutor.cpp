@@ -175,11 +175,24 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         std::size_t processedsize = 0;
         unsigned int c = 0;
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-            returnValue += cppCheck.check(i->first);
-            processedsize += i->second;
-            if (!settings._errorsOnly)
-                reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
-            c++;
+            if(!Path::isExternal(i->first)) {
+                returnValue += cppCheck.check(i->first);
+                processedsize += i->second;
+                if (!settings._errorsOnly)
+                    reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                c++;
+            }
+        }
+        // second loop to catch all external files which may not work until all
+        // c/cpp files have been parsed and checked
+        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+            if(Path::isExternal(i->first)) {
+                returnValue += cppCheck.check(i->first);
+                processedsize += i->second;
+                if (!settings._errorsOnly)
+                    reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                c++;
+            }
         }
 
         cppCheck.checkFunctionUsage();

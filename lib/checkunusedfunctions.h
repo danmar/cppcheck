@@ -44,7 +44,7 @@ public:
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens(const Tokenizer &tokenizer);
+    void parseTokens(const Tokenizer &tokenizer, const Settings *settings);
 
     void check(ErrorLogger * const errorLogger);
 

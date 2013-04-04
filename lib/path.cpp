@@ -206,9 +206,15 @@ bool Path::isCPP(const std::string &path)
     return(getFilenameExtension(path) == ".C");
 }
 
+bool Path::isExternal(const std::string &path)
+{
+	const std::string extension = getFilenameExtensionInLowerCase(path);
+	return(extension == ".qml");
+}
+
 bool Path::acceptFile(const std::string &path)
 {
-    return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path));
+    return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path) || isExternal(path));
 }
 
 bool Path::isHeader(const std::string &path)

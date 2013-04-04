@@ -304,16 +304,18 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             _dependencies.insert(_tokenizer.list.getFiles().begin()+1, _tokenizer.list.getFiles().end());
 
         // call all "runChecks" in all registered Check classes
-        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-            if (_settings.terminated())
-                return;
+        if (!Path::isExternal(FileName)) {
+            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+                if (_settings.terminated())
+                    return;
 
-            Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
-            (*it)->runChecks(&_tokenizer, &_settings, this);
+                Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
+                (*it)->runChecks(&_tokenizer, &_settings, this);
+            }
         }
 
         if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
-            _checkUnusedFunctions.parseTokens(_tokenizer);
+            _checkUnusedFunctions.parseTokens(_tokenizer, &_settings);
 
         Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
         result = _tokenizer.simplifyTokenList();

@@ -229,6 +229,14 @@ Example: '-UDEBUG'</para>
                   <para>Warn if there are missing includes. For detailed information use --check-config</para>
                 </glossdef>
               </glossentry>
+              <glossentry>
+                <glossterm>qt</glossterm>
+                <glossdef>
+                  <para>If a directory containing qt .qml files is added to the source list these
+                  will be parsed to find and resolve functions that may be reported as unused as no C/C++ code
+                  will reference them</para>
+                </glossdef>
+              </glossentry>
             </glosslist>
             By default none of the additional checks are enabled. Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunction. See also --std
           </para>
