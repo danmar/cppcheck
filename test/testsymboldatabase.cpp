@@ -118,6 +118,7 @@ private:
         TEST_CASE(isVariableDeclarationIdentifiesReference);
         TEST_CASE(isVariableDeclarationDoesNotIdentifyTemplateClass);
         TEST_CASE(isVariableDeclarationPointerConst);
+        TEST_CASE(isVariableDeclarationRValueRef);
 
         TEST_CASE(staticMemberVar);
 
@@ -527,6 +528,18 @@ private:
         ASSERT(false == v.isReference());
     }
 
+    void isVariableDeclarationRValueRef() {
+        reset();
+        givenACodeSampleToTokenize var("int&& i;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0);
+        ASSERT(false == v.isArray());
+        ASSERT(false == v.isPointer());
+        ASSERT(true == v.isReference());
+        ASSERT(true == v.isRValueReference());
+    }
+
     void staticMemberVar() {
         GET_SYMBOL_DB("class Foo {\n"
                       "    static const double d;\n"
@@ -756,6 +769,8 @@ private:
             ASSERT(foo_int && foo_int->tokenDef->str() == "foo");
             ASSERT(foo_int && !foo_int->hasBody);
             ASSERT(foo_int && foo_int->tokenDef->strAt(2) == "int");
+
+            ASSERT(&foo_int->argumentList.front() == db->getVariableFromVarId(1));
         }
     }
 

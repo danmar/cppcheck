@@ -111,7 +111,8 @@ class CPPCHECKLIB Variable {
         fIsArray     = (1 << 5), /** @brief array variable */
         fIsPointer   = (1 << 6), /** @brief pointer variable */
         fIsReference = (1 << 7), /** @brief reference variable */
-        fHasDefault  = (1 << 8)  /** @brief function argument with default value */
+        fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
+        fHasDefault  = (1 << 9)  /** @brief function argument with default value */
     };
 
     /**
@@ -339,6 +340,14 @@ public:
      */
     bool isReference() const {
         return getFlag(fIsReference);
+    }
+
+    /**
+     * Is reference variable.
+     * @return true if reference, false otherwise
+     */
+    bool isRValueReference() const {
+        return getFlag(fIsRValueRef);
     }
 
     /**

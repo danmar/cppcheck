@@ -839,10 +839,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         // add all function parameters
         std::list<Function>::const_iterator func;
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            // ignore function without implementations
-            if (!func->hasBody)
-                continue;
-
             std::list<Variable>::const_iterator arg;
             for (arg = func->argumentList.begin(); arg != func->argumentList.end(); ++arg) {
                 // check for named parameters
@@ -997,8 +993,14 @@ void Variable::evaluate()
         else if (tok->str() == "*") {
             setFlag(fIsPointer, true);
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
-        } else if (tok->str() == "&")
+        } else if (tok->str() == "&") {
+            if (isReference())
+                setFlag(fIsRValueRef, true);
             setFlag(fIsReference, true);
+        } else if (tok->str() == "&&") { // Before simplification, && isn't split up
+            setFlag(fIsRValueRef, true);
+            setFlag(fIsReference, true); // Set also fIsReference
+        }
 
         if (tok->str() == "<")
             tok->findClosingBracket(tok);
@@ -1567,6 +1569,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "    isArray: " << (var->isArray() ? "true" : "false") << std::endl;
     std::cout << indent << "    isPointer: " << (var->isPointer() ? "true" : "false") << std::endl;
     std::cout << indent << "    isReference: " << (var->isReference() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isRValueRef: " << (var->isRValueReference() ? "true" : "false") << std::endl;
     std::cout << indent << "    hasDefault: " << (var->hasDefault() ? "true" : "false") << std::endl;
     std::cout << indent << "_type: ";
     if (var->type()) {
@@ -2281,7 +2284,7 @@ static const Token* skipScopeIdentifiers(const Token* tok)
 
 static const Token* skipPointers(const Token* tok)
 {
-    while (Token::Match(tok, "*|&")) {
+    while (Token::Match(tok, "*|&|&&")) {
         tok = tok->next();
     }
 

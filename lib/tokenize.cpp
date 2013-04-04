@@ -1964,10 +1964,21 @@ bool Tokenizer::tokenize(std::istream &code,
 
     simplifyEmptyNamespaces();
 
-    bool valid = validate();
-    if (valid)
-        createSymbolDatabase();
-    return valid;
+    if (!validate())
+        return false;
+
+    createSymbolDatabase();
+
+    // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
+    for (std::size_t i = 0; i < _symbolDatabase->getVariableListSize(); i++) {
+        const Variable* var = _symbolDatabase->getVariableFromVarId(i);
+        if (var && var->isRValueReference()) {
+            const_cast<Token*>(var->typeEndToken())->str("&");
+            const_cast<Token*>(var->typeEndToken())->insertToken("&");
+        }
+    }
+
+    return true;
 }
 //---------------------------------------------------------------------------
 
@@ -2555,7 +2566,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             bool ok = tok2->findClosingBracket(tok2);
             if (!ok || !tok2)
                 break;
-        } else if (tok2->str() == "&") {
+        } else if (tok2->str() == "&" || tok2->str() == "&&") {
             ref = true;
         } else if (tok2->str() != "*" && tok2->str() != "::") {
             break;

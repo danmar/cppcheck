@@ -272,6 +272,7 @@ private:
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
+        TEST_CASE(varid_rvalueref);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4310,6 +4311,22 @@ private:
 
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: typename A a@1 ;\n", tokenizeDebugListing("typename A a;"));
+    }
+
+    void varid_rvalueref() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: int & & a@1 ;\n", tokenizeDebugListing("int&& a;"));
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void foo ( int & & a@1 ) { }\n", tokenizeDebugListing("void foo(int&& a) {}"));
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class C {\n"
+                      "2: C ( int & & a@1 ) ;\n"
+                      "3: } ;\n",
+                      tokenizeDebugListing("class C {\n"
+                                           "    C(int&& a);\n"
+                                           "};"));
     }
 
     void varidclass1() {
