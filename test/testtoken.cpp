@@ -279,12 +279,16 @@ private:
     void nextArgument() const {
         givenACodeSampleToTokenize example1("foo(1, 2, 3, 4);");
         ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
+        ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(4)->nextArgument(), "3 , 4"));
 
         givenACodeSampleToTokenize example2("foo();");
         ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == 0);
 
         givenACodeSampleToTokenize example3("foo(bar(a, b), 2, 3);");
         ASSERT_EQUALS(true, Token::simpleMatch(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
+
+        givenACodeSampleToTokenize example4("foo(x.i[1], \"\", 3);");
+        ASSERT_EQUALS(true, Token::simpleMatch(example4.tokens()->tokAt(2)->nextArgument(), "\"\" , 3"));
     }
 
     void eraseTokens() const {

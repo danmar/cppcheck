@@ -4104,6 +4104,16 @@ private:
               "write(1, \"Dump string \\n\", 10);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4706 avoid crashing when a struct member is used as first argument
+        check("static struct {\n"
+              "    int i[2];\n"
+              "} p;\n"
+              "void foo()\n"
+              "{\n"
+              "    write(p.i[1], \"\", 1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
