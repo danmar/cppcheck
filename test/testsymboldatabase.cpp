@@ -132,6 +132,7 @@ private:
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
         TEST_CASE(hasSubClassConstructor);
+        TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
 
@@ -726,6 +727,29 @@ private:
                 }
             }
             ASSERT_EQUALS(true, seen_something);
+        }
+    }
+
+    void testConstructors() {
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor && !ctor->isExplicit);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { explicit Foo(Foo f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(4)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor && ctor->isExplicit);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo&& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
         }
     }
 

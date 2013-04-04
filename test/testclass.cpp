@@ -5661,7 +5661,7 @@ private:
                                      "};\n"
                                      "A::A():m(A::pure())\n"
                                      "{}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
 
         checkPureVirtualFunctionCall("class A\n"
                                      " {\n"

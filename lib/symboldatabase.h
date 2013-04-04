@@ -432,7 +432,7 @@ private:
 
 class CPPCHECKLIB Function {
 public:
-    enum Type { eConstructor, eCopyConstructor, eOperatorEqual, eDestructor, eFunction };
+    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
     Function()
         : tokenDef(NULL),

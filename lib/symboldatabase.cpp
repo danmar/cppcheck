@@ -362,30 +362,27 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         if (function.tokenDef->previous()->str() == "~")
                             function.type = Function::eDestructor;
 
-                        // copy constructor
-                        else if ((Token::Match(function.tokenDef, "%var% ( const %var% & %var%| )") ||
-                                  (Token::Match(function.tokenDef, "%var% ( const %var% <") &&
-                                   Token::Match(function.tokenDef->linkAt(4), "> & %var%| )"))) &&
-                                 function.tokenDef->strAt(3) == scope->className)
-                            function.type = Function::eCopyConstructor;
+                        // copy/move constructor?
+                        else if (Token::Match(function.tokenDef, "%var% ( const| %var% &|&& &| %var%| )") ||
+                                 Token::Match(function.tokenDef, "%var% ( const| %var% <")) {
+                            const Token* typTok = function.tokenDef->tokAt(2);
+                            if (typTok->str() == "const")
+                                typTok = typTok->next();
+                            if (typTok->strAt(1) == "<") { // TODO: Remove this branch (#4710)
+                                if (Token::Match(typTok->linkAt(1), "> & %var%| )"))
+                                    function.type = Function::eCopyConstructor;
+                                else if (Token::Match(typTok->linkAt(1), "> &&|& & %var%| )"))
+                                    function.type = Function::eMoveConstructor;
+                                else
+                                    function.type = Function::eConstructor;
+                            } else if (typTok->strAt(1) == "&&" || typTok->strAt(2) == "&")
+                                function.type = Function::eMoveConstructor;
+                            else
+                                function.type = Function::eCopyConstructor;
 
-                        else if ((Token::Match(function.tokenDef, "%var% <") &&
-                                  Token::Match(function.tokenDef->linkAt(1), "> (const %var% & %var%| )")) &&
-                                 function.tokenDef->linkAt(1)->strAt(3) == scope->className)
-                            function.type = Function::eCopyConstructor;
-
-                        // copy constructor with non-const argument
-                        else if ((Token::Match(function.tokenDef, "%var% ( %var% & %var%| )") ||
-                                  (Token::Match(function.tokenDef, "%var% ( %var% <") &&
-                                   Token::Match(function.tokenDef->linkAt(4), "> & %var%| )"))) &&
-                                 function.tokenDef->strAt(2) == scope->className)
-                            function.type = Function::eCopyConstructor;
-
-                        else if ((Token::Match(function.tokenDef, "%var% <") &&
-                                  Token::Match(function.tokenDef->linkAt(1), "> ( %var% & %var%| )")) &&
-                                 function.tokenDef->strAt(2) == scope->className)
-                            function.type = Function::eCopyConstructor;
-
+                            if (typTok->str() != function.tokenDef->str())
+                                function.type = Function::eConstructor; // Overwrite, if types are not identical
+                        }
                         // regular constructor
                         else
                             function.type = Function::eConstructor;
@@ -1635,6 +1632,7 @@ void SymbolDatabase::printOut(const char *title) const
                       << _tokenizer->list.fileLine(func->tokenDef) << std::endl;
             std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
                                               func->type == Function::eCopyConstructor ? "CopyConstructor" :
+                                              func->type == Function::eMoveConstructor ? "MoveConstructor" :
                                               func->type == Function::eOperatorEqual ? "OperatorEqual" :
                                               func->type == Function::eDestructor ? "Destructor" :
                                               func->type == Function::eFunction ? "Function" :
@@ -2394,10 +2392,6 @@ const Function* Scope::findFunction(const Token *tok) const
         if (i->tokenDef->str() == tok->str()) {
             const Function *func = &*i;
             if (tok->strAt(1) == "(" && tok->tokAt(2)) {
-                // check if function has no arguments
-                if (tok->strAt(2) == ")" && (func->argCount() == 0 || func->minArgCount() == 0))
-                    return func;
-
                 // check the arguments
                 unsigned int args = 0;
                 const Token *arg = tok->tokAt(2);
