@@ -60,6 +60,7 @@ public:
         checkStl.string_c_str();
         checkStl.checkAutoPointer();
         checkStl.uselessCalls();
+        checkStl.checkDereferenceInvalidIterator();
 
         // Style check
         checkStl.size();
@@ -134,6 +135,8 @@ public:
     /** @brief %Check calls that using them is useless */
     void uselessCalls();
 
+    /** @brief %Check for derefencing an iterator that is invalid */
+    void checkDereferenceInvalidIterator();
 
     /**
      * Dereferencing an erased iterator
@@ -179,6 +182,8 @@ private:
     void uselessCallsEmptyError(const Token *tok);
     void uselessCallsRemoveError(const Token *tok, const std::string& function);
 
+    void dereferenceInvalidIteratorError(const Token* deref, const std::string &itername);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckStl c(0, settings, errorLogger);
         c.invalidIteratorError(0, "iterator");
@@ -205,6 +210,7 @@ private:
         c.uselessCallsSubstrError(0, false);
         c.uselessCallsEmptyError(0);
         c.uselessCallsRemoveError(0, "remove");
+        c.dereferenceInvalidIteratorError(0, "i");
     }
 
     static std::string myName() {
@@ -223,7 +229,8 @@ private:
                "* redundant condition\n"
                "* common mistakes when using string::c_str()\n"
                "* using auto pointer (auto_ptr)\n"
-               "* useless calls of string and STL functions\n";
+               "* useless calls of string and STL functions\n"
+               "* dereferencing an invalid iterator\n";
     }
 };
 /// @}

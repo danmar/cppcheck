@@ -125,6 +125,8 @@ private:
         TEST_CASE(uselessCalls);
         TEST_CASE(stabilityOfChecks); // #4684 cppcheck crash in template function call
 
+        TEST_CASE(dereferenceInvalidIterator);
+
     }
 
     void check(const char code[], const bool inconclusive=false) {
@@ -2244,6 +2246,112 @@ private:
               "    }\n"
               "    void shift() { EffectivityRangeData<int>::iterator it;  } \n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void dereferenceInvalidIterator() {
+        // Test simplest "if" with && case
+        check("void foo(std::string::iterator& i) {\n"
+              "    if (std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test suggested correction doesn't report an error
+        check("void foo(std::string::iterator& i) {\n"
+              "    if (i != str.end() && std::isalpha(*i)) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test "while" with "&&" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test "while" with "||" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (!(!std::isalpha(*i) || i == str.end())) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test fix for "while" with "||" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (!(i == str.end() || !std::isalpha(*i))) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test "for" with "&&" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    for (; std::isalpha(*i) && i != str.end() ;) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test "for" with "||" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    for (; std::isalpha(*i) || i == str.end() ;) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test that a dereference outside the condition part of a "for"
+        // loop does not result in a false positive
+        check("void foo(std::string::iterator& i) {\n"
+              "    for (char c = *i; isRunning && i != str.end() ;) {\n"
+              "        std::cout << c;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test that other "&&" terms in the condition don't invalidate the check
+        check("void foo(char* c, std::string::iterator& i) {\n"
+              "    if (*c && std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test that dereference of different variable doesn't trigger a false positive
+        check("void foo(const char* c, std::string::iterator& i) {\n"
+              "    if (std::isalpha(*c) && i != str.end()) {\n"
+              "        std::cout << *c;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test case involving "rend()" instead of "end()"
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (std::isalpha(*i) && i != str.rend()) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test that mixed "&&" and "||" don't result in a false positive
+        check("void foo(std::string::iterator& i) {\n"
+              "    if ((i == str.end() || *i) || (isFoo() && i != str.end())) {\n"
+              "        std::cout << \"foo\";\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
