@@ -122,54 +122,54 @@ private:
 
     void multiCompare() const {
         // Test for found
-        Token *one = new Token(0);
-        one->str("one");
-        ASSERT_EQUALS(1, Token::multiCompare(one, "one|two", "one"));
+        Token one(0);
+        one.str("one");
+        ASSERT_EQUALS(1, Token::multiCompare(&one, "one|two", "one"));
 
-        Token *two = new Token(0);
-        two->str("two");
-        ASSERT_EQUALS(1, Token::multiCompare(two, "one|two", "two"));
-        ASSERT_EQUALS(1, Token::multiCompare(two, "verybig|two|", "two"));
+        Token two(0);
+        two.str("two");
+        ASSERT_EQUALS(1, Token::multiCompare(&two, "one|two", "two"));
+        ASSERT_EQUALS(1, Token::multiCompare(&two, "verybig|two|", "two"));
 
         // Test for empty string found
-        Token *notfound = new Token(0);
-        notfound->str("notfound");
-        ASSERT_EQUALS(0, Token::multiCompare(notfound, "|one|two", "notfound"));
-        ASSERT_EQUALS(0, Token::multiCompare(notfound, "one||two", "notfound"));
-        ASSERT_EQUALS(0, Token::multiCompare(notfound, "one|two|", "notfound"));
+        Token notfound(0);
+        notfound.str("notfound");
+        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "|one|two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one||two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one|two|", "notfound"));
 
         // Test for not found
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(notfound, "one|two", "notfound")));
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&notfound, "one|two", "notfound")));
 
-        Token *s = new Token(0);
-        s->str("s");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(s, "verybig|two", "s")));
+        Token s(0);
+        s.str("s");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&s, "verybig|two", "s")));
 
-        Token *ne = new Token(0);
-        ne->str("ne");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(ne, "one|two", "ne")));
+        Token ne(0);
+        ne.str("ne");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&ne, "one|two", "ne")));
 
-        Token *a = new Token(0);
-        a->str("a");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(a, "abc|def", "a")));
+        Token a(0);
+        a.str("a");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&a, "abc|def", "a")));
 
-        Token *abcd = new Token(0);
-        abcd->str("abcd");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(abcd, "abc|def", "abcd")));
+        Token abcd(0);
+        abcd.str("abcd");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&abcd, "abc|def", "abcd")));
 
-        Token *def = new Token(0);
-        def->str("default");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(def, "abc|def", "default")));
+        Token def(0);
+        def.str("default");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&def, "abc|def", "default")));
 
         // %op%
-        Token *plus = new Token(0);
-        plus->str("+");
-        ASSERT_EQUALS(1, Token::multiCompare(plus, "one|%op%", "+"));
-        ASSERT_EQUALS(1, Token::multiCompare(plus, "%op%|two", "+"));
-        Token *x = new Token(0);
-        x->str("x");
-        ASSERT_EQUALS(-1, Token::multiCompare(x, "one|%op%", "x"));
-        ASSERT_EQUALS(-1, Token::multiCompare(x, "%op%|two", "x"));
+        Token plus(0);
+        plus.str("+");
+        ASSERT_EQUALS(1, Token::multiCompare(&plus, "one|%op%", "+"));
+        ASSERT_EQUALS(1, Token::multiCompare(&plus, "%op%|two", "+"));
+        Token x(0);
+        x.str("x");
+        ASSERT_EQUALS(-1, Token::multiCompare(&x, "one|%op%", "x"));
+        ASSERT_EQUALS(-1, Token::multiCompare(&x, "%op%|two", "x"));
     }
 
     void multiCompare2() const { // #3294
