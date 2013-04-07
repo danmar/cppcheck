@@ -37,7 +37,7 @@
 
 static void printlist(const std::list<Token *> &list)
 {
-    for (std::list<Token *>::const_iterator it = list.begin(); it != list.end(); it++) {
+    for (std::list<Token *>::const_iterator it = list.begin(); it != list.end(); ++it) {
         const Token *token = *it;
         std::cout << "   ";
         while (token && !Token::Match(token, "[{};]")) {
