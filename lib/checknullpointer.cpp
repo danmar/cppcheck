@@ -1509,7 +1509,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     callstack.push_back(tok);
     callstack.push_back(nullCheck);
     const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check it against null.");
-    reportError(callstack, Severity::error, "nullPointer", errmsg, inconclusive);
+    reportError(callstack, Severity::warning, "nullPointer", errmsg, inconclusive);
 }
 
 void CheckNullPointer::nullPointerDefaultArgError(const Token *tok, const std::string &varname)
