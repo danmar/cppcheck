@@ -177,6 +177,15 @@ private:
               "    int c = b & 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching bitmasks. Result is always 0 (X = Y & 0xf0; Z = X & 0x1; => Z=0).\n", errout.str());
+
+        check("void f(int a) {\n"
+              "    int b = a;"
+              "    switch (x) {\n"
+              "    case 1: b &= 1; break;\n"
+              "    case 2: b &= 2; break;\n"
+              "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void compare() {

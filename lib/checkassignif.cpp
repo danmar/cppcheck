@@ -78,6 +78,8 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                                        const char bitop,
                                        const MathLib::bigint num)
 {
+    bool ret = false;
+
     for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
         if (Token::Match(tok2->tokAt(2), "%varid% %cop% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
             const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
@@ -95,6 +97,10 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
         if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
             return true;
         if (tok2->str() == "}")
+            return false;
+        if (Token::Match(tok2, "break|continue|return"))
+            ret = true;
+        if (ret && tok2->str() == ";")
             return false;
         if (!islocal && Token::Match(tok2, "%var% (") && !Token::simpleMatch(tok2->next()->link(), ") {"))
             return true;
