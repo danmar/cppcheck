@@ -127,6 +127,7 @@ private:
         TEST_CASE(template33);  // #3818 - inner templates in template instantiation not handled well
         TEST_CASE(template34);  // #3706 - namespace => hang
         TEST_CASE(template35);  // #4074 - A<'x'> a;
+        TEST_CASE(template36);  // #4310 - passing unknown template instantiation as template argument
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2239,6 +2240,16 @@ private:
         const char code[] = "template <char c> class A {};\n"
                             "A<'x'> a;";
         ASSERT_EQUALS("A<'x'> a ; class A<'x'> { }", tok(code));
+    }
+
+    void template36() { // #4310 - Passing unknown template instantiation as template argument
+        const char code[] = "template <class T> struct X { T t; };\n"
+                            "template <class C> struct Y { Foo < X< Bar<C> > > _foo; };\n" // <- Bar is unknown
+                            "Y<int> bar;";
+        ASSERT_EQUALS("Y<int> bar ; "
+                      "struct Y<int> { Foo < X<Bar<int>> > _foo ; } "
+                      "struct X<Bar<int>> { Bar < int > t ; }",
+                      tok(code));
     }
 
     void template_unhandled() {

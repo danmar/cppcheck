@@ -31,6 +31,38 @@
 #include <string>
 #include <cassert>
 
+#ifdef GDB_HELPERS
+
+#include <iostream>
+
+static void printlist(const std::list<Token *> &list)
+{
+    for (std::list<Token *>::const_iterator it = list.begin(); it != list.end(); it++) {
+        const Token *token = *it;
+        std::cout << "   ";
+        while (token && !Token::Match(token, "[{};]")) {
+            std::cout << " " << token->str();
+            token = token->next();
+        }
+        std::cout << std::endl;
+    }
+}
+
+static void printvector(const std::vector<const Token *> &v)
+{
+    for (unsigned int i = 0; i < v.size(); i++) {
+        const Token *token = v[i];
+        std::cout << "    " << i << ":";
+        while (token && !Token::Match(token, "[{};]")) {
+            std::cout << " " << token->str();
+            token = token->next();
+        }
+        std::cout << std::endl;
+    }
+}
+
+#endif
+
 //---------------------------------------------------------------------------
 
 void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
@@ -620,9 +652,16 @@ void TemplateSimplifier::expandTemplate(
 
                 // replace type with given type..
                 if (itype < typeParametersInDeclaration.size()) {
+                    unsigned int typeindentlevel = 0;
                     for (const Token *typetok = typesUsedInTemplateInstantiation[itype];
-                         typetok && !Token::Match(typetok, "[,>]");
+                         typetok && (typeindentlevel>0 || !Token::Match(typetok, "[,>]"));
                          typetok = typetok->next()) {
+                        if (Token::Match(typetok, "%var% <") && templateParameters(typetok->next()) > 0)
+                            ++typeindentlevel;
+                        else if (typeindentlevel > 0 && typetok->str() == ">")
+                            --typeindentlevel;
+                        else if (typeindentlevel > 0 && typetok->str() == ">>")
+                            typeindentlevel -= (typeindentlevel > 1) ? 2 : 1;
                         tokenlist.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
                     }
                     continue;
