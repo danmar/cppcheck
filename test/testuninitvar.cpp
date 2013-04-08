@@ -2563,6 +2563,14 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f(int x) {\n"
+                        "    int y;\n"
+                        "    if (x) y = do_something();\n"
+                        "    if (!x) return 0;\n"
+                        "    return y;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Unknown => bail out..
         checkUninitVar2("void f(int x) {\n"
                         "    int i;\n"

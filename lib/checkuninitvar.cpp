@@ -1235,6 +1235,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     return true;
                 }
 
+                if (alwaysTrue && noreturnIf)
+                    return true;
+
                 std::map<unsigned int, int> varValueIf;
                 if (!initif && !noreturnIf) {
                     for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
