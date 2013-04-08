@@ -42,6 +42,8 @@ namespace {
             return "constructor";
         case Function::eCopyConstructor:
             return "copy constructor";
+        case Function::eMoveConstructor:
+            return "move constructor";
         case Function::eDestructor:
             return "destructor";
         case Function::eFunction:
