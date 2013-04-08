@@ -1490,9 +1490,9 @@ void CheckStl::checkDereferenceInvalidIterator()
             // Only consider conditions composed of all "&&" terms and
             // conditions composed of all "||" terms
             const bool isOrExpression =
-                Token::findsimplematch(startOfCondition, "||", endOfCondition);
+                Token::findsimplematch(startOfCondition, "||", endOfCondition) != 0;
             const bool isAndExpression =
-                Token::findsimplematch(startOfCondition, "&&", endOfCondition);
+                Token::findsimplematch(startOfCondition, "&&", endOfCondition) != 0;
 
             // Look for a check of the validity of an iterator
             const Token* validityCheckTok = 0;
