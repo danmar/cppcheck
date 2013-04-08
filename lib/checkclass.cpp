@@ -1880,6 +1880,7 @@ void CheckClass::checkPureVirtualFunctionCall()
         if (scope->function == 0 || !scope->function->hasBody ||
             !(scope->function->type==Function::eConstructor ||
               scope->function->type==Function::eCopyConstructor ||
+              scope->function->type==Function::eMoveConstructor ||
               scope->function->type==Function::eDestructor))
             continue;
 
