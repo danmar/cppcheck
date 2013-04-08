@@ -1278,7 +1278,6 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                         }
                     }
 
-
                     if (initelse && condVarId > 0U && !noreturnIf && !noreturnElse)
                         variableValue[condVarId] = condVarValue;
 
