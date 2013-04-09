@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: Calibri, Verdana, sans-serif;
+  font: 16px Calibri, Verdana, sans-serif;
   color: black;
   background-color: #eee;
 }
@@ -12,13 +12,20 @@ dt {
 
 
 /* Default link style */
+a:hover {
+  -webkit-transition: all 0.20s ease-in-out;
+     -moz-transition: all 0.20s ease-in-out;
+       -o-transition: all 0.20s ease-in-out;
+          transition: all 0.20s ease-in-out;
+}
+
 a:link,
 a:visited   { color: #036; text-decoration: underline; }
 
-a:link:hover,
-a:visited:hover,
+a:active,
 a:focus,
-a:active    { color: #369; text-decoration: none; }
+a:hover,
+a:visited   { color: #369; text-decoration: node; }
 
 
 /* Header */
@@ -30,7 +37,7 @@ a:active    { color: #369; text-decoration: none; }
 #header h1 {
   margin: 0;
   padding: 0;
-  font-family: Orbitron, Calibri, Verdana, sans-serif;
+  font-family: Orbitron;
 }
 
 #header p {
@@ -157,13 +164,6 @@ a.downloadnow:hover {
   text-decoration: none;
   color: white;
   background-color: #090;
-}
-
-a.downloadnow:hover {
-  -webkit-transition: background-color 0.20s ease-in-out;
-     -moz-transition: background-color 0.20s ease-in-out;
-       -o-transition: background-color 0.20s ease-in-out;
-          transition: background-color 0.20s ease-in-out;
 }
 
 .downloadnow strong {
