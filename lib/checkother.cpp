@@ -2729,17 +2729,29 @@ void CheckOther::checkIncorrectStringCompare()
                 (tok->str().find("assert")+6U==tok->str().size() || tok->str().find("ASSERT")+6U==tok->str().size()))
                 tok = tok->next()->link();
 
-            if (Token::Match(tok, ". substr ( %any% , %num% ) ==|!= %str%")) {
-                MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(5));
-                std::size_t slen = Token::getStrLength(tok->tokAt(8));
-                if (clen != (int)slen) {
-                    incorrectStringCompareError(tok->next(), "substr", tok->strAt(8));
+            if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
+                MathLib::bigint clen = MathLib::toLongNumber(tok->linkAt(2)->strAt(-1));
+                const Token* begin = tok->previous();
+                for (;;) { // Find start of statement
+                    while (begin->link() && Token::Match(begin, "]|)|>"))
+                        begin = begin->link()->previous();
+                    if (Token::Match(begin->previous(), ".|::"))
+                        begin = begin->tokAt(-2);
+                    else
+                        break;
                 }
-            } else if (Token::Match(tok, "%str% ==|!= %var% . substr ( %any% , %num% )")) {
-                MathLib::bigint clen = MathLib::toLongNumber(tok->strAt(8));
-                std::size_t slen = Token::getStrLength(tok);
-                if (clen != (int)slen) {
-                    incorrectStringCompareError(tok->next(), "substr", tok->str());
+                begin = begin->previous();
+                const Token* end = tok->linkAt(2)->next();
+                if (Token::Match(begin->previous(), "%str% ==|!=") && begin->strAt(-2) != "+") {
+                    std::size_t slen = Token::getStrLength(begin->previous());
+                    if (clen != (int)slen) {
+                        incorrectStringCompareError(tok->next(), "substr", begin->strAt(-1));
+                    }
+                } else if (Token::Match(end, "==|!= %str% !!+")) {
+                    std::size_t slen = Token::getStrLength(end->next());
+                    if (clen != (int)slen) {
+                        incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
+                    }
                 }
             } else if (Token::Match(tok, "&&|%oror%|( %str% &&|%oror%|)") && !Token::Match(tok, "( %str% )")) {
                 incorrectStringBooleanError(tok->next(), tok->strAt(1));

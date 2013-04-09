@@ -4866,62 +4866,67 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " return \"Hello\" == test.substr( 0 , 4 ) ? : 0 : 1 ;\n"
+              "    return \"Hello\" == test.substr( 0 , 4 ) ? : 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
 
         check("int f() {\n"
-              " return \"Hello\" == test.substr( 0 , 5 ) ? : 0 : 1 ;\n"
+              "    return \"Hello\" == foo.bar<int>().z[1].substr(i+j*4, 4) ? : 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
+
+        check("int f() {\n"
+              "    return \"Hello\" == test.substr( 0 , 5 ) ? : 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " if (\"Hello\") { }\n"
+              "    if (\"Hello\") { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " if (\"Hello\" && 1) { }\n"
+              "    if (\"Hello\" && 1) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " if (1 && \"Hello\") { }\n"
+              "    if (1 && \"Hello\") { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " while (\"Hello\") { }\n"
+              "    while (\"Hello\") { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " assert (test || \"Hello\");\n"
+              "    assert (test || \"Hello\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " assert (test && \"Hello\");\n"
+              "    assert (test && \"Hello\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " assert (\"Hello\" || test);\n"
+              "    assert (\"Hello\" || test);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " assert (\"Hello\" && test);\n"
+              "    assert (\"Hello\" && test);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " BOOST_ASSERT (\"Hello\" && test);\n"
+              "    BOOST_ASSERT (\"Hello\" && test);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " return f2(\"Hello\");\n"
+              "    return f2(\"Hello\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
