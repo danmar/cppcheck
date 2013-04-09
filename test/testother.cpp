@@ -7113,7 +7113,7 @@ private:
               "    int x;\n"
               "    x = 1;\n"
               "    if (y)\n" // <-- cppcheck does not know anything about 'y'
-              " 	   x = 2;\n"
+              "        x = 2;\n"
               "    return x + 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());

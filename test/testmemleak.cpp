@@ -2608,7 +2608,7 @@ private:
         check("class Pool{\n"
               "    int* GetNewObj()\n"
               "    {\n"
-              " 	   return new int;\n"
+              "        return new int;\n"
               "    }\n"
               "};\n"
               "void foo(){\n"
