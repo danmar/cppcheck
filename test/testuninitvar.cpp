@@ -2350,6 +2350,11 @@ private:
                         "    x((A)(B)&a);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n" // #4717 - ({})
+                        "    int a = ({ long b = (long)(123); 2 + b; });\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #3869 - reference variable

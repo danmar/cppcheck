@@ -1084,6 +1084,8 @@ void CheckUninitVar::checkScope(const Scope* scope)
         }
         while (tok && tok->str() != ";")
             tok = tok->next();
+        if (Token::findsimplematch(i->typeStartToken(), "=", tok))
+            continue;
         if (stdtype || i->isPointer())
             checkScopeForVariable(scope, tok, *i, NULL, NULL, "");
         if (Token::Match(i->typeStartToken(), "struct %type% %var% ;")) {
