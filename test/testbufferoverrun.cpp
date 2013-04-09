@@ -4098,7 +4098,7 @@ private:
         check("void f(void){\n"
               "write(1, \"Dump string \\n\", 100);\n"
               "}");                       // ^ number of bytes too big
-        ASSERT_EQUALS("[test.cpp:2]: (error) Writing '87' bytes outside buffer size.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Writing 87 bytes outside buffer size.\n", errout.str());
 
         check("void f(void){\n"
               "write(1, \"Dump string \\n\", 10);\n"
@@ -4113,7 +4113,7 @@ private:
               "{\n"
               "    write(p.i[1], \"\", 1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Writing 1 bytes outside buffer size.\n", errout.str());
     }
 };
 

@@ -2248,14 +2248,14 @@ void CheckBufferOverrun::writeOutsideBufferSize()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "pwrite|write (") && Token::Match(tok->tokAt(2), "%any% , %str% , %num%")) {
+            if (Token::Match(tok, "pwrite|write (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str% , %num%")) {
                 const std::string & functionName(tok->str());
-                tok = tok->tokAt(4); // set tokenptr to %str% parameter
+                tok = tok->tokAt(2)->nextArgument(); // set tokenptr to %str% parameter
                 const std::size_t stringLength = Token::getStrLength(tok);
                 tok = tok->tokAt(2); // set tokenptr to %num% parameter
                 const MathLib::bigint writeLength = MathLib::toLongNumber(tok->str());
-                if (static_cast<unsigned long int>(writeLength) > stringLength)
-                    writeOutsideBufferSizeError(tok, stringLength, writeLength,functionName);
+                if (static_cast<std::size_t>(writeLength) > stringLength)
+                    writeOutsideBufferSizeError(tok, stringLength, writeLength, functionName);
             }
         }
     }
@@ -2264,8 +2264,8 @@ void CheckBufferOverrun::writeOutsideBufferSize()
 void CheckBufferOverrun::writeOutsideBufferSizeError(const Token *tok, const std::size_t stringLength, const MathLib::bigint writeLength, const std::string &strFunctionName)
 {
     reportError(tok, Severity::error, "writeOutsideBufferSize",
-                "Writing '" +MathLib::longToString(writeLength-stringLength)+"' bytes outside buffer size.\n"
-                "The number of bytes to write ('" +MathLib::longToString(writeLength)+ "' bytes) are bigger than the source buffer ('" +MathLib::longToString(stringLength)+ "' bytes)."
+                "Writing " + MathLib::longToString(writeLength-stringLength) + " bytes outside buffer size.\n"
+                "The number of bytes to write (" + MathLib::longToString(writeLength) + " bytes) are bigger than the source buffer (" +MathLib::longToString(stringLength)+ " bytes)."
                 " Please check the second and the third parameter of the function '"+strFunctionName+"'.");
 }
 // -------------------------------------------------------------------------------------
