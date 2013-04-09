@@ -1619,7 +1619,7 @@ private:
         std::map<std::string, std::string> actual;
         Settings settings;
         settings.debug = settings.debugwarnings = true;
-        settings.addEnabled("missingInclude");;
+        settings.addEnabled("missingInclude");
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 

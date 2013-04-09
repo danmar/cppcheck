@@ -800,9 +800,9 @@ void Tokenizer::simplifyTypedef()
             typeOf = true;
         }
 
-        // function: typedef ... ( .... type )( ... );
-        //           typedef ... (( .... type )( ... ));
-        //           typedef ... ( * ( .... type )( ... ));
+        // function: typedef ... ( ... type )( ... );
+        //           typedef ... (( ... type )( ... ));
+        //           typedef ... ( * ( ... type )( ... ));
         else if ((tokOffset->str() == "(" &&
                   Token::Match(tokOffset->link()->previous(), "%type% ) (") &&
                   Token::Match(tokOffset->link()->next()->link(), ") const|volatile|;")) ||

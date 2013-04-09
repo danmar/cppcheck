@@ -42,7 +42,7 @@ namespace {
 // - http://www.cplusplus.com/reference/cstdio/fgetc/
 // - http://www.cplusplus.com/reference/cstdio/getc/
 // - http://www.cplusplus.com/reference/cstdio/getchar/
-// - http://www.cplusplus.com/reference/cstdio/ungetc/ ....
+// - http://www.cplusplus.com/reference/cstdio/ungetc/ ...
 //----------------------------------------------------------------------------------
 void CheckOther::checkCastIntToCharAndBack()
 {

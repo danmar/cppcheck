@@ -7585,7 +7585,7 @@ private:
                             "UINT_PTR uint_ptr;"
                             "WPARAM wparam;"
                             "HALF_PTR half_ptr;"
-                            "INT_PTR int_ptr;";;
+                            "INT_PTR int_ptr;";
 
         const char expected[] = "unsigned int sizeof_short ; sizeof_short = 2 ; "
                                 "unsigned int sizeof_unsigned_short ; sizeof_unsigned_short = 2 ; "
