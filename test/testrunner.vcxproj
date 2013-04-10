@@ -62,6 +62,7 @@
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
+    <ClCompile Include="testsizeof.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="testsuite.cpp" />
     <ClCompile Include="testsuppressions.cpp" />

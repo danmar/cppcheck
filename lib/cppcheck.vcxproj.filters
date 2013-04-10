@@ -116,6 +116,9 @@
     <ClCompile Include="checkbool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checksizeof.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -230,6 +233,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkbool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checksizeof.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

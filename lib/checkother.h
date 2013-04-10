@@ -57,16 +57,10 @@ public:
         checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
         checkOther.strPlusChar();
-        checkOther.sizeofsizeof();
-        checkOther.sizeofCalculation();
-        checkOther.suspiciousSizeofCalculation();
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkSuspiciousCaseInSwitch();
         checkOther.checkAssignmentInAssert();
-        checkOther.checkSizeofForArrayParameter();
-        checkOther.checkSizeofForPointerSize();
-        checkOther.checkSizeofForNumericParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
@@ -171,17 +165,8 @@ public:
     /** @brief %Check for parameters given to cctype function that do make error*/
     void checkCCTypeFunctions();
 
-    /** @brief %Check for 'sizeof sizeof ..' */
-    void sizeofsizeof();
-
-    /** @brief %Check for calculations inside sizeof */
-    void sizeofCalculation();
-
     /** @brief % Check for seteuid(geteuid()) or setuid(getuid())*/
     void redundantGetAndSetUserId();
-
-    /** @brief %Check for suspicious calculations with sizeof results */
-    void suspiciousSizeofCalculation();
 
     /** @brief copying to memory or assigning to a variable twice */
     void checkRedundantAssignment();
@@ -212,15 +197,6 @@ public:
 
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
-
-    /** @brief %Check for using sizeof with array given as function argument */
-    void checkSizeofForArrayParameter();
-
-    /** @brief %Check for using sizeof of a variable when allocating it */
-    void checkSizeofForPointerSize();
-
-    /** @brief %Check for using sizeof with numeric given as function argument */
-    void checkSizeofForNumericParameter();
 
     /** @brief %Check for using bad usage of strncmp and substr */
     void checkIncorrectStringCompare();
@@ -293,11 +269,7 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void clarifyStatementError(const Token* tok);
-    void sizeofsizeofError(const Token *tok);
-    void sizeofCalculationError(const Token *tok, bool inconclusive);
     void redundantGetAndSetUserIdError(const Token *tok);
-    void multiplySizeofError(const Token *tok);
-    void divideSizeofError(const Token *tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void dangerousUsageStrtolError(const Token *tok, const std::string& funcname);
@@ -326,9 +298,6 @@ private:
     void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
-    void sizeofForArrayParameterError(const Token *tok);
-    void sizeofForPointerError(const Token *tok, const std::string &varname);
-    void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void duplicateIfError(const Token *tok1, const Token *tok2);
@@ -360,9 +329,6 @@ private:
         c.zerodivError(0);
         c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
-        c.sizeofForArrayParameterError(0);
-        c.sizeofForPointerError(0, "varname");
-        c.sizeofForNumericParameterError(0);
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
@@ -385,10 +351,6 @@ private:
         c.charBitOpError(0);
         c.variableScopeError(0, "varname");
         c.strPlusCharError(0);
-        c.sizeofsizeofError(0);
-        c.sizeofCalculationError(0, false);
-        c.multiplySizeofError(0);
-        c.divideSizeofError(0);
         c.redundantAssignmentInSwitchError(0, 0, "var");
         c.redundantCopyInSwitchError(0, 0, "var");
         c.switchCaseFallThrough(0);
@@ -435,9 +397,6 @@ private:
                "* division with zero\n"
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
-               "* sizeof for array given as function argument\n"
-               "* sizeof for numeric given as function argument\n"
-               "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* free() or delete of an invalid memory location\n"
                "* double free() or double closedir()\n"
@@ -467,9 +426,6 @@ private:
                "* redundant pre/post operation in a switch statement\n"
                "* redundant bitwise operation in a switch statement\n"
                "* redundant strcpy in a switch statement\n"
-               "* look for 'sizeof sizeof ..'\n"
-               "* look for calculations inside sizeof()\n"
-               "* look for suspicious calculations with sizeof()\n"
                "* assignment of a variable to itself\n"
                "* Suspicious case labels in switch()\n"
                "* Suspicious equality comparisons\n"

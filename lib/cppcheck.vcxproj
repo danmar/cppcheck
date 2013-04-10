@@ -52,6 +52,7 @@
     <ClCompile Include="checkobsoletefunctions.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkpostfixoperator.cpp" />
+    <ClCompile Include="checksizeof.cpp" />
     <ClCompile Include="checkstl.cpp" />
     <ClCompile Include="checkuninitvar.cpp" />
     <ClCompile Include="checkunusedfunctions.cpp" />
@@ -90,6 +91,7 @@
     <ClInclude Include="checkobsoletefunctions.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkpostfixoperator.h" />
+    <ClInclude Include="checksizeof.h" />
     <ClInclude Include="checkstl.h" />
     <ClInclude Include="checkuninitvar.h" />
     <ClInclude Include="checkunusedfunctions.h" />
