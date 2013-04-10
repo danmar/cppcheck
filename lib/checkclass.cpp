@@ -120,8 +120,7 @@ void CheckClass::constructors()
         std::vector<Usage> usage(scope->varlist.size());
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (!func->hasBody || !(func->type == Function::eConstructor ||
-                                    func->type == Function::eCopyConstructor ||
+            if (!func->hasBody || !(func->isConstructor() ||
                                     func->type == Function::eOperatorEqual))
                 continue;
 
@@ -160,8 +159,15 @@ void CheckClass::constructors()
                 }
 
                 // Check if type can't be copied
-                if (!var->isPointer() && var->typeScope() && canNotCopy(var->typeScope()))
-                    continue;
+                if (!var->isPointer() && var->typeScope()) {
+                    if (func->type == Function::eMoveConstructor) {
+                        if (canNotMove(var->typeScope()))
+                            continue;
+                    } else {
+                        if (canNotCopy(var->typeScope()))
+                            continue;
+                    }
+                }
 
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
@@ -197,7 +203,7 @@ void CheckClass::constructors()
                     const Scope *varType = var->typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
                         if (func->type == Function::eConstructor &&
-                            func->nestedIn && (func->nestedIn->numConstructors - func->nestedIn->numCopyConstructors) > 1 &&
+                            func->nestedIn && (func->nestedIn->numConstructors - func->nestedIn->numCopyOrMoveConstructors) > 1 &&
                             func->argCount() == 0 && func->functionScope &&
                             func->arg && func->arg->link()->next() == func->functionScope->classStart &&
                             func->functionScope->classStart->link() == func->functionScope->classStart->next()) {
@@ -324,15 +330,40 @@ bool CheckClass::canNotCopy(const Scope *scope)
     bool publicCopy = false;
 
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        if (func->type == Function::eConstructor || func->type == Function::eCopyConstructor)
+        if (func->isConstructor())
             constructor = true;
-        if (func->type == Function::eCopyConstructor && func->access == Public)
+        if ((func->type == Function::eCopyConstructor) &&
+            func->access == Public)
             publicCopy = true;
         else if (func->type == Function::eOperatorEqual && func->access == Public)
             publicAssign = true;
     }
 
     return constructor && !(publicAssign || publicCopy);
+}
+
+bool CheckClass::canNotMove(const Scope *scope)
+{
+    std::list<Function>::const_iterator func;
+    bool constructor = false;
+    bool publicAssign = false;
+    bool publicCopy = false;
+    bool publicMove = false;
+
+    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        if (func->isConstructor())
+            constructor = true;
+        if ((func->type == Function::eCopyConstructor) &&
+            func->access == Public)
+            publicCopy = true;
+        else if ((func->type == Function::eMoveConstructor) &&
+                 func->access == Public)
+            publicMove = true;
+        else if (func->type == Function::eOperatorEqual && func->access == Public)
+            publicAssign = true;
+    }
+
+    return constructor && !(publicAssign || publicCopy || publicMove);
 }
 
 void CheckClass::assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage)
@@ -401,7 +432,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 
 void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
-    bool initList = func.type == Function::eConstructor || func.type == Function::eCopyConstructor;
+    bool initList = func.isConstructor();
     const Token *ftok = func.arg->link()->next();
     int level = 0;
     for (; ftok != func.functionScope->classEnd; ftok = ftok->next()) {
@@ -582,7 +613,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
             // check if member function
             if (ftok->function() && ftok->function()->nestedIn == scope &&
-                ftok->function()->type != Function::eConstructor) {
+                !ftok->function()->isConstructor()) {
                 const Function *member = ftok->function();
 
                 // recursive call
@@ -621,7 +652,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             // not member function
             else {
                 // could be a base class virtual function, so we assume it initializes everything
-                if (func.type != Function::eConstructor && isBaseClassFunc(ftok, scope)) {
+                if (!func.isConstructor() && isBaseClassFunc(ftok, scope)) {
                     /** @todo False Negative: we should look at the base class functions to see if they
                      *  call any derived class virtual functions that change the derived class state
                      */
@@ -712,7 +743,7 @@ void CheckClass::initializationListUsage()
         const Scope * scope = symbolDatabase->functionScopes[i];
 
         // Check every constructor
-        if (!scope->function || (scope->function->type != Function::eConstructor && scope->function->type != Function::eCopyConstructor))
+        if (!scope->function || (!scope->function->isConstructor()))
             continue;
 
         const Scope* owner = scope->functionOf;
@@ -728,7 +759,8 @@ void CheckClass::initializationListUsage()
                     for (const Token* tok2 = tok->tokAt(2); tok2->str() != ";"; tok2 = tok2->next()) {
                         if (tok2->varId()) {
                             const Variable* var2 = tok2->variable();
-                            if (var2 && var2->scope() == owner) { // Is there a dependency between two member variables?
+                            if (var2 && var2->scope() == owner &&
+                                tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
                                 allowed = false;
                                 break;
                             }
@@ -1816,7 +1848,7 @@ void CheckClass::initializerListOrder()
 
         // iterate through all member functions looking for constructors
         for (func = info->functionList.begin(); func != info->functionList.end(); ++func) {
-            if ((func->type == Function::eConstructor || func->type == Function::eCopyConstructor) && func->hasBody) {
+            if ((func->isConstructor()) && func->hasBody) {
                 // check for initializer list
                 const Token *tok = func->arg->link()->next();
 
@@ -1878,10 +1910,8 @@ void CheckClass::checkPureVirtualFunctionCall()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         if (scope->function == 0 || !scope->function->hasBody ||
-            !(scope->function->type==Function::eConstructor ||
-              scope->function->type==Function::eCopyConstructor ||
-              scope->function->type==Function::eMoveConstructor ||
-              scope->function->type==Function::eDestructor))
+            !(scope->function->isConstructor() ||
+              scope->function->isDestructor()))
             continue;
 
         const std::list<const Token *> & pureVirtualFunctionCalls=callsPureVirtualFunction(*scope->function,callsPureVirtualFunctionMap);

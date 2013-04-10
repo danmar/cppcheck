@@ -2368,8 +2368,8 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
     // Inspect member functions
     std::list<Function>::const_iterator func;
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        const bool constructor = func->type == Function::eConstructor;
-        const bool destructor = func->type == Function::eDestructor;
+        const bool constructor = func->isConstructor();
+        const bool destructor = func->isDestructor();
         if (!func->hasBody) {
             if (destructor) { // implementation for destructor is not seen => assume it deallocates all variables properly
                 deallocInDestructor = true;

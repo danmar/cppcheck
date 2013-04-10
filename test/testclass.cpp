@@ -5546,6 +5546,20 @@ private:
 
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
+                                     "    C c;\n"
+                                     "    Fred(Fred const & other) { c = other.c; }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
+                                     "    C c;\n"
+                                     "    Fred(Fred && other) { c = other.c; }\n"
+                                     "};");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+
+        checkInitializationListUsage("class C;\n"
+                                     "class Fred {\n"
                                      "    C a;\n"
                                      "    Fred() { initB(); a = b; }\n"
                                      "};");

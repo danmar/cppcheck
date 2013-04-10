@@ -190,6 +190,8 @@ private:
               "{\n"
               "public:\n"
               "    Fred() : i(0) { }\n"
+              "    Fred(Fred const & other) : i(other.i) {}\n"
+              "    Fred(Fred && other) : i(other.i) {}\n"
               "    int i;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
@@ -198,6 +200,8 @@ private:
               "{\n"
               "public:\n"
               "    Fred() { i = 0; }\n"
+              "    Fred(Fred const & other) {i=other.i}\n"
+              "    Fred(Fred && other) {i=other.i}\n"
               "    int i;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
@@ -206,16 +210,24 @@ private:
               "{\n"
               "public:\n"
               "    Fred() { }\n"
+              "    Fred(Fred const & other) {}\n"
+              "    Fred(Fred && other) {}\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
+                      "[test.cpp:6]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
               "    Fred() { }\n"
+              "    Fred(Fred const & other) {}\n"
+              "    Fred(Fred && other) {}\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
+                      "[test.cpp:4]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
     }
 
 
@@ -254,6 +266,7 @@ private:
               "{\n"
               "    Fred();\n"
               "    explicit Fred(int _i);\n"
+              "    Fred(Fred const & other);\n"
               "    int i;\n"
               "};\n"
               "Fred::Fred()\n"
@@ -262,7 +275,7 @@ private:
               "{\n"
               "    i = _i;\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:7]: (warning, inconclusive) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning, inconclusive) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
     }
 
     void simple5() { // ticket #2560
@@ -1004,7 +1017,6 @@ private:
         check("class B\n"
               "{\n"
               "    B (const B & Var);\n"
-              "    B & operator= (const B & Var);\n"
               "};\n"
               "class A\n"
               "{\n"
@@ -1012,6 +1024,39 @@ private:
               "public:\n"
               "    A(){}\n"
               "    A(const A&){}\n"
+              "    A(A &&){}\n"
+              "    const A& operator=(const A&){return *this;}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class B\n"
+              "{\n"
+              "    B (B && Var);\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B m_SemVar;\n"
+              "public:\n"
+              "    A(){}\n"
+              "    A(const A&){}\n"
+              "    A(A &&){}\n"
+              "    const A& operator=(const A&){return *this;}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class B\n"
+              "{\n"
+              "    B & operator= (const B & Var);\n"
+              "public:\n"
+              "    B ();\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B m_SemVar;\n"
+              "public:\n"
+              "    A(){}\n"
+              "    A(const A&){}\n"
+              "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
@@ -1020,6 +1065,40 @@ private:
               "{\n"
               "public:\n"
               "    B (const B & Var);\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B m_SemVar;\n"
+              "public:\n"
+              "    A(){}\n"
+              "    A(const A&){}\n"
+              "    A(A &&){}\n"
+              "    const A& operator=(const A&){return *this;}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:11]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
+                      "[test.cpp:12]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
+                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
+
+        check("class B\n"
+              "{\n"
+              "public:\n"
+              "    B (B && Var);\n"
+              "};\n"
+              "class A\n"
+              "{\n"
+              "    B m_SemVar;\n"
+              "public:\n"
+              "    A(){}\n"
+              "    A(const A&){}\n"
+              "    A(A &&){}\n"
+              "    const A& operator=(const A&){return *this;}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:12]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n", errout.str());
+
+        check("class B\n"
+              "{\n"
+              "public:\n"
+              "    B ();\n"
               "    B & operator= (const B & Var);\n"
               "};\n"
               "class A\n"
@@ -1028,10 +1107,12 @@ private:
               "public:\n"
               "    A(){}\n"
               "    A(const A&){}\n"
+              "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
               "};");
         ASSERT_EQUALS("[test.cpp:12]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
-                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
+                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
+                      "[test.cpp:14]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
 
         check("class A\n"
               "{\n"

@@ -476,6 +476,16 @@ public:
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
 
+    bool isConstructor() const {
+        return type==eConstructor ||
+               type==eCopyConstructor ||
+               type==eMoveConstructor;
+    }
+
+    bool isDestructor() const {
+        return type==eDestructor;
+    }
+
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
     const Token *token;    // function name token in implementation
@@ -530,7 +540,7 @@ public:
     const Scope *nestedIn;
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
-    unsigned int numCopyConstructors;
+    unsigned int numCopyOrMoveConstructors;
     std::list<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;

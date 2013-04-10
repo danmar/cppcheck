@@ -433,12 +433,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.isConst = true;
 
                     // count the number of constructors
-                    if (function.type == Function::eConstructor)
+                    if (function.isConstructor())
                         scope->numConstructors++;
-                    else if (function.type == Function::eCopyConstructor) {
-                        scope->numConstructors++;
-                        scope->numCopyConstructors++;
-                    }
+                    if (function.type == Function::eCopyConstructor ||
+                        function.type == Function::eMoveConstructor)
+                        scope->numCopyOrMoveConstructors++;
 
                     // assume implementation is inline (definition and implementation same)
                     function.token = function.tokenDef;
@@ -1987,7 +1986,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     classEnd(start_->link()),
     nestedIn(nestedIn_),
     numConstructors(0),
-    numCopyConstructors(0),
+    numCopyOrMoveConstructors(0),
     type(type_),
     definedType(NULL),
     functionOf(NULL),
@@ -2002,7 +2001,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     classEnd(NULL),
     nestedIn(nestedIn_),
     numConstructors(0),
-    numCopyConstructors(0),
+    numCopyOrMoveConstructors(0),
     definedType(NULL),
     functionOf(NULL),
     function(NULL)

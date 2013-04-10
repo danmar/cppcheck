@@ -1131,7 +1131,7 @@ void CheckNullPointer::nullConstantDereference()
 
         const Token *tok = scope->classStart;
 
-        if (scope->function && (scope->function->type == Function::eConstructor || scope->function->type == Function::eCopyConstructor))
+        if (scope->function && scope->function->isConstructor())
             tok = scope->function->token; // Check initialization list
 
         for (; tok != scope->classEnd; tok = tok->next()) {

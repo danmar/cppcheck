@@ -279,6 +279,8 @@ private:
         std::list<const Token *> & pureFuncStack);
 
     static bool canNotCopy(const Scope *scope);
+
+    static bool canNotMove(const Scope *scope);
 };
 /// @}
 //---------------------------------------------------------------------------
