@@ -113,6 +113,9 @@
     <ClCompile Include="checkleakautovar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checkbool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -224,6 +227,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkbool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

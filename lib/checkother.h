@@ -75,8 +75,6 @@ public:
         checkOther.checkSuspiciousSemicolon();
         checkOther.checkVariableScope();
         checkOther.clarifyCondition();   // not simplified because ifAssign
-        checkOther.checkComparisonOfBoolExpressionWithInt();
-        checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
         checkOther.checkIncompleteArrayFill();
         checkOther.checkSuspiciousStringCompare();
@@ -103,18 +101,13 @@ public:
         checkOther.redundantGetAndSetUserId();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
-        checkOther.checkComparisonOfFuncReturningBool();
-        checkOther.checkComparisonOfBoolWithBool();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkIncorrectStringCompare();
-        checkOther.checkIncrementBoolean();
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
         checkOther.checkModuloAlwaysTrueFalse();
         checkOther.checkPipeParameterSize();
 
-        checkOther.checkAssignBoolToPointer();
-        checkOther.checkBitwiseOnBoolean();
         checkOther.checkInvalidFree();
         checkOther.checkDoubleFree();
         checkOther.checkRedundantCopy();
@@ -217,12 +210,6 @@ public:
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
 
-    /** @brief %Check for comparison of function returning bool*/
-    void checkComparisonOfFuncReturningBool();
-
-    /** @brief %Check for comparison of variable of type bool*/
-    void checkComparisonOfBoolWithBool();
-
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
 
@@ -240,12 +227,6 @@ public:
 
     /** @brief %Check for comparison of a string literal with a char* variable */
     void checkSuspiciousStringCompare();
-
-    /** @brief %Check for using postfix increment on bool */
-    void checkIncrementBoolean();
-
-    /** @brief %Check for suspicious comparison of a bool and a non-zero (and non-one) value (e.g. "if (!x==4)") */
-    void checkComparisonOfBoolWithInt();
 
     /** @brief %Check for suspicious code where multiple if have the same expression (e.g "if (a) { } else if (a) { }") */
     void checkDuplicateIf();
@@ -265,17 +246,8 @@ public:
     /** @brief %Check for code that gets never executed, such as duplicate break statements */
     void checkUnreachableCode();
 
-    /** @brief assigning bool to pointer */
-    void checkAssignBoolToPointer();
-
     /** @brief %Check for testing sign of unsigned variable */
     void checkSignOfUnsignedVariable();
-
-    /** @brief %Check for using bool in bitwise expression */
-    void checkBitwiseOnBoolean();
-
-    /** @brief %Check for comparing a bool expression with an integer other than 0 or 1 */
-    void checkComparisonOfBoolExpressionWithInt();
 
     /** @brief %Check for suspicious use of semicolon */
     void checkSuspiciousSemicolon();
@@ -353,18 +325,12 @@ private:
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
     void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void comparisonOfFuncReturningBoolError(const Token *tok, const std::string &expression);
-    void comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2);
-    void comparisonOfBoolWithBoolError(const Token *tok, const std::string &expression);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void sizeofForArrayParameterError(const Token *tok);
     void sizeofForPointerError(const Token *tok, const std::string &varname);
     void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
-    void incrementBooleanError(const Token *tok);
-    void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
-    void comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression);
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
@@ -373,13 +339,10 @@ private:
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
-    void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
     void pointerLessThanZeroError(const Token *tok, bool inconclusive);
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void pointerPositiveError(const Token *tok, bool inconclusive);
-    void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
-    void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void SuspiciousSemicolonError(const Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
@@ -392,15 +355,11 @@ private:
         CheckOther c(0, settings, errorLogger);
 
         // error
-        c.assignBoolToPointerError(0);
         c.sprintfOverlappingDataError(0, "varname");
         c.udivError(0, false);
         c.zerodivError(0);
         c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
-        c.comparisonOfFuncReturningBoolError(0, "func_name");
-        c.comparisonOfTwoFuncsReturningBoolError(0, "func_name1", "func_name2");
-        c.comparisonOfBoolWithBoolError(0, "var_name");
         c.sizeofForArrayParameterError(0);
         c.sizeofForPointerError(0, "varname");
         c.sizeofForNumericParameterError(0);
@@ -446,8 +405,6 @@ private:
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
         c.suspiciousStringCompareError(0, "foo");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
-        c.incrementBooleanError(0);
-        c.comparisonOfBoolWithIntError(0, "varname", true);
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
@@ -459,8 +416,6 @@ private:
         c.unsignedPositiveError(0, "varname", false);
         c.pointerLessThanZeroError(0, false);
         c.pointerPositiveError(0, false);
-        c.bitwiseOnBooleanError(0, "varname", "&&");
-        c.comparisonOfBoolExpressionWithIntError(0, true);
         c.SuspiciousSemicolonError(0);
         c.cctypefunctionCallError(0, "funname", "value");
         c.moduloAlwaysTrueFalseError(0, "1");
@@ -520,11 +475,6 @@ private:
                "* Suspicious equality comparisons\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* Clarify calculation with parentheses\n"
-               "* using increment on boolean\n"
-               "* comparison of a boolean with a non-zero integer\n"
-               "* comparison of a boolean expression with an integer other than 0 or 1\n"
-               "* comparison of a function returning boolean value using relational operator\n"
-               "* comparison of a boolean value with boolean value using relational operator\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
                "* suspicious condition (string literals as boolean)\n"
@@ -533,7 +483,6 @@ private:
                "* unreachable code\n"
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
-               "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "* incorrect usage of functions from ctype library.\n"
                "* Comparisons of modulo results that are always true/false.\n"

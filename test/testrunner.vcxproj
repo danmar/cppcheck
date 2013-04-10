@@ -33,6 +33,7 @@
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testassignif.cpp" />
     <ClCompile Include="testautovariables.cpp" />
+    <ClCompile Include="testbool.cpp" />
     <ClCompile Include="testboost.cpp" />
     <ClCompile Include="testbufferoverrun.cpp" />
     <ClCompile Include="testcharvar.cpp" />
