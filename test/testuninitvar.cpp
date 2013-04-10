@@ -2731,6 +2731,14 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        // for
+        checkUninitVar2("struct AB { int a; };\n"
+                        "void f() {\n"
+                        "    struct AB ab;\n"
+                        "    while (x) { clear(ab); z = ab.a; }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // address of member
         checkUninitVar2("struct AB { int a[10]; int b; };\n"
                         "void f() {\n"

@@ -1461,6 +1461,8 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
 
                 if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                     usetok = tok;
+                else if (Token::Match(tok->previous(), "[(,] %var% [,)]"))
+                    return true;
             } else {
                 if (isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                     usetok = tok;
