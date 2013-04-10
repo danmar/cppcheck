@@ -2506,6 +2506,15 @@ private:
                         "    a(&c);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("struct ABC { int a; };\n"  // struct initialization
+                        "void clear(struct ABC &abc);\n"
+                        "int f() {\n"
+                        "    struct ABC abc;\n"
+                        "    clear(abc);\n"
+                        "    return abc.a;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_value() {

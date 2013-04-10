@@ -1397,6 +1397,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                     uninitStructMemberError(tok, tok->str() + "." + membervar);
 
+                else if (Token::Match(tok->previous(), "[(,] %var% [,)]"))
+                    return true;
+
             } else {
                 // Use variable
                 if (!suppressErrors && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
