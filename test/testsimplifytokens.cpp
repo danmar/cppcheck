@@ -128,6 +128,7 @@ private:
         TEST_CASE(template34);  // #3706 - namespace => hang
         TEST_CASE(template35);  // #4074 - A<'x'> a;
         TEST_CASE(template36);  // #4310 - passing unknown template instantiation as template argument
+        TEST_CASE(template37);  // #4544 - A<class B> a;
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2249,6 +2250,15 @@ private:
         ASSERT_EQUALS("Y<int> bar ; "
                       "struct Y<int> { Foo < X<Bar<int>> > _foo ; } "
                       "struct X<Bar<int>> { Bar < int > t ; }",
+                      tok(code));
+    }
+
+    void template37() { // #4544 - A<class B> a;
+        const char code[] = "class A { };\n"
+                            "template<class T> class B {};\n"
+                            "B<class A> b1;\n"
+                            "B<A> b2;";
+        ASSERT_EQUALS("class A { } ; B<A> b1 ; B<A> b2 ; class B<A> { }",
                       tok(code));
     }
 

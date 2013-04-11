@@ -1092,17 +1092,19 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
                 --indentlevel;
             templateMatchPattern += tok3->str();
-            templateMatchPattern += " ";
+            templateMatchPattern += ' ';
             if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]"))
                 typesUsedInTemplateInstantiation.push_back(tok3);
             // add additional type information
-            if (tok3->isUnsigned())
-                typeForNewNameStr += "unsigned";
-            else if (tok3->isSigned())
-                typeForNewNameStr += "signed";
-            if (tok3->isLong())
-                typeForNewNameStr += "long";
-            typeForNewNameStr += tok3->str();
+            if (tok3->str() != "class") {
+                if (tok3->isUnsigned())
+                    typeForNewNameStr += "unsigned";
+                else if (tok3->isSigned())
+                    typeForNewNameStr += "signed";
+                if (tok3->isLong())
+                    typeForNewNameStr += "long";
+                typeForNewNameStr += tok3->str();
+            }
         }
         templateMatchPattern += ">";
         const std::string typeForNewName(typeForNewNameStr);
