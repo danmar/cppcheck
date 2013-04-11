@@ -50,6 +50,7 @@ public:
     static std::string multiply(const std::string & first, const std::string & second);
     static std::string divide(const std::string & first, const std::string & second);
     static std::string mod(const std::string & first, const std::string & second);
+    static std::string bitwiseNot(const std::string &number);
     static std::string calculate(const std::string & first, const std::string & second, char action);
 
     static std::string sin(const std::string & tok);
