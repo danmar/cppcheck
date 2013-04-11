@@ -5672,6 +5672,9 @@ void Tokenizer::simplifyIfNotNull()
             continue;
         }
 
+        if (Token::Match(tok, "==|!= ("))
+            tok = tok->linkAt(1);
+
         if (Token::Match(tok, "(|&&|%oror%")) {
             tok = tok->next();
 

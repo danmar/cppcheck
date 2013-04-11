@@ -1042,6 +1042,9 @@ private:
         ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0UL == p )", true));
         ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0ul == p )", true));
         ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0l == p )", true));
+
+        // not pointer
+        ASSERT_EQUALS("( x != ( y != 0 ) )", tokenizeAndStringify("( x != ( y != 0 ) )", false));
     }
 
 
