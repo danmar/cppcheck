@@ -6114,6 +6114,15 @@ private:
               "  }\n"
               "}",NULL,false,false,true);
         ASSERT_EQUALS("", errout.str());
+
+        // avoid crash with pointer variable
+        check("void foo (int* arrayPtr)\n"
+              "{\n"
+              "  if (pipe (arrayPtr) < 0)\n"
+              "  {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void checkCastIntToCharAndBack() { // #160
