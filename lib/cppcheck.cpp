@@ -304,7 +304,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             _dependencies.insert(_tokenizer.list.getFiles().begin()+1, _tokenizer.list.getFiles().end());
 
         // call all "runChecks" in all registered Check classes
-        if (!Path::isExternal(FileName)) {
+        if (!Path::isQt(FileName)) {
             for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
                 if (_settings.terminated())
                     return;

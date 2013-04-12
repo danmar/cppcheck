@@ -126,9 +126,9 @@ public:
     /**
      * @brief Identify language based on file extension
      * &param path filename to check.
-     * @return true if extension is an external file
+     * @return true if extension is a QT file
      */
-    static bool isExternal(const std::string &path);
+    static bool isQt(const std::string &path);
 
 private:
     /**
