@@ -581,7 +581,16 @@ bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::stri
         return false;
 
     if (patternAfter) {
-        const Token *tok = Token::findsimplematch(instance, ">");
+        const Token *tok = instance;
+        unsigned int indentlevel = 0;
+        for (tok = instance; tok && (tok->str() != ">" || indentlevel > 0); tok = tok->next()) {
+            if (Token::Match(tok, "[<,] %var% <") && templateParameters(tok->tokAt(2)) > 0)
+                ++indentlevel;
+            if (indentlevel > 0 && tok->str() == ">")
+                --indentlevel;
+            if (indentlevel > 0 && tok->str() == ">>")
+                indentlevel -= (indentlevel > 1) ? 2 : 1;
+        }
         if (!tok || !Token::Match(tok->next(), patternAfter))
             return false;
     }
@@ -1087,11 +1096,19 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typeForNewNameStr.clear();
                 break;
             }
-            if (tok3->str() == "<" && templateParameters(tok3) > 0)
+            if (Token::Match(tok3->tokAt(-2), "[<,] %var% <") && templateParameters(tok3) > 0)
                 ++indentlevel;
             else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
                 --indentlevel;
-            templateMatchPattern += tok3->str();
+            else if (indentlevel > 0 && tok3->str() == ">>") {
+                if (indentlevel == 1) {
+                    templateMatchPattern += '>';
+                    typeForNewNameStr += '>';
+                    break;
+                }
+                indentlevel -= 2;
+            }
+            templateMatchPattern += (tok3->str() == ">>") ? std::string("> >") : tok3->str();
             templateMatchPattern += ' ';
             if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]"))
                 typesUsedInTemplateInstantiation.push_back(tok3);

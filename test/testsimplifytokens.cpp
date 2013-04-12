@@ -124,7 +124,7 @@ private:
         TEST_CASE(template30);  // #3529 - template < template < ..
         TEST_CASE(template31);  // #4010 - reference type
         TEST_CASE(template32);  // #3818 - mismatching template not handled well
-        TEST_CASE(template33);  // #3818 - inner templates in template instantiation not handled well
+        TEST_CASE(template33);  // #3818,#4544 - inner templates in template instantiation not handled well
         TEST_CASE(template34);  // #3706 - namespace => hang
         TEST_CASE(template35);  // #4074 - A<'x'> a;
         TEST_CASE(template36);  // #4310 - passing unknown template instantiation as template argument
@@ -2214,15 +2214,30 @@ private:
     }
 
     void template33() {
-        // #3818 - inner templates in template instantiation not handled well
-        const char code[] = "template<class T> struct A { };\n"
-                            "template<class T> struct B { };\n"
-                            "template<class T> struct C { A<B<X<T> > > ab; };\n"
-                            "C<int> c;";
-        ASSERT_EQUALS("C<int> c ; "
-                      "struct C<int> { A<B<X<int>>> ab ; } "
-                      "struct B<X<int>> { } "  // <- redundant.. but nevermind
-                      "struct A<B<X<int>>> { }", tok(code));
+        {
+            // #3818 - inner templates in template instantiation not handled well
+            const char code[] = "template<class T> struct A { };\n"
+                                "template<class T> struct B { };\n"
+                                "template<class T> struct C { A<B<X<T> > > ab; };\n"
+                                "C<int> c;";
+            ASSERT_EQUALS("C<int> c ; "
+                          "struct C<int> { A<B<X<int>>> ab ; } "
+                          "struct B<X<int>> { } "  // <- redundant.. but nevermind
+                          "struct A<B<X<T>>> { } "  // <- redundant.. but nevermind
+                          "struct A<B<X<int>>> { }", tok(code));
+        }
+
+        {
+            // #4544
+            const char code[] = "struct A { };\n"
+                                "template<class T> struct B { };\n"
+                                "template<class T> struct C { };\n"
+                                "C< B<A> > c;";
+            ASSERT_EQUALS("struct A { } ; "
+                          "template < class T > struct B { } ; "  // <- redundant.. but nevermind
+                          "C<B<A>> c ; struct C<B<A>> { }",
+                          tok(code));
+        }
     }
 
     void template34() {
