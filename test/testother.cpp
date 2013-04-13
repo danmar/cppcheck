@@ -2845,13 +2845,6 @@ private:
 
     void suspiciousEqualityComparison() {
         check("void foo(int c) {\n"
-              "    if (c == 1) {\n"
-              "        c == 0;\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
-
-        check("void foo(int c) {\n"
               "    if (c == 1) c == 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
@@ -2908,13 +2901,6 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
-
-        check("void foo(int c) {\n"
-              "    for (; running == 1;) {\n"
-              "        c ++;\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
 
         check("void foo(int c) {\n"
               "    for (; running == 1;) {\n"
@@ -3446,14 +3432,6 @@ private:
              );
         ASSERT_EQUALS("[test.cpp:4]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n", errout.str());
 
-        check("void f(int x, int y) {\n"
-              "    const int ERR1 = 5;\n"
-              "    if ((x != ERR1) || (y != ERR1))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
         check("void f(unsigned int a, unsigned int b, unsigned int c) {\n"
               "    if((a != b) || (c != b) || (c != a))\n"
               "    {\n"
@@ -3851,8 +3829,6 @@ private:
 
         check("seteuid(getuid());\n", NULL, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("seteuid(getuid());\n", NULL, false , false, true);
-        ASSERT_EQUALS("", errout.str());
         check("seteuid(foo());\n", NULL, false , false, true);
         ASSERT_EQUALS("", errout.str());
         check("foo(getuid());\n", NULL, false , false, true);
@@ -4089,12 +4065,12 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              "    if (\"Hello\" && 1) { }\n"
+              "    if (\"Hello\" && test) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              "    if (1 && \"Hello\") { }\n"
+              "    if (test && \"Hello\") { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
@@ -4281,15 +4257,6 @@ private:
               "{\n"
               "  if (front < 0)\n"
               "    frac = (front)/(front-back);\n"
-              "  else\n"
-              "    frac = (front)/(front-back);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "  if (front < 0)\n"
-              "  { frac = (front)/(front-back);}\n"
               "  else\n"
               "    frac = (front)/(front-back);\n"
               "}");
@@ -5013,16 +4980,6 @@ private:
         check(
             "void foo() {\n"
             "  for(int i = 0; i < 10; ++i); {\n"
-            "  }\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'for' statement.\n", errout.str());
-
-        // Block with some tokens to make sure the tokenizer output
-        // stays the same for "for(); {}"
-        check(
-            "void foo() {\n"
-            "  for(int i = 0; i < 10; ++i); {\n"
-            "  int j = 123;\n"
             "  }\n"
             "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'for' statement.\n", errout.str());

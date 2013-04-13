@@ -2584,7 +2584,6 @@ private:
         ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(0==x);", false));
         ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(x==0);", false));
         ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if(0==(a=b));", false));
-        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(x==0);", false));
         ASSERT_EQUALS("if ( ! a && b ( ) ) { ; }", tok("if( 0 == a && b() );", false));
         ASSERT_EQUALS("if ( b ( ) && ! a ) { ; }", tok("if( b() && 0 == a );", false));
         ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if((a=b)==0);", false));

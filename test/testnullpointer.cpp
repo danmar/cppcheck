@@ -1126,12 +1126,6 @@ private:
     void nullpointer8() {
         check("void foo()\n"
               "{\n"
-              "  const char * x = 0;\n"
-              "  strdup(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
-        check("void foo()\n"
-              "{\n"
               "  char const * x = 0;\n"
               "  strdup(x);\n"
               "}");
@@ -1154,39 +1148,9 @@ private:
               "  p->x = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "  struct my_type* p;\n"
-              "  p = 0;\n"
-              "  p->x = 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer11() { // ticket #2812
-        check("int foo()\n"
-              "{\n"
-              "  my_type* p = 0;\n"
-              "  return p->x;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
-
-        check("int foo()\n"
-              "{\n"
-              "  struct my_type* p = 0;\n"
-              "  return p->x;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
-
-        check("int foo()\n"
-              "{\n"
-              "  my_type* p;\n"
-              "  p = 0;\n"
-              "  return p->x;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: p\n", errout.str());
-
         check("int foo()\n"
               "{\n"
               "  struct my_type* p;\n"
@@ -1429,21 +1393,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(char *p) {\n"
-              "    if (!p) {\n"
-              "        abort();\n"
-              "    }\n"
-              "    *p = 0;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        {
+            static const char code[] =
+                "void foo(char *p) {\n"
+                "    if (!p) {\n"
+                "        abort();\n"
+                "    }\n"
+                "    *p = 0;\n"
+                "}";
+            check(code, false);
+            ASSERT_EQUALS("", errout.str());
 
-        check("void foo(char *p) {\n"
-              "    if (!p) {\n"
-              "        abort();\n"
-              "    }\n"
-              "    *p = 0;\n"
-              "}\n", true);
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (warning, inconclusive) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
+            check(code, true);
+            ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (warning, inconclusive) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
+        }
 
         check("void foo(char *p) {\n"
               "    if (!p) {\n"
