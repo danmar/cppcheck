@@ -76,7 +76,12 @@ private:
         checkBool.runChecks(&tokenizer, &settings, this);
 
         // Simplify token list..
+        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList();
+        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+        if (str1 != str2)
+            warn("Unsimplified code in test case");
+
         checkBool.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
