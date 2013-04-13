@@ -1962,13 +1962,11 @@ private:
     }
 
     void array_index_string_literal() {
-        check("void f()\n"
-              "{\n"
+        check("void f() {\n"
               "    const char *str = \"abc\";\n"
-              "    int i = 10;\n"
-              "    bar(str[i]);\n"
+              "    bar(str[10]);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[4]' accessed at index 10, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'str[4]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -2054,14 +2052,14 @@ private:
         check("void f(FILE* fd)\n"
               "{\n"
               "char str[3];\n"
-              "fread(str,sizeof(char),4,fd);\n"
+              "fread(str,1,4,fd);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
-              "char str[3*sizeof(char)];\n"
-              "fread(str,sizeof(char),3,fd);\n"
+              "char str[3];\n"
+              "fread(str,1,3,fd);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2069,14 +2067,14 @@ private:
         check("void f(FILE* fd)\n"
               "{\n"
               "char str[3];\n"
-              "fwrite(str,sizeof(char),4,fd);\n"
+              "fwrite(str,1,4,fd);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
-              "char str[3*sizeof(char)];\n"
-              "fwrite(str,sizeof(char),3,fd);\n"
+              "char str[3];\n"
+              "fwrite(str,1,3,fd);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2389,7 +2387,7 @@ private:
 
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a));\n"
-              "  if (1) {\n"
+              "  {\n"
               "    strcpy(b, a);\n"
               "  }\n"
               "  return b;\n"
@@ -2454,7 +2452,7 @@ private:
         check("extern char a[10];\n"
               "void f() {\n"
               "    char b[25] = {0};\n"
-              "    std::memcpy(b, a, sizeof(a));\n"
+              "    std::memcpy(b, a, 10);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
