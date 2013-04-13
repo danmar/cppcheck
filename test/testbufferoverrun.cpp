@@ -1237,17 +1237,15 @@ private:
     }
 
     void array_index_38() { //ticket #3273
-        check("void aFunction()\n"
-              "{\n"
-              "    const unsigned int arraySize = 10;\n"
-              "    double aDoubleArray[ arraySize ];\n"
-              "    unsigned int i = 0;\n"
+        check("void aFunction() {\n"
+              "    double aDoubleArray[ 10 ];\n"
+              "    unsigned int i; i = 0;\n"
               "    for( i = 0; i < 6; i++ )\n"
               "    {\n"
-              "        unsigned int j = 0;\n"
+              "        unsigned int j; j = 0;\n"
               "        for( j = 0; j < 5; j++ )\n"
               "        {\n"
-              "            unsigned int x = 0;\n"
+              "            unsigned int x; x = 0;\n"
               "            for( x = 0; x < 4; x++ )\n"
               "            {\n"
               "            }\n"
@@ -1303,7 +1301,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "  char *p = (char*)malloc(10);\n"
+              "  char *p; p = malloc(10);\n"
               "  p[10] = 7;\n"
               "  free(p);\n"
               "}");
@@ -1311,7 +1309,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "  char *p = (char*)malloc(10);\n"
+              "  char *p; p = malloc(10);\n"
               "  p[0] = 0;\n"
               "  p[9] = 9;\n"
               "  free(p);\n"
@@ -1320,7 +1318,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "  char *p = new char[10];\n"
+              "  char *p; p = new char[10];\n"
               "  p[0] = 0;\n"
               "  p[9] = 9;\n"
               "  delete [] p;\n"
@@ -1560,23 +1558,17 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds.\n", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "  int i=2;\n"
-              "  int ii=10;\n"
-              "  char a[ii][ii][ii];\n"
-              "  a[i*3][4*ii][ii] = 'a';\n"
+        check("void f() {\n"
+              "  char a[10][10][10];\n"
+              "  a[6][40][10] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds.\n", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "  int i=2;\n"
-              "  int ii=1;\n"
-              "  char a[ii][ii][ii];\n"
-              "  a[i][i][i] = 'a';\n"
+        check("void f() {\n"
+              "  char a[1][1][1];\n"
+              "  a[2][2][2] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[1][1][1]' index a[2][2][2] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[1][1][1]' index a[2][2][2] out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
