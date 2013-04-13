@@ -2355,12 +2355,6 @@ private:
                       "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with realloc(), but class provides constructors.\n", errout.str());
 
-        checkNoMemset("struct C { C() {} };\n"
-                      "void foo(C*& p) {\n"
-                      "    p = realloc(p, sizeof(C));\n"
-                      "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with realloc(), but class provides constructors.\n", errout.str());
-
         checkNoMemset("struct C { virtual void bar(); };\n"
                       "void foo(C*& p) {\n"
                       "    p = malloc(sizeof(C));\n"
@@ -3217,37 +3211,6 @@ private:
                    "class A {\n"
                    "public:\n"
                    "    A(){}\n"
-                   "    pair< int,vector<int> >  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< int,vector<int> >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    const pair< int,vector<int> >&  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< int,vector<int> >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    pair< int,vector<int> >&  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< int,vector<int> >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("", errout.str());
-
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
                    "    pair< vector<int>, int >  GetPair() {return m_pair;}\n"
                    "private:\n"
                    "    pair< vector<int>, int >  m_pair;\n"
@@ -3302,37 +3265,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
 
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    pair< vector<int>, vector<int> >  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< vector<int>, vector<int> >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    const pair< vector<int>, vector<int> >&  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< vector<int>, vector<int> >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    pair< vector<int>, vector<int> >&  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< vector<int>, vector<int> >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("", errout.str());
-
-
 
         checkConst("class A {\n"
                    "public:\n"
@@ -3361,67 +3293,6 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    pair< pair < int, char > , int >  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< pair < int, char > , int >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    const pair< pair < int, char > , int > & GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< pair < int, char > , int >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    pair< pair < int, char > , int > & GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< pair < int, char > , int >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("", errout.str());
-
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    pair< int , pair < int, char > >  GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< int , pair < int, char > >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    const pair< int , pair < int, char > > & GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< int , pair < int, char > >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
-
-
-        checkConst("using namespace std;"
-                   "class A {\n"
-                   "public:\n"
-                   "    A(){}\n"
-                   "    pair< int , pair < int, char > > & GetPair() {return m_pair;}\n"
-                   "private:\n"
-                   "    pair< int , pair < int, char > >  m_pair;\n"
-                   "};");
-        ASSERT_EQUALS("", errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -3493,14 +3364,6 @@ private:
         checkConst("class A {\n"
                    "public:\n"
                    "    const int ** foo() { return &x; }\n"
-                   "private:\n"
-                   "    const int * x;\n"
-                   "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::foo' can be const.\n", errout.str());
-
-        checkConst("class A {\n"
-                   "public:\n"
-                   "    const int * const * foo() { return &x; }\n"
                    "private:\n"
                    "    const int * x;\n"
                    "};");
@@ -5134,16 +4997,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // A function that returns LPVOID can't be const
+    // A function that returns unknown types can't be const (#1579)
     void constLPVOID() {
         checkConst("class Fred {\n"
-                   "    LPVOID a() { return 0; };\n"
+                   "    UNKNOWN a() { return 0; };\n"
                    "};");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::a' can be static.\n", "", errout.str());
 
         // #1579 - HDC
         checkConst("class Fred {\n"
-                   "    HDC a() { return 0; };\n"
+                   "    foo bar;\n"
+                   "    UNKNOWN a() { return b; };\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
     }

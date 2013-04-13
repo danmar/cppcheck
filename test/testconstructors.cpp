@@ -66,7 +66,6 @@ private:
         TEST_CASE(simple10); // ticket #4388
         TEST_CASE(simple11); // ticket #4536
         TEST_CASE(simple12); // ticket #4620
-        TEST_CASE(simple13); // ticket #4617
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -387,36 +386,6 @@ private:
               "    void Init(int i, int j = 0);\n"
               "};\n"
               "void Fred::Init(int i, int j) { x = i; y = j; }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void simple13() { // ticket #4617
-        check("class Fred {\n"
-              "    int x;\n"
-              "public:\n"
-              "    Fred() noexcept;\n"
-              "};");
-        ASSERT_EQUALS("", errout.str());
-
-        check("class Fred {\n"
-              "    int x;\n"
-              "public:\n"
-              "    Fred() noexcept(true);\n"
-              "};");
-        ASSERT_EQUALS("", errout.str());
-
-        check("class Fred {\n"
-              "    int x;\n"
-              "public:\n"
-              "    Fred() noexcept { x = 0; }\n"
-              "};");
-        ASSERT_EQUALS("", errout.str());
-
-        check("class Fred {\n"
-              "    int x;\n"
-              "public:\n"
-              "    Fred() noexcept(true) { x = 0; }\n"
-              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -883,18 +852,6 @@ private:
               "    Fred() { };\n"
               "    Fred(const Fred &) { };\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
-
-        check("class Fred\n"
-              "{\n"
-              "private:\n"
-              "    std::string var;\n"
-              "public:\n"
-              "    Fred();\n"
-              "    Fred(const Fred &);\n"
-              "};\n"
-              "Fred::Fred() { };\n"
-              "Fred::Fred(const Fred &) { };");
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred\n"

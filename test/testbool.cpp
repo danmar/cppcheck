@@ -614,10 +614,6 @@ private:
               "void f() { bValue++; }");
         ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
 
-        check("_Bool bValue = true;\n"
-              "void f() { bValue++; }");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
-
         check("void f(bool test){\n"
               "    test++;\n"
               "}");
