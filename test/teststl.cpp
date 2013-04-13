@@ -107,7 +107,6 @@ private:
         // Redundant conditions..
         // if (ints.find(123) != ints.end()) ints.remove(123);
         TEST_CASE(redundantCondition1);
-        TEST_CASE(redundantCondition2);
 
         // missing inner comparison when incrementing iterator inside loop
         TEST_CASE(missingInnerComparison1);
@@ -1658,15 +1657,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void redundantCondition1() {
-        check("void f(string haystack)\n"
-              "{\n"
-              "    if (haystack.find(needle) != haystack.end())\n"
-              "        haystack.remove(needle);"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element existence before removing it.\n", errout.str());
-    }
-
     void size2() {
         check("struct Fred {\n"
               "    std::list<int> x;\n"
@@ -1722,13 +1712,11 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void redundantCondition2() {
+    void redundantCondition1() {
         check("void f(string haystack)\n"
               "{\n"
               "    if (haystack.find(needle) != haystack.end())\n"
-              "    {\n"
-              "        haystack.remove(needle);\n"
-              "    }\n"
+              "        haystack.remove(needle);"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element existence before removing it.\n", errout.str());
     }
