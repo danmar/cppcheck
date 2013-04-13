@@ -50,7 +50,15 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList();
+        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+
+        // Ensure that the test case is not bad.
+        if (str1 != str2) {
+            warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
+        }
+
 
         // Check char variable usage..
         CheckAssignIf checkAssignIf(&tokenizer, &settings, this);
@@ -124,7 +132,7 @@ private:
         check("void f(int x) {\n"
               "    int y = x & 7;\n"
               "    if (z) y=0;\n"
-              "    else if (y==8);\n" // always false
+              "    else { if (y==8); }\n" // always false
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
 
@@ -245,14 +253,14 @@ private:
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"
-              "    else if (x == 1);\n"
+              "    else { if (x == 1); }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"
-              "    else if (x & 1);\n"
+              "    else { if (x & 1); }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
     }
