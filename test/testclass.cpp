@@ -2423,7 +2423,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], const Settings *s = 0, bool inconclusive = true) {
+    void checkConst(const char code[], const Settings *s = 0, bool inconclusive = true, bool verify = true) {
         // Clear the error log
         errout.str("");
 
@@ -2439,7 +2439,12 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+
+        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList();
+        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+        if (verify && str1 != str2)
+            warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkConst();
@@ -2557,7 +2562,7 @@ private:
         // assignment to variable, can't be const
         checkConst("class Fred {\n"
                    "    std::string s;\n"
-                   "    void foo(std::string & a, std::string & b) { s = a; b = s; }\n"
+                   "    void foo(std::string & a, std::string & b) { s = a; b = a; }\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -2625,7 +2630,7 @@ private:
                    "    std::string s;\n"
                    "    const std::string & foo();\n"
                    "};\n"
-                   "const std::string & Fred::foo() { return \"\"; }");
+                   "const std::string & Fred::foo() { return \"\"; }", 0, false, false);
         TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", "", errout.str());
 
         // functions with a function call to a non-const member can't be const.. (#1305)
@@ -2693,7 +2698,7 @@ private:
                    "    std::string s;\n"
                    "    void foo(std::string & a, std::string & b);\n"
                    "};\n"
-                   "void Fred::foo(std::string & a, std::string & b) { s = a; b = s; }");
+                   "void Fred::foo(std::string & a, std::string & b) { s = a; b = a; }");
         ASSERT_EQUALS("", errout.str());
 
         // assignment to variable, can't be const
@@ -2877,7 +2882,7 @@ private:
     void constoperator1() {
         checkConst("struct Fred {\n"
                    "    int a;\n"
-                   "    bool operator<(const Fred &f) { return (a < f.a); }\n"
+                   "    bool operator<(const Fred &f) { return a < f.a; }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::operator<' can be const.\n", errout.str());
     }
@@ -3054,7 +3059,7 @@ private:
 
         checkConst("class A {\n"
                    "public:\n"
-                   "    int foo() { return (x ? x : x = 0); }\n"
+                   "    int foo() { return x ? x : x = 0; }\n"
                    "private:\n"
                    "    int x;\n"
                    "};");
@@ -3062,7 +3067,7 @@ private:
 
         checkConst("class A {\n"
                    "public:\n"
-                   "    int foo() { return (x ? x = 0 : x); }\n"
+                   "    int foo() { return x ? x = 0 : x; }\n"
                    "private:\n"
                    "    int x;\n"
                    "};");
@@ -3355,7 +3360,7 @@ private:
 
         checkConst("class A {\n"
                    "public:\n"
-                   "    int * const * foo() { return &x; }\n"
+                   "    int * * foo() { return &x; }\n"
                    "private:\n"
                    "    const int * x;\n"
                    "};");
@@ -3615,7 +3620,7 @@ private:
 
         checkConst("struct DelayBase {\n"
                    "    float swapSpecificDelays(int index1) {\n"
-                   "        return static_cast<float>(delays_[index1]);\n"
+                   "        return delays_[index1];\n"
                    "    }\n"
                    "    float delays_[4];\n"
                    "};");
@@ -3634,7 +3639,7 @@ private:
                    "double  A::dGetValue() {\n"
                    "    double dRet = m_iRealVal;\n"
                    "    if( m_d != 0 )\n"
-                   "        return dRet / m_d;\n"
+                   "        return m_iRealVal / m_d;\n"
                    "    return dRet;\n"
                    "};\n"
                   );
@@ -4235,7 +4240,7 @@ private:
                    "    bool bOn;\n"
                    "    bool foo()\n"
                    "    {\n"
-                   "        return 0 != (bOn = bOn && true);\n"
+                   "        return 0 != (bOn = bOn);\n"
                    "    }\n"
                    "};");
 
@@ -4449,17 +4454,14 @@ private:
                    "            case FLOAT_TYPE:\n"
                    "            {\n"
                    "                return RET_OK;\n"
-                   "                break;\n"
                    "            }\n"
                    "            case INT_TYPE:\n"
                    "            {\n"
                    "                return RET_OK;\n"
-                   "                break;\n"
                    "            }\n"
                    "            default:\n"
                    "            {\n"
                    "                return RET_NOK;\n"
-                   "                break;\n"
                    "            }\n"
                    "        }\n"
                    "    }\n"
