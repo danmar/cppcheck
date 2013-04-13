@@ -34,7 +34,7 @@ private:
 
 
 
-    void check(const char code[], bool inconclusive=false) {
+    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true) {
         // Clear the error buffer..
         errout.str("");
 
@@ -50,11 +50,17 @@ private:
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();
 
-        tokenizer.simplifyTokenList();
+        if (runSimpleChecks) {
+            const std::string str1(tokenizer.tokens()->stringifyList(0,true));
+            tokenizer.simplifyTokenList();
+            const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+            if (str1 != str2)
+                warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
 
-        // Check auto variables
-        checkAutoVariables.autoVariables();
-        checkAutoVariables.returnPointerToLocalArray();
+            // Check auto variables
+            checkAutoVariables.autoVariables();
+            checkAutoVariables.returnPointerToLocalArray();
+        }
     }
 
     void run() {
@@ -222,8 +228,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void foo(std::string& s) {\n"
-              "    char* p = foo;\n"
-              "    s = &p[0];\n"
+              "    s = foo;\n"
               "}", false);
         ASSERT_EQUALS("", errout.str());
     }
@@ -382,7 +387,7 @@ private:
               "    char tmp2[256];\n"
               "    delete tmp2;\n"
               "    char tmp3[256];\n"
-              "    delete (tmp3);\n"
+              "    delete tmp3;\n"
               "    char tmp4[256];\n"
               "    delete[] (tmp4);\n"
               "    char tmp5[256];\n"
@@ -659,7 +664,7 @@ private:
               "    double ret = getValue();\n"
               "    rd = ret;\n"
               "    return rd;\n"
-              "}");
+              "}", false, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -667,8 +672,7 @@ private:
     void returnReference4() {
         check("double a;\n"
               "double & f() {\n"
-              "    double & ref = a;\n"
-              "    return ref;\n"
+              "    return a;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
