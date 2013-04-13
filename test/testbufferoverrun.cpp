@@ -487,7 +487,7 @@ private:
               "\n"
               "static void f()\n"
               "{\n"
-              "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
+              "    struct ABC* x = malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[1] = 0;"
               "}");
         ASSERT_EQUALS("[test.cpp:10]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
@@ -502,7 +502,7 @@ private:
               "\n"
               "static void f()\n"
               "{\n"
-              "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
+              "    struct ABC* x = malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[10] = 0;"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -516,7 +516,7 @@ private:
               "\n"
               "static void f()\n"
               "{\n"
-              "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
+              "    struct ABC* x = malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[11] = 0;"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 11, which is out of bounds.\n", "", errout.str());
@@ -529,7 +529,7 @@ private:
               "\n"
               "static void f()\n"
               "{\n"
-              "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC) + 10);\n"
+              "    struct ABC* x = malloc(sizeof(ABC) + 10);\n"
               "    x->str[11] = 0;"
               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
@@ -543,7 +543,7 @@ private:
               "\n"
               "static void f()\n"
               "{\n"
-              "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC));\n"
+              "    struct ABC* x = malloc(sizeof(struct ABC));\n"
               "    x->str[1] = 0;"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'str[1]' accessed at index 1, which is out of bounds.\n", "", errout.str());
@@ -557,7 +557,7 @@ private:
               "\n"
               "static void f()\n"
               "{\n"
-              "    struct ABC* x = (struct ABC *)malloc(sizeof(ABC));\n"
+              "    struct ABC* x = malloc(sizeof(ABC));\n"
               "    x->str[1] = 0;"
               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
@@ -812,7 +812,7 @@ private:
         check("void f() {\n"  // #4398
               "    int a[2];\n"
               "    for (int i = 0; i < 4; i+=2)\n"
-              "        do_stuff(&a[i]);\n"
+              "        do_stuff(a+i);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1049,7 +1049,7 @@ private:
         check("void f()\n"
               "{\n"
               "    int i[2];\n"
-              "    int *ip = &i[1];\n"
+              "    int *ip = i + 1;\n"
               "    ip[-10] = 1;\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array ip[-10] out of bounds.\n", "", errout.str());
@@ -1644,7 +1644,7 @@ private:
               "{\n"
               "    char data[8];\n"
               "    for (int i = 19; i < 36; ++i) {\n"
-              "        data[(i-0)/2] = 0;\n"
+              "        data[i/2] = 0;\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[8]' accessed at index 17, which is out of bounds.\n", errout.str());
