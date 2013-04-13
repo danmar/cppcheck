@@ -3947,47 +3947,37 @@ private:
     }
 
     void readlinkat() {
-        check("void f()\n"
-              "{\n"
-              "    int dirfd = 42;\n"
+        check("void f() {\n"
               "    char buf[255];\n"
-              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
+              "    ssize_t len = readlinkat(42, path, buf, 254);\n"
               "    printf(\"%s\n\", buf);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlinkat().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlinkat().\n", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    int dirfd = 42;\n"
+        check("void f() {\n"
               "    char buf[255];\n"
-              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
+              "    ssize_t len = readlinkat(42, path, buf, 254);\n"
               "    buf[len] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    int dirfd = 42;\n"
+        check("void f() {\n"
               "    char buf[10];\n"
-              "    ssize_t len = readlinkat(dirf, path, buf, 255);\n"
+              "    ssize_t len = readlinkat(42, path, buf, 255);\n"
               "    buf[len] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) readlinkat() buf size is out of bounds: Supplied size 255 is larger than actual size 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) readlinkat() buf size is out of bounds: Supplied size 255 is larger than actual size 10.\n", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    int dirfd = 42;\n"
+        check("void f() {\n"
               "    char buf[255];\n"
-              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf));\n"
+              "    ssize_t len = readlinkat(42, path, buf, 255);\n"
               "    buf[len] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) readlinkat() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) readlinkat() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    int dirfd = 42;\n"
+        check("void f() {\n"
               "    char buf[255];\n"
-              "    ssize_t len = readlinkat(dirfd, path, buf, sizeof(buf)-1);\n"
+              "    ssize_t len = readlinkat(42, path, buf, 254);\n"
               "    if (len == -1) {\n"
               "        return;\n"
               "    }\n"
