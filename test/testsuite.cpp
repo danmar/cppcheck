@@ -24,6 +24,7 @@
 
 std::ostringstream errout;
 std::ostringstream output;
+std::ostringstream warnings;
 
 /**
  * TestRegistry
@@ -223,6 +224,11 @@ void TestFixture::run(const std::string &str)
     run();
 }
 
+void TestFixture::warn(const char msg[])
+{
+    warnings << "Warning: " << currentTest << " " << msg << std::endl;
+}
+
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
@@ -250,6 +256,10 @@ std::size_t TestFixture::runTests(const options& args)
         }
     }
 
+    const std::string &w(warnings.str());
+    if (!w.empty()) {
+        std::cout << "\n\n" << w;
+    }
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
     std::cout << "Number of todos: " << todos_counter;
     if (succeeded_todos_counter > 0)
