@@ -4637,8 +4637,7 @@ void Tokenizer::simplifyCasts()
         }
 
         while (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <")) {
-            Token *tok2 = tok->next();
-            tok2->next()->findClosingBracket(tok2);
+            Token *tok2 = tok->linkAt(2);
 
             if (Token::simpleMatch(tok2, "> (")) {
                 Token *closeBracket = tok2->next()->link();
@@ -7930,8 +7929,7 @@ void Tokenizer::simplifyComma()
 
         // Skip unhandled template specifiers..
         if (Token::Match(tok, "%var% <")) {
-            Token* tok2;
-            tok->next()->findClosingBracket(tok2);
+            Token* tok2 = tok->next()->link();
             if (tok2)
                 tok = tok2;
         }
