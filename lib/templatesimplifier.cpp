@@ -1129,7 +1129,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantiation.size()) {
             if (_settings->debugwarnings) {
                 std::list<const Token *> callstack(1, tok);
-                errorlogger.reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debg",
+                errorlogger.reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug",
                                       "Failed to instantiate template. The checking continues anyway.", false));
             }
             if (typeForNewName.empty())
