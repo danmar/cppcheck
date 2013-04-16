@@ -998,8 +998,8 @@ void Variable::evaluate()
             setFlag(fIsReference, true); // Set also fIsReference
         }
 
-        if (tok->str() == "<")
-            tok->findClosingBracket(tok);
+        if (tok->str() == "<" && tok->link())
+            tok = tok->link();
         else
             tok = tok->next();
     }
@@ -1373,7 +1373,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
     while (tok2 && tok2->str() != "{") {
         // skip unsupported templates
         if (tok2->str() == "<")
-            tok2->findClosingBracket(tok2);
+            tok2 = tok2->link();
 
         // check for base classes
         else if (Token::Match(tok2, ":|,")) {
@@ -1828,8 +1828,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                     while (tok->next()->str() == "[")
                         tok = tok->next()->link();
                 } else if (tok->str() == "<") {
-                    bool success = tok->findClosingBracket(tok);
-                    if (!tok || !success) // something is wrong so just bail out
+                    tok = tok->link();
+                    if (!tok) // something is wrong so just bail out
                         return;
                 }
 
@@ -2297,9 +2297,8 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     const Token* localVarTok = NULL;
 
     if (Token::Match(localTypeTok, "%type% <")) {
-        const Token* closeTok = NULL;
-        bool found = localTypeTok->next()->findClosingBracket(closeTok);
-        if (found) {
+        const Token* closeTok = localTypeTok->next()->link();
+        if (closeTok) {
             localVarTok = skipPointers(closeTok->next());
 
             if (Token::Match(localVarTok, ":: %type% %var% ;|=|(")) {
