@@ -1950,19 +1950,23 @@ private:
 
 
     /** New checking that doesn't rely on ExecutionPath */
-    void checkUninitVar2(const char code[], const char fname[] = "test.cpp", bool experimental = false) {
+    void checkUninitVar2(const char code[], const char fname[] = "test.cpp", bool verify=true) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.experimental = experimental;
-        settings.addEnabled("style");
-
         // Tokenize..
+        Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, fname);
+
+        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList();
+        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+        if (verify && str1 != str2)
+            warn(("Unsimplified code in test case. It looks like this test "
+                  "should either be cleaned up or moved to TestTokenizer or "
+                  "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
@@ -2016,7 +2020,7 @@ private:
         checkUninitVar2("void f() {\n"  // #3926 - weird cast.
                         "    int x;\n"
                         "    *(((char *)&x) + 0) = 0;\n"
-                        "}");
+                        "}", "test.c", false);
         ASSERT_EQUALS("", errout.str());
 
         // using uninit var in condition
@@ -2081,7 +2085,7 @@ private:
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (y == 1) { x = 1; }\n"
-                        "    else if (y == 2) { x = 1; }\n"
+                        "    else { if (y == 2) { x = 1; } }\n"
                         "    return x;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
@@ -2089,7 +2093,7 @@ private:
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    if (y == 1) { x = 1; }\n"
-                        "    else if (y == 2) { x = 1; }\n"
+                        "    else { if (y == 2) { x = 1; } }\n"
                         "    if (y == 3) { }\n"   // <- ignore condition
                         "    return x;\n"
                         "}");
@@ -2119,14 +2123,6 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
-        checkUninitVar2("void f() {\n"
-                        "    int x;\n"
-                        "    return;\n"
-                        "err:\n"
-                        "    return x;\n"
-                        "}");
-        ASSERT_EQUALS("", errout.str());
-
         checkUninitVar2("int f(int x) {\n"
                         "    int ret;\n"
                         "    if (!x) {\n"
@@ -2137,7 +2133,7 @@ private:
                         "out1:\n"
                         "out2:\n"
                         "    return ret;\n"
-                        "}");
+                        "}", "test.c", false);
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("void f() {\n"
@@ -2167,13 +2163,6 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
-        // try
-        checkUninitVar2("void f() {\n"
-                        "    int i, *p = &i;\n"
-                        "    try { }\n"
-                        "}");
-        ASSERT_EQUALS("", errout.str());
-
         // exit
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
@@ -2188,7 +2177,7 @@ private:
                         "    int i;\n"
                         "    ({ if (0); });\n"
                         "    for_each(i) { }\n"
-                        "}");
+                        "}", "test.c", false);
         ASSERT_EQUALS("", errout.str());
 
         // if, if
@@ -2214,7 +2203,7 @@ private:
         checkUninitVar2("void f() {\n"
                         "    int a=0, b;\n"
                         "    if (x) { }\n"
-                        "    else if (y==2) { a=1; b=2; }\n"
+                        "    else { if (y==2) { a=1; b=2; } }\n"
                         "    if (a) { ++b; }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
@@ -2335,7 +2324,7 @@ private:
         checkUninitVar2("void f() {\n"
                         "    std::vector<int> *x = NULL;\n"
                         "    return x;\n"
-                        "}");
+                        "}", "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
         // &
@@ -2353,7 +2342,7 @@ private:
 
         checkUninitVar2("void f() {\n" // #4717 - ({})
                         "    int a = ({ long b = (long)(123); 2 + b; });\n"
-                        "}", "test.c");
+                        "}", "test.c", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2784,9 +2773,8 @@ private:
         checkUninitVar2("int f() {\n"
                         "    int i;\n"
                         "    for (i=0;i<9;++i)\n"
-                        "        if (foo()) goto out;\n"
-                        "out:\n"
-                        "    return i;\n"
+                        "        if (foo()) return i;\n"
+                        "    return 9;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2801,7 +2789,7 @@ private:
                         "       }\n"
                         "   }\n"
                         "   return x;\n"
-                        "}\n", "test.c", true);
+                        "}\n", "test.c");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
         checkUninitVar2("void f(void) {\n"
