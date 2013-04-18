@@ -66,8 +66,7 @@ void VarInfo::possibleUsageAll(const std::string &functionName)
 
 void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, const std::string &type)
 {
-    const Standards standards;
-    CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, standards);
+    const CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, _settings->standards);
     if (type == "fopen")
         checkmemleak.resourceLeakError(tok, varname);
     else
@@ -77,18 +76,15 @@ void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, c
 
 void CheckLeakAutoVar::mismatchError(const Token *tok, const std::string &varname)
 {
-    const Standards standards;
-    CheckMemoryLeak c(_tokenizer, _errorLogger, standards);
-    std::list<const Token *> callstack;
-    callstack.push_back(tok);
+    const CheckMemoryLeak c(_tokenizer, _errorLogger, _settings->standards);
+    std::list<const Token *> callstack(1, tok);
     c.mismatchAllocDealloc(callstack, varname);
     //reportError(tok, Severity::error, "newmismatch", "New mismatching allocation and deallocation: " + varname);
 }
 
 void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varname)
 {
-    const Standards standards;
-    CheckMemoryLeak c(_tokenizer, _errorLogger, standards);
+    const CheckMemoryLeak c(_tokenizer, _errorLogger, _settings->standards);
     c.deallocuseError(tok, varname);
     //reportError(tok, Severity::error, "newdeallocuse", "Using deallocated pointer " + varname);
 }
@@ -195,7 +191,7 @@ void CheckLeakAutoVar::check()
         VarInfo varInfo;
 
         // Local variables that are known to be non-zero.
-        const std::set<unsigned int> notzero;
+        static const std::set<unsigned int> notzero;
 
         checkScope(scope->classStart, &varInfo, notzero);
 
