@@ -55,7 +55,6 @@ private:
         TEST_CASE(tokenize20);  // replace C99 _Bool => bool
         TEST_CASE(tokenize21);  // tokenize 0x0E-7
         TEST_CASE(tokenize22);  // special marker $ from preprocessor
-        TEST_CASE(tokenize23);  // tokenize "return - __LINE__;"
         TEST_CASE(tokenize24);  // #4195 (segmentation fault)
         TEST_CASE(tokenize25);  // #4239 (segmentation fault)
         TEST_CASE(tokenize26);  // #4245 (segmentation fault)
@@ -71,6 +70,8 @@ private:
         TEST_CASE(syntax_case_default);
         TEST_CASE(garbageCode1);
         TEST_CASE(garbageCode2); // #4300
+
+        TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
         TEST_CASE(foreach);     // #3690
 
@@ -437,7 +438,7 @@ private:
 
         TEST_CASE(Qt);
 
-        TEST_CASE(sql);
+        TEST_CASE(simplifySQL);
 
         TEST_CASE(simplifyLogicalOperators);
 
@@ -680,10 +681,6 @@ private:
         ASSERT_EQUALS("a b", tokenizeAndStringify("a$b"));
     }
 
-    void tokenize23() { // tokenize 'return - __LINE__' correctly
-        ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
-    }
-
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
     void tokenize24() {
         tokenizeAndStringify("enum { int f ( ) { return = } r = f ( ) ; }");
@@ -865,6 +862,10 @@ private:
 
     void garbageCode2() { //#4300 (segmentation fault)
         tokenizeAndStringify("enum { D = 1  struct  { } ; }  s.b = D;");
+    }
+
+    void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
+        ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
     }
 
     void foreach() {
@@ -7160,7 +7161,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void sql() {
+    void simplifySQL() {
         // Oracle PRO*C extensions for inline SQL. Just replace the SQL with "asm()" to fix wrong error messages
         // ticket: #1959
         ASSERT_EQUALS("asm ( \"\"EXEC SQL SELECT A FROM B\"\" ) ;", tokenizeAndStringify("EXEC SQL SELECT A FROM B;",false));
