@@ -3614,11 +3614,26 @@ private:
                       tokenizeDebugListing(code, false, "test.c"));
     }
 
-    void varid47() { // #3768
-        const std::string code("void f(std::string &string, std::string &len) {}");
-        ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: void f ( std :: string & string@1 , std :: string & len@2 ) { }\n",
-                      tokenizeDebugListing(code, false, "test.cpp"));
+    void varid47() { // function parameters
+        // #3768
+        {
+            const std::string code("void f(std::string &string, std::string &len) {}");
+            ASSERT_EQUALS("\n\n##file 0\n"
+                          "1: void f ( std :: string & string@1 , std :: string & len@2 ) { }\n",
+                          tokenizeDebugListing(code, false, "test.cpp"));
+        }
+
+        // #4729
+        {
+            const char code[] = "int x;\n"
+                                "void a(int x);\n"
+                                "void b() { x = 0; }\n";
+            ASSERT_EQUALS("\n\n##file 0\n"
+                          "1: int x@1 ;\n"
+                          "2: void a ( int x@2 ) ;\n"
+                          "3: void b ( ) { x@1 = 0 ; }\n",
+                          tokenizeDebugListing(code));
+        }
     }
 
     void varid48() {  // #3785 - return (a*b)

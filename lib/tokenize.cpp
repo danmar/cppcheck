@@ -2753,6 +2753,14 @@ void Tokenizer::setVarId()
             (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {") || isInitList(tok->link()))) {
             scopeInfo.push(variableId);
             initlist = Token::simpleMatch(tok->link(), ") :");
+
+            // function declarations
+        } else if (!executableScope.top() && tok->str() == "(" && Token::simpleMatch(tok->link(), ") ;")) {
+            scopeInfo.push(variableId);
+        } else if (!executableScope.top() && Token::simpleMatch(tok, ") ;")) {
+            variableId.swap(scopeInfo.top());
+            scopeInfo.pop();
+
         } else if (tok->str() == "{") {
             initlist = false;
             // parse anonymous unions as part of the current scope
