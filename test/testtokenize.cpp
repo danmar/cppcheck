@@ -451,7 +451,7 @@ private:
         TEST_CASE(simplifyCompoundAssignment);
 
         // x = ({ 123; });  =>  { x = 123; }
-        TEST_CASE(simplifyAssignmentBlock);
+        TEST_CASE(simplifyRoundCurlyParentheses);
 
         TEST_CASE(simplifyOperatorName1);
         TEST_CASE(simplifyOperatorName2);
@@ -7287,7 +7287,7 @@ private:
         ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tokenizeAndStringify(";f(x=g());"));
     }
 
-    void simplifyAssignmentBlock() {
+    void simplifyRoundCurlyParentheses() {
         ASSERT_EQUALS("; x = 123 ;", tokenizeAndStringify(";x=({123;});"));
         ASSERT_EQUALS("; x = y ;", tokenizeAndStringify(";x=({y;});"));
     }
