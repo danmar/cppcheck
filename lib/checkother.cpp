@@ -2056,8 +2056,8 @@ void CheckOther::checkIncompleteStatement()
         else if (tok->str() == "{" && Token::Match(tok->tokAt(-2), ",|: %var%") && Token::Match(tok->link(), "} [,{]"))
             tok = tok->link();
 
-        // C++11 vector initialization
-        else if (Token::Match(tok,"> %var% {"))
+        // C++11 vector initialization / return { .. }
+        else if (Token::Match(tok,"> %var% {") || Token::Match(tok, "[;{}] return {"))
             tok = tok->linkAt(2);
 
         else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%")) {

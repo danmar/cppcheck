@@ -191,6 +191,15 @@ private:
               "    return (struct s){0,0};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4754
+        check("unordered_map<string, string>  foo() {\n"
+              "    return {\n"
+              "        {\"hi\", \"there\"},\n"
+              "        {\"happy\", \"sad\"}\n"
+              "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cast() {
