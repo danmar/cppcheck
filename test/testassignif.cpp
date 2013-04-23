@@ -34,7 +34,7 @@ private:
 
     void run() {
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
-        TEST_CASE(mismatchingBitAnd); // overlapping bitmasks
+        TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
         TEST_CASE(compare);            // mismatching LHS/RHS in comparison
         TEST_CASE(multicompare);       // mismatching comparisons
     }
@@ -171,6 +171,13 @@ private:
               "    x = x & 1;\n"
               "    x = x & 1 ? 1 : -1;\n"
               "    if(x != -1) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #4735
+        check("void f() {\n"
+              "    int x = *(char*)&0x12345678;\n"
+              "    if (x==18) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

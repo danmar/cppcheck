@@ -52,7 +52,12 @@ void CheckAssignIf::assignIf()
                 bitop = tok->strAt(2).at(0);
                 num = MathLib::toLongNumber(tok->next()->str());
             } else {
-                const Token * const endToken = Token::findsimplematch(tok, ";");
+                const Token *endToken = Token::findsimplematch(tok, ";");
+
+                // Casting address
+                if (Token::Match(endToken->tokAt(-4), "* ) & %any% ;"))
+                    endToken = NULL;
+
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
                     num = MathLib::toLongNumber(endToken->previous()->str());
