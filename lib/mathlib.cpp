@@ -339,11 +339,6 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
     }
 }
 
-std::string MathLib::bitwiseNot(const std::string &number)
-{
-    return MathLib::longToString(~MathLib::toLongNumber(number));
-}
-
 std::string MathLib::sin(const std::string &tok)
 {
     return doubleToString(std::sin(toDoubleNumber(tok)));

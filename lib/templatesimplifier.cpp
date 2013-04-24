@@ -1001,12 +1001,6 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                  tok->str() == MathLib::multiply(tok->strAt(2), MathLib::divide(tok->str(), tok->strAt(2)))) {
             tok->deleteNext(2);
         }
-        // simplify bitwise not operations, e.g: ~0 --> -1
-        else if (Token::Match(tok, "~ %num%")) {
-            const std::string result = MathLib::bitwiseNot(tok->strAt(1));
-            tok->str(result);
-            tok->deleteNext();
-        }
 
         else {
             ret |= simplifyNumericCalculations(tok);

@@ -41,7 +41,6 @@ private:
         TEST_CASE(isNotEqual)
         TEST_CASE(isLess)
         TEST_CASE(isLessEqual)
-        TEST_CASE(bitwiseNot)
     }
 
     void isGreater() const {
@@ -343,11 +342,6 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E-1"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
-    }
-
-    void bitwiseNot() const {
-        ASSERT_EQUALS("-1" , MathLib::bitwiseNot("0"));
-        ASSERT_EQUALS("-8" , MathLib::bitwiseNot("7"));
     }
 };
 
