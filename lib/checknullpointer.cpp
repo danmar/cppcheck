@@ -1194,6 +1194,26 @@ void CheckNullPointer::nullConstantDereference()
     }
 }
 
+/**
+* @brief If tok is a function call that passes in a pointer such that
+*         the pointer may be modified, this function will remove that
+*         pointer from pointerArgs.
+*/
+void CheckNullPointer::removeAssignedVarFromSet(const Token* tok, std::set<unsigned int>& pointerArgs)
+{
+    // Common functions that are known NOT to modify their pointer argument
+    const char safeFunctions[] = "printf|sprintf|fprintf|vprintf";
+
+    // If a pointer's address is passed into a function, stop considering it
+    if (Token::Match(tok->previous(), "[;{}] %var% (")) {
+        const Token* endParen = tok->next()->link();
+        for (const Token* tok2 = tok->next(); tok2 != endParen; tok2 = tok2->next()) {
+            if (tok2->isName() && tok2->varId() > 0 && !Token::Match(tok, safeFunctions)) {
+                pointerArgs.erase(tok2->varId());
+            }
+        }
+    }
+}
 
 /**
 * @brief Does one part of the check for nullPointer().
@@ -1223,8 +1243,8 @@ void CheckNullPointer::nullPointerDefaultArgument()
 
         // Report an error if any of the default-NULL arguments are dereferenced
         if (!pointerArgs.empty()) {
-            bool unknown = _settings->inconclusive;
             for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+
                 // If we encounter a possible NULL-pointer check, skip over its body
                 if (Token::simpleMatch(tok, "if ( "))  {
                     bool dependsOnPointer = false;
@@ -1241,30 +1261,52 @@ void CheckNullPointer::nullPointerDefaultArgument()
                     // pointer check for the pointers referenced in its condition
                     const Token *endOfIf = startOfIfBlock->link();
                     bool isExitOrReturn =
-                        Token::findmatch(startOfIfBlock, "exit|return", endOfIf) != NULL;
+                        Token::findmatch(startOfIfBlock, "exit|return|throw", endOfIf) != NULL;
 
-                    for (const Token *tok2 = tok->next(); tok2 != endOfCondition; tok2 = tok2->next()) {
-                        if (tok2->isName() && tok2->varId() > 0 &&
-                            pointerArgs.count(tok2->varId()) > 0) {
-
-                            // If the if() depends on a pointer and may return, stop
-                            // considering that pointer because it may be a NULL-pointer
-                            // check that returns if the pointer is NULL.
+                    if (Token::Match(tok, "if ( %var% == 0 )")) {
+                        const unsigned int var = tok->tokAt(2)->varId();
+                        if (var > 0 && pointerArgs.count(var) > 0) {
                             if (isExitOrReturn)
-                                pointerArgs.erase(tok2->varId());
+                                pointerArgs.erase(var);
                             else
                                 dependsOnPointer = true;
                         }
+                    } else {
+                        for (const Token *tok2 = tok->next(); tok2 != endOfCondition; tok2 = tok2->next()) {
+                            if (tok2->isName() && tok2->varId() > 0 &&
+                                pointerArgs.count(tok2->varId()) > 0) {
+
+                                // If the if() depends on a pointer and may return, stop
+                                // considering that pointer because it may be a NULL-pointer
+                                // check that returns if the pointer is NULL.
+                                if (isExitOrReturn)
+                                    pointerArgs.erase(tok2->varId());
+                                else
+                                    dependsOnPointer = true;
+                            }
+                        }
                     }
+
                     if (dependsOnPointer && endOfIf) {
                         for (; tok != endOfIf; tok = tok->next()) {
                             // If a pointer is assigned a new value, stop considering it.
                             if (Token::Match(tok, "%var% ="))
                                 pointerArgs.erase(tok->varId());
+                            else
+                                removeAssignedVarFromSet(tok, pointerArgs);
                         }
                         continue;
                     }
                 }
+
+                // If there is a noreturn function (e.g. exit()), stop considering the rest of
+                // this function.
+                bool unknown = false;
+                if (Token::Match(tok, "return|throw|exit") ||
+                    (_tokenizer->IsScopeNoReturn(tok, &unknown) && !unknown))
+                    break;
+
+                removeAssignedVarFromSet(tok, pointerArgs);
 
                 if (tok->varId() == 0 || pointerArgs.count(tok->varId()) == 0)
                     continue;
@@ -1276,7 +1318,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
                 // If a pointer dereference is preceded by an && or ||,
                 // they serve as a sequence point so the dereference
                 // may not be executed.
-                if (isPointerDeRef(tok, unknown) &&
+                if (isPointerDeRef(tok, unknown) && !unknown &&
                     tok->strAt(-1) != "&&" && tok->strAt(-1) != "||" &&
                     tok->strAt(-2) != "&&" && tok->strAt(-2) != "||")
                     nullPointerDefaultArgError(tok, tok->str());

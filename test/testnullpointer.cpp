@@ -2110,6 +2110,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
 
+        check("void f(int *p = 0) {\n"
+              "    if (!p)\n"
+              "        return;\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(char a, int *p = 0) {\n"
               "    *p = 0;\n"
               "}");
@@ -2193,6 +2200,53 @@ private:
 
         check("void g(int *p = 0) {\n"
               "    return !p || *p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // bar may initialize p but be can't know for sure without knowing
+        // if p is passed in by reference and is modified by bar()
+        check("void f(int *p = 0) {\n"
+              "    bar(p);\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    printf(\"%d\", p);\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+
+        // The init() function may or may not initialize p, but since the address
+        // of p is passed in, it's a good bet that p may be modified and
+        // so we should not report an error.
+        check("void f(int *p = 0) {\n"
+              "    init(&p);\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void init(int* &g);\n"
+              "void f(int *p = 0) {\n"
+              "    init(p);\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    if (p == 0) {\n"
+              "        init(&p);\n"
+              "    }\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    if (p == 0) {\n"
+              "        throw SomeException;\n"
+              "    }\n"
+              "    *p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
