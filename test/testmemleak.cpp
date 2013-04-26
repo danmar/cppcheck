@@ -5079,7 +5079,7 @@ private:
         TEST_CASE(globalvar);
 
         // local struct variable
-        TEST_CASE(localvar);
+        TEST_CASE(localvars);
     }
 
     void err() {
@@ -5323,16 +5323,50 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar() {
-        const char code[] = "void foo() {\n"
-                            "    struct ABC abc;\n"
-                            "    abc.a = malloc(10);\n"
-                            "}\n";
+    // Ticket #933 Leaks with struct members not detected
+    void localvars() {
+    	// Test error case
+        const char code_err[] = "struct A {\n"
+                                "    FILE* f;\n"
+                                "    char* c;\n"
+                                "    void* m;\n"
+                                "};\n"
+                                "\n"
+                                "void func() {\n"
+                                "    struct A a;\n"
+                                "    a.f = fopen(\"test\", \"r\");\n"
+                                "    a.c = new char[12];\n"
+                                "    a.m = malloc(12);\n"
+                                "}\n";
 
-        check(code, "test.cpp");
+        check(code_err, "test.cpp");
         ASSERT_EQUALS("", errout.str());
-        check(code, "test.c");
-        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: abc.a\n", errout.str());
+        check(code_err, "test.c");
+        ASSERT_EQUALS("[test.c:12]: (error) Memory leak: a.f\n"
+                      "[test.c:12]: (error) Memory leak: a.c\n"
+                      "[test.c:12]: (error) Memory leak: a.m\n", errout.str());
+
+        // Test OK case
+        const char code_ok[] = "struct A {\n"
+                               "    FILE* f;\n"
+                               "    char* c;\n"
+                               "    void* m;\n"
+                               "};\n"
+                               "\n"
+                               "void func() {\n"
+                               "    struct A a;\n"
+                               "    a.f = fopen(\"test\", \"r\");\n"
+                               "    a.c = new char[12];\n"
+                               "    a.m = malloc(12);\n"
+                               "    fclose(a.f);\n"
+                               "    delete [] a.c;\n"
+                               "    free(a.m);\n"
+                               "}\n";
+
+        check(code_ok, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+        check(code_ok, "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
