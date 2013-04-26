@@ -1113,9 +1113,8 @@ void CheckNullPointer::nullPointer()
         nullPointerStructByDeRefAndChec();
         nullPointerByDeRefAndChec();
         nullPointerByCheckAndDeRef();
+        nullPointerDefaultArgument();
     }
-
-    nullPointerDefaultArgument();
 }
 
 /** Dereferencing null constant (simplified token list) */
