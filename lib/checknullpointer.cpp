@@ -1200,11 +1200,11 @@ void CheckNullPointer::nullConstantDereference()
 */
 void CheckNullPointer::removeAssignedVarFromSet(const Token* tok, std::set<unsigned int>& pointerArgs)
 {
-    // Common functions that are known NOT to modify their pointer argument
-    const char safeFunctions[] = "printf|sprintf|fprintf|vprintf";
-
     // If a pointer's address is passed into a function, stop considering it
     if (Token::Match(tok->previous(), "[;{}] %var% (")) {
+        // Common functions that are known NOT to modify their pointer argument
+        const char safeFunctions[] = "printf|sprintf|fprintf|vprintf";
+
         const Token* endParen = tok->next()->link();
         for (const Token* tok2 = tok->next(); tok2 != endParen; tok2 = tok2->next()) {
             if (tok2->isName() && tok2->varId() > 0 && !Token::Match(tok, safeFunctions)) {
