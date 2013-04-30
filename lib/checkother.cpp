@@ -612,6 +612,7 @@ void CheckOther::checkRedundantAssignment()
 
         std::map<unsigned int, const Token*> varAssignments;
         std::map<unsigned int, const Token*> memAssignments;
+        std::set<unsigned int> initialized;
         const Token* writtenArgumentsEnd = 0;
 
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
@@ -672,10 +673,12 @@ void CheckOther::checkRedundantAssignment()
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
                     if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat")) {
-                        std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
-                        if (it == memAssignments.end())
+                        if (tok->str() == "memset" && initialized.find(param1->varId()) == initialized.end() && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray())
+                            initialized.insert(param1->varId());
+                        else if (memAssignments.find(param1->varId()) == memAssignments.end())
                             memAssignments[param1->varId()] = tok;
                         else {
+                            const std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
                             if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok) && warning)
                                 redundantCopyInSwitchError(it->second, tok, param1->str());
                             else if (performance)

@@ -5643,8 +5643,7 @@ private:
               "    memcpy(a, b, 5);\n"
               "    memmove(a, b, 5);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n"
-                      "[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n"
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n"
                       "[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n"
                       "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
                       "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'?\n", errout.str());
@@ -5947,6 +5946,14 @@ private:
               "    memset(a, 0, size);\n"
               "    if(x)\n"
               "        memset(a, 0, size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #4455 - initialization of local buffer
+        check("void f(void) {"
+              "    char buf[10];\n"
+              "    memset(buf, 0, 10);\n"
+              "    strcpy(buf, string);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
