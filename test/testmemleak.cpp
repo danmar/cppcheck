@@ -5325,7 +5325,7 @@ private:
 
     // Ticket #933 Leaks with struct members not detected
     void localvars() {
-    	// Test error case
+        // Test error case
         const char code_err[] = "struct A {\n"
                                 "    FILE* f;\n"
                                 "    char* c;\n"
