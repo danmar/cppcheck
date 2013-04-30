@@ -5956,6 +5956,13 @@ private:
               "    strcpy(buf, string);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(void) {\n"
+              "    char buf[10] = {0};\n"
+              "    memset(buf, 0, 10);\n"
+              "    strcpy(buf, string);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'buf' is being written before its old content has been used.\n", errout.str());
     }
 
     void varFuncNullUB() { // #4482

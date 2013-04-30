@@ -629,6 +629,17 @@ void CheckOther::checkRedundantAssignment()
                 varAssignments.clear();
                 memAssignments.clear();
             } else if (tok->type() == Token::eVariable) {
+                // Set initialization flag
+                if (!Token::Match(tok, "%var% ["))
+                    initialized.insert(tok->varId());
+                else {
+                    const Token *tok2 = tok->next();
+                    while (tok2 && tok2->str() == "[")
+                        tok2 = tok2->link()->next();
+                    if (tok2 && tok2->str() != ";")
+                        initialized.insert(tok->varId());
+                }
+
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
                 if (tok->next()->isAssignmentOp() && Token::Match(tok->previous(), "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
