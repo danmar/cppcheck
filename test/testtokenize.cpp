@@ -290,6 +290,7 @@ private:
         TEST_CASE(varidclass13);
         TEST_CASE(varidclass14);
         TEST_CASE(varidclass15);  // initializer list
+        TEST_CASE(varid_classnameshaddowsvariablename) // #3990
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -4715,6 +4716,22 @@ private:
                                 "5: } ;\n"
                                 "6: A :: A ( ) : a@1 ( 0 ) { b@2 = 1 ; }\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varid_classnameshaddowsvariablename() {
+        const char code[] = "class Data;\n"
+                            "void strange_declarated(const Data& Data);\n"
+                            "void handleData(const Data& data) {\n"
+                            "    strange_declarated(data);\n"
+                            "}\n";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Data ;\n"
+                                "2: void strange_declarated ( const Data & Data@1 ) ;\n"
+                                "3: void handleData ( const Data & data@2 ) {\n"
+                                "4: strange_declarated ( data@2 ) ;\n"
+                                "5: }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+
     }
 
     void file1() {
