@@ -1308,34 +1308,30 @@ void CheckStl::checkAutoPointer()
                 (Token::simpleMatch(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
                 autoPointerContainerError(tok);
             } else {
-                const Token *tok2 = tok->tokAt(2);
-                while (tok2) {
-                    if (Token::Match(tok2, "> %var%")) {
-                        const Token *tok3 = tok2->tokAt(2);
-                        if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
+                const Token *tok2 = tok->linkAt(1);
+
+                if (Token::Match(tok2, "> %var%")) {
+                    const Token *tok3 = tok2->tokAt(2);
+                    if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
+                        autoPointerArrayError(tok2->next());
+                    }
+                    while (tok3 && tok3->str() != ";") {
+                        tok3 = tok3->next();
+                    }
+                    if (tok3) {
+                        tok3 = tok3->tokAt(-2);
+                        if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
                             autoPointerArrayError(tok2->next());
-                            break;
-                        }
-                        while (tok3 && tok3->str() != ";") {
-                            tok3 = tok3->next();
-                        }
-                        if (tok3) {
-                            tok3 = tok3->tokAt(-2);
-                            if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
+                        } else if (tok3->varId()) {
+                            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type%", tok3->varId());
+                            if (decltok && hasArrayEnd(decltok)) {
                                 autoPointerArrayError(tok2->next());
-                            } else if (tok3->varId()) {
-                                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type%", tok3->varId());
-                                if (decltok && hasArrayEnd(decltok)) {
-                                    autoPointerArrayError(tok2->next());
-                                }
                             }
-                            if (tok2->next()->varId()) {
-                                autoPtrVarId.insert(tok2->next()->varId());
-                            }
-                            break;
+                        }
+                        if (tok2->next()->varId()) {
+                            autoPtrVarId.insert(tok2->next()->varId());
                         }
                     }
-                    tok2 = tok2->next();
                 }
             }
         } else {

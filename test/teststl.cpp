@@ -2145,6 +2145,16 @@ private:
         // ticket #2967 (segmentation fault)
         check("auto_ptr<x>\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #4390
+        check("auto_ptr<ConnectionStringReadStorage> CreateRegistryStringStorage() {\n"
+              "    return auto_ptr<ConnectionStringReadStorage>(new RegistryConnectionStringStorage());\n"
+              "}\n"
+              "\n"
+              "void LookupWindowsUserAccountName() {\n"
+              "    auto_ptr_array<char> domainName(new char[42]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
