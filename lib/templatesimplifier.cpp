@@ -630,7 +630,7 @@ void TemplateSimplifier::expandTemplate(
     std::list<Token *> &templateInstantiations)
 {
     for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3->next()) {
-        if (tok3->str() == "{" || tok3->str() == "(")
+        if (tok3->str() == "{" || tok3->str() == "(" || tok3->str() == "[")
             tok3 = tok3->link();
 
         // Start of template..

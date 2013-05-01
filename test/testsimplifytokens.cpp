@@ -1894,6 +1894,7 @@ private:
                             "{\n"
                             "public:\n"
                             "    static AA<T> create(T* newObject);\n"
+                            "    static int size();\n"
                             "};\n"
                             "\n"
                             "class CC { public: CC(AA<BB>, int) {} };\n"
@@ -1906,7 +1907,9 @@ private:
                             "\n"
                             "XX::XX():\n"
                             "    y(AA<CC>::create(new CC(AA<BB>(), 0)))\n"
-                            "    {}\n";
+                            "    {}\n"
+                            "\n"
+                            "int yy[AA<CC>::size()];";
 
         // Just run it and check that there are not assertions.
         tok(code);
