@@ -1549,7 +1549,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
                 return false; // address of
             if (tok2 && tok2->str() == ")")
                 tok2 = tok2->link()->previous();
-            if (Token::Match(tok2,") ( %type% *| ) &") && tok2->tokAt(2)->varId() == 0)
+            if (Token::Match(tok2,"[()] ( %type% *| ) &") && tok2->tokAt(2)->varId() == 0)
                 return false; // cast
             while (tok2 && tok2->str() == "(")
                 tok2 = tok2->previous();

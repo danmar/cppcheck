@@ -2023,6 +2023,12 @@ private:
                         "}", "test.c", false);
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n" // #4737 - weird cast.
+                        "    int x;\n"
+                        "    do_something(&((char*)&x)[0], 1);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // using uninit var in condition
         checkUninitVar2("void f(void) {\n"
                         "    int x;\n"
