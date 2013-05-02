@@ -2713,6 +2713,13 @@ private:
                         "}\n", "test.c");
         ASSERT_EQUALS("[test.c:9]: (error) Uninitialized struct member: fred.b\n", errout.str());
 
+        checkUninitVar2("struct Fred { int a; };\n"
+                        "void f() {\n"
+                        "    struct Fred fred;\n"
+                        "    if (fred.a==1) {}\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized struct member: fred.a\n", errout.str());
+
         checkUninitVar2("struct S { int n; int m; };\n"
                         "void f(void) {\n"
                         " struct S s;\n"

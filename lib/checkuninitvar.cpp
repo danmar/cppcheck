@@ -1616,6 +1616,8 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             return true;
         else if ((tok->previous() && tok->previous()->isConstOp()) || Token::Match(tok->previous(), "[|="))
             ; // member variable usage
+        else if (tok->tokAt(3)->isConstOp())
+            ; // member variable usage
         else
             return true;
     } else if (tok->strAt(1) == "=")
