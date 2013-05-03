@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="check64bit.cpp" />
+    <ClCompile Include="checkassert.cpp" />
     <ClCompile Include="checkassignif.cpp" />
     <ClCompile Include="checkautovariables.cpp" />
     <ClCompile Include="checkbool.cpp" />
@@ -75,6 +76,7 @@
   <ItemGroup>
     <ClInclude Include="check.h" />
     <ClInclude Include="check64bit.h" />
+    <ClInclude Include="checkassert.h" />
     <ClInclude Include="checkassignif.h" />
     <ClInclude Include="checkautovariables.h" />
     <ClInclude Include="checkbool.h" />

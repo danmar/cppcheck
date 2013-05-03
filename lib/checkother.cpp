@@ -1171,46 +1171,6 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 }
 
 //---------------------------------------------------------------------------
-//    int a = 1;
-//    assert(a = 2);            // <- assert should not have a side-effect
-//---------------------------------------------------------------------------
-static inline const Token *findAssertPattern(const Token *start)
-{
-    return Token::findmatch(start, "assert ( %any%");
-}
-
-void CheckOther::checkAssignmentInAssert()
-{
-    if (!_settings->isEnabled("warning"))
-        return;
-
-    const Token *tok = findAssertPattern(_tokenizer->tokens());
-    const Token *endTok = tok ? tok->next()->link() : NULL;
-
-    while (tok && endTok) {
-        for (tok = tok->tokAt(2); tok != endTok; tok = tok->next()) {
-            if (tok->isName() && (tok->next()->isAssignmentOp() || tok->next()->type() == Token::eIncDecOp))
-                assignmentInAssertError(tok, tok->str());
-            else if (Token::Match(tok, "--|++ %var%"))
-                assignmentInAssertError(tok, tok->strAt(1));
-        }
-
-        tok = findAssertPattern(endTok->next());
-        endTok = tok ? tok->next()->link() : NULL;
-    }
-}
-
-void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
-                "Variable '" + varname + "' is modified insert assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.");
-}
-
-//---------------------------------------------------------------------------
 //    if ((x != 1) || (x != 3))            // expression always true
 //    if ((x == 1) && (x == 3))            // expression always false
 //    if ((x < 1)  && (x > 3))             // expression always false

@@ -4,8 +4,10 @@ include($$PWD/pcrerules.pri)
 INCLUDEPATH += ../externals/tinyxml
 HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}check64bit.h \
+           $${BASEPATH}checkassert.h \
            $${BASEPATH}checkassignif.h \
            $${BASEPATH}checkautovariables.h \
+           $${BASEPATH}checkbool.h \
            $${BASEPATH}checkboost.h \
            $${BASEPATH}checkbufferoverrun.h \
            $${BASEPATH}checkclass.h \
@@ -19,6 +21,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkobsoletefunctions.h \
            $${BASEPATH}checkother.h \
            $${BASEPATH}checkpostfixoperator.h \
+           $${BASEPATH}checksizeof.h \
            $${BASEPATH}checkstl.h \
            $${BASEPATH}checkuninitvar.h \
            $${BASEPATH}checkunusedfunctions.h \
@@ -40,8 +43,10 @@ HEADERS += $${BASEPATH}check.h \
 
 
 SOURCES += $${BASEPATH}check64bit.cpp \
+           $${BASEPATH}checkassert.cpp \
            $${BASEPATH}checkassignif.cpp \
            $${BASEPATH}checkautovariables.cpp \
+           $${BASEPATH}checkbool.cpp \
            $${BASEPATH}checkboost.cpp \
            $${BASEPATH}checkbufferoverrun.cpp \
            $${BASEPATH}checkclass.cpp \
@@ -55,6 +60,7 @@ SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}checkobsoletefunctions.cpp \
            $${BASEPATH}checkother.cpp \
            $${BASEPATH}checkpostfixoperator.cpp \
+           $${BASEPATH}checksizeof.cpp \
            $${BASEPATH}checkstl.cpp \
            $${BASEPATH}checkuninitvar.cpp \
            $${BASEPATH}checkunusedfunctions.cpp \
