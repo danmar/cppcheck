@@ -202,6 +202,10 @@ public:
                _type == eBoolean; // TODO: "true"/"false" aren't really a name...
     }
     bool isUpperCaseName() const;
+    bool isLiteral() const {
+        return _type == eNumber || _type == eString || _type == eChar ||
+               _type == eBoolean || _type == eLiteral;
+    }
     bool isNumber() const {
         return _type == eNumber;
     }

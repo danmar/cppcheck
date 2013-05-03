@@ -3369,23 +3369,8 @@ bool Tokenizer::simplifyTokenList()
     // Simplify simple calculations..
     simplifyCalculations();
 
-    // Replace "*(str + num)" => "str[num]"
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%var%") && !tok->isNumber()
-            && !Token::Match(tok, "]|)")
-            && (Token::Match(tok->next(), "* ( %var% + %num%|%var% )"))) {
-            // remove '* ('
-            tok->deleteNext(2);
-
-            tok = tok->tokAt(2);
-            // '+'->'['
-            tok->str("[");
-
-            tok = tok->tokAt(2);
-            tok->str("]");
-            Token::createMutualLinks(tok->tokAt(-2), tok);
-        }
-    }
+    // Replace "*(ptr + num)" => "ptr[num]"
+    simplifyOffsetPointerDereference();
 
     // Replace "&str[num]" => "(str + num)"
     std::set<unsigned int> pod;
@@ -6760,8 +6745,39 @@ bool Tokenizer::simplifyCalculations()
     return TemplateSimplifier::simplifyCalculations(list.front());
 }
 
+void Tokenizer::simplifyOffsetPointerDereference()
+{
+    // Replace "*(str + num)" => "str[num]" and
+    // Replace "*(str - num)" => "str[-num]"
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!tok->isName() && !tok->isLiteral()
+            && !Token::Match(tok, "]|)|++|--")
+            && Token::Match(tok->next(), "* ( %var% +|- %num%|%var% )")) {
 
+            // remove '* ('
+            tok->deleteNext(2);
 
+            // '+'->'['
+            tok = tok->tokAt(2);
+            Token* const openBraceTok = tok;
+            const bool isNegativeIndex = (tok->str() == "-");
+            tok->str("[");
+
+            // Insert a "-" in front of the number or variable
+            if (isNegativeIndex) {
+                if (tok->next()->isName()) {
+                    tok->insertToken("-");
+                    tok = tok->next();
+                } else
+                    tok->next()->str(std::string("-") + tok->next()->str());
+            }
+
+            tok = tok->tokAt(2);
+            tok->str("]");
+            Token::createMutualLinks(openBraceTok, tok);
+        }
+    }
+}
 
 void Tokenizer::simplifyGoto()
 {

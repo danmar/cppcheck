@@ -165,6 +165,13 @@ public:
      */
     bool simplifyCalculations();
 
+    /**
+     * Simplify dereferencing a pointer offset by a number:
+     *     "*(ptr + num)" => "ptr[num]"
+     *     "*(ptr - num)" => "ptr[-num]"
+     */
+    void simplifyOffsetPointerDereference();
+
     /** Insert array size where it isn't given */
     void arraySize();
 
