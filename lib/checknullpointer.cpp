@@ -762,6 +762,19 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             // Variable id for pointer
             const unsigned int varid(vartok->varId());
 
+            // bailout for while scope if pointer is assigned inside the loop
+            if (i->type == Scope::eWhile) {
+                bool assign = false;
+                for (const Token *tok2 = i->classStart; tok2 && tok2 != i->classEnd; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "%varid% =", varid)) {
+                        assign = true;
+                        break;
+                    }
+                }
+                if (assign)
+                    continue;
+            }
+
             // Name of pointer
             const std::string& varname(vartok->str());
 

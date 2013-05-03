@@ -587,6 +587,19 @@ private:
               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
+        // while
+        check("void f(int *p) {\n"
+              "    *p = 0;\n"
+              "    while (p) { p = 0; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p) {\n"
+              "    *p = 0;\n"
+              "    while (p) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
+
         // Ticket #3125
         check("void foo(ABC *p)\n"
               "{\n"
