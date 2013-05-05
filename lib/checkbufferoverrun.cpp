@@ -859,37 +859,29 @@ void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &
     bool maxMinFlipped = false;
     std::string min_counter_value = counter_init_value;
     std::string max_counter_value;
-    MathLib::bigint max_value = MathLib::toLongNumber(max_counter_value);
 
-    for_condition(tok3, counter_varid, min_counter_value, max_counter_value, maxMinFlipped);
-    while (tok3 && tok3->str() != ";") {
+    if (!for_condition(tok3, counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
+        return;
+
+    const MathLib::bigint max_value = MathLib::toLongNumber(max_counter_value);
+
+    // Skip condition
+    while (tok3 && tok3->str() != ";")
         tok3 = tok3->next();
-    }
 
-    for (const Token* tok2 = tok; tok2; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "%var% < %num%")) {
-            max_value = MathLib::toLongNumber(tok2->strAt(2));
-            max_value = max_value - 1;
+    if (max_value > size && Token::simpleMatch(tok3, "; ) {")) {
+        const Token * const endToken = tok3->linkAt(2);
+        const Token *useToken = NULL;
+        bool incrementInLoop = false;
+        for (const Token *loopTok = tok3->tokAt(3); loopTok != endToken; loopTok = loopTok->next()) {
+            if (Token::Match(loopTok, "%varid% [ %var% ++| ]", arrayInfo.varid()) && loopTok->tokAt(2)->varId() == counter_varid)
+                useToken = loopTok;
+            if (Token::Match(loopTok, "%varid% ++", counter_varid))
+                incrementInLoop = true;
         }
-    }
 
-    if (max_value > size) {
-        if (tok3 && tok3->strAt(1) == ")") {
-            bool usedInArray = false;
-            for (const Token *loopTok = tok3->tokAt(2); loopTok->str() != "}" ; loopTok = loopTok->next()) {
-                if (loopTok->varId() == arrayInfo.varid() && loopTok->tokAt(2)->varId() == counter_varid)
-                    usedInArray = true;
-            }
-
-            for (const Token *loopTok = tok3->tokAt(2); loopTok->str() != "}" ; loopTok = loopTok->next()) {
-                if (usedInArray && (counter_varid == loopTok->varId())) {
-                    if (loopTok->strAt(1) == "++" ||
-                        (loopTok->previous()->type() == Token::eIncDecOp)) {
-                        bufferOverrunError(tok, arrayInfo.varname());
-                    }
-                }
-            }
-        }
+        if ((useToken != NULL) && incrementInLoop)
+            bufferOverrunError(useToken, arrayInfo.varname());
     }
 }
 

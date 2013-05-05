@@ -2569,7 +2569,7 @@ private:
               "      x += array[i];\n"
               "       i++;  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: array\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: array\n", errout.str());
 
         check("void main() {\n"
               "   int array[] = {1,2};\n"
@@ -2588,7 +2588,7 @@ private:
               "         }\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: array\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: array\n", errout.str());
     }
 
     void buffer_overrun_26() { // ticket #4432 (segmentation fault)
