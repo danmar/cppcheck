@@ -95,6 +95,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 LIBOBJ =      $(SRCDIR)/check64bit.o \
               $(SRCDIR)/checkassignif.o \
               $(SRCDIR)/checkautovariables.o \
+              $(SRCDIR)/checkbool.o \
               $(SRCDIR)/checkboost.o \
               $(SRCDIR)/checkbufferoverrun.o \
               $(SRCDIR)/checkclass.o \
@@ -108,6 +109,7 @@ LIBOBJ =      $(SRCDIR)/check64bit.o \
               $(SRCDIR)/checkobsoletefunctions.o \
               $(SRCDIR)/checkother.o \
               $(SRCDIR)/checkpostfixoperator.o \
+              $(SRCDIR)/checksizeof.o \
               $(SRCDIR)/checkstl.o \
               $(SRCDIR)/checkuninitvar.o \
               $(SRCDIR)/checkunusedfunctions.o \
@@ -138,6 +140,7 @@ TESTOBJ =     test/options.o \
               test/test64bit.o \
               test/testassignif.o \
               test/testautovariables.o \
+              test/testbool.o \
               test/testboost.o \
               test/testbufferoverrun.o \
               test/testcharvar.o \
@@ -166,6 +169,7 @@ TESTOBJ =     test/options.o \
               test/testpreprocessor.o \
               test/testrunner.o \
               test/testsimplifytokens.o \
+              test/testsizeof.o \
               test/teststl.o \
               test/testsuite.o \
               test/testsuppressions.o \
@@ -236,6 +240,9 @@ $(SRCDIR)/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/config.
 $(SRCDIR)/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h lib/checkuninitvar.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checkautovariables.o $(SRCDIR)/checkautovariables.cpp
 
+$(SRCDIR)/checkbool.o: lib/checkbool.cpp lib/checkbool.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/mathlib.h lib/symboldatabase.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checkbool.o $(SRCDIR)/checkbool.cpp
+
 $(SRCDIR)/checkboost.o: lib/checkboost.cpp lib/checkboost.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checkboost.o $(SRCDIR)/checkboost.cpp
 
@@ -274,6 +281,9 @@ $(SRCDIR)/checkother.o: lib/checkother.cpp lib/checkother.h lib/config.h lib/che
 
 $(SRCDIR)/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checkpostfixoperator.o $(SRCDIR)/checkpostfixoperator.cpp
+
+$(SRCDIR)/checksizeof.o: lib/checksizeof.cpp lib/checksizeof.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checksizeof.o $(SRCDIR)/checksizeof.cpp
 
 $(SRCDIR)/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/executionpath.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checkstl.o $(SRCDIR)/checkstl.cpp
@@ -359,6 +369,9 @@ test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/errorlogger.h lib/
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkautovariables.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testautovariables.o test/testautovariables.cpp
 
+test/testbool.o: test/testbool.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkbool.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testbool.o test/testbool.cpp
+
 test/testboost.o: test/testboost.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkboost.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testboost.o test/testboost.cpp
 
@@ -442,6 +455,9 @@ test/testrunner.o: test/testrunner.cpp test/testsuite.h lib/errorlogger.h lib/co
 
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/settings.h lib/standards.h lib/templatesimplifier.h lib/path.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
+
+test/testsizeof.o: test/testsizeof.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checksizeof.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testsizeof.o test/testsizeof.cpp
 
 test/teststl.o: test/teststl.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkstl.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/teststl.o test/teststl.cpp

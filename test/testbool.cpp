@@ -74,17 +74,7 @@ private:
         // Check...
         CheckBool checkBool(&tokenizer, &settings, this);
         checkBool.runChecks(&tokenizer, &settings, this);
-
-        // Simplify token list..
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList();
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-        if (str1 != str2)
-            warn(("Unsimplified code in test case. It looks like this test "
-                  "should either be cleaned up or moved to TestTokenizer or "
-                  "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
-
-
         checkBool.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
