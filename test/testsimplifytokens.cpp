@@ -2733,6 +2733,12 @@ private:
                                 "}\n";
             ASSERT_EQUALS("void f ( ) { char buf [ BUFSIZ ] ; char * * p ; char * ptrs [ BUFSIZ ] ; char * * pp ; }", tok(code));
         }
+
+        {
+            // #4786 - don't replace , with ; in ".. : public B, C .." code
+            const char code[] = "template < class T = X > class A : public B , C { } ;";
+            ASSERT_EQUALS(code, tok(code));
+        }
     }
 
     void remove_comma() {

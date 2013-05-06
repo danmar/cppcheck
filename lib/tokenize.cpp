@@ -7985,7 +7985,7 @@ void Tokenizer::simplifyComma()
                         // Handle "delete a, a = 0;"
                         tok->str(";");
                         break;
-                    } else if (Token::Match(tok2, "[;,{}()]")) {
+                    } else if (Token::Match(tok2, "[:;,{}()]")) {
                         break;
                     }
                 }
