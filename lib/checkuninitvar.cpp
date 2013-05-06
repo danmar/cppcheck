@@ -1241,7 +1241,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     return true;
 
                 std::map<unsigned int, int> varValueIf;
-                if (!initif && !noreturnIf) {
+                if (!alwaysFalse && !initif && !noreturnIf) {
                     for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                         if (Token::Match(tok2, "[;{}.] %var% = - %var% ;"))
                             varValueIf[tok2->next()->varId()] = NOT_ZERO;
@@ -1268,10 +1268,10 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
                     bool possibleInitElse(number_of_if > 0 || suppressErrors);
                     bool noreturnElse = false;
-                    const bool initelse = checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, NULL, membervar);
+                    const bool initelse = !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, NULL, membervar);
 
                     std::map<unsigned int, int> varValueElse;
-                    if (!initelse && !noreturnElse) {
+                    if (!alwaysTrue && !initelse && !noreturnElse) {
                         for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                             if (Token::Match(tok2, "[;{}.] %var% = - %var% ;"))
                                 varValueElse[tok2->next()->varId()] = NOT_ZERO;
@@ -1286,10 +1286,8 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     // goto the }
                     tok = tok->link();
 
-                    if (initif && initelse)
-                        return true;
-
-                    if ((initif && noreturnElse) || (initelse && noreturnIf))
+                    if ((alwaysFalse || initif || noreturnIf) &&
+                        (alwaysTrue || initelse || noreturnElse))
                         return true;
 
                     if ((initif || initelse || possibleInitElse) && !noreturnIf && !noreturnElse) {

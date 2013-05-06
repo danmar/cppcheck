@@ -2261,11 +2261,41 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar2("int* f(int a) {\n" // #4560
+        checkUninitVar2("int f(int a) {\n" // #4560
                         "    int x = 0, y;\n"
                         "    if (a) x = 1;\n"
                         "    else return 0;\n"
                         "    if (x) y = 123;\n" // <- y is always initialized
+                        "    else {}\n"
+                        "    return y;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("int f(int a) {\n" // #4560
+                        "    int x = 1, y;\n"
+                        "    if (a) x = 0;\n"
+                        "    else return 0;\n"
+                        "    if (x) {}\n"
+                        "    else y = 123;\n" // <- y is always initialized
+                        "    return y;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("static int x;" // #4773
+                        "int f() {\n"
+                        "    int y;\n"
+                        "    if (x) g();\n"
+                        "    if (x) y = 123;\n"
+                        "    else y = 456;\n"
+                        "    return y;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("static int x;" // #4773
+                        "int f() {\n"
+                        "    int y;\n"
+                        "    if (!x) g();\n"
+                        "    if (x) y = 123;\n"
                         "    else y = 456;\n"
                         "    return y;\n"
                         "}");
