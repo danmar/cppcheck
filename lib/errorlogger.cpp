@@ -20,6 +20,7 @@
 #include "path.h"
 #include "cppcheck.h"
 #include "tokenlist.h"
+#include "token.h"
 
 #include <cassert>
 #include <sstream>
