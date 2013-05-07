@@ -60,7 +60,6 @@ public:
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkSuspiciousCaseInSwitch();
-        checkOther.checkAssignmentInAssert();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
@@ -186,9 +185,6 @@ public:
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
 
-    /** @brief %Check for assignment to a variable in an assert test*/
-    void checkAssignmentInAssert();
-
     /** @brief %Check for testing for mutual exclusion over ||*/
     void checkIncorrectLogicOperator();
 
@@ -293,7 +289,6 @@ private:
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
-    void assignmentInAssertError(const Token *tok, const std::string &varname);
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
     void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
@@ -357,7 +352,6 @@ private:
         c.suspiciousCaseInSwitchError(0, "||");
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
-        c.assignmentInAssertError(0, "varname");
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
         c.redundantConditionError(0, "If x > 10 the condition x > 11 is always true.");
         c.memsetZeroBytesError(0, "varname");

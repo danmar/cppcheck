@@ -93,6 +93,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 ###### Object Files
 
 LIBOBJ =      $(SRCDIR)/check64bit.o \
+              $(SRCDIR)/checkassert.o \
               $(SRCDIR)/checkassignif.o \
               $(SRCDIR)/checkautovariables.o \
               $(SRCDIR)/checkbool.o \
@@ -138,6 +139,7 @@ CLIOBJ =      cli/cmdlineparser.o \
 
 TESTOBJ =     test/options.o \
               test/test64bit.o \
+              test/testassert.o \
               test/testassignif.o \
               test/testautovariables.o \
               test/testbool.o \
@@ -233,6 +235,9 @@ install: cppcheck
 
 $(SRCDIR)/check64bit.o: lib/check64bit.cpp lib/check64bit.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/check64bit.o $(SRCDIR)/check64bit.cpp
+
+$(SRCDIR)/checkassert.o: lib/checkassert.cpp lib/checkassert.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checkassert.o $(SRCDIR)/checkassert.cpp
 
 $(SRCDIR)/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/mathlib.h lib/symboldatabase.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_LIB} -c -o $(SRCDIR)/checkassignif.o $(SRCDIR)/checkassignif.cpp
@@ -362,6 +367,9 @@ test/options.o: test/options.cpp test/options.h
 
 test/test64bit.o: test/test64bit.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/check64bit.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/test64bit.o test/test64bit.cpp
+
+test/testassert.o: test/testassert.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassert.h lib/check.h lib/token.h lib/settings.h lib/standards.h test/testsuite.h test/redirect.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testassert.o test/testassert.cpp
 
 test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassignif.h lib/check.h lib/token.h lib/settings.h lib/standards.h lib/mathlib.h test/testsuite.h test/redirect.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) ${INCLUDE_FOR_TEST} -c -o test/testassignif.o test/testassignif.cpp

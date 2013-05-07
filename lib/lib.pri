@@ -4,6 +4,7 @@ include($$PWD/pcrerules.pri)
 INCLUDEPATH += ../externals/tinyxml
 HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}check64bit.h \
+           $${BASEPATH}checkassert.h \
            $${BASEPATH}checkassignif.h \
            $${BASEPATH}checkautovariables.h \
            $${BASEPATH}checkbool.h \
@@ -42,6 +43,7 @@ HEADERS += $${BASEPATH}check.h \
 
 
 SOURCES += $${BASEPATH}check64bit.cpp \
+           $${BASEPATH}checkassert.cpp \
            $${BASEPATH}checkassignif.cpp \
            $${BASEPATH}checkautovariables.cpp \
            $${BASEPATH}checkbool.cpp \
