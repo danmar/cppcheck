@@ -62,7 +62,7 @@ private:
             "int a;\n"
             "bool b = false;\n"
             "int foo() {\n"
-            "	if (b) { a = 1+2 };\n"
+            "   if (b) { a = 1+2 };\n"
             "   return a;\n"
             "}\n"
             "assert(foo() == 3); \n"
