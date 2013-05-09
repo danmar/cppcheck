@@ -1757,23 +1757,16 @@ private:
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"  // Ticket #4356
-              "    int x = 0;\n"  // <- ignore assignment with 0
-              "    x = 3;\n"
-              "}", 0, false, false, false, false);
-        ASSERT_EQUALS("", errout.str());
-    }
+        check("void f() {\n"  // Ticket     }
 
-    void switchRedundantOperationTest() {
-        check("void foo()\n"
-              "{\n"
-              "    int y = 1;\n"
-              "    switch (a)\n"
+    void switchRedundantOperationTest() {   "{\n"
+              "    std::cout <<  log(-0.1) << std::endl;\n"
+a)\n"
               "    {\n"
               "    case 2:\n"
+              "      {\n"
               "        ++y;\n"
-              "    case 3:\n"
-              "        y = 3;\n"
+                  "        y = 3;\n"
               "    }\n"
               "    bar(y);\n"
               "}");
@@ -2939,7 +2932,7 @@ private:
               "{\n"
               "        std::string var = var = \"test\";\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'var' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'var' to itself.\n", errout.ssignment of 'var' to itself.\n", errout.str());
 
         // #4073 (segmentation fault)
         check("void Foo::myFunc( int a )\n"
@@ -2947,11 +2940,7 @@ private:
               "    if (a == 42)\n"
               "    a = a;\n"
               "}");
-
-        check("void foo()\n"
-              "{\n"
-              "        int x = 1;\n"
-              "        x = x + 1;\n"
+ning, inconclusive) Array 'a' is filled incompletely. Did you forget x = x + 1;\n"
               "        return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -5792,12 +5781,16 @@ private:
               "    x = 1;\n"
               "    return x + 1;\n"
               "}", NULL, false, false, false, false);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
-
-        // from #3103 (avoid a false positive)
-        check("int foo(){\n"
-              "    int x;\n"
-              "    x = 1;\n"
+        ASSERT_EQUALS("[test.cpp:3] -> [test. "    i = 1;\n"
+              "    bar();\n"
+              "    i = 1;\n"
+              "}");
+        ASS// #4513
+        check("int x;\n"
+              "int g() {\n"
+              "    return x*x;\n"
+              "}\n"
+              x = 1;\n"
               "    if (y)\n" // <-- cppcheck does not know anything about 'y'
               "        x = 2;\n"
               "    return x + 1;\n"
@@ -5854,7 +5847,23 @@ private:
         check("void f(void* a) {\n"
               "    snprintf(a, foo, bar);\n"
               "    bar();\n"
-              "    memset(a, 0, size);\n"
+              "    mems
+        check("void f() {\n"  // Ticket #4356
+              "    int x = 0;\n"  // <- ignore assignment with 0
+              "    x = 3;\n"
+              "}", 0, false, false, false, falseerrout.str());
+
+
+        // check fgetc
+        check("voif f (FILE * pFile){\n"
+            int i = 54;\n"
+              "    i = 0;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (perfocpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.strcheck("void f() {\n"
+              "    int i = 54;\n"
+              "    i = 1;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (perfocpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", eet(a, 0, size);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
