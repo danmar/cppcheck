@@ -59,6 +59,7 @@ private:
         TEST_CASE(tokenize25);  // #4239 (segmentation fault)
         TEST_CASE(tokenize26);  // #4245 (segmentation fault)
         TEST_CASE(tokenize27);  // #4525 (segmentation fault)
+        TEST_CASE(tokenize28);  // #4725 (writing asm() around "^{}")
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -730,6 +731,12 @@ private:
                              "struct S { S(); };\n"
                              "S::S() __attribute((pure)) = default;"
                             );
+    }
+
+    // #4725 - ^{}
+    void tokenize28() {
+        ASSERT_EQUALS("void f ( ) { asm ( \"^{}\" ) ; }", tokenizeAndStringify("void f() { ^{} }"));
+        ASSERT_EQUALS("void f ( ) { asm ( \"x(^{});\" ) ; }", tokenizeAndStringify("void f() { x(^{}); }"));
     }
 
     void wrong_syntax1() {
