@@ -116,7 +116,7 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
 }
 
 // checks if side effects happen on the variable prior to tmp
-bool CheckAssert::checkVariableAssignment(const Token* assignTok, bool reportError /*= true*/)
+bool CheckAssert::checkVariableAssignment(const Token* assignTok, bool reportErr /*= true*/)
 {
     const Variable* v = assignTok->previous()->variable();
     if (!v) return false;
@@ -126,7 +126,7 @@ bool CheckAssert::checkVariableAssignment(const Token* assignTok, bool reportErr
 
         if (v->isConst()) return false;
 
-        if (reportError) // report as variable assignment error
+        if (reportErr) // report as variable assignment error
             assignmentInAssertError(assignTok, v->name());
 
         return true;
