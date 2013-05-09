@@ -612,6 +612,7 @@ void CheckOther::checkRedundantAssignment()
 
         std::map<unsigned int, const Token*> varAssignments;
         std::map<unsigned int, const Token*> memAssignments;
+        std::set<unsigned int> initialized;
         const Token* writtenArgumentsEnd = 0;
 
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
@@ -628,6 +629,17 @@ void CheckOther::checkRedundantAssignment()
                 varAssignments.clear();
                 memAssignments.clear();
             } else if (tok->type() == Token::eVariable) {
+                // Set initialization flag
+                if (!Token::Match(tok, "%var% ["))
+                    initialized.insert(tok->varId());
+                else {
+                    const Token *tok2 = tok->next();
+                    while (tok2 && tok2->str() == "[")
+                        tok2 = tok2->link()->next();
+                    if (tok2 && tok2->str() != ";")
+                        initialized.insert(tok->varId());
+                }
+
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
                 if (tok->next()->isAssignmentOp() && Token::Match(tok->previous(), "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
@@ -652,7 +664,9 @@ void CheckOther::checkRedundantAssignment()
                         }
                         it->second = tok;
                     }
-                    if (!Token::simpleMatch(tok->tokAt(2), "0 ;") || (tok->variable() && tok->variable()->nameToken() != tok->tokAt(-2)))
+                    if (Token::simpleMatch(tok->tokAt(2), "0 ;"))
+                        varAssignments.erase(tok->varId());
+                    else
                         varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
                 } else if (tok->next()->type() == Token::eIncDecOp || (tok->previous()->type() == Token::eIncDecOp && !Token::Match(tok->next(), ".|[|("))) { // Variable incremented/decremented
@@ -670,10 +684,12 @@ void CheckOther::checkRedundantAssignment()
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
                     if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat")) {
-                        std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
-                        if (it == memAssignments.end())
+                        if (tok->str() == "memset" && initialized.find(param1->varId()) == initialized.end() && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray())
+                            initialized.insert(param1->varId());
+                        else if (memAssignments.find(param1->varId()) == memAssignments.end())
                             memAssignments[param1->varId()] = tok;
                         else {
+                            const std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
                             if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok) && warning)
                                 redundantCopyInSwitchError(it->second, tok, param1->str());
                             else if (performance)
@@ -1152,46 +1168,6 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 {
     reportError(tok, Severity::warning,
                 "selfAssignment", "Redundant assignment of '" + varname + "' to itself.");
-}
-
-//---------------------------------------------------------------------------
-//    int a = 1;
-//    assert(a = 2);            // <- assert should not have a side-effect
-//---------------------------------------------------------------------------
-static inline const Token *findAssertPattern(const Token *start)
-{
-    return Token::findmatch(start, "assert ( %any%");
-}
-
-void CheckOther::checkAssignmentInAssert()
-{
-    if (!_settings->isEnabled("warning"))
-        return;
-
-    const Token *tok = findAssertPattern(_tokenizer->tokens());
-    const Token *endTok = tok ? tok->next()->link() : NULL;
-
-    while (tok && endTok) {
-        for (tok = tok->tokAt(2); tok != endTok; tok = tok->next()) {
-            if (tok->isName() && (tok->next()->isAssignmentOp() || tok->next()->type() == Token::eIncDecOp))
-                assignmentInAssertError(tok, tok->str());
-            else if (Token::Match(tok, "--|++ %var%"))
-                assignmentInAssertError(tok, tok->strAt(1));
-        }
-
-        tok = findAssertPattern(endTok->next());
-        endTok = tok ? tok->next()->link() : NULL;
-    }
-}
-
-void CheckOther::assignmentInAssertError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
-                "Variable '" + varname + "' is modified insert assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.");
 }
 
 //---------------------------------------------------------------------------
