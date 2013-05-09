@@ -1756,12 +1756,6 @@ private:
               "    }\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"  // Ticket #4356
-              "    int x = 0;\n"  // <- ignore assignment with 0
-              "    x = 3;\n"
-              "}", 0, false, false, false, false);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantOperationTest() {
@@ -5803,6 +5797,24 @@ private:
               "    return x + 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"  // Ticket #4356
+              "    int x = 0;\n"  // <- ignore assignment with 0
+              "    x = 3;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int i = 54;\n"
+              "    i = 0;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "    int i = 54;\n"
+              "    i = 1;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantMemWrite() {

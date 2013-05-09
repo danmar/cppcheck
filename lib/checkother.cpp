@@ -664,9 +664,7 @@ void CheckOther::checkRedundantAssignment()
                         }
                         it->second = tok;
                     }
-                    if (Token::simpleMatch(tok->tokAt(2), "0 ;"))
-                        varAssignments.erase(tok->varId());
-                    else
+                    if (!Token::simpleMatch(tok->tokAt(2), "0 ;") || (tok->variable() && tok->variable()->nameToken() != tok->tokAt(-2)))
                         varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
                 } else if (tok->next()->type() == Token::eIncDecOp || (tok->previous()->type() == Token::eIncDecOp && !Token::Match(tok->next(), ".|[|("))) { // Variable incremented/decremented
