@@ -657,7 +657,8 @@ void CheckOther::checkRedundantAssignment()
                             }
                         }
                         if (error) {
-                            if (scope->typ!Token::simpleMatch(tok->tokAt(2), "0 ;") || (tok->variable() && tok->variable()->nameToken() != tok->tokAt(-2)))AssignmentInSwitchError(it->second, tok, tok->str());
+                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok) && warning)
+                                redundantAssignmentInSwitchError(it->second, tok, tok->str());
                             else if (performance)
                                 redundantAssignmentError(it->second, tok, tok->str(), nonLocal(it->second->variable())); // Inconclusive for non-local variables
                         }
@@ -2118,7 +2119,7 @@ void CheckOther::checkMathFunctions()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-   ch(tok, "div|st Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
             if (Token::Match(tok, "log|log10 ( %num% )")) {
