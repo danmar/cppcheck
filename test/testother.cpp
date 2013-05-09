@@ -106,6 +106,9 @@ private:
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
+
+        TEST_CASE(assignmentInAssert);
+
         TEST_CASE(modulo);
 
         TEST_CASE(incorrectLogicOperator1);
@@ -1756,17 +1759,18 @@ private:
               "    }\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+    }
 
-        check("void f() {\n"  // Ticket     }
-
-    void switchRedundantOperationTest() {   "{\n"
-              "    std::cout <<  log(-0.1) << std::endl;\n"
-a)\n"
+    void switchRedundantOperationTest() {
+        check("void foo()\n"
+              "{\n"
+              "    int y = 1;\n"
+              "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
-              "      {\n"
               "        ++y;\n"
-                  "        y = 3;\n"
+              "    case 3:\n"
+              "        y = 3;\n"
               "    }\n"
               "    bar(y);\n"
               "}");
@@ -2932,7 +2936,7 @@ a)\n"
               "{\n"
               "        std::string var = var = \"test\";\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'var' to itself.\n", errout.ssignment of 'var' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'var' to itself.\n", errout.str());
 
         // #4073 (segmentation fault)
         check("void Foo::myFunc( int a )\n"
@@ -2940,7 +2944,11 @@ a)\n"
               "    if (a == 42)\n"
               "    a = a;\n"
               "}");
-ning, inconclusive) Array 'a' is filled incompletely. Did you forget x = x + 1;\n"
+
+        check("void foo()\n"
+              "{\n"
+              "        int x = 1;\n"
+              "        x = x + 1;\n"
               "        return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -3219,6 +3227,62 @@ ning, inconclusive) Array 'a' is filled incompletely. Did you forget x = x + 1;\
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assignmentInAssert() {
+        check("void f() {\n"
+              "    int a; a = 0;\n"
+              "    assert(a = 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+        check("void f(int a) {\n"
+              "    assert(a == 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "    assert(a == 2 && b = 1);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assert statement modifies 'b'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a; a = 0;\n"
+              "    assert(a += 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a; a = 0;\n"
+              "    assert(a *= 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a; a = 0;\n"
+              "    assert(a -= 2);\n"
+              "    return a;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    assert(a--);\n" // don't simplify and verify
+              "    return a;\n"
+              "}\n", 0, false, false, false, false
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
     }
 
     void modulo() {
@@ -5573,7 +5637,8 @@ ning, inconclusive) Array 'a' is filled incompletely. Did you forget x = x + 1;\
               "    memcpy(a, b, 5);\n"
               "    memmove(a, b, 5);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n"
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n"
+                      "[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n"
                       "[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n"
                       "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
                       "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'?\n", errout.str());
@@ -5781,21 +5846,35 @@ ning, inconclusive) Array 'a' is filled incompletely. Did you forget x = x + 1;\
               "    x = 1;\n"
               "    return x + 1;\n"
               "}", NULL, false, false, false, false);
-        ASSERT_EQUALS("[test.cpp:3] -> [test. "    i = 1;\n"
-              "    bar();\n"
-              "    i = 1;\n"
-              "}");
-        ASS// #4513
-        check("int x;\n"
-              "int g() {\n"
-              "    return x*x;\n"
-              "}\n"
-              x = 1;\n"
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+
+        // from #3103 (avoid a false positive)
+        check("int foo(){\n"
+              "    int x;\n"
+              "    x = 1;\n"
               "    if (y)\n" // <-- cppcheck does not know anything about 'y'
               "        x = 2;\n"
               "    return x + 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"  // Ticket #4356
+              "    int x = 0;\n"  // <- ignore assignment with 0
+              "    x = 3;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int i = 54;\n"
+              "    i = 0;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "    int i = 54;\n"
+              "    i = 1;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantMemWrite() {
@@ -5847,23 +5926,7 @@ ning, inconclusive) Array 'a' is filled incompletely. Did you forget x = x + 1;\
         check("void f(void* a) {\n"
               "    snprintf(a, foo, bar);\n"
               "    bar();\n"
-              "    mems
-        check("void f() {\n"  // Ticket #4356
-              "    int x = 0;\n"  // <- ignore assignment with 0
-              "    x = 3;\n"
-              "}", 0, false, false, false, falseerrout.str());
-
-
-        // check fgetc
-        check("voif f (FILE * pFile){\n"
-            int i = 54;\n"
-              "    i = 0;\n"
-              "}", 0, false, false, false, false);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (perfocpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.strcheck("void f() {\n"
-              "    int i = 54;\n"
-              "    i = 1;\n"
-              "}", 0, false, false, false, false);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (perfocpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", eet(a, 0, size);\n"
+              "    memset(a, 0, size);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
@@ -5898,21 +5961,6 @@ ning, inconclusive) Array 'a' is filled incompletely. Did you forget x = x + 1;\
               "        memset(a, 0, size);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-        // #4455 - initialization of local buffer
-        check("void f(void) {"
-              "    char buf[10];\n"
-              "    memset(buf, 0, 10);\n"
-              "    strcpy(buf, string);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(void) {\n"
-              "    char buf[10] = {0};\n"
-              "    memset(buf, 0, 10);\n"
-              "    strcpy(buf, string);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'buf' is being written before its old content has been used.\n", errout.str());
     }
 
     void varFuncNullUB() { // #4482
