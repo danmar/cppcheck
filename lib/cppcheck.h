@@ -135,6 +135,9 @@ public:
 
 private:
 
+    /** @brief There has been a internal error => Report information message */
+    void internalError(const std::string &filename, const std::string &msg);
+
     /** @brief Process one file. */
     unsigned int processFile(const std::string& filename);
 

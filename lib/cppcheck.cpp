@@ -210,9 +210,9 @@ unsigned int CppCheck::processFile(const std::string& filename)
             }
         }
     } catch (const std::runtime_error &e) {
-        // Exception was thrown when checking this file..
-        const std::string fixedpath = Path::toNativeSeparators(filename);
-        _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
+        internalError(filename, e.what());
+    } catch (const InternalError &e) {
+        internalError(filename, e.errorMessage);
     }
 
     if (!_settings._errorsOnly)
@@ -222,6 +222,29 @@ unsigned int CppCheck::processFile(const std::string& filename)
     return exitcode;
 }
 
+void CppCheck::internalError(const std::string &filename, const std::string &msg)
+{
+    const std::string fixedpath = Path::toNativeSeparators(filename);
+    const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was a internal error: " + msg);
+
+    if (_settings.isEnabled("information")) {
+        const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        callstack.push_back(loc1);
+
+        ErrorLogger::ErrorMessage errmsg(callstack,
+                                         Severity::information,
+                                         fullmsg,
+                                         "internalError",
+                                         false);
+
+        _errorLogger.reportErr(errmsg);
+
+    } else {
+        // Report on stdout
+        _errorLogger.reportOut(fullmsg);
+    }
+}
 
 
 void CppCheck::checkFunctionUsage()

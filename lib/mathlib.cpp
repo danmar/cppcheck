@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cctype>
+#include <limits>
 
 MathLib::bigint MathLib::toLongNumber(const std::string &str)
 {
@@ -280,7 +281,10 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
+        bigint a = toLongNumber(first);
         bigint b = toLongNumber(second);
+        if (a == std::numeric_limits<bigint>::min())
+            throw InternalError(0, "Internal Error: Division overflow");
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
         return longToString(toLongNumber(first) / b);
