@@ -1559,11 +1559,14 @@ void CheckOther::checkUnreachableCode()
             secondBreak = tok->tokAt(2);
         else if (Token::Match(tok, "[;{}:] return|throw")) {
             tok = tok->next(); // tok should point to return or throw
-            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
                 if (tok2->str() == ";") {
                     secondBreak = tok2->next();
                     break;
                 }
+            }
         } else if (Token::Match(tok, "goto %any% ;")) {
             secondBreak = tok->tokAt(3);
             labelName = tok->next();

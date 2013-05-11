@@ -2776,6 +2776,12 @@ private:
               "    return 1;\n"
               "}", 0, false, true, false, false);
         ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        // #4711 lambda functions
+        check("int f() {\n"
+              "    return g([](int x){x+1; return x;});\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
 
