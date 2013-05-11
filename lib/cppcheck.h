@@ -133,6 +133,10 @@ public:
 
     void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
 
+    void dontSimplify() {
+        _simplify = false;
+    }
+
 private:
 
     /** @brief There has been a internal error => Report information message */
@@ -197,6 +201,9 @@ private:
 
     /** Are there too many configs? */
     bool tooManyConfigs;
+
+    /** Simplify code? true by default */
+    bool _simplify;
 };
 
 /// @}

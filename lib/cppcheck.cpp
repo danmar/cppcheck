@@ -40,7 +40,7 @@ static const char ExtraVersion[] = "";
 static TimerResults S_timerResults;
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : _errorLogger(errorLogger), exitcode(0), _useGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false)
+    : _errorLogger(errorLogger), exitcode(0), _useGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), _simplify(true)
 {
 }
 
@@ -337,6 +337,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
             _checkUnusedFunctions.parseTokens(_tokenizer);
+
+        if (!_simplify)
+            return;
 
         Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
         result = _tokenizer.simplifyTokenList();
