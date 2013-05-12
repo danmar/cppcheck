@@ -5007,8 +5007,10 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                 if (isCPP() && Token::Match(tok2, "[(,] [")) {
                     // lambda function at tok2->next()
                     // find start of lambda body
-                    Token * lambdaBody = Token::findsimplematch(tok2, "{", tok->link());
-                    if (lambdaBody && lambdaBody->link())
+                    Token * lambdaBody = tok2;
+                    while (lambdaBody && lambdaBody != tok2->link() && lambdaBody->str() != "{")
+                        lambdaBody = lambdaBody->next();
+                    if (lambdaBody && lambdaBody != tok2->link() && lambdaBody->link())
                         simplifyVarDecl(lambdaBody, lambdaBody->link(), only_k_r_fpar);
                 }
             }
