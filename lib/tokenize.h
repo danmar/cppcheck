@@ -208,6 +208,7 @@ public:
      * \param only_k_r_fpar Only simplify K&R function parameters
      */
     void simplifyVarDecl(bool only_k_r_fpar);
+    void simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_fpar);
 
     /**
      * Simplify variable initialization

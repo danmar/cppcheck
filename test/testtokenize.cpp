@@ -5730,21 +5730,31 @@ private:
     }
 
     void vardecl24() {  // #4187 - variable declaration within lambda function
-        const char code[] = "void f() {\n"
-                            "    std::for_each(ints.begin(), ints.end(), [](int val)\n"
-                            "    {\n"
-                            "        int temp = 0;\n"
-                            "    });\n"
-                            "}";
+        const char code1[] = "void f() {\n"
+                             "    std::for_each(ints.begin(), ints.end(), [](int val)\n"
+                             "    {\n"
+                             "        int temp = 0;\n"
+                             "    });\n"
+                             "}";
 
-        const char expected[] = "void f ( ) {\n"
-                                "std :: for_each ( ints . begin ( ) , ints . end ( ) , [ ] ( int val )\n"
-                                "{\n"
-                                "int temp ; temp = 0 ;\n"
-                                "} ) ;\n"
-                                "}";
+        const char expected1[] = "void f ( ) {\n"
+                                 "std :: for_each ( ints . begin ( ) , ints . end ( ) , [ ] ( int val )\n"
+                                 "{\n"
+                                 "int temp ; temp = 0 ;\n"
+                                 "} ) ;\n"
+                                 "}";
 
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
+
+        const char code2[] = "void f(int j) {\n"
+                             "    g( [](){int temp = 0;} , j );\n"
+                             "}";
+
+        const char expected2[] = "void f ( int j ) {\n"
+                                 "g ( [ ] ( ) { int temp ; temp = 0 ; } , j ) ;\n"
+                                 "}";
+
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
 
     void volatile_variables() {

@@ -4978,14 +4978,17 @@ static void incdec(std::string &value, const std::string &op)
     value = ostr.str();
 }
 
-
-
 void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
+{
+    simplifyVarDecl(list.front(), NULL, only_k_r_fpar);
+}
+
+void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_fpar)
 {
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
     bool finishedwithkr = true;
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token *tok = tokBegin; tok != tokEnd; tok = tok->next()) {
         if (Token::simpleMatch(tok, "= {")) {
             tok = tok->next()->link();
         }
@@ -5000,11 +5003,16 @@ void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
             } else
                 continue;
         } else if (tok->str() == "(") {
+            for (Token * tok2 = tok; tok2 != tok->link(); tok2 = tok2->next()) {
+                if (isCPP() && Token::Match(tok2, "[(,] [")) {
+                    // lambda function at tok2->next()
+                    // find start of lambda body
+                    Token * lambdaBody = Token::findsimplematch(tok2, "{", tok->link());
+                    if (lambdaBody && lambdaBody->link())
+                        simplifyVarDecl(lambdaBody, lambdaBody->link(), only_k_r_fpar);
+                }
+            }
             tok = tok->link();
-
-            // TestTokenizer::vardecl24 - lambda functions..
-            if (isCPP() && tok->previous()->str() == "}")
-                tok = tok->previous()->link();
         }
 
         if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|)|public:|protected:|private:"))
