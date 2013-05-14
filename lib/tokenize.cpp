@@ -2010,6 +2010,7 @@ bool Tokenizer::tokenize(std::istream &code,
         if (var && var->isRValueReference()) {
             const_cast<Token*>(var->typeEndToken())->str("&");
             const_cast<Token*>(var->typeEndToken())->insertToken("&");
+            const_cast<Token*>(var->typeEndToken()->next())->scope(var->typeEndToken()->scope());
         }
     }
 
