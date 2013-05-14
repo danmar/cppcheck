@@ -361,6 +361,7 @@ private:
         TEST_CASE(vardecl22);  // #4211 - segmentation fault
         TEST_CASE(vardecl23);  // #4276 - segmentation fault
         TEST_CASE(vardecl24);  // #4187 - variable declaration within lambda function
+        TEST_CASE(vardecl25);  // #4799 - segmentation fault
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template_1);
@@ -5755,6 +5756,13 @@ private:
                                  "}";
 
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
+    }
+
+    void vardecl25() {  // #4799 - segmentation fault
+        tokenizeAndStringify("void A::func(P g) const {}\n"
+                             "void A::a() {\n"
+                             "   b = new d(  [this]( const P & p) -> double { return this->func(p);}  );\n"
+                             "}");
     }
 
     void volatile_variables() {
