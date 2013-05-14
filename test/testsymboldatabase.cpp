@@ -539,7 +539,7 @@ private:
         ASSERT(false == v.isPointer());
         ASSERT(true == v.isReference());
         ASSERT(true == v.isRValueReference());
-        ASSERT(var.tokens()->tokAt(2)->scope());
+        ASSERT(var.tokens()->tokAt(2)->scope() != 0);
     }
 
     void staticMemberVar() {

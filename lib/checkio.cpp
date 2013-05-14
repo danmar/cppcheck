@@ -448,7 +448,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
-            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%")) {
+            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%") || (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%"))) {
                 const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
                 if (Token::Match(formatStringTok, "%str% ,")) {
                     argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
@@ -459,7 +459,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
-            } else if (Token::Match(tok, "snprintf|fnprintf|swprintf (")) {
+            } else if (Token::Match(tok, "snprintf|fnprintf (") || (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%"))) {
                 const Token* formatStringTok = tok->tokAt(2);
                 for (int i = 0; i < 2 && formatStringTok; i++) {
                     formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)

@@ -577,6 +577,15 @@ private:
                       "[test.cpp:3]: (warning) printf format string has 1 parameters but 2 are given.\n"
                       "[test.cpp:4]: (warning) printf format string has 2 parameters but 3 are given.\n", errout.str());
 
+        check("void foo() {\n" // swprintf exists as MSVC extension and as standard function: #4790
+              "    swprintf(string1, L\"%u\", 32, string2);\n" // MSVC implementation
+              "    swprintf(string1, L\"%s%s\", L\"a\", string2);\n" // MSVC implementation
+              "    swprintf(string1, 6, L\"%u\", 32, string2);\n" // Standard implementation
+              "    swprintf(string1, 6, L\"%u%s\", 32, string2);\n" // Standard implementation
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) swprintf format string has 1 parameters but 2 are given.\n"
+                      "[test.cpp:4]: (warning) swprintf format string has 1 parameters but 2 are given.\n", errout.str());
+
         check("void foo(char *str) {\n"
               "    printf(\"%u\", 0);\n"
               "    printf(\"%u%s\", 123, bar());\n"
