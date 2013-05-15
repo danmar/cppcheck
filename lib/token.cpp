@@ -336,6 +336,13 @@ static int multiComparePercent(const Token *tok, const char * * haystack_p,
             if (needle[0] == '|' && needle[1] == '|')
                 return 1;
             *haystack_p = haystack = haystack + 6;
+        } else if (haystack[1] == 'v' && // "%var%"
+                   haystack[2] == 'a' &&
+                   haystack[3] == 'r' &&
+                   haystack[4] == '%') {
+            if (tok->isName())
+                return 1;
+            *haystack_p = haystack = haystack + 5;
         }
 
         if (*haystack == '|')
