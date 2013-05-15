@@ -50,7 +50,7 @@ public:
 
 protected:
     bool checkVariableAssignment(const Token* tmp, bool reportErr = true);
-    bool inSameScope(const Token* returnTok, const Token* assignTok);
+    static bool inSameScope(const Token* returnTok, const Token* assignTok);
 
     static const Token* findAssertPattern(const Token *start);
 
