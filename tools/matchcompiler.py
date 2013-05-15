@@ -111,12 +111,12 @@ class MatchCompiler:
 
         return '(tok->str()==' + self._insertMatchStr(tok) + ')/* ' + tok + ' */'
 
-    def _compilePattern(self, pattern, nr, varid, isFindMatch=False):
+    def _compilePattern(self, pattern, nr, varid, isFindMatch=False, tokenType="const Token"):
         ret = ''
         returnStatement = ''
 
         if isFindMatch:
-            ret = '\nconst Token *tok = start_tok;\n'
+            ret = '\n    ' + tokenType + ' * tok = start_tok;\n'
             returnStatement = 'continue;\n'
         else:
             arg2 = ''
@@ -124,7 +124,7 @@ class MatchCompiler:
                 arg2 = ', const unsigned int varid'
 
             ret = '// pattern: ' + pattern + '\n'
-            ret += 'static bool match' + str(nr) + '(const Token *tok'+arg2+') {\n'
+            ret += 'static bool match' + str(nr) + '(' + tokenType + '* tok'+arg2+') {\n'
             returnStatement = 'return false;\n'
 
         tokens = pattern.split(' ')
@@ -199,16 +199,16 @@ class MatchCompiler:
         more_args = ''
         endCondition = ''
         if endToken:
-            more_args += ', const Token *end'
+            more_args += ', const Token * end'
             endCondition = ' && start_tok != end'
         if varId:
             more_args += ', unsigned int varid'
 
         ret = '// pattern: ' + pattern + '\n'
-        ret += 'static const Token *findmatch' + str(findmatchnr) + '(const Token *start_tok'+more_args+') {\n'
+        ret += 'template<class T> T * findmatch' + str(findmatchnr) + '(T * start_tok'+more_args+') {\n'
         ret += '    for (; start_tok' + endCondition + '; start_tok = start_tok->next()) {\n'
 
-        ret += self._compilePattern(pattern, -1, varId, True)
+        ret += self._compilePattern(pattern, -1, varId, True, 'T')
         ret += '    }\n'
         ret += '    return NULL;\n}\n'
 
@@ -365,25 +365,25 @@ class MatchCompiler:
     def _compileVerifyTokenFindMatch(self, is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId):
         more_args = ''
         if endToken:
-            more_args += ', const Token *endToken'
+            more_args += ', const Token * endToken'
         if varId:
             more_args += ', const unsigned int varid'
 
-        ret = 'static const Token *findmatch_verify' + str(verifyNumber) + '(const Token *tok'+more_args+') {\n'
+        ret = 'template < class T > T * findmatch_verify' + str(verifyNumber) + '(T * tok'+more_args+') {\n'
 
         origFindMatchName = 'findmatch'
         if is_findsimplematch:
             origMatchName = 'findsimplematch'
             assert(varId == None)
 
-        ret += '    const Token *res_compiled_findmatch = findmatch'+str(patternNumber)+'(tok'
+        ret += '    T * res_compiled_findmatch = findmatch'+str(patternNumber)+'(tok'
         if endToken:
             ret += ', endToken'
         if varId:
             ret += ', varid'
         ret += ');\n'
 
-        ret += '    const Token *res_parsed_findmatch = Token::' + origFindMatchName + '(tok, "' + pattern + '"'
+        ret += '    T * res_parsed_findmatch = Token::' + origFindMatchName + '(tok, "' + pattern + '"'
         if endToken:
             ret += ', endToken'
         if varId:
