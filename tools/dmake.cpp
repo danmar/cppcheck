@@ -234,7 +234,11 @@ int main(int argc, char **argv)
     fout << "# folder where lib/*.cpp files are located\n";
     makeConditionalVariable(fout, "SRCDIR", "lib");
     fout << "ifeq ($(SRCDIR),build)\n"
-         << "    matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
+         << "    ifdef VERIFY\n"
+         << "        matchcompiler_S := $(shell python tools/matchcompiler.py --verify)\n"
+         << "    else\n"
+         << "        matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
+         << "    endif\n"
          << "endif\n\n";
 
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.

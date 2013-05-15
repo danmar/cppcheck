@@ -11,7 +11,11 @@ ifndef SRCDIR
 endif
 
 ifeq ($(SRCDIR),build)
-    matchcompiler_S := $(shell python tools/matchcompiler.py)
+    ifdef VERIFY
+        matchcompiler_S := $(shell python tools/matchcompiler.py --verify)
+    else
+        matchcompiler_S := $(shell python tools/matchcompiler.py)
+    endif
 endif
 
 # Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.
