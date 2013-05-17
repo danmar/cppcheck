@@ -899,8 +899,11 @@ void CheckClass::noMemset()
                 const Token* arg1 = tok->tokAt(2);
                 const Token* arg3 = arg1;
                 arg3 = arg3->nextArgument();
-                if (arg3)
-                    arg3 = arg3->nextArgument();
+                arg3 = (arg3 != NULL) ? arg3->nextArgument() : NULL;
+                if (!arg3)
+                    // weird, shouldn't happen: memset etc should have
+                    // 3 arguments.
+                    continue;
 
                 const Token *typeTok = 0;
                 const Scope *type = 0;
