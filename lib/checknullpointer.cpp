@@ -136,7 +136,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("ctime");
         functionNames1_all.insert("mktime");
 
-        functionNames1_nullptr.insert("itoa");
         functionNames1_nullptr.insert("memcpy");
         functionNames1_nullptr.insert("memmove");
         functionNames1_nullptr.insert("memset");
@@ -217,6 +216,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames2_nullptr.insert("frexp");
         functionNames2_nullptr.insert("modf");
         functionNames2_nullptr.insert("fgetpos");
+        functionNames2_nullptr.insert("itoa");
     }
 
     if (Token::Match(&tok, "%var% ( )") || !tok.tokAt(2))
