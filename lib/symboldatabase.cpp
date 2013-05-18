@@ -1069,31 +1069,61 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         // skip default value assignment
         else if (first->next()->str() == "=") {
             first = first->nextArgument();
-
+            if (first)
+                first = first->tokAt(-2);
             if (second->next()->str() == "=") {
                 second = second->nextArgument();
+                if (second)
+                    second = second->tokAt(-2);
                 if (!first || !second) { // End of argument list (first or second)
                     return !first && !second;
                 }
             } else if (!first) { // End of argument list (first)
                 return second->next() && second->next()->str() == ")";
             }
+        } else if (second->next()->str() == "=") {
+            second = second->nextArgument();
+            if (second)
+                second = second->tokAt(-2);
+            if (!first || !second) { // End of argument list (first or second)
+                return !first && !second;
+            }
         }
 
         // definition missing variable name
-        else if (first->next()->str() == "," && second->next()->str() != ",")
+        else if (first->next()->str() == "," && second->next()->str() != ",") {
             second = second->next();
-        else if (first->next()->str() == ")" && second->next()->str() != ")")
+            // skip default value assignment
+            if (second->next()->str() == "=") {
+                while (!Token::Match(second->next(), ",|)"))
+                    second = second->next();
+            }
+        } else if (first->next()->str() == ")" && second->next()->str() != ")") {
             second = second->next();
-        else if (first->next()->str() == "[" && second->next()->str() != "[")
+            // skip default value assignment
+            if (second->next()->str() == "=") {
+                while (!Token::Match(second->next(), ",|)"))
+                    second = second->next();
+            }
+        } else if (first->next()->str() == "[" && second->next()->str() != "[")
             second = second->next();
 
         // function missing variable name
-        else if (second->next()->str() == "," && first->next()->str() != ",")
+        else if (second->next()->str() == "," && first->next()->str() != ",") {
             first = first->next();
-        else if (second->next()->str() == ")" && first->next()->str() != ")")
+            // skip default value assignment
+            if (first->next()->str() == "=") {
+                while (!Token::Match(first->next(), ",|)"))
+                    first = first->next();
+            }
+        } else if (second->next()->str() == ")" && first->next()->str() != ")") {
             first = first->next();
-        else if (second->next()->str() == "[" && first->next()->str() != "[")
+            // skip default value assignment
+            if (first->next()->str() == "=") {
+                while (!Token::Match(first->next(), ",|)"))
+                    first = first->next();
+            }
+        } else if (second->next()->str() == "[" && first->next()->str() != "[")
             first = first->next();
 
         // argument list has different number of arguments

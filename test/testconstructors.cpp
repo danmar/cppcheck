@@ -118,6 +118,7 @@ private:
         TEST_CASE(uninitVar22); // ticket #3043
         TEST_CASE(uninitVar23); // ticket #3702
         TEST_CASE(uninitVar24); // ticket #3190
+        TEST_CASE(uninitVar25); // ticket #4789
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1824,6 +1825,69 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (warning, inconclusive) Member variable 'Sub::b' is not initialized in the constructor.\n"
                       "[test.cpp:12]: (warning) Member variable 'Sub::b' is not initialized in the constructor.\n"
                       "[test.cpp:20]: (warning) Member variable 'Sub::f' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar25() { // ticket #4789
+        check("struct A {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "    int c;\n"
+              "    A(int x = 0, int y = 0, int z = 0);\n"
+              "};\n"
+              "A::A(int x = 0, int y = 0, int z = 0) { } \n"
+              "struct B {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "    int c;\n"
+              "    B(int x = 0, int y = 0, int z = 0);\n"
+              "};\n"
+              "B::B(int x, int y, int z) { } \n"
+              "struct C {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "    int c;\n"
+              "    C(int, int, int);\n"
+              "};\n"
+              "C::C(int x = 0, int y = 0, int z = 0) { } \n"
+              "struct D {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "    int c;\n"
+              "    D(int, int, int);\n"
+              "};\n"
+              "D::D(int x, int y, int z) { } \n"
+              "struct E {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "    int c;\n"
+              "    E(int x, int y, int z);\n"
+              "};\n"
+              "E::E(int, int, int) { } \n"
+              "struct F {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "    int c;\n"
+              "    F(int x = 0, int y = 0, int z = 0);\n"
+              "};\n"
+              "F::F(int, int, int) { }\n", true); 
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
+                      "[test.cpp:7]: (warning) Member variable 'A::b' is not initialized in the constructor.\n"
+                      "[test.cpp:7]: (warning) Member variable 'A::c' is not initialized in the constructor.\n"
+                      "[test.cpp:14]: (warning) Member variable 'B::a' is not initialized in the constructor.\n"
+                      "[test.cpp:14]: (warning) Member variable 'B::b' is not initialized in the constructor.\n"
+                      "[test.cpp:14]: (warning) Member variable 'B::c' is not initialized in the constructor.\n"
+                      "[test.cpp:21]: (warning) Member variable 'C::a' is not initialized in the constructor.\n"
+                      "[test.cpp:21]: (warning) Member variable 'C::b' is not initialized in the constructor.\n"
+                      "[test.cpp:21]: (warning) Member variable 'C::c' is not initialized in the constructor.\n"
+                      "[test.cpp:28]: (warning) Member variable 'D::a' is not initialized in the constructor.\n"
+                      "[test.cpp:28]: (warning) Member variable 'D::b' is not initialized in the constructor.\n"
+                      "[test.cpp:28]: (warning) Member variable 'D::c' is not initialized in the constructor.\n"
+                      "[test.cpp:35]: (warning) Member variable 'E::a' is not initialized in the constructor.\n"
+                      "[test.cpp:35]: (warning) Member variable 'E::b' is not initialized in the constructor.\n"
+                      "[test.cpp:35]: (warning) Member variable 'E::c' is not initialized in the constructor.\n"
+                      "[test.cpp:42]: (warning) Member variable 'F::a' is not initialized in the constructor.\n"
+                      "[test.cpp:42]: (warning) Member variable 'F::b' is not initialized in the constructor.\n"
+                      "[test.cpp:42]: (warning) Member variable 'F::c' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {
