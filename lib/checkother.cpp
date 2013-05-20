@@ -1058,7 +1058,7 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
 //---------------------------------------------------------------------------
 void CheckOther::checkSuspiciousEqualityComparison()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled("warning") || !_settings->inconclusive)
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
