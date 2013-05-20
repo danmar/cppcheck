@@ -691,6 +691,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option, so it's disabled.");
     }
 
+    if (_settings->inconclusive && _settings->_xml && _settings->_xml_version == 1U) {
+        PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible. It's recommended to use the new xml format (use --xml-version=2).");
+    }
+
     if (argc <= 1)
         _showHelp = true;
 
