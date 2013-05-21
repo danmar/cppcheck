@@ -5005,14 +5005,14 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                 continue;
         } else if (tok->str() == "(") {
             for (Token * tok2 = tok; tok2 != tok->link(); tok2 = tok2->next()) {
-                if (!only_k_r_fpar && isCPP() && Token::Match(tok2, "[(,] [")) {
+                if (isCPP() && Token::Match(tok2, "[(,] [")) {
                     // lambda function at tok2->next()
                     // find start of lambda body
                     Token * lambdaBody = tok2;
                     while (lambdaBody && lambdaBody != tok2->link() && lambdaBody->str() != "{")
                         lambdaBody = lambdaBody->next();
                     if (lambdaBody && lambdaBody != tok2->link() && lambdaBody->link())
-                        simplifyVarDecl(lambdaBody, lambdaBody->link(), only_k_r_fpar);
+                        simplifyVarDecl(lambdaBody, lambdaBody->link()->next(), only_k_r_fpar);
                 }
             }
             tok = tok->link();
