@@ -75,7 +75,7 @@ as a plugin for your favorite IDE:</p>
   <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
 </ul>
 <p>There is no plugin for <strong>Visual Studio</strong>, but it is possible to
-add Cppcheck as an external tool.</p>
+add Cppcheck as an external tool. You can also try the free trial of <a href="http://www.viva64.com/en/pvs-studio/">PVS-Studio</a>, which is oriented for this environment. A comparison of Cppcheck and PVS-Studio can be found <a href="http://www.viva64.com/en/b/0149/">here</a> and we believe it's a good and honest comparison.</p>
 
 <h2><a id="features">Features</a></h2>
 <ul>
