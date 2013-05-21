@@ -1869,7 +1869,7 @@ private:
               "    int c;\n"
               "    F(int x = 0, int y = 0, int z = 0);\n"
               "};\n"
-              "F::F(int, int, int) { }\n", true); 
+              "F::F(int, int, int) { }\n", true);
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
                       "[test.cpp:7]: (warning) Member variable 'A::b' is not initialized in the constructor.\n"
                       "[test.cpp:7]: (warning) Member variable 'A::c' is not initialized in the constructor.\n"
