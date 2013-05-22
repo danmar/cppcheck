@@ -77,7 +77,10 @@ as a plugin for your favorite IDE:</p>
   <li><strong>Mercurial (Linux)</strong> - <a href="http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=519">Adding a pre-commit hook script</a></li>
 </ul>
 <p>There is no plugin for <strong>Visual Studio</strong>, but it is possible to
-add Cppcheck as an external tool. You can also try the proprietary <a href="http://www.viva64.com/en/pvs-studio/">PVS-Studio</a> (there is a free trial), which is oriented for this environment. A comparison of Cppcheck and PVS-Studio can be found <a href="http://www.viva64.com/en/b/0149/">here</a> and we believe it's a good and honest comparison.</p>
+add Cppcheck as an external tool. You can also try the proprietary
+<a href="http://www.viva64.com/en/pvs-studio/">PVS-Studio</a> (there is a free trial),
+which is oriented for this environment. A comparison of Cppcheck and PVS-Studio can be found
+<a href="http://www.viva64.com/en/b/0149/">here</a> and we believe it's a good and honest comparison.</p>
 
 <h2><a id="features">Features</a></h2>
 <ul>
@@ -107,7 +110,7 @@ add Cppcheck as an external tool. You can also try the proprietary <a href="http
 <p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
 
 <h2><a id="documentation">Documentation</a></h2>
-<p>You can read the <a href="manual.pdf">manual</a> or download some 
+<p>You can read the <a href="manual.pdf">manual</a> or download some
 <a href="http://sourceforge.net/projects/cppcheck/files/Articles/">articles</a>.</p>
 
 <h2><a id="support">Support</a></h2>
