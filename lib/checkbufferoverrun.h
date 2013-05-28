@@ -131,7 +131,7 @@ public:
     public:
         ArrayInfo();
         ArrayInfo(const ArrayInfo &);
-        ArrayInfo(const Variable *var, const Tokenizer *tokenizer);
+        ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcevarid = 0);
         ArrayInfo & operator=(const ArrayInfo &ai);
 
         /**

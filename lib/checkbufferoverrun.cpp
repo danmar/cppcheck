@@ -1384,7 +1384,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
         const Variable *var = symbolDatabase->getVariableFromVarId(i);
         if (var && var->isArray() && var->dimension(0) > 0) {
-            const ArrayInfo arrayInfo(var, _tokenizer);
+            const ArrayInfo arrayInfo(var, _tokenizer, i);
             const Token *tok = var->nameToken();
             while (tok && tok->str() != ";") {
                 if (tok->str() == "{") {
@@ -1972,8 +1972,8 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai
     *this = ai;
 }
 
-CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer)
-    : _varname(var->name()), _varid(var->varId())
+CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcevarid)
+    : _varname(var->name()), _varid((forcevarid == 0U) ? var->varId() : forcevarid)
 {
     for (std::size_t i = 0; i < var->dimensions().size(); i++)
         _num.push_back(var->dimension(i));

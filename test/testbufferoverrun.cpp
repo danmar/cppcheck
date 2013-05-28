@@ -140,6 +140,7 @@ private:
         TEST_CASE(array_index_extern);       // FP when using 'extern'. #1684
         TEST_CASE(array_index_cast);         // FP after cast. #2841
         TEST_CASE(array_index_string_literal);
+        TEST_CASE(array_index_same_struct_and_var_name); // #4751 - not handled well when struct name and var name is same
 
         TEST_CASE(buffer_overrun_1_standard_functions);
         TEST_CASE(buffer_overrun_2_struct);
@@ -1989,6 +1990,30 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds.\n", errout.str());
 
+    }
+
+    void array_index_same_struct_and_var_name() {
+        // don't throw internal error
+        check("struct tt {\n"
+              "    char typename[21];\n"
+              "} ;\n"
+              "void doswitch(struct tt *x)\n"
+              "{\n"
+              "    struct tt *tt=x;\n"
+              "    tt->typename;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // detect error
+        check("struct tt {\n"
+              "    char typename[21];\n"
+              "} ;\n"
+              "void doswitch(struct tt *x)\n"
+              "{\n"
+              "    struct tt *tt=x;\n"
+              "    tt->typename[22] = 123;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt.typename[21]' accessed at index 22, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_1_standard_functions() {
