@@ -2618,6 +2618,15 @@ private:
                         "    i++;\n" // <- no error if b(x) is always true when a(x) is false
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) i = 0;\n"
+                        "    while (condition) {\n"
+                        "        if (x) i++;\n" // <- no error
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_structmembers() { // struct members

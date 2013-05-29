@@ -1327,11 +1327,10 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             const Token *tok2 = tok->next()->link()->next();
 
             if (tok2 && tok2->str() == "{") {
-                bool possibleinit = false;
-                bool init = checkLoopBody(tok2, var, membervar, suppressErrors);
+                bool init = checkLoopBody(tok2, var, membervar, (number_of_if > 0) | suppressErrors);
 
                 // variable is initialized in the loop..
-                if (possibleinit || init)
+                if (init)
                     return true;
 
                 // is variable used in for-head?
