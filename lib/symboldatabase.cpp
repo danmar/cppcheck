@@ -799,7 +799,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (scope->definedType->needInitialization == Type::Unknown)
                         unknowns++;
                 }
-            } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::Unknown)
+            } else if (scope->type == Scope::eUnion && scope->definedType && scope->definedType->needInitialization == Type::Unknown)
                 scope->definedType->needInitialization = Type::True;
         }
 
