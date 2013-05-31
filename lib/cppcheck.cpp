@@ -215,7 +215,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
         internalError(filename, e.errorMessage);
     }
 
-    if (!_settings._errorsOnly)
+    if (_settings.isEnabled("information") || _settings.checkConfiguration)
         reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename));
 
     _errorList.clear();

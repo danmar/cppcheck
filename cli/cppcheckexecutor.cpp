@@ -191,10 +191,10 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         returnValue = executor.check();
     }
 
-    if (!settings.checkConfiguration) {
-        if (!settings._errorsOnly)
-            reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+    if (settings.isEnabled("information") || settings.checkConfiguration)
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
 
+    if (!settings.checkConfiguration) {
         cppCheck.tooManyConfigsError("",0U);
 
         if (settings.isEnabled("missingInclude") && Preprocessor::missingIncludeFlag) {

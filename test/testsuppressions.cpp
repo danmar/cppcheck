@@ -121,6 +121,7 @@ private:
         CppCheck cppCheck(*this, true);
         Settings& settings = cppCheck.settings();
         settings._inlineSuppressions = true;
+        settings.addEnabled("information");
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
@@ -141,6 +142,7 @@ private:
         Settings settings;
         settings._jobs = 1;
         settings._inlineSuppressions = true;
+        settings.addEnabled("information");
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
@@ -162,6 +164,7 @@ private:
         CppCheck cppCheck(*this, true);
         Settings& settings = cppCheck.settings();
         settings._inlineSuppressions = true;
+        settings.addEnabled("information");
         if (!suppression.empty())
             settings.nomsg.addSuppressionLine(suppression);
 
