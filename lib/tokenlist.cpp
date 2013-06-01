@@ -353,7 +353,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
-void TokenList::createAst()
+void TokenList::createAst() const
 {
     // operators that must be ordered according to C-precedence
     const char * const operators[] = {
