@@ -217,7 +217,7 @@ public:
 
 private:
 
-    bool isArrayOfStruct(const Token* tok, int &position);
+    static bool isArrayOfStruct(const Token* tok, int &position);
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void bufferOverrunError(const Token *tok, const std::string &varnames = "");
     void bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames = "");
