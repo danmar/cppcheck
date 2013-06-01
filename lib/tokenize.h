@@ -569,7 +569,7 @@ public:
     void syntaxError(const Token *tok, char c) const;
 
     /** Report that there is an unhandled "class x y {" code */
-    void unhandled_macro_class_x_y(const Token *tok);
+    void unhandled_macro_class_x_y(const Token *tok) const;
 
     /**
      * assert that tokens are ok - used during debugging for example

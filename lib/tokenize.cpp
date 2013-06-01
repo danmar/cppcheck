@@ -7938,7 +7938,7 @@ void Tokenizer::syntaxError(const Token *tok, char c) const
                 "when these macros are defined: '" + _configuration + "'.");
 }
 
-void Tokenizer::unhandled_macro_class_x_y(const Token *tok)
+void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
 {
     reportError(tok,
                 Severity::information,
