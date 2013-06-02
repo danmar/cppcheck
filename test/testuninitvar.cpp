@@ -2627,6 +2627,15 @@ private:
                         "    }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) i = 0;\n"
+                        "    while (condition) {\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void uninitvar2_structmembers() { // struct members
