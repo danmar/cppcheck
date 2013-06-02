@@ -49,6 +49,7 @@
             <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.TranslationsDir)\cppcheck_ru.qm' />
             <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
             <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
+            <File Id='cppcheck_zh_CN.qm' Name='cppcheck_zh_CN.qm' Source='$(var.TranslationsDir)\cppcheck_zh_CN.qm' />
           </Component>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
             <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' />
