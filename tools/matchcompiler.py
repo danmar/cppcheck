@@ -518,7 +518,7 @@ class MatchCompiler:
             line = self._replaceTokenMatch(line)
 
             # Compile Token::findsimplematch
-            line = self._replaceTokenFindMatch(line)
+            #line = self._replaceTokenFindMatch(line)
 
             # Cache plain C-strings in C++ strings
             line = self._replaceCStrings(line)
