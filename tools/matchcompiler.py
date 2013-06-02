@@ -205,7 +205,7 @@ class MatchCompiler:
             more_args += ', unsigned int varid'
 
         ret = '// pattern: ' + pattern + '\n'
-        ret += 'template<class T> T * findmatch' + str(findmatchnr) + '(T * start_tok'+more_args+') {\n'
+        ret += 'template<class T> static T * findmatch' + str(findmatchnr) + '(T * start_tok'+more_args+') {\n'
         ret += '    for (; start_tok' + endCondition + '; start_tok = start_tok->next()) {\n'
 
         ret += self._compilePattern(pattern, -1, varId, True, 'T')
@@ -369,7 +369,7 @@ class MatchCompiler:
         if varId:
             more_args += ', const unsigned int varid'
 
-        ret = 'template < class T > T * findmatch_verify' + str(verifyNumber) + '(T * tok'+more_args+') {\n'
+        ret = 'template < class T > static T * findmatch_verify' + str(verifyNumber) + '(T * tok'+more_args+') {\n'
 
         origFindMatchName = 'findmatch'
         if is_findsimplematch:
@@ -518,7 +518,7 @@ class MatchCompiler:
             line = self._replaceTokenMatch(line)
 
             # Compile Token::findsimplematch
-            #line = self._replaceTokenFindMatch(line)
+            line = self._replaceTokenFindMatch(line)
 
             # Cache plain C-strings in C++ strings
             line = self._replaceCStrings(line)
