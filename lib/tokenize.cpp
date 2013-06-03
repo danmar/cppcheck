@@ -7432,6 +7432,22 @@ void Tokenizer::simplifyEnum()
                             // Create a copy of the shadow ids for the inner scope
                             if (!shadowId.empty())
                                 shadowId.push(shadowId.top());
+
+                            if (Token::simpleMatch(tok2->previous(), ") {") || Token::simpleMatch(tok2->tokAt(-2), ") const {")) {
+                                std::set<std::string> shadowArg;
+                                for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
+                                    if (Token::Match(arg, "%type% [,)]") && enumValues.find(arg->str()) != enumValues.end()) {
+                                        shadowArg.insert(arg->str());
+                                    }
+                                }
+                                if (!shadowArg.empty()) {
+                                    if (shadowId.empty())
+                                        shadowId.push(shadowArg);
+                                    else
+                                        shadowId.top().insert(shadowArg.begin(), shadowArg.end());
+                                }
+                            }
+
                         }
                         // Function head
                     } else if (Token::Match(tok2, "%var% (")) {
