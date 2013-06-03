@@ -64,11 +64,11 @@ private:
     }
 
     static std::string myName() {
-        return "Side Effects in asserts";
+        return "Assert";
     }
 
     std::string classInfo() const {
-        return "Warn if side effects in assert statements \n";
+        return "Warn if there are side effects in assert statements (since this cause different behaviour in debug/release builds).\n";
     }
 };
 /// @}
