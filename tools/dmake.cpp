@@ -82,7 +82,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) " << args << " -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
     }
 }
 
