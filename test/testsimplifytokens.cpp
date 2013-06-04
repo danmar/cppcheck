@@ -7232,7 +7232,9 @@ private:
                             "    x+=1;\n"
                             "}\n";
         checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
+                      "[test.cpp:6] -> [test.cpp:1]: (style) Function argument 'x' hides enumerator with same name\n",
+                      errout.str());
     }
 
     void enum23() { // ticket #2804

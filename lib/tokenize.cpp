@@ -7439,6 +7439,10 @@ void Tokenizer::simplifyEnum()
                                 for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
                                     if (Token::Match(arg, "%type% [,)]") && enumValues.find(arg->str()) != enumValues.end()) {
                                         shadowArg.insert(arg->str());
+                                        if (_settings->isEnabled("style")) {
+                                            const EnumValue enumValue = enumValues.find(arg->str())->second;
+                                            duplicateEnumError(arg, enumValue.name, "Function argument");
+                                        }
                                     }
                                 }
                                 if (!shadowArg.empty()) {
@@ -7455,8 +7459,17 @@ void Tokenizer::simplifyEnum()
                                 if (tok3->str() == "{")
                                     tok3 = tok3->link(); // skip inner scopes
                                 else if (tok3->isName() && enumValues.find(tok3->str()) != enumValues.end()) {
-                                    if (Token::Match(tok3->previous(), "*|%type%") || Token::Match(tok3->previous(), "& %type% =")) // variable declaration?
+                                    const Token *prev = tok3->previous();
+                                    if ((prev->isName() && !Token::Match(prev, "return|case")) ||
+                                        prev->str() == "*" ||
+                                        Token::Match(prev, "& %type% =")) {
+                                        // variable declaration?
                                         shadowVars.insert(tok3->str());
+                                        if (_settings->isEnabled("style")) {
+                                            const EnumValue enumValue = enumValues.find(tok3->str())->second;
+                                            duplicateEnumError(tok3, enumValue.name, "Variable");
+                                        }
+                                    }
                                 }
                             }
                             if (!shadowVars.empty()) {
