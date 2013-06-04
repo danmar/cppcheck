@@ -7437,9 +7437,10 @@ void Tokenizer::simplifyEnum()
                             if (Token::simpleMatch(tok2->previous(), ") {") || Token::simpleMatch(tok2->tokAt(-2), ") const {")) {
                                 std::set<std::string> shadowArg;
                                 for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
-                                    if (Token::Match(arg, "%type% [,)]") && enumValues.find(arg->str()) != enumValues.end()) {
+                                    if (Token::Match(arg->previous(), "%type%|*|& %type% [,)]") &&
+                                        enumValues.find(arg->str()) != enumValues.end()) {
                                         shadowArg.insert(arg->str());
-                                        if (_settings->isEnabled("style")) {
+                                        if (inScope && _settings->isEnabled("style")) {
                                             const EnumValue enumValue = enumValues.find(arg->str())->second;
                                             duplicateEnumError(arg, enumValue.name, "Function argument");
                                         }
@@ -7465,7 +7466,7 @@ void Tokenizer::simplifyEnum()
                                         Token::Match(prev, "& %type% =")) {
                                         // variable declaration?
                                         shadowVars.insert(tok3->str());
-                                        if (_settings->isEnabled("style")) {
+                                        if (inScope && _settings->isEnabled("style")) {
                                             const EnumValue enumValue = enumValues.find(tok3->str())->second;
                                             duplicateEnumError(tok3, enumValue.name, "Variable");
                                         }

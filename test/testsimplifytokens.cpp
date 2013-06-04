@@ -7235,6 +7235,18 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
                       "[test.cpp:6] -> [test.cpp:1]: (style) Function argument 'x' hides enumerator with same name\n",
                       errout.str());
+
+        // avoid false positive: in other scope
+        const char code2[] = "class C1 { enum en { x = 0 }; };\n"
+                              "class C2 { bool x; };\n";
+        checkSimplifyEnum(code2);
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid false positive: inner if-scope
+        const char code3[] = "enum en { x = 0 };\n"
+                              "void f() { if (aa) ; else if (bb==x) df; }\n";
+        checkSimplifyEnum(code3);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enum23() { // ticket #2804
