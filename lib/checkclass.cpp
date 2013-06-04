@@ -1912,6 +1912,15 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
                     (tok->previous() && tok->previous()->str()=="."))
                     continue;
 
+                if (tok->previous() && 
+                    tok->previous()->str()=="(") {
+                    const Token * prev = tok->previous();
+                    if (prev->previous() && 
+                        (prev->previous()->str() == "SIGNAL" ||
+                         prev->previous()->str() == "SLOT"))
+                        continue;
+                }
+
                 if (isPureWithoutBody(*callFunction)) {
                     pureFunctionCalls.push_back(tok);
                     continue;
