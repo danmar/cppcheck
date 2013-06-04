@@ -7433,6 +7433,7 @@ void Tokenizer::simplifyEnum()
                             if (!shadowId.empty())
                                 shadowId.push(shadowId.top());
 
+                            // are there shadow arguments?
                             if (Token::simpleMatch(tok2->previous(), ") {") || Token::simpleMatch(tok2->tokAt(-2), ") const {")) {
                                 std::set<std::string> shadowArg;
                                 for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
@@ -7448,7 +7449,24 @@ void Tokenizer::simplifyEnum()
                                 }
                             }
 
+                            // are there shadow variables in the scope?
+                            std::set<std::string> shadowVars;
+                            for (const Token *tok3 = tok2->next(); tok3 && tok3->str() != "}"; tok3 = tok3->next()) {
+                                if (tok3->str() == "{")
+                                    tok3 = tok3->link(); // skip inner scopes
+                                else if (tok3->isName() && enumValues.find(tok3->str()) != enumValues.end()) {
+                                    if (Token::Match(tok3->previous(), "*|%type%") || Token::Match(tok3->previous(), "& %type% =")) // variable declaration?
+                                        shadowVars.insert(tok3->str());
+                                }
+                            }
+                            if (!shadowVars.empty()) {
+                                if (shadowId.empty())
+                                    shadowId.push(shadowVars);
+                                else
+                                    shadowId.top().insert(shadowVars.begin(), shadowVars.end());
+                            }
                         }
+
                         // Function head
                     } else if (Token::Match(tok2, "%var% (")) {
                         const Token *prev = tok2->previous();

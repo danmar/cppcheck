@@ -7334,9 +7334,18 @@ private:
         ASSERT_EQUALS("struct X { X ( int ) { int y ; y = ( int ) 1 ; } } ;", checkSimplifyEnum(code));
     }
 
-    void enum37() {  // #4280
-        const char code[] = "enum { a, b }; void f(int a) { return a + 1; }";
-        ASSERT_EQUALS("void f ( int a ) { return a + 1 ; }", checkSimplifyEnum(code));
+    void enum37() {  // #4280 - shadow variables
+        const char code1[] = "enum { a, b }; void f(int a) { return a + 1; }";
+        ASSERT_EQUALS("void f ( int a ) { return a + 1 ; }", checkSimplifyEnum(code1));
+
+        const char code2[] = "enum { a, b }; void f() { int a; }";
+        ASSERT_EQUALS("void f ( ) { int a ; }", checkSimplifyEnum(code2));
+
+        const char code3[] = "enum { a, b }; void f() { int *a=do_something(); }";
+        ASSERT_EQUALS("void f ( ) { int * a ; a = do_something ( ) ; }", checkSimplifyEnum(code3));
+
+        const char code4[] = "enum { a, b }; void f() { int &a=x; }";
+        ASSERT_EQUALS("void f ( ) { int & a = x ; }", checkSimplifyEnum(code4));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
