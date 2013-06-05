@@ -7238,13 +7238,13 @@ private:
 
         // avoid false positive: in other scope
         const char code2[] = "class C1 { enum en { x = 0 }; };\n"
-                              "class C2 { bool x; };\n";
+                             "class C2 { bool x; };\n";
         checkSimplifyEnum(code2);
         ASSERT_EQUALS("", errout.str());
 
         // avoid false positive: inner if-scope
         const char code3[] = "enum en { x = 0 };\n"
-                              "void f() { if (aa) ; else if (bb==x) df; }\n";
+                             "void f() { if (aa) ; else if (bb==x) df; }\n";
         checkSimplifyEnum(code3);
         ASSERT_EQUALS("", errout.str());
     }
