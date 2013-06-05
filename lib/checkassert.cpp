@@ -68,7 +68,7 @@ void CheckAssert::assertWithSideEffects()
                 for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
                     if (tok2->type() != Token::eAssignmentOp && tok2->type() != Token::eIncDecOp) continue;
                     const Variable* var = tok2->previous()->variable();
-                    if (!var) continue;
+                    if (!var || var->isLocal()) continue;
 
                     std::vector<const Token*> returnTokens; // find all return statements
                     for (const Token *rt = scope->classStart; rt != scope->classEnd; rt = rt->next()) {

@@ -68,6 +68,15 @@ private:
             "assert(foo() == 3); \n"
         );
         ASSERT_EQUALS("", errout.str());
+
+        check(
+            "int foo(int a) {\n"
+            "    int b=a+1;\n"
+            "    return b;\n"
+            "}\n"
+            "assert(foo(1) == 2); \n"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionCallInAssert() {
