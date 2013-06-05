@@ -27,7 +27,7 @@ a:visited   { color: #036; text-decoration: underline; }
 a:active,
 a:focus,
 a:hover,
-a:visited   { color: #369; text-decoration: node; }
+a:visited   { color: #369; }
 
 
 /* Header */
@@ -136,7 +136,7 @@ a.author:active {
 
 
 /* "Download Now!" link */
-.downloadnow {
+a.downloadnow {
   display: block;
   width: 12em;
   margin: 0;
@@ -155,26 +155,18 @@ a.author:active {
           box-sizing: content-box;
 }
 
-a.downloadnow:link,
-a.downloadnow:visited {
-  text-decoration: none;
-  color: white;
-}
-
 a.downloadnow:focus,
 a.downloadnow:hover {
-  text-decoration: none;
-  color: white;
   background-color: #090;
 }
 
-.downloadnow strong {
+a.downloadnow strong {
   display: block;
   font-size: larger;
   font-weight: bold;
 }
 
-.downloadnow em {
+a.downloadnow em {
   display: block;
   font-size: smaller;
   font-style: normal;
