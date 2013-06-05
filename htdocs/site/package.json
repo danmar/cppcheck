@@ -1,0 +1,31 @@
+{
+  "name": "cppcheck-web",
+  "version": "0.1.0",
+  "author": "XhmikosR (https://github.com/XhmikosR)",
+  "description": "The dependencies to build cppcheck's website",
+  "homepage": "https://github.com/danmar/cppcheck",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danmar/cppcheck.git"
+  },
+  "bugs": {
+    "url": "http://sourceforge.net/apps/trac/cppcheck/wiki"
+  },
+  "license": "MIT",
+  "main": "make.js",
+  "readmeFilename": "Readme.md",
+  "scripts": {
+    "check": "node run-tests",
+    "lint": "node run-tests"
+  },
+  "dependencies": {
+    "clean-css": "~1.0.6",
+    "csslint": "~0.9.10",
+    "jshint": "~2.1.3",
+    "shelljs": "~0.1.4",
+    "uglify-js": "~2.3.6"
+  },
+  "engines": {
+    "node": "~0.8.0"
+  }
+}

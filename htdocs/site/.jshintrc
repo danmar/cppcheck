@@ -1,0 +1,30 @@
+{
+  "node" : true,
+  "browser" : false,
+
+  "bitwise": true,
+  "boss": true,
+  "camelcase": true,
+  "curly": true,
+  "eqeqeq": true,
+  "indent": 4,
+  "latedef": true,
+  "multistr": true,
+  "noarg": true,
+  "noempty": true,
+  "plusplus": false,
+  "regexp": true,
+  "strict": false,
+  "trailing": true,
+  "unused": true,
+  "globals": {
+    "cd": true,
+    "cp": true,
+    "target": true,
+    "echo": true,
+    "cat": true,
+    "exec": true,
+    "require": true,
+    "__dirname": true
+  }
+}
