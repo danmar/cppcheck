@@ -74,7 +74,7 @@ as a plugin for your favorite IDE:</p>
   <li><strong>Hudson</strong> - <a href="http://wiki.hudson-ci.org/display/HUDSON/Cppcheck+Plugin">Cppcheck Plugin</a></li>
   <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
   <li><strong>Tortoise SVN</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Tortoisesvn">Adding a pre-commit hook script</a></li>
-  <li><strong>Mercurial</strong> - <a href="http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=519">Adding a pre-commit hook script</a></li>
+  <li><strong>Mercurial (Linux)</strong> - <a href="http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=519">Adding a pre-commit hook script</a></li>
 </ul>
 <p>There is no plugin for <strong>Visual Studio</strong>, but it is possible to
 add Cppcheck as an external tool. You can also try the proprietary <a href="http://www.viva64.com/en/pvs-studio/">PVS-Studio</a> (there is a free trial), which is oriented for this environment. A comparison of Cppcheck and PVS-Studio can be found <a href="http://www.viva64.com/en/b/0149/">here</a> and we believe it's a good and honest comparison.</p>
