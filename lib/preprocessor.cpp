@@ -2741,7 +2741,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
                     continue;
                 // macro is used in code, return false
                 if (_settings->isEnabled("information"))
-                    validateCfgError(cfg);
+                    validateCfgError(cfg, macro);
                 return false;
             }
         }
@@ -2750,7 +2750,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
     return true;
 }
 
-void Preprocessor::validateCfgError(const std::string &cfg)
+void Preprocessor::validateCfgError(const std::string &cfg, const std::string &macro)
 {
     const std::string id = "ConfigurationNotChecked";
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -2758,7 +2758,7 @@ void Preprocessor::validateCfgError(const std::string &cfg)
     loc.line = 1;
     loc.setfile(file0);
     locationList.push_back(loc);
-    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' because it seems to be invalid. Use -D if you want to check it.", id, false);
+    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it.", id, false);
     _errorLogger->reportInfo(errmsg);
 }
 
@@ -3041,6 +3041,6 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
     settings2.checkConfiguration=true;
     preprocessor.missingInclude("", 1, "", UserHeader);
     preprocessor.missingInclude("", 1, "", SystemHeader);
-    preprocessor.validateCfgError("X");
+    preprocessor.validateCfgError("X", "X");
     preprocessor.error("", 1, "#error message");   // #error ..
 }

@@ -3766,7 +3766,7 @@ private:
         settings.addEnabled("all");
         preprocessor.setFile0("test.c");
         ASSERT_EQUALS(false, preprocessor.validateCfg("int a=A;", "A"));
-        ASSERT_EQUALS("[test.c:1]: (information) Skipping configuration 'A' because it seems to be invalid. Use -D if you want to check it.\n", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (information) Skipping configuration 'A' since the value of 'A' is unknown. Use -D if you want to check it.\n", errout.str());
     }
 
     void if_sizeof() { // #4071
