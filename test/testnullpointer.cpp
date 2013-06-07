@@ -1687,6 +1687,11 @@ private:
               "    return p[4];\n"
               "}", false, "test.cpp", false);
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+
+        check("void f(int x) {\n" // #4809 - passing "NULL"
+              "    itoa(x,NULL,10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
     }
 
     void gcc_statement_expression() {

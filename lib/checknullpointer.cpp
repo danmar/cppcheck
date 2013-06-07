@@ -37,14 +37,14 @@ namespace {
  * @param tok first token
  * @param var variables that the function read / write.
  * @param value 0 => invalid with null pointers as parameter.
- *              1-.. => invalid with uninitialized data.
+ *              1-.. => only invalid with uninitialized data.
  */
 void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, unsigned char value)
 {
     // standard functions that dereference first parameter..
-    static std::set<std::string> functionNames1_all;
-    static std::set<std::string> functionNames1_nullptr;
-    static std::set<std::string> functionNames1_uninit;
+    static std::set<std::string> functionNames1_all;     // used no matter what 'value' is
+    static std::set<std::string> functionNames1_nullptr; // used only when 'value' is 0
+    static std::set<std::string> functionNames1_uninit;  // used only when 'value' is non-zero
     if (functionNames1_all.empty()) {
         // cstdlib
         functionNames1_all.insert("atoi");
@@ -163,9 +163,10 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // standard functions that dereference second parameter..
-    static std::set<std::string> functionNames2_all;
-    static std::set<std::string> functionNames2_nullptr;
+    static std::set<std::string> functionNames2_all;     // used no matter what 'value' is
+    static std::set<std::string> functionNames2_nullptr; // used only if 'value' is 0
     if (functionNames2_all.empty()) {
+        functionNames2_all.insert("itoa");
         functionNames2_all.insert("mbstowcs");
         functionNames2_all.insert("wcstombs");
         functionNames2_all.insert("memcmp");
@@ -227,7 +228,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 
     // 1st parameter..
     if ((Token::Match(firstParam, "%var% ,|)") && firstParam->varId() > 0) ||
-        (value == 0 && Token::Match(firstParam, "0 ,|)"))) {
+        (value == 0 && Token::Match(firstParam, "0|NULL ,|)"))) {
         if (functionNames1_all.find(tok.str()) != functionNames1_all.end())
             var.push_back(firstParam);
         else if (value == 0 && functionNames1_nullptr.find(tok.str()) != functionNames1_nullptr.end())
@@ -239,7 +240,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // 2nd parameter..
-    if (secondParam && ((value == 0 && secondParam->str() == "0") || (secondParam->varId() > 0))) {
+    if ((value == 0 && Token::Match(secondParam, "0|NULL ,|)")) || (secondParam && secondParam->varId() > 0)) {
         if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
             var.push_back(secondParam);
         else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
@@ -1170,7 +1171,7 @@ void CheckNullPointer::nullConstantDereference()
 
                     // is one of the var items a NULL pointer?
                     for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
-                        if (Token::Match(*it, "0 [,)]")) {
+                        if (Token::Match(*it, "0|NULL [,)]")) {
                             nullPointerError(*it);
                         }
                     }
