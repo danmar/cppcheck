@@ -8690,6 +8690,14 @@ void Tokenizer::simplifyKeyword()
         }
     }
 
+    if (_settings->standards.c >= Standards::C11) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            while (tok->str() == "_Atomic") {
+                tok->deleteThis();
+            }
+        }
+    }
+
     if (_settings->standards.cpp >= Standards::CPP11) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             while (Token::Match(tok, "constexpr|override")) {

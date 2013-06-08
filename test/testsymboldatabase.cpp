@@ -191,6 +191,7 @@ private:
         TEST_CASE(symboldatabase30);
         TEST_CASE(symboldatabase31);
         TEST_CASE(symboldatabase33); // ticket #4682 (false negatives)
+        TEST_CASE(symboldatabase34); // ticket #4694 (segmentation fault)
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1494,6 +1495,15 @@ private:
                       "static struct A::B w({0});\n"
                       "void foo() { }");
         ASSERT(db && db->functionScopes.size() == 1);
+    }
+
+    void symboldatabase34() { // ticket #4694
+        check("typedef _Atomic(int(A::*)) atomic_mem_ptr_to_int;\n"
+                      "typedef _Atomic(int)&atomic_int_ref;\n"
+                      "struct S {\n"
+                      "  _Atomic union { int n; };\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isImplicitlyVirtual() {
