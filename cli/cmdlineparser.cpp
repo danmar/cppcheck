@@ -102,6 +102,9 @@ void CmdLineParser::PrintMessage(const std::string &message)
 
 bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 {
+    bool def = false;
+    bool maxconfigs = false;
+
     for (int i = 1; i < argc; i++) {
         if (std::strcmp(argv[i], "--version") == 0) {
             _showVersion = true;
@@ -366,6 +369,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             if (!_settings->userDefines.empty())
                 _settings->userDefines += ";";
             _settings->userDefines += define;
+
+            def = true;
         }
         // User undef
         else if (std::strncmp(argv[i], "-U", 2) == 0) {
@@ -662,6 +667,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 PrintMessage("cppcheck: argument to '--max-configs=' must be greater than 0.");
                 return false;
             }
+
+            maxconfigs = true;
         }
 
         // Print help
@@ -686,6 +693,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _pathnames.push_back(path);
         }
     }
+
+    if (def && !_settings->_force && !maxconfigs)
+        _settings->_maxConfigs = 1U;
+
+    if (_settings->_force)
+        _settings->_maxConfigs = ~0U;
 
     if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option, so it's disabled.");

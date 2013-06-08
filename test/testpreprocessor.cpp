@@ -256,6 +256,7 @@ private:
         TEST_CASE(predefine3);
         TEST_CASE(predefine4);
         TEST_CASE(predefine5);  // automatically define __cplusplus
+        TEST_CASE(predefine6);  // using -D and -f => check all matching configurations
 
         // Test Preprocessor::simplifyCondition
         TEST_CASE(simplifyCondition);
@@ -3174,6 +3175,31 @@ private:
         Preprocessor preprocessor(NULL,this);
         ASSERT_EQUALS("\n\n\n",    preprocessor.getcode(code, "X=123", "test.c"));
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(code, "X=123", "test.cpp"));
+    }
+
+    void predefine6() {  // #3737 - using -D and -f => check all matching configurations
+        const char filedata[] = "#ifdef A\n"
+                                "1\n"
+                                "#else\n"
+                                "2\n"
+                                "#endif\n"
+                                "#ifdef B\n"
+                                "3\n"
+                                "#else\n"
+                                "4\n"
+                                "#endif";
+
+        // actual result..
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::map<std::string, std::string> defs;
+        defs["A"] = "1";
+        const std::list<std::string> configs = preprocessor.getcfgs(filedata, "test1.c", defs);
+
+        // Compare actual result with expected result..
+        ASSERT_EQUALS(2U, configs.size());
+        ASSERT_EQUALS("", configs.front());
+        ASSERT_EQUALS("B", configs.back());
     }
 
 

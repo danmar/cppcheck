@@ -710,8 +710,9 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     std::string data;
     preprocess(istr, data, configs, filename, includePaths);
     for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
-        if (_settings && (_settings->userUndefs.find(*it) == _settings->userUndefs.end()))
+        if (_settings && (_settings->userUndefs.find(*it) == _settings->userUndefs.end())) {
             result[ *it ] = getcode(data, *it, filename);
+        }
     }
 }
 
@@ -803,7 +804,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
     processedFile = read(srcCodeStream, filename);
 
-    if (_settings && !_settings->userIncludes.empty()) {
+    if (_settings && _settings->_maxConfigs == 1U) {
         for (std::list<std::string>::iterator it = _settings->userIncludes.begin();
              it != _settings->userIncludes.end();
              ++it) {
@@ -870,9 +871,9 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    if (_settings && !_settings->userDefines.empty()) {
-        std::map<std::string, std::string> defs;
+    std::map<std::string, std::string> defs;
 
+    if (_settings && !_settings->userDefines.empty()) {
         // TODO: break out this code. There is other similar code.
         std::string::size_type pos1 = 0;
         while (pos1 != std::string::npos) {
@@ -897,19 +898,18 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
             if (pos1 != std::string::npos)
                 pos1++;
         }
+    }
 
+    if (_settings && _settings->_maxConfigs == 1U) {
         processedFile = handleIncludes(processedFile, filename, includePaths, defs);
-        if (_settings->userIncludes.empty())
-            resultConfigurations = getcfgs(processedFile, filename);
-
+        resultConfigurations = getcfgs(processedFile, filename, defs);
     } else {
-
         handleIncludes(processedFile, filename, includePaths);
 
         processedFile = replaceIfDefined(processedFile);
 
         // Get all possible configurations..
-        resultConfigurations = getcfgs(processedFile, filename);
+        resultConfigurations = getcfgs(processedFile, filename, defs);
 
         // Remove configurations that are disabled by -U
         handleUndef(resultConfigurations);
@@ -1050,7 +1050,7 @@ static void simplifyVarMap(std::map<std::string, std::string> &variables)
     }
 }
 
-std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename)
+std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename, const std::map<std::string, std::string> &defs)
 {
     std::list<std::string> ret;
     ret.push_back("");
@@ -1169,7 +1169,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
             // Replace defined constants
             {
-                std::map<std::string, std::string> varmap;
+                std::map<std::string, std::string> varmap(defs);
                 for (std::set<std::string>::const_iterator it = defines.begin(); it != defines.end(); ++it) {
                     std::string::size_type pos = it->find_first_of("=(");
                     if (pos == std::string::npos)

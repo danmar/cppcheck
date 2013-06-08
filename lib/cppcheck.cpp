@@ -166,7 +166,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
             return 0;
         }
 
-        if (!_settings.userDefines.empty()) {
+        if (!_settings.userDefines.empty() && _settings._maxConfigs==1U) {
             configurations.clear();
             configurations.push_back(_settings.userDefines);
         }
@@ -195,8 +195,14 @@ unsigned int CppCheck::processFile(const std::string& filename)
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
             }
 
+            if (!_settings.userDefines.empty()) {
+                if (!cfg.empty())
+                    cfg = ";" + cfg;
+                cfg = _settings.userDefines + cfg;
+            }
+
             Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-            const std::string codeWithoutCfg = preprocessor.getcode(filedata, *it, filename, _settings.userDefines.empty());
+            const std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename, _settings._maxConfigs == 1U);
             t.Stop();
 
             const std::string &appendCode = _settings.append();

@@ -202,15 +202,15 @@ private:
      */
     static std::string removeSpaceNearNL(const std::string &str);
 
+    static std::string getdef(std::string line, bool def);
+
+public:
+
     /**
      * Get all possible configurations sorted in alphabetical order.
      * By looking at the ifdefs and ifndefs in filedata
      */
-    std::list<std::string> getcfgs(const std::string &filedata, const std::string &filename);
-
-    static std::string getdef(std::string line, bool def);
-
-public:
+    std::list<std::string> getcfgs(const std::string &filedata, const std::string &filename, const std::map<std::string, std::string> &defs);
 
     /**
      * Remove asm(...) from a string
