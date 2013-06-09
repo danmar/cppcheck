@@ -1499,10 +1499,10 @@ private:
 
     void symboldatabase34() { // ticket #4694
         check("typedef _Atomic(int(A::*)) atomic_mem_ptr_to_int;\n"
-                      "typedef _Atomic(int)&atomic_int_ref;\n"
-                      "struct S {\n"
-                      "  _Atomic union { int n; };\n"
-                      "};");
+              "typedef _Atomic(int)&atomic_int_ref;\n"
+              "struct S {\n"
+              "  _Atomic union { int n; };\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
