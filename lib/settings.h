@@ -178,10 +178,12 @@ public:
     class CPPCHECKLIB Rule {
     public:
         Rule()
-            : id("rule") // default id
+            : tokenlist("simple") // use simple tokenlist
+            , id("rule")          // default id
             , severity("style") { // default severity
         }
 
+        std::string tokenlist;
         std::string pattern;
         std::string id;
         std::string severity;

@@ -598,6 +598,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                     Settings::Rule rule;
 
+                    tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                    if (tokenlist)
+                        rule.tokenlist = tokenlist->GetText();
+
                     tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
                     if (pattern) {
                         rule.pattern = pattern->GetText();

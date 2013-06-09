@@ -149,6 +149,13 @@ private:
     void checkFile(const std::string &code, const char FileName[]);
 
     /**
+     * @brief Execute rules, if any
+     * @param tokenlist token list to use (normal / simple)
+     * @param tokenizer tokenizer
+     */
+    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
+
+    /**
      * @brief Errors and warnings are directed here.
      *
      * @param msg Errors messages are normally in format
