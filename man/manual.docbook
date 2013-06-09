@@ -104,9 +104,10 @@ Checking path/file2.cpp...
       <para>All files under <filename class="directory">src/a</filename> and
       <filename class="directory">src/b</filename> are then checked.</para>
 
-      <para>The second option is to use <parameter class="command">-i</parameter>,
-      with it you specify files/paths to ignore. With this command no files in
-      <filename class="directory">src/c</filename> are checked:</para>
+      <para>The second option is to use <parameter
+      class="command">-i</parameter>, with it you specify files/paths to
+      ignore. With this command no files in <filename
+      class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
     </section>
@@ -147,9 +148,10 @@ Checking path/file2.cpp...
           <term>performance</term>
 
           <listitem>
-            <para>Suggestions for making the code faster. These suggestions are
-            only based on common knowledge. It is not certain you'll get any
-            measurable difference in speed by fixing these messages.</para>
+            <para>Suggestions for making the code faster. These suggestions
+            are only based on common knowledge. It is not certain you'll get
+            any measurable difference in speed by fixing these
+            messages.</para>
           </listitem>
         </varlistentry>
 
@@ -175,67 +177,42 @@ Checking path/file2.cpp...
     <section>
       <title>Enable messages</title>
 
-      <para>By default only <parameter class="command">error</parameter> messages
-      are shown. Through the <parameter class="command">--enable</parameter>
-      command more checks can be enabled.</para>
+      <para>By default only <parameter class="command">error</parameter>
+      messages are shown. Through the <parameter
+      class="command">--enable</parameter> command more checks can be
+      enabled.</para>
 
-      <section>
-        <title>Stylistic issues</title>
+      <programlisting># enable warning messages
+cppcheck --enable=warning file.c
 
-        <para>With <parameter class="command">--enable=style</parameter> you
-        enable most <parameter class="command">warning</parameter>,
-        <parameter class="command">style</parameter> and
-        <parameter class="command">performance</parameter> messages.</para>
+# enable performance messages
+cppcheck --enable=performance file.c
 
-        <para>Here is a simple code example:</para>
+# enable information messages
+cppcheck --enable=information file.c
 
-        <programlisting>void f(int x)
-{
-    int i;
-    if (x == 0)
-    {
-        i = 0;
-    }
-}</programlisting>
+# For historical reasons, --enable=style enables warning, performance,
+# portability and style messages. These are all reported as "style" when
+# using the old xml format.
+cppcheck --enable=style file.c
 
-        <para>There are no bugs in that code so Cppcheck won't report anything
-        by default. To enable the stylistic messages, use the
-        <parameter class="command">--enable=style</parameter> command:</para>
+# enable warning and information messages
+cppcheck --enable=warning,information file.c
 
-        <programlisting>cppcheck --enable=style file3.c</programlisting>
+# enable unusedFunction checking. This is not enabled by --enable=style
+# because it doesn't work well on libraries.
+cppcheck --enable=unusedFunction file.c
 
-        <para>The output from Cppcheck is now:</para>
-
-        <programlisting>Checking file3.c...
-[file3.c:3]: (style) Variable 'i' is assigned a value that is never used
-[file3.c:3]: (style) The scope of the variable i can be reduced</programlisting>
-      </section>
-
-      <section>
-        <title>Unused functions</title>
-
-        <para>This check will try to find unused functions. It is best to use
-        this when the whole program is checked, so that all usages is seen by
-        cppcheck.</para>
-
-        <programlisting>cppcheck --enable=unusedFunction path</programlisting>
-      </section>
-
-      <section>
-        <title>Enable all checks</title>
-
-        <para>To enable all checks your can use the
-        <parameter class="command">--enable=all</parameter> flag:</para>
-
-        <programlisting>cppcheck --enable=all path</programlisting>
-      </section>
+# enable all messages
+cppcheck --enable=all</programlisting>
 
       <section>
         <title>Inconclusive checks</title>
 
         <para>By default Cppcheck only writes error messages if it is certain.
         With <parameter class="command">--inconclusive</parameter> error
-        messages will also be written when the analysis is inconclusive.</para>
+        messages will also be written when the analysis is
+        inconclusive.</para>
 
         <programlisting>cppcheck --inconclusive path</programlisting>
 
@@ -258,8 +235,9 @@ Checking path/file2.cpp...
     <section>
       <title>Multithreaded checking</title>
 
-      <para>The option -j is used to specify the number of threads you want to use.
-      For example, to use 4 threads to check the files in a folder:</para>
+      <para>The option -j is used to specify the number of threads you want to
+      use. For example, to use 4 threads to check the files in a
+      folder:</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
     </section>
@@ -269,22 +247,30 @@ Checking path/file2.cpp...
     <title>Preprocessor configurations</title>
 
     <para>By default Cppcheck will check all preprocessor configurations
-    (except those that have #error in them). This is the recommended
-    behaviour.</para>
+    (except those that have #error in them).</para>
 
-    <para>But if you want to manually limit the checking you can do so with
-    <parameter class="command">-D</parameter>.</para>
+    <para>You can use -D to change this. When you use -D, cppcheck will by
+    default only check the given configuration and nothing else. This is how
+    compilers work. But you can use <literal>--force</literal> or
+    <literal><literal>--max-configs</literal></literal> to override the number
+    of configurations.</para>
 
-    <para>Beware that only the macros, which are given here and the macros
-    defined in source files and known header files are considered. That
-    excludes all the macros defined in some system header files, which are by
-    default not examined by Cppcheck.</para>
+    <programlisting># check all configurations
+cppcheck file.c
 
-    <para>The usage: if you, for example, want to limit the checking so the
-    only configuration to check should be <literal>DEBUG=1;__cplusplus</literal>
-    then something like this can be used:</para>
+# only check the configuration A
+cppcheck -DA file.c
 
-    <programlisting>cppcheck -DDEBUG=1 -D__cplusplus path</programlisting>
+# check all configurations when macro A is defined
+cppcheck -DA --force file.c</programlisting>
+
+    <para>Another useful flag might be -U. It undefines a symbol. Example
+    usage:</para>
+
+    <programlisting>cppcheck -UX file.c</programlisting>
+
+    <para>That will mean that X is not defined. Cppcheck will not check what
+    happens when X is defined.</para>
   </chapter>
 
   <chapter>
@@ -403,7 +389,7 @@ Checking path/file2.cpp...
 
           <listitem>
             <para>this attribute doesn't exist yet. But in the future we may
-            add a short message for each location. </para>
+            add a short message for each location.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -416,8 +402,8 @@ Checking path/file2.cpp...
     <para>If you want to reformat the output so it looks different you can use
     templates.</para>
 
-    <para>To get Visual Studio compatible output you can use
-    <parameter class="command">--template=vs</parameter>:</para>
+    <para>To get Visual Studio compatible output you can use <parameter
+    class="command">--template=vs</parameter>:</para>
 
     <programlisting>cppcheck --template=vs gui/test.cpp</programlisting>
 
@@ -427,8 +413,8 @@ Checking path/file2.cpp...
 gui/test.cpp(31): error: Memory leak: b
 gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
 
-    <para>To get gcc compatible output you can use
-    <parameter class="command">--template=gcc</parameter>:</para>
+    <para>To get gcc compatible output you can use <parameter
+    class="command">--template=gcc</parameter>:</para>
 
     <programlisting>cppcheck --template=gcc gui/test.cpp</programlisting>
 
@@ -449,7 +435,8 @@ gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisti
 gui/test.cpp,31,error,memleak,Memory leak: b
 gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
 
-    <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and \t (horizontal tab) are supported.</para>
+    <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and
+    \t (horizontal tab) are supported.</para>
   </chapter>
 
   <chapter>
@@ -558,9 +545,8 @@ Checking test.c...
     <section>
       <title>User-defined allocation/deallocation functions</title>
 
-      <para>Cppcheck understands standard allocation and
-      deallocation functions. But it doesn't know what library functions
-      do.</para>
+      <para>Cppcheck understands standard allocation and deallocation
+      functions. But it doesn't know what library functions do.</para>
 
       <para>Here is example code that might leak memory or resources:</para>
 
@@ -591,8 +577,8 @@ void DestroyFred(void *p)
 }</programlisting>
 
       <para>When Cppcheck see this it understands that <function>CreateFred()
-      </function> will return allocated memory and that <function>DestroyFred()
-      </function> will deallocate memory.</para>
+      </function> will return allocated memory and that
+      <function>DestroyFred() </function> will deallocate memory.</para>
 
       <para>Now, execute <command>cppcheck</command> this way:</para>
 
@@ -609,11 +595,11 @@ void DestroyFred(void *p)
     <title>HTML report</title>
 
     <para>You can convert the XML output from cppcheck into a HTML report.
-    You'll need Python and the pygments module
-    (<ulink url="http://pygments.org/">http://pygments.org/</ulink>) for this to
-    work. In the Cppcheck source tree there is a folder
-    <filename class="directory">htmlreport</filename> that contains a script
-    that transforms a Cppcheck XML file into HTML output.</para>
+    You'll need Python and the pygments module (<ulink
+    url="http://pygments.org/">http://pygments.org/</ulink>) for this to work.
+    In the Cppcheck source tree there is a folder <filename
+    class="directory">htmlreport</filename> that contains a script that
+    transforms a Cppcheck XML file into HTML output.</para>
 
     <para>This command generates the help screen:</para>
 
@@ -675,9 +661,11 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
       <para>The language can be changed at any time by using the
       <guimenu>Language</guimenu> menu.</para>
 
-      <para>More settings are available in
-      <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem>
-      </menuchoice>.</para>
+      <para>More settings are available in <menuchoice>
+          <guimenu>Edit</guimenu>
+
+          <guimenuitem>Preferences</guimenuitem>
+        </menuchoice>.</para>
     </section>
 
     <section>
@@ -696,9 +684,10 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
         </listitem>
       </itemizedlist>
 
-      <para>As you can read in <link linkend="preprocessor-configurations">chapter
-      3</link> in this manual the default is that Cppcheck checks all configurations.
-      So only provide preprocessor defines if you want to limit the checking.</para>
+      <para>As you can read in <link
+      linkend="preprocessor-configurations">chapter 3</link> in this manual
+      the default is that Cppcheck checks all configurations. So only provide
+      preprocessor defines if you want to limit the checking.</para>
     </section>
   </chapter>
 </book>
