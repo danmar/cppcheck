@@ -317,6 +317,17 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     try {
         bool result;
 
+        // Execute rules for "raw" code
+        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+            if (it->tokenlist == "raw") {
+                Tokenizer tokenizer2(&_settings, this);
+                std::istringstream istr(code);
+                tokenizer2.list.createTokens(istr, FileName);
+                executeRules("raw", tokenizer2);
+                break;
+            }
+        }
+
         // Tokenize the file
         std::istringstream istr(code);
 
