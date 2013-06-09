@@ -402,6 +402,10 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
 {
+     (void)tokenlist;
+     (void)tokenizer;
+
+#ifdef HAVE_RULES
     // Are there rules to execute?
     bool isrule = false;
     for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
@@ -424,7 +428,6 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty() || rule.tokenlist != tokenlist)
             continue;
 
-#ifdef HAVE_RULES
         const char *error = 0;
         int erroffset = 0;
         pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
@@ -480,8 +483,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         }
 
         pcre_free(re);
-#endif
     }
+#endif
 }
 
 Settings &CppCheck::settings()
