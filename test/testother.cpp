@@ -43,6 +43,8 @@ private:
         TEST_CASE(zeroDiv5);
         TEST_CASE(zeroDiv6);
 
+        TEST_CASE(nanInArithmeticExpression);
+
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
@@ -410,6 +412,47 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
 
+    void nanInArithmeticExpression() {
+        check("void f()\n"
+              "{\n"
+              "   double x = 3.0 / 0.0 + 1.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 3.0 / 0.0 - 1.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 1.0 + 3.0 / 0.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 1.0 - 3.0 / 0.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 3.0 / 0.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+    }
 
     void sprintfUsage(const char code[]) {
         // Clear the error buffer..

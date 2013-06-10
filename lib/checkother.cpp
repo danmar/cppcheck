@@ -2114,6 +2114,30 @@ void CheckOther::zerodivError(const Token *tok)
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+/** @brief Check for NaN (not-a-number) in an arithmetic expression
+ *  @note e.g. double d = 1.0 / 0.0 + 100.0;
+ */
+void CheckOther::checkNanInArithmeticExpression()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "inf.0 +|-") ||
+            Token::Match(tok, "+|- inf.0") ||
+            Token::Match(tok, "+|- %num% / 0.0")) {
+            nanInArithmeticExpressionError(tok);
+        }
+    }
+}
+
+void CheckOther::nanInArithmeticExpressionError(const Token *tok)
+{
+    reportError(tok, Severity::style, "nanInArithmeticExpression",
+                "Using NaN/Inf in a computation.\n"
+                "Although nothing bad really happens, it is suspicious.");
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void CheckOther::checkMathFunctions()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

@@ -72,6 +72,7 @@ public:
         checkOther.checkIncompleteArrayFill();
         checkOther.checkSuspiciousStringCompare();
         checkOther.checkVarFuncNullUB();
+        checkOther.checkNanInArithmeticExpression();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -157,6 +158,9 @@ public:
 
     /** @brief %Check zero division*/
     void checkZeroDivision();
+
+    /** @brief Check for NaN (not-a-number) in an arithmetic expression */
+    void checkNanInArithmeticExpression();
 
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
@@ -278,6 +282,7 @@ private:
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok);
+    void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
@@ -377,6 +382,7 @@ private:
         c.moduloAlwaysTrueFalseError(0, "1");
         c.incompleteArrayFillError(0, "buffer", "memset", false);
         c.varFuncNullUBError(0);
+        c.nanInArithmeticExpressionError(0);
     }
 
     static std::string myName() {
@@ -438,7 +444,8 @@ private:
                "* Comparisons of modulo results that are always true/false.\n"
                "* Array filled incompletely using memset/memcpy/memmove.\n"
                "* redundant get and set function of user id (--std=posix).\n"
-               "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n";
+               "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n"
+               "* NaN (not a number) value used in arithmetic expression.\n";
     }
 
     void checkExpressionRange(const std::list<const Function*> &constFunctions,
