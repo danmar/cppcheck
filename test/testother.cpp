@@ -5864,6 +5864,14 @@ private:
               "    i = 1;\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("int foo() {\n" // #4420
+              "    int x;\n"
+              "    bar(++x);\n"
+              "    x = 5;\n"
+              "    return bar(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
