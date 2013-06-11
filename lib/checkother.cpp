@@ -2133,6 +2133,7 @@ void CheckOther::nanInArithmeticExpressionError(const Token *tok)
 {
     reportError(tok, Severity::style, "nanInArithmeticExpression",
                 "Using NaN/Inf in a computation.\n"
+                "Using NaN/Inf in a computation. "
                 "Although nothing bad really happens, it is suspicious.");
 }
 
