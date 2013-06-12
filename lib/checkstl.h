@@ -135,7 +135,7 @@ public:
     /** @brief %Check calls that using them is useless */
     void uselessCalls();
 
-    /** @brief %Check for derefencing an iterator that is invalid */
+    /** @brief %Check for dereferencing an iterator that is invalid */
     void checkDereferenceInvalidIterator();
 
     /**
