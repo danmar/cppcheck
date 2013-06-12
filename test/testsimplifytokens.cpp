@@ -129,6 +129,7 @@ private:
         TEST_CASE(template35);  // #4074 - A<'x'> a;
         TEST_CASE(template36);  // #4310 - passing unknown template instantiation as template argument
         TEST_CASE(template37);  // #4544 - A<class B> a;
+        TEST_CASE(template38);  // #4832 - crash on C++11 right angle brackets
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2285,6 +2286,20 @@ private:
     void template_unhandled() {
         // An unhandled template usage should be simplified..
         ASSERT_EQUALS("x<int> ( ) ;", tok("x<int>();"));
+    }
+
+    void template38() { // #4832 - Crash on C++11 right angle brackets
+        const char code[] = "template <class T> class A {\n"
+                            "  T mT;\n"
+                            "public:\n"
+                            "  void foo() {}\n"
+                            "};\n"
+                            "\n"
+                            "int main() {\n"
+                            "    A<A<BLA>>   gna1;\n"
+                            "    A<BLA>      gna2;\n"
+                            "}\n";
+        tok(code); // Don't crash or freeze
     }
 
     void template_default_parameter() {

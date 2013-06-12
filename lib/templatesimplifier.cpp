@@ -663,14 +663,17 @@ void TemplateSimplifier::expandTemplate(
                 if (itype < typeParametersInDeclaration.size()) {
                     unsigned int typeindentlevel = 0;
                     for (const Token *typetok = typesUsedInTemplateInstantiation[itype];
-                         typetok && (typeindentlevel>0 || !Token::Match(typetok, "[,>]"));
+                         typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>|>>"));
                          typetok = typetok->next()) {
                         if (Token::Match(typetok, "%var% <") && templateParameters(typetok->next()) > 0)
                             ++typeindentlevel;
                         else if (typeindentlevel > 0 && typetok->str() == ">")
                             --typeindentlevel;
-                        else if (typeindentlevel > 0 && typetok->str() == ">>")
-                            typeindentlevel -= (typeindentlevel > 1) ? 2 : 1;
+                        else if (typeindentlevel > 0 && typetok->str() == ">>") {
+                            if (typeindentlevel == 1)
+                                break;
+                            typeindentlevel -= 2;
+                        }
                         tokenlist.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
                     }
                     continue;
