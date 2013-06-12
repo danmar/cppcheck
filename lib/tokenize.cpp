@@ -7142,7 +7142,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
                     const Token *back = tok;
                     while (back && back->isName())
                         back = back->previous();
-                    if (!back || Token::Match(back, "[(,;{}] !!return")) {
+                    if (!back || (Token::Match(back, "[(,;{}]") && !Token::Match(back->next(),"return|throw"))) {
                         duplicateEnumError(*tokPtr, name, "Variable");
                         return true;
                     }
@@ -7461,7 +7461,7 @@ void Tokenizer::simplifyEnum()
                                     tok3 = tok3->link(); // skip inner scopes
                                 else if (tok3->isName() && enumValues.find(tok3->str()) != enumValues.end()) {
                                     const Token *prev = tok3->previous();
-                                    if ((prev->isName() && !Token::Match(prev, "return|case")) ||
+                                    if ((prev->isName() && !Token::Match(prev, "return|case|throw")) ||
                                         prev->str() == "*" ||
                                         Token::Match(prev, "& %type% =")) {
                                         // variable declaration?

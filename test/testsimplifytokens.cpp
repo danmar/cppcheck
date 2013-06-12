@@ -361,6 +361,7 @@ private:
         TEST_CASE(enum35); // ticket #3953 (avoid simplification of type)
         TEST_CASE(enum36); // ticket #4378
         TEST_CASE(enum37); // ticket #4280 (shadow variable)
+        TEST_CASE(enum38); // ticket #4463 (when throwing enum id, don't warn about shadow variable)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -7360,6 +7361,12 @@ private:
 
         const char code4[] = "enum { a, b }; void f() { int &a=x; }";
         ASSERT_EQUALS("void f ( ) { int & a = x ; }", checkSimplifyEnum(code4));
+    }
+
+    void enum38() { // #4463
+        const char code[] = "enum { a,b }; void f() { throw a; }";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
