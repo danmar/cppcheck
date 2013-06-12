@@ -402,8 +402,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
 {
-     (void)tokenlist;
-     (void)tokenizer;
+    (void)tokenlist;
+    (void)tokenizer;
 
 #ifdef HAVE_RULES
     // Are there rules to execute?
