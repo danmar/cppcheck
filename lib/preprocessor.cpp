@@ -804,7 +804,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
     processedFile = read(srcCodeStream, filename);
 
-    if (_settings && _settings->_maxConfigs == 1U) {
+    if (_settings) {
         for (std::list<std::string>::iterator it = _settings->userIncludes.begin();
              it != _settings->userIncludes.end();
              ++it) {
@@ -822,7 +822,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
                               );
                 continue;
             }
-            std::string fileData = read(fin, filename);
+            const std::string fileData = read(fin, filename);
 
             fin.close();
 
