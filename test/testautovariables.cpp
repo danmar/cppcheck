@@ -77,6 +77,7 @@ private:
         TEST_CASE(testautovar8);
         TEST_CASE(testautovar9);
         TEST_CASE(testautovar10); // ticket #2930 - void f(char *p) { p = '\0'; }
+        TEST_CASE(testautovar11); // ticket #4641 - fp, assign local struct member address to function parameter
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -303,6 +304,26 @@ private:
               "    p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar11() { // #4641 - fp, assign local struct member address to function parameter
+        check("struct A {\n"
+              "    char *data[10];\n"
+              "};\n"
+              "void foo(char** p) {\n"
+              "    struct A a = bar();\n"
+              "    *p = &a.data[0];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    char data[10];\n"
+              "};\n"
+              "void foo(char** p) {\n"
+              "    struct A a = bar();\n"
+              "    *p = &a.data[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_array1() {
