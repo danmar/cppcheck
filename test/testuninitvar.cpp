@@ -2376,6 +2376,12 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n" // #4778 - cast address of uninitialized variable
+                        "    long a;\n"
+                        "    &a;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar2("void f() {\n" // #4717 - ({})
                         "    int a = ({ long b = (long)(123); 2 + b; });\n"
                         "}", "test.c", false);
