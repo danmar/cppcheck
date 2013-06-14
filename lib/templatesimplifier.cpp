@@ -875,11 +875,13 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                         if (par == 0)
                             break;
                         --par;
-                    } else if (par == 0 && (Token::Match(tok2, "[,;]")))
+                    } else if (par == 0 && (Token::Match(tok2, "[,;?]")))
                         break;
                 }
-                if (Token::Match(tok2, "[);,]"))
+                if (Token::Match(tok2, "[);,?]")) {
                     Token::eraseTokens(tok, tok2);
+                    ret = true;
+                }
                 continue;
             }
 
@@ -973,7 +975,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             if (Token::Match(tok, "%num% %comp% %num%") &&
                 MathLib::isInt(tok->str()) &&
                 MathLib::isInt(tok->strAt(2))) {
-                if (Token::Match(tok->previous(), "(|&&|%oror%") && Token::Match(tok->tokAt(3), ")|&&|%oror%")) {
+                if (Token::Match(tok->previous(), "(|&&|%oror%") && Token::Match(tok->tokAt(3), ")|&&|%oror%|?")) {
                     const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
                     const std::string &cmp(tok->next()->str());
                     const MathLib::bigint op2(MathLib::toLongNumber(tok->strAt(2)));

@@ -170,6 +170,7 @@ private:
 
         // Simplify calculations
         TEST_CASE(calculations);
+        TEST_CASE(comparisons);
 
         // Simplify goto..
         TEST_CASE(goto1);
@@ -3019,6 +3020,12 @@ private:
         ASSERT_EQUALS("( 4 )", tok("(1 * 2 / 1 * 2)")); // #3722
     }
 
+    void comparisons() {
+        ASSERT_EQUALS("( 1 )", tok("( 1 < 2 )"));
+        ASSERT_EQUALS("( x )", tok("( x && 1 < 2 )"));
+        ASSERT_EQUALS("( 5 )", tok("( 1 < 2 && 3 < 4 ? 5 : 6 )"));
+        ASSERT_EQUALS("( 6 )", tok("( 1 > 2 && 3 > 4 ? 5 : 6 )"));
+    }
 
     void goto1() {
         {
