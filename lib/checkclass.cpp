@@ -494,8 +494,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             assignVar(ftok->strAt(1), scope, usage);
         }
 
-        // Before a new statement there is "[{};)=]"
-        if (! Token::Match(ftok, "[{};()=]"))
+        // Before a new statement there is "[{};()=[]"
+        if (! Token::Match(ftok, "[{};()=[]"))
             continue;
 
         if (Token::simpleMatch(ftok, "( !"))

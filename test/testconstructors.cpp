@@ -119,6 +119,7 @@ private:
         TEST_CASE(uninitVar23); // ticket #3702
         TEST_CASE(uninitVar24); // ticket #3190
         TEST_CASE(uninitVar25); // ticket #4789
+        TEST_CASE(uninitVar26);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1888,6 +1889,19 @@ private:
                       "[test.cpp:42]: (warning) Member variable 'F::a' is not initialized in the constructor.\n"
                       "[test.cpp:42]: (warning) Member variable 'F::b' is not initialized in the constructor.\n"
                       "[test.cpp:42]: (warning) Member variable 'F::c' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar26()
+    {
+        check("class A {\n"
+              "    int * v;\n"
+              "    int sz;\n"
+              "public:\n"
+              "    A(int s) {\n"
+              "        v = new int [sz = s];\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray1() {
