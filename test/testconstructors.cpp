@@ -1891,8 +1891,7 @@ private:
                       "[test.cpp:42]: (warning) Member variable 'F::c' is not initialized in the constructor.\n", errout.str());
     }
 
-    void uninitVar26()
-    {
+    void uninitVar26() {
         check("class A {\n"
               "    int * v;\n"
               "    int sz;\n"
