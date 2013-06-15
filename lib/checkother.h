@@ -73,6 +73,7 @@ public:
         checkOther.checkSuspiciousStringCompare();
         checkOther.checkVarFuncNullUB();
         checkOther.checkNanInArithmeticExpression();
+        checkOther.checkCommaSeparatedReturn();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -143,6 +144,9 @@ public:
     /** @brief %Check scope of variables */
     void checkVariableScope();
     static bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
+
+    /** @brief %Check for comma separated statements in return */
+    void checkCommaSeparatedReturn();
 
     /** @brief %Check for constant function parameter */
     void checkConstantFunctionParameter();
@@ -319,6 +323,7 @@ private:
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
+    void commaSeparatedReturnError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -383,6 +388,7 @@ private:
         c.incompleteArrayFillError(0, "buffer", "memset", false);
         c.varFuncNullUBError(0);
         c.nanInArithmeticExpressionError(0);
+        c.commaSeparatedReturnError(0);
     }
 
     static std::string myName() {
@@ -445,7 +451,8 @@ private:
                "* Array filled incompletely using memset/memcpy/memmove.\n"
                "* redundant get and set function of user id (--std=posix).\n"
                "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n"
-               "* NaN (not a number) value used in arithmetic expression.\n";
+               "* NaN (not a number) value used in arithmetic expression.\n"
+               "* comma in return statement (the comma can easily be misread as a semicolon).\n";
     }
 
     void checkExpressionRange(const std::list<const Function*> &constFunctions,

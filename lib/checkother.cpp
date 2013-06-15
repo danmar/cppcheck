@@ -1877,6 +1877,46 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
                 "When you see this message it is always safe to reduce the variable scope 1 level.");
 }
 
+void CheckOther::checkCommaSeparatedReturn()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next())      {
+        if (Token::Match(tok ,"return")) {
+
+            while (tok->str() != ";")   {
+
+                if (tok->str() == "(")
+                    tok=tok->link();
+
+                if (!tok->isExpandedMacro() && tok->str() == ",")
+                    commaSeparatedReturnError(tok);
+
+                tok=tok->next();
+
+            }
+        }
+    }
+}
+
+void CheckOther::commaSeparatedReturnError(const Token *tok)
+{
+    reportError(tok,
+                Severity::style,
+                "commaSeparatedReturn",
+                "Comma is used in return statement. The comma can easily be misread as a ';'.\n"
+                "Comma is used in return statement. When comma is used in a return statement it can "
+                "easily be misread as a semicolon. For example in the code below the value "
+                "of 'b' is returned if the condition is true, but it is easy to think that 'a+1' is "
+                "returned:\n"
+                "    if (x)\n"
+                "        return a + 1,\n"
+                "    b++;\n"
+                "However it can be useful to use comma in macros. Cppcheck does not warn when such a "
+                "macro is then used in a return statement, It is less likely such code is misunderstood.");
+}
+
 //---------------------------------------------------------------------------
 // Check for constant function parameters
 //---------------------------------------------------------------------------

@@ -172,6 +172,8 @@ private:
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
 
         TEST_CASE(checkSleepTimeIntervall)
+
+        TEST_CASE(checkCommaSeparatedReturn);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true) {
@@ -6231,6 +6233,20 @@ private:
               "usleep(1000001);\n"
               "}",NULL,false,false,true);
         ASSERT_EQUALS("[test.cpp:2]: (error) The argument of usleep must be less than 1000000.\n", errout.str());
+    }
+
+    void checkCommaSeparatedReturn() {
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a++ , 0;\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a=a+5,1; \n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
     }
 };
 
