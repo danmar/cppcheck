@@ -202,7 +202,7 @@ unsigned int CppCheck::processFile(const std::string& filename)
             }
 
             Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-            const std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename, _settings._maxConfigs == 1U);
+            const std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename, _settings.isEnabled("information"));
             t.Stop();
 
             const std::string &appendCode = _settings.append();
