@@ -799,8 +799,15 @@ private:
 
     void wrong_syntax_if_macro() {
         // #2518 #4171
-        const std::string code("void f() { if MACRO(); }");
-        tokenizeAndStringify(code.c_str(), false);
+        tokenizeAndStringify("void f() { if MACRO(); }", false);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        // #4668 - note there is no semicolon after MACRO()
+        tokenizeAndStringify("void f() { if (x) MACRO() {} }", false);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+
+        // #4810 - note there is no semicolon after MACRO()
+        tokenizeAndStringify("void f() { if (x) MACRO() else ; }", false);
         ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
     }
 

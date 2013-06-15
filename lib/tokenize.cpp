@@ -1602,6 +1602,19 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
+    // if (x) MACRO() ..
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "if (")) {
+            tok = tok->next()->link();
+            if (Token::Match(tok, ") %var% (") &&
+                tok->next()->isUpperCaseName() &&
+                Token::Match(tok->linkAt(2), ") {|else")) {
+                syntaxError(tok->next());
+                return false;
+            }
+        }
+    }
+
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
 
