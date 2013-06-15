@@ -1914,7 +1914,7 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
                 "        return a + 1,\n"
                 "    b++;\n"
                 "However it can be useful to use comma in macros. Cppcheck does not warn when such a "
-                "macro is then used in a return statement, It is less likely such code is misunderstood.");
+                "macro is then used in a return statement, it is less likely such code is misunderstood.");
 }
 
 //---------------------------------------------------------------------------
