@@ -3583,8 +3583,9 @@ void Tokenizer::removeMacrosInGlobalScope()
                 tok->deleteNext();
         }
 
-        if (Token::Match(tok, "[;{}] %type%") && tok->next()->isUpperCaseName()) {
-            const Token *tok2 = tok->tokAt(2);
+        if ((!tok->previous() || Token::Match(tok->previous(), "[;{}]")) &&
+            Token::Match(tok, "%type%") && tok->isUpperCaseName()) {
+            const Token *tok2 = tok->next();
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
 
@@ -3594,9 +3595,20 @@ void Tokenizer::removeMacrosInGlobalScope()
                 const Token *tok3 = tok2;
                 while (tok3 && !Token::Match(tok3,"[;{}()]"))
                     tok3 = tok3->next();
-                if (tok3 && tok3->str() == "{")
+                if (tok3 && tok3->str() == "{") {
                     Token::eraseTokens(tok, tok2);
+                    tok->deleteThis();
+                }
                 continue;
+            }
+
+            // replace unknown macros before foo(
+            if (Token::Match(tok2, "%type% (") && Token::Match(tok2->next()->link(), ") const| {")) {
+                std::string typeName;
+                for (const Token* tok3 = tok; tok3 != tok2; tok3 = tok3->next())
+                    typeName += tok3->str();
+                Token::eraseTokens(tok, tok2);
+                tok->str(typeName);
             }
 
             // remove unknown macros before foo::foo(
@@ -3604,8 +3616,10 @@ void Tokenizer::removeMacrosInGlobalScope()
                 const Token *tok3 = tok2;
                 while (Token::Match(tok3, "%type% :: %type% ::"))
                     tok3 = tok3->tokAt(2);
-                if (Token::Match(tok3, "%type% :: %type% (") && tok3->str() == tok3->strAt(2))
+                if (Token::Match(tok3, "%type% :: %type% (") && tok3->str() == tok3->strAt(2)) {
                     Token::eraseTokens(tok, tok2);
+                    tok->deleteThis();
+                }
                 continue;
             }
         }
