@@ -206,6 +206,13 @@ cppcheck --enable=unusedFunction file.c
 # enable all messages
 cppcheck --enable=all</programlisting>
 
+      <para>Please note that <literal>--enable=unusedFunction</literal> should
+      only be used when the whole program is scanned. And therefore
+      <literal>--enable=all</literal> should also only be used when the whole
+      program is scanned. The reason is that the unusedFunction checking will
+      warn if a function is not called. There will be noise if function calls
+      are not seen.</para>
+
       <section>
         <title>Inconclusive checks</title>
 
