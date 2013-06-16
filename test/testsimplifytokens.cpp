@@ -7383,6 +7383,10 @@ private:
 
         const char code4[] = "enum { a, b }; void f() { int &a=x; }";
         ASSERT_EQUALS("void f ( ) { int & a = x ; }", checkSimplifyEnum(code4));
+
+        // #4857 - not shadow variable
+        checkSimplifyEnum("enum { a,b }; void f() { if (x) { } else if ( x & a ) {} }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enum38() { // #4463

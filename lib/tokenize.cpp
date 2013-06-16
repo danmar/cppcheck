@@ -7448,10 +7448,31 @@ void Tokenizer::simplifyEnum()
 
                             // are there shadow arguments?
                             if (Token::simpleMatch(tok2->previous(), ") {") || Token::simpleMatch(tok2->tokAt(-2), ") const {")) {
+                                // Determine if this is a executable scope..
+                                bool executableScope = false;
+                                {
+                                    const Token *prev = tok2->previous()->link();
+                                    while (prev) {
+                                        if (prev->str() == "}")
+                                            prev = prev->link();
+                                        else if (prev->str() == "{") {
+                                            while ((prev = prev->previous()) && (prev->isName()));
+                                            if (!prev || prev->str() == ")")
+                                                break;
+                                        }
+                                        prev = prev->previous();
+                                    }
+
+                                    if (prev)
+                                        executableScope = true;
+                                }
+
                                 std::set<std::string> shadowArg;
                                 for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
                                     if (Token::Match(arg->previous(), "%type%|*|& %type% [,)]") &&
                                         enumValues.find(arg->str()) != enumValues.end()) {
+                                        if (executableScope && Token::Match(arg->previous(), "[*&]"))
+                                            continue;
                                         shadowArg.insert(arg->str());
                                         if (inScope && _settings->isEnabled("style")) {
                                             const EnumValue enumValue = enumValues.find(arg->str())->second;
