@@ -7414,11 +7414,14 @@ void Tokenizer::simplifyEnum()
                 bool hasClass = false;
                 EnumValue *ev = NULL;
 
+                int executableScopeLevel = 0;
+
                 if (!tok1)
                     return;
                 for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "}") {
                         --level;
+                        --executableScopeLevel;
                         if (level < 0)
                             inScope = false;
 
@@ -7442,6 +7445,9 @@ void Tokenizer::simplifyEnum()
                             // Not a duplicate enum..
                             ++level;
 
+                            if (executableScopeLevel > 0)
+                                ++executableScopeLevel;
+
                             // Create a copy of the shadow ids for the inner scope
                             if (!shadowId.empty())
                                 shadowId.push(shadowId.top());
@@ -7449,11 +7455,10 @@ void Tokenizer::simplifyEnum()
                             // are there shadow arguments?
                             if (Token::simpleMatch(tok2->previous(), ") {") || Token::simpleMatch(tok2->tokAt(-2), ") const {")) {
                                 // Determine if this is a executable scope..
-                                bool executableScope = false;
-                                {
-                                    const Token *prev = tok2->previous()->link();
+                                if (executableScopeLevel <= 0) {
+                                    const Token *prev = tok2->previous();
                                     while (prev) {
-                                        if (prev->str() == "}")
+                                        if (prev->str() == "}" || prev->str() == ")")
                                             prev = prev->link();
                                         else if (prev->str() == "{") {
                                             while ((prev = prev->previous()) && (prev->isName()));
@@ -7464,8 +7469,10 @@ void Tokenizer::simplifyEnum()
                                     }
 
                                     if (prev)
-                                        executableScope = true;
+                                        executableScopeLevel = 1;
                                 }
+
+                                bool executableScope = (executableScopeLevel > 0);
 
                                 std::set<std::string> shadowArg;
                                 for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
