@@ -3585,20 +3585,8 @@ void Tokenizer::removeMacrosInGlobalScope()
 
         if (Token::Match(tok, "[;{}] %type%") && tok->next()->isUpperCaseName()) {
             const Token *tok2 = tok->tokAt(2);
-            if (tok2 && tok2->str() == "(") {
-                unsigned int par = 0;
-                for (; tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        ++par;
-                    else if (tok2->str() == ")") {
-                        if (par <= 1)
-                            break;
-                        --par;
-                    }
-                }
-                if (tok2 && tok2->str() == ")")
-                    tok2 = tok2->next();
-            }
+            if (tok2 && tok2->str() == "(")
+                tok2 = tok2->link()->next();
 
             // remove unknown macros before namespace|class|struct|union
             if (Token::Match(tok2, "namespace|class|struct|union")) {
