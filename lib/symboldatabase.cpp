@@ -1481,7 +1481,8 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
             // save pattern for base class name
             derivedFrom.push_back(base);
         }
-        tok2 = tok2->next();
+        if (tok2) // see #4806
+            tok2 = tok2->next();
     }
 
     return tok2;
