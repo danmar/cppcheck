@@ -2532,7 +2532,7 @@ private:
         ASSERT_EQUALS("; a = b ( ) ; if ( a ) { ; }", simplifyIfAssign(";if((a=b()));"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAssign(";if(!(a=b()));"));
         ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAssign(";if(!(a->x=b()));"));
-        ASSERT_EQUALS("A ( ) a = b ; if ( a ) { ; }", simplifyIfAssign("A() if(a=b);"));
+        ASSERT_EQUALS("void f ( ) { A ( ) a = b ; if ( a ) { ; } }", simplifyIfAssign("void f() { A() if(a=b); }"));
         ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( 0 <= a ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
         TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }",
                            "void foo ( A a ) { a . c = b ( ) ; if ( a . c >= 0 ) { ; } }",
