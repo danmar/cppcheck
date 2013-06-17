@@ -6238,15 +6238,35 @@ private:
     void checkCommaSeparatedReturn() {
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
-              "    return a++ , 0;\n"
+              "    return a++,\n"
+              "  do_something();\n"
               "}", NULL, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
-              "    return a=a+5,1; \n"
+              "    return a++, do_something();\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a+5,\n"
+              "  do_something();\n"
               "}", NULL, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a+5, do_something();\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a<int,\nint>::b;\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
