@@ -2827,6 +2827,20 @@ private:
               "    return g([](int x){x+1; return x;});\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // #4756
+        check("template <>\n"
+              "inline uint16_t htobe(uint16_t value) {\n"
+              "     return ( __extension__ ({\n"
+              "         register unsigned short int __v, __x = (unsigned short int) (value);\n"
+              "         if (__builtin_constant_p (__x))\n"
+              "             __v = ((unsigned short int) ((((__x) >> 8) & 0xff) | (((__x) & 0xff) << 8)));\n"
+              "         else\n"
+              "             __asm__ (\"rorw $8, %w0\" : \"=r\" (__v) : \"0\" (__x) : \"cc\");\n"
+              "         __v;\n"
+              "     }));\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
 
