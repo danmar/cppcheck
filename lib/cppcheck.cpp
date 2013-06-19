@@ -474,6 +474,9 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
+    if (Path::isQt(msg.file0))
+        return;
+
     std::string errmsg = msg.toString(_settings._verbose);
     if (errmsg.empty())
         return;
