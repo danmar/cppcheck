@@ -227,6 +227,7 @@ private:
         TEST_CASE(define_if3);
         TEST_CASE(define_if4); // #4079 - #define X +123
         TEST_CASE(define_if5); // #4516 - #define B (A & 0x00f0)
+        TEST_CASE(define_if6); // #4863 - #define B (A?-1:1)
         TEST_CASE(define_ifdef);
         TEST_CASE(define_ifndef1);
         TEST_CASE(define_ifndef2);
@@ -2771,6 +2772,27 @@ private:
         }
     }
 
+    void define_if6() { // #4516 - #define B (A?1:-1)
+        const char filedata[] = "#ifdef A\n"
+                                "#define B (A?1:-1)\n"
+                                "#endif\n"
+                                "\n"
+                                "#if B < 0\n"
+                                "123\n"
+                                "#endif\n"
+                                "\n"
+                                "#if B >= 0\n"
+                                "456\n"
+                                "#endif\n";
+        Preprocessor preprocessor(NULL, this);
+        const std::string actualA0 = preprocessor.getcode(filedata, "A=0", "test.c");
+        ASSERT_EQUALS(true,  actualA0.find("123") != std::string::npos);
+        ASSERT_EQUALS(false, actualA0.find("456") != std::string::npos);
+        const std::string actualA1 = preprocessor.getcode(filedata, "A=1", "test.c");
+        ASSERT_EQUALS(false, actualA1.find("123") != std::string::npos);
+        ASSERT_EQUALS(true,  actualA1.find("456") != std::string::npos);
+    }
+
     void define_ifdef() {
         {
             const char filedata[] = "#define ABC\n"
@@ -2830,7 +2852,7 @@ private:
 
         {
             const char filedata[] = "#define A 1\n"
-                                    "#ifdef A>0\n"
+                                    "#if A>0\n"
                                     "A\n"
                                     "#endif\n";
 
@@ -3123,7 +3145,7 @@ private:
     }
 
     void predefine1() {
-        const std::string src("#ifdef X || Y\n"
+        const std::string src("#if defined X || Y\n"
                               "Fred & Wilma\n"
                               "#endif\n");
 
@@ -3134,7 +3156,7 @@ private:
     }
 
     void predefine2() {
-        const std::string src("#ifdef X && Y\n"
+        const std::string src("#if defined(X) && Y\n"
                               "Fred & Wilma\n"
                               "#endif\n");
         {

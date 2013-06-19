@@ -1543,6 +1543,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         modified = false;
         modified |= tokenizer.simplifySizeof();
         modified |= tokenizer.simplifyCalculations();
+        modified |= tokenizer.simplifyConstTernaryOp();
         modified |= tokenizer.simplifyRedundantParentheses();
         for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next()) {
             if (Token::Match(tok, "! %num%")) {
@@ -1728,13 +1729,18 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             }
         }
 
+        else if (line.compare(0,4,"#if ") == 0) {
+            matching_ifdef.push_back(match_cfg_def(cfgmap, line.substr(4)));
+            matched_ifdef.push_back(matching_ifdef.back());
+        }
+
         else if (! def.empty()) {
-            matching_ifdef.push_back(match_cfg_def(cfgmap, def));
+            matching_ifdef.push_back(cfgmap.find(def) != cfgmap.end());
             matched_ifdef.push_back(matching_ifdef.back());
         }
 
         else if (! ndef.empty()) {
-            matching_ifdef.push_back(! match_cfg_def(cfgmap, ndef));
+            matching_ifdef.push_back(cfgmap.find(ndef) == cfgmap.end());
             matched_ifdef.push_back(matching_ifdef.back());
         }
 
