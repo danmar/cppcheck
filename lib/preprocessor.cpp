@@ -122,6 +122,42 @@ static std::string unify(const std::string &s, char separator)
     return join(parts, separator);
 }
 
+
+/**
+ * Get cfgmap - a map of macro names and values
+ */
+static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
+{
+    std::map<std::string, std::string> cfgmap;
+
+    if (!cfg.empty()) {
+        std::string::size_type pos = 0;
+        for (;;) {
+            std::string::size_type pos2 = cfg.find_first_of(";=", pos);
+            if (pos2 == std::string::npos) {
+                cfgmap[cfg.substr(pos)] = "";
+                break;
+            }
+            if (cfg[pos2] == ';') {
+                cfgmap[cfg.substr(pos, pos2-pos)] = "";
+            } else {
+                std::string::size_type pos3 = pos2;
+                pos2 = cfg.find(";", pos2);
+                if (pos2 == std::string::npos) {
+                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1);
+                    break;
+                } else {
+                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1, pos2 - pos3 - 1);
+                }
+            }
+            pos = pos2 + 1;
+        }
+    }
+
+    return cfgmap;
+}
+
+
 /** Just read the code into a string. Perform simple cleanup of the code */
 std::string Preprocessor::read(std::istream &istr, const std::string &filename)
 {
@@ -871,34 +907,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    std::map<std::string, std::string> defs;
-
-    if (_settings && !_settings->userDefines.empty()) {
-        // TODO: break out this code. There is other similar code.
-        std::string::size_type pos1 = 0;
-        while (pos1 != std::string::npos) {
-            const std::string::size_type pos2 = _settings->userDefines.find_first_of(";=", pos1);
-            const std::string::size_type pos3 = _settings->userDefines.find(";", pos1);
-
-            std::string name, value;
-            if (pos2 == std::string::npos)
-                name = _settings->userDefines.substr(pos1);
-            else
-                name = _settings->userDefines.substr(pos1, pos2 - pos1);
-            if (pos2 != pos3) {
-                if (pos3 == std::string::npos)
-                    value = _settings->userDefines.substr(pos2+1);
-                else
-                    value = _settings->userDefines.substr(pos2+1, pos3 - pos2 - 1);
-            }
-
-            defs[name] = value;
-
-            pos1 = pos3;
-            if (pos1 != std::string::npos)
-                pos1++;
-        }
-    }
+    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string("")));
 
     if (_settings && _settings->_maxConfigs == 1U) {
         processedFile = handleIncludes(processedFile, filename, includePaths, defs);
@@ -1596,42 +1605,6 @@ bool Preprocessor::match_cfg_def(std::map<std::string, std::string> cfg, std::st
 
     return false;
 }
-
-
-/**
- * Get cfgmap - a map of macro names and values
- */
-static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
-{
-    std::map<std::string, std::string> cfgmap;
-
-    if (!cfg.empty()) {
-        std::string::size_type pos = 0;
-        for (;;) {
-            std::string::size_type pos2 = cfg.find_first_of(";=", pos);
-            if (pos2 == std::string::npos) {
-                cfgmap[cfg.substr(pos)] = "";
-                break;
-            }
-            if (cfg[pos2] == ';') {
-                cfgmap[cfg.substr(pos, pos2-pos)] = "";
-            } else {
-                std::string::size_type pos3 = pos2;
-                pos2 = cfg.find(";", pos2);
-                if (pos2 == std::string::npos) {
-                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1);
-                    break;
-                } else {
-                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1, pos2 - pos3 - 1);
-                }
-            }
-            pos = pos2 + 1;
-        }
-    }
-
-    return cfgmap;
-}
-
 
 std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const bool validate)
 {
