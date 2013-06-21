@@ -1970,15 +1970,15 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
             if (indent == indentmatch + 1)
                 elseIsTrue = true;
 
-        } else if (!suppressCurrentCodePath && line.compare(0,4,"#if ") == 0) {
-            if (indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
+        } else if (line.compare(0,4,"#if ") == 0) {
+            if (!suppressCurrentCodePath && indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
                 elseIsTrue = false;
                 indentmatch++;
             }
             ++indent;
 
             if (indent == indentmatch + 1)
-                elseIsTrue = true;
+                elseIsTrue = true;  // this value doesn't matter when suppressCurrentCodePath is true
         } else if (line.compare(0,6,"#elif ") == 0 || line.compare(0,5,"#else") == 0) {
             if (!elseIsTrue) {
                 if (indentmatch == indent) {
@@ -1993,10 +1993,6 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                         elseIsTrue = false;
                     }
                 }
-            }
-            if (suppressCurrentCodePath) {
-                suppressCurrentCodePath = false;
-                indentmatch = indent;
             }
         } else if (line.compare(0, 6, "#endif") == 0) {
             if (indent > 0)

@@ -268,6 +268,7 @@ private:
         TEST_CASE(def_missingInclude);
         TEST_CASE(def_handleIncludes_ifelse1);   // problems in handleIncludes for #else
         TEST_CASE(def_handleIncludes_ifelse2);
+        TEST_CASE(def_handleIncludes_ifelse3);   // #4868 - crash
 
         TEST_CASE(def_valueWithParentheses); // #3531
 
@@ -3508,6 +3509,25 @@ private:
         defs["A"] = "1";
         ASSERT_EQUALS(std::string::npos,  // No "123" in the output
                       preprocessor.handleIncludes(code, "test.c", includePaths, defs).find("123"));
+    }
+
+    void def_handleIncludes_ifelse3() { // #4865
+        const char code[] = "#ifdef A\n"
+                            "#if defined(SOMETHING_NOT_DEFINED)\n"
+                            "#else\n"
+                            "#endif\n"
+                            "#else\n"
+                            "#endif";
+
+        Settings settings;
+        settings.userUndefs.insert("A");
+        Preprocessor preprocessor(&settings, this);
+
+        const std::list<std::string> includePaths;
+        std::map<std::string,std::string> defs;
+        defs["B"] = "1";
+        defs["C"] = "1";
+        preprocessor.handleIncludes(code, "test.c", includePaths, defs); // don't crash
     }
 
     void def_valueWithParentheses() {
