@@ -529,6 +529,10 @@ Settings MainWindow::GetCppcheckSettings()
                 result.userDefines += ";";
             result.userDefines += define.toStdString();
         }
+
+        // Only check the given -D configuration
+        if (!defines.isEmpty())
+            result._maxConfigs = 1;
     }
 
     // Include directories (and files) are searched in listed order.

@@ -3583,22 +3583,11 @@ void Tokenizer::removeMacrosInGlobalScope()
                 tok->deleteNext();
         }
 
-        if (Token::Match(tok, "[;{}] %type%") && tok->next()->isUpperCaseName()) {
-            const Token *tok2 = tok->tokAt(2);
-            if (tok2 && tok2->str() == "(") {
-                unsigned int par = 0;
-                for (; tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        ++par;
-                    else if (tok2->str() == ")") {
-                        if (par <= 1)
-                            break;
-                        --par;
-                    }
-                }
-                if (tok2 && tok2->str() == ")")
-                    tok2 = tok2->next();
-            }
+        if ((!tok->previous() || Token::Match(tok->previous(), "[;{}]")) &&
+            Token::Match(tok, "%type%") && tok->isUpperCaseName()) {
+            const Token *tok2 = tok->next();
+            if (tok2 && tok2->str() == "(")
+                tok2 = tok2->link()->next();
 
             // remove unknown macros before namespace|class|struct|union
             if (Token::Match(tok2, "namespace|class|struct|union")) {
@@ -3606,9 +3595,20 @@ void Tokenizer::removeMacrosInGlobalScope()
                 const Token *tok3 = tok2;
                 while (tok3 && !Token::Match(tok3,"[;{}()]"))
                     tok3 = tok3->next();
-                if (tok3 && tok3->str() == "{")
+                if (tok3 && tok3->str() == "{") {
                     Token::eraseTokens(tok, tok2);
+                    tok->deleteThis();
+                }
                 continue;
+            }
+
+            // replace unknown macros before foo(
+            if (Token::Match(tok2, "%type% (") && Token::Match(tok2->next()->link(), ") const| {")) {
+                std::string typeName;
+                for (const Token* tok3 = tok; tok3 != tok2; tok3 = tok3->next())
+                    typeName += tok3->str();
+                Token::eraseTokens(tok, tok2);
+                tok->str(typeName);
             }
 
             // remove unknown macros before foo::foo(
@@ -3616,8 +3616,10 @@ void Tokenizer::removeMacrosInGlobalScope()
                 const Token *tok3 = tok2;
                 while (Token::Match(tok3, "%type% :: %type% ::"))
                     tok3 = tok3->tokAt(2);
-                if (Token::Match(tok3, "%type% :: %type% (") && tok3->str() == tok3->strAt(2))
+                if (Token::Match(tok3, "%type% :: %type% (") && tok3->str() == tok3->strAt(2)) {
                     Token::eraseTokens(tok, tok2);
+                    tok->deleteThis();
+                }
                 continue;
             }
         }
@@ -7414,11 +7416,14 @@ void Tokenizer::simplifyEnum()
                 bool hasClass = false;
                 EnumValue *ev = NULL;
 
+                int executableScopeLevel = 0;
+
                 if (!tok1)
                     return;
                 for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "}") {
                         --level;
+                        --executableScopeLevel;
                         if (level < 0)
                             inScope = false;
 
@@ -7442,16 +7447,41 @@ void Tokenizer::simplifyEnum()
                             // Not a duplicate enum..
                             ++level;
 
+                            if (executableScopeLevel > 0)
+                                ++executableScopeLevel;
+
                             // Create a copy of the shadow ids for the inner scope
                             if (!shadowId.empty())
                                 shadowId.push(shadowId.top());
 
                             // are there shadow arguments?
                             if (Token::simpleMatch(tok2->previous(), ") {") || Token::simpleMatch(tok2->tokAt(-2), ") const {")) {
+                                // Determine if this is a executable scope..
+                                if (executableScopeLevel <= 0) {
+                                    const Token *prev = tok2->previous();
+                                    while (prev) {
+                                        if (prev->str() == "}" || prev->str() == ")")
+                                            prev = prev->link();
+                                        else if (prev->str() == "{") {
+                                            while ((prev = prev->previous()) && (prev->isName()));
+                                            if (!prev || prev->str() == ")")
+                                                break;
+                                        }
+                                        prev = prev->previous();
+                                    }
+
+                                    if (prev)
+                                        executableScopeLevel = 1;
+                                }
+
+                                bool executableScope = (executableScopeLevel > 0);
+
                                 std::set<std::string> shadowArg;
                                 for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
                                     if (Token::Match(arg->previous(), "%type%|*|& %type% [,)]") &&
                                         enumValues.find(arg->str()) != enumValues.end()) {
+                                        if (executableScope && Token::Match(arg->previous(), "[*&]"))
+                                            continue;
                                         shadowArg.insert(arg->str());
                                         if (inScope && _settings->isEnabled("style")) {
                                             const EnumValue enumValue = enumValues.find(arg->str())->second;
@@ -8557,6 +8587,8 @@ void Tokenizer::simplifyStructDecl()
                 continue;
             skip.push(false);
             tok = next->link();
+            if (!tok)
+                break; // see #4869 segmentation fault in Tokenizer::simplifyStructDecl (invalid code)
             restart = next;
 
             // check for named type
@@ -8568,6 +8600,8 @@ void Tokenizer::simplifyStructDecl()
                     tok = tok->next();
                     start->deleteThis();
                 }
+                if (!tok)
+                    break; // see #4869 segmentation fault in Tokenizer::simplifyStructDecl (invalid code)
                 tok->insertToken(type->str());
                 if (start->str() != "class")
                     tok->insertToken(start->str());

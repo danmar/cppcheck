@@ -209,12 +209,12 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="131"/>
         <source>C++ standard</source>
-        <translation type="unfinished"></translation>
+        <translation>Стандарт C++</translation>
     </message>
     <message>
         <location filename="main.ui" line="138"/>
         <source>C standard</source>
-        <translation type="unfinished"></translation>
+        <translation>Стандарт C</translation>
     </message>
     <message>
         <location filename="main.ui" line="157"/>
@@ -375,12 +375,12 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="555"/>
         <source>Portability</source>
-        <translation>Производительность</translation>
+        <translation>Переносимость</translation>
     </message>
     <message>
         <location filename="main.ui" line="558"/>
         <source>Show portability warnings</source>
-        <translation>Показать предупреждения производительности</translation>
+        <translation>Показать предупреждения переносимости</translation>
     </message>
     <message>
         <location filename="main.ui" line="566"/>
@@ -440,17 +440,17 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="666"/>
         <source>C11</source>
-        <translation type="unfinished">C11</translation>
+        <translation>C11</translation>
     </message>
     <message>
         <location filename="main.ui" line="674"/>
         <source>C89</source>
-        <translation type="unfinished">C89</translation>
+        <translation>C89</translation>
     </message>
     <message>
         <location filename="main.ui" line="682"/>
         <source>C++03</source>
-        <translation type="unfinished">C++03</translation>
+        <translation>C++03</translation>
     </message>
     <message>
         <location filename="main.ui" line="370"/>
@@ -607,7 +607,8 @@ Do you want to load this project file instead?</source>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
-        <translation type="unfinished"></translation>
+        <translation>Найдены файлы проекта из каталога.
+Вы хотите продолжить проверку, не используя ни одного из этих файлов проекта?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="819"/>
@@ -739,7 +740,7 @@ The user interface language has been reset to English. Open the Preferences-dial
     <message>
         <location filename="mainwindow.cpp" line="1066"/>
         <source>No project file loaded</source>
-        <translation>Файл с проектом на загружен</translation>
+        <translation>Файл с проектом не загружен</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1141"/>
@@ -836,12 +837,22 @@ Options:
     -l &lt;file&gt;      Open given results xml file
     -d &lt;directory&gt; Specify the directory that was checked to generate the results xml specified with -l
     -v, --version  Show program version</source>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheck Графический Интерфейс Пользователя .
+
+Синтаксис:
+     cppcheck-gui [ОПЦИИ] [файлы или пути]
+	 
+Опции:
+	 -h, --help     Показать эту справку
+	 -p &lt;file&gt;     Откройте данный файл проекта и начните проверять его
+	 -l &lt;file&gt;     Откройте данные результаты xml файл
+	 -d &lt;directory&gt;   Укажите каталог, который был проверен, чтобы генерировать результаты xml определенный с -l
+	 -v, --version Показать версию программы</translation>
     </message>
     <message>
         <location filename="main.cpp" line="99"/>
         <source>Cppcheck GUI - Command line parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheck GUI - параметры Командной строки</translation>
     </message>
 </context>
 <context>
@@ -999,22 +1010,22 @@ Options:
     <message>
         <location filename="translationhandler.cpp" line="29"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="30"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="31"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="32"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить</translation>
     </message>
 </context>
 <context>
@@ -1062,18 +1073,18 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="102"/>
         <source>Undefined file</source>
-        <translation></translation>
+        <translation>Неопределенный файл</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="206"/>
         <location filename="resultstree.cpp" line="727"/>
         <source>[Inconclusive]</source>
-        <translation></translation>
+        <translation>[Неубедительный]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="264"/>
         <source>debug</source>
-        <translation></translation>
+        <translation>отлаживать</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="533"/>
@@ -1117,14 +1128,16 @@ Options:
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
         <oldsource>Configure the text file viewer program in Cppcheck preferences/Applications.</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>Никакое приложение редактора не сконфигурировано.
+Сконфигурируйте приложение редактора для Cppcheck в предпочтениях/Приложениях.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="602"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
-        <translation type="unfinished"></translation>
+        <translation>Никакое приложение редактора по умолчанию не выбрано.
+Выберите приложение редактора по умолчанию в предпочтениях/Приложениях.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="631"/>
@@ -1136,14 +1149,17 @@ Please select the default editor application in preferences/Applications.</sourc
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось запустить %1
+Пожалуйста, проверьте путь приложения, и верны ли параметры.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="691"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удается найти файл:
+%1		
+Пожалуйста, выберите каталог, в котором находится файл.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="698"/>
@@ -1153,37 +1169,37 @@ Please select the directory where file is located.</source>
     <message>
         <location filename="resultstree.cpp" line="1045"/>
         <source>Id</source>
-        <translation type="unfinished">Id</translation>
+        <translation>Id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="246"/>
         <source>style</source>
-        <translation type="unfinished"></translation>
+        <translation>стиль</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="249"/>
         <source>error</source>
-        <translation type="unfinished"></translation>
+        <translation>ошибка</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="252"/>
         <source>warning</source>
-        <translation type="unfinished"></translation>
+        <translation>предупреждение</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="255"/>
         <source>performance</source>
-        <translation type="unfinished"></translation>
+        <translation>производительность</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="258"/>
         <source>portability</source>
-        <translation type="unfinished"></translation>
+        <translation>переносимость</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="261"/>
         <source>information</source>
-        <translation type="unfinished"></translation>
+        <translation>информация</translation>
     </message>
 </context>
 <context>
@@ -1208,7 +1224,8 @@ Please select the directory where file is located.</source>
         <location filename="resultsview.cpp" line="222"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
-        <translation type="unfinished"></translation>
+        <translation>Были обнаружены ошибки, но они настроены быть скрыты.
+Для переключения какие ошибки отображаются, откройте меню представления.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="268"/>
@@ -1645,16 +1662,16 @@ To toggle what kind of errors are shown, open view menu.</source>
 %1
 
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
-        <translation type="unfinished">Failed to change the user interface language:
+        <translation>Не удалось изменить язык пользовательского интерфейса:
 
 %1
 
-The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</translation>
+Язык пользовательского интерфейса был сброшен на английский. Откройте Настройки-диалог для выбора любой из доступных языков.</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="121"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
 </context>
 <context>

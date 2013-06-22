@@ -21,6 +21,7 @@
 #include "checkother.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "templatesimplifier.h"
 
 #include <cmath> // fabs()
 #include <stack>
@@ -1890,11 +1891,25 @@ void CheckOther::checkCommaSeparatedReturn()
                 if (tok->str() == "(")
                     tok=tok->link();
 
-                if (!tok->isExpandedMacro() && tok->str() == ",")
+                // Skip template parameters
+                if (tok->str() == "<" && TemplateSimplifier::templateParameters(tok) > 0U) {
+                    unsigned int level = 1U;
+                    while (level > 0U && NULL != (tok = tok->next())) {
+                        if (tok->str() == "<")
+                            level++;
+                        else if (tok->str() == ">")
+                            level--;
+                        else if (tok->str() == ">>")
+                            level = level - ((level > 1U) ? 2 : 1);
+                        else if (tok->str() == ";")
+                            break;
+                    }
+                }
+
+                if (!tok->isExpandedMacro() && tok->str() == "," && tok->linenr() != tok->next()->linenr())
                     commaSeparatedReturnError(tok);
 
                 tok=tok->next();
-
             }
         }
     }
@@ -1914,7 +1929,7 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
                 "        return a + 1,\n"
                 "    b++;\n"
                 "However it can be useful to use comma in macros. Cppcheck does not warn when such a "
-                "macro is then used in a return statement, It is less likely such code is misunderstood.");
+                "macro is then used in a return statement, it is less likely such code is misunderstood.");
 }
 
 //---------------------------------------------------------------------------
