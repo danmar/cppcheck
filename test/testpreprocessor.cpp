@@ -2508,6 +2508,32 @@ private:
 
             ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
+
+	{
+	    // Ticket #4873
+            const char filedata[] = "// Life's good!\n";
+
+            // expand macros..
+            errout.str("");
+            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+
+            ASSERT_EQUALS("", actual);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+	{
+	    // Ticket #4873
+            const char filedata[] = "/* I wonder\n"
+				    "if life's\n"
+				    "good */\n";
+
+            // expand macros..
+            errout.str("");
+            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+
+            ASSERT_EQUALS("", actual);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void unicodeInCode() {
