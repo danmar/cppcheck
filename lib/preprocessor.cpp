@@ -491,11 +491,14 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             while (i < str.size() && std::isspace(str[i]))
                 code << str[i++];
             if (str[i] == '{') {
+                // Ticket 4873: Extract comments from the __asm / __asm__'s content
+                std::string asmBody;
                 while (i < str.size() && str[i] != '}') {
                     if (str[i] == ';')
                         i = str.find("\n", i);
-                    code << str[i++];
+                    asmBody += str[i++];
                 }
+                code << removeComments(asmBody, filename);
                 code << '}';
             } else
                 --i;

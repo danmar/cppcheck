@@ -402,6 +402,9 @@ private:
         ASSERT_EQUALS(" __asm123", preprocessor.removeComments(" __asm123", "3837.cpp"));
         ASSERT_EQUALS("\" __asm { ; } \"", preprocessor.removeComments("\" __asm { ; } \"", "3837.cpp"));
         ASSERT_EQUALS("__asm__ volatile { \"\" }", preprocessor.removeComments("__asm__ volatile { \"\" }", "3837.cpp"));
+
+        // #4873
+        ASSERT_EQUALS("__asm { }", preprocessor.removeComments("__asm { /* This is a comment */ }", "4873.cpp"));
     }
 
 
@@ -2507,32 +2510,6 @@ private:
             const std::string actual(OurPreprocessor::expandMacros(filedata, this));
 
             ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
-        }
-
-        {
-            // Ticket #4873
-            const char filedata[] = "// Life's good!\n";
-
-            // expand macros..
-            errout.str("");
-            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
-
-            ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("", errout.str());
-        }
-
-        {
-            // Ticket #4873
-            const char filedata[] = "/* I wonder\n"
-                                    "if life's\n"
-                                    "good */\n";
-
-            // expand macros..
-            errout.str("");
-            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
-
-            ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("", errout.str());
         }
     }
 
