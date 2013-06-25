@@ -91,6 +91,7 @@ private:
         TEST_CASE(casting);
 
         TEST_CASE(strlen1);
+        TEST_CASE(strlen2);
 
         TEST_CASE(template1);
         TEST_CASE(template2);
@@ -1651,7 +1652,11 @@ private:
 
     }
 
-
+    void strlen2() {
+        // #4530 - make sure calculation with strlen is simplified
+        ASSERT_EQUALS("i = -4 ;",
+                      tok("i = (strlen(\"abcd\") - 8);"));
+    }
 
 
 

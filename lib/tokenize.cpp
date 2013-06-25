@@ -3503,6 +3503,16 @@ bool Tokenizer::simplifyTokenList()
         modified |= simplifyConditions();
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
+
+        // replace strlen(str)
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "strlen ( %str% )")) {
+                tok->str(MathLib::longToString(Token::getStrLength(tok->tokAt(2))));
+                tok->deleteNext(3);
+                modified = true;
+            }
+        }
+
         modified |= removeRedundantConditions();
         modified |= simplifyRedundantParentheses();
         modified |= simplifyConstTernaryOp();
@@ -3510,16 +3520,6 @@ bool Tokenizer::simplifyTokenList()
     }
 
     simplifyConditionOperator();
-
-    // replace strlen(str)
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "strlen ( %str% )")) {
-            std::ostringstream ostr;
-            ostr << Token::getStrLength(tok->tokAt(2));
-            tok->str(ostr.str());
-            tok->deleteNext(3);
-        }
-    }
 
     // simplify redundant for
     removeRedundantFor();
