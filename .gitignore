@@ -39,6 +39,7 @@ test/temp/
 *.mode[0-9]v[0-9]
 *.pbxuser
 build/
+Cppcheck.xcodeproj/project.pbxproj
 
 # GUI build folders
 gui/debug/
