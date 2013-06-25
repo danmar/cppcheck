@@ -121,6 +121,7 @@ private:
         TEST_CASE(array_index_43); // struct with array
         TEST_CASE(array_index_44); // #3979
         TEST_CASE(array_index_45); // #4207 - calling function with variable number of parameters (...)
+        TEST_CASE(array_index_46); // #4840 - two-statement for loop
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1502,6 +1503,36 @@ private:
               "void test() {\n"
               "    char buffer[1024];\n"
               "    f(buffer);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // Two statement for-loop
+    void array_index_46() {
+        // #4840
+        check("void bufferAccessOutOfBounds2() {\n"
+              "    char *buffer[]={\"a\",\"b\",\"c\"};\n"
+              "    for(int i=3; i--;) {\n"
+              "        printf(\"files(%i): %s\n\", 3-i, buffer[3-i]);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'buffer[3]' accessed at index 3, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "    int buffer[9];\n"
+              "    long int i;\n"
+              "    for(i=10; i--;) {\n"
+              "        buffer[i] = i;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: buffer\n", errout.str());
+
+        // Correct access limits -> i from 9 to 0
+        check("void f() {\n"
+              "    int buffer[10];\n"
+              "    for(unsigned long int i=10; i--;) {\n"
+              "        buffer[i] = i;\n"
+              "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

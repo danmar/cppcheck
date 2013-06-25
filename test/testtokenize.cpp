@@ -333,6 +333,7 @@ private:
         TEST_CASE(simplify_constants2);
         TEST_CASE(simplify_constants3);
         TEST_CASE(simplify_constants4);
+        TEST_CASE(simplify_constants5);
         TEST_CASE(simplify_null);
         TEST_CASE(simplifyMulAndParens);    // Ticket #2784 + #3184
 
@@ -5293,6 +5294,15 @@ private:
                             "x = bSize;\n"
                             "y = aSize;\n";
         ASSERT_EQUALS("x = 4 ;\ny = 50 ;", tokenizeAndStringify(code,true));
+    }
+
+    void simplify_constants5() {
+        const char code[] = "int buffer[10];\n"
+                            "static const int NELEMS = sizeof(buffer)/sizeof(int);\n"
+                            "static const int NELEMS2(sizeof(buffer)/sizeof(int));\n"
+                            "x = NELEMS;\n"
+                            "y = NELEMS2;\n";
+        ASSERT_EQUALS("int buffer [ 10 ] ;\n\n\nx = 10 ;\ny = 10 ;", tokenizeAndStringify(code,true));
     }
 
     void simplify_null() {

@@ -3382,15 +3382,22 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyUndefinedSizeArray();
 
+    simplifyCasts();
+
+    // Simplify simple calculations before replace constants, this allows the replacement of constants that are calculated
+    // e.g. const static int value = sizeof(X)/sizeof(Y);
+    simplifyCalculations();
+
     // Replace constants..
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "const static| %type% %var% = %num% ;")) {
+        if (Token::Match(tok, "const static| %type% %var% = %num% ;") ||
+            Token::Match(tok, "const static| %type% %var% ( %num% ) ;")) {
             unsigned int offset = 0;
             if (tok->strAt(1) == "static")
                 offset = 1;
             const unsigned int varId(tok->tokAt(2 + offset)->varId());
             if (varId == 0) {
-                tok = tok->tokAt(5);
+                tok = tok->tokAt(5 + offset);
                 continue;
             }
 
@@ -3412,8 +3419,6 @@ bool Tokenizer::simplifyTokenList()
             }
         }
     }
-
-    simplifyCasts();
 
     // Simplify simple calculations..
     simplifyCalculations();
@@ -5937,9 +5942,10 @@ bool Tokenizer::simplifyKnownVariables()
                 tok = tok->previous();
                 goback = false;
             }
-            if (tok->isName() && Token::Match(tok, "static| const| static| %type% const| %var% = %any% ;")) {
+            if (tok->isName() && (Token::Match(tok, "static| const| static| %type% const| %var% = %any% ;") ||
+                                  Token::Match(tok, "static| const| static| %type% const| %var% ( %any% ) ;"))) {
                 bool isconst = false;
-                for (const Token *tok2 = tok; tok2->str() != "="; tok2 = tok2->next()) {
+                for (const Token *tok2 = tok; (tok2->str() != "=") && (tok2->str() != "("); tok2 = tok2->next()) {
                     if (tok2->str() == "const") {
                         isconst = true;
                         break;
@@ -5962,7 +5968,7 @@ bool Tokenizer::simplifyKnownVariables()
 
                 const Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
                 const Token * const valuetok = vartok->tokAt(2);
-                if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% ;")) {
+                if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% )| ;")) {
                     //check if there's not a reference usage inside the code
                     bool withreference = false;
                     for (const Token *tok2 = valuetok->tokAt(2); tok2; tok2 = tok2->next()) {

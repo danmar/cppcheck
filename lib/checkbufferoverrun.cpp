@@ -319,6 +319,11 @@ static bool for_condition(const Token *tok2, unsigned int varid, std::string &mi
         maxMinFlipped = true;
         max_value = min_value;
         min_value = tok2->str();
+    }  else if (Token::Match(tok2, "%varid% -- ; )", varid) ||
+                Token::Match(tok2, "-- %varid% ; )", varid)) {
+        maxMinFlipped = true;
+        max_value = min_value;
+        min_value = (tok2->str() == "--") ? "1" : "0";
     } else {
         // parse condition
         while (tok2 && tok2->str() != ";") {
@@ -819,7 +824,8 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     }
     if (!tok2 || tok2->str() != ";")
         return;
-    if (!for3(tok2->next(), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
+    const bool hasFor3 = tok2->next()->str() != ")";
+    if (hasFor3 && !for3(tok2->next(), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
         return;
 
     if (Token::Match(tok2->next(), "%var% =") && MathLib::toLongNumber(max_counter_value) < size)
