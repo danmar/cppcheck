@@ -1318,13 +1318,15 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             tok = tok->next()->link();
 
         // for/while..
-        if (Token::Match(tok, "for|while (")) {
+        if (Token::Match(tok, "for|while (") || Token::simpleMatch(tok, "do {")) {
+            const bool forwhile = Token::Match(tok, "for|while (");
+
             // is variable initialized in for-head (don't report errors yet)?
-            if (checkIfForWhileHead(tok->next(), var, true, false, membervar))
+            if (forwhile && checkIfForWhileHead(tok->next(), var, true, false, membervar))
                 return true;
 
             // goto the {
-            const Token *tok2 = tok->next()->link()->next();
+            const Token *tok2 = forwhile ? tok->next()->link()->next() : tok->next();
 
             if (tok2 && tok2->str() == "{") {
                 bool init = checkLoopBody(tok2, var, membervar, (number_of_if > 0) | suppressErrors);
@@ -1335,11 +1337,16 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
                 // is variable used in for-head?
                 if (!suppressErrors) {
-                    checkIfForWhileHead(tok->next(), var, false, bool(number_of_if == 0), membervar);
+                    const Token *startCond = forwhile ? tok->next() : tok->next()->link()->tokAt(2);
+                    checkIfForWhileHead(startCond, var, false, bool(number_of_if == 0), membervar);
                 }
 
                 // goto "}"
                 tok = tok2->link();
+
+                // do-while => goto ")"
+                if (!forwhile)
+                    tok = tok->linkAt(2);
             }
         }
 
@@ -1453,8 +1460,22 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
     for (const Token * const end = tok->link(); tok != end; tok = tok->next()) {
         if (tok->varId() == var.varId()) {
             if (!membervar.empty()) {
-                if (isMemberVariableAssignment(tok, membervar))
-                    return true;
+                if (isMemberVariableAssignment(tok, membervar)) {
+                    bool assign = true;
+                    bool rhs = false;
+                    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                        if (tok2->str() == "=")
+                            rhs = true;
+                        if (tok2->str() == ";")
+                            break;
+                        if (rhs && tok2->varId() == var.varId() && isMemberVariableUsage(tok2, var.isPointer(), membervar)) {
+                            assign = false;
+                            break;
+                        }
+                    }
+                    if (assign)
+                        return true;
+                }
 
                 if (isMemberVariableUsage(tok, var.isPointer(), membervar))
                     usetok = tok;
@@ -1463,8 +1484,17 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
             } else {
                 if (isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                     usetok = tok;
-                else
-                    return true;
+                else if (Token::Match(tok->previous(), "[;{}] %var% =")) {
+                    bool assign = true;
+                    for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
+                        if (tok2->varId() == var.varId()) {
+                            assign = false;
+                            break;
+                        }
+                    }
+                    if (assign)
+                        return true;
+                }
             }
         }
 

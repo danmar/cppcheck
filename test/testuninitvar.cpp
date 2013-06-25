@@ -2795,6 +2795,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("struct AB { int a; };\n"
+                        "void f() {\n"
+                        "    struct AB ab;\n"
+                        "    while (x) { ab.a = ab.a + 1; }\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
         // address of member
         checkUninitVar2("struct AB { int a[10]; int b; };\n"
                         "void f() {\n"
@@ -2812,7 +2819,15 @@ private:
                         "        x = x + 1;\n"
                         "    }\n"
                         "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    do {\n"
+                        "        x = x + 1;\n"
+                        "    } while (a);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
