@@ -998,7 +998,7 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
                 if (!child) {
                     continue;
                 }
-                //Get childs's user data
+                //Get child's user data
                 QVariant child_userdata = child->data();
                 //Convert it to QVariantMap
                 QVariantMap child_data = child_userdata.toMap();

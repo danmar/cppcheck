@@ -2736,7 +2736,7 @@ void Preprocessor::validateCfgError(const std::string &cfg, const std::string &m
     loc.line = 1;
     loc.setfile(file0);
     locationList.push_back(loc);
-    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explictly.", id, false);
+    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     _errorLogger->reportInfo(errmsg);
 }
 

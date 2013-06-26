@@ -5371,7 +5371,7 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", "", errout.str());
 
         check(
-            "void MyFuction()\n"
+            "void MyFunction()\n"
             "{\n"
             "    char* data; data = new char[100];\n"
             "    try\n"
@@ -5393,7 +5393,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check(
-            "void MyFuction()\n"
+            "void MyFunction()\n"
             "{\n"
             "    char* data; data = new char[100];\n"
             "    try\n"

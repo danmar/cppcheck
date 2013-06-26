@@ -1924,7 +1924,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                 break;
         }
 
-        // count deafult arguments
+        // count default arguments
         for (const Token* tok = argDef->next(); tok && tok != argDef->link(); tok = tok->next()) {
             if (tok->str() == "=")
                 initArgCount++;
