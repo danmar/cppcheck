@@ -173,6 +173,7 @@ private:
         TEST_CASE(simplifyKnownVariables49);    // #3691 - continue in switch
         TEST_CASE(simplifyKnownVariables50);    // #4066 sprintf changes
         TEST_CASE(simplifyKnownVariables51);    // #4409 hang
+        TEST_CASE(simplifyKnownVariables52);    // #4728 bitand
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
@@ -2689,6 +2690,12 @@ private:
                             "  use_pointer(q);\n"
                             "}";
         tokenizeAndStringify(code, true); // don't hang
+    }
+
+    void simplifyKnownVariables52() { // #4728 bitand
+        const char code[] = "void f() { int x=34; int y=x&z; }";
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 & z ; }",
+                      tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesIfEq1() {

@@ -54,7 +54,6 @@ private:
         TEST_CASE(nullpointer19); // #3811
         TEST_CASE(nullpointer20); // #3807 (fp: return p ? (p->x() || p->y()) : z)
         TEST_CASE(nullpointer21); // #4038 (fp: if (x) p=q; else return;)
-        TEST_CASE(nullpointer22); // #4007 (fp: (uri != NULL) && (*uri == 0))
         TEST_CASE(nullpointer23); // #4665 (false positive)
         TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
@@ -891,12 +890,6 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
-              "    Foo *p = 0;\n"
-              "    bool b = (p && (p->type() == 1));\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
         check("void foo()\n"
               "{\n"
               "    int sz = sizeof((*(struct dummy *)0).x);\n"
@@ -1233,14 +1226,6 @@ private:
               "    if (x) p = q;\n"
               "    else return;\n"
               "    *p = 0;\n" // <- p is not NULL
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void nullpointer22() {  // #4007 - fp: (x != NULL) && (*x == 0)
-        check("void f() {\n"
-              "    int *p; p = 0;\n"
-              "    int result = p && (!*p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
