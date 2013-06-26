@@ -173,7 +173,7 @@ private:
         TEST_CASE(simplifyKnownVariables49);    // #3691 - continue in switch
         TEST_CASE(simplifyKnownVariables50);    // #4066 sprintf changes
         TEST_CASE(simplifyKnownVariables51);    // #4409 hang
-        TEST_CASE(simplifyKnownVariables52);    // #4728 bitand
+        TEST_CASE(simplifyKnownVariables52);    // #4728 "= x %cop%"
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
@@ -2692,10 +2692,29 @@ private:
         tokenizeAndStringify(code, true); // don't hang
     }
 
-    void simplifyKnownVariables52() { // #4728 bitand
-        const char code[] = "void f() { int x=34; int y=x&z; }";
-        ASSERT_EQUALS("void f ( ) { int y ; y = 34 & z ; }",
-                      tokenizeAndStringify(code, true));
+    void simplifyKnownVariables52() { // #4728 "= x %op%"
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 + z ; }", tokenizeAndStringify("void f() { int x=34; int y=x+z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 - z ; }", tokenizeAndStringify("void f() { int x=34; int y=x-z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 * z ; }", tokenizeAndStringify("void f() { int x=34; int y=x*z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 / z ; }", tokenizeAndStringify("void f() { int x=34; int y=x/z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 % z ; }", tokenizeAndStringify("void f() { int x=34; int y=x%z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 & z ; }", tokenizeAndStringify("void f() { int x=34; int y=x&z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 | z ; }", tokenizeAndStringify("void f() { int x=34; int y=x|z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 ^ z ; }", tokenizeAndStringify("void f() { int x=34; int y=x^z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 << z ; }", tokenizeAndStringify("void f() { int x=34; int y=x<<z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 >> z ; }", tokenizeAndStringify("void f() { int x=34; int y=x>>z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 && z ; }", tokenizeAndStringify("void f() { int x=34; int y=x&&z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 || z ; }", tokenizeAndStringify("void f() { int x=34; int y=x||z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 > z ; }", tokenizeAndStringify("void f() { int x=34; int y=x>z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 >= z ; }", tokenizeAndStringify("void f() { int x=34; int y=x>=z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 < z ; }", tokenizeAndStringify("void f() { int x=34; int y=x<z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 <= z ; }", tokenizeAndStringify("void f() { int x=34; int y=x<=z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 == z ; }", tokenizeAndStringify("void f() { int x=34; int y=x==z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 != z ; }", tokenizeAndStringify("void f() { int x=34; int y=x!=z; }", true));
+
+        // #4007
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { char *p = 0; int result = p && (!*p); }", true));
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { Foo *p = 0; bool b = (p && (p->type() == 1)); }", true));
     }
 
     void simplifyKnownVariablesIfEq1() {
