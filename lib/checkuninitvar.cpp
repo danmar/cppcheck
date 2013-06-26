@@ -1484,7 +1484,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
             } else {
                 if (isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                     usetok = tok;
-                else if (Token::Match(tok->previous(), "[;{}] %var% =")) {
+                else if (tok->strAt(1) == "=") {
                     bool assign = true;
                     for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                         if (tok2->varId() == var.varId()) {

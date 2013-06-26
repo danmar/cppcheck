@@ -2919,6 +2919,15 @@ private:
                         "        x += sizeof(*abc);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(void) {\n" // #4879
+                        "    int i;\n"
+                        "    while (x) {\n"
+                        "        for (i = 0; i < 5; i++)\n"
+                        "            a[i] = b[i];\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_4494() {
