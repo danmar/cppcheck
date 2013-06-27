@@ -2845,6 +2845,15 @@ private:
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
                         "    while (a) {\n"
+                        "        init(&x);\n"
+                        "        x++;\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    while (a) {\n"
                         "        if (b) x++;\n"
                         "        else x = 0;\n"
                         "    }\n"
