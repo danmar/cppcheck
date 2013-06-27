@@ -14,17 +14,8 @@
   "noempty": true,
   "plusplus": false,
   "regexp": true,
+  "shelljs": true,
   "strict": false,
   "trailing": true,
-  "unused": true,
-  "globals": {
-    "cd": true,
-    "cp": true,
-    "target": true,
-    "echo": true,
-    "cat": true,
-    "exec": true,
-    "require": true,
-    "__dirname": true
-  }
+  "unused": true
 }
