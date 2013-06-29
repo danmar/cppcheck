@@ -72,6 +72,7 @@ private:
         TEST_CASE(garbageCode1);
         TEST_CASE(garbageCode2); // #4300
         TEST_CASE(garbageCode3); // #4869
+        TEST_CASE(garbageCode4); // #4887
 
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
@@ -910,6 +911,10 @@ private:
 
     void garbageCode3() { //#4849 (segmentation fault in Tokenizer::simplifyStructDecl (invalid code))
         tokenizeAndStringify("enum {  D = 2 s ; struct y  { x } ; } { s.a = C ; s.b = D ; }");
+    }
+
+    void garbageCode4() { // #4887
+        tokenizeAndStringify("void f ( ) { = a ; if ( 1 ) if = ( 0 ) ; }");
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly

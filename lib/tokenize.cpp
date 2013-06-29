@@ -4119,6 +4119,8 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         tokBracesEnd=tokAfterCondition->link();
     } else {
         Token * tokEnd = simplifyAddBracesToCommand(tokAfterCondition);
+        if (!tokEnd) // Ticket #4887
+            return tok;
         if (tokEnd->str()!="}") {
             // Token does not end with brace
             // Look for ; to add own closing brace after it
