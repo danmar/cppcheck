@@ -2035,6 +2035,12 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int i;\n"
+                        "    i=f(), i!=2;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // using uninit var in condition
         checkUninitVar2("void f(void) {\n"
                         "    int x;\n"

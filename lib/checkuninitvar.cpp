@@ -1396,14 +1396,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         if (tok->varId() == var.varId()) {
             if (!membervar.empty()) {
                 if (isMemberVariableAssignment(tok, membervar)) {
-                    bool rhs = false;
-                    for (const Token *tok2 = tok; tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
-                        if (tok2->str() == "=")
-                            rhs = true;
-                        else if (rhs && tok2->varId() == var.varId() && isMemberVariableUsage(tok2, var.isPointer(), membervar))
-                            uninitStructMemberError(tok2, tok2->str() + "." + membervar);
-                    }
-
+                    checkRhs(tok, var, membervar);
                     return true;
                 }
 
@@ -1419,14 +1412,8 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     uninitvarError(tok, tok->str());
 
                 else {
-                    if (tok->strAt(1) == "=") {
-                        for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
-                            if (tok2->varId() == tok->varId() && isVariableUsage(tok2, var.isPointer(), _tokenizer->isCPP())) {
-                                uninitvarError(tok, tok->str());
-                                break;
-                            }
-                        }
-                    }
+                    if (tok->strAt(1) == "=")
+                        checkRhs(tok, var, "");
 
                     // assume that variable is assigned
                     return true;
@@ -1535,6 +1522,31 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
     }
 
     return false;
+}
+
+void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, const std::string &membervar)
+{
+    bool rhs = false;
+    unsigned int indent = 0;
+    while (tok = tok->next()) {
+        if (tok->str() == "=")
+            rhs = true;
+        if (rhs && tok->varId() == var.varId()) {
+            if (membervar.empty() && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
+                uninitvarError(tok, tok->str());
+            else if (!membervar.empty() && isMemberVariableUsage(tok, var.isPointer(), membervar))
+                uninitStructMemberError(tok, tok->str() + "." + membervar);
+
+        } else if (tok->str() == ";" || (indent==0 && tok->str() == ","))
+            break;
+        else if (tok->str() == "(")
+            ++indent;
+        else if (tok->str() == ")") {
+            if (indent == 0)
+                break;
+            --indent;
+        }
+    }
 }
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp)
