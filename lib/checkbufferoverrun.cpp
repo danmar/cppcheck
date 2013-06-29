@@ -304,7 +304,7 @@ static bool for_condition(const Token *tok2, unsigned int varid, std::string &mi
         Token::Match(tok2, "%varid% != %num% ; %varid% ++", varid)) {
         maxMinFlipped = false;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->strAt(2));
-        max_value = MathLib::longToString(value - 1);
+        max_value = MathLib::toString(value - 1);
     } else if (Token::Match(tok2, "%varid% <= %num% ;|&&|%oror%", varid)) {
         maxMinFlipped = false;
         max_value = tok2->strAt(2);
@@ -314,7 +314,7 @@ static bool for_condition(const Token *tok2, unsigned int varid, std::string &mi
         maxMinFlipped = true;
         const MathLib::bigint value = MathLib::toLongNumber(tok2->str());
         max_value = min_value;
-        min_value = MathLib::longToString(value + 1);
+        min_value = MathLib::toString(value + 1);
     } else if (Token::Match(tok2, "%num% <= %varid% ;|&&|%oror%", varid)) {
         maxMinFlipped = true;
         max_value = min_value;
@@ -365,7 +365,7 @@ static bool for_maxvalue(const Token * const stepvalue, const std::string &min_v
     MathLib::bigint max = MathLib::toLongNumber(max_value);
     const MathLib::bigint min = MathLib::toLongNumber(min_value);
     max = ((max - min) / num) * num + min;
-    max_value = MathLib::longToString(max);
+    max_value = MathLib::toString(max);
     return true;
 }
 
@@ -2262,8 +2262,8 @@ void CheckBufferOverrun::writeOutsideBufferSize()
 void CheckBufferOverrun::writeOutsideBufferSizeError(const Token *tok, const std::size_t stringLength, const MathLib::bigint writeLength, const std::string &strFunctionName)
 {
     reportError(tok, Severity::error, "writeOutsideBufferSize",
-                "Writing " + MathLib::longToString(writeLength-stringLength) + " bytes outside buffer size.\n"
-                "The number of bytes to write (" + MathLib::longToString(writeLength) + " bytes) are bigger than the source buffer (" +MathLib::longToString(stringLength)+ " bytes)."
+                "Writing " + MathLib::toString(writeLength-stringLength) + " bytes outside buffer size.\n"
+                "The number of bytes to write (" + MathLib::toString(writeLength) + " bytes) are bigger than the source buffer (" +MathLib::toString(stringLength)+ " bytes)."
                 " Please check the second and the third parameter of the function '"+strFunctionName+"'.");
 }
 // -------------------------------------------------------------------------------------

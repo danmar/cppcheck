@@ -794,9 +794,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
                 result = MathLib::calculate(tok->str(), tok->strAt(2), cop);
             else if (cop == '<') {
                 if (tok->previous()->str() != "<<" && rightInt > 0) // Ensure that its not a shift operator as used for streams
-                    result = MathLib::longToString(leftInt << rightInt);
+                    result = MathLib::toString(leftInt << rightInt);
             } else if (rightInt > 0)
-                result = MathLib::longToString(leftInt >> rightInt);
+                result = MathLib::toString(leftInt >> rightInt);
 
             if (!result.empty()) {
                 ret = true;
@@ -859,7 +859,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         }
 
         if (Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
-            tok->str(MathLib::longToString(tok->str()[1] & 0xff));
+            tok->str(MathLib::toString(tok->str()[1] & 0xff));
         }
 
         if (tok->isNumber()) {

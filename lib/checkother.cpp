@@ -526,7 +526,7 @@ void CheckOther::checkPipeParameterSize()
                 const Variable *var = varTok->variable();
                 MathLib::bigint dim;
                 if (var && (var->isArray() || var->isPointer()) && !var->isArgument() && ((dim=var->dimension(0U)) < 2)) {
-                    const std::string strDim = MathLib::longToString(dim);
+                    const std::string strDim = MathLib::toString(dim);
                     checkPipeParameterSizeError(varTok,varTok->str(), strDim);
                 }
             }
