@@ -148,6 +148,7 @@
     <addaction name="separator"/>
     <addaction name="menuC_standard"/>
     <addaction name="menuCpp_standard"/>
+    <addaction name="mActionGtk"/>
     <addaction name="mActionPosix"/>
     <addaction name="separator"/>
     <addaction name="mActionPlatforms"/>
@@ -648,6 +649,14 @@
    </property>
    <property name="text">
     <string>C99</string>
+   </property>
+  </action>
+  <action name="mActionGtk">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Gtk</string>
    </property>
   </action>
   <action name="mActionPosix">

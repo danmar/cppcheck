@@ -251,6 +251,8 @@ void MainWindow::LoadSettings()
     mUI.mActionC11->setChecked(stdC11);
     const bool stdC99 = mSettings->value(SETTINGS_STD_C99, true).toBool();
     mUI.mActionC99->setChecked(stdC99 || (!stdC89 && !stdC11));
+    const bool stdGtk = mSettings->value(SETTINGS_STD_GTK, false).toBool();
+    mUI.mActionGtk->setChecked(stdGtk);
     const bool stdPosix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
     mUI.mActionPosix->setChecked(stdPosix);
 
@@ -304,6 +306,7 @@ void MainWindow::SaveSettings() const
     mSettings->setValue(SETTINGS_STD_C89, mUI.mActionC89->isChecked());
     mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
     mSettings->setValue(SETTINGS_STD_C11, mUI.mActionC11->isChecked());
+    mSettings->setValue(SETTINGS_STD_GTK, mUI.mActionGtk->isChecked());
     mSettings->setValue(SETTINGS_STD_POSIX, mUI.mActionPosix->isChecked());
 
     // Main window settings
@@ -562,6 +565,7 @@ Settings MainWindow::GetCppcheckSettings()
     result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
     result.standards.cpp = mSettings->value(SETTINGS_STD_CPP11, true).toBool() ? Standards::CPP11 : Standards::CPP03;
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
+    result.standards.gtk = mSettings->value(SETTINGS_STD_GTK, false).toBool();
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
     if (result._jobs <= 1) {
@@ -587,6 +591,7 @@ void MainWindow::CheckDone()
     mPlatformActions->setEnabled(true);
     mCStandardActions->setEnabled(true);
     mCppStandardActions->setEnabled(true);
+    mUI.mActionGtk->setEnabled(true);
     mUI.mActionPosix->setEnabled(true);
     if (mScratchPad)
         mScratchPad->setEnabled(true);
@@ -615,6 +620,7 @@ void MainWindow::CheckLockDownUI()
     mPlatformActions->setEnabled(false);
     mCStandardActions->setEnabled(false);
     mCppStandardActions->setEnabled(false);
+    mUI.mActionGtk->setEnabled(false);
     mUI.mActionPosix->setEnabled(false);
     if (mScratchPad)
         mScratchPad->setEnabled(false);
