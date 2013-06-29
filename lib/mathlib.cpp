@@ -75,13 +75,6 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
     return ret;
 }
 
-std::string MathLib::longToString(const bigint value)
-{
-    std::ostringstream result;
-    result << value;
-    return result.str();
-}
-
 double MathLib::toDoubleNumber(const std::string &str)
 {
     if (isHex(str))
