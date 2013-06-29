@@ -1528,7 +1528,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, const std::
 {
     bool rhs = false;
     unsigned int indent = 0;
-    while (tok = tok->next()) {
+    while ((tok = tok->next())) {
         if (tok->str() == "=")
             rhs = true;
         if (rhs && tok->varId() == var.varId()) {
@@ -1559,7 +1559,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
         const bool address(vartok->previous()->str() == "&");
 
         // locate start parentheses in function call..
-        int argumentNumber = 0;
+        unsigned int argumentNumber = 0;
         const Token *start = vartok;
         while (start && !Token::Match(start, "[;{}(]")) {
             if (start->str() == ")")
