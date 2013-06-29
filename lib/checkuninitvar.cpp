@@ -1559,7 +1559,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
         const bool address(vartok->previous()->str() == "&");
 
         // locate start parentheses in function call..
-        int argumentNumber = 0;
+        unsigned int argumentNumber = 0;
         const Token *start = vartok;
         while (start && !Token::Match(start, "[;{}(]")) {
             if (start->str() == ")")
