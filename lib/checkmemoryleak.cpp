@@ -149,22 +149,24 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return Malloc;
 
         // Does tok2 point on "g_malloc", "g_strdup", ..
-        static const char * const gmallocfunc[] = {
-            "g_new",
-            "g_new0",
-            "g_try_new",
-            "g_try_new0",
-            "g_malloc",
-            "g_malloc0",
-            "g_try_malloc",
-            "g_try_malloc0",
-            "g_strdup",
-            "g_strndup",
-            "g_strdup_printf"
-        };
-        for (unsigned int i = 0; i < sizeof(gmallocfunc)/sizeof(*gmallocfunc); i++) {
-            if (tok2->str() == gmallocfunc[i])
-                return gMalloc;
+        if (standards.gtk) {
+            static const char * const gmallocfunc[] = {
+                "g_new",
+                "g_new0",
+                "g_try_new",
+                "g_try_new0",
+                "g_malloc",
+                "g_malloc0",
+                "g_try_malloc",
+                "g_try_malloc0",
+                "g_strdup",
+                "g_strndup",
+                "g_strdup_printf"
+            };
+            for (unsigned int i = 0; i < sizeof(gmallocfunc)/sizeof(*gmallocfunc); i++) {
+                if (tok2->str() == gmallocfunc[i])
+                    return gMalloc;
+            }
         }
 
         if (Token::Match(tok2, "new struct| %type% [;()]") ||
@@ -180,17 +182,19 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (Token::Match(tok2, "fopen|tmpfile|g_fopen ("))
             return File;
 
-        if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp (")) {
-            // simple sanity check of function parameters..
-            // TODO: Make such check for all these functions
-            unsigned int num = countParameters(tok2);
-            if (tok2->str() == "open" && num != 2 && num != 3)
-                return No;
+        if (standards.posix) {
+            if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp (")) {
+                // simple sanity check of function parameters..
+                // TODO: Make such check for all these functions
+                unsigned int num = countParameters(tok2);
+                if (tok2->str() == "open" && num != 2 && num != 3)
+                    return No;
 
-            // is there a user function with this name?
-            if (tokenizer && Token::findmatch(tokenizer->tokens(), ("%type% *|&| " + tok2->str()).c_str()))
-                return No;
-            return Fd;
+                // is there a user function with this name?
+                if (tokenizer && Token::findmatch(tokenizer->tokens(), ("%type% *|&| " + tok2->str()).c_str()))
+                    return No;
+                return Fd;
+            }
         }
 
         if (Token::simpleMatch(tok2, "popen ("))
@@ -218,11 +222,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 
     callstack->push_back(func);
     return functionReturnType(func, callstack);
-}
-
-static bool isPosixAllocationType(const CheckMemoryLeak::AllocType allocType)
-{
-    return (allocType == CheckMemoryLeak::Fd || allocType == CheckMemoryLeak::Pipe || allocType == CheckMemoryLeak::Dir);
 }
 
 
@@ -273,22 +272,26 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         Token::Match(tok, "realloc ( %varid% , 0 ) ;", varid))
         return Malloc;
 
-    if (Token::Match(tok, "g_free ( %varid% ) ;", varid) ||
-        Token::Match(tok, "g_free ( %varid% -", varid))
-        return gMalloc;
+    if (standards.gtk) {
+        if (Token::Match(tok, "g_free ( %varid% ) ;", varid) ||
+            Token::Match(tok, "g_free ( %varid% -", varid))
+            return gMalloc;
+    }
 
     if (Token::Match(tok, "fclose ( %varid% )", varid) ||
         Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
 
-    if (Token::Match(tok, "close ( %varid% )", varid))
-        return Fd;
+    if (standards.posix) {
+        if (Token::Match(tok, "close ( %varid% )", varid))
+            return Fd;
 
-    if (Token::Match(tok, "pclose ( %varid% )", varid))
-        return Pipe;
+        if (Token::Match(tok, "pclose ( %varid% )", varid))
+            return Pipe;
 
-    if (Token::Match(tok, "closedir ( %varid% )", varid))
-        return Dir;
+        if (Token::Match(tok, "closedir ( %varid% )", varid))
+            return Dir;
+    }
 
     return No;
 }
@@ -887,9 +890,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
                 }
 
-                if (isPosixAllocationType(alloc) && !_settings->standards.posix)
-                    alloc = CheckMemoryLeak::No;
-
                 // don't check classes..
                 if (alloc == CheckMemoryLeak::New) {
                     if (Token::Match(tok->tokAt(2), "new struct| %type% [(;]")) {
@@ -978,9 +978,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     tok = tok->tokAt(2);
 
                 AllocType dealloc = getDeallocationType(tok, varid);
-
-                if (isPosixAllocationType(dealloc) && !_settings->standards.posix)
-                    dealloc = CheckMemoryLeak::No;
 
                 if (dealloc != No && tok->str() == "fcloseall" && alloctype != dealloc)
                     //TODO: this assignment is redundant, should be fixed

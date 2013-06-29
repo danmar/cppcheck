@@ -44,13 +44,16 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.standards.gtk = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        return ((const CheckMemoryLeak *)0)->functionReturnType(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
+        CheckMemoryLeak c(&tokenizer, this, settings.standards);
+
+        return c.functionReturnType(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
 
     void testFunctionReturnType() {
@@ -368,6 +371,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings.standards.gtk = true;
         settings.standards.posix = true;
 
         // Tokenize..
