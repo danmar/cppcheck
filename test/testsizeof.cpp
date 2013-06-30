@@ -489,3 +489,5 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 };
+
+REGISTER_TEST(TestSizeof);
