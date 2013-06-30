@@ -111,7 +111,7 @@ Parameters: -l(line) (file)</source>
         <location filename="fileviewdialog.cpp" line="46"/>
         <location filename="fileviewdialog.cpp" line="60"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="fileviewdialog.cpp" line="56"/>
@@ -144,7 +144,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="logview.cpp" line="73"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="logview.cpp" line="74"/>
@@ -167,7 +167,7 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="1075"/>
         <location filename="mainwindow.cpp" line="1156"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="main.ui" line="171"/>
@@ -383,27 +383,27 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="586"/>
         <source>Windows 32-bit ANSI</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows 32-bit ANSI</translation>
     </message>
     <message>
         <location filename="main.ui" line="594"/>
         <source>Windows 32-bit Unicode</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows 32-bit Unicode</translation>
     </message>
     <message>
         <location filename="main.ui" line="602"/>
         <source>Unix 32-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Unix 32-bit</translation>
     </message>
     <message>
         <location filename="main.ui" line="610"/>
         <source>Unix 64-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Unix 64-bit</translation>
     </message>
     <message>
         <location filename="main.ui" line="618"/>
         <source>Windows 64-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows 64-bit</translation>
     </message>
     <message>
         <location filename="main.ui" line="626"/>
@@ -413,37 +413,37 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="640"/>
         <source>C++11</source>
-        <translation type="unfinished"></translation>
+        <translation>C++11</translation>
     </message>
     <message>
         <location filename="main.ui" line="651"/>
         <source>C99</source>
-        <translation type="unfinished"></translation>
+        <translation>C99</translation>
     </message>
     <message>
         <location filename="main.ui" line="659"/>
         <source>Gtk</source>
-        <translation type="unfinished"></translation>
+        <translation>Gtk</translation>
     </message>
     <message>
         <location filename="main.ui" line="667"/>
         <source>Posix</source>
-        <translation type="unfinished"></translation>
+        <translation>Posix</translation>
     </message>
     <message>
         <location filename="main.ui" line="675"/>
         <source>C11</source>
-        <translation type="unfinished"></translation>
+        <translation>C11</translation>
     </message>
     <message>
         <location filename="main.ui" line="683"/>
         <source>C89</source>
-        <translation type="unfinished"></translation>
+        <translation>C89</translation>
     </message>
     <message>
         <location filename="main.ui" line="691"/>
         <source>C++03</source>
-        <translation type="unfinished"></translation>
+        <translation>C++03</translation>
     </message>
     <message>
         <location filename="main.ui" line="371"/>
@@ -564,7 +564,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="408"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation>F1</translation>
     </message>
     <message>
         <location filename="main.ui" line="117"/>
@@ -684,7 +684,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="mainwindow.cpp" line="909"/>
         <source>Cppcheck - %1</source>
-        <translation type="unfinished">Cppcheck - %1</translation>
+        <translation>Cppcheck - %1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="954"/>
@@ -737,7 +737,7 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="translationhandler.cpp" line="42"/>
         <source>Chinese (Simplified)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kineski (Pojednostavljeni)</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="43"/>
@@ -752,12 +752,12 @@ Do you want to remove the file from the recently used projects -list?</source>
     <message>
         <location filename="translationhandler.cpp" line="48"/>
         <source>Italian</source>
-        <translation type="unfinished"></translation>
+        <translation>Italijanski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="50"/>
         <source>Korean</source>
-        <translation type="unfinished"></translation>
+        <translation>Korejski</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="53"/>
@@ -820,27 +820,27 @@ Options:
     <message>
         <location filename="platforms.cpp" line="38"/>
         <source>Unix 32-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Unix 32-bit</translation>
     </message>
     <message>
         <location filename="platforms.cpp" line="39"/>
         <source>Unix 64-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Unix 64-bit</translation>
     </message>
     <message>
         <location filename="platforms.cpp" line="40"/>
         <source>Windows 32-bit ANSI</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows 32-bit ANSI</translation>
     </message>
     <message>
         <location filename="platforms.cpp" line="41"/>
         <source>Windows 32-bit Unicode</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows 32-bit Unicode</translation>
     </message>
     <message>
         <location filename="platforms.cpp" line="42"/>
         <source>Windows 64-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows 64-bit</translation>
     </message>
 </context>
 <context>
@@ -849,7 +849,7 @@ Options:
         <location filename="project.cpp" line="71"/>
         <location filename="project.cpp" line="115"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="project.cpp" line="72"/>
@@ -1073,7 +1073,7 @@ Options:
         <location filename="resultstree.cpp" line="587"/>
         <location filename="resultstree.cpp" line="601"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="588"/>
@@ -1615,7 +1615,7 @@ The user interface language has been reset to English. Open the Preferences-dial
     <message>
         <location filename="translationhandler.cpp" line="121"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
 </context>
 <context>
