@@ -490,4 +490,4 @@ private:
     }
 };
 
-REGISTER_TEST(TestSizeof);
+REGISTER_TEST(TestSizeof)
