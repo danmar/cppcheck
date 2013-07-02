@@ -328,6 +328,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        // --environment
+        else if (std::strncmp(argv[i], "--environment=", 14) == 0) {
+            if (!_settings->environment.load(argv[i]+14)) {
+                PrintMessage("cppcheck: Failed to load environment file '" + std::string(argv[i]+14) + "'");
+                return false;
+            }
+        }
+
         // --error-exitcode=1
         else if (std::strncmp(argv[i], "--error-exitcode=", 17) == 0) {
             std::string temp = argv[i]+17;

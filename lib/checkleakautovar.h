@@ -28,7 +28,7 @@
 
 class CPPCHECKLIB VarInfo {
 public:
-    std::map<unsigned int, std::string> alloctype;
+    std::map<unsigned int, int> alloctype;
     std::map<unsigned int, std::string> possibleUsage;
     std::set<unsigned int> conditionalAlloc;
     std::set<unsigned int> referenced;
@@ -81,19 +81,10 @@ public:
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
-        checkLeakAutoVar.parseConfigurationFile("cppcheck.cfg");
         checkLeakAutoVar.check();
     }
 
 private:
-
-    std::map<std::string,std::string> cfgalloc;
-    std::map<std::string,std::string> cfgdealloc;
-    std::set<std::string> cfgignore;
-    std::set<std::string> cfguse;
-    std::set<std::string> cfgnoreturn;
-
-    void parseConfigurationFile(const std::string &filename);
 
     /** check for leaks in all scopes */
     void check();
@@ -104,7 +95,7 @@ private:
                     std::set<unsigned int> notzero);
 
     /** parse function call */
-    void functionCall(const Token *tok, VarInfo *varInfo, const std::string &dealloc);
+    void functionCall(const Token *tok, VarInfo *varInfo, const int dealloc);
 
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, const VarInfo &varInfo);
@@ -112,7 +103,7 @@ private:
     /** if variable is allocated then there is a leak */
     void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);
 
-    void leakError(const Token* tok, const std::string &varname, const std::string &type);
+    void leakError(const Token* tok, const std::string &varname, int type);
     void mismatchError(const Token* tok, const std::string &varname);
     void deallocUseError(const Token *tok, const std::string &varname);
     void deallocReturnError(const Token *tok, const std::string &varname);

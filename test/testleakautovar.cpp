@@ -119,6 +119,7 @@ private:
         // Check for leaks..
         CheckLeakAutoVar c;
         settings.experimental = true;
+        settings.addEnabled("information");
         c.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 

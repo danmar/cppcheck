@@ -75,7 +75,7 @@ ifndef PREFIX
 endif
 
 ifndef INCLUDE_FOR_LIB
-    INCLUDE_FOR_LIB=-Ilib
+    INCLUDE_FOR_LIB=-Ilib -Iexternals -Iexternals/tinyxml
 endif
 
 ifndef INCLUDE_FOR_CLI
@@ -120,6 +120,7 @@ LIBOBJ =      $(SRCDIR)/check64bit.o \
               $(SRCDIR)/checkunusedfunctions.o \
               $(SRCDIR)/checkunusedvar.o \
               $(SRCDIR)/cppcheck.o \
+              $(SRCDIR)/environment.o \
               $(SRCDIR)/errorlogger.o \
               $(SRCDIR)/executionpath.o \
               $(SRCDIR)/mathlib.o \
@@ -285,7 +286,7 @@ $(SRCDIR)/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h li
 $(SRCDIR)/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/checkobsoletefunctions.o $(SRCDIR)/checkobsoletefunctions.cpp
 
-$(SRCDIR)/checkother.o: lib/checkother.cpp lib/checkother.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/mathlib.h lib/symboldatabase.h
+$(SRCDIR)/checkother.o: lib/checkother.cpp lib/checkother.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/mathlib.h lib/symboldatabase.h lib/templatesimplifier.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/checkother.o $(SRCDIR)/checkother.cpp
 
 $(SRCDIR)/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/config.h lib/check.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/standards.h lib/symboldatabase.h lib/mathlib.h
@@ -308,6 +309,9 @@ $(SRCDIR)/checkunusedvar.o: lib/checkunusedvar.cpp lib/checkunusedvar.h lib/conf
 
 $(SRCDIR)/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/preprocessor.h lib/path.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/cppcheck.o $(SRCDIR)/cppcheck.cpp
+
+$(SRCDIR)/environment.o: lib/environment.cpp lib/environment.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/environment.o $(SRCDIR)/environment.cpp
 
 $(SRCDIR)/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/config.h lib/suppressions.h lib/path.h lib/cppcheck.h lib/settings.h lib/standards.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/errorlogger.o $(SRCDIR)/errorlogger.cpp

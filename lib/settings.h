@@ -24,6 +24,7 @@
 #include <string>
 #include <set>
 #include "config.h"
+#include "environment.h"
 #include "suppressions.h"
 #include "standards.h"
 
@@ -173,6 +174,9 @@ public:
 
     /** @brief --report-progress */
     bool reportProgress;
+
+    /** Environment (--environment) */
+    Environment environment;
 
     /** Rule */
     class CPPCHECKLIB Rule {
