@@ -1528,7 +1528,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, const std::
 {
     bool rhs = false;
     unsigned int indent = 0;
-    while (tok = tok->next()) {
+    while (NULL != (tok = tok->next())) {
         if (tok->str() == "=")
             rhs = true;
         if (rhs && tok->varId() == var.varId()) {
