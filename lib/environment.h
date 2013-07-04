@@ -19,6 +19,7 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
+#include "config.h"
 #include <map>
 #include <set>
 #include <string>
@@ -29,7 +30,7 @@
 /**
  * @brief Environment definitions handling
  */
-class Environment {
+class CPPCHECKLIB Environment {
 public:
     Environment();
     Environment(const Environment &);
