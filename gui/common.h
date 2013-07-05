@@ -61,7 +61,6 @@
 #define SETTINGS_STD_C89                "Platform C89"
 #define SETTINGS_STD_C99                "Platform C99"
 #define SETTINGS_STD_C11                "Platform C11"
-#define SETTINGS_STD_GTK                "Platform Gtk"
 #define SETTINGS_STD_POSIX              "Platform Posix"
 
 // Other settings
