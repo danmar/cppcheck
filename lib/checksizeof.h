@@ -58,6 +58,7 @@ public:
         checkSizeof.checkSizeofForArrayParameter();
         checkSizeof.checkSizeofForPointerSize();
         checkSizeof.checkSizeofForNumericParameter();
+        checkSizeof.sizeofVoid();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -82,6 +83,9 @@ public:
     /** @brief %Check for using sizeof with numeric given as function argument */
     void checkSizeofForNumericParameter();
 
+    /** @brief %Check for using sizeof(void) */
+    void sizeofVoid();
+
 private:
     // Error messages..
     void sizeofsizeofError(const Token* tok);
@@ -91,6 +95,9 @@ private:
     void sizeofForArrayParameterError(const Token* tok);
     void sizeofForPointerError(const Token* tok, const std::string &varname);
     void sizeofForNumericParameterError(const Token* tok);
+    void sizeofVoidError(const Token *tok);
+    void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
+    void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const {
         CheckSizeof c(0, settings, errorLogger);
@@ -102,6 +109,9 @@ private:
         c.sizeofCalculationError(0, false);
         c.multiplySizeofError(0);
         c.divideSizeofError(0);
+        c.sizeofVoidError(0);
+        c.sizeofDereferencedVoidPointerError(0, "varname");
+        c.arithOperationsOnVoidPointerError(0, "varname");
     }
 
     static std::string myName() {
@@ -116,7 +126,8 @@ private:
                "* using sizeof(pointer) instead of the size of pointed data\n"
                "* look for 'sizeof sizeof ..'\n"
                "* look for calculations inside sizeof()\n"
-               "* look for suspicious calculations with sizeof()\n";
+               "* look for suspicious calculations with sizeof()\n"
+               "* using 'sizeof(void)' which is undefined\n";
     }
 };
 /// @}

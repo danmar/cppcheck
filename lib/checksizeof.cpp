@@ -278,3 +278,46 @@ void CheckSizeof::divideSizeofError(const Token *tok)
                 "Division of result of sizeof() on pointer type. sizeof() returns the size of the pointer, "
                 "not the size of the memory area it points to.", true);
 }
+
+void CheckSizeof::sizeofVoid()
+{
+    if (!_settings->isEnabled("portability"))
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "sizeof ( )")) { // "sizeof(void)" gets simplified to sizeof ( )
+            sizeofVoidError(tok);
+        } else if (Token::Match(tok, "sizeof ( * %var% )") && tok->tokAt(3)->variable() &&
+                   (Token::Match(tok->tokAt(3)->variable()->typeStartToken(), "void * !!*")) &&
+                   (!tok->tokAt(3)->variable()->isArray())) { // sizeof(*p) where p is of type "void*"
+            sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
+        } else if (Token::Match(tok, "%var% +|-|++|--") || Token::Match(tok, "+|-|++|-- %var%")) { // Arithmetic operations on variable of type "void*"
+            int index = (tok->isName()) ? 0 : 1;
+            const Variable* var = tok->tokAt(index)->variable();
+            if (var && Token::Match(var->typeStartToken(), "void *")) {
+                arithOperationsOnVoidPointerError(tok, tok->tokAt(index)->str());
+            }
+        }
+    }
+}
+
+void CheckSizeof::sizeofVoidError(const Token *tok)
+{
+    const std::string message = "Behaviour of 'sizeof(void)' is not covered by the ISO C standard.";
+    const std::string verbose = message + " A value for 'sizeof(void)' is defined only as part of a GNU C extension, which defines 'sizeof(void)' to be 1.";
+    reportError(tok, Severity::portability, "sizeofVoid", message + "\n" + verbose);
+}
+
+void CheckSizeof::sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname)
+{
+    const std::string message = "'*" + varname + "' is of type 'void', the behaviour of 'sizeof(void)' is not covered by the ISO C standard.";
+    const std::string verbose = message + " A value for 'sizeof(void)' is defined only as part of a GNU C extension, which defines 'sizeof(void)' to be 1.";
+    reportError(tok, Severity::portability, "sizeofDereferencedVoidPointer", message + "\n" + verbose);
+}
+
+void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname)
+{
+    const std::string message = "'" + varname + "' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.";
+    const std::string verbose = message + " Arithmetic operations on 'void *' is a GNU C extension, which defines the 'sizeof(void)' to be 1.";
+    reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", message + "\n" + verbose);
+}

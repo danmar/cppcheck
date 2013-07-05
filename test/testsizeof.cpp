@@ -39,6 +39,7 @@ private:
         TEST_CASE(sizeofForArrayParameter);
         TEST_CASE(sizeofForNumericParameter);
         TEST_CASE(suspiciousSizeofCalculation);
+        TEST_CASE(sizeofVoid);
     }
 
     void check(const char code[]) {
@@ -47,6 +48,7 @@ private:
 
         Settings settings;
         settings.addEnabled("warning");
+        settings.addEnabled("portability");
         settings.inconclusive = true;
 
         // Tokenize..
@@ -488,6 +490,50 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void sizeofVoid() {
+        check("void f() {\n"
+              "  int size = sizeof(void);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout.str());
+
+        check("void f() {\n"
+              "  void* p;\n"
+              "  int size = sizeof(*p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) '*p' is of type 'void', the behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout.str());
+
+        check("void f() {\n"
+              "  void* p = malloc(10);\n"
+              "  int* p2 = p + 4;\n"
+              "  int* p3 = p - 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
+                      "[test.cpp:4]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        check("void f() {\n"
+              "  void* p1 = malloc(10);\n"
+              "  void* p2 = malloc(5);\n"
+              "  p1--;\n"
+              "  p2++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (portability) 'p1' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
+                      "[test.cpp:5]: (portability) 'p2' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        check("void f() {\n"
+              "  void** p1;\n"
+              "  int j = sizeof(*p1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  void* p1[5];\n"
+              "  int j = sizeof(*p1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestSizeof)
+
