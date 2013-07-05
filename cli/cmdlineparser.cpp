@@ -486,8 +486,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // --std
         else if (std::strcmp(argv[i], "--std=posix") == 0) {
             _settings->standards.posix = true;
-        } else if (std::strcmp(argv[i], "--std=gtk") == 0) {
-            _settings->standards.gtk = true;
         } else if (std::strcmp(argv[i], "--std=c89") == 0) {
             _settings->standards.c = Standards::C89;
         } else if (std::strcmp(argv[i], "--std=c99") == 0) {
@@ -873,8 +871,6 @@ void CmdLineParser::PrintHelp()
 #endif
               "    --std=<id>           Set standard.\n"
               "                         The available options are:\n"
-              "                          * gtk\n"
-              "                                 GTK code\n"
               "                          * posix\n"
               "                                 POSIX compatible code\n"
               "                          * c89\n"

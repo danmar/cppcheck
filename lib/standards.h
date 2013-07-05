@@ -33,14 +33,11 @@ struct Standards {
     /** C++ code standard */
     enum cppstd_t { CPP03, CPP11 } cpp;
 
-    /** Code is gtk */
-    bool gtk;
-
     /** Code is posix */
     bool posix;
 
     /** This constructor clear all the variables **/
-    Standards() : c(C11), cpp(CPP11), gtk(false), posix(false) {}
+    Standards() : c(C11), cpp(CPP11), posix(false) {}
 };
 
 /// @}

@@ -44,14 +44,13 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.standards.gtk = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        CheckMemoryLeak c(&tokenizer, this, settings.standards);
+        CheckMemoryLeak c(&tokenizer, this, &settings);
 
         return c.functionReturnType(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
@@ -108,7 +107,7 @@ private:
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
-        CheckMemoryLeak check(&tokenizer, 0, settings.standards);
+        CheckMemoryLeak check(&tokenizer, 0, &settings);
         ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }
 };
@@ -371,7 +370,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.standards.gtk = true;
         settings.standards.posix = true;
 
         // Tokenize..
@@ -412,7 +410,6 @@ private:
         ASSERT_EQUALS(";;alloc;", getcode("int *a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int * const a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("const int * const a = new int[10];", "a"));
-        ASSERT_EQUALS(";;alloc;", getcode("char *a = g_strdup_printf(\"%i\", f());", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int i = open(a,b);", "i"));
         ASSERT_EQUALS(";;assign;", getcode("int i = open();", "i"));
 

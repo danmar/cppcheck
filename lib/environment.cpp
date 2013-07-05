@@ -49,28 +49,27 @@ bool Environment::load(const char path[])
         return false;
 
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    if (strcmp(rootnode->Value(),"def") != 0)
+    if (strcmp(rootnode->Name(),"def") != 0)
         return false;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (strcmp(node->Value(),"memory")==0) {
+        if (strcmp(node->Name(),"memory")==0) {
             while (!ismemory(++allocid));
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
-                if (strcmp(memorynode->Value(),"alloc")==0)
-                    _alloc[node->GetText()] = allocid;
-                else if (strcmp(memorynode->Value(),"dealloc")==0)
-                    _dealloc[node->GetText()] = allocid;
-                else if (strcmp(node->Value(),"use")==0)
-                    use.insert(node->GetText());
+                if (strcmp(memorynode->Name(),"alloc")==0)
+                    _alloc[memorynode->GetText()] = allocid;
+                else if (strcmp(memorynode->Name(),"dealloc")==0)
+                    _dealloc[memorynode->GetText()] = allocid;
+                else if (strcmp(memorynode->Name(),"use")==0)
+                    use.insert(memorynode->GetText());
                 else
                     return false;
             }
-
         }
 
-        else if (strcmp(node->Value(),"ignore")==0)
+        else if (strcmp(node->Name(),"ignore")==0)
             ignore.insert(node->GetText());
-        else if (strcmp(node->Value(),"noreturn")==0)
+        else if (strcmp(node->Name(),"noreturn")==0)
             noreturn.insert(node->GetText());
         else
             return false;

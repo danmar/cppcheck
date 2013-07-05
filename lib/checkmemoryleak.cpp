@@ -148,27 +148,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (varid && Token::Match(tok2, "realloc ( %any% ,") && tok2->tokAt(2)->varId() != varid)
             return Malloc;
 
-        // Does tok2 point on "g_malloc", "g_strdup", ..
-        if (standards.gtk) {
-            static const char * const gmallocfunc[] = {
-                "g_new",
-                "g_new0",
-                "g_try_new",
-                "g_try_new0",
-                "g_malloc",
-                "g_malloc0",
-                "g_try_malloc",
-                "g_try_malloc0",
-                "g_strdup",
-                "g_strndup",
-                "g_strdup_printf"
-            };
-            for (unsigned int i = 0; i < sizeof(gmallocfunc)/sizeof(*gmallocfunc); i++) {
-                if (tok2->str() == gmallocfunc[i])
-                    return gMalloc;
-            }
-        }
-
         if (Token::Match(tok2, "new struct| %type% [;()]") ||
             Token::Match(tok2, "new ( std :: nothrow ) struct| %type% [;()]") ||
             Token::Match(tok2, "new ( nothrow ) struct| %type% [;()]"))
@@ -182,7 +161,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (Token::Match(tok2, "fopen|tmpfile|g_fopen ("))
             return File;
 
-        if (standards.posix) {
+        if (settings1->standards.posix) {
             if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
@@ -202,6 +181,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 
         if (Token::Match(tok2, "opendir|fdopendir ("))
             return Dir;
+
+        // Does tok2 point on "g_malloc", "g_strdup", ..
+        const int alloctype = settings1->environment.alloc(tok2->str());
+        if (alloctype > 0)
+            return Environment::ismemory(alloctype) ? OtherMem : OtherRes;
     }
 
     while (Token::Match(tok2,"%type%|%var% ::|. %type%"))
@@ -243,8 +227,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
         return Malloc;
 
     // GTK memory reallocation..
-    if (Token::Match(tok2, "g_realloc|g_try_realloc|g_renew|g_try_renew"))
-        return gMalloc;
+    //if (Token::Match(tok2, "g_realloc|g_try_realloc|g_renew|g_try_renew"))
 
     return No;
 }
@@ -272,17 +255,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         Token::Match(tok, "realloc ( %varid% , 0 ) ;", varid))
         return Malloc;
 
-    if (standards.gtk) {
-        if (Token::Match(tok, "g_free ( %varid% ) ;", varid) ||
-            Token::Match(tok, "g_free ( %varid% -", varid))
-            return gMalloc;
-    }
-
     if (Token::Match(tok, "fclose ( %varid% )", varid) ||
         Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
 
-    if (standards.posix) {
+    if (settings1->standards.posix) {
         if (Token::Match(tok, "close ( %varid% )", varid))
             return Fd;
 
@@ -291,6 +268,13 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
         if (Token::Match(tok, "closedir ( %varid% )", varid))
             return Dir;
+    }
+
+    // Does tok2 point on "g_free", etc ..
+    if (Token::Match(tok, "%type% ( %varid% )", varid)) {
+        const int dealloctype = settings1->environment.dealloc(tok->str());
+        if (dealloctype > 0)
+            return Environment::ismemory(dealloctype) ? OtherMem : OtherRes;
     }
 
     return No;
@@ -315,9 +299,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         Token::simpleMatch(tok, std::string("realloc ( " + varname + " , 0 ) ;").c_str()))
         return Malloc;
 
-    if (Token::simpleMatch(tok, std::string("g_free ( " + varname + " ) ;").c_str()))
-        return gMalloc;
-
     if (Token::simpleMatch(tok, std::string("fclose ( " + varname + " )").c_str()) ||
         Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
@@ -330,6 +311,12 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
     if (Token::simpleMatch(tok, std::string("closedir ( " + varname + " )").c_str()))
         return Dir;
+
+    if (Token::Match(tok, ("%type% ( " + varname + " )").c_str())) {
+        int type = settings1->environment.dealloc(tok->str());
+        if (type > 0)
+            return Environment::ismemory(type) ? OtherMem : OtherRes;
+    }
 
     return No;
 }
