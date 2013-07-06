@@ -46,6 +46,7 @@ private:
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
+        TEST_CASE(testPrintfScanfParameter); // #4900
     }
 
     void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -752,6 +753,29 @@ private:
                       "[test.cpp:7]: (warning) 'z' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:8]: (warning) 't' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:9]: (warning) 'L' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+    }
+
+    void testPrintfScanfParameter() { // #4900  - No support for parameters in format strings
+        check("void foo() {"
+              "  int bar;"
+              "  printf(\"%1$d\", 1);"
+              "  printf(\"%1$d, %d, %1$d\", 1, 2);"
+              "  scanf(\"%1$d\", &bar);" 
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "  int bar;\n"
+              "  printf(\"%1$d\");\n"
+              "  printf(\"%1$d, %d, %4$d\", 1, 2, 3);\n"
+              "  scanf(\"%2$d\", &bar);\n"
+              "  printf(\"%0$f\", 0.0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) printf format string has 1 parameters but only 0 are given.\n"
+                      "[test.cpp:4]: (warning) printf: referencing parameter 4 while 3 arguments given\n"
+                      "[test.cpp:5]: (warning) scanf: referencing parameter 2 while 1 arguments given\n"
+                      "[test.cpp:6]: (warning) printf: parameter indices start at 1, not 0\n"
+                      "", errout.str());
     }
 };
 

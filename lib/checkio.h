@@ -82,6 +82,8 @@ private:
                                         const std::string &function,
                                         unsigned int numFormat,
                                         unsigned int numFunction);
+    void wrongPrintfScanfParameterError(const Token* tok, const std::string& functionName,
+                                        unsigned int index, unsigned int numFunction);
     void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
     void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
