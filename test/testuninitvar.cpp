@@ -2352,6 +2352,12 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    A *a;\n"
+                        "    a = malloc(sizeof(*a));\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Ticket #3486 - Don't crash garbage code
         checkUninitVar2("void f()\n"
                         "{\n"

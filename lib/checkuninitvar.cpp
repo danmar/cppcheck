@@ -1531,7 +1531,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, const std::
     while (NULL != (tok = tok->next())) {
         if (tok->str() == "=")
             rhs = true;
-        if (rhs && tok->varId() == var.varId()) {
+        else if (rhs && tok->varId() == var.varId()) {
             if (membervar.empty() && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                 uninitvarError(tok, tok->str());
             else if (!membervar.empty() && isMemberVariableUsage(tok, var.isPointer(), membervar))
@@ -1545,7 +1545,8 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, const std::
             if (indent == 0)
                 break;
             --indent;
-        }
+        } else if (Token::simpleMatch(tok, "sizeof ("))
+			tok = tok->next()->link();
     }
 }
 
