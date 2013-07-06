@@ -681,10 +681,6 @@ Options:
         <source>C++03</source>
         <translation type="unfinished">C++03</translation>
     </message>
-    <message>
-        <source>Gtk</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>Platforms</name>
