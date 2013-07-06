@@ -627,7 +627,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                         tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
                         if (summary)
-                            rule.summary = summary->GetText();
+                            rule.summary = summary->GetText() ? summary->GetText() : "";
                     }
 
                     if (!rule.pattern.empty())
