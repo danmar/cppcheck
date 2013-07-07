@@ -1546,7 +1546,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, const std::
                 break;
             --indent;
         } else if (Token::simpleMatch(tok, "sizeof ("))
-			tok = tok->next()->link();
+            tok = tok->next()->link();
     }
 }
 

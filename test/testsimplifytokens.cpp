@@ -2310,7 +2310,7 @@ private:
     }
 
     void template39() { // #4742 - Used to freeze in 1.60
-        const char code[] = "template<typename T> struct vector {" 
+        const char code[] = "template<typename T> struct vector {"
                             "  operator T() const;"
                             "};"
                             "void f() {"
