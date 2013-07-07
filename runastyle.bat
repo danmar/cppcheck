@@ -16,5 +16,5 @@ astyle %STYLE% %OPTIONS% test/*.h
 
 astyle %STYLE% %OPTIONS% tools/*.cpp
 
-astyle %STYLE% %OPTIONS% htdocs/archive/*.cpp
+astyle %STYLE% %OPTIONS% htdocs/archive/*.c
 astyle %STYLE% %OPTIONS% htdocs/archive/*.h
