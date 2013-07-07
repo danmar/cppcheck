@@ -131,6 +131,7 @@ private:
         TEST_CASE(template36);  // #4310 - passing unknown template instantiation as template argument
         TEST_CASE(template37);  // #4544 - A<class B> a;
         TEST_CASE(template38);  // #4832 - crash on C++11 right angle brackets
+        TEST_CASE(template39);  // #4742 - freeze
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2306,6 +2307,17 @@ private:
                             "    A<BLA>      gna2;\n"
                             "}\n";
         tok(code); // Don't crash or freeze
+    }
+
+    void template39() { // #4742 - Used to freeze in 1.60
+        const char code[] = "template<typename T> struct vector {" 
+                            "  operator T() const;"
+                            "};"
+                            "void f() {"
+                            "  vector<vector<int>> v;"
+                            "  const vector<int> vi = static_cast<vector<int>>(v);"
+                            "}";
+        tok(code);
     }
 
     void template_default_parameter() {
