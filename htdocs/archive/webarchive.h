@@ -1,4 +1,3 @@
-
 #include <string.h>
 
 #define MAX_RECORDS 1000
@@ -52,4 +51,3 @@ void sortdata(char * * const data, int sz)
         }
     }
 }
-
