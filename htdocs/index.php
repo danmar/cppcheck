@@ -13,7 +13,7 @@ uninitialized variables, unused functions" />
   <link rel="stylesheet" type="text/css" href="/site/css/pack.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
-        href="http://sourceforge.net/export/rss2_projnews.php?group_id=195752" />
+        href="http://sourceforge.net/p/cppcheck/news/feed" />
 </head>
 <body>
 <div id="header">
@@ -98,7 +98,7 @@ which is oriented for this environment. A comparison of Cppcheck and PVS-Studio 
   require './site/simplepie/simplepie.php';
 
   $feed = new SimplePie();
-  $feed->set_feed_url('http://sourceforge.net/export/rss2_projnews.php?group_id=195752');
+  $feed->set_feed_url('http://sourceforge.net/p/cppcheck/news/feed');
   $feed->set_cache_location('./site/simplepie/cache');
   $feed->init();
   print("<ul class=\"rssfeeditems\">\n");
@@ -107,7 +107,7 @@ which is oriented for this environment. A comparison of Cppcheck and PVS-Studio 
   }
   print("</ul>\n");
 ?>
-<p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
+<p><a href="http://sourceforge.net/p/cppcheck/news/">View all news&hellip;</a></p>
 
 <h2><a id="documentation">Documentation</a></h2>
 <p>You can read the <a href="manual.pdf">manual</a> or download some
