@@ -1,4 +1,5 @@
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_RECORDS 1000
 
@@ -12,7 +13,10 @@ int readdata(char * * const data, int sz)
     int i = 0;
     while (i < sz && fgets(line,sizeof(line)-2,f)) {
         if (strncmp(line, "name=", 5) == 0) {
-            data[i] = malloc(strlen(line));
+            int len = strlen(line);
+            while (line[len-1] == '\n' || line[len-1] == '\r' || line[len-1] == '\t' || line[len-1] == ' ')
+                line[--len] = '\0';
+            data[i] = malloc(len);
             strcpy(data[i], line);
             i++;
         }
@@ -46,8 +50,8 @@ void sortdata(char * * const data, int sz)
             char *p = data[i-1];
             data[i-1] = data[i];
             data[i] = p;
-            if (i > 1)
-                i--;
+            if (i >= 2)
+                i -= 2;
         }
     }
 }
