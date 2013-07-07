@@ -73,7 +73,7 @@ Options -MultiViews
 # You can customize what Apache returns to the client in case of an error (see
 # http://httpd.apache.org/docs/current/mod/core.html#errordocument), e.g.:
 
-#ErrorDocument 404 /404.html
+ErrorDocument 404 /404.html
 
 
 # ##############################################################################
