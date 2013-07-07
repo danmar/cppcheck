@@ -1,6 +1,6 @@
 {
   "name": "cppcheck-web",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "XhmikosR (https://github.com/XhmikosR)",
   "description": "The dependencies to build cppcheck's website",
   "homepage": "https://github.com/danmar/cppcheck",
@@ -11,7 +11,7 @@
   "bugs": {
     "url": "http://sourceforge.net/apps/trac/cppcheck/wiki"
   },
-  "license": "MIT",
+  "license": "GPLv3",
   "main": "make.js",
   "readmeFilename": "Readme.md",
   "scripts": {
