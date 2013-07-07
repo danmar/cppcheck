@@ -55,3 +55,16 @@ void sortdata(char * * const data, int sz)
         }
     }
 }
+
+void generatepage(const char msg[])
+{
+    puts("Content-type: text/html\r\n\r\n");
+    puts("<html>");
+    puts("<head><script>");
+    puts("function ok() { window.location = \"http://cppcheck.sf.net/cgi-bin/report.cgi\"; }");
+    puts("</script></head>");
+    puts("<body>");
+    puts(msg);
+    puts("<br><input type=\"button\" value=\"OK\" onclick=\"ok()\"></body></html>");
+}
+

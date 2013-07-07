@@ -27,17 +27,15 @@ int main()
 {
     const char *query_string = getenv("QUERY_STRING");
     if (query_string == NULL) {
-        printf("Content-type: text/plain\r\n\r\n");
-        puts("empty/invalid data");
+        generatepage("Internal error: invalid request");
     } else if (NULL != validate(query_string)) {
-        printf("Content-type: text/plain\r\n\r\n");
-        puts(validate(query_string));
+        generatepage(validate(query_string));
     } else {
 
         char *data[MAX_RECORDS] = {0};
         if (!readdata(data, MAX_RECORDS)) {
-            printf("Content-type: text/plain\r\n\r\n");
-            puts("failed to delete file, try again");
+            generatepage("Failed to delete file, try again");
+            return EXIT_SUCCESS;
         }
         sortdata(data, MAX_RECORDS);
 
@@ -52,30 +50,26 @@ int main()
         }
 
         if (index == -1) {
-            puts("Content-type: text/plain\r\n\r\n");
-            puts("file not found");
+            generatepage("File not found");
             return EXIT_SUCCESS;
         }
 
-        if (index >= 0) {
-            int deleted = 0;
-            FILE *f = fopen("data.txt", "wt");
-            if (f != NULL) {
-                for (int i = 0; i < MAX_RECORDS && data[i]; i++) {
-                    if (i != index)
-                        fprintf(f, "%s\n", data[i]);
-                    else
-                        deleted = 1;
-                }
-                fclose(f);
-
-                puts("Content-type: text/plain\r\n\r\n");
-                puts(deleted ? "file deleted" : "failed to delete file");
-            } else {
-                puts("Content-type: text/plain\r\n\r\n");
-                puts("failed to delete file, try again");
-            }
+        FILE *f = fopen("data.txt", "wt");
+        if (f == NULL) {
+            generatepage("Failed to delete file (access denied)");
+            return EXIT_SUCCESS;
         }
+
+        int deleted = 0;
+        for (int i = 0; i < MAX_RECORDS && data[i]; i++) {
+            if (i != index)
+                fprintf(f, "%s\n", data[i]);
+            else
+                deleted = 1;
+        }
+        fclose(f);
+
+        generatepage(deleted ? "File deleted" : "Failed to delete file");
     }
 
     return EXIT_SUCCESS;

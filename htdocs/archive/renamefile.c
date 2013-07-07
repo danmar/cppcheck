@@ -42,17 +42,15 @@ int main()
 {
     const char *query_string = getenv("QUERY_STRING");
     if (query_string == NULL) {
-        printf("Content-type: text/plain\r\n\r\n");
-        puts("empty/invalid data");
+        generatepage("Internal error: empty/invalid data");
     } else if (NULL != validate(query_string)) {
-        printf("Content-type: text/plain\r\n\r\n");
-        puts(validate(query_string));
+        generatepage(validate(query_string));
     } else {
 
         char *data[MAX_RECORDS] = {0};
         if (!readdata(data, MAX_RECORDS)) {
-            printf("Content-type: text/plain\r\n\r\n");
-            puts("access failed, try again");
+            generatepage("access failed, try again");
+            return EXIT_SUCCESS;
         }
         sortdata(data, MAX_RECORDS);
 
@@ -74,15 +72,13 @@ int main()
         }
 
         if (index == -1) {
-            puts("Content-type: text/plain\r\n\r\n");
-            puts("file not found");
+            generatepage("file not found");
             return EXIT_SUCCESS;
         }
 
         FILE *f = fopen("data.txt", "wt");
         if (f == NULL) {
-            puts("Content-type: text/plain\r\n\r\n");
-            puts("failed to rename file (access denied), try again");
+            generatepage("failed to rename file (access denied), try again");
             return EXIT_SUCCESS;
         }
 
@@ -95,8 +91,7 @@ int main()
 
         fclose(f);
 
-        puts("Content-type: text/plain\r\n\r\n");
-        puts("file renamed");
+        generatepage("file renamed");
     }
 
     return EXIT_SUCCESS;

@@ -51,33 +51,35 @@ int main()
 {
     const char *query_string = getenv("QUERY_STRING");
     if (query_string == NULL) {
-        printf("Content-type: text/plain\r\n\r\n");
-        printf("empty/invalid data\n");
+        generatepage("Internal error: empty/invalid data");
     } else if (strlen(query_string) > 1024) {
-        printf("Content-type: text/plain\r\n\r\n");
-        printf("data size limit exceeded (1024)\n");
+        generatepage("Internal error: data size limit exceeded (1024)");
     } else if (NULL != validate(query_string)) {
-        printf("Content-type: text/plain\r\n\r\n");
-        printf("%s\n", validate(query_string));
+        generatepage(validate(query_string));
     } else {
         char data[4096] = {0};
         unencode(query_string, data);
 
-        printf("Content-type: text/plain\r\n\r\n");
-
         if (NULL != validate(data)) {
-            printf("%s\n", validate(data));
+            generatepage(validate(data));
         } else {
             char *olddata[MAX_RECORDS] = {0};
             olddata[0] = data;
-            readdata(&olddata[1], MAX_RECORDS-1);
+            if (!readdata(&olddata[1], MAX_RECORDS-1)) {
+                generatepage("Failed to add file (access denied). Try again.");
+                return EXIT_SUCCESS;
+            }
             sortdata(olddata, MAX_RECORDS);
 
             FILE *f = fopen("data.txt", "wt");
+            if (f == NULL) {
+                generatepage("Failed to add file (access denied). Try again.");
+                return EXIT_SUCCESS;
+            }
             for (int i = 0; i < MAX_RECORDS && olddata[i]; i++)
                 fprintf(f, "%s\n", olddata[i]);
             fclose(f);
-            printf("saved\n");
+            generatepage("saved.");
         }
     }
 
