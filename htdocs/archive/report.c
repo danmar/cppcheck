@@ -7,7 +7,8 @@
 
 #define MAX_RECORDS 1000
 
-void listAll(char **data) {
+void listAll(char **data)
+{
     puts("Content-type: text/html\r\n\r\n");
     puts("<html><meta http-equiv=\"Pragma\" content=\"no-cache\"><body>\n");
     puts("<table>\n");
@@ -19,7 +20,8 @@ void listAll(char **data) {
     puts("</body></html>");
 }
 
-void listOne(char **data, const char name[]) {
+void listOne(char **data, const char name[])
+{
     int index = -1;
     for (int i = 0; i < MAX_RECORDS && data[i]; i++) {
         if (strcmp(getname(data[i]), name)==0) {
@@ -32,7 +34,8 @@ void listOne(char **data, const char name[]) {
     puts((index == -1) ? "Not found" : data[index]);
 }
 
-int main() {
+int main()
+{
     char *data[MAX_RECORDS] = {0};
 
     // read

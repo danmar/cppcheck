@@ -43,7 +43,7 @@ const char *validate(const char *data)
     i += 6;
 
     // TODO: check XML data..
-    
+
     return NULL;
 }
 

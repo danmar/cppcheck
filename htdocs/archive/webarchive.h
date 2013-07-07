@@ -23,7 +23,8 @@ int readdata(char * * const data, int sz)
     return 1;  // success
 }
 
-const char * getname(const char *data) {
+const char * getname(const char *data)
+{
     static char name[32];
     if (strncmp(data,"name=",5) != 0)
         return NULL;
