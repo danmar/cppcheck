@@ -1,7 +1,5 @@
 /*! Inspired by: http://aboutcode.net/2010/11/11/list-github-projects-using-javascript.html */
 
-/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:false, undef:true, unused:true, curly:true, browser:true, jquery:true, indent:4*/
-
 jQuery.fn.listCommits = function(username, repository, branch) {
     this.html('<span>Querying GitHub for recent commits&hellip;</span>');
 
