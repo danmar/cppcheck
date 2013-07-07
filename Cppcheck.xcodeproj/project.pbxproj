@@ -50,6 +50,8 @@
 		F4043DE5177F093300CD5A40 /* symboldatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD0177F093300CD5A40 /* symboldatabase.cpp */; };
 		F4043DE6177F093300CD5A40 /* templatesimplifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD2177F093300CD5A40 /* templatesimplifier.cpp */; };
 		F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD4177F093300CD5A40 /* tokenlist.cpp */; };
+		F47E507E17896A8600C684DC /* environment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E507C17896A8600C684DC /* environment.cpp */; };
+		F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E508117896AEB00C684DC /* tinyxml2.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -154,6 +156,10 @@
 		F4043DD4177F093300CD5A40 /* tokenlist.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tokenlist.cpp; path = lib/tokenlist.cpp; sourceTree = "<group>"; };
 		F4043DD5177F093300CD5A40 /* tokenlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tokenlist.h; path = lib/tokenlist.h; sourceTree = "<group>"; };
 		F4043DD6177F093300CD5A40 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = version.h; path = lib/version.h; sourceTree = "<group>"; };
+		F47E507C17896A8600C684DC /* environment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = environment.cpp; path = lib/environment.cpp; sourceTree = "<group>"; };
+		F47E507D17896A8600C684DC /* environment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = environment.h; path = lib/environment.h; sourceTree = "<group>"; };
+		F47E508117896AEB00C684DC /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml2.cpp; path = externals/tinyxml/tinyxml2.cpp; sourceTree = "<group>"; };
+		F47E508217896AEB00C684DC /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml2.h; path = externals/tinyxml/tinyxml2.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +186,7 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				F47E507F17896AC700C684DC /* Externals */,
 				2C21A45D1178BB0B00D35009 /* Library */,
 				2C21A45C1178BB0400D35009 /* Command */,
 			);
@@ -264,6 +271,8 @@
 				F4043DCC177F093300CD5A40 /* checkunusedvar.h */,
 				39E60EA11270DE3A00AC0D02 /* cppcheck.cpp */,
 				39E60EA21270DE3A00AC0D02 /* cppcheck.h */,
+				F47E507C17896A8600C684DC /* environment.cpp */,
+				F47E507D17896A8600C684DC /* environment.h */,
 				39E60EA31270DE3A00AC0D02 /* errorlogger.cpp */,
 				39E60EA41270DE3A00AC0D02 /* errorlogger.h */,
 				39E60EA51270DE3A00AC0D02 /* executionpath.cpp */,
@@ -301,6 +310,23 @@
 			children = (
 			);
 			name = Documentation;
+			sourceTree = "<group>";
+		};
+		F47E507F17896AC700C684DC /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+				F47E508017896AD200C684DC /* tinyxml */,
+			);
+			name = Externals;
+			sourceTree = "<group>";
+		};
+		F47E508017896AD200C684DC /* tinyxml */ = {
+			isa = PBXGroup;
+			children = (
+				F47E508117896AEB00C684DC /* tinyxml2.cpp */,
+				F47E508217896AEB00C684DC /* tinyxml2.h */,
+			);
+			name = tinyxml;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -399,6 +425,8 @@
 				F4043DE5177F093300CD5A40 /* symboldatabase.cpp in Sources */,
 				F4043DE6177F093300CD5A40 /* templatesimplifier.cpp in Sources */,
 				F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */,
+				F47E507E17896A8600C684DC /* environment.cpp in Sources */,
+				F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
