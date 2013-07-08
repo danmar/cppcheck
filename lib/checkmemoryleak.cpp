@@ -183,9 +183,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return Dir;
 
         // Does tok2 point on "g_malloc", "g_strdup", ..
-        const int alloctype = settings1->environment.alloc(tok2->str());
+        const int alloctype = settings1->library.alloc(tok2->str());
         if (alloctype > 0)
-            return Environment::ismemory(alloctype) ? OtherMem : OtherRes;
+            return Library::ismemory(alloctype) ? OtherMem : OtherRes;
     }
 
     while (Token::Match(tok2,"%type%|%var% ::|. %type%"))
@@ -272,9 +272,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
     // Does tok2 point on "g_free", etc ..
     if (Token::Match(tok, "%type% ( %varid% )", varid)) {
-        const int dealloctype = settings1->environment.dealloc(tok->str());
+        const int dealloctype = settings1->library.dealloc(tok->str());
         if (dealloctype > 0)
-            return Environment::ismemory(dealloctype) ? OtherMem : OtherRes;
+            return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
     }
 
     return No;
@@ -313,9 +313,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         return Dir;
 
     if (Token::Match(tok, ("%type% ( " + varname + " )").c_str())) {
-        int type = settings1->environment.dealloc(tok->str());
+        int type = settings1->library.dealloc(tok->str());
         if (type > 0)
-            return Environment::ismemory(type) ? OtherMem : OtherRes;
+            return Library::ismemory(type) ? OtherMem : OtherRes;
     }
 
     return No;

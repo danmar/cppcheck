@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
+#ifndef libraryH
+#define libraryH
 
 #include "config.h"
 #include <map>
@@ -28,13 +28,13 @@
 /// @{
 
 /**
- * @brief Environment definitions handling
+ * @brief Library definitions handling
  */
-class CPPCHECKLIB Environment {
+class CPPCHECKLIB Library {
 public:
-    Environment();
-    Environment(const Environment &);
-    ~Environment();
+    Library();
+    Library(const Library &);
+    ~Library();
 
     bool load(const char path[]);
 
@@ -75,4 +75,4 @@ private:
 
 /// @}
 
-#endif // PATH_H_INCLUDED
+#endif // libraryH

@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "environment.h"
+#include "library.h"
 #include "tinyxml2.h"
 
-Environment::Environment() : allocid(0)
+Library::Library() : allocid(0)
 {
     while (!ismemory(++allocid));
     _alloc["malloc"] = allocid;
@@ -33,14 +33,14 @@ Environment::Environment() : allocid(0)
     _dealloc["fclose"] = allocid;
 }
 
-Environment::Environment(const Environment &env) : use(env.use), ignore(env.ignore), noreturn(env.noreturn), allocid(env.allocid), _alloc(env._alloc), _dealloc(env._dealloc)
+Library::Library(const Library &lib) : use(lib.use), ignore(lib.ignore), noreturn(lib.noreturn), allocid(lib.allocid), _alloc(lib._alloc), _dealloc(lib._dealloc)
 {
 
 }
 
-Environment::~Environment() { }
+Library::~Library() { }
 
-bool Environment::load(const char path[])
+bool Library::load(const char path[])
 {
     tinyxml2::XMLDocument doc;
 

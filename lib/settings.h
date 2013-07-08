@@ -24,7 +24,7 @@
 #include <string>
 #include <set>
 #include "config.h"
-#include "environment.h"
+#include "library.h"
 #include "suppressions.h"
 #include "standards.h"
 
@@ -175,8 +175,8 @@ public:
     /** @brief --report-progress */
     bool reportProgress;
 
-    /** Environment (--environment) */
-    Environment environment;
+    /** Library (--library) */
+    Library library;
 
     /** Rule */
     class CPPCHECKLIB Rule {
@@ -201,6 +201,9 @@ public:
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
+
+    /** Check for incomplete info in library files? */
+    bool checkLibrary;
 
     /** Struct contains standards settings */
     Standards standards;

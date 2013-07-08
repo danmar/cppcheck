@@ -70,7 +70,7 @@ void VarInfo::possibleUsageAll(const std::string &functionName)
 void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, int type)
 {
     const CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, _settings);
-    if (_settings->environment.isresource(type))
+    if (_settings->library.isresource(type))
         checkmemleak.resourceLeakError(tok, varname);
     else
         checkmemleak.memleakError(tok, varname);
@@ -96,7 +96,7 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &v
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (_settings->isEnabled("information") && _settings->experimental) {
+    if (_settings->checkLibrary) {
         reportError(tok,
                     Severity::information,
                     "leakconfiguration",
@@ -232,7 +232,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // allocation?
             if (Token::Match(tok->tokAt(2), "%type% (")) {
-                int i = _settings->environment.alloc(tok->strAt(2));
+                int i = _settings->library.alloc(tok->strAt(2));
                 if (i > 0) {
                     alloctype[tok->varId()] = i;
                 }
@@ -255,7 +255,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (innerTok->str() == ")")
                     break;
                 if (innerTok->str() == "(" && innerTok->previous()->isName()) {
-                    const int deallocId = _settings->environment.dealloc(tok->str());
+                    const int deallocId = _settings->library.dealloc(tok->str());
                     functionCall(innerTok->previous(), varInfo, deallocId);
                     innerTok = innerTok->link();
                 }
@@ -335,7 +335,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // Function call..
         else if (Token::Match(tok, "%type% (") && tok->str() != "return") {
-            const int dealloc = _settings->environment.dealloc(tok->str());
+            const int dealloc = _settings->library.dealloc(tok->str());
 
             functionCall(tok, varInfo, dealloc);
 
@@ -345,8 +345,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (dealloc == NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 const std::string &functionName(tok->link()->previous()->str());
                 bool unknown = false;
-                if (_settings->environment.ignore.find(functionName) == _settings->environment.ignore.end() &&
-                    _settings->environment.use.find(functionName) == _settings->environment.use.end() &&
+                if (_settings->library.ignore.find(functionName) == _settings->library.ignore.end() &&
+                    _settings->library.use.find(functionName) == _settings->library.use.end() &&
                     _tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (unknown) {
                         //const std::string &functionName(tok->link()->previous()->str());
@@ -385,7 +385,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const in
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
 
     // Ignore function call?
-    const bool ignore = bool(_settings->environment.ignore.find(tok->str()) != _settings->environment.ignore.end());
+    const bool ignore = bool(_settings->library.ignore.find(tok->str()) != _settings->library.ignore.end());
 
     if (ignore)
         return;

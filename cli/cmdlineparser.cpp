@@ -314,6 +314,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        // Check configuration
+        else if (std::strcmp(argv[i], "--check-config") == 0) {
+            _settings->checkConfiguration = true;
+        }
+
+        // Check library definitions
+        else if (std::strcmp(argv[i], "--check-library") == 0) {
+            _settings->checkLibrary = true;
+        }
+
         else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
             const std::string errmsg = _settings->addEnabled(argv[i] + 9);
             if (!errmsg.empty()) {
@@ -325,14 +335,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->addEnabled("warning");
                 _settings->addEnabled("performance");
                 _settings->addEnabled("portability");
-            }
-        }
-
-        // --environment
-        else if (std::strncmp(argv[i], "--environment=", 14) == 0) {
-            if (!_settings->environment.load(argv[i]+14)) {
-                PrintMessage("cppcheck: Failed to load environment file '" + std::string(argv[i]+14) + "'");
-                return false;
             }
         }
 
@@ -475,6 +477,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                         path += '/';
                 }
                 _ignoredPaths.push_back(path);
+            }
+        }
+
+        // --library
+        else if (std::strncmp(argv[i], "--library=", 10) == 0) {
+            if (!_settings->library.load(argv[i]+10)) {
+                PrintMessage("cppcheck: Failed to load library file '" + std::string(argv[i]+10) + "'");
+                return false;
             }
         }
 
@@ -637,11 +647,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 #endif
 
-        // Check configuration
-        else if (std::strcmp(argv[i], "--check-config") == 0) {
-            _settings->checkConfiguration = true;
-        }
-
         // Specify platform
         else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
             std::string platform(11+argv[i]);
@@ -755,6 +760,7 @@ void CmdLineParser::PrintHelp()
               "                         by providing an implementation for them.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
+              "    --check-library      Warn when library files have incomplete info.\n"
               "    -D<ID>               Define preprocessor symbol. Unless --max-configs or\n"
               "                         --force is used, Cppcheck will only check the given\n"
               "                         configuration when -D is used.\n"
