@@ -88,6 +88,7 @@ private:
         TEST_CASE(initvar_nocopy1);            // ticket #2474
         TEST_CASE(initvar_nocopy2);            // ticket #2484
         TEST_CASE(initvar_nocopy3);            // ticket #3611
+        TEST_CASE(initvar_with_member_function_this); // ticket #4824
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
         TEST_CASE(initvar_func_ret_func_ptr); // ticket #4449
@@ -1132,6 +1133,15 @@ private:
               "    A(const A& rhs) {}\n"
               "};", true);
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Member variable 'A::b' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void initvar_with_member_function_this() {
+        check("struct Foo {\n"
+              "  Foo(int m) { this->setMember(m); }\n"
+              "  void setMember(int m) { member = m; }\n"
+              "  int member;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_destructor() {

@@ -2500,7 +2500,7 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
     }
 
     // check for member function
-    else if (tok->strAt(-1) == ".") {
+    else if (Token::Match(tok->tokAt(-2), "!!this .")) {
         if (Token::Match(tok->tokAt(-2), "%var% .")) {
             const Token *tok1 = tok->tokAt(-2);
 
