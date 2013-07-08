@@ -3,6 +3,23 @@
 
 #define MAX_RECORDS 1000
 
+static void unencode(const char *src, char *dest)
+{
+    for (; *src; src++, dest++) {
+        if (*src == '+')
+            *dest = ' ';
+        else if (*src == '%') {
+            int code;
+            if (sscanf(src+1, "%2x", &code) != 1)
+                code = '?';
+            *dest = code;
+            src += 2;
+        } else
+            *dest = *src;
+    }
+    *dest = '\0';
+}
+
 int readdata(char * * const data, int sz)
 {
     FILE *f = fopen("data.txt", "rt");

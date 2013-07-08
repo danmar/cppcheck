@@ -5,23 +5,6 @@
 
 #include "webarchive.h"
 
-static void unencode(const char *src, char *dest)
-{
-    for (; *src; src++, dest++) {
-        if (*src == '+')
-            *dest = ' ';
-        else if (*src == '%') {
-            int code;
-            if (sscanf(src+1, "%2x", &code) != 1)
-                code = '?';
-            *dest = code;
-            src += 2;
-        } else
-            *dest = *src;
-    }
-    *dest = '\0';
-}
-
 const char *validate(const char *data)
 {
     int i;
