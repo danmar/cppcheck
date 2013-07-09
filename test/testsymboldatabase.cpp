@@ -193,6 +193,7 @@ private:
         TEST_CASE(symboldatabase33); // ticket #4682 (false negatives)
         TEST_CASE(symboldatabase34); // ticket #4694 (segmentation fault)
         TEST_CASE(symboldatabase35); // ticket #4806 (segmentation fault)
+        TEST_CASE(symboldatabase36); // ticket #4892 (segmentation fault)
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1510,6 +1511,11 @@ private:
     void symboldatabase35() { // ticket #4806 and #4841
         check("class FragmentQueue : public CL_NS(util)::PriorityQueue<CL_NS(util)::Deletor::Object<TextFragment> >\n"
               "{};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase36() { // ticket #4892
+        check("void struct ( ) { if ( 1 ) } int main ( ) { }");
         ASSERT_EQUALS("", errout.str());
     }
 
