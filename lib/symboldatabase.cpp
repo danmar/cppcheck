@@ -742,6 +742,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
             scope = &(*it);
 
+            if (!scope->definedType) {
+                _blankTypes.push_back(Type());
+                scope->definedType = &_blankTypes.back();
+            }
+
             if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
                 // check for default constructor
                 bool hasDefaultConstructor = false;
@@ -799,7 +804,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (scope->definedType->needInitialization == Type::Unknown)
                         unknowns++;
                 }
-            } else if (scope->type == Scope::eUnion && scope->definedType && scope->definedType->needInitialization == Type::Unknown)
+            } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::Unknown)
                 scope->definedType->needInitialization = Type::True;
         }
 

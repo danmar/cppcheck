@@ -730,6 +730,9 @@ private:
 
     /** variable symbol table */
     std::vector<const Variable *> _variableList;
+
+    /** list for missing types */
+    std::list<Type> _blankTypes;
 };
 
 #endif
