@@ -1386,6 +1386,12 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 else if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
                     tok = tok->linkAt(1);
 
+                else if (tok->str() == "?")
+                    // TODO: False negatives when "?:" is used.
+                    // Fix the tokenizer and then remove this bailout.
+                    // The tokenizer should replace "return x?y:z;" with "if(x)return y;return z;"
+                    return true;
+
                 tok = tok->next();
             }
 

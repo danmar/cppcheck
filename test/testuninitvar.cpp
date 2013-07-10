@@ -2634,6 +2634,25 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f(int x) {\n" // FP with ?:
+                        "    int a;\n"
+                        "    if (x)\n"
+                        "        a = p;\n"
+                        "    return x ? 2*a : 0;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // TODO: False negative when "?:" is used
+        // This should probably be fixed in the tokenizer by changing
+        // "return x?y:z;" to "if(x)return y;return z;"
+        checkUninitVar2("int f(int x) {\n"
+                        "    int a;\n"
+                        "    if (x)\n"
+                        "        a = p;\n"
+                        "    return y ? 2*a : 3*a;\n"
+                        "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         // Unknown => bail out..
         checkUninitVar2("void f(int x) {\n"
                         "    int i;\n"
