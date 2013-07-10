@@ -97,7 +97,7 @@ private:
     void sizeofForNumericParameterError(const Token* tok);
     void sizeofVoidError(const Token *tok);
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
-    void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname);
+    void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const {
         CheckSizeof c(0, settings, errorLogger);
@@ -111,7 +111,7 @@ private:
         c.divideSizeofError(0);
         c.sizeofVoidError(0);
         c.sizeofDereferencedVoidPointerError(0, "varname");
-        c.arithOperationsOnVoidPointerError(0, "varname");
+        c.arithOperationsOnVoidPointerError(0, "varname", "vartype");
     }
 
     static std::string myName() {

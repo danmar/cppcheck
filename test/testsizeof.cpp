@@ -531,6 +531,33 @@ private:
               "  int j = sizeof(*p1);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Calculations on void* with casts
+
+        check("void f(void *data) {\n"
+              "  *((unsigned char *)data + 1) = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void *data) {\n"
+              "  *((unsigned char *)(data) + 1) = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void *data) {\n"
+              "  unsigned char* c = (unsigned char *)(data + 1);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        check("void f(void *data) {\n"
+              "  unsigned char* c = (unsigned char *)data++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        check("void f(void *data) {\n"
+              "  void* data2 = (void *)data + 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
     }
 
 };

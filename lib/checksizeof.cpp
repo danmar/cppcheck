@@ -295,7 +295,10 @@ void CheckSizeof::sizeofVoid()
             int index = (tok->isName()) ? 0 : 1;
             const Variable* var = tok->tokAt(index)->variable();
             if (var && Token::Match(var->typeStartToken(), "void *")) {
-                arithOperationsOnVoidPointerError(tok, tok->tokAt(index)->str());
+                if (Token::Match(tok->previous(), ") %var% +|-") && // Check for cast on operations with +|-
+                    !Token::Match(tok->previous()->link(), "( const| void *"))
+                    continue;
+                arithOperationsOnVoidPointerError(tok, tok->strAt(index), var->typeStartToken()->stringifyList(var->typeEndToken()->next()));
             }
         }
     }
@@ -315,9 +318,9 @@ void CheckSizeof::sizeofDereferencedVoidPointerError(const Token *tok, const std
     reportError(tok, Severity::portability, "sizeofDereferencedVoidPointer", message + "\n" + verbose);
 }
 
-void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname)
+void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype)
 {
-    const std::string message = "'" + varname + "' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.";
+    const std::string message = "'" + varname + "' is of type '" + vartype + "'. When using void pointers in calculations, the behaviour is undefined.";
     const std::string verbose = message + " Arithmetic operations on 'void *' is a GNU C extension, which defines the 'sizeof(void)' to be 1.";
     reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", message + "\n" + verbose);
 }
