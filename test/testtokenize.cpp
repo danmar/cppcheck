@@ -7123,6 +7123,29 @@ private:
         static const char code10[] = "std::tr1::function <void(int)> f;";
         ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Unspecified, "test.cpp", false));
         ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Unspecified, "test.cpp", true));
+
+        // #4042 (Do not add 'std ::' to variables)
+        static const char code11[] = "using namespace std;\n"
+                                     "const char * string = \"Hi\";";
+        ASSERT_EQUALS("const char * string ; string = \"Hi\" ;", tokenizeAndStringify(code11, false));
+
+        static const char code12[] = "using namespace std;\n"
+                                     "string f(const char * string) {\n"
+                                     "    cout << string << endl;\n"
+                                     "    return string;\n"
+                                     "}";
+        static const char expected12[] = "std :: string f ( const char * string ) {\n"
+                                         "std :: cout << string << std :: endl ;\n"
+                                         "return string ;\n"
+                                         "}";
+        ASSERT_EQUALS(expected12, tokenizeAndStringify(code12, false));
+
+        static const char code13[] = "using namespace std;\n"
+                                     "try { }\n"
+                                     "catch(std::exception &exception) { }";
+        static const char expected13[] = "try { }\n"
+                                         "catch ( std :: exception & exception ) { }";
+        ASSERT_EQUALS(expected13, tokenizeAndStringify(code13, false));
     }
 
     void microsoftMFC() {

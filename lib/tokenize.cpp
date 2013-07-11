@@ -1703,9 +1703,6 @@ bool Tokenizer::tokenize(std::istream &code,
     // remove unnecessary member qualification..
     removeUnnecessaryQualification();
 
-    // Add std:: in front of std classes, when using namespace std; was given
-    simplifyNamespaceStd();
-
     // remove Microsoft MFC..
     simplifyMicrosoftMFC();
 
@@ -1989,6 +1986,9 @@ bool Tokenizer::tokenize(std::istream &code,
     } else {
         setVarId();
     }
+
+    // Add std:: in front of std classes, when using namespace std; was given
+    simplifyNamespaceStd();
 
     createLinks2();
 
@@ -8991,7 +8991,7 @@ void Tokenizer::simplifyNamespaceStd()
         "exception", "bad_exception",
         "logic_error", "domain_error", "invalid_argument_", "length_error", "out_of_rage", "runtime_error", "range_error", "overflow_error", "underflow_error",
         "locale",
-        "cout", "cerr", "clog", "cin",
+        "cout", "cerr", "clog", "cin", "endl",
         "fpos", "streamoff", "streampos", "streamsize"
     };
     static const std::set<std::string> stdTypes(stdTypes_, stdTypes_+sizeof(stdTypes_)/sizeof(*stdTypes_));
@@ -9019,7 +9019,7 @@ void Tokenizer::simplifyNamespaceStd()
             insert = true;
         else if (Token::Match(tok, "%var% <") && !Token::Match(tok->previous(), ".|::") && stdTemplates.find(tok->str()) != stdTemplates.end())
             insert = true;
-        else if (tok->isName() && !Token::Match(tok->next(), "(|<") && !Token::Match(tok->previous(), ".|::") && stdTypes.find(tok->str()) != stdTypes.end())
+        else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && !Token::Match(tok->previous(), ".|::") && stdTypes.find(tok->str()) != stdTypes.end())
             insert = true;
 
         if (insert) {
