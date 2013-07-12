@@ -162,6 +162,28 @@ unsigned int CppCheck::processFile(const std::string& filename)
             preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
         }
 
+        // Run rules on this code
+        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+            if (it->tokenlist == "define") {
+                Tokenizer tokenizer2(&_settings, this);
+                std::istringstream istr2(filedata);
+                tokenizer2.list.createTokens(istr2, filename);
+
+                for (const Token *tok = tokenizer2.list.front(); tok; tok = tok->next()) {
+                    if (tok->str() == "#define") {
+                        std::string code = std::string(tok->linenr()-1U, '\n');
+                        for (const Token *tok2 = tok; tok2 && tok2->linenr() == tok->linenr(); tok2 = tok2->next())
+                            code += " " + tok2->str();
+                        Tokenizer tokenizer3(&_settings, this);
+                        std::istringstream istr3(code);
+                        tokenizer3.list.createTokens(istr3, tokenizer2.list.file(tok));
+                        executeRules("define", tokenizer3);
+                    }
+                }
+                break;
+            }
+        }
+
         if (_settings.checkConfiguration) {
             return 0;
         }
