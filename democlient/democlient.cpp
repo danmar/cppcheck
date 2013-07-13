@@ -81,6 +81,12 @@ int main()
     char code[4096] = {0};
     unencode(data, code);
 
+    FILE *logfile = fopen("democlient.log", "at");
+    if (logfile != NULL) {
+        fprintf(logfile, "===========================================================\n%s\n", code);
+        fclose(logfile);
+    }
+
     printf("Content-type: text/plain\n\n");
 
     CppcheckExecutor cppcheckExecutor;
