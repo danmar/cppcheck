@@ -16,7 +16,7 @@ Despite the name, Cppcheck is designed for both C and C++.
 
 ## Manual
 
-A manual is available [online](http://cppcheck.sf.net/manual.pdf).
+A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
 
 ## Compiling
 
@@ -48,7 +48,7 @@ make
 Use the cppcheck.sln file. The rules are normally enabled.
 
 To compile with rules (PCRE dependency):
-* the PCRE dll is needed. It can be downloaded from [here](http://cppcheck.sf.net/pcre-8.10-vs.zip).
+* the PCRE dll is needed. It can be downloaded from [here](http://cppcheck.sourceforge.net/pcre-8.10-vs.zip).
 
 To compile without rules (no dependencies):
 * remove the preprocessor define `HAVE_RULES` from the project

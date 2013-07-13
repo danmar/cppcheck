@@ -10,7 +10,7 @@ About
 Manual
 
     A manual is available online:
-    http://cppcheck.sf.net/manual.pdf
+    http://cppcheck.sourceforge.net/manual.pdf
 
 Compiling
 
@@ -41,7 +41,7 @@ Compiling
 
         To compile with rules (pcre dependency):
             * the pcre dll is needed. it can be downloaded from:
-                http://cppcheck.sf.net/pcre-8.10-vs.zip
+                http://cppcheck.sourceforge.net/pcre-8.10-vs.zip
 
         To compile without rules (no dependencies):
             * remove the preprocessor define HAVE_RULES from the project

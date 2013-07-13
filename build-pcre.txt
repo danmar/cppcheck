@@ -30,7 +30,7 @@ Then I built the lib with:
     nmake
 
 The resulting files can be downloaded here (please try if it works):
-    http://cppcheck.sf.net/pcre-8.10-vs.zip
+    http://cppcheck.sourceforge.net/pcre-8.10-vs.zip
 
 
 MINGW (Qt 4.7 SDK)

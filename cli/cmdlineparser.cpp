@@ -926,5 +926,5 @@ void CmdLineParser::PrintHelp()
               "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
               "\n"
               "For more information:\n"
-              "    http://cppcheck.sf.net/manual.pdf\n";
+              "    http://cppcheck.sourceforge.net/manual.pdf\n";
 }
