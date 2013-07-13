@@ -97,7 +97,7 @@ void generatepage(const char msg[])
     puts("Content-type: text/html\r\n\r\n");
     puts("<html>");
     puts("<head><script>");
-    puts("function ok() { window.location = \"http://cppcheck.sf.net/cgi-bin/report.cgi\"; }");
+    puts("function ok() { window.location = \"http://cppcheck.sf.net/archive/test.php\"; }");
     puts("</script></head>");
     puts("<body>");
     puts(msg);

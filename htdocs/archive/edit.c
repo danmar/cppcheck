@@ -57,8 +57,8 @@ int main()
     puts("<body>");
     puts("  <form action=\"http://cppcheck.sf.net/cgi-bin/setfiledata.cgi\" method=\"get\">");
     printf("    <textarea name=\"name\" cols=\"30\" rows=\"1\" readonly>%s</textarea>\n",name);
-    printf("    <textarea name=\"name\" cols=\"30\" rows=\"1\" readonly>%i</textarea>\n",version);
-    printf("    <textarea name=\"data\" cols=\"60\" rows=\"20\" maxsize=\"512\">123</textarea><br>\n",olddata);
+    printf("    <textarea name=\"version\" cols=\"30\" rows=\"1\" readonly>%i</textarea><br>\n",1+version);
+    printf("    <textarea name=\"data\" cols=\"60\" rows=\"20\" maxsize=\"512\">%s</textarea><br>\n",olddata);
     puts("    <input type=\"submit\" value=\"Save\">");
     puts("  </form>");
     puts("</body>");
