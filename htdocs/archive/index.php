@@ -37,16 +37,13 @@ uninitialized variables, unused functions" />
 </div> <!-- #tabs -->
 <div id="content">
   <div class="wrap">
-    <h1>Submit file</h1>
-    <form action="http://cppcheck.sf.net/cgi-bin/submit.cgi" method="get">
-      <p>Name:</p>
-      <input name="name" size="30" />
-      <p>Copy/paste the file data:</p>
-      <textarea name="data" rows="10" cols="40"></textarea>
-      <br />
-      <br />
-      <input type="submit" value="Submit" />
-    </form>
+    <h1>Cppcheck - Archive</h1>
+    <p>This archive is for useful Cppcheck rules and library configuration files.</p>
+    
+    <p> If you have a rule or library configuration that you want to share, use this
+    archive. Feel free to add any library or rule here.</p>
+
+    <? virtual('../cgi-bin/report.cgi') ?>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
 </body>
