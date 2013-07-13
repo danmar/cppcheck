@@ -62,6 +62,12 @@ int main()
     fclose(f);
     generatepage("saved.");
 
+    f = fopen("history.txt", "at");
+    if (f) {
+        fprintf(f,"%s\n",str);
+        fclose(f);
+    }
+
     return EXIT_SUCCESS;
 }
 
