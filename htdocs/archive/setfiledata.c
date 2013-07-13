@@ -62,7 +62,7 @@ int main()
     fclose(f);
     generatepage("saved.");
 
-    f = fopen("history.txt", "at");
+    f = fopen("setfiledata.log", "at");
     if (f) {
         fprintf(f,"%s\n",str);
         fclose(f);
