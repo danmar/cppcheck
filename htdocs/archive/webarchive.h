@@ -60,6 +60,25 @@ const char * getname(const char *data)
     return name;
 }
 
+int getversion(const char *data)
+{
+    const char *name = getname(data);
+    if (name == NULL)
+        return 0; // invalid string => 0
+    data = data + strlen("name=") + strlen(name);
+    if (strncmp(data,"&version=",9) != 0)
+        return 1;  // no version => 1
+    data = data + 9;
+    int ret = 0;
+    while (isdigit(*data)) {
+        ret = ret * 10 + *data - '0';
+        data++;
+    }
+    if (*data != '\0' && *data != '&')
+        return -1;  // invalid version => -1
+    return ret;
+}
+
 void sortdata(char * * const data, int sz)
 {
     for (int i = 1; i < sz && data[i]; i++) {
@@ -84,4 +103,68 @@ void generatepage(const char msg[])
     puts(msg);
     puts("<br><input type=\"button\" value=\"OK\" onclick=\"ok()\"></body></html>");
 }
+
+
+const char *validate_name_version(const char *data)
+{
+    int i = 0;
+
+    // name
+    if (strncmp(data,"name=",5) != 0)
+        return "invalid query string: must start with 'name='";
+    i += 5;
+    if (!isalnum(data[i]))
+        return "invalid query string: no name / invalid character in name";
+    while (isalnum(data[i]))
+        i++;
+    if (i > 35)
+        return "invalid query string: max name size is 32";
+
+    // version
+    if (strncmp(&data[i], "&version=", 9) != 0)
+        return "invalid query string: 'version=' not seen at the expected location";
+    i += strlen("&version=");
+    if (!isdigit(data[i]))
+        return "invalid query string: version must consist of digits 0-9";
+    while (isdigit(data[i]))
+        i++;
+
+    // end
+    if (data[i] != '\0')
+        return "invalid query";
+
+    return NULL;
+}
+
+const char *validate_name_version_data(const char *data)
+{
+    int i = 0;
+
+    // name
+    if (strncmp(data,"name=",5) != 0)
+        return "invalid query string: must start with 'name='";
+    i += 5;
+    if (!isalnum(data[i]))
+        return "invalid query string: no name / invalid character in name";
+    while (isalnum(data[i]))
+        i++;
+    if (i > 35)
+        return "invalid query string: max name size is 32";
+
+    // version
+    if (strncmp(&data[i], "&version=", 9) != 0)
+        return "invalid query string: 'version=' not seen at the expected location";
+    i += strlen("&version=");
+    if (!isdigit(data[i]))
+        return "invalid query string: version must consist of digits 0-9";
+    while (isdigit(data[i]))
+        i++;
+
+    // filedata
+    if (strncmp(data+i, "&data=", 6) != 0)
+        return "invalid query string: 'data=' not seen at the expected location";
+
+    return NULL;
+}
+
 
