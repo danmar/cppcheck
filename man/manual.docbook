@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.61 dev</title>
 
-    <date>2013-01-12</date>
+    <date>2013-07-14</date>
   </bookinfo>
 
   <chapter>
@@ -442,33 +442,57 @@ gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisti
 gui/test.cpp,31,error,memleak,Memory leak: b
 gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
 
- <para>The following format specifiers are supported:</para>
-      <variablelist>
-	<varlistentry>
-          <term>callstack</term>
-          <listitem>callstack - if available</listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>file</term>
-          <listitem>filename</listitem>
-        </varlistentry>
-	<varlistentry>
-          <term>id</term>
-          <listitem>message id</listitem>
-        </varlistentry>
-	<varlistentry>
-          <term>line</term>
-          <listitem>line number</listitem>
-        </varlistentry>
-	<varlistentry>
-          <term>message</term>
-          <listitem>verbose message text</listitem>
-        </varlistentry>
-	<varlistentry>
-          <term>severity</term>
-          <listitem>severity</listitem>
-        </varlistentry>
-      </variablelist>
+    <para>The following format specifiers are supported:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>callstack</term>
+
+        <listitem>
+          callstack - if available
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>file</term>
+
+        <listitem>
+          filename
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>id</term>
+
+        <listitem>
+          message id
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>line</term>
+
+        <listitem>
+          line number
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>message</term>
+
+        <listitem>
+          verbose message text
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>severity</term>
+
+        <listitem>
+          severity
+        </listitem>
+      </varlistentry>
+    </variablelist>
 
     <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and
     \t (horizontal tab) are supported.</para>
@@ -571,58 +595,261 @@ Checking test.c...
   </chapter>
 
   <chapter>
-    <title>Leaks</title>
+    <title>Rules</title>
 
-    <para>Looking for memory leaks and resource leaks is a key feature of
-    Cppcheck. Cppcheck can detect many common mistakes by default. But through
-    some tweaking you can improve the checking.</para>
+    <para>You can define custom rules using regular expressions.</para>
+
+    <para>These rules can not perform sophisticated analysis of the code. But
+    they give you an easy way to check for various simple patterns in the
+    code.</para>
+
+    <para>To get started writing rules, see the related articles here:</para>
+
+    <para><uri>http://sourceforge.net/projects/cppcheck/files/Articles/</uri></para>
+
+    <para>The file format for rules is:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;rule&gt;
+  &lt;tokenlist&gt;LIST&lt;/tokenlist&gt;
+  &lt;pattern&gt;PATTERN&lt;/pattern&gt;
+  &lt;message&gt;
+    &lt;id&gt;ID&lt;/id&gt;
+    &lt;severity&gt;SEVERITY&lt;/severity&gt;
+    &lt;summary&gt;SUMMARY&lt;/summary&gt;
+  &lt;/message&gt;
+&lt;/rule&gt;</programlisting>
 
     <section>
-      <title>User-defined allocation/deallocation functions</title>
+      <title>&lt;tokenlist&gt;</title>
 
-      <para>Cppcheck understands standard allocation and deallocation
-      functions. But it doesn't know what library functions do.</para>
+      <para>The <literal>&lt;tokenlist&gt;</literal> element is optional. With
+      this element you can control what tokens are checked. The
+      <literal>LIST</literal> can be either <literal>define</literal>,
+      <literal>raw</literal>, <literal>normal</literal> or
+      <literal>simple</literal>.</para>
 
-      <para>Here is example code that might leak memory or resources:</para>
+      <variablelist>
+        <varlistentry>
+          <term>define</term>
 
-      <programlisting>void foo(int x)
+          <listitem>
+            <para>used to check #define preprocessor statements.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>raw</term>
+
+          <listitem>
+            <para>used to check the preprocessor output.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>normal</term>
+
+          <listitem>
+            <para>used to check the <literal>normal</literal> token list.
+            There are some simplifications.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>simple</term>
+
+          <listitem>
+            <para>used to check the simple token list. All simplifications are
+            used. Most Cppcheck checks use the simple token list.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>If there is no &lt;tokenlist&gt; element then
+      <literal>simple</literal> is used automatically.</para>
+    </section>
+
+    <section>
+      <title>&lt;pattern&gt;</title>
+
+      <para>The <literal>PATTERN</literal> is the
+      <literal>PCRE</literal>-compatible regular expression that will be
+      executed.</para>
+    </section>
+
+    <section>
+      <title>&lt;id&gt;</title>
+
+      <para>The ID specify the user-defined message id.</para>
+    </section>
+
+    <section>
+      <title>&lt;severity&gt;</title>
+
+      <para>The <literal>SEVERITY</literal> must be one of the
+      <literal>Cppcheck</literal> severities: <literal>information</literal>,
+      <literal>performance</literal>, <literal>portability</literal>,
+      <literal>style</literal>, <literal>warning</literal>, or
+      <literal>error</literal>.</para>
+    </section>
+
+    <section>
+      <title>&lt;summary&gt;</title>
+
+      <para>Optional. The summary for the message. If no summary is given, the
+      matching tokens is written.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Library configuration</title>
+
+    <para><literal>Cppcheck</literal> has internal knowledge about how
+    standard C/C++ functions work. There is no internal knowledge about how
+    various libraries and environments work. <literal>Cppcheck</literal> can
+    however be told how libraries and environments work by using configuration
+    files.</para>
+
+    <para>The idea is that users will be able to download configuration files
+    for all popular libraries and environments here:</para>
+
+    <para><uri>http://cppcheck.sourceforge.net/archive</uri></para>
+
+    <para>Ideally, all you need to do is choose and download the configuration
+    files you need.</para>
+
+    <para>The archive is not complete however. If you can't find the
+    configuration file you need in the archive, you can wait - maybe somebody
+    else will write it and share it. Or you can write your own configuration
+    file (and then it's possible to share your configuration file with
+    others).</para>
+
+    <para>A minimal configuration file looks like this:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+&lt;/def&gt;</programlisting>
+
+    <section>
+      <title>Leaks</title>
+
+      <para>Allocation and deallocation is defined with
+      <literal>&lt;memory&gt;</literal> and
+      <literal>&lt;resource&gt;.</literal></para>
+
+      <para>Here is example code:</para>
+
+      <programlisting>void ok()
 {
-    void *f = CreateFred();
-    if (x == 1)
-        return;
-    DestroyFred(f);
-}</programlisting>
-
-      <para>If you analyse that with Cppcheck it won't find any leaks:</para>
-
-      <programlisting>cppcheck fred1.c</programlisting>
-
-      <para>You can add some custom leaks checking by providing simple
-      implementations for the allocation and deallocation functions. Write
-      this in a separate file <literal>fred.def</literal>:</para>
-
-      <programlisting>void *CreateFred()
-{
-    return malloc(100);
+    char *p = alloc_something();
+    free_something(p);
 }
 
-void DestroyFred(void *p)
+void leak()
 {
-    free(p);
+    char *p = alloc_something();
 }</programlisting>
 
-      <para>When Cppcheck see this it understands that <function>CreateFred()
-      </function> will return allocated memory and that
-      <function>DestroyFred() </function> will deallocate memory.</para>
+      <para>Cppcheck doesn't normally report any errors for that:</para>
 
-      <para>Now, execute <command>cppcheck</command> this way:</para>
+      <programlisting># cppcheck test.c 
+Checking test.c...</programlisting>
 
-      <programlisting>cppcheck --include=fred.def fred1.c</programlisting>
+      <para>Example configuration:</para>
 
-      <para>The output from <command>cppcheck</command> is:</para>
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
+    &lt;alloc&gt;alloc_something&lt;/alloc&gt;
+  &lt;/memory&gt;
+&lt;/def&gt;</programlisting>
 
-      <programlisting>Checking fred1.c...
-[fred1.c:5]: (error) Memory leak: f</programlisting>
+      <para>Output from <literal>Cppcheck</literal>:</para>
+
+      <programlisting># cppcheck --library=something.cfg test.c 
+Checking test.c...
+[test.c:10]: (error) Memory leak: p</programlisting>
+
+      <para>Another example code:</para>
+
+      <programlisting>void f()
+{
+    char *p = alloc_something();
+    do_something(p);
+    *p = 0;
+}</programlisting>
+
+      <para>If you want that the <literal>do_something</literal> function call
+      is ignored, use &lt;ignore&gt;:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
+    &lt;alloc&gt;alloc_something&lt;/alloc&gt;
+  &lt;/memory&gt;
+  &lt;ignore&gt;do_something&lt;/ignore&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Running <literal>Cppcheck</literal> now:</para>
+
+      <para><programlisting># cppcheck --library=something.cfg test.c 
+Checking test.c...
+[test.c:10]: (error) Memory leak: p</programlisting>If the
+      <literal>do_something</literal> takes the allocated memory and
+      deallocates it later, then use <literal>&lt;use&gt;</literal>
+      instead:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
+    &lt;alloc&gt;alloc_something&lt;/alloc&gt;
+    &lt;use&gt;do_something&lt;/use&gt;
+  &lt;/memory&gt;
+&lt;/def&gt;</programlisting>Running Cppcheck now:</para>
+
+      <programlisting># cppcheck --library=something.cfg test.c 
+Checking test.c...</programlisting>
+    </section>
+
+    <section>
+      <title>no return</title>
+
+      <para>You can define if a function is "noreturn" or not. Example
+      code:</para>
+
+      <programlisting>int f(int x)
+{
+    int a;
+    if (x == 3)
+        a = 1;
+    else
+        do_something();
+    return a;  // a is uninitialized if do_something() is called and it returns
+}</programlisting>
+
+      <para>The output is:</para>
+
+      <programlisting># cppcheck test.c 
+Checking test.c...</programlisting>
+
+      <para>To tell Cppcheck that <literal>do_something</literal> is not a
+      <literal>noreturn</literal> function, use such configuration:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Now Cppcheck will be able to detect the error:</para>
+
+      <programlisting>cppcheck --library=something.cfg test.c 
+Checking test.c...
+[test.c:8]: (error) Uninitialized variable: a</programlisting>
     </section>
   </chapter>
 
