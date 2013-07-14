@@ -7731,7 +7731,7 @@ void Tokenizer::simplifyStd()
 
 //---------------------------------------------------------------------------
 
-bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown)
+bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 {
     if (unknown)
         *unknown = false;
@@ -7754,6 +7754,13 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown)
 
         while (tok && (Token::Match(tok, "::|.") || tok->isName()))
             tok = tok->previous();
+
+        if (Token::Match(tok, "[;{}] %var% (")) {
+            if (_settings->library.isnoreturn(tok->next()->str()))
+                return true;
+            if (_settings->library.isnotnoreturn(tok->next()->str()))
+                return false;
+        }
 
         if (Token::Match(tok, "[;{}]")) {
             if (unknown)

@@ -33,7 +33,7 @@ Library::Library() : allocid(0)
     _dealloc["fclose"] = allocid;
 }
 
-Library::Library(const Library &lib) : use(lib.use), ignore(lib.ignore), noreturn(lib.noreturn), allocid(lib.allocid), _alloc(lib._alloc), _dealloc(lib._dealloc)
+Library::Library(const Library &lib) : use(lib.use), ignore(lib.ignore), allocid(lib.allocid), _alloc(lib._alloc), _dealloc(lib._dealloc), _noreturn(lib._noreturn)
 {
 
 }
@@ -69,9 +69,28 @@ bool Library::load(const char path[])
 
         else if (strcmp(node->Name(),"ignore")==0)
             ignore.insert(node->GetText());
-        else if (strcmp(node->Name(),"noreturn")==0)
-            noreturn.insert(node->GetText());
-        else
+        else if (strcmp(node->Name(),"function")==0) {
+            const char *name = node->Attribute("name");
+            if (name == NULL)
+                return false;
+
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(),"noreturn")==0)
+                    _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
+                else if (strcmp(functionnode->Name(),"arg")==0 && functionnode->Attribute("nr") != NULL) {
+                    const int nr = atoi(functionnode->Attribute("nr"));
+
+                    const char *nullpointer     = functionnode->Attribute("nullpointer");
+                    const char *uninitdata      = functionnode->Attribute("uninitdata");
+                    const char *uninitderefdata = functionnode->Attribute("uninitderefdata");
+
+                    functionArgument[name][nr].nullpointer     = (nullpointer     != NULL);
+                    functionArgument[name][nr].uninitdata      = (uninitdata      != NULL);
+                    functionArgument[name][nr].uninitderefdata = (uninitderefdata != NULL);
+                } else
+                    return false;
+            }
+        } else
             return false;
     }
     return true;

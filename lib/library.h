@@ -60,12 +60,31 @@ public:
 
     std::set<std::string> use;
     std::set<std::string> ignore;
-    std::set<std::string> noreturn;
+
+    bool isnoreturn(const std::string &name) const {
+        std::map<std::string,bool>::const_iterator it = _noreturn.find(name);
+        return (it != _noreturn.end() && it->second);
+    }
+
+    bool isnotnoreturn(const std::string &name) const {
+        std::map<std::string,bool>::const_iterator it = _noreturn.find(name);
+        return (it != _noreturn.end() && !it->second);
+    }
+
+    struct Argument {
+        bool nullpointer;
+        bool uninitdata;
+        bool uninitderefdata;
+    };
+
+    // function name, argument nr => argument data
+    std::map<std::string, std::map<int, Argument> > functionArgument;
 
 private:
     int allocid;
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
+    std::map<std::string, bool> _noreturn; // is function noreturn?
 
     int getid(const std::map<std::string,int> &data, const std::string &name) const {
         const std::map<std::string,int>::const_iterator it = data.find(name);
