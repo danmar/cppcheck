@@ -449,7 +449,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>callstack</term>
 
         <listitem>
-           callstack - if available 
+           callstack - if available
         </listitem>
       </varlistentry>
 
@@ -457,7 +457,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>file</term>
 
         <listitem>
-           filename 
+           filename
         </listitem>
       </varlistentry>
 
@@ -465,7 +465,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>id</term>
 
         <listitem>
-           message id 
+           message id
         </listitem>
       </varlistentry>
 
@@ -473,7 +473,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>line</term>
 
         <listitem>
-           line number 
+           line number
         </listitem>
       </varlistentry>
 
@@ -481,7 +481,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>message</term>
 
         <listitem>
-           verbose message text 
+           verbose message text
         </listitem>
       </varlistentry>
 
@@ -489,7 +489,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>severity</term>
 
         <listitem>
-           severity 
+           severity
         </listitem>
       </varlistentry>
     </variablelist>
@@ -754,7 +754,7 @@ void leak()
 
       <para>Cppcheck doesn't normally report any errors for that:</para>
 
-      <programlisting># cppcheck test.c 
+      <programlisting># cppcheck test.c
 Checking test.c...</programlisting>
 
       <para>Example configuration:</para>
@@ -773,7 +773,7 @@ Checking test.c...</programlisting>
 
       <para>Output from <literal>Cppcheck</literal>:</para>
 
-      <programlisting># cppcheck --library=something.cfg test.c 
+      <programlisting># cppcheck --library=something.cfg test.c
 Checking test.c...
 [test.c:10]: (error) Memory leak: p</programlisting>
     </section>
@@ -806,7 +806,7 @@ Checking test.c...
 
       <para>Running <literal>Cppcheck</literal> now:</para>
 
-      <para><programlisting># cppcheck --library=something.cfg test.c 
+      <para><programlisting># cppcheck --library=something.cfg test.c
 Checking test.c...
 [test.c:10]: (error) Memory leak: p</programlisting>If the
       <literal>do_something</literal> takes the allocated memory and
@@ -822,7 +822,7 @@ Checking test.c...
   &lt;/memory&gt;
 &lt;/def&gt;</programlisting>Running Cppcheck now:</para>
 
-      <programlisting># cppcheck --library=something.cfg test.c 
+      <programlisting># cppcheck --library=something.cfg test.c
 Checking test.c...</programlisting>
 
       <para>Cppcheck will often assume that functions "use" allocated memory.
@@ -953,7 +953,7 @@ Checking test1.c...
 
       <para>The output is:</para>
 
-      <programlisting># cppcheck test.c 
+      <programlisting># cppcheck test.c
 Checking test.c...</programlisting>
 
       <para>To tell Cppcheck that <literal>do_something</literal> is not a
@@ -968,7 +968,7 @@ Checking test.c...</programlisting>
 
       <para>Now Cppcheck will be able to detect the error:</para>
 
-      <programlisting>cppcheck --library=something.cfg test.c 
+      <programlisting>cppcheck --library=something.cfg test.c
 Checking test.c...
 [test.c:8]: (error) Uninitialized variable: a</programlisting>
     </section>

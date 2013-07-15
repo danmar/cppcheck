@@ -39,7 +39,7 @@ uninitialized variables, unused functions" />
   <div class="wrap">
     <h1>Cppcheck - Archive</h1>
     <p>This archive is for useful Cppcheck rules and library configuration files.</p>
-    
+
     <p> If you have a rule or library configuration that you want to share, use this
     archive. Feel free to add any library or rule here.</p>
 
