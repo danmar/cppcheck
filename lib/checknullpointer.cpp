@@ -238,11 +238,11 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(firstParam);
         else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
             var.push_back(firstParam);
-		else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),1))
-			var.push_back(firstParam);
-		else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),1))
-			var.push_back(firstParam);
-	}
+        else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),1))
+            var.push_back(firstParam);
+        else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),1))
+            var.push_back(firstParam);
+    }
 
     // 2nd parameter..
     if ((value == 0 && Token::Match(secondParam, "0|NULL ,|)")) || (secondParam && secondParam->varId() > 0)) {
@@ -250,10 +250,10 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(secondParam);
         else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
             var.push_back(secondParam);
-		else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),2))
-			var.push_back(secondParam);
-		else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),2))
-			var.push_back(secondParam);
+        else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),2))
+            var.push_back(secondParam);
+        else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),2))
+            var.push_back(secondParam);
     }
 
     if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf|wprintf|swprintf|fwprintf|wscanf|swscanf|fwscanf")) {
@@ -817,7 +817,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
                     if (Token::Match(tok2->next(), "%var% ( %varid% ,", varid)) {
                         std::list<const Token *> varlist;
-						parseFunctionCall(*(tok2->next()), varlist, &_settings->library, 0);
+                        parseFunctionCall(*(tok2->next()), varlist, &_settings->library, 0);
                         if (!varlist.empty() && varlist.front() == tok2->tokAt(3)) {
                             nullPointerError(tok2->tokAt(3), varname, tok, inconclusive);
                             break;
@@ -1365,13 +1365,13 @@ public:
 
 private:
     const SymbolDatabase* symbolDatabase;
-	const Library *library;
+    const Library *library;
 
     /** Create checking of specific variable: */
     Nullpointer(Check *c, const unsigned int id, const std::string &name, const SymbolDatabase* symbolDatabase_, const Library *lib)
         : ExecutionPath(c, id),
           symbolDatabase(symbolDatabase_),
-		  library(lib),
+          library(lib),
           varname(name),
           null(false) {
     }
