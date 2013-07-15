@@ -36,10 +36,11 @@ namespace {
  * @brief parse a function call and extract information about variable usage
  * @param tok first token
  * @param var variables that the function read / write.
+ * @param library --library files data
  * @param value 0 => invalid with null pointers as parameter.
  *              1-.. => only invalid with uninitialized data.
  */
-void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, unsigned char value)
+void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library, unsigned char value)
 {
     // standard functions that dereference first parameter..
     static std::set<std::string> functionNames1_all;     // used no matter what 'value' is
@@ -237,7 +238,11 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(firstParam);
         else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
             var.push_back(firstParam);
-    }
+		else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),1))
+			var.push_back(firstParam);
+		else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),1))
+			var.push_back(firstParam);
+	}
 
     // 2nd parameter..
     if ((value == 0 && Token::Match(secondParam, "0|NULL ,|)")) || (secondParam && secondParam->varId() > 0)) {
@@ -245,6 +250,10 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(secondParam);
         else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
             var.push_back(secondParam);
+		else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),2))
+			var.push_back(secondParam);
+		else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),2))
+			var.push_back(secondParam);
     }
 
     if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf|wprintf|swprintf|fwprintf|wscanf|swscanf|fwscanf")) {
@@ -808,7 +817,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
                     if (Token::Match(tok2->next(), "%var% ( %varid% ,", varid)) {
                         std::list<const Token *> varlist;
-                        parseFunctionCall(*(tok2->next()), varlist, 0);
+						parseFunctionCall(*(tok2->next()), varlist, &_settings->library, 0);
                         if (!varlist.empty() && varlist.front() == tok2->tokAt(3)) {
                             nullPointerError(tok2->tokAt(3), varname, tok, inconclusive);
                             break;
@@ -1069,7 +1078,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             // function call, check if pointer is dereferenced
             if (Token::Match(tok2, "%var% (") && !Token::Match(tok2, "if|while")) {
                 std::list<const Token *> vars;
-                parseFunctionCall(*tok2, vars, 0);
+                parseFunctionCall(*tok2, vars, &_settings->library, 0);
                 for (std::list<const Token *>::const_iterator it = vars.begin(); it != vars.end(); ++it) {
                     if (Token::Match(*it, "%varid% [,)]", varid)) {
                         nullPointerError(*it, pointerName, vartok, inconclusive);
@@ -1167,7 +1176,7 @@ void CheckNullPointer::nullConstantDereference()
                         nullPointerError(tok);
                 } else { // function call
                     std::list<const Token *> var;
-                    parseFunctionCall(*tok, var, 0);
+                    parseFunctionCall(*tok, var, &_settings->library, 0);
 
                     // is one of the var items a NULL pointer?
                     for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
@@ -1351,16 +1360,18 @@ void CheckNullPointer::nullPointerDefaultArgument()
 class Nullpointer : public ExecutionPath {
 public:
     /** Startup constructor */
-    Nullpointer(Check *c, const SymbolDatabase* symbolDatabase_) : ExecutionPath(c, 0), symbolDatabase(symbolDatabase_), null(false) {
+    Nullpointer(Check *c, const SymbolDatabase* symbolDatabase_, const Library *lib) : ExecutionPath(c, 0), symbolDatabase(symbolDatabase_), library(lib), null(false) {
     }
 
 private:
     const SymbolDatabase* symbolDatabase;
+	const Library *library;
 
     /** Create checking of specific variable: */
-    Nullpointer(Check *c, const unsigned int id, const std::string &name, const SymbolDatabase* symbolDatabase_)
+    Nullpointer(Check *c, const unsigned int id, const std::string &name, const SymbolDatabase* symbolDatabase_, const Library *lib)
         : ExecutionPath(c, id),
           symbolDatabase(symbolDatabase_),
+		  library(lib),
           varname(name),
           null(false) {
     }
@@ -1430,7 +1441,7 @@ private:
             // Pointer declaration declaration?
             const Variable *var = tok.variable();
             if (var && var->isPointer() && var->nameToken() == &tok)
-                checks.push_back(new Nullpointer(owner, var->varId(), var->name(), symbolDatabase));
+                checks.push_back(new Nullpointer(owner, var->varId(), var->name(), symbolDatabase, library));
         }
 
         if (Token::simpleMatch(&tok, "try {")) {
@@ -1450,7 +1461,7 @@ private:
 
             // parse usage..
             std::list<const Token *> var;
-            CheckNullPointer::parseFunctionCall(tok, var, 0);
+            CheckNullPointer::parseFunctionCall(tok, var, library, 0);
             for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
                 dereference(checks, *it);
         }
@@ -1518,7 +1529,7 @@ private:
 
         if (Token::Match(&tok, "!| %var% (")) {
             std::list<const Token *> var;
-            CheckNullPointer::parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, 0);
+            CheckNullPointer::parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, library, 0);
             for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
                 dereference(checks, *it);
         }
@@ -1544,7 +1555,7 @@ private:
 void CheckNullPointer::executionPaths()
 {
     // Check for null pointer errors..
-    Nullpointer c(this, _tokenizer->getSymbolDatabase());
+    Nullpointer c(this, _tokenizer->getSymbolDatabase(), &_settings->library);
     checkExecutionPaths(_tokenizer->getSymbolDatabase(), &c);
 }
 
