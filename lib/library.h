@@ -72,23 +72,22 @@ public:
     }
 
     struct Argument {
-        bool nullpointer;
-        bool uninitdata;
-        bool uninitderefdata;
+        bool notnull;
+        bool notuninit;
     };
 
     // function name, argument nr => argument data
     std::map<std::string, std::map<int, Argument> > functionArgument;
 
-	bool isnullargbad(const std::string &functionName, int argnr) const {
-		const Argument *arg = getarg(functionName,argnr);
-		return arg && arg->nullpointer;
-	}
+    bool isnullargbad(const std::string &functionName, int argnr) const {
+        const Argument *arg = getarg(functionName,argnr);
+        return arg && arg->notnull;
+    }
 
-	bool isuninitargbad(const std::string &functionName, int argnr) const {
-		const Argument *arg = getarg(functionName,argnr);
-		return arg && arg->uninitdata;
-	}
+    bool isuninitargbad(const std::string &functionName, int argnr) const {
+        const Argument *arg = getarg(functionName,argnr);
+        return arg && arg->notuninit;
+    }
 
     std::set<std::string> returnuninitdata;
 
@@ -98,16 +97,16 @@ private:
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
 
-	const Argument * getarg(const std::string &functionName, int argnr) const {
-		std::map<std::string, std::map<int, Argument> >::const_iterator it1;
-		it1 = functionArgument.find(functionName);
-		if (it1 != functionArgument.end()) {
-			const std::map<int,Argument>::const_iterator it2 = it1->second.find(argnr);
-			if (it2 != it1->second.end())
-				return &it2->second;
-		}
-		return NULL;
-	}
+    const Argument * getarg(const std::string &functionName, int argnr) const {
+        std::map<std::string, std::map<int, Argument> >::const_iterator it1;
+        it1 = functionArgument.find(functionName);
+        if (it1 != functionArgument.end()) {
+            const std::map<int,Argument>::const_iterator it2 = it1->second.find(argnr);
+            if (it2 != it1->second.end())
+                return &it2->second;
+        }
+        return NULL;
+    }
 
     int getid(const std::map<std::string,int> &data, const std::string &name) const {
         const std::map<std::string,int>::const_iterator it = data.find(name);

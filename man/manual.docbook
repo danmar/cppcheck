@@ -706,12 +706,13 @@ Checking test.c...
 
     <para><literal>Cppcheck</literal> has internal knowledge about how
     standard C/C++ functions work. There is no internal knowledge about how
-    various libraries and environments work. <literal>Cppcheck</literal> can
-    however be told how libraries and environments work by using configuration
-    files.</para>
+    all libraries and environments work, and there can't be.
+    <literal>Cppcheck</literal> can be told how libraries and environments
+    work by using configuration files.</para>
 
-    <para>The idea is that users will be able to download configuration files
-    for all popular libraries and environments here:</para>
+    <para>The idea is that users will be able to download library
+    configuration files for all popular libraries and environments
+    here:</para>
 
     <para><uri>http://cppcheck.sourceforge.net/archive</uri></para>
 
@@ -733,9 +734,10 @@ Checking test.c...
     <section>
       <title>&lt;alloc&gt; and &lt;dealloc&gt;</title>
 
-      <para>Allocation and deallocation is defined within
-      <literal>&lt;memory&gt;</literal> or <literal>&lt;resource&gt; using
-      &lt;alloc&gt; and &lt;dealloc&gt;.</literal></para>
+      <para>Allocation and deallocation is defined <literal>using
+      &lt;alloc&gt; and &lt;dealloc&gt;. These are used inside inside
+      <literal>&lt;memory&gt;</literal> or
+      <literal>&lt;resource&gt;.</literal></literal></para>
 
       <para>Here is example code:</para>
 
@@ -765,33 +767,23 @@ Checking test.c...</programlisting>
   &lt;/memory&gt;
 &lt;/def&gt;</programlisting>
 
+      <para>That tells Cppcheck that <literal>alloc_something</literal>
+      allocates memory and that the matching deallocation function is
+      <literal>free_something</literal>.</para>
+
       <para>Output from <literal>Cppcheck</literal>:</para>
 
       <programlisting># cppcheck --library=something.cfg test.c 
 Checking test.c...
 [test.c:10]: (error) Memory leak: p</programlisting>
-
-      <para>Some allocation functions initialize the allocated data. Others
-      don't. Here is a short code example:</para>
-
-      <programlisting>void f()
-{
-    char *p = alloc_something();
-    char c = *p;
-    free_something();
-}</programlisting>
-
-      <para>If alloc_something() initializes the memory that is allocated then
-      that code is OK. Otherwise that code is bad. To configure that </para>
-
-      <para/>
     </section>
 
     <section>
       <title>&lt;ignore&gt; and &lt;use&gt;</title>
 
-      <para>The &lt;ignore&gt; and &lt;use&gt; tells Cppcheck how functions
-      uses allocated memory. Example code:</para>
+      <para>The <literal>&lt;ignore&gt;</literal> and
+      <literal>&lt;use&gt;</literal> tells Cppcheck how functions uses
+      allocated memory. Example code:</para>
 
       <programlisting>void f()
 {
@@ -840,7 +832,7 @@ Checking test.c...</programlisting>
     </section>
 
     <section>
-      <title>&lt;alloc init="false"&gt;</title>
+      <title>allocate but not initialize</title>
 
       <para>Some allocation function initialize the data, others don't. Here
       is a example code:</para>
@@ -851,6 +843,11 @@ Checking test.c...</programlisting>
     char c = *p;
     free_something();
 }</programlisting>
+
+      <para>No error is reported:</para>
+
+      <programlisting># cppcheck --library=something.cfg test.c 
+Checking test.c...</programlisting>
 
       <para>Here is a configuration that tells cppcheck that alloc_something
       doesn't initialize the data:</para>
@@ -865,9 +862,77 @@ Checking test.c...</programlisting>
 
       <para>Now you will get this error message:</para>
 
-      <programlisting>daniel@dator:~/cppcheck$ ./cppcheck --library=something.cfg test.c
+      <programlisting># cppcheck --library=something.cfg test.c
 Checking test.c...
 [test.c:4]: (error) Memory is allocated but not initialized: p</programlisting>
+    </section>
+
+    <section>
+      <title>function arguments: null pointers</title>
+
+      <para>You can define if a function parameter can be NULL or if it must
+      be non-NULL.</para>
+
+      <para>Example code:</para>
+
+      <programlisting>void do_something(char *p);
+
+void f()
+{
+    do_something(NULL);
+}</programlisting>
+
+      <para>Normally no error is reported for that code.</para>
+
+      <para>But if the do_something() parameter should be non-NULL you can use
+      this configuration:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Now the output from cppcheck is:</para>
+
+      <programlisting># cppcheck --library=something.cfg test1.c
+Checking test1.c...
+[test1.c:5]: (error) Null pointer dereference</programlisting>
+    </section>
+
+    <section>
+      <title>Function arguments: uninitialized data</title>
+
+      <para>Here is example code:</para>
+
+      <programlisting>void do_something(char *p);
+
+void f() 
+{
+    char str[10];
+    do_something(str);
+}</programlisting>
+
+      <para>Normally <literal>Cppcheck</literal> doesn't report any error
+      message for that. However if the parameter must be initialized there is
+      a problem. Here is a configuration that says that the parameter must be
+      initialized:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-uninit/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now the cppcheck output is:</para>
+
+      <programlisting># cppcheck --library=something.cfg test1.c
+Checking test1.c...
+[test1.c:6]: (error) Uninitialized variable: str</programlisting>
     </section>
 
     <section>

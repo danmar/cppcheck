@@ -91,14 +91,18 @@ bool Library::load(const char path[])
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 else if (strcmp(functionnode->Name(),"arg")==0 && functionnode->Attribute("nr") != NULL) {
                     const int nr = atoi(functionnode->Attribute("nr"));
-
-                    const char *nullpointer     = functionnode->Attribute("nullpointer");
-                    const char *uninitdata      = functionnode->Attribute("uninitdata");
-                    const char *uninitderefdata = functionnode->Attribute("uninitderefdata");
-
-                    functionArgument[name][nr].nullpointer     = (nullpointer     != NULL);
-                    functionArgument[name][nr].uninitdata      = (uninitdata      != NULL);
-                    functionArgument[name][nr].uninitderefdata = (uninitderefdata != NULL);
+                    bool notnull = false;
+                    bool notuninit = false;
+                    for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
+                        if (strcmp(argnode->Name(), "not-null") == 0)
+                            notnull = true;
+                        else if (strcmp(argnode->Name(), "not-uninit") == 0)
+                            notuninit = true;
+                        else
+                            return false;
+                    }
+                    functionArgument[name][nr].notnull = notnull;
+                    functionArgument[name][nr].notuninit = notuninit;
                 } else
                     return false;
             }
