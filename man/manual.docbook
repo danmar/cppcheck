@@ -449,7 +449,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>callstack</term>
 
         <listitem>
-          callstack - if available
+           callstack - if available 
         </listitem>
       </varlistentry>
 
@@ -457,7 +457,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>file</term>
 
         <listitem>
-          filename
+           filename 
         </listitem>
       </varlistentry>
 
@@ -465,7 +465,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>id</term>
 
         <listitem>
-          message id
+           message id 
         </listitem>
       </varlistentry>
 
@@ -473,7 +473,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>line</term>
 
         <listitem>
-          line number
+           line number 
         </listitem>
       </varlistentry>
 
@@ -481,7 +481,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>message</term>
 
         <listitem>
-          verbose message text
+           verbose message text 
         </listitem>
       </varlistentry>
 
@@ -489,7 +489,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>severity</term>
 
         <listitem>
-          severity
+           severity 
         </listitem>
       </varlistentry>
     </variablelist>
@@ -731,11 +731,11 @@ Checking test.c...
 &lt;/def&gt;</programlisting>
 
     <section>
-      <title>Leaks</title>
+      <title>&lt;alloc&gt; and &lt;dealloc&gt;</title>
 
-      <para>Allocation and deallocation is defined with
-      <literal>&lt;memory&gt;</literal> and
-      <literal>&lt;resource&gt;.</literal></para>
+      <para>Allocation and deallocation is defined within
+      <literal>&lt;memory&gt;</literal> or <literal>&lt;resource&gt; using
+      &lt;alloc&gt; and &lt;dealloc&gt;.</literal></para>
 
       <para>Here is example code:</para>
 
@@ -760,8 +760,8 @@ Checking test.c...</programlisting>
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;memory&gt;
-    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
     &lt;alloc&gt;alloc_something&lt;/alloc&gt;
+    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
   &lt;/memory&gt;
 &lt;/def&gt;</programlisting>
 
@@ -771,7 +771,27 @@ Checking test.c...</programlisting>
 Checking test.c...
 [test.c:10]: (error) Memory leak: p</programlisting>
 
-      <para>Another example code:</para>
+      <para>Some allocation functions initialize the allocated data. Others
+      don't. Here is a short code example:</para>
+
+      <programlisting>void f()
+{
+    char *p = alloc_something();
+    char c = *p;
+    free_something();
+}</programlisting>
+
+      <para>If alloc_something() initializes the memory that is allocated then
+      that code is OK. Otherwise that code is bad. To configure that </para>
+
+      <para/>
+    </section>
+
+    <section>
+      <title>&lt;ignore&gt; and &lt;use&gt;</title>
+
+      <para>The &lt;ignore&gt; and &lt;use&gt; tells Cppcheck how functions
+      uses allocated memory. Example code:</para>
 
       <programlisting>void f()
 {
@@ -786,8 +806,8 @@ Checking test.c...
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;memory&gt;
-    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
     &lt;alloc&gt;alloc_something&lt;/alloc&gt;
+    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
   &lt;/memory&gt;
   &lt;ignore&gt;do_something&lt;/ignore&gt;
 &lt;/def&gt;</programlisting>
@@ -804,14 +824,50 @@ Checking test.c...
       <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;memory&gt;
-    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
     &lt;alloc&gt;alloc_something&lt;/alloc&gt;
+    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
     &lt;use&gt;do_something&lt;/use&gt;
   &lt;/memory&gt;
 &lt;/def&gt;</programlisting>Running Cppcheck now:</para>
 
       <programlisting># cppcheck --library=something.cfg test.c 
 Checking test.c...</programlisting>
+
+      <para>Cppcheck will often assume that functions "use" allocated memory.
+      By using &lt;ignore&gt; you can make Cppcheck detect more errors. By
+      using &lt;use&gt;, no extra errors are detected but Cppcheck will not
+      need to assume.</para>
+    </section>
+
+    <section>
+      <title>&lt;alloc init="false"&gt;</title>
+
+      <para>Some allocation function initialize the data, others don't. Here
+      is a example code:</para>
+
+      <programlisting>void f()
+{
+    char *p = alloc_something();
+    char c = *p;
+    free_something();
+}</programlisting>
+
+      <para>Here is a configuration that tells cppcheck that alloc_something
+      doesn't initialize the data:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;alloc init="false"&gt;alloc_something&lt;/alloc&gt;
+    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
+  &lt;/memory&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Now you will get this error message:</para>
+
+      <programlisting>daniel@dator:~/cppcheck$ ./cppcheck --library=something.cfg test.c
+Checking test.c...
+[test.c:4]: (error) Memory is allocated but not initialized: p</programlisting>
     </section>
 
     <section>

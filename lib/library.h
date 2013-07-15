@@ -80,6 +80,8 @@ public:
     // function name, argument nr => argument data
     std::map<std::string, std::map<int, Argument> > functionArgument;
 
+    std::set<std::string> returnuninitdata;
+
 private:
     int allocid;
     std::map<std::string, int> _alloc; // allocation functions

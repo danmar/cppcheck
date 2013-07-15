@@ -33,7 +33,15 @@ Library::Library() : allocid(0)
     _dealloc["fclose"] = allocid;
 }
 
-Library::Library(const Library &lib) : use(lib.use), ignore(lib.ignore), allocid(lib.allocid), _alloc(lib._alloc), _dealloc(lib._dealloc), _noreturn(lib._noreturn)
+Library::Library(const Library &lib) :
+    use(lib.use),
+    ignore(lib.ignore),
+    functionArgument(lib.functionArgument),
+    returnuninitdata(lib.returnuninitdata),
+    allocid(lib.allocid),
+    _alloc(lib._alloc),
+    _dealloc(lib._dealloc),
+    _noreturn(lib._noreturn)
 {
 
 }
@@ -56,9 +64,13 @@ bool Library::load(const char path[])
         if (strcmp(node->Name(),"memory")==0) {
             while (!ismemory(++allocid));
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
-                if (strcmp(memorynode->Name(),"alloc")==0)
+                if (strcmp(memorynode->Name(),"alloc")==0) {
                     _alloc[memorynode->GetText()] = allocid;
-                else if (strcmp(memorynode->Name(),"dealloc")==0)
+                    const char *init = memorynode->Attribute("init");
+                    if (init && strcmp(init,"false")==0) {
+                        returnuninitdata.insert(memorynode->GetText());
+                    }
+                } else if (strcmp(memorynode->Name(),"dealloc")==0)
                     _dealloc[memorynode->GetText()] = allocid;
                 else if (strcmp(memorynode->Name(),"use")==0)
                     use.insert(memorynode->GetText());
