@@ -96,11 +96,11 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &v
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (_settings->checkLibrary) {
+    if (_settings->checkLibrary && _settings->isEnabled("information")) {
         reportError(tok,
                     Severity::information,
-                    "leakconfiguration",
-                    functionName + " configuration is needed to establish if there is a leak or not");
+                    "checkLibraryUseIgnore",
+                    "--check-library: Function " + functionName + "() should have <use>/<ignore> configuration");
     }
 }
 

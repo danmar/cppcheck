@@ -7760,6 +7760,13 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
                 return true;
             if (_settings->library.isnotnoreturn(tok->next()->str()))
                 return false;
+
+            if (_settings->checkLibrary && _settings->isEnabled("information")) {
+                reportError(tok->next(),
+                            Severity::information,
+                            "checkLibraryNoReturn",
+                            "--check-library: Function " + tok->next()->str() + "() should have <noreturn> configuration");
+            }
         }
 
         if (Token::Match(tok, "[;{}]")) {
