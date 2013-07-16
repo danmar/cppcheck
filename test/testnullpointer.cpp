@@ -2116,7 +2116,7 @@ private:
         // nothing bad..
         {
             Library library;
-            Library::Argument arg = {0};
+            Library::Argument arg = {false, false};
             library.functionArgument["x"][1] = arg;
             library.functionArgument["x"][2] = arg;
 
@@ -2130,10 +2130,10 @@ private:
         // for 1st parameter null pointer is not ok..
         {
             Library library;
-            Library::Argument arg = {0};
+            struct Library::Argument arg = {false, false};
             library.functionArgument["x"][1] = arg;
             library.functionArgument["x"][2] = arg;
-            library.functionArgument["x"][1].nullpointer = true;
+            library.functionArgument["x"][1].notnull = true;
 
             std::list<const Token *> null,uninit;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);
@@ -2146,10 +2146,10 @@ private:
         // for 2nd parameter uninit data is not ok..
         {
             Library library;
-            Library::Argument arg = {0};
+            Library::Argument arg = {false, false};
             library.functionArgument["x"][1] = arg;
             library.functionArgument["x"][2] = arg;
-            library.functionArgument["x"][2].uninitdata = true;
+            library.functionArgument["x"][2].notuninit = true;
 
             std::list<const Token *> null,uninit;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);
