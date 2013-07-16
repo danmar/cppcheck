@@ -71,21 +71,21 @@ public:
         return (it != _noreturn.end() && !it->second);
     }
 
-    struct Argument {
+    struct ArgumentChecks {
         bool notnull;
         bool notuninit;
     };
 
     // function name, argument nr => argument data
-    std::map<std::string, std::map<int, Argument> > functionArgument;
+    std::map<std::string, std::map<int, ArgumentChecks> > argumentChecks;
 
     bool isnullargbad(const std::string &functionName, int argnr) const {
-        const Argument *arg = getarg(functionName,argnr);
+        const ArgumentChecks *arg = getarg(functionName,argnr);
         return arg && arg->notnull;
     }
 
     bool isuninitargbad(const std::string &functionName, int argnr) const {
-        const Argument *arg = getarg(functionName,argnr);
+        const ArgumentChecks *arg = getarg(functionName,argnr);
         return arg && arg->notuninit;
     }
 
@@ -97,11 +97,11 @@ private:
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
 
-    const Argument * getarg(const std::string &functionName, int argnr) const {
-        std::map<std::string, std::map<int, Argument> >::const_iterator it1;
-        it1 = functionArgument.find(functionName);
-        if (it1 != functionArgument.end()) {
-            const std::map<int,Argument>::const_iterator it2 = it1->second.find(argnr);
+    const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {
+        std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
+        it1 = argumentChecks.find(functionName);
+        if (it1 != argumentChecks.end()) {
+            const std::map<int,ArgumentChecks>::const_iterator it2 = it1->second.find(argnr);
             if (it2 != it1->second.end())
                 return &it2->second;
         }

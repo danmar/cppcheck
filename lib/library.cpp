@@ -36,7 +36,7 @@ Library::Library() : allocid(0)
 Library::Library(const Library &lib) :
     use(lib.use),
     ignore(lib.ignore),
-    functionArgument(lib.functionArgument),
+    argumentChecks(lib.argumentChecks),
     returnuninitdata(lib.returnuninitdata),
     allocid(lib.allocid),
     _alloc(lib._alloc),
@@ -101,8 +101,8 @@ bool Library::load(const char path[])
                         else
                             return false;
                     }
-                    functionArgument[name][nr].notnull = notnull;
-                    functionArgument[name][nr].notuninit = notuninit;
+                    argumentChecks[name][nr].notnull = notnull;
+                    argumentChecks[name][nr].notuninit = notuninit;
                 } else
                     return false;
             }
