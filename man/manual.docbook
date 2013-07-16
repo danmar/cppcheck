@@ -449,7 +449,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>callstack</term>
 
         <listitem>
-           callstack - if available
+           callstack - if available 
         </listitem>
       </varlistentry>
 
@@ -457,7 +457,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>file</term>
 
         <listitem>
-           filename
+           filename 
         </listitem>
       </varlistentry>
 
@@ -465,7 +465,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>id</term>
 
         <listitem>
-           message id
+           message id 
         </listitem>
       </varlistentry>
 
@@ -473,7 +473,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>line</term>
 
         <listitem>
-           line number
+           line number 
         </listitem>
       </varlistentry>
 
@@ -481,7 +481,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>message</term>
 
         <listitem>
-           verbose message text
+           verbose message text 
         </listitem>
       </varlistentry>
 
@@ -489,7 +489,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>severity</term>
 
         <listitem>
-           severity
+           severity 
         </listitem>
       </varlistentry>
     </variablelist>
@@ -731,246 +731,102 @@ Checking test.c...
 &lt;def&gt;
 &lt;/def&gt;</programlisting>
 
-    <section>
-      <title>&lt;alloc&gt; and &lt;dealloc&gt;</title>
+    <para>This configuration file is filled up with various options:</para>
 
-      <para>Allocation and deallocation is defined <literal>using
-      &lt;alloc&gt; and &lt;dealloc&gt;. These are used inside inside
-      <literal>&lt;memory&gt;</literal> or
-      <literal>&lt;resource&gt;.</literal></literal></para>
-
-      <para>Here is example code:</para>
-
-      <programlisting>void ok()
-{
-    char *p = alloc_something();
-    free_something(p);
-}
-
-void leak()
-{
-    char *p = alloc_something();
-}</programlisting>
-
-      <para>Cppcheck doesn't normally report any errors for that:</para>
-
-      <programlisting># cppcheck test.c
-Checking test.c...</programlisting>
-
-      <para>Example configuration:</para>
-
-      <programlisting>&lt;?xml version="1.0"?&gt;
+    <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;memory&gt;
-    &lt;alloc&gt;alloc_something&lt;/alloc&gt;
-    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
+    &lt;alloc&gt;CreateFred&lt;/alloc&gt;
+    &lt;dealloc&gt;CloseFred&lt;/dealloc&gt;
+
+    &lt;use&gt;AppendFred&lt;/use&gt;
   &lt;/memory&gt;
-&lt;/def&gt;</programlisting>
 
-      <para>That tells Cppcheck that <literal>alloc_something</literal>
-      allocates memory and that the matching deallocation function is
-      <literal>free_something</literal>.</para>
-
-      <para>Output from <literal>Cppcheck</literal>:</para>
-
-      <programlisting># cppcheck --library=something.cfg test.c
-Checking test.c...
-[test.c:10]: (error) Memory leak: p</programlisting>
-    </section>
-
-    <section>
-      <title>&lt;ignore&gt; and &lt;use&gt;</title>
-
-      <para>The <literal>&lt;ignore&gt;</literal> and
-      <literal>&lt;use&gt;</literal> tells Cppcheck how functions uses
-      allocated memory. Example code:</para>
-
-      <programlisting>void f()
-{
-    char *p = alloc_something();
-    do_something(p);
-    *p = 0;
-}</programlisting>
-
-      <para>If you want that the <literal>do_something</literal> function call
-      is ignored, use &lt;ignore&gt;:</para>
-
-      <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
   &lt;memory&gt;
-    &lt;alloc&gt;alloc_something&lt;/alloc&gt;
-    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
+    &lt;alloc init="false"&gt;AllocWilma&lt;/alloc&gt;
+    &lt;alloc init="true"&gt;CAllocWilma&lt;/alloc&gt;
+    &lt;dealloc&gt;CloseWilma&lt;/dealloc&gt;
   &lt;/memory&gt;
-  &lt;ignore&gt;do_something&lt;/ignore&gt;
-&lt;/def&gt;</programlisting>
 
-      <para>Running <literal>Cppcheck</literal> now:</para>
+  &lt;resource&gt;
+    &lt;alloc&gt;Lock&lt;/alloc&gt;
+    &lt;dealloc&gt;Unlock&lt;/dealloc&gt;
+  &lt;/resource&gt;
 
-      <para><programlisting># cppcheck --library=something.cfg test.c
-Checking test.c...
-[test.c:10]: (error) Memory leak: p</programlisting>If the
-      <literal>do_something</literal> takes the allocated memory and
-      deallocates it later, then use <literal>&lt;use&gt;</literal>
-      instead:</para>
+  &lt;ignore&gt;IsEqual&lt;/ignore&gt;
 
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;memory&gt;
-    &lt;alloc&gt;alloc_something&lt;/alloc&gt;
-    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
-    &lt;use&gt;do_something&lt;/use&gt;
-  &lt;/memory&gt;
-&lt;/def&gt;</programlisting>Running Cppcheck now:</para>
-
-      <programlisting># cppcheck --library=something.cfg test.c
-Checking test.c...</programlisting>
-
-      <para>Cppcheck will often assume that functions "use" allocated memory.
-      By using &lt;ignore&gt; you can make Cppcheck detect more errors. By
-      using &lt;use&gt;, no extra errors are detected but Cppcheck will not
-      need to assume.</para>
-    </section>
-
-    <section>
-      <title>allocate but not initialize</title>
-
-      <para>Some allocation function initialize the data, others don't. Here
-      is a example code:</para>
-
-      <programlisting>void f()
-{
-    char *p = alloc_something();
-    char c = *p;
-    free_something();
-}</programlisting>
-
-      <para>No error is reported:</para>
-
-      <programlisting># cppcheck --library=something.cfg test.c 
-Checking test.c...</programlisting>
-
-      <para>Here is a configuration that tells cppcheck that alloc_something
-      doesn't initialize the data:</para>
-
-      <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;memory&gt;
-    &lt;alloc init="false"&gt;alloc_something&lt;/alloc&gt;
-    &lt;dealloc&gt;free_something&lt;/dealloc&gt;
-  &lt;/memory&gt;
-&lt;/def&gt;</programlisting>
-
-      <para>Now you will get this error message:</para>
-
-      <programlisting># cppcheck --library=something.cfg test.c
-Checking test.c...
-[test.c:4]: (error) Memory is allocated but not initialized: p</programlisting>
-    </section>
-
-    <section>
-      <title>function arguments: null pointers</title>
-
-      <para>You can define if a function parameter can be NULL or if it must
-      be non-NULL.</para>
-
-      <para>Example code:</para>
-
-      <programlisting>void do_something(char *p);
-
-void f()
-{
-    do_something(NULL);
-}</programlisting>
-
-      <para>Normally no error is reported for that code.</para>
-
-      <para>But if the do_something() parameter should be non-NULL you can use
-      this configuration:</para>
-
-      <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="do_something"&gt;
+  &lt;function name="AssignFred"&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
     &lt;arg nr="1"&gt;
       &lt;not-null/&gt;
     &lt;/arg&gt;
-  &lt;/function&gt;
-&lt;/def&gt;</programlisting>
-
-      <para>Now the output from cppcheck is:</para>
-
-      <programlisting># cppcheck --library=something.cfg test1.c
-Checking test1.c...
-[test1.c:5]: (error) Null pointer dereference</programlisting>
-    </section>
-
-    <section>
-      <title>Function arguments: uninitialized data</title>
-
-      <para>Here is example code:</para>
-
-      <programlisting>void do_something(char *p);
-
-void f() 
-{
-    char str[10];
-    do_something(str);
-}</programlisting>
-
-      <para>Normally <literal>Cppcheck</literal> doesn't report any error
-      message for that. However if the parameter must be initialized there is
-      a problem. Here is a configuration that says that the parameter must be
-      initialized:</para>
-
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="do_something"&gt;
-    &lt;arg nr="1"&gt;
+    &lt;arg nr="2"&gt;
       &lt;not-uninit/&gt;
     &lt;/arg&gt;
   &lt;/function&gt;
-&lt;/def&gt;</programlisting>Now the cppcheck output is:</para>
-
-      <programlisting># cppcheck --library=something.cfg test1.c
-Checking test1.c...
-[test1.c:6]: (error) Uninitialized variable: str</programlisting>
-    </section>
-
-    <section>
-      <title>no return</title>
-
-      <para>You can define if a function is "noreturn" or not. Example
-      code:</para>
-
-      <programlisting>int f(int x)
-{
-    int a;
-    if (x == 3)
-        a = 1;
-    else
-        do_something();
-    return a;  // a is uninitialized if do_something() is called and it returns
-}</programlisting>
-
-      <para>The output is:</para>
-
-      <programlisting># cppcheck test.c
-Checking test.c...</programlisting>
-
-      <para>To tell Cppcheck that <literal>do_something</literal> is not a
-      <literal>noreturn</literal> function, use such configuration:</para>
-
-      <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="do_something"&gt;
-    &lt;noreturn&gt;false&lt;/noreturn&gt;
-  &lt;/function&gt;
 &lt;/def&gt;</programlisting>
 
-      <para>Now Cppcheck will be able to detect the error:</para>
+    <para>In the <literal>&lt;memory&gt;</literal> and
+    <literal>&lt;resource&gt;</literal> the allocation and deallocation
+    functions are configured. Putting allocation and deallocation functions in
+    different <literal>&lt;memory&gt;</literal> and
+    <literal>&lt;resource&gt;</literal> blocks means they are mismatching -
+    you'll get a warning message if you allocate memory with
+    <literal>CreateFred</literal> and try to close it with
+    <literal>CloseWilma</literal>.</para>
 
-      <programlisting>cppcheck --library=something.cfg test.c
-Checking test.c...
-[test.c:8]: (error) Uninitialized variable: a</programlisting>
+    <para>The <literal>&lt;use&gt;</literal> and
+    <literal>&lt;ignore&gt;</literal> elements are used to control the leaks
+    checking. If it should be ignored that a function is called, use
+    <literal>&lt;ignore&gt;</literal>. If there is no leak whenever the memory
+    is passed to a function, use <literal>&lt;use&gt;</literal>.</para>
+
+    <para>In the <literal>&lt;function&gt;</literal> block some useful info is
+    added about function behaviour. The <literal>&lt;noreturn&gt;</literal>
+    tells <literal>Cppcheck</literal> if the function is a no return function.
+    The <literal>&lt;arg&gt;</literal> is used to validate arguments. If it's
+    invalid to pass NULL, use <literal>&lt;not-null&gt;</literal>. If it's
+    invalid to pass uninitialized data, use
+    <literal>&lt;not-uninit&gt;</literal>. If the function takes a pointer
+    argument then it is always invalid to pass a uninitialized/dead pointer.
+    The <literal>&lt;not-uninit&gt;</literal> will then mean that the data
+    that the pointer points at must be initialized.</para>
+
+    <section>
+      <title>Example: strcpy()</title>
+
+      <para>No configuration is necessary for the standard functions. The
+      strcpy() was chosen in this example for demonstration purposes because
+      its behaviour is well-known. </para>
+
+      <para>The proper configuration for the standard strcpy() function would
+      be:</para>
+
+      <programlisting>  &lt;function name="strcpy"&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"&gt;
+      &lt;not-null/&gt;
+      &lt;not-uninit/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;</programlisting>
+
+      <para>The <literal>&lt;noreturn&gt;</literal> is optional. But it's
+      recommended.</para>
+
+      <para>The first parameter that the function takes is a pointer. It must
+      not be a null pointer, a uninitialized pointer nor a dead pointer. It
+      must point at some data, this data can be initialized but it is not
+      wrong if it isn't. Using <literal>&lt;not-null&gt;</literal> is correct.
+      <literal>Cppcheck</literal> will check by default that the pointer is
+      not uninitialized nor dead.</para>
+
+      <para>The second parameter the function takes is a pointer. It must not
+      be null. And it must point at initialized data. Using
+      <literal>&lt;not-null&gt;</literal> and
+      <literal>&lt;not-uninit&gt;</literal> is correct.</para>
     </section>
   </chapter>
 
