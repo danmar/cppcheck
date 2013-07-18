@@ -22,7 +22,7 @@
 <body>
 <div id="header">
   <div class="wrap">
-    <h1>Cppcheck</h1>
+    <h1><a href="/">Cppcheck</a></h1>
     <p>A tool for static C/C++ code analysis</p>
   </div> <!-- .wrap -->
 </div> <!-- #header -->

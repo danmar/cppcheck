@@ -36,6 +36,11 @@ a:visited   { color: #369; }
   background-color: #036;
 }
 
+#header a {
+  color: inherit;
+  text-decoration: none;
+}
+
 #header h1 {
   margin: 0;
   padding: 0;
@@ -146,10 +151,10 @@ a.downloadnow {
   color: white;
   background-color: #060;
   border: 1px solid #060;
-  -webkit-border-radius: .5em;
-   -khtml-border-radius: .5em;
-     -moz-border-radius: .5em;
-          border-radius: .5em;
+  -webkit-border-radius: 0.5em;
+   -khtml-border-radius: 0.5em;
+     -moz-border-radius: 0.5em;
+          border-radius: 0.5em;
   -webkit-box-sizing: content-box;
      -moz-box-sizing: content-box;
           box-sizing: content-box;
