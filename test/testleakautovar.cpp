@@ -335,7 +335,7 @@ private:
               "    fatal_error();\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<ignore> configuration\n", 
+                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<ignore> configuration\n",
                       errout.str());
     }
 
