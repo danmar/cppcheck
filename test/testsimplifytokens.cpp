@@ -308,6 +308,8 @@ private:
         TEST_CASE(simplifyTypedefFunction7);
         TEST_CASE(simplifyTypedefFunction8);
 
+        TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
+
         TEST_CASE(simplifyOperator1);
 
         TEST_CASE(reverseArraySyntax)
@@ -6571,6 +6573,15 @@ private:
                             "void f(f_expand   *(*get_fexp(int))){}\n";
         checkSimplifyTypedef(code);
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (debug) Function::addArguments found argument 'int' with varid 0.\n", errout.str());  // make sure that there is no internal error
+    }
+
+    void simplifyTypedefShadow() { // shadow variable (#4445)
+        const char code[] = "typedef struct { int x; } xyz;;\n"
+                            "void f(){\n"
+                            "    int abc, xyz;\n" // <- shadow variable
+                            "}\n";
+        ASSERT_EQUALS("struct xyz { int x ; } ; void f ( ) { int abc ; int xyz ; }",
+                      tok(code,false));
     }
 
     void simplifyOperator1() {
