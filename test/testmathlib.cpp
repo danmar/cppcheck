@@ -41,6 +41,7 @@ private:
         TEST_CASE(isNotEqual)
         TEST_CASE(isLess)
         TEST_CASE(isLessEqual)
+        TEST_CASE(naninf)
     }
 
     void isGreater() const {
@@ -343,6 +344,12 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E-1"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
+    }
+
+    void naninf() {
+        ASSERT_EQUALS("inf.0", MathLib::divide("0.0", "0.0")); // nan
+        ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.0")); // inf
+        ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "0.0")); // -inf
     }
 };
 
