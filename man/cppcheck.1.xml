@@ -104,6 +104,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <command>&dhpackage;</command>
       <arg choice="opt"><option>--append=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--check-config</option></arg>
+      <arg choice="opt"><option>--check-library</option></arg>
       <arg choice="opt"><option>-D&lt;id&gt;</option></arg>
       <arg choice="opt"><option>-U&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--enable=&lt;id&gt;</option></arg>
@@ -119,6 +120,8 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--inconclusive</option></arg>
       <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
+      <arg choice="opt"><option>--language=&lt;language&gt;</option></arg>
+      <arg choice="opt"><option>--library=&lt;cfg&gt;</option></arg>
       <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
       <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
@@ -169,6 +172,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>--check-library</option></term>
+        <listitem>
+          <para>Show information messages when library files have incomplete info.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-D&lt;id&gt;</option></term>
         <listitem>
           <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration.
@@ -190,13 +199,23 @@ Example: '-UDEBUG'</para>
               <glossentry>
                 <glossterm>all</glossterm>
                 <glossdef>
-                  <para>Enable all checks</para>
+                  <para>Enable all checks. It is recommended to only use
+                  --enable=all when the whole program is scanned, because this
+                  enables unusedFunction.</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>warning</glossterm>
+                <glossdef>
+                  <para>Enable warning messages</para>
                 </glossdef>
               </glossentry>
               <glossentry>
                 <glossterm>style</glossterm>
                 <glossdef>
-                  <para>Check coding style</para>
+                  <para>Enable all coding style checks. All messages with the
+                  severities 'style', 'performance' and 'portability' are
+                  enabled.</para>
                 </glossdef>
               </glossentry>
               <glossentry>
@@ -220,7 +239,8 @@ Example: '-UDEBUG'</para>
               <glossentry>
                 <glossterm>unusedFunction</glossterm>
                 <glossdef>
-                  <para>Check for unused functions</para>
+                  <para>Check for unused functions. It is recommend to only
+                  enable this when the whole program is scanned</para>
                 </glossdef>
               </glossentry>
               <glossentry>
@@ -315,6 +335,19 @@ There are false positives with this option. Each result must be carefully invest
         <term><option>-j &lt;jobs&gt;</option></term>
         <listitem>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--language=&lt;language&gt;</option></term>
+        <listitem>
+          <para>Forces cppcheck to check all files as the given language. Valid
+          values are: c, c++</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--library=&lt;cfg&gt;</option></term>
+        <listitem>
+          <para>Use library configuration.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
