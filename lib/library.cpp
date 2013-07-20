@@ -17,20 +17,14 @@
  */
 
 #include "library.h"
+#include "path.h"
 #include "tinyxml2.h"
+
+#include <string>
+#include <algorithm>
 
 Library::Library() : allocid(0)
 {
-    while (!ismemory(++allocid));
-    _alloc["malloc"] = allocid;
-    _alloc["calloc"] = allocid;
-    _alloc["strdup"] = allocid;
-    _alloc["strndup"] = allocid;
-    _dealloc["free"] = allocid;
-
-    while (!isresource(++allocid));
-    _alloc["fopen"] = allocid;
-    _dealloc["fclose"] = allocid;
 }
 
 Library::Library(const Library &lib) :
@@ -43,7 +37,6 @@ Library::Library(const Library &lib) :
     _dealloc(lib._dealloc),
     _noreturn(lib._noreturn)
 {
-
 }
 
 Library::~Library() { }
@@ -65,19 +58,27 @@ bool Library::load(const char exename[], const char path[])
         return ret;
     }
 
+    // open file..
     FILE *fp = fopen(path, "rt");
     if (fp == NULL) {
-        std::string fullpath(exename);
-        if (fullpath.find_first_of("/\\") != std::string::npos)
-            fullpath = fullpath.substr(0, 1U + fullpath.find_last_of("/\\"));
-        fullpath += path;
-        fp = fopen(fullpath.c_str(), "rt");
-        if (fp == NULL) {
-            fullpath += ".cfg";
-            fp = fopen(fullpath.c_str(), "rt");
-            if (fp == NULL)
-                return false;
+        // failed to open file.. is there no extension?
+        std::string fullfilename(path);
+        if (Path::getFilenameExtension(fullfilename) == "") {
+            fullfilename += ".cfg";
+            fp = fopen(fullfilename.c_str(), "rt");
         }
+
+        if (fp==NULL) {
+            // Try to locate the library configuration in the installation folder..
+            std::string temp = exename;
+            std::replace(temp.begin(), temp.end(), '\\', '/');
+            const std::string installfolder = Path::getPathFromFilename(temp);
+            const std::string filename = installfolder + "cfg/" + fullfilename;
+            fp = fopen(filename.c_str(), "rt");
+        }
+
+        if (fp == NULL)
+            return false;
     }
 
     if (doc.LoadFile(fp) != tinyxml2::XML_NO_ERROR)

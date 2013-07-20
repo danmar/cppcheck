@@ -48,6 +48,15 @@ public:
         return getid(_dealloc, name);
     }
 
+    /** set allocation id for function */
+    void setalloc(const std::string &functionname, int id) {
+        _alloc[functionname] = id;
+    }
+
+    void setdealloc(const std::string &functionname, int id) {
+        _dealloc[functionname] = id;
+    }
+
     /** is allocation type memory? */
     static bool ismemory(int id) {
         return ((id > 0) && ((id & 1) == 0));

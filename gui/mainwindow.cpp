@@ -516,6 +516,9 @@ Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
 
+    const QString applicationFilePath = QCoreApplication::applicationFilePath();
+    result.library.load(applicationFilePath.toLatin1(), "std");
+
     // If project file loaded, read settings from it
     if (mProject) {
         ProjectFile *pfile = mProject->GetProjectFile();

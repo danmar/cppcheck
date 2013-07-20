@@ -111,6 +111,13 @@ private:
 
         // Tokenize..
         Settings settings;
+        int id = 0;
+        while (!settings.library.ismemory(++id));
+        settings.library.setalloc("malloc",id);
+        settings.library.setdealloc("free",id);
+        while (!settings.library.isresource(++id));
+        settings.library.setalloc("fopen",id);
+        settings.library.setdealloc("fclose",id);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.c");

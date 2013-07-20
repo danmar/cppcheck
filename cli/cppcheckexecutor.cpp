@@ -152,6 +152,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     Settings& settings = cppCheck.settings();
     _settings = &settings;
 
+    settings.library.load(argv[0], "std");
+
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         return EXIT_FAILURE;
     }
