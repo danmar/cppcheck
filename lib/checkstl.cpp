@@ -103,7 +103,7 @@ void CheckStl::iterators()
                 validIterator = true;
 
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && container && tok2->tokAt(2)->varId() != container->varId()) {
+            if (Token::Match(tok2, "%varid% !=|== %var% . end|rend|cend|crend ( )", iteratorId) && container && tok2->tokAt(2)->varId() != container->declarationId()) {
                 iteratorsError(tok2, container->name(), tok2->strAt(2));
                 tok2 = tok2->tokAt(6);
             }
@@ -123,7 +123,7 @@ void CheckStl::iterators()
 
                 // If insert/erase is used on different container then
                 // report an error
-                if (container && tok2->varId() != container->varId()) {
+                if (container && tok2->varId() != container->declarationId()) {
                     // skip error message if container is a set..
                     const Variable *variableInfo = tok2->variable();
                     const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
@@ -312,13 +312,13 @@ void CheckStl::stlOutOfBounds()
                 continue;
 
             // variable id for loop variable.
-            unsigned int numId = tok->next()->varId();
+            const unsigned int numId = tok->next()->varId();
 
             // variable id for the container variable
-            unsigned int varId = container->varId();
+            const unsigned int declarationId = container->declarationId();
 
             for (const Token *tok3 = tok->tokAt(8); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
-                if (tok3->varId() == varId) {
+                if (tok3->varId() == declarationId) {
                     if (Token::Match(tok3->next(), ". size|length ( )"))
                         break;
                     else if (Token::Match(tok3->next(), "[ %varid% ]", numId))

@@ -195,10 +195,10 @@ public:
     }
 
     /**
-     * Get variable ID.
-     * @return variable ID
+     * Get declaration ID (varId used for variable in its declaration).
+     * @return declaration ID
      */
-    unsigned int varId() const {
+    unsigned int declarationId() const {
         // name may not exist for function arguments
         if (_name)
             return _name->varId();

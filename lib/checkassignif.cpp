@@ -70,7 +70,7 @@ void CheckAssignIf::assignIf()
             if (num < 0 && bitop == '|')
                 continue;
 
-            assignIfParseScope(tok, tok->tokAt(4), var->varId(), var->isLocal(), bitop, num);
+            assignIfParseScope(tok, tok->tokAt(4), var->declarationId(), var->isLocal(), bitop, num);
         }
     }
 }

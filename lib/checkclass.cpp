@@ -517,7 +517,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         if (Token::Match(ftok->next(), "%var% . %var% (")) {
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                if (var->varId() == ftok->next()->varId()) {
+                if (var->declarationId() == ftok->next()->varId()) {
                     /** @todo false negative: we assume function changes variable state */
                     assignVar(ftok->next()->str(), scope, usage);
                     break;
@@ -1334,7 +1334,7 @@ void CheckClass::virtualDestructor()
                     for (std::size_t k = 0; k < symbolDatabase->getVariableListSize(); k++) {
                         const Variable* var = symbolDatabase->getVariableFromVarId(k);
                         if (var && var->isPointer() && var->type() == derivedFrom)
-                            basepointer.insert(var->varId());
+                            basepointer.insert(var->declarationId());
                     }
 
                     // pointer variables of type 'Base *' that should not be deleted

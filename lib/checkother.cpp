@@ -1744,7 +1744,7 @@ void CheckOther::checkVariableScope()
             continue;
 
         const Token* tok = var->nameToken()->next();
-        if (Token::Match(tok, "; %varid% = %any% ;", var->varId())) {
+        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) {
             tok = tok->tokAt(3);
             if (!tok->isNumber() && tok->type() != Token::eString && tok->type() != Token::eChar && !tok->isBoolean())
                 continue;
@@ -1768,7 +1768,7 @@ void CheckOther::checkVariableScope()
                 }
 
                 tok = tok->link();
-            } else if (tok->varId() == var->varId() || tok->str() == "goto") {
+            } else if (tok->varId() == var->declarationId() || tok->str() == "goto") {
                 reduce = false;
                 break;
             }
@@ -1817,7 +1817,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok == forHeadEnd)
             forHeadEnd = 0;
 
-        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->varId())) { // Assigned in outer scope.
+        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;
             unsigned int indent = 0;
             for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) { // Ensure that variable isn't used on right side of =, too
@@ -1829,23 +1829,23 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     indent--;
                 } else if (tok2->str() == ";")
                     break;
-                else if (tok2->varId() == var->varId()) {
+                else if (tok2->varId() == var->declarationId()) {
                     loopVariable = true;
                     break;
                 }
             }
         }
 
-        if (loopVariable && Token::Match(tok, "%varid% !!=", var->varId())) // Variable used in loop
+        if (loopVariable && Token::Match(tok, "%varid% !!=", var->declarationId())) // Variable used in loop
             return false;
 
-        if (Token::Match(tok, "& %varid%", var->varId())) // Taking address of variable
+        if (Token::Match(tok, "& %varid%", var->declarationId())) // Taking address of variable
             return false;
 
-        if (Token::Match(tok, "= %varid%", var->varId()) && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
+        if (Token::Match(tok, "= %varid%", var->declarationId()) && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
             return false;
 
-        if (tok->varId() == var->varId()) {
+        if (tok->varId() == var->declarationId()) {
             used = true;
             if (scope->type == Scope::eSwitch && scope == tok->scope())
                 return false; // Used in outer switch scope - unsafe or impossible to reduce scope

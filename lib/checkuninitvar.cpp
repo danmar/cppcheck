@@ -69,7 +69,7 @@ private:
 
     /** internal constructor for creating extra checks */
     UninitVar(Check *c, const Variable* v, const SymbolDatabase* db, const Library *lib, bool isc)
-        : ExecutionPath(c, v->varId()), symbolDatabase(db), library(lib), isC(isc), var(v), alloc(false), strncpy_(false), memset_nonzero(false) {
+        : ExecutionPath(c, v->declarationId()), symbolDatabase(db), library(lib), isC(isc), var(v), alloc(false), strncpy_(false), memset_nonzero(false) {
     }
 
     /** is other execution path equal? */
@@ -420,7 +420,7 @@ private:
                 while (parent) {
                     for (std::list<Variable>::const_iterator j = parent->varlist.begin(); j != parent->varlist.end(); ++j) {
                         if (j->name() == var2->name()) {
-                            ExecutionPath::bailOutVar(checks, j->varId()); // If there is a variable with the same name in other scopes, this might cause false positives, if there are unexpanded macros
+                            ExecutionPath::bailOutVar(checks, j->declarationId()); // If there is a variable with the same name in other scopes, this might cause false positives, if there are unexpanded macros
                             break;
                         }
                     }
@@ -1309,7 +1309,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             const Token *end = tok->next()->link();
 
             // If address of variable is taken in the block then bail out
-            if (Token::findmatch(tok->tokAt(2), "& %varid%", end, var.varId()))
+            if (Token::findmatch(tok->tokAt(2), "& %varid%", end, var.declarationId()))
                 return true;
 
             // Skip block
@@ -1370,7 +1370,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
             while (tok && tok->str() != ";") {
                 // variable is seen..
-                if (tok->varId() == var.varId()) {
+                if (tok->varId() == var.declarationId()) {
                     if (!membervar.empty()) {
                         if (Token::Match(tok, "%var% . %var% ;|%cop%") && tok->strAt(2) == membervar)
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
@@ -1403,7 +1403,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         }
 
         // variable is seen..
-        if (tok->varId() == var.varId()) {
+        if (tok->varId() == var.declarationId()) {
             if (!membervar.empty()) {
                 if (isMemberVariableAssignment(tok, membervar)) {
                     checkRhs(tok, var, membervar);
@@ -1439,7 +1439,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
 {
     const Token * const endpar = startparentheses->link();
     for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
-        if (tok->varId() == var.varId()) {
+        if (tok->varId() == var.declarationId()) {
             if (Token::Match(tok, "%var% . %var%")) {
                 if (tok->strAt(2) == membervar) {
                     if (isMemberVariableAssignment(tok, membervar))
@@ -1474,7 +1474,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
     assert(tok->str() == "{");
 
     for (const Token * const end = tok->link(); tok != end; tok = tok->next()) {
-        if (tok->varId() == var.varId()) {
+        if (tok->varId() == var.declarationId()) {
             if (!membervar.empty()) {
                 if (isMemberVariableAssignment(tok, membervar)) {
                     bool assign = true;
@@ -1484,7 +1484,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                             rhs = true;
                         if (tok2->str() == ";")
                             break;
-                        if (rhs && tok2->varId() == var.varId() && isMemberVariableUsage(tok2, var.isPointer(), membervar)) {
+                        if (rhs && tok2->varId() == var.declarationId() && isMemberVariableUsage(tok2, var.isPointer(), membervar)) {
                             assign = false;
                             break;
                         }
@@ -1504,7 +1504,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                     bool assign = true;
                     if (tok->strAt(1) == "=") {
                         for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
-                            if (tok2->varId() == var.varId()) {
+                            if (tok2->varId() == var.declarationId()) {
                                 assign = false;
                                 break;
                             }
@@ -1541,7 +1541,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, const std::
     while (NULL != (tok = tok->next())) {
         if (tok->str() == "=")
             rhs = true;
-        else if (rhs && tok->varId() == var.varId()) {
+        else if (rhs && tok->varId() == var.declarationId()) {
             if (membervar.empty() && isVariableUsage(tok, var.isPointer(), _tokenizer->isCPP()))
                 uninitvarError(tok, tok->str());
             else if (!membervar.empty() && isMemberVariableUsage(tok, var.isPointer(), membervar))

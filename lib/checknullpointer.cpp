@@ -1441,7 +1441,7 @@ private:
             // Pointer declaration declaration?
             const Variable *var = tok.variable();
             if (var && var->isPointer() && var->nameToken() == &tok)
-                checks.push_back(new Nullpointer(owner, var->varId(), var->name(), symbolDatabase, library));
+                checks.push_back(new Nullpointer(owner, var->declarationId(), var->name(), symbolDatabase, library));
         }
 
         if (Token::simpleMatch(&tok, "try {")) {

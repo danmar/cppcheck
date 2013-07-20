@@ -832,7 +832,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         // add all variables
         std::list<Variable>::const_iterator var;
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-            unsigned int varId = var->varId();
+            unsigned int varId = var->declarationId();
             if (varId)
                 _variableList[varId] = &(*var);
         }
@@ -843,10 +843,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             std::list<Variable>::const_iterator arg;
             for (arg = func->argumentList.begin(); arg != func->argumentList.end(); ++arg) {
                 // check for named parameters
-                if (arg->nameToken() && arg->varId()) {
-                    unsigned int varId = arg->varId();
-                    if (varId)
-                        _variableList[varId] = &(*arg);
+                if (arg->nameToken() && arg->declarationId()) {
+                    const unsigned int declarationId = arg->declarationId();
+                    if (declarationId > 0U)
+                        _variableList[declarationId] = &(*arg);
                 }
             }
         }
@@ -1574,7 +1574,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "_name: " << var->nameToken();
     if (var->nameToken()) {
         std::cout << " " << var->name() << " " << _tokenizer->list.fileLine(var->nameToken()) << std::endl;
-        std::cout << indent << "    varId: " << var->varId() << std::endl;
+        std::cout << indent << "    declarationId: " << var->declarationId() << std::endl;
     } else
         std::cout << std::endl;
     std::cout << indent << "_start: " << var->typeStartToken() << " " << var->typeStartToken()->str()

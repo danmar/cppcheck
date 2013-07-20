@@ -125,13 +125,13 @@ public:
         /** size of each element in array */
         MathLib::bigint _element_size;
 
-        /** variable id */
-        unsigned int _varid;
+        /** declaration id */
+        unsigned int _declarationId;
 
     public:
         ArrayInfo();
         ArrayInfo(const ArrayInfo &);
-        ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcevarid = 0);
+        ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcedeclid = 0);
         ArrayInfo & operator=(const ArrayInfo &ai);
 
         /**
@@ -164,11 +164,11 @@ public:
         }
 
         /** Variable name */
-        unsigned int varid() const {
-            return _varid;
+        unsigned int declarationId() const {
+            return _declarationId;
         }
-        void varid(unsigned int id) {
-            _varid = id;
+        void declarationId(unsigned int id) {
+            _declarationId = id;
         }
 
         /** Variable name */

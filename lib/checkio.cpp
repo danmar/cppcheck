@@ -107,16 +107,16 @@ void CheckIO::checkFileUsage()
     std::size_t varListSize = symbolDatabase->getVariableListSize();
     for (std::size_t i = 1; i < varListSize; ++i) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->varId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
+        if (!var || !var->declarationId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
             continue;
 
         if (var->isLocal()) {
             if (var->nameToken()->strAt(1) == "(") // initialize by calling "ctor"
-                filepointers.insert(std::make_pair(var->varId(), Filepointer(UNKNOWN)));
+                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN)));
             else
-                filepointers.insert(std::make_pair(var->varId(), Filepointer(CLOSED)));
+                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(CLOSED)));
         } else {
-            filepointers.insert(std::make_pair(var->varId(), Filepointer(UNKNOWN)));
+            filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN)));
             // TODO: If all fopen calls we find open the file in the same type, we can set Filepointer::mode
         }
     }
