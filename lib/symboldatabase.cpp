@@ -858,8 +858,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         const Scope *func = functionScopes[i];
         for (const Token *tok = func->classStart->next(); tok != func->classEnd; tok = tok->next()) {
             // check for member variable
-            if (tok && tok->varId() && tok->next() && tok->next()->str() == ".") {
-                const Token *tok1 = tok->tokAt(2);
+            if (tok && tok->varId() && tok->next() &&
+                (tok->next()->str() == "." ||
+                 (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
+                const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
                 if (tok1 && tok1->varId() && _variableList[tok1->varId()] == 0) {
                     const Variable *var = _variableList[tok->varId()];
                     if (var && var->typeScope()) {
