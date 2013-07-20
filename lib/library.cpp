@@ -35,7 +35,7 @@ Library::Library() : allocid(0)
 
 Library::Library(const Library &lib) :
     use(lib.use),
-    ignore(lib.ignore),
+    leakignore(lib.leakignore),
     argumentChecks(lib.argumentChecks),
     returnuninitdata(lib.returnuninitdata),
     allocid(lib.allocid),
