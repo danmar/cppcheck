@@ -345,7 +345,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (dealloc == NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 const std::string &functionName(tok->link()->previous()->str());
                 bool unknown = false;
-                if (_settings->library.ignore.find(functionName) == _settings->library.ignore.end() &&
+                if (_settings->library.leakignore.find(functionName) == _settings->library.leakignore.end() &&
                     _settings->library.use.find(functionName) == _settings->library.use.end() &&
                     _tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (unknown) {
@@ -385,7 +385,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const in
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
 
     // Ignore function call?
-    const bool ignore = bool(_settings->library.ignore.find(tok->str()) != _settings->library.ignore.end());
+    const bool ignore = bool(_settings->library.leakignore.find(tok->str()) != _settings->library.leakignore.end());
 
     if (ignore)
         return;

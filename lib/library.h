@@ -59,7 +59,7 @@ public:
     }
 
     std::set<std::string> use;
-    std::set<std::string> ignore;
+    std::set<std::string> leakignore;
 
     bool isnoreturn(const std::string &name) const {
         std::map<std::string,bool>::const_iterator it = _noreturn.find(name);

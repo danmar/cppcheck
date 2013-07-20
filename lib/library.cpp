@@ -106,8 +106,6 @@ bool Library::load(const char exename[], const char path[])
             }
         }
 
-        else if (strcmp(node->Name(),"ignore")==0)
-            ignore.insert(node->GetText());
         else if (strcmp(node->Name(),"function")==0) {
             const char *name = node->Attribute("name");
             if (name == NULL)
@@ -116,6 +114,8 @@ bool Library::load(const char exename[], const char path[])
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(),"noreturn")==0)
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
+                else if (strcmp(functionnode->Name(),"leak-ignore")==0)
+                    leakignore.insert(name);
                 else if (strcmp(functionnode->Name(),"arg")==0 && functionnode->Attribute("nr") != NULL) {
                     const int nr = atoi(functionnode->Attribute("nr"));
                     bool notnull = false;

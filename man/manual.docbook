@@ -753,7 +753,9 @@ Checking test.c...
     &lt;dealloc&gt;Unlock&lt;/dealloc&gt;
   &lt;/resource&gt;
 
-  &lt;ignore&gt;IsEqual&lt;/ignore&gt;
+  &lt;function name="IsEqual"&gt;
+    &lt;leak-ignore/&gt;
+  &lt;/function&gt;
 
   &lt;function name="AssignFred"&gt;
     &lt;noreturn&gt;false&lt;/noreturn&gt;
@@ -776,10 +778,10 @@ Checking test.c...
     <literal>CloseWilma</literal>.</para>
 
     <para>The <literal>&lt;use&gt;</literal> and
-    <literal>&lt;ignore&gt;</literal> elements are used to control the leaks
-    checking. If it should be ignored that a function is called, use
-    <literal>&lt;ignore&gt;</literal>. If there is no leak whenever the memory
-    is passed to a function, use <literal>&lt;use&gt;</literal>.</para>
+    <literal>&lt;leak-ignore&gt;</literal> elements are used to control the
+    leaks checking. If it should be ignored that a function is called, use
+    <literal>&lt;leak-ignore&gt;</literal>. If there is no leak whenever the
+    memory is passed to a function, use <literal>&lt;use&gt;</literal>.</para>
 
     <para>In the <literal>&lt;function&gt;</literal> block some useful info is
     added about function behaviour. The <literal>&lt;noreturn&gt;</literal>
@@ -797,12 +799,13 @@ Checking test.c...
 
       <para>No configuration is necessary for the standard functions. The
       strcpy() was chosen in this example for demonstration purposes because
-      its behaviour is well-known. </para>
+      its behaviour is well-known.</para>
 
       <para>The proper configuration for the standard strcpy() function would
       be:</para>
 
       <programlisting>  &lt;function name="strcpy"&gt;
+    &lt;leak-ignore/&gt;
     &lt;noreturn&gt;false&lt;/noreturn&gt;
     &lt;arg nr="1"&gt;
       &lt;not-null/&gt;
@@ -813,17 +816,22 @@ Checking test.c...
     &lt;/arg&gt;
   &lt;/function&gt;</programlisting>
 
+      <para>The <literal>&lt;leak-ignore/&gt;</literal> is optional and it
+      tells Cppcheck to ignore this function call in the leaks checking.
+      Passing allocated memory to this function won't mean it will be
+      deallocated.</para>
+
       <para>The <literal>&lt;noreturn&gt;</literal> is optional. But it's
       recommended.</para>
 
-      <para>The first parameter that the function takes is a pointer. It must
+      <para>The first argument that the function takes is a pointer. It must
       not be a null pointer, a uninitialized pointer nor a dead pointer. It
       must point at some data, this data can be initialized but it is not
       wrong if it isn't. Using <literal>&lt;not-null&gt;</literal> is correct.
       <literal>Cppcheck</literal> will check by default that the pointer is
       not uninitialized nor dead.</para>
 
-      <para>The second parameter the function takes is a pointer. It must not
+      <para>The second argument the function takes is a pointer. It must not
       be null. And it must point at initialized data. Using
       <literal>&lt;not-null&gt;</literal> and
       <literal>&lt;not-uninit&gt;</literal> is correct.</para>

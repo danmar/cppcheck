@@ -570,7 +570,7 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz)
 {
     if (test_white_list(tok->str()) ||
-        (_settings->library.ignore.find(tok->str()) != _settings->library.ignore.end())) {
+        (_settings->library.leakignore.find(tok->str()) != _settings->library.leakignore.end())) {
         if (tok->str() == "asprintf" ||
             tok->str() == "delete" ||
             tok->str() == "fclose" ||
