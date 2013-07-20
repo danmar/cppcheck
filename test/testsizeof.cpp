@@ -558,6 +558,54 @@ private:
               "  void* data2 = (void *)data + 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        // #4908 (void pointer as a member of a struct/class)
+        check("struct FOO {\n"
+              "  void *data;\n"
+              "};\n"
+              "char f(struct FOO foo) {\n"
+              "  char x = *((char*)(foo.data+1));\n"
+              "  foo.data++;\n"
+              "  return x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (portability) 'foo.data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
+                      "[test.cpp:6]: (portability) 'foo.data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        check("struct FOO {\n"
+              "  void *data;\n"
+              "};\n"
+              "char f(struct FOO foo) {\n"
+              "  char x = *((char*)foo.data+1);\n"
+              "  return x;\n"
+              "}\n"
+              "char f2(struct FOO foo) {\n"
+              "  char x = *((char*)((FOO)foo).data + 1);\n"
+              "  return x;\n"
+              "}\n"
+              "char f3(struct FOO* foo) {\n"
+              "  char x = *((char*)foo->data + 1);\n"
+              "  return x;\n"
+              "}\n"
+              "struct BOO {\n"
+              "  FOO data;\n"
+              "};\n"
+              "void f4(struct BOO* boo) {\n"
+              "  char c = *((char*)boo->data.data + 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct FOO {\n"
+              "  void *data;\n"
+              "};\n"
+              "char f(struct FOO* foo) {\n"
+              "  char x = *(foo[1].data + 1);\n"
+              "  return x;\n"
+              "}\n"
+              "void f2(struct FOO* foo) {\n"
+              "  (foo[0]).data++;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (portability) 'foo[1].data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
+                           "[test.cpp:9]: (portability) 'foo[0].data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", "", errout.str());
     }
 
 };

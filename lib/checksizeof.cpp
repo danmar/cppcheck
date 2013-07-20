@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checksizeof.h"
 #include "symboldatabase.h"
+#include <algorithm>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -291,14 +292,40 @@ void CheckSizeof::sizeofVoid()
                    (Token::Match(tok->tokAt(3)->variable()->typeStartToken(), "void * !!*")) &&
                    (!tok->tokAt(3)->variable()->isArray())) { // sizeof(*p) where p is of type "void*"
             sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
-        } else if (Token::Match(tok, "%var% +|-|++|--") || Token::Match(tok, "+|-|++|-- %var%")) { // Arithmetic operations on variable of type "void*"
+        } else if (Token::Match(tok, "%var% +|-|++|--") ||
+                   Token::Match(tok, "+|-|++|-- %var%")) { // Arithmetic operations on variable of type "void*"
             int index = (tok->isName()) ? 0 : 1;
             const Variable* var = tok->tokAt(index)->variable();
             if (var && Token::Match(var->typeStartToken(), "void *")) {
-                if (Token::Match(tok->previous(), ") %var% +|-") && // Check for cast on operations with +|-
-                    !Token::Match(tok->previous()->link(), "( const| void *"))
-                    continue;
-                arithOperationsOnVoidPointerError(tok, tok->strAt(index), var->typeStartToken()->stringifyList(var->typeEndToken()->next()));
+                std::string varname = tok->str();
+                // In case this 'void *' var is a member then go back to the main object
+                const Token* tok2 = tok->tokAt(index);
+                if (index == 0) {
+                    bool isMember = false;
+                    while (Token::Match(tok2->previous(), ".")) {
+                        isMember = true;
+                        if (Token::Match(tok2->tokAt(-2), ")"))
+                            tok2 = tok2->tokAt(-2)->link();
+                        else if (Token::Match(tok2->tokAt(-2), "]"))
+                            tok2 = tok2->tokAt(-2)->link()->previous();
+                        else
+                            tok2 = tok2->tokAt(-2);
+                    }
+                    if (isMember) {
+                        // Get 'struct.member' complete name (without spaces)
+                        varname = tok2->stringifyList(tok->tokAt(index)->next());
+                        varname.erase(remove_if(varname.begin(), varname.end(),
+                                                static_cast<int (*)(int)>(std::isspace)), varname.end());
+                    }
+                }
+                // Check for cast on operations with '+|-'
+                if (Token::Match(tok, "%var% +|-")) {
+                    // Check for cast expression
+                    if (Token::Match(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
+                        continue;
+                }
+                arithOperationsOnVoidPointerError(tok, varname,
+                                                  var->typeStartToken()->stringifyList(var->typeEndToken()->next()));
             }
         }
     }
