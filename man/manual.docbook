@@ -797,9 +797,8 @@ Checking test.c...
     <section>
       <title>Example: strcpy()</title>
 
-      <para>No configuration is necessary for the standard functions. The
-      strcpy() was chosen in this example for demonstration purposes because
-      its behaviour is well-known.</para>
+      <para>The strcpy() was chosen in this example for demonstration purposes
+      because its behaviour is well-known.</para>
 
       <para>The proper configuration for the standard strcpy() function would
       be:</para>
