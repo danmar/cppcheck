@@ -482,8 +482,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --library
         else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-            if (!_settings->library.load(argv[i]+10)) {
-                PrintMessage("cppcheck: Failed to load library file '" + std::string(argv[i]+10) + "'");
+            if (!_settings->library.load(argv[0], argv[i]+10)) {
+                PrintMessage("cppcheck: Failed to load library configuration file '" + std::string(argv[i]+10) + "'");
                 return false;
             }
         }

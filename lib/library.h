@@ -36,7 +36,7 @@ public:
     Library(const Library &);
     ~Library();
 
-    bool load(const char path[]);
+    bool load(const char exename[], const char path[]);
 
     /** get allocation id for function (by name) */
     int alloc(const std::string &name) const {

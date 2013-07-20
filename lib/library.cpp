@@ -48,12 +48,39 @@ Library::Library(const Library &lib) :
 
 Library::~Library() { }
 
-bool Library::load(const char path[])
+bool Library::load(const char exename[], const char path[])
 {
     tinyxml2::XMLDocument doc;
 
-    const tinyxml2::XMLError error = doc.LoadFile(path);
-    if (error != tinyxml2::XML_NO_ERROR)
+    if (std::strchr(path,',') != NULL) {
+        bool ret = true;
+        std::string p(path);
+        while (p.find(",") != std::string::npos) {
+            const std::string::size_type pos = p.find(",");
+            ret &= load(exename, p.substr(0,pos).c_str());
+            p = p.substr(pos+1);
+        }
+        if (!p.empty())
+            ret &= load(exename, p.c_str());
+        return ret;
+    }
+
+    FILE *fp = fopen(path, "rt");
+    if (fp == NULL) {
+        std::string fullpath(exename);
+        if (fullpath.find_first_of("/\\") != std::string::npos)
+            fullpath = fullpath.substr(0, 1U + fullpath.find_last_of("/\\"));
+        fullpath += path;
+        fp = fopen(fullpath.c_str(), "rt");
+        if (fp == NULL) {
+            fullpath += ".cfg";
+            fp = fopen(fullpath.c_str(), "rt");
+            if (fp == NULL)
+                return false;
+        }
+    }
+
+    if (doc.LoadFile(fp) != tinyxml2::XML_NO_ERROR)
         return false;
 
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
