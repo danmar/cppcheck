@@ -598,14 +598,17 @@ private:
               "  void *data;\n"
               "};\n"
               "char f(struct FOO* foo) {\n"
-              "  char x = *(foo[1].data + 1);\n"
-              "  return x;\n"
-              "}\n"
+              "  *(foo[1].data + 1) = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (portability) 'foo[1].data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        check("struct FOO {\n"
+              "  void *data;\n"
+              "};\n"
               "void f2(struct FOO* foo) {\n"
               "  (foo[0]).data++;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (portability) 'foo[1].data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
-                           "[test.cpp:9]: (portability) 'foo[0].data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (portability) '(foo[0]).data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
     }
 
 };

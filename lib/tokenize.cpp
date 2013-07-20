@@ -9375,6 +9375,31 @@ void Tokenizer::createSymbolDatabase()
         for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
             if (tok->varId())
                 tok->variable(_symbolDatabase->getVariableFromVarId(tok->varId()));
+
+            // Set Token::variable pointer for array member variable
+            // Since it doesn't point at a fixed location it doesn't have varid
+            if (tok->variable() != NULL &&
+                tok->variable()->typeScope() &&
+                Token::Match(tok, "%var% [")) {
+
+                // Locate "]"
+                Token *tok2 = tok->next();
+                while (tok2 && tok2->str() == "[")
+                    tok2 = tok2->link()->next();
+
+                Token *membertok = NULL;
+                if (Token::Match(tok2, ". %var%"))
+                    membertok = tok2->next();
+                else if (Token::Match(tok2, ") . %var%") && tok->strAt(-1) == "(")
+                    membertok = tok2->tokAt(2);
+
+                if (membertok) {
+                    const Variable *var = tok->variable();
+                    const Variable *membervar = var->typeScope()->getVariable(membertok->str());
+                    if (membervar)
+                        membertok->variable(membervar);
+                }
+            }
         }
     }
 }

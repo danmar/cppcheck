@@ -120,6 +120,9 @@ private:
         TEST_CASE(isVariableDeclarationPointerConst);
         TEST_CASE(isVariableDeclarationRValueRef);
 
+        TEST_CASE(arrayMemberVar1);
+        TEST_CASE(arrayMemberVar2);
+        TEST_CASE(arrayMemberVar3);
         TEST_CASE(staticMemberVar);
 
         TEST_CASE(hasRegularFunction);
@@ -543,6 +546,66 @@ private:
         ASSERT(true == v.isReference());
         ASSERT(true == v.isRValueReference());
         ASSERT(var.tokens()->tokAt(2)->scope() != 0);
+    }
+
+    void arrayMemberVar1() {
+        const char code[] = "struct Foo {\n"
+                            "    int x;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    struct Foo foo[10];\n"
+                            "    foo[1].x = 123;\n"  // <- x should get a variable() pointer
+                            "}";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        tok = tok ? tok->next() : NULL;
+        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
+    }
+
+    void arrayMemberVar2() {
+        const char code[] = "struct Foo {\n"
+                            "    int x;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    struct Foo foo[10][10];\n"
+                            "    foo[1][2].x = 123;\n"  // <- x should get a variable() pointer
+                            "}";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        tok = tok ? tok->next() : NULL;
+        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
+    }
+
+    void arrayMemberVar3() {
+        const char code[] = "struct Foo {\n"
+                            "    int x;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    struct Foo foo[10];\n"
+                            "    (foo[1]).x = 123;\n"  // <- x should get a variable() pointer
+                            "}";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        tok = tok ? tok->next() : NULL;
+        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
     void staticMemberVar() {
