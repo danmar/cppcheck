@@ -1,3 +1,4 @@
+#include "validatexml.h"
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -174,42 +175,17 @@ const char *validate_name_version_data(const char *data)
     i += 6;
 
     // validate xml
-    char xml[strlen(data+i)];
-    memset(xml, 0, strlen(data+i));
-    unencode(data+i, xml);
-
-    if (strncmp(xml,"<?xml version=\"1.0\"?>",21)!=0)
-        return "invalid query string: XML must start with '&lt;?xml version=\"1.0\"?&gt;'";
-    int linenr = 1;
-    enum {TEXT,ELEMENT} state = TEXT;
-    for (int pos = 21; xml[pos]; pos++) {
-        if (strncmp(&xml[pos], "\r\n", 2)==0) {
-            ++linenr;
-            ++pos;
-        } else if (xml[pos]=='\r' || xml[pos]=='\n') {
-            ++linenr;
-        } else if (xml[pos] == '<') {
-            if (state != TEXT) {
-                static char errmsg[256];
-                sprintf(errmsg, "invalid query string: Invalid XML at line %i", linenr);
-                return errmsg;
-            }
-            state = ELEMENT;
-        } else if (xml[pos] == '>') {
-            if (state != ELEMENT) {
-                static char errmsg[256];
-                sprintf(errmsg, "invalid query string: Invalid XML at line %i", linenr);
-                return errmsg;
-            }
-            state = TEXT;
-        }
-    }
-    if (state != TEXT) {
-        static char errmsg[256];
-        sprintf(errmsg, "invalid query string: Invalid XML at line %i", linenr);
-        return errmsg;
+    char xmldata[strlen(data+i)];
+    memset(xmldata, 0, strlen(data+i));
+    unencode(data+i, xmldata);
+    const int badline = validatexml(xmldata);
+    if (badline >= 1) {
+        static char buf[256];
+        sprintf(buf, "Invalid query: Invalid XML at line %i\n", badline);
+        return buf;
     }
 
+    // No error
     return NULL;
 }
 
