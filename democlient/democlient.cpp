@@ -1,6 +1,7 @@
 #include <ctime>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <algorithm>
 
 #include "cppcheck.h"
@@ -75,7 +76,7 @@ int main()
         fgets(data, len, stdin);
     } else {
         const char *s = getenv("QUERY_STRING");
-        strncpy(data, s?s:"", sizeof(data)-2);
+        std::strncpy(data, s?s:"", sizeof(data)-2);
     }
 
     char code[4096] = {0};
