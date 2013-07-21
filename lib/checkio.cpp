@@ -543,86 +543,129 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     }
                                 }
                             } else if (!scan && warning) {
-                                switch (*i) {
-                                case 's':
-                                    if (variableInfo && argListTok->type() != Token::eString && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
-                                        invalidPrintfArgTypeError_s(tok, numFormat);
-                                    break;
-                                case 'n':
-                                    if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")) || argListTok->type() == Token::eString)
-                                        invalidPrintfArgTypeError_n(tok, numFormat);
-                                    break;
-                                case 'c':
-                                case 'x':
-                                case 'X':
-                                case 'o':
-                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "bool|short|long|int|char|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
-                                        invalidPrintfArgTypeError_int(tok, numFormat, *i);
-                                    else if (argListTok->type() == Token::eString)
-                                        invalidPrintfArgTypeError_int(tok, numFormat, *i);
-                                    break;
-                                case 'd':
-                                case 'i':
-                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
-                                        if ((varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "bool|short|long|int")) && varTypeTok->str() != "char")
-                                            invalidPrintfArgTypeError_sint(tok, numFormat, *i);
-                                    } else if (argListTok->type() == Token::eString)
-                                        invalidPrintfArgTypeError_sint(tok, numFormat, *i);
-                                    break;
-                                case 'u':
-                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
-                                        if ((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "char|short|long|int|size_t")) && varTypeTok->str() != "bool")
-                                            invalidPrintfArgTypeError_uint(tok, numFormat, *i);
-                                    } else if (argListTok->type() == Token::eString)
-                                        invalidPrintfArgTypeError_uint(tok, numFormat, *i);
-                                    break;
-                                case 'p':
-                                    if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "short|long|int|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
-                                        invalidPrintfArgTypeError_p(tok, numFormat);
-                                    else if (argListTok->type() == Token::eString)
-                                        invalidPrintfArgTypeError_p(tok, numFormat);
-                                    break;
-                                case 'e':
-                                case 'E':
-                                case 'f':
-                                case 'g':
-                                case 'G':
-                                    if (varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray()))
-                                        invalidPrintfArgTypeError_float(tok, numFormat, *i);
-                                    else if (argListTok->type() == Token::eString)
-                                        invalidPrintfArgTypeError_float(tok, numFormat, *i);
-                                    break;
-                                case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
-                                case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
-                                    // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
-                                    if (i != formatString.end() && *(i+1) == *i) {
-                                        if (i+1 != formatString.end() && !isalpha(*(i+2))) {
-                                            std::string modifier;
-                                            modifier += *i;
-                                            modifier += *(i+1);
-                                            invalidLengthModifierError(tok, numFormat, modifier);
+                                std::string specifier;
+                                bool done = false;
+                                while (!done) {
+                                    switch (*i) {
+                                    case 's':
+                                        if (variableInfo && argListTok->type() != Token::eString && isKnownType(variableInfo, varTypeTok) && (!variableInfo->isPointer() && !variableInfo->isArray()))
+                                            invalidPrintfArgTypeError_s(tok, numFormat);
+                                        done = true;
+                                        break;
+                                    case 'n':
+                                        if ((varTypeTok && isKnownType(variableInfo, varTypeTok) && ((!variableInfo->isPointer() && !variableInfo->isArray()) || varTypeTok->strAt(-1) == "const")) || argListTok->type() == Token::eString)
+                                            invalidPrintfArgTypeError_n(tok, numFormat);
+                                        done = true;
+                                        break;
+                                    case 'c':
+                                    case 'x':
+                                    case 'X':
+                                    case 'o':
+                                        if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "bool|short|long|int|char|size_t") && !variableInfo->isPointer() && !variableInfo->isArray()) {
+                                            specifier += *i;
+                                            invalidPrintfArgTypeError_int(tok, numFormat, specifier);
+                                        } else if (argListTok->type() == Token::eString) {
+                                            specifier += *i;
+                                            invalidPrintfArgTypeError_int(tok, numFormat, specifier);
                                         }
-                                    } else {
+                                        done = true;
+                                        break;
+                                    case 'd':
+                                    case 'i':
+                                        if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
+                                            if ((varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "bool|short|long|int")) && varTypeTok->str() != "char") {
+                                                specifier += *i;
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier);
+                                            }
+                                        } else if (argListTok->type() == Token::eString) {
+                                            specifier += *i;
+                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier);
+                                        }
+                                        done = true;
+                                        break;
+                                    case 'u':
+                                        if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !variableInfo->isPointer() && !variableInfo->isArray()) {
+                                            if ((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "char|short|long|int|size_t")) && varTypeTok->str() != "bool") {
+                                                specifier += *i;
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier);
+                                            }
+                                        } else if (argListTok->type() == Token::eString) {
+                                            specifier += *i;
+                                            invalidPrintfArgTypeError_uint(tok, numFormat, specifier);
+                                        }
+                                        done = true;
+                                        break;
+                                    case 'p':
+                                        if (varTypeTok && isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "short|long|int|size_t") && !variableInfo->isPointer() && !variableInfo->isArray())
+                                            invalidPrintfArgTypeError_p(tok, numFormat);
+                                        else if (argListTok->type() == Token::eString)
+                                            invalidPrintfArgTypeError_p(tok, numFormat);
+                                        done = true;
+                                        break;
+                                    case 'e':
+                                    case 'E':
+                                    case 'f':
+                                    case 'g':
+                                    case 'G':
+                                        if (varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray())) {
+                                            specifier += *i;
+                                            invalidPrintfArgTypeError_float(tok, numFormat, specifier);
+                                        } else if (argListTok->type() == Token::eString) {
+                                            specifier += *i;
+                                            invalidPrintfArgTypeError_float(tok, numFormat, specifier);
+                                        }
+                                        done = true;
+                                        break;
+                                    case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
+                                    case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
+                                        // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
+                                        if (i != formatString.end() && *(i+1) == *i) {
+                                            if (i+1 != formatString.end() && !isalpha(*(i+2))) {
+                                                std::string modifier;
+                                                modifier += *i;
+                                                modifier += *(i+1);
+                                                invalidLengthModifierError(tok, numFormat, modifier);
+                                            }
+                                        } else {
+                                            if (i != formatString.end() && !isalpha(*(i+1))) {
+                                                std::string modifier;
+                                                modifier += *i;
+                                                invalidLengthModifierError(tok, numFormat, modifier);
+                                            }
+                                        }
+                                        done = true;
+                                        break;
+                                    case 'I': // Microsoft extension: I for size_t and ptrdiff_t, I32 for __int32, and I64 for __int64
+                                        if (i != formatString.end()) {
+                                            if (isalpha(*(i+1))) {
+                                                specifier = *i++;
+                                            } else if (*(i+1) == '3' && *(i+2) == '2' && isalpha(*(i+3))) {
+                                                specifier = *i++;
+                                                specifier += *i++;
+                                                specifier += *i++;
+                                            } else if (*(i+1) == '6' && *(i+2) == '4' && isalpha(*(i+3))) {
+                                                specifier = *i++;
+                                                specifier += *i++;
+                                                specifier += *i++;
+                                            }
+                                        }
+                                        break;
+                                    case 'j': // intmax_t or uintmax_t
+                                    case 'z': // size_t
+                                    case 't': // ptrdiff_t
+                                    case 'L': // long double
+                                        // Expect an alphabetical character after these specifiers
                                         if (i != formatString.end() && !isalpha(*(i+1))) {
                                             std::string modifier;
                                             modifier += *i;
                                             invalidLengthModifierError(tok, numFormat, modifier);
                                         }
+                                        done = true;
+                                        break;
+                                    default:
+                                        done = true;
+                                        break;
                                     }
-                                    break;
-                                case 'j': // intmax_t or uintmax_t
-                                case 'z': // size_t
-                                case 't': // ptrdiff_t
-                                case 'L': // long double
-                                    // Expect an alphabetical character after these specifiers
-                                    if (i != formatString.end() && !isalpha(*(i+1))) {
-                                        std::string modifier;
-                                        modifier += *i;
-                                        invalidLengthModifierError(tok, numFormat, modifier);
-                                    }
-                                    break;
-                                default:
-                                    break;
                                 }
                             }
                         }
@@ -692,31 +735,31 @@ void CheckIO::invalidPrintfArgTypeError_p(const Token* tok, unsigned int numForm
     errmsg << "%p in format string (no. " << numFormat << ") requires an address given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_p", errmsg.str());
 }
-void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c)
+void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an integer given in the argument list.";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires an integer given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str());
 }
-void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, char c)
+void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires an unsigned integer given in the argument list.";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires an unsigned integer given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_uint", errmsg.str());
 }
-void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, char c)
+void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a signed integer given in the argument list.";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a signed integer given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_sint", errmsg.str());
 }
-void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c)
+void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << c << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list.";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a floating point number given in the argument list.";
     reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
 }
-void CheckIO::invalidLengthModifierError(const Token* tok, unsigned int numFormat, std::string& modifier)
+void CheckIO::invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier)
 {
     std::ostringstream errmsg;
     errmsg << "'" << modifier << "' in format string (no. " << numFormat << ") is a length modifier and cannot be used without a conversion specifier.";

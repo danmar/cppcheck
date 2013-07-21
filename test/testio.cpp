@@ -46,6 +46,8 @@ private:
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
+
+        TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
     }
 
     void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -752,6 +754,29 @@ private:
                       "[test.cpp:7]: (warning) 'z' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:8]: (warning) 't' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:9]: (warning) 'L' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+    }
+
+    void testMicrosoftPrintfArgument() {
+        check("void foo() {\n"
+              "    size_t s;\n"
+              "    ptrdiff_t p;\n"
+              "    __int32 i32;\n"
+              "    unsigned __int32 u32;\n"
+              "    __int64 i64;\n"
+              "    unsigned __int64 u64;\n"
+              "    printf(\"%Id %Iu %Ix\", s, s, s);\n"
+              "    printf(\"%Id %Iu %Ix\", p, p, p);\n"
+              "    printf(\"%I32d %I32u %I32x\", i32, i32, i32);\n"
+              "    printf(\"%I32d %I32u %I32x\", u32, u32, u32);\n"
+              "    printf(\"%I64d %I64u %I64x\", i64, i64, i64);\n"
+              "    printf(\"%I64d %I64u %I64x\", u64, u64, u64);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires a signed integer given in the argument list.\n", errout.str());
     }
 };
 

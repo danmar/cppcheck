@@ -193,6 +193,12 @@ private:
               " return 1 + p->i;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4919
+        check("void* foo(int i) {\n"
+              "  [i] { return i; };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

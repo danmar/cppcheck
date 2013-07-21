@@ -86,11 +86,11 @@ private:
     void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
-    void invalidLengthModifierError(const Token* tok, unsigned int numFormat, std::string& modifier);
+    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier);
+    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier);
+    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier);
+    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier);
+    void invalidLengthModifierError(const Token* tok, unsigned int numFormat,const  std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -108,10 +108,10 @@ private:
         c.invalidPrintfArgTypeError_s(0, 1);
         c.invalidPrintfArgTypeError_n(0, 1);
         c.invalidPrintfArgTypeError_p(0, 1);
-        c.invalidPrintfArgTypeError_int(0, 1, 'X');
-        c.invalidPrintfArgTypeError_uint(0, 1, 'u');
-        c.invalidPrintfArgTypeError_sint(0, 1, 'i');
-        c.invalidPrintfArgTypeError_float(0, 1, 'f');
+        c.invalidPrintfArgTypeError_int(0, 1, "X");
+        c.invalidPrintfArgTypeError_uint(0, 1, "u");
+        c.invalidPrintfArgTypeError_sint(0, 1, "i");
+        c.invalidPrintfArgTypeError_float(0, 1, "f");
         c.invalidScanfFormatWidthError(0, 10, 5, NULL);
     }
 
