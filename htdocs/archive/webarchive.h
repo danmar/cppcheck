@@ -1,7 +1,11 @@
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#define MAX_RECORDS 1000
+#define MAX_RECORDS   1000
+#define MAX_LINE_LEN  0xffff
+#define MAX_NAME_LEN  32
 
 static void unencode(const char *src, char *dest)
 {
@@ -12,6 +16,10 @@ static void unencode(const char *src, char *dest)
             int code;
             if (sscanf(src+1, "%2x", &code) != 1)
                 code = '?';
+            if (code == '%' && isxdigit(src[3]) && isxdigit(src[4])) {
+                src += 2;
+                sscanf(src+1, "%2x", &code);
+            }
             *dest = code;
             src += 2;
         } else
@@ -26,7 +34,7 @@ int readdata(char * * const data, int sz)
     if (!f)
         return 0;  // failed
 
-    char line[10000] = {0};
+    char line[MAX_LINE_LEN] = {0};
     int i = 0;
     while (i < sz && fgets(line,sizeof(line)-2,f)) {
         if (strncmp(line, "name=", 5) == 0) {
@@ -163,6 +171,44 @@ const char *validate_name_version_data(const char *data)
     // filedata
     if (strncmp(data+i, "&data=", 6) != 0)
         return "invalid query string: 'data=' not seen at the expected location";
+    i += 6;
+
+    // validate xml
+    char xml[strlen(data+i)];
+    memset(xml, 0, strlen(data+i));
+    unencode(data+i, xml);
+
+    if (strncmp(xml,"<?xml version=\"1.0\"?>",21)!=0)
+        return "invalid query string: XML must start with '&lt;?xml version=\"1.0\"?&gt;'";
+    int linenr = 1;
+    enum {TEXT,ELEMENT} state = TEXT;
+    for (int pos = 21; xml[pos]; pos++) {
+        if (strncmp(&xml[pos], "\r\n", 2)==0) {
+            ++linenr;
+            ++pos;
+        } else if (xml[pos]=='\r' || xml[pos]=='\n') {
+            ++linenr;
+        } else if (xml[pos] == '<') {
+            if (state != TEXT) {
+                static char errmsg[256];
+                sprintf(errmsg, "invalid query string: Invalid XML at line %i", linenr);
+                return errmsg;
+            }
+            state = ELEMENT;
+        } else if (xml[pos] == '>') {
+            if (state != ELEMENT) {
+                static char errmsg[256];
+                sprintf(errmsg, "invalid query string: Invalid XML at line %i", linenr);
+                return errmsg;
+            }
+            state = TEXT;
+        }
+    }
+    if (state != TEXT) {
+        static char errmsg[256];
+        sprintf(errmsg, "invalid query string: Invalid XML at line %i", linenr);
+        return errmsg;
+    }
 
     return NULL;
 }

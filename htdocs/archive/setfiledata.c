@@ -24,7 +24,7 @@ int main()
         return EXIT_SUCCESS;
     }
 
-    char name[32] = {0};
+    char name[MAX_NAME_LEN] = {0};
     strcpy(name, getname(query_string));
     int index = -1;
     for (int i = 0; i < MAX_RECORDS && data[i]; i++) {
@@ -40,7 +40,7 @@ int main()
     }
 
     // cleanup data...
-    char str[1000] = {0};
+    char str[MAX_LINE_LEN] = {0};
     char *dst = str;
     for (const char *src = query_string; *src; src++) {
         *dst = *src;

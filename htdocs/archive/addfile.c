@@ -35,12 +35,14 @@ int main()
     const char *query_string = getenv("QUERY_STRING");
     if (query_string == NULL) {
         generatepage("Internal error: empty/invalid data");
-    } else if (strlen(query_string) > 1024) {
-        generatepage("Internal error: data size limit exceeded (1024)");
+    } else if (strlen(query_string) > MAX_LINE_LEN) {
+        char errmsg[100] = {0};
+        sprintf(errmsg, "Internal error: data size limit exceeded (%i)", MAX_LINE_LEN);
+        generatepage(errmsg);
     } else if (NULL != validate(query_string)) {
         generatepage(validate(query_string));
     } else {
-        char data[4096] = {0};
+        char data[MAX_LINE_LEN] = {0};
         unencode(query_string, data);
 
         if (NULL != validate(data)) {

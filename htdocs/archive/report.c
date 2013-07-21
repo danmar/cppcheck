@@ -83,7 +83,7 @@ int main()
     if (query_string == NULL || *query_string == '\0') {
         listAll(data);
     } else if (strncmp(query_string, "name=", 5) == 0 && getname(query_string) != NULL) {
-        char name[32] = {0};
+        char name[MAX_NAME_LEN] = {0};
         strcpy(name, getname(query_string));
         listOne(data,name);
     } else {

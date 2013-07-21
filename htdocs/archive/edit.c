@@ -25,7 +25,7 @@ int main()
         return EXIT_SUCCESS;
     }
 
-    char name[32] = {0};
+    char name[MAX_NAME_LEN] = {0};
     strcpy(name, getname(query_string));
     int index = -1;
     for (int i = 0; i < MAX_RECORDS && data[i]; i++) {
