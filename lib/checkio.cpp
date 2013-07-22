@@ -620,20 +620,34 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
                                         // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
                                         if (i != formatString.end() && *(i+1) == *i) {
-                                            if (i+1 != formatString.end() && !isalpha(*(i+2))) {
-                                                std::string modifier;
-                                                modifier += *i;
-                                                modifier += *(i+1);
-                                                invalidLengthModifierError(tok, numFormat, modifier);
+                                            if (i+1 != formatString.end()) {
+                                                if (!isalpha(*(i+2))) {
+                                                    std::string modifier;
+                                                    modifier += *i;
+                                                    modifier += *(i+1);
+                                                    invalidLengthModifierError(tok, numFormat, modifier);
+                                                    done = true;
+                                                } else {
+                                                    specifier = *i++;
+                                                    specifier += *i++;
+                                                }
+                                            } else {
+                                                done = true;
                                             }
                                         } else {
-                                            if (i != formatString.end() && !isalpha(*(i+1))) {
-                                                std::string modifier;
-                                                modifier += *i;
-                                                invalidLengthModifierError(tok, numFormat, modifier);
+                                            if (i != formatString.end()) {
+                                                if (!isalpha(*(i+1))) {
+                                                    std::string modifier;
+                                                    modifier += *i;
+                                                    invalidLengthModifierError(tok, numFormat, modifier);
+                                                    done = true;
+                                                } else {
+                                                    specifier = *i++;
+                                                }
+                                            } else {
+                                                done = true;
                                             }
                                         }
-                                        done = true;
                                         break;
                                     case 'I': // Microsoft extension: I for size_t and ptrdiff_t, I32 for __int32, and I64 for __int64
                                         if (i != formatString.end()) {
@@ -659,8 +673,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             std::string modifier;
                                             modifier += *i;
                                             invalidLengthModifierError(tok, numFormat, modifier);
+                                            done = true;
+                                        } else {
+                                            specifier = *i++;
                                         }
-                                        done = true;
                                         break;
                                     default:
                                         done = true;

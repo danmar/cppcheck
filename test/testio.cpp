@@ -717,7 +717,7 @@ private:
         // False positive tests
         check("void foo(signed char sc, unsigned char uc, short int si, unsigned short int usi) {\n"
               "  printf(\"%hhx %hhd\", sc, uc);\n"
-              "  printf(\"%hd %hi\", si, usi);\n"
+              "  printf(\"%hd %hu\", si, usi);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -754,6 +754,25 @@ private:
                       "[test.cpp:7]: (warning) 'z' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:8]: (warning) 't' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:9]: (warning) 'L' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+
+        check("void foo(unsigned int i) {\n"
+              "  printf(\"%hd\", i);\n"
+              "  printf(\"%hhd\", i);\n"
+              "  printf(\"%ld\", i);\n"
+              "  printf(\"%lld\", i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hd in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:3]: (warning) %hhd in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:4]: (warning) %ld in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:5]: (warning) %lld in format string (no. 1) requires a signed integer given in the argument list.\n" , errout.str());
+
+        check("void foo(size_t s, ptrdiff_t p) {\n"
+              "  printf(\"%zd\", s);\n"
+              "  printf(\"%tu\", p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires an unsigned integer given in the argument list.\n", errout.str());
+
     }
 
     void testMicrosoftPrintfArgument() {
