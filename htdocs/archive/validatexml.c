@@ -89,7 +89,7 @@ int validatexml(const char xmldata[])
 
     if (level != 0)
         return linenr;
-    
+
     return -1;
 }
 
