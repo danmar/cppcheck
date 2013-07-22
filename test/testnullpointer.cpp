@@ -2116,7 +2116,7 @@ private:
         // nothing bad..
         {
             Library library;
-            Library::ArgumentChecks arg = {false, false};
+            Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
 
@@ -2130,7 +2130,7 @@ private:
         // for 1st parameter null pointer is not ok..
         {
             Library library;
-            struct Library::ArgumentChecks arg = {false, false};
+            struct Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
             library.argumentChecks["x"][1].notnull = true;
@@ -2146,7 +2146,7 @@ private:
         // for 2nd parameter uninit data is not ok..
         {
             Library library;
-            Library::ArgumentChecks arg = {false, false};
+            Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
             library.argumentChecks["x"][2].notuninit = true;

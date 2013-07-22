@@ -121,16 +121,24 @@ bool Library::load(const char exename[], const char path[])
                     const int nr = atoi(functionnode->Attribute("nr"));
                     bool notnull = false;
                     bool notuninit = false;
+                    bool formatstr = false;
+                    bool strz = false;
                     for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                         if (strcmp(argnode->Name(), "not-null") == 0)
                             notnull = true;
                         else if (strcmp(argnode->Name(), "not-uninit") == 0)
+                            notuninit = true;
+                        else if (strcmp(argnode->Name(), "formatstr") == 0)
+                            notuninit = true;
+                        else if (strcmp(argnode->Name(), "strz") == 0)
                             notuninit = true;
                         else
                             return false;
                     }
                     argumentChecks[name][nr].notnull = notnull;
                     argumentChecks[name][nr].notuninit = notuninit;
+                    argumentChecks[name][nr].formatstr = formatstr;
+                    argumentChecks[name][nr].strz = strz;
                 } else
                     return false;
             }

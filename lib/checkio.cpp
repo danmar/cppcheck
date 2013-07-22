@@ -439,7 +439,26 @@ void CheckIO::checkWrongPrintfScanfArguments()
             const Token* argListTok = 0; // Points to first va_list argument
             std::string formatString;
 
-            if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%")) {
+            if (Token::Match(tok->next(), "( %any%")) {
+                const Token *arg = tok->tokAt(2);
+                int argnr = 1;
+                while (arg) {
+                    if (Token::Match(arg, "%str% [,)]") && _settings->library.isargformatstr(tok->str(),argnr)) {
+                        formatString = arg->str();
+                        if (arg->strAt(1) == ",")
+                            argListTok = arg->tokAt(2);
+                        else
+                            argListTok = 0;
+                        break;
+                    }
+
+                    arg = arg->nextArgument();
+                    argnr++;
+                }
+            }
+
+            if (!formatString.empty()) { /* formatstring found in library */ }
+            else if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%")) {
                 formatString = tok->strAt(2);
                 if (tok->strAt(3) == ",") {
                     argListTok = tok->tokAt(4);

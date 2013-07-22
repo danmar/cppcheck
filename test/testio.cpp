@@ -48,9 +48,11 @@ private:
         TEST_CASE(testPrintfArgument);
 
         TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
+
+        TEST_CASE(testlibrarycfg); // library configuration
     }
 
-    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
+    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, Library *lib = NULL) {
         // Clear the error buffer..
         errout.str("");
 
@@ -61,6 +63,9 @@ private:
             settings.addEnabled("portability");
         settings.inconclusive = inconclusive;
         settings.platform(platform);
+
+        if (lib)
+            settings.library = *lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -796,6 +801,22 @@ private:
                       "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires a signed integer given in the argument list.\n"
                       "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires a signed integer given in the argument list.\n", errout.str());
+    }
+
+    void testlibrarycfg() {
+        const char code[] = "void f() {\n"
+                            "    format(\"%s\");\n"
+                            "}";
+
+        // no error if configuration for 'format' is not provided
+        check(code);
+        ASSERT_EQUALS("", errout.str());
+
+        // error if configuration for 'format' is provided
+        Library lib;
+        lib.argumentChecks["format"][1].formatstr = true;
+        check(code, false, false, Settings::Unspecified, &lib);
+        ASSERT_EQUALS("[test.cpp:2]: (error) format format string has 1 parameters but only 0 are given.\n", errout.str());
     }
 };
 

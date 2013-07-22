@@ -81,8 +81,14 @@ public:
     }
 
     struct ArgumentChecks {
+        ArgumentChecks() {
+            notnull = notuninit = formatstr = strz = false;
+        }
+
         bool notnull;
         bool notuninit;
+        bool formatstr;
+        bool strz;
     };
 
     // function name, argument nr => argument data
@@ -96,6 +102,16 @@ public:
     bool isuninitargbad(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName,argnr);
         return arg && arg->notuninit;
+    }
+
+    bool isargformatstr(const std::string &functionName, int argnr) const {
+        const ArgumentChecks *arg = getarg(functionName,argnr);
+        return arg && arg->formatstr;
+    }
+
+    bool isargstrz(const std::string &functionName, int argnr) const {
+        const ArgumentChecks *arg = getarg(functionName,argnr);
+        return arg && arg->strz;
     }
 
     std::set<std::string> returnuninitdata;
