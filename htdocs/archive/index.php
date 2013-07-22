@@ -44,6 +44,8 @@ uninitialized variables, unused functions" />
     archive. Feel free to add any library or rule here.</p>
 
     <? virtual('../cgi-bin/report.cgi') ?>
+
+    <p><a href="/cgi-bin/createzip.cgi">Download all</a></p>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
 </body>
