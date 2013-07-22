@@ -105,6 +105,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
+        TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -3265,6 +3266,18 @@ private:
 
         check(code, "test.cpp");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectInConstructor() {
+        const char code[] = "class Foo {\n"
+                            "public:\n"
+                            "  Foo(char x) {\n"
+                            "    Foo(x, 0);\n"
+                            "  }\n"
+                            "  Foo(char x, int y) { }\n"
+                            "};\n";
+        check(code, "test.cpp");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
     }
 
     void trac2084() {
