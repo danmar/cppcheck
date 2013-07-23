@@ -449,7 +449,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>callstack</term>
 
         <listitem>
-           callstack - if available 
+          <para>callstack - if available</para>
         </listitem>
       </varlistentry>
 
@@ -457,7 +457,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>file</term>
 
         <listitem>
-           filename 
+          <para>filename</para>
         </listitem>
       </varlistentry>
 
@@ -465,7 +465,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>id</term>
 
         <listitem>
-           message id 
+          <para>message id</para>
         </listitem>
       </varlistentry>
 
@@ -473,7 +473,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>line</term>
 
         <listitem>
-           line number 
+          <para>line number</para>
         </listitem>
       </varlistentry>
 
@@ -481,7 +481,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>message</term>
 
         <listitem>
-           verbose message text 
+          <para>verbose message text</para>
         </listitem>
       </varlistentry>
 
@@ -489,7 +489,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>severity</term>
 
         <listitem>
-           severity 
+          <para>severity</para>
         </listitem>
       </varlistentry>
     </variablelist>
