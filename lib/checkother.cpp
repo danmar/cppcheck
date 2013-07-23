@@ -3217,7 +3217,7 @@ void CheckOther::checkSignOfUnsignedVariable()
                 const Variable *var = tok->tokAt(2)->variable();
                 if (var && var->typeEndToken()->isUnsigned())
                     unsignedLessThanZeroError(tok, var->name(), inconclusive);
-                else if (var && var->isPointer() && !Token::Match(tok->tokAt(3), "[.[]"))
+                else if (var && var->isPointer() && !Token::Match(tok->tokAt(3), "[.[(]"))
                     pointerLessThanZeroError(tok, inconclusive);
             } else if (Token::Match(tok, "0 <= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
                 const Variable *var = tok->tokAt(2)->variable();
