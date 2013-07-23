@@ -765,6 +765,12 @@ Checking test.c...
     &lt;arg nr="2"&gt;
       &lt;not-uninit/&gt;
     &lt;/arg&gt;
+    &lt;arg nr="3"&gt;
+      &lt;strz/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="4"&gt;
+      &lt;formatstr/&gt;
+    &lt;/arg&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
 
@@ -789,10 +795,10 @@ Checking test.c...
     The <literal>&lt;arg&gt;</literal> is used to validate arguments. If it's
     invalid to pass NULL, use <literal>&lt;not-null&gt;</literal>. If it's
     invalid to pass uninitialized data, use
-    <literal>&lt;not-uninit&gt;</literal>. If the function takes a pointer
-    argument then it is always invalid to pass a uninitialized/dead pointer.
-    The <literal>&lt;not-uninit&gt;</literal> will then mean that the data
-    that the pointer points at must be initialized.</para>
+    <literal>&lt;not-uninit&gt;</literal>. If the argument is a
+    zero-terminated string, use <literal>&lt;strz&gt;</literal>. If the
+    argument is a formatstring, use
+    <literal>&lt;formatstr&gt;</literal>.</para>
 
     <section>
       <title>Example: strcpy()</title>
