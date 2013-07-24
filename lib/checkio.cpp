@@ -457,8 +457,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 }
             }
 
-            if (!formatString.empty()) { /* formatstring found in library */ }
-            else if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%")) {
+            if (!formatString.empty()) {
+                /* formatstring found in library */
+            } else if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%")) {
                 formatString = tok->strAt(2);
                 if (tok->strAt(3) == ",") {
                     argListTok = tok->tokAt(4);

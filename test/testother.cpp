@@ -4955,7 +4955,7 @@ private:
             "  int (*t)(void *a, void *b);\n"
             "  if (t(a, b) < 0)\n"
             "    bar();\n"
-            "}");  
+            "}");
         ASSERT_EQUALS("", errout.str());
 
         check_signOfUnsignedVariable(
@@ -4963,7 +4963,7 @@ private:
             "  int (*t)(void *a, void *b);\n"
             "  if (0 > t(a, b))\n"
             "    bar();\n"
-            "}");  
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 
