@@ -142,7 +142,7 @@ public:
      * @param str The string to be converted
      * @return The replaced string
      */
-    static std::string replaceIfDefined(const std::string &str);
+    std::string replaceIfDefined(const std::string &str) const;
 
     /**
      * expand macros in code. ifdefs etc are ignored so the code must be a single configuration

@@ -397,7 +397,13 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
         }
 
+        if (_settings.terminated())
+            return;
+
         executeRules("simple", _tokenizer);
+
+        if (_settings.terminated())
+            return;
     } catch (const InternalError &e) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         ErrorLogger::ErrorMessage::FileLocation loc2;

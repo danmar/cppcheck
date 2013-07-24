@@ -169,6 +169,9 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
             bom |= (unsigned int)istr.get();
     }
 
+    if (_settings && _settings->terminated())
+        return "";
+
     // ------------------------------------------------------------------------------------------
     //
     // handling <backslash><newline>
@@ -231,20 +234,28 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     //
     // Remove all comments..
     result = removeComments(result, filename);
+    if (_settings && _settings->terminated())
+        return "";
 
     // ------------------------------------------------------------------------------------------
     //
     // Clean up all preprocessor statements
     result = preprocessCleanupDirectives(result);
+    if (_settings && _settings->terminated())
+        return "";
 
     // ------------------------------------------------------------------------------------------
     //
     // Clean up preprocessor #if statements with Parentheses
     result = removeParentheses(result);
+    if (_settings && _settings->terminated())
+        return "";
 
     // Remove '#if 0' blocks
     if (result.find("#if 0\n") != std::string::npos)
         result = removeIf0(result);
+    if (_settings && _settings->terminated())
+        return "";
 
     return result;
 }
@@ -391,6 +402,9 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                    << "(line=" << lineno << ", character code=" << std::hex << (int(ch) & 0xff) << ")";
             writeError(filename, lineno, _errorLogger, "syntaxError", errmsg.str());
         }
+
+        if (_settings && _settings->terminated())
+            return "";
 
         if ((str.compare(i, 7, "#error ") == 0 && (!_settings || _settings->userDefines.empty())) ||
             str.compare(i, 9, "#warning ") == 0) {
@@ -775,7 +789,7 @@ std::string Preprocessor::removeSpaceNearNL(const std::string &str)
     return tmp;
 }
 
-std::string Preprocessor::replaceIfDefined(const std::string &str)
+std::string Preprocessor::replaceIfDefined(const std::string &str) const
 {
     std::string ret(str);
     std::string::size_type pos;
@@ -791,6 +805,9 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
             ret.insert(pos + 3, "def ");
         }
         ++pos;
+
+        if (_settings && _settings->terminated())
+            return "";
     }
 
     pos = 0;
@@ -804,6 +821,9 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
             ret.insert(pos + 3, "ndef ");
         }
         ++pos;
+
+        if (_settings && _settings->terminated())
+            return "";
     }
 
     pos = 0;
@@ -816,6 +836,9 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
             ret.erase(pos + 6, 8);
         }
         ++pos;
+
+        if (_settings && _settings->terminated())
+            return "";
     }
 
     return ret;
@@ -903,6 +926,9 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
                         line += ")";
                     else
                         line.insert(pos, ")");
+
+                    if (_settings && _settings->terminated())
+                        return;
                 }
             }
             ostr << line << "\n";
@@ -1083,6 +1109,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     std::string line;
     while (std::getline(istr, line)) {
         ++linenr;
+
+        if (_settings && _settings->terminated())
+            return ret;
 
         if (_errorLogger)
             _errorLogger->reportProgress(filename, "Preprocessing (get configurations 1)", 0);
@@ -1634,6 +1663,9 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     while (std::getline(istr, line)) {
         ++lineno;
 
+        if (_settings && _settings->terminated())
+            return "";
+
         if (line.compare(0, 11, "#pragma asm") == 0) {
             ret << "\n";
             bool found_end = false;
@@ -1918,15 +1950,15 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     if (_errorLogger)
         _errorLogger->reportProgress(filePath, "Preprocessor (handleIncludes)", 0);
 
-    if (_settings && _settings->terminated())
-        return "";
-
     std::ostringstream ostr;
     std::istringstream istr(code);
     std::string line;
     bool suppressCurrentCodePath = false;
     while (std::getline(istr,line)) {
         ++linenr;
+
+        if (_settings && _settings->terminated())
+            return "";
 
         // has there been a true #if condition at the current indentmatch level?
         // then no more #elif or #else can be true before the #endif is seen.
@@ -2109,6 +2141,9 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     std::string::size_type endfilePos = 0;
     std::set<std::string> handledFiles;
     while ((pos = code.find("#include", pos)) != std::string::npos) {
+        if (_settings && _settings->terminated())
+            return;
+
         // Accept only includes that are at the start of a line
         if (pos > 0 && code[pos-1] != '\n') {
             pos += 8; // length of "#include"

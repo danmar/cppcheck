@@ -322,6 +322,9 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             CurrentToken.clear();
 
             if (ch == '\n') {
+                if (_settings->terminated())
+                    return false;
+
                 ++lineno;
                 continue;
             } else if (ch == ' ') {

@@ -510,6 +510,9 @@ void Tokenizer::simplifyTypedef()
         if (_errorLogger && !list.getFiles().empty())
             _errorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
 
+        if (_settings && _settings->terminated())
+            return;
+
         if (goback) {
             //jump back once, see the comment at the end of the function
             goback = false;
@@ -953,6 +956,9 @@ void Tokenizer::simplifyTypedef()
             std::size_t classLevel = spaceInfo.size();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+                if (_settings && _settings->terminated())
+                    return;
+
                 // check for end of scope
                 if (tok2->str() == "}") {
                     // check for end of member function
@@ -1570,6 +1576,9 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
+    if (_settings->terminated())
+        return false;
+
     // if MACRO
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|for|while|BOOST_FOREACH %var% (")) {
@@ -1615,6 +1624,9 @@ bool Tokenizer::tokenize(std::istream &code,
             }
         }
     }
+
+    if (_settings->terminated())
+        return false;
 
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
@@ -1663,6 +1675,9 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    if (_settings->terminated())
+        return false;
+
     // Remove "volatile", "inline", "register", and "restrict"
     simplifyKeyword();
 
@@ -1689,6 +1704,9 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
+    if (_settings->terminated())
+        return false;
+
     // Remove __declspec()
     simplifyDeclspec();
 
@@ -1712,6 +1730,9 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // convert Microsoft string functions
     simplifyMicrosoftStringFunctions();
+
+    if (_settings->terminated())
+        return false;
 
     // Remove Qt signals and slots
     simplifyQtSignalsSlots();
@@ -1766,6 +1787,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // enum..
     simplifyEnum();
+
+    // The simplify enum have inner loops
+    if (_settings && _settings->terminated())
+        return false;
 
     // Remove __asm..
     simplifyAsm();
@@ -1823,6 +1848,10 @@ bool Tokenizer::tokenize(std::istream &code,
     // collapse compound standard types into a single token
     // unsigned long long int => long _isUnsigned=true,_isLong=true
     simplifyStdType();
+
+    // The simplifyTemplates have inner loops
+    if (_settings && _settings->terminated())
+        return false;
 
     // simplify bit fields..
     simplifyBitfields();
@@ -1914,6 +1943,10 @@ bool Tokenizer::tokenize(std::istream &code,
         tok = fortok;
     }*/
 
+    // The simplifyTemplates have inner loops
+    if (_settings && _settings->terminated())
+        return false;
+
     simplifyConst();
 
     // struct simplification "struct S {} s; => struct S { } ; S s ;
@@ -1924,6 +1957,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Change initialisation of variable to assignment
     simplifyInitVar();
+
+    // The simplifyTemplates have inner loops
+    if (_settings && _settings->terminated())
+        return false;
 
     // Split up variable declarations.
     simplifyVarDecl(false);
@@ -1937,6 +1974,10 @@ bool Tokenizer::tokenize(std::istream &code,
     // x = ({ 123; });  =>   { x = 123; }
     simplifyAssignmentBlock();
 
+    // The simplifyTemplates have inner loops
+    if (_settings && _settings->terminated())
+        return false;
+
     simplifyVariableMultipleAssign();
 
     // Remove redundant parentheses
@@ -1947,6 +1988,10 @@ bool Tokenizer::tokenize(std::istream &code,
 
     // Handle templates..
     simplifyTemplates();
+
+    // The simplifyTemplates have inner loops
+    if (_settings && _settings->terminated())
+        return false;
 
     // Simplify templates.. sometimes the "simplifyTemplates" fail and
     // then unsimplified function calls etc remain. These have the
@@ -1987,6 +2032,10 @@ bool Tokenizer::tokenize(std::istream &code,
     } else {
         setVarId();
     }
+
+    // The simplify enum might have inner loops
+    if (_settings && _settings->terminated())
+        return false;
 
     // Add std:: in front of std classes, when using namespace std; was given
     simplifyNamespaceStd();
@@ -2863,6 +2912,9 @@ void Tokenizer::setVarId()
                 continue;
             }
 
+            if (_settings->terminated())
+                return;
+
             // locate the variable name..
             const Token *tok2 = (tok->isName()) ? tok : tok->next();
 
@@ -3379,6 +3431,9 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
+    if (_settings && _settings->terminated())
+        return false;
+
     simplifySizeof();
 
     simplifyUndefinedSizeArray();
@@ -3420,6 +3475,9 @@ bool Tokenizer::simplifyTokenList()
             }
         }
     }
+
+    if (_settings && _settings->terminated())
+        return false;
 
     // Simplify simple calculations..
     simplifyCalculations();
@@ -3563,6 +3621,9 @@ bool Tokenizer::simplifyTokenList()
         if (Token::simpleMatch(tok, "* const"))
             tok->deleteNext();
     }
+
+    if (_settings->terminated())
+        return false;
 
     if (_settings->debug) {
         list.front()->printOut(0, list.getFiles());
@@ -7414,6 +7475,9 @@ void Tokenizer::simplifyEnum()
 
             // Substitute enum values
             {
+                if (_settings && _settings->terminated())
+                    return;
+
                 const std::string pattern = className.empty() ?
                                             std::string("") :
                                             std::string(className + " :: ");
