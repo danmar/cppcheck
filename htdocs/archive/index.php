@@ -45,7 +45,7 @@ uninitialized variables, unused functions" />
 
     <? virtual('../cgi-bin/report.cgi') ?>
 
-    <p><a href="/cgi-bin/createzip.cgi">Download all</a></p>
+    <p><a href="/cgi-bin/archive.zip">Download all</a></p>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
 </body>

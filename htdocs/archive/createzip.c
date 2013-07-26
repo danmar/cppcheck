@@ -20,16 +20,18 @@ int main()
     int first = 1;
     char line[MAX_LINE_LEN] = {0};
     while (fgets(line,sizeof(line)-2,f)) {
-        char name[MAX_NAME_LEN+10];
-        sprintf(name, "cfg/%s.cfg", getname(line));
-
         char data[MAX_LINE_LEN] = {0};
         unencode(line,data);
         const char *xmldata = strstr(data, "&data=");
         xmldata = xmldata ? (xmldata + 6) : "";
 
+        char name[MAX_NAME_LEN+20];
+		if (strstr(xmldata, "<rule>"))
+            sprintf(name, "archive/%s.rule", getname(line));
+		else
+            sprintf(name, "archive/%s.cfg", getname(line));
+
         if (first == 1) {
-            int status = 1;
             first = 0;
 
             if (!mz_zip_writer_init_file(&zip_archive, ALL_ZIP, 0)) {
