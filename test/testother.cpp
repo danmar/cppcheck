@@ -415,7 +415,7 @@ private:
               "} } }");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
-    
+
     void zeroDiv7() {
         check("void f() {\n"
               "  int a = 1/2*3/0;\n"
