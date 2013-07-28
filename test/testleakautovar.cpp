@@ -328,7 +328,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void doublefree3() {  // #4914
         check("void foo() {\n"
               "   bool done = false;\n"
@@ -343,7 +343,7 @@ private:
               "   } while(!done);\n"
               "   return;"
               "}"
-              );
+             );
         ASSERT_EQUALS("", errout.str());
     }
 
