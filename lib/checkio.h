@@ -115,6 +115,7 @@ private:
         c.invalidPrintfArgTypeError_sint(0, 1, "i");
         c.invalidPrintfArgTypeError_float(0, 1, "f");
         c.invalidScanfFormatWidthError(0, 10, 5, NULL);
+        c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
     }
 
     static std::string myName() {
