@@ -502,6 +502,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
             unsigned int numFormat = 0;
             bool percent = false;
             const Token* argListTok2 = argListTok;
+            std::set<unsigned int> parameterPositionsUsed;
             for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
                 if (*i == '%') {
                     percent = !percent;
@@ -523,6 +524,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
                     bool _continue = false;
                     std::string width;
+                    unsigned int parameterPosition = 0; bool hasParameterPosition = false;
                     while (i != formatString.end() && *i != ']' && !std::isalpha(*i)) {
                         if (*i == '*') {
                             if (scan)
@@ -532,8 +534,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                 if (argListTok)
                                     argListTok = argListTok->nextArgument();
                             }
-                        } else if (std::isdigit(*i))
+                        } else if (std::isdigit(*i)) {
                             width += *i;
+                        } else if (*i == '$') {
+                            parameterPosition = static_cast<unsigned int>(std::atoi(width.c_str()));
+                            hasParameterPosition = true;
+                            width.clear();
+                        }
                         ++i;
                     }
                     if (i == formatString.end())
@@ -542,7 +549,15 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         continue;
 
                     if (scan || *i != 'm') { // %m is a non-standard extension that requires no parameter on print functions.
-                        numFormat++;
+                        ++numFormat;
+                        
+                        // Handle parameter positions (POSIX extension) - Ticket #4900
+                        if(hasParameterPosition) {
+                            if(parameterPositionsUsed.find(parameterPosition) == parameterPositionsUsed.end())
+                                parameterPositionsUsed.insert(parameterPosition);
+                            else // Parameter already referenced, hence don't consider it a new format
+                                --numFormat;
+                        }
 
                         // Perform type checks
                         if (argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
@@ -718,6 +733,12 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 numFunction++;
                 argListTok2 = argListTok2->nextArgument(); // Find next argument
             }
+            
+            // Check that all parameter positions reference an actual parameter
+            for(std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
+                if((*it == 0) || (*it > numFormat))
+                    wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
+            }
 
             // Mismatching number of parameters => warning
             if (numFormat != numFunction)
@@ -745,6 +766,21 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
            << " are given.";
 
     reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str());
+}
+
+void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
+                                                          unsigned int index, unsigned int numFunction)
+{
+    if (!_settings->isEnabled("style"))
+        return;
+    std::ostringstream errmsg;
+    errmsg << functionName << ": ";
+    if(index == 0) {
+        errmsg << "parameter positions start at 1, not 0";
+    } else {
+        errmsg << "referencing parameter " << index << " while " << numFunction << " arguments given";
+    }
+    reportError(tok, Severity::warning, "wrongPrintfScanfParameterError", errmsg.str());
 }
 
 void CheckIO::invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat)

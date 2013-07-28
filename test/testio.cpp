@@ -46,6 +46,7 @@ private:
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
+        TEST_CASE(testPosixPrintfScanfParameterPosition);  // #4900
 
         TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
 
@@ -779,6 +780,30 @@ private:
                       "[test.cpp:3]: (warning) %tu in format string (no. 1) requires an unsigned integer given in the argument list.\n", errout.str());
 
     }
+
+    void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
+        check("void foo() {"
+              "  int bar;"
+              "  printf(\"%1$d\", 1);"
+              "  printf(\"%1$d, %d, %1$d\", 1, 2);"
+              "  scanf(\"%1$d\", &bar);" 
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "  int bar;\n"
+              "  printf(\"%1$d\");\n"
+              "  printf(\"%1$d, %d, %4$d\", 1, 2, 3);\n"
+              "  scanf(\"%2$d\", &bar);\n"
+              "  printf(\"%0$f\", 0.0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) printf format string has 1 parameters but only 0 are given.\n"
+                      "[test.cpp:4]: (warning) printf: referencing parameter 4 while 3 arguments given\n"
+                      "[test.cpp:5]: (warning) scanf: referencing parameter 2 while 1 arguments given\n"
+                      "[test.cpp:6]: (warning) printf: parameter positions start at 1, not 0\n"
+                      "", errout.str());
+    }
+
 
     void testMicrosoftPrintfArgument() {
         check("void foo() {\n"
