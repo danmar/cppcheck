@@ -56,6 +56,7 @@ private:
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
+        TEST_CASE(doublefree3); // #4914
 
         // exit
         TEST_CASE(exit1);
@@ -325,6 +326,24 @@ private:
               "    free(p);\n"
               "    return 0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+    
+    void doublefree3() {  // #4914
+        check("void foo() {\n"
+              "   bool done = false;\n"
+              "   do {\n"
+              "       char *bar = malloc(10)\n"
+              "       if(condition()) {\n"
+              "           free(bar);\n"
+              "           continue;\n"
+              "       }\n"
+              "       done = true;\n"
+              "       free(bar)\n"
+              "   } while(!done);\n"
+              "   return;"
+              "}"
+              );
         ASSERT_EQUALS("", errout.str());
     }
 

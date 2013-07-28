@@ -370,6 +370,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         else if (tok->str() == "goto") {
             varInfo->clear();
         }
+        
+        // continue/break
+        else if (Token::Match(tok, "continue|break ;")) {
+            varInfo->clear();
+        }
 
         // throw
         // TODO: if the execution leave the function then treat it as return
