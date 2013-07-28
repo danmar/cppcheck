@@ -44,7 +44,7 @@ uninitialized variables, unused functions" />
     <p> If you have a rule or library configuration that you want to share, use this
     archive. Feel free to add any library or rule here.</p>
 
-    <? virtual('../cgi-bin/report.cgi') ?>
+    <?php virtual('../cgi-bin/report.cgi') ?>
 
     <p><a href="/cgi-bin/archive.zip">Download all</a></p>
   </div> <!-- .wrap -->
