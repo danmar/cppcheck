@@ -26,9 +26,9 @@ int main()
         xmldata = xmldata ? (xmldata + 6) : "";
 
         char name[MAX_NAME_LEN+20];
-		if (strstr(xmldata, "<rule>"))
+        if (strstr(xmldata, "<rule>"))
             sprintf(name, "archive/%s.rule", getname(line));
-		else
+        else
             sprintf(name, "archive/%s.cfg", getname(line));
 
         if (first == 1) {
