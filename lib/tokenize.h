@@ -245,10 +245,12 @@ public:
     void simplifyCompoundAssignment();
 
     /**
-     * simplify if-assignments
+     * Simplify assignments in "if" and "while" conditions
      * Example: "if(a=b);" => "a=b;if(a);"
+     * Example: "while(a=b) { f(a); }" => "a = b; while(a){ f(a); a = b; }"
+     * Example: "do { f(a); } while(a=b);" => "do { f(a); a = b; } while(a);"
      */
-    void simplifyIfAssign();
+    void simplifyIfAndWhileAssign();
 
     /**
      * Simplify multiple assignments.

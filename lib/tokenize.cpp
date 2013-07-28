@@ -3541,7 +3541,7 @@ bool Tokenizer::simplifyTokenList()
 
     elseif();
     simplifyErrNoInWhile();
-    simplifyIfAssign();
+    simplifyIfAndWhileAssign();
     simplifyRedundantParentheses();
     simplifyIfNot();
     simplifyIfNotNull();
@@ -3551,7 +3551,7 @@ bool Tokenizer::simplifyTokenList()
     simplifyWhile0();
     simplifyFuncInWhile();
 
-    simplifyIfAssign();    // could be affected by simplifyIfNot
+    simplifyIfAndWhileAssign(); // Could be affected by simplifyIfNot
 
     bool modified = true;
     while (modified) {
@@ -5585,19 +5585,21 @@ void Tokenizer::simplifyStdType()
     }
 }
 
-void Tokenizer::simplifyIfAssign()
+void Tokenizer::simplifyIfAndWhileAssign()
 {
-    // See also simplifyFunctionAssign
-
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok->next(), "if|while ( !| (| %var% =") &&
             !Token::Match(tok->next(), "if|while ( !| (| %var% . %var% ="))
             continue;
 
-        // simplifying a "while" condition ?
+        // simplifying a "while(cond) { }" condition ?
         const bool iswhile(tok->next()->str() == "while");
 
-        // delete the "if"
+        // simplifying a "do { } while(cond);" condition ?
+        const bool isDoWhile = iswhile && Token::Match(tok, "}") && Token::Match(tok->link()->previous(), "do");
+        Token* openBraceTok = tok->link();
+
+        // delete the "if|while"
         tok->deleteNext();
 
         // Remember if there is a "!" or not. And delete it if there are.
@@ -5641,12 +5643,22 @@ void Tokenizer::simplifyIfAssign()
         if (isNot)
             tok2->next()->insertToken("!");
         tok2->insertToken(iswhile ? "while" : "if");
+        if (isDoWhile) {
+            tok2->insertToken("}");
+            Token::createMutualLinks(openBraceTok, tok2->next());
+        }
+
         tok2->insertToken(";");
 
-        // If it's a while loop.. insert the assignment in the loop
-        if (iswhile) {
+        // delete the extra "}"
+        if (isDoWhile)
+            tok->deleteThis();
+
+        // If it's a while loop, insert the assignment in the loop
+        if (iswhile && !isDoWhile) {
             unsigned int indentlevel = 0;
             Token *tok3 = tok2;
+
             for (; tok3; tok3 = tok3->next()) {
                 if (tok3->str() == "{")
                     ++indentlevel;
@@ -5681,7 +5693,6 @@ void Tokenizer::simplifyIfAssign()
         }
     }
 }
-
 
 void Tokenizer::simplifyVariableMultipleAssign()
 {
@@ -8856,7 +8867,7 @@ void Tokenizer::simplifyAssignmentInFunctionCall()
         // Find 'foo(var='. Exclude 'assert(var=' to allow tests to check that assert(...) does not contain side-effects
         else if (Token::Match(tok, "[;{}] %var% ( %var% =") &&
                  Token::simpleMatch(tok->linkAt(2), ") ;") &&
-                 tok->next()->str() != "assert") {
+                 !Token::Match(tok->next(), "assert|while")) {
             const std::string funcname(tok->next()->str());
             const Token * const vartok = tok->tokAt(3);
 

@@ -150,6 +150,7 @@ private:
         TEST_CASE(whileAssign1);
         TEST_CASE(whileAssign2);
         TEST_CASE(whileAssign3); // varid
+        TEST_CASE(doWhileAssign); // varid
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
@@ -495,7 +496,7 @@ private:
     }
 
     void simplifyTokenList1() {
-        // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAssign..
+        // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAndWhileAssign..
         ASSERT_EQUALS("; x = f ( ) ; while ( x == -1 ) { x = f ( ) ; }",
                       tok(";while((x=f())==-1 && errno==EINTR){}",true));
     }
@@ -2533,7 +2534,7 @@ private:
     }
 
 
-    std::string simplifyIfAssign(const char code[]) {
+    std::string simplifyIfAndWhileAssign(const char code[]) {
         errout.str("");
         Settings settings;
         // tokenize..
@@ -2541,17 +2542,17 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyIfAssign();
+        tokenizer.simplifyIfAndWhileAssign();
 
         return tokenizer.tokens()->stringifyList(0, false);
     }
 
     void ifassign1() {
-        ASSERT_EQUALS("; a = b ; if ( a ) { ; }", simplifyIfAssign(";if(a=b);"));
-        ASSERT_EQUALS("; a = b ( ) ; if ( a ) { ; }", simplifyIfAssign(";if((a=b()));"));
-        ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAssign(";if(!(a=b()));"));
-        ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAssign(";if(!(a->x=b()));"));
-        ASSERT_EQUALS("void f ( ) { A ( ) a = b ; if ( a ) { ; } }", simplifyIfAssign("void f() { A() if(a=b); }"));
+        ASSERT_EQUALS("; a = b ; if ( a ) { ; }", simplifyIfAndWhileAssign(";if(a=b);"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( a ) { ; }", simplifyIfAndWhileAssign(";if((a=b()));"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a=b()));"));
+        ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a->x=b()));"));
+        ASSERT_EQUALS("void f ( ) { A ( ) a = b ; if ( a ) { ; } }", simplifyIfAndWhileAssign("void f() { A() if(a=b); }"));
         ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( 0 <= a ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
         TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }",
                            "void foo ( A a ) { a . c = b ( ) ; if ( a . c >= 0 ) { ; } }",
@@ -2580,8 +2581,8 @@ private:
     }
 
     void whileAssign1() {
-        ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAssign(";while(a=b) { b = 0; }"));
-        ASSERT_EQUALS("; a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; }", simplifyIfAssign(";while(a.b=c) { c=0; }"));
+        ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAndWhileAssign(";while(a=b) { b = 0; }"));
+        ASSERT_EQUALS("; a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; }", simplifyIfAndWhileAssign(";while(a.b=c) { c=0; }"));
         ASSERT_EQUALS("struct hfs_bnode * node ; "
                       "struct hfs_btree * tree ; "
                       "node = tree . node_hash [ i ++ ] ; "
@@ -2619,6 +2620,20 @@ private:
                       "4: }\n", tokenizeDebugListing(code, true, "test.c"));
     }
 
+    void doWhileAssign() {
+        ASSERT_EQUALS("; do { a = b ; } while ( a ) ;", simplifyIfAndWhileAssign(";do { } while(a=b);"));
+        ASSERT_EQUALS("; do { a . a = 0 ; a . b = c ; } while ( a . b ) ;", simplifyIfAndWhileAssign(";do { a.a = 0; } while(a.b=c);"));
+        ASSERT_EQUALS("struct hfs_bnode * node ; "
+                      "struct hfs_btree * tree ; "
+                      "do { node = tree . node_hash [ i ++ ] ; } while ( node ) ;",
+                      tok("struct hfs_bnode *node;"
+                          "struct hfs_btree *tree;"
+                          "do { } while((node = tree->node_hash[i++]));"));
+        ASSERT_EQUALS("char * s ; do { s = new char [ 10 ] ; } while ( ! s ) ;",
+                      tok("char *s; do { } while (0 == (s=new char[10]));"));
+        // #4911
+        ASSERT_EQUALS("; do { current = f ( ) ; } while ( current ) ;", simplifyIfAndWhileAssign(";do { } while((current=f()) != NULL);"));
+    }
 
     void ifnot() {
         ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(0==x);", false));
