@@ -1349,8 +1349,20 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 tok = tok2->link();
 
                 // do-while => goto ")"
-                if (!forwhile)
+                if (!forwhile) {
+                    // Assert that the tokens are '} while ('
+                    if (testrunner && !Token::simpleMatch(tok, "} while ("))
+                        reportError(tok,Severity::debug,"","assertion failed '} while ('");
+                    else
+                        assert(Token::simpleMatch(tok, "} while ("));
+
+                    // Goto ')'
                     tok = tok->linkAt(2);
+
+                    if (!tok)
+                        // bailout : invalid code / bad tokenizer
+                        break;
+                }
             }
         }
 

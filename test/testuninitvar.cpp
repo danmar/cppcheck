@@ -1970,6 +1970,7 @@ private:
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        checkuninitvar.testrunner = true;
         checkuninitvar.check();
     }
 
@@ -2872,6 +2873,13 @@ private:
                         "    } while (a);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("void f() {\n" // #4911 - bad simplification => don't crash
+                        "    int a;\n"
+                        "    do { } a=do_something(); while (a);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n"
+                      "[test.cpp:3]: (debug) assertion failed '} while ('\n", errout.str());
 
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
