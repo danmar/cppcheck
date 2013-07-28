@@ -1,9 +1,7 @@
 {
-  "node" : true,
-  "browser" : false,
-
   "bitwise": true,
   "boss": true,
+  "browser": false,
   "camelcase": true,
   "curly": true,
   "eqeqeq": true,
@@ -11,8 +9,10 @@
   "latedef": true,
   "multistr": true,
   "noarg": true,
+  "node": true,
   "noempty": true,
   "plusplus": false,
+  "quotmark": "double",
   "regexp": true,
   "shelljs": true,
   "strict": false,

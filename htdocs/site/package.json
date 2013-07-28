@@ -1,6 +1,6 @@
 {
   "name": "cppcheck-web",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "XhmikosR (https://github.com/XhmikosR)",
   "description": "The dependencies to build cppcheck's website",
   "homepage": "https://github.com/danmar/cppcheck",
@@ -19,9 +19,9 @@
     "lint": "node run-tests"
   },
   "dependencies": {
-    "clean-css": "~1.0.10",
+    "clean-css": "~1.0.12",
     "csslint": "~0.9.10",
-    "jshint": "~2.1.4",
+    "jshint": "~2.1.5",
     "shelljs": "~0.1.4",
     "uglify-js": "~2.3.6"
   },

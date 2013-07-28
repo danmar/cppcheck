@@ -1,5 +1,7 @@
 /*! Inspired by: http://aboutcode.net/2010/11/11/list-github-projects-using-javascript.html */
 
+/* jshint quotmark:true, jquery:true */
+
 jQuery.fn.listCommits = function(username, repository, branch) {
     this.html('<span>Querying GitHub for recent commits&hellip;</span>');
 
@@ -26,7 +28,7 @@ jQuery.fn.listCommits = function(username, repository, branch) {
     });
 
     function cutLines(message) {
-        var lineFeed = message.indexOf("\n");
+        var lineFeed = message.indexOf('\n');
 
         if (lineFeed > -1) {
             return message.slice(0, lineFeed);
