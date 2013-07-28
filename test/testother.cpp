@@ -42,6 +42,7 @@ private:
         TEST_CASE(zeroDiv4);
         TEST_CASE(zeroDiv5);
         TEST_CASE(zeroDiv6);
+        TEST_CASE(zeroDiv7);  // #4930
 
         TEST_CASE(nanInArithmeticExpression);
 
@@ -413,6 +414,15 @@ private:
               "   int a = b % 0;\n"
               "} } }");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
+    }
+    
+    void zeroDiv7() {
+        check("void f() {\n"
+              "  int a = 1/2*3/0;\n"
+              "  int b = 1/2*3%0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n"
+                      "[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
 
     void nanInArithmeticExpression() {
