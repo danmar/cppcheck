@@ -48,7 +48,7 @@
         fs.writeFileSync("css/pack.css", packCss, "utf8");
 
         echo();
-        echo("### Finished" + " " + "css/pack.css" + ".");
+        echo("### Finished css/pack.css.");
 
         echo();
         echo("### Minifying js files...");
@@ -66,7 +66,7 @@
         fs.writeFileSync("js/pack.js", minifiedJs.code, "utf8");
 
         echo();
-        echo("### Finished" + " " + "js/pack.js" + ".");
+        echo("### Finished js/pack.js.");
     };
 
 
