@@ -524,7 +524,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
                     bool _continue = false;
                     std::string width;
-                    unsigned int parameterPosition = 0; bool hasParameterPosition = false;
+                    unsigned int parameterPosition = 0;
+                    bool hasParameterPosition = false;
                     while (i != formatString.end() && *i != ']' && !std::isalpha(*i)) {
                         if (*i == '*') {
                             if (scan)
@@ -550,10 +551,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
                     if (scan || *i != 'm') { // %m is a non-standard extension that requires no parameter on print functions.
                         ++numFormat;
-                        
+
                         // Handle parameter positions (POSIX extension) - Ticket #4900
-                        if(hasParameterPosition) {
-                            if(parameterPositionsUsed.find(parameterPosition) == parameterPositionsUsed.end())
+                        if (hasParameterPosition) {
+                            if (parameterPositionsUsed.find(parameterPosition) == parameterPositionsUsed.end())
                                 parameterPositionsUsed.insert(parameterPosition);
                             else // Parameter already referenced, hence don't consider it a new format
                                 --numFormat;
@@ -733,10 +734,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 numFunction++;
                 argListTok2 = argListTok2->nextArgument(); // Find next argument
             }
-            
+
             // Check that all parameter positions reference an actual parameter
-            for(std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
-                if((*it == 0) || (*it > numFormat))
+            for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
+                if ((*it == 0) || (*it > numFormat))
                     wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
             }
 
@@ -769,13 +770,13 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
 }
 
 void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
-                                                          unsigned int index, unsigned int numFunction)
+        unsigned int index, unsigned int numFunction)
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("warning"))
         return;
     std::ostringstream errmsg;
     errmsg << functionName << ": ";
-    if(index == 0) {
+    if (index == 0) {
         errmsg << "parameter positions start at 1, not 0";
     } else {
         errmsg << "referencing parameter " << index << " while " << numFunction << " arguments given";

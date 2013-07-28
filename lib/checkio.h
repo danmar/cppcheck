@@ -83,7 +83,7 @@ private:
                                         unsigned int numFormat,
                                         unsigned int numFunction);
     void wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
-                                                     unsigned int index, unsigned int numFunction);
+            unsigned int index, unsigned int numFunction);
     void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
     void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
