@@ -1886,7 +1886,7 @@ void CheckOther::checkCommaSeparatedReturn()
     for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next())      {
         if (Token::Match(tok ,"return")) {
 
-            while (tok->str() != ";")   {
+            while (tok && tok->str() != ";")   {
 
                 if (tok->str() == "(")
                     tok=tok->link();
@@ -1911,6 +1911,9 @@ void CheckOther::checkCommaSeparatedReturn()
 
                 tok=tok->next();
             }
+            // bailout: missing semicolon (invalid code / bad tokenizer)
+            if (!tok)
+                break;
         }
     }
 }
