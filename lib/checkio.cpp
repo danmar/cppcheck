@@ -737,7 +737,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             // Check that all parameter positions reference an actual parameter
             for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
-                if ((*it == 0) || (*it > numFormat))
+                if (((*it == 0) || (*it > numFormat)) && _settings->isEnabled("warning"))
                     wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
             }
 
@@ -772,8 +772,6 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
 void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
         unsigned int index, unsigned int numFunction)
 {
-    if (!_settings->isEnabled("warning"))
-        return;
     std::ostringstream errmsg;
     errmsg << functionName << ": ";
     if (index == 0) {
@@ -781,7 +779,7 @@ void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, cons
     } else {
         errmsg << "referencing parameter " << index << " while " << numFunction << " arguments given";
     }
-    reportError(tok, Severity::warning, "wrongPrintfScanfParameterError", errmsg.str());
+    reportError(tok, Severity::warning, "wrongPrintfScanfParameterPositionError", errmsg.str());
 }
 
 void CheckIO::invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat)
