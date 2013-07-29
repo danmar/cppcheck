@@ -160,6 +160,13 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
 
         check("void f(int x) {\n"
+              "    int y = x & 7;\n"
+              "    do_something(&y);\n" // passing variable => no error
+              "    if (y==8);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
               "    extern int y; y = x & 7;\n"
               "    do_something();\n"
               "    if (y==8);\n" // non-local variable => no error
@@ -178,6 +185,28 @@ private:
         check("void f() {\n"
               "    int x = *(char*)&0x12345678;\n"
               "    if (x==18) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // bailout: no variable info
+        check("void foo(int x) {\n"
+              "    y = 2 | x;\n"  // y not declared => no error
+              "    if(y == 1) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // bailout: negative number
+        check("void foo(int x) {\n"
+              "    int y = -2 | x;\n" // negative number => no error
+              "    if (y==1) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // bailout: pass variable to function
+        check("void foo(int x) {\n"
+              "    int y = 2 | x;\n"
+              "    bar(&y);\n"  // pass variable to function => no error
+              "    if (y==1) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
