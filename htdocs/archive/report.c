@@ -17,7 +17,7 @@ void listAll(char **data)
     puts("function addfile() {");
     puts("    var name = prompt(\"Name of library/platform/etc\", \"\");");
     puts("    if (name != null)");
-    puts("        window.location = \"http://cppcheck.sourceforge.net/cgi-bin/addfile.cgi?name=\" + name + \"&version=\" + version;");
+    puts("        window.location = \"http://cppcheck.sourceforge.net/cgi-bin/addfile.cgi?name=\" + name;");
     puts("}");
     puts("function editfile(name,version) {\n");
     puts("    window.location = \"http://cppcheck.sourceforge.net/cgi-bin/edit.cgi?name=\" + name + \"&version=\" + version;\n");

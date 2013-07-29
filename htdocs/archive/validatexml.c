@@ -31,22 +31,29 @@ int validatexml(const char xmldata[])
         } else if (xmldata[pos]=='\r' || xmldata[pos]=='\n') {
             ++linenr;
         } else if (xmldata[pos] == '<') {
+            // found a element, validate it
             ++pos;
             skipspaces(xmldata,&pos,&linenr);
+
+            // is this a end-element?
             if (xmldata[pos] == '/') {
+                // end element without any previous start element
                 if (level <= 0) {
                     return linenr;
                 }
                 --level;
+                // compare name of end element with name of start element
                 int len = strlen(elementNames[level]);
                 if (strncmp(&xmldata[pos+1],elementNames[level],len)!=0 || xmldata[pos+1+len]!='>')
                     return linenr;
                 pos += 1 + len;
             } else {
+                // this validator allows max 8 element levels
                 if (level > 8)
                     return linenr;
                 if (!isalpha(xmldata[pos]))
                     return linenr;
+                // add element name to elementNames so it can be compared later against the end element
                 memset(elementNames[level], 0, 64);
                 for (int i = 0; i < 64; i++) {
                     if ((xmldata[pos+i]>='a' && xmldata[pos+i]<='z') || xmldata[pos+i] == '-')
@@ -57,29 +64,42 @@ int validatexml(const char xmldata[])
                     }
                 }
 
-                if (!strchr("> \r\n", xmldata[pos]))
+                if (!strchr("/> \r\n", xmldata[pos]))
                     return linenr;
 
                 level++;
 
-                while (xmldata[pos] != '>') {
+                // validate all attributes
+                while (xmldata[pos] != '/' && xmldata[pos] != '>') {
+                    // validate one attribute
                     skipspaces(xmldata,&pos,&linenr);
                     if ((xmldata[pos] >= 'a') && xmldata[pos] <= 'z') {
+                        // attribute name
                         while (((xmldata[pos] >= 'a') && xmldata[pos] <= 'z') || xmldata[pos] == '-')
                             ++pos;
                         if (xmldata[pos++] != '=')
                             return linenr;
                         if (xmldata[pos++] != '\"')
                             return linenr;
-                        while (isalnum(xmldata[pos]) || strchr(":-.,",xmldata[pos]))
+                        // attribute value
+                        while (isalnum(xmldata[pos]) || strchr(":-.,_",xmldata[pos]))
                             ++pos;
                         if (xmldata[pos++] != '\"')
                             return linenr;
                         if (!strchr("> \r\n", xmldata[pos]))
                             return linenr;
-                    } else if (xmldata[pos] != '>') {
+                    } else if (xmldata[pos] != '/' && xmldata[pos] != '>') {
                         return linenr;
                     }
+                }
+
+                // no end element.. <abc/>
+                if (xmldata[pos] == '/') {
+                    --level;
+                    ++pos;
+                    skipspaces(xmldata,&pos,&linenr);
+                    if (xmldata[pos] != '>')
+                        return linenr;
                 }
             }
         } else if (xmldata[pos] == '>') {
