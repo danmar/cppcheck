@@ -151,6 +151,7 @@ private:
         TEST_CASE(whileAssign2);
         TEST_CASE(whileAssign3); // varid
         TEST_CASE(doWhileAssign); // varid
+        TEST_CASE(test_4881); // similar to doWhileAssign (#4911), taken from #4881 with full code
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
@@ -8213,6 +8214,19 @@ private:
         ASSERT_EQUALS("'w' ;", tok("\"hello\nworld\"[6] ;"));
         ASSERT_EQUALS("\"hello\" [ 7 ] ;", tok("\"hello\"[7] ;"));
         ASSERT_EQUALS("\"hello\" [ -1 ] ;", tok("\"hello\"[-1] ;"));
+    }
+
+    void test_4881() {
+        const char code[] = "int evallex() {\n"
+                            "  int c, t;\n"
+                            "again:\n"
+                            "   do {\n"
+                            "      if ((c = macroid(c)) == EOF_CHAR || c == '\n') {\n"
+                            "      }\n"
+                            "   } while ((t = type[c]) == LET && catenate());\n"
+                            "}\n";
+        ASSERT_EQUALS("int evallex ( ) { int c ; int t ; do { c = macroid ( c ) ; if ( c == EOF_CHAR || c == '\n' ) { } t = type [ c ] ; } while ( t == LET && catenate ( ) ) ; }",
+                      tok(code, true));
     }
 };
 
