@@ -100,6 +100,7 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
             return true;
         }
         if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
+            // TODO: don't bailout if variable is passed by value
             return true;
         if (tok2->str() == "}")
             return false;

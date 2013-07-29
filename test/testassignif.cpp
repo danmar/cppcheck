@@ -166,6 +166,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void do_something(int);\n"
+              "void f(int x) {\n"
+              "    int y = x & 7;\n"
+              "    do_something(y);\n" // passing variable by value => error
+              "    if (y==8);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         check("void f(int x) {\n"
               "    extern int y; y = x & 7;\n"
               "    do_something();\n"
