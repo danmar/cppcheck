@@ -63,19 +63,15 @@ void CheckOther::checkCastIntToCharAndBack()
                 }
             } else if (Token::Match(tok, "EOF %comp% ( %var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
                 tok = tok->tokAt(3);
-                if (tok && tok->varId()) {
-                    const Variable *var = tok->variable();
-                    if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
-                        checkCastIntToCharAndBackError(tok, tok->strAt(2));
-                    }
+                const Variable *var = tok->variable();
+                if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
+                    checkCastIntToCharAndBackError(tok, tok->strAt(2));
                 }
             } else if (Token::Match(tok, "EOF %comp% ( %var% = std :: cin . get (") || Token::Match(tok, "EOF %comp% ( %var% = cin . get (")) {
                 tok = tok->tokAt(3);
-                if (tok && tok->varId()) {
-                    const Variable *var = tok->variable();
-                    if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
-                        checkCastIntToCharAndBackError(tok, "cin.get");
-                    }
+                const Variable *var = tok->variable();
+                if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
+                    checkCastIntToCharAndBackError(tok, "cin.get");
                 }
             } else if (Token::Match(tok, "%var% = std :: cin . get (") || Token::Match(tok, "%var% = cin . get (")) {
                 const Variable *var = tok->variable();
