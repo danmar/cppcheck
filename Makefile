@@ -316,7 +316,7 @@ $(SRCDIR)/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/config.h lib/
 $(SRCDIR)/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/config.h lib/token.h lib/symboldatabase.h lib/mathlib.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/executionpath.o $(SRCDIR)/executionpath.cpp
 
-$(SRCDIR)/library.o: lib/library.cpp lib/library.h lib/config.h
+$(SRCDIR)/library.o: lib/library.cpp lib/library.h lib/config.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/library.o $(SRCDIR)/library.cpp
 
 $(SRCDIR)/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/config.h lib/errorlogger.h lib/suppressions.h
