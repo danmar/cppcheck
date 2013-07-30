@@ -6017,6 +6017,32 @@ bool Tokenizer::simplifyKnownVariables()
                 tok = tok->previous();
                 goback = false;
             }
+            // Reference to variable
+            if (Token::Match(tok, "%type%|* & %var% = %var% ;")) {
+                Token *start = tok->previous();
+                while (Token::Match(start,"%type%|*|&"))
+                    start = start->previous();
+                if (!Token::Match(start,"[;{}]"))
+                    continue;
+                const Token *reftok = tok->tokAt(2);
+                const Token *vartok = reftok->tokAt(2);
+                int level = 0;
+                for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "{") {
+                        ++level;
+                    } else if (tok2->str() == "}") {
+                        if (level <= 0)
+                            break;
+                        --level;
+                    } else if (tok2->varId() == reftok->varId()) {
+                        tok2->str(vartok->str());
+                        tok2->varId(vartok->varId());
+                    }
+                }
+                Token::eraseTokens(start, tok->tokAt(6));
+                tok = start;
+            }
+
             if (tok->isName() && (Token::Match(tok, "static| const| static| %type% const| %var% = %any% ;") ||
                                   Token::Match(tok, "static| const| static| %type% const| %var% ( %any% ) ;"))) {
                 bool isconst = false;

@@ -517,9 +517,6 @@ private:
         // use reference
         ASSERT_EQUALS(";;callfunc&use;", getcode("struct AB *ab; f(&ab);", "ab"));
 
-        // reference
-        ASSERT_EQUALS(";", getcode("char *p; char * & ref = p; p = malloc(10);", "p"));
-
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
         ASSERT_EQUALS(";;returnuse;", getcode("char *s; return s;", "s"));
