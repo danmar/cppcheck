@@ -10,7 +10,7 @@
 void listAll(char **data)
 {
     puts("Content-type: text/html\r\n\r\n");
-    puts("<input type=\"button\" onclick=\"addfile()\" value=\"Add file\"/>");
+    puts("<input type=\"button\" onclick=\"addFile()\" value=\"Add file\"/>");
     puts("<table border=\"1\"><tr><td><table>");
     for (int i = 0; i < MAX_RECORDS && data[i]; i++) {
         const char *name = getname(data[i]);
@@ -20,9 +20,9 @@ void listAll(char **data)
         if (i > 0)
             printf("<tr height=\"1\"><td colspan=\"2\" bgcolor=\"gray\"></td></tr>");
         printf("<tr><td width=\"200\">%s</td>", name);
-        printf("<td><input type=\"button\" onclick=\"editfile(\'%s\','%i')\" value=\"Edit\"/>", name, version);
-        printf("<input type=\"button\" onclick=\"renamefile(\'%s\','%i')\" value=\"Rename\"/>", name, version);
-        printf("<input type=\"button\" onclick=\"deletefile(\'%s\','%i')\" value=\"Delete\"/>&nbsp;</td>", name, version);
+        printf("<td><input type=\"button\" onclick=\"editFile(\'%s\','%i')\" value=\"Edit\"/>", name, version);
+        printf("<input type=\"button\" onclick=\"renameFile(\'%s\','%i')\" value=\"Rename\"/>", name, version);
+        printf("<input type=\"button\" onclick=\"deleteFile(\'%s\','%i')\" value=\"Delete\"/>&nbsp;</td>", name, version);
         printf("</tr>\n");
     }
     puts("</table></td></tr></table>");

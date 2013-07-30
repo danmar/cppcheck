@@ -15,24 +15,24 @@ uninitialized variables, unused functions" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
         href="http://sourceforge.net/p/cppcheck/news/feed" />
   <script type="text/javascript">
-    function addfile() {
+    function addFile() {
         var name = prompt("Name of library/platform/etc", "");
         if (name != null)
             window.location = "http://cppcheck.sourceforge.net/cgi-bin/addfile.cgi?name=" + name;
     }
 
-    function editfile(name,version) {
+    function editFile(name,version) {
         window.location = "http://cppcheck.sourceforge.net/cgi-bin/edit.cgi?name=" + name + "&amp;version=" + version;
     }
 
-    function renamefile(name1,version) {
+    function renameFile(name1,version) {
         var name2 = prompt("Name", name1);
         if (name2 != null)
             window.location = "http://cppcheck.sourceforge.net/cgi-bin/renamefile.cgi?name1=" + name1 + "&amp;name2=" + name2;
     }
 
-    function deletefile(name,version) {
-        window.location = "http://cppcheck.sourceforge.net/cgi-bin/deletefile.cgi?name=" + name + "&amp;version=" + version;
+    function deleteFile(name,version) {
+        window.location = "http://cppcheck.sourceforge.net/cgi-bin/deletefile.cgi?name=" + name + "&version=" + version;
     }
   </script>
 </head>
