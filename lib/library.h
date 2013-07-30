@@ -133,7 +133,7 @@ private:
         return NULL;
     }
 
-    int getid(const std::map<std::string,int> &data, const std::string &name) const {
+    static int getid(const std::map<std::string,int> &data, const std::string &name) {
         const std::map<std::string,int>::const_iterator it = data.find(name);
         return (it == data.end()) ? 0 : it->second;
     }

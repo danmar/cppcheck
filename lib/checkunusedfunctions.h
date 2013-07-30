@@ -58,9 +58,9 @@ private:
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void unusedFunctionError(ErrorLogger * const errorLogger,
-                             const std::string &filename, unsigned int lineNumber,
-                             const std::string &funcname);
+    static void unusedFunctionError(ErrorLogger * const errorLogger,
+                                    const std::string &filename, unsigned int lineNumber,
+                                    const std::string &funcname);
 
     /**
      * Dummy implementation, just to provide error for --errorlist

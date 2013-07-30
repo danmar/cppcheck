@@ -62,7 +62,7 @@ public:
     bool checkLoopBody(const Token *tok, const Variable& var, const std::string &membervar, const bool suppressErrors);
     void checkRhs(const Token *tok, const Variable &var, const std::string &membervar);
     static bool isVariableUsage(const Token *vartok, bool ispointer, bool cpp);
-    bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
+    static bool isMemberVariableAssignment(const Token *tok, const std::string &membervar);
     bool isMemberVariableUsage(const Token *tok, bool isPointer, const std::string &membervar) const;
 
     /**

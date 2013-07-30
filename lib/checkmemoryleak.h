@@ -121,7 +121,7 @@ public:
     /**
      * @brief Get type of reallocation at given position
      */
-    AllocType getReallocationType(const Token *tok2, unsigned int varid) const;
+    static AllocType getReallocationType(const Token *tok2, unsigned int varid);
 
     /**
      * @brief Is a typename the name of a class?

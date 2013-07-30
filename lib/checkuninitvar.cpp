@@ -363,7 +363,7 @@ private:
      * @param tok2 start token of rhs
      * @param checks the execution paths
      */
-    void parserhs(const Token *tok2, std::list<ExecutionPath *> &checks) const {
+    static void parserhs(const Token *tok2, std::list<ExecutionPath *> &checks) {
         // check variable usages in rhs/index
         while (NULL != (tok2 = tok2->next())) {
             if (Token::Match(tok2, "[;)=]"))
@@ -1690,7 +1690,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
     return false;
 }
 
-bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::string &membervar) const
+bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::string &membervar)
 {
     if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar) {
         if (Token::Match(tok->tokAt(3), "[=.[]"))
