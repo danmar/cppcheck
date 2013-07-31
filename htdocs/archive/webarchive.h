@@ -105,12 +105,12 @@ void generatepage(const char msg[])
 {
     puts("Content-type: text/html\r\n\r\n");
     puts("<html>");
-    puts("<head><script>");
+    puts("<head><script type=\"text/javascript\">");
     puts("function ok() { window.location = \"http://cppcheck.sourceforge.net/archive/\"; }");
     puts("</script></head>");
     puts("<body>");
     puts(msg);
-    puts("<br><input type=\"button\" value=\"OK\" onclick=\"ok()\"></body></html>");
+    puts("<br /><input type=\"button\" value=\"OK\" onclick=\"ok()\"></body></html>");
 }
 
 

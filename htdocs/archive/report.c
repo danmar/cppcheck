@@ -11,7 +11,7 @@ void listAll(char **data)
 {
     puts("Content-type: text/html\r\n\r\n");
     puts("<input type=\"button\" onclick=\"addFile()\" value=\"Add file\"/>");
-    puts("<table border=\"1\"><tr><td><table>");
+    puts("<br /><table border=\"1\"><tr><td><table>");
     for (int i = 0; i < MAX_RECORDS && data[i]; i++) {
         const char *name = getname(data[i]);
         int version = getversion(data[i]);
