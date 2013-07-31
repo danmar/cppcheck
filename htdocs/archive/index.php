@@ -15,7 +15,11 @@ uninitialized variables, unused functions" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
         href="http://sourceforge.net/p/cppcheck/news/feed" />
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
-  <script type="text/javascript">window.jQuery || document.write('<script type="text/javascript" src="/site/js/jquery-1.10.2.min.js"><\/script>')</script>
+  <script type="text/javascript">
+    //<![CDATA[
+    window.jQuery || document.write('<script type="text/javascript" src="/site/js/jquery-1.10.2.min.js"><\/script>')
+    //]]>
+  </script>
   <script src="/site/js/pack.js" type="text/javascript"></script></head>
 <body>
 <div id="header">
