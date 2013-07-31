@@ -2,6 +2,11 @@
 
 /* jshint quotmark:true, jquery:true */
 
+// htmlEntities taken from http://css-tricks.com/snippets/javascript/htmlentities-for-javascript/
+function htmlEntities(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 jQuery.fn.listCommits = function(username, repository, branch) {
     this.html('<span>Querying GitHub for recent commits&hellip;</span>');
 
@@ -13,7 +18,7 @@ jQuery.fn.listCommits = function(username, repository, branch) {
 
         $(commits).each(function(i) {
             var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha,
-                shortMessage = cutLines(this.commit.message);
+                shortMessage = htmlEntities(cutLines(this.commit.message));
 
             if (this.author !== null) {
                 list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a><em> by <strong><a class="author" href="' + 'https://github.com/' + this.author.login + '">' + this.author.login + '</a></strong></em></li>');
