@@ -65,8 +65,7 @@ void Check64BitPortability::pointerassignment()
             continue;
 
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "return %var%|%num% [;+]") && !Token::simpleMatch(tok, "return 0 ;") &&
-                (tok->scope() == scope)) { // #4919 - check if the 'return' doesn't belong to a lambda inside this 'scope'
+            if (Token::Match(tok, "return %var%|%num% [;+]") && !Token::simpleMatch(tok, "return 0 ;")) {
                 enum { NO, INT, PTR, PTRDIFF } type = NO;
                 for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                     if ((type == NO || type == INT) && Token::Match(tok2, "%var% [+;]") && isaddr(tok2->variable()))
