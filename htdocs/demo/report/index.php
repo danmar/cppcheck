@@ -68,11 +68,6 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript">window.jQuery || document.write('<script type="text/javascript" src="/site/js/jquery-1.10.2.min.js"><\/script>')</script>
   <script src="/site/js/pack.js" type="text/javascript"></script>
-  <script type="text/javascript">
-    $(document).ready(function() {
-      $('#resultsTable').tableFilter();
-    });
-  </script>
 </head>
 <body>
 <div id="header">

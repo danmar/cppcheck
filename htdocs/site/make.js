@@ -53,7 +53,8 @@
         echo();
         echo("### Minifying js files...");
 
-        var inJs = cat(["js/github.js",
+        var inJs = cat(["js/cppcheck.js",
+                        "js/github.js",
                         "js/picnet.table.filter.min.js"]);
 
         var minifiedJs = UglifyJS.minify(inJs, {

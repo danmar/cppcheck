@@ -32,7 +32,7 @@ if (!test("-f", jshintBin)) {
     exit(1);
 }
 
-if (exec("node" + " " + jshintBin + " " + "make.js run-tests.js js/github.js").code !== 0) {
+if (exec("node" + " " + jshintBin + " " + "make.js run-tests.js js/cppcheck.js js/github.js").code !== 0) {
     echo("*** JSHint failed! (return code != 0)");
     echo();
 } else {

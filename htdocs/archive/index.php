@@ -14,28 +14,9 @@ uninitialized variables, unused functions" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
         href="http://sourceforge.net/p/cppcheck/news/feed" />
-  <script type="text/javascript">
-    function addFile() {
-        var name = prompt("Name of library/platform/etc", "");
-        if (name != null)
-            window.location = "http://cppcheck.sourceforge.net/cgi-bin/addfile.cgi?name=" + name;
-    }
-
-    function editFile(name,version) {
-        window.location = "http://cppcheck.sourceforge.net/cgi-bin/edit.cgi?name=" + name + "&version=" + version;
-    }
-
-    function renameFile(name1,version) {
-        var name2 = prompt("Name", name1);
-        if (name2 != null)
-            window.location = "http://cppcheck.sourceforge.net/cgi-bin/renamefile.cgi?name1=" + name1 + "&name2=" + name2;
-    }
-
-    function deleteFile(name,version) {
-        window.location = "http://cppcheck.sourceforge.net/cgi-bin/deletefile.cgi?name=" + name + "&version=" + version;
-    }
-  </script>
-</head>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+  <script type="text/javascript">window.jQuery || document.write('<script type="text/javascript" src="/site/js/jquery-1.10.2.min.js"><\/script>')</script>
+  <script src="/site/js/pack.js" type="text/javascript"></script></head>
 <body>
 <div id="header">
   <div class="wrap">
