@@ -58,7 +58,7 @@ bugs that the compilers normally do not detect. The goal is to detect only real
 errors in the code (i.e. have zero false positives).
 </p>
 
-<h2><a id="download">Download</a></h2>
+<h2 id="download">Download</h2>
 <p>
     <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.60.1/cppcheck-1.60.1-x86-Setup.msi">
         <span class="downButtonText">Download Now!</span>
@@ -84,7 +84,7 @@ add Cppcheck as an external tool. You can also try the proprietary
 which is oriented for this environment. A comparison of Cppcheck and PVS-Studio can be found
 <a href="http://www.viva64.com/en/b/0149/">here</a> and we believe it's a good and honest comparison.</p>
 
-<h2><a id="features">Features</a></h2>
+<h2 id="features">Features</h2>
 <ul>
   <li>Out of bounds checking</li>
   <li>Check the code for each class</li>
@@ -95,7 +95,7 @@ which is oriented for this environment. A comparison of Cppcheck and PVS-Studio 
   <li>Check for uninitialized variables and unused functions</li>
 </ul>
 
-<h2><a id="news">News</a></h2>
+<h2 id="news">News</h2>
 <?php
   require './site/simplepie/simplepie.php';
 
@@ -111,11 +111,11 @@ which is oriented for this environment. A comparison of Cppcheck and PVS-Studio 
 ?>
 <p><a href="http://sourceforge.net/p/cppcheck/news/">View all news&hellip;</a></p>
 
-<h2><a id="documentation">Documentation</a></h2>
+<h2 id="documentation">Documentation</h2>
 <p>You can read the <a href="manual.pdf">manual</a> or download some
 <a href="http://sourceforge.net/projects/cppcheck/files/Articles/">articles</a>.</p>
 
-<h2><a id="support">Support</a></h2>
+<h2 id="support">Support</h2>
 <ul>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report
   bugs and feature requests</li>
@@ -124,7 +124,7 @@ which is oriented for this environment. A comparison of Cppcheck and PVS-Studio 
   <li>For more details look at the <a href="http://sourceforge.net/apps/mediawiki/cppcheck/">wiki</a></li>
 </ul>
 
-<h2><a id="contribute">Contribute</a></h2>
+<h2 id="contribute">Contribute</h2>
 <p>You are welcome to contribute. Help is needed.</p>
 <dl>
   <dt>Testing</dt>
