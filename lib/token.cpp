@@ -836,30 +836,38 @@ Token* Token::nextArgument() const
     return 0;
 }
 
-bool Token::findClosingBracket(const Token*& closing) const
+const Token * Token::findClosingBracket() const
 {
+    const Token *closing = 0;
+
     if (_str == "<") {
         unsigned int depth = 0;
         for (closing = this; closing != NULL; closing = closing->next()) {
             if (closing->str() == "{" || closing->str() == "[" || closing->str() == "(")
                 closing = closing->link();
             else if (closing->str() == "}" || closing->str() == "]" || closing->str() == ")" || closing->str() == ";" || closing->str() == "=")
-                return false;
+                break;
             else if (closing->str() == "<")
                 ++depth;
             else if (closing->str() == ">") {
                 if (--depth == 0)
-                    return true;
+                    break;
             } else if (closing->str() == ">>") {
                 if (--depth == 0)
-                    return true;
+                    break;
                 if (--depth == 0)
-                    return true;
+                    break;
             }
         }
     }
 
-    return false;
+    return closing;
+}
+
+Token * Token::findClosingBracket()
+{
+    // return value of const function
+    return const_cast<Token*>(const_cast<const Token*>(this)->findClosingBracket());
 }
 
 //---------------------------------------------------------------------------

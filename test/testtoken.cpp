@@ -832,18 +832,14 @@ private:
     void canFindMatchingBracketsNeedsOpen() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        const Token* t = 0;
-        bool found = var.tokens()->findClosingBracket(t);
-        ASSERT(! found);
-        ASSERT(! t);
+        const Token* t = var.tokens()->findClosingBracket();
+        ASSERT(t == NULL);
     }
 
     void canFindMatchingBracketsInnerPair() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        Token* t = 0;
-        bool found = var.tokens()->tokAt(7)->findClosingBracket(t);
-        ASSERT(found);
+        Token* t = const_cast<Token*>(var.tokens()->tokAt(7))->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(9) == t);
     }
@@ -851,20 +847,15 @@ private:
     void canFindMatchingBracketsOuterPair() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        const Token* t = 0;
-        bool found = var.tokens()->tokAt(3)->findClosingBracket(t);
-        ASSERT(found);
+        const Token* t = var.tokens()->tokAt(3)->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(10) == t);
-
     }
 
     void canFindMatchingBracketsWithTooManyClosing() const {
         givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
 
-        const Token* t = 0;
-        bool found = var.tokens()->next()->findClosingBracket(t);
-        ASSERT(found);
+        const Token* t = var.tokens()->next()->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(3) == t);
     }
@@ -872,14 +863,12 @@ private:
     void canFindMatchingBracketsWithTooManyOpening() const {
         givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
 
-        const Token* t = 0;
-        bool found = var.tokens()->next()->findClosingBracket(t);
-        ASSERT(found);
+        const Token* t = var.tokens()->next()->findClosingBracket();
+        ASSERT(t != NULL && t->str() == ">");
 
-        found = var.tokens()->tokAt(4)->findClosingBracket(t);
-        ASSERT(!found);
+        t = var.tokens()->tokAt(4)->findClosingBracket();
+        ASSERT(t != NULL && t->str() == ")");
     }
-
 };
 
 REGISTER_TEST(TestToken)

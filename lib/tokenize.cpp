@@ -661,7 +661,7 @@ void Tokenizer::simplifyTypedef()
 
         // check for template
         if (tokOffset->str() == "<") {
-            tokOffset->findClosingBracket(typeEnd);
+            typeEnd = tokOffset->findClosingBracket();
 
             while (typeEnd && Token::Match(typeEnd->next(), ":: %type%"))
                 typeEnd = typeEnd->tokAt(2);
@@ -2662,8 +2662,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 ++typeCount;
             }
         } else if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
-            bool ok = tok2->findClosingBracket(tok2);
-            if (!ok || !tok2)
+            tok2 = tok2->findClosingBracket();
+            if (!Token::Match(tok2, ">|>>"))
                 break;
         } else if (tok2->str() == "&" || tok2->str() == "&&") {
             ref = true;
@@ -5251,7 +5251,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                                 if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
                                     tok2 = tok2->link();
                                 if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0)
-                                    tok2->findClosingBracket(tok2);
+                                    tok2 = tok2->findClosingBracket();
                                 tok2 = tok2->next();
                             }
                             if (tok2 && tok2->str() == ";")
@@ -5305,7 +5305,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                     tok2 = tok2->link();
 
                 else if (tok2->str() == "<" && tok2->previous()->isName() && !tok2->previous()->varId())
-                    tok2->findClosingBracket(tok2);
+                    tok2 = tok2->findClosingBracket();
 
                 else if (std::strchr(";,", tok2->str()[0])) {
                     // "type var ="   =>   "type var; var ="

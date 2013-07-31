@@ -448,7 +448,7 @@ std::list<Token *> TemplateSimplifier::getTemplateInstantiations(Token *tokens)
     for (Token *tok = tokens; tok; tok = tok->next()) {
         // template definition.. skip it
         if (Token::simpleMatch(tok, "template <")) {
-            tok->next()->findClosingBracket(tok);
+            tok = tok->next()->findClosingBracket();
             if (!tok)
                 break;
         } else if (Token::Match(tok->previous(), "[({};=] %var% <") ||
@@ -456,8 +456,7 @@ std::list<Token *> TemplateSimplifier::getTemplateInstantiations(Token *tokens)
 
             // Add inner template instantiations first => go to the ">"
             // and then parse backwards, adding all seen instantiations
-            const Token *tok2;
-            tok->next()->findClosingBracket(tok2);
+            const Token *tok2 = tok->next()->findClosingBracket();
 
             // parse backwards and add template instantiations
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
