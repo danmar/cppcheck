@@ -90,6 +90,7 @@
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
       <li><em><a href="/demo/">Online Demo</a></em></li>
+      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
