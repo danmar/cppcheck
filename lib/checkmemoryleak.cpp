@@ -1384,8 +1384,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
 
 
-
-
 void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
 {
     {
@@ -1983,8 +1981,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
 
 
 
-
-
 const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 {
     const Token *result;
@@ -2032,10 +2028,6 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 
     return NULL;
 }
-
-
-
-
 
 
 // Check for memory leaks for a function variable.
@@ -2148,15 +2140,13 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 //---------------------------------------------------------------------------
 
 
-
-
-
 //---------------------------------------------------------------------------
 // Check for memory leaks due to improper realloc() usage.
 //   Below, "a" may be set to null without being freed if realloc() cannot
 //   allocate the requested memory:
 //     a = malloc(10); a = realloc(a, 100);
 //---------------------------------------------------------------------------
+
 static bool isNoArgument(const SymbolDatabase* symbolDatabase, unsigned int varid)
 {
     const Variable* var = symbolDatabase->getVariableFromVarId(varid);
@@ -2216,10 +2206,6 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 //---------------------------------------------------------------------------
 
 
-
-
-
-
 //---------------------------------------------------------------------------
 // Checks for memory leaks inside function..
 //---------------------------------------------------------------------------
@@ -2274,37 +2260,9 @@ void CheckMemoryLeakInFunction::check()
 //---------------------------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //---------------------------------------------------------------------------
 // Checks for memory leaks in classes..
 //---------------------------------------------------------------------------
-
 
 
 void CheckMemoryLeakInClass::check()

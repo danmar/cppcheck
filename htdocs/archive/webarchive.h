@@ -188,5 +188,3 @@ const char *validate_name_version_data(const char *data)
     // No error
     return NULL;
 }
-
-

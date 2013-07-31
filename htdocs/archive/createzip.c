@@ -1,9 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "webarchive.h"
 #include "miniz.c"
-
-#include <stdio.h>
-#include <stdlib.h>
 
 #define ALL_ZIP   "all.zip"
 
