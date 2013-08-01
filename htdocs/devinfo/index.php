@@ -109,5 +109,6 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
 </ul>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("../analyticstracking.php") ?>
 </body>
 </html>

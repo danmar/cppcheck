@@ -55,5 +55,6 @@ uninitialized variables, unused functions" />
     <p><a href="/cgi-bin/archive.zip">Download all</a></p>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("../analyticstracking.php") ?>
 </body>
 </html>

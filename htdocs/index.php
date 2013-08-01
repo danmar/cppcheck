@@ -155,5 +155,6 @@ which is oriented for this environment. A comparison of Cppcheck and PVS-Studio 
 </dl>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("analyticstracking.php") ?>
 </body>
 </html>

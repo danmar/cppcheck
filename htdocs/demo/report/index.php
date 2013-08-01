@@ -169,5 +169,6 @@
 ?>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("../../analyticstracking.php") ?>
 </body>
 </html>

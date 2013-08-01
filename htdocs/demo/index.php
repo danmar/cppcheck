@@ -89,5 +89,6 @@ void f()
 <span class="br0">}</span></pre>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("../analyticstracking.php") ?>
 </body>
 </html>
