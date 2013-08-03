@@ -51,6 +51,12 @@
             <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
             <File Id='cppcheck_zh_CN.qm' Name='cppcheck_zh_CN.qm' Source='$(var.TranslationsDir)\cppcheck_zh_CN.qm' />
           </Component>
+          <Directory Id='CfgsFolder' Name='cfg'>
+            <Component Id='Cfgs' Guid='$(var.cfgsGUID)'>
+              <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
+              <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
+            </Component>
+          </Directory>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
             <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' />
             <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' />
@@ -113,6 +119,9 @@
           <ComponentRef Id='GuiTranslations' />
         </Feature>
         <ComponentRef Id='ProgramMenuDir' />
+      </Feature>
+      <Feature Id='ConfigFiles' Title='Default configurations' AllowAdvertise='no' Description='Provide default configuration files, for example for standard library or GTK' Level='1'>
+        <ComponentRef Id='Cfgs' />
       </Feature>
       <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2010 Runtime Components">
         <MergeRef Id="CRT"/>
