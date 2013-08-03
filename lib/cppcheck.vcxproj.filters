@@ -250,7 +250,7 @@
     <ClInclude Include="checkassert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="environment.h">
+    <ClInclude Include="library.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\externals\tinyxml\tinyxml2.h">
