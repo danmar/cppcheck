@@ -1,7 +1,7 @@
+#include "validatexml.h"
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "validatexml.h"
 
 void skipspaces(const char xmldata[], int *pos, int *linenr)
 {

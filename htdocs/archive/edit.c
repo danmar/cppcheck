@@ -5,7 +5,6 @@
 
 #include "webarchive.h"
 
-
 int main()
 {
     const char *query_string = getenv("QUERY_STRING");
