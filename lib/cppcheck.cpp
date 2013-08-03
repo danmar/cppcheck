@@ -34,7 +34,7 @@
 #include <pcre.h>
 #endif
 
-static const char Version[] = "1.61 dev";
+static const char Version[] = "1.61";
 static const char ExtraVersion[] = "";
 
 static TimerResults S_timerResults;
