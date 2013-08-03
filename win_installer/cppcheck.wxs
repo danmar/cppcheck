@@ -37,20 +37,22 @@
             <File Id='qtcore4dll' Name='qtcore4.dll' Source='$(var.QtDllDir)\qtcore4.dll' />
             <File Id='qtgui4dll' Name='qtgui4.dll' Source='$(var.QtDllDir)\qtgui4.dll' />
           </Component>
-          <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
-            <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.TranslationsDir)\cppcheck_de.qm' />
-            <File Id='cppcheck_es.qm' Name='cppcheck_es.qm' Source='$(var.TranslationsDir)\cppcheck_es.qm' />
-            <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.TranslationsDir)\cppcheck_fi.qm' />
-            <File Id='cppcheck_fr.qm' Name='cppcheck_fr.qm' Source='$(var.TranslationsDir)\cppcheck_fr.qm' />
-            <File Id='cppcheck_it.qm' Name='cppcheck_it.qm' Source='$(var.TranslationsDir)\cppcheck_it.qm' />
-            <File Id='cppcheck_ja.qm' Name='cppcheck_ja.qm' Source='$(var.TranslationsDir)\cppcheck_ja.qm' />
-            <File Id='cppcheck_ko.qm' Name='cppcheck_ko.qm' Source='$(var.TranslationsDir)\cppcheck_ko.qm' />
-            <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.TranslationsDir)\cppcheck_nl.qm' />
-            <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.TranslationsDir)\cppcheck_ru.qm' />
-            <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
-            <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
-            <File Id='cppcheck_zh_CN.qm' Name='cppcheck_zh_CN.qm' Source='$(var.TranslationsDir)\cppcheck_zh_CN.qm' />
-          </Component>
+          <Directory Id='TranslationsFolder' Name='lang'>
+            <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
+              <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.TranslationsDir)\cppcheck_de.qm' />
+              <File Id='cppcheck_es.qm' Name='cppcheck_es.qm' Source='$(var.TranslationsDir)\cppcheck_es.qm' />
+              <File Id='cppcheck_fi.qm' Name='cppcheck_fi.qm' Source='$(var.TranslationsDir)\cppcheck_fi.qm' />
+              <File Id='cppcheck_fr.qm' Name='cppcheck_fr.qm' Source='$(var.TranslationsDir)\cppcheck_fr.qm' />
+              <File Id='cppcheck_it.qm' Name='cppcheck_it.qm' Source='$(var.TranslationsDir)\cppcheck_it.qm' />
+              <File Id='cppcheck_ja.qm' Name='cppcheck_ja.qm' Source='$(var.TranslationsDir)\cppcheck_ja.qm' />
+              <File Id='cppcheck_ko.qm' Name='cppcheck_ko.qm' Source='$(var.TranslationsDir)\cppcheck_ko.qm' />
+              <File Id='cppcheck_nl.qm' Name='cppcheck_nl.qm' Source='$(var.TranslationsDir)\cppcheck_nl.qm' />
+              <File Id='cppcheck_ru.qm' Name='cppcheck_ru.qm' Source='$(var.TranslationsDir)\cppcheck_ru.qm' />
+              <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
+              <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
+              <File Id='cppcheck_zh_CN.qm' Name='cppcheck_zh_CN.qm' Source='$(var.TranslationsDir)\cppcheck_zh_CN.qm' />
+            </Component>
+          </Directory>
           <Directory Id='CfgsFolder' Name='cfg'>
             <Component Id='Cfgs' Guid='$(var.cfgsGUID)'>
               <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
