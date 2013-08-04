@@ -149,6 +149,7 @@ private:
         TEST_CASE(if_macro_eq_macro); // #3536
         TEST_CASE(ticket_3675);
         TEST_CASE(ticket_3699);
+        TEST_CASE(ticket_4922); // #4922
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -1702,6 +1703,17 @@ private:
 
         // First, it must not hang. Second, inline must becomes inline, and __forceinline must become __forceinline.
         ASSERT_EQUALS("\n\n\n\n\n$$$__forceinline $$inline $$__forceinline\n", actual[""]);
+    }
+
+    void ticket_4922() {// #4922
+        const std::string code("__asm__ \n"
+                               "{ int extern __value) 0; (double return (\"\" } extern\n"
+                               "__typeof __finite (__finite) __finite __inline \"__GI___finite\");");
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istr(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istr, actual, "file.cpp");
     }
 
     void multiline1() {

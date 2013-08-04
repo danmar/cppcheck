@@ -508,8 +508,11 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 // Ticket 4873: Extract comments from the __asm / __asm__'s content
                 std::string asmBody;
                 while (i < str.size() && str[i] != '}') {
-                    if (str[i] == ';')
-                        i = str.find("\n", i);
+                    if (str[i] == ';') {
+                        std::string::size_type backslashN = str.find("\n", i);
+                        if (backslashN != std::string::npos) // Ticket #4922: Don't go in infinite loop or crash if there is no '\n'
+                            i = backslashN;
+                    }
                     asmBody += str[i++];
                 }
                 code << removeComments(asmBody, filename);
