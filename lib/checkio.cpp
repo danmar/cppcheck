@@ -470,11 +470,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 }
             } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%") || (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%"))) {
                 const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
-                if (Token::Match(formatStringTok, "%str% ,")) {
+                if (Token::Match(formatStringTok, "%str% [,)]")) {
                     argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
-                    formatString = formatStringTok->str();
-                } else if (Token::Match(formatStringTok, "%str% )")) {
-                    argListTok = 0; // Find third parameter (first argument of va_args)
                     formatString = formatStringTok->str();
                 } else {
                     continue;
@@ -484,11 +481,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 for (int i = 0; i < 2 && formatStringTok; i++) {
                     formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
                 }
-                if (Token::Match(formatStringTok, "%str% ,")) {
+                if (Token::Match(formatStringTok, "%str% [,)]")) {
                     argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
-                    formatString = formatStringTok->str();
-                } else if (Token::Match(formatStringTok, "%str% )")) {
-                    argListTok = 0; // Find fourth parameter (first argument of va_args)
                     formatString = formatStringTok->str();
                 } else {
                     continue;
