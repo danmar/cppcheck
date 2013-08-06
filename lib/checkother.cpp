@@ -1881,33 +1881,16 @@ void CheckOther::checkCommaSeparatedReturn()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok ; tok = tok->next())      {
-        if (Token::Match(tok ,"return")) {
-
-            while (tok && tok->str() != ";")   {
-
-                if (tok->str() == "(")
-                    tok=tok->link();
-
-                // Skip template parameters
-                if (tok->str() == "<" && TemplateSimplifier::templateParameters(tok) > 0U) {
-                    unsigned int level = 1U;
-                    while (level > 0U && NULL != (tok = tok->next())) {
-                        if (tok->str() == "<")
-                            level++;
-                        else if (tok->str() == ">")
-                            level--;
-                        else if (tok->str() == ">>")
-                            level = level - ((level > 1U) ? 2 : 1);
-                        else if (tok->str() == ";")
-                            break;
-                    }
-                }
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->str() == "return") {
+            while (tok && tok->str() != ";") {
+                if (Token::Match(tok, "[([{<]") && tok->link())
+                    tok = tok->link();
 
                 if (!tok->isExpandedMacro() && tok->str() == "," && tok->linenr() != tok->next()->linenr())
                     commaSeparatedReturnError(tok);
 
-                tok=tok->next();
+                tok = tok->next();
             }
             // bailout: missing semicolon (invalid code / bad tokenizer)
             if (!tok)

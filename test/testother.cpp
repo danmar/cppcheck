@@ -6345,13 +6345,24 @@ private:
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
-              "    return a<int,\nint>::b;\n"
+              "    return c<int,\nint>::b;\n"
               "}", NULL, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         // ticket #4927 Segfault in CheckOther::checkCommaSeparatedReturn() on invalid code
         check("int main() {\n"
               "   return 0\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        // #4943 take care of C++11 initializer lists
+        check("std::vector<Foo> Bar() {\n"
+              "    return\n"
+              "    {\n"
+              "        { \"1\" },\n"
+              "        { \"2\" },\n"
+              "        { \"3\" }\n"
+              "    };\n"
               "}", NULL, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
     }
