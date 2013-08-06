@@ -57,6 +57,11 @@ public:
         _dealloc[functionname] = id;
     }
 
+    /** add noreturn function setting */
+    void setnoreturn(const std::string& funcname, bool noreturn) {
+        _noreturn[funcname] = noreturn;
+    }
+
     /** is allocation type memory? */
     static bool ismemory(int id) {
         return ((id > 0) && ((id & 1) == 0));

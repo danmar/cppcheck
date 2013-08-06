@@ -1567,6 +1567,8 @@ void CheckOther::checkUnreachableCode()
         } else if (Token::Match(tok, "goto %any% ;")) {
             secondBreak = tok->tokAt(3);
             labelName = tok->next();
+        } else if (Token::Match(tok, "%var% (") && _settings->library.isnoreturn(tok->str())) {
+            secondBreak = tok->linkAt(1)->tokAt(2);
         }
 
         // Statements follow directly, no line between them. (#3383)

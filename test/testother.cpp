@@ -178,27 +178,30 @@ private:
         TEST_CASE(checkCommaSeparatedReturn);
     }
 
-    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true) {
+    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.addEnabled("performance");
-        settings.inconclusive = inconclusive;
-        settings.experimental = experimental;
-        settings.standards.posix = posix;
+        if (!settings) {
+            static Settings _settings;
+            settings = &_settings;
+        }
+        settings->addEnabled("style");
+        settings->addEnabled("warning");
+        settings->addEnabled("portability");
+        settings->addEnabled("performance");
+        settings->inconclusive = inconclusive;
+        settings->experimental = experimental;
+        settings->standards.posix = posix;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename ? filename : "test.cpp");
 
         // Check..
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.runChecks(&tokenizer, &settings, this);
+        CheckOther checkOther(&tokenizer, settings, this);
+        checkOther.runChecks(&tokenizer, settings, this);
 
         if (runSimpleChecks) {
             const std::string str1(tokenizer.tokens()->stringifyList(0,true));
@@ -206,7 +209,7 @@ private:
             const std::string str2(tokenizer.tokens()->stringifyList(0,true));
             if (str1 != str2)
                 warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
-            checkOther.runSimplifiedChecks(&tokenizer, &settings, this);
+            checkOther.runSimplifiedChecks(&tokenizer, settings, this);
         }
     }
 
@@ -2656,6 +2659,14 @@ private:
               "    return(0);\n"
               "    goto A;\n"
               "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        Settings settings;
+        settings.library.setnoreturn("exit", true);
+        check("void foo() {\n"
+              "    exit(0);\n"
+              "    break;\n"
+              "}", 0, false, false, false, false, &settings);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo(int a)\n"
