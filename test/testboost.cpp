@@ -27,8 +27,8 @@ extern std::ostringstream errout;
 
 class TestBoost : public TestFixture {
 public:
-    TestBoost() : TestFixture("TestBoost")
-    { }
+    TestBoost() : TestFixture("TestBoost") {
+    }
 
 private:
     void run() {

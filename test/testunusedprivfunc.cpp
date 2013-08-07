@@ -27,8 +27,8 @@ extern std::ostringstream errout;
 
 class TestUnusedPrivateFunction : public TestFixture {
 public:
-    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction")
-    { }
+    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {
+    }
 
 private:
     void run() {

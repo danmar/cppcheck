@@ -23,8 +23,8 @@
 
 class TestCmdlineParser : public TestFixture {
 public:
-    TestCmdlineParser() : TestFixture("TestCmdlineParser")
-    { }
+    TestCmdlineParser() : TestFixture("TestCmdlineParser") {
+    }
 
 private:
     Settings settings;

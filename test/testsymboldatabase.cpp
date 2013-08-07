@@ -45,8 +45,8 @@ public:
         ,vartok(NULL)
         ,typetok(NULL)
         ,t(NULL)
-        ,found(false)
-    {}
+        ,found(false) {
+    }
 
 private:
     const Scope si;

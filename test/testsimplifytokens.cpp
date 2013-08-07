@@ -33,8 +33,8 @@ extern std::ostringstream errout;
 
 class TestSimplifyTokens : public TestFixture {
 public:
-    TestSimplifyTokens() : TestFixture("TestSimplifyTokens")
-    { }
+    TestSimplifyTokens() : TestFixture("TestSimplifyTokens") {
+    }
 
 
 private:

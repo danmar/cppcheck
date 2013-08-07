@@ -25,8 +25,8 @@ extern std::ostringstream errout;
 
 class TestIO : public TestFixture {
 public:
-    TestIO() : TestFixture("TestIO")
-    { }
+    TestIO() : TestFixture("TestIO") {
+    }
 
 private:
 

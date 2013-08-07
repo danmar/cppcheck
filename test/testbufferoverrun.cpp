@@ -28,8 +28,8 @@ extern std::ostringstream errout;
 
 class TestBufferOverrun : public TestFixture {
 public:
-    TestBufferOverrun() : TestFixture("TestBufferOverrun")
-    { }
+    TestBufferOverrun() : TestFixture("TestBufferOverrun") {
+    }
 
 private:
 

@@ -40,21 +40,21 @@ bool CheckAutoVariables::isPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return(var && var->isArgument() && var->isPointer());
+    return (var && var->isArgument() && var->isPointer());
 }
 
 bool CheckAutoVariables::isRefPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return(var && var->isArgument() && var->isReference() && var->isPointer());
+    return (var && var->isArgument() && var->isReference() && var->isPointer());
 }
 
 bool CheckAutoVariables::isNonReferenceArg(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return(var && var->isArgument() && !var->isReference() && (var->isPointer() || var->typeStartToken()->isStandardType() || var->type()));
+    return (var && var->isArgument() && !var->isReference() && (var->isPointer() || var->typeStartToken()->isStandardType() || var->type()));
 }
 
 bool CheckAutoVariables::isAutoVar(const Token *tok)
@@ -96,7 +96,7 @@ static bool checkRvalueExpression(const Token * const vartok)
         return var2 && !var2->isPointer();
     }
 
-    return((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
+    return ((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
 static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)

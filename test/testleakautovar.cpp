@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class TestLeakAutoVar : public TestFixture {
 public:
-    TestLeakAutoVar() : TestFixture("TestLeakAutoVar")
-    { }
+    TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {
+    }
 
 private:
 

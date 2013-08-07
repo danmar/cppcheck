@@ -1634,11 +1634,11 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 //---------------------------------------------------------------------------
 bool CheckOther::isUnsigned(const Variable* var) const
 {
-    return(var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray() && _tokenizer->sizeOfType(var->typeStartToken()) >= _settings->sizeof_int);
+    return (var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray() && _tokenizer->sizeOfType(var->typeStartToken()) >= _settings->sizeof_int);
 }
 bool CheckOther::isSigned(const Variable* var)
 {
-    return(var && !var->typeStartToken()->isUnsigned() && Token::Match(var->typeEndToken(), "int|char|short|long") && !var->isPointer() && !var->isArray());
+    return (var && !var->typeStartToken()->isUnsigned() && Token::Match(var->typeEndToken(), "int|char|short|long") && !var->isPointer() && !var->isArray());
 }
 
 void CheckOther::checkUnsignedDivision()
@@ -1960,12 +1960,12 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 //---------------------------------------------------------------------------
 static bool isChar(const Variable* var)
 {
-    return(var && !var->isPointer() && !var->isArray() && var->typeStartToken()->str() == "char");
+    return (var && !var->isPointer() && !var->isArray() && var->typeStartToken()->str() == "char");
 }
 
 static bool isSignedChar(const Variable* var)
 {
-    return(isChar(var) && !var->typeStartToken()->isUnsigned());
+    return (isChar(var) && !var->typeStartToken()->isUnsigned());
 }
 
 void CheckOther::checkCharVariable()

@@ -27,8 +27,8 @@
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture {
 public:
-    TestTokenizer() : TestFixture("TestTokenizer")
-    { }
+    TestTokenizer() : TestFixture("TestTokenizer") {
+    }
 
 private:
 

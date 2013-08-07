@@ -42,11 +42,11 @@ protected:
     virtual bool is_equal(const ExecutionPath *) const = 0;
 
 public:
-    ExecutionPath(Check *c, unsigned int id) : owner(c), numberOfIf(0), varId(id)
-    { }
+    ExecutionPath(Check *c, unsigned int id) : owner(c), numberOfIf(0), varId(id) {
+    }
 
-    virtual ~ExecutionPath()
-    { }
+    virtual ~ExecutionPath() {
+    }
 
     /** Implement this in each derived class. This function must create a copy of the current instance */
     virtual ExecutionPath *copy() = 0;
@@ -117,8 +117,8 @@ public:
     }
 
     /** going out of scope - all execution paths end */
-    virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const
-    { }
+    virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const {
+    }
 
     bool operator==(const ExecutionPath &e) const {
         return bool(varId == e.varId && is_equal(&e));

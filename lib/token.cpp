@@ -302,7 +302,7 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->_str : empty_str;
 }
 
-static int multiComparePercent(const Token *tok, const char * * haystack_p,
+static int multiComparePercent(const Token *tok, const char ** haystack_p,
                                const char * needle,
                                bool emptyStringFound)
 {

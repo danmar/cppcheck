@@ -111,11 +111,11 @@ void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varna
 
 static bool isBool(const Variable* var)
 {
-    return(var && var->typeEndToken()->str() == "bool");
+    return (var && var->typeEndToken()->str() == "bool");
 }
 static bool isNonBoolStdType(const Variable* var)
 {
-    return(var && var->typeEndToken()->isStandardType() && var->typeEndToken()->str() != "bool");
+    return (var && var->typeEndToken()->isStandardType() && var->typeEndToken()->str() != "bool");
 }
 void CheckBool::checkComparisonOfBoolWithInt()
 {

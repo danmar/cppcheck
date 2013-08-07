@@ -31,8 +31,8 @@ extern std::ostringstream errout;
 
 class TestDivision : public TestFixture {
 public:
-    TestDivision() : TestFixture("TestDivision")
-    { }
+    TestDivision() : TestFixture("TestDivision") {
+    }
 
 private:
     void check(const char code[], bool inconclusive = false) {

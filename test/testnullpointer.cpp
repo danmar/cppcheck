@@ -25,8 +25,8 @@ extern std::ostringstream errout;
 
 class TestNullPointer : public TestFixture {
 public:
-    TestNullPointer() : TestFixture("TestNullPointer")
-    { }
+    TestNullPointer() : TestFixture("TestNullPointer") {
+    }
 
 private:
 

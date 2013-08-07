@@ -23,8 +23,8 @@
 
 class TestPathMatch : public TestFixture {
 public:
-    TestPathMatch() : TestFixture("TestPathMatch")
-    { }
+    TestPathMatch() : TestFixture("TestPathMatch") {
+    }
 
 private:
 

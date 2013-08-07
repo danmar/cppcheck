@@ -43,8 +43,8 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger), _name(aname)
-    { }
+        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger), _name(aname) {
+    }
 
     virtual ~Check() {
 #if !defined(DJGPP) && !defined(__sun)
@@ -79,8 +79,8 @@ public:
     }
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *)
-    { }
+    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
+    }
 
     /** run checks, the token list is simplified */
     virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;

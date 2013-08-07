@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class TestSizeof : public TestFixture {
 public:
-    TestSizeof() : TestFixture("TestSizeof")
-    { }
+    TestSizeof() : TestFixture("TestSizeof") {
+    }
 
 private:
 

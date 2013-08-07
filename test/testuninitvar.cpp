@@ -25,8 +25,8 @@ extern std::ostringstream errout;
 
 class TestUninitVar : public TestFixture {
 public:
-    TestUninitVar() : TestFixture("TestUninitVar")
-    { }
+    TestUninitVar() : TestFixture("TestUninitVar") {
+    }
 
 private:
 

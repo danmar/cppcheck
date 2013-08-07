@@ -43,13 +43,13 @@ class Token;
 class CPPCHECKLIB CheckExceptionSafety : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckExceptionSafety() : Check(myName())
-    { }
+    CheckExceptionSafety() : Check(myName()) {
+    }
 
     /** This constructor is used when running checks. */
     CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    { }
+        : Check(myName(), tokenizer, settings, errorLogger) {
+    }
 
     /** Checks that uses the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {

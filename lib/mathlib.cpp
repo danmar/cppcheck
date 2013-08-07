@@ -114,8 +114,8 @@ bool MathLib::isFloat(const std::string &s)
     if (s.find("." , 0) != std::string::npos)
         return true;
     // scientific notation
-    return(s.find("E-", 0) != std::string::npos
-           || s.find("e-", 0) != std::string::npos);
+    return (s.find("E-", 0) != std::string::npos
+            || s.find("e-", 0) != std::string::npos);
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -125,25 +125,25 @@ bool MathLib::isNegative(const std::string &s)
     // eat up whitespace
     while (std::isspace(s[n])) ++n;
     // every negative number has a negative sign
-    return(s[n] == '-');
+    return (s[n] == '-');
 }
 
 bool MathLib::isOct(const std::string& str)
 {
     bool sign = str[0]=='-' || str[0]=='+';
-    return(str[sign?1:0] == '0' && (str.size() == 1 || isOctalDigit(str[sign?2:1])) && !isFloat(str));
+    return (str[sign?1:0] == '0' && (str.size() == 1 || isOctalDigit(str[sign?2:1])) && !isFloat(str));
 }
 
 bool MathLib::isHex(const std::string& str)
 {
     bool sign = str[0]=='-' || str[0]=='+';
-    return(str.compare(sign?1:0, 2, "0x") == 0 || str.compare(sign?1:0, 2, "0X") == 0);
+    return (str.compare(sign?1:0, 2, "0x") == 0 || str.compare(sign?1:0, 2, "0X") == 0);
 }
 
 bool MathLib::isBin(const std::string& str)
 {
     bool sign = str[0]=='-' || str[0]=='+';
-    return((str.compare(sign?1:0, 2, "0b") == 0 || str.compare(sign?1:0, 2, "0B") == 0) && str.find_first_not_of("10bB", 1) == std::string::npos);
+    return ((str.compare(sign?1:0, 2, "0b") == 0 || str.compare(sign?1:0, 2, "0B") == 0) && str.find_first_not_of("10bB", 1) == std::string::npos);
 }
 
 bool MathLib::isInt(const std::string & s)
@@ -236,7 +236,7 @@ bool MathLib::isInt(const std::string & s)
 
     // if everything goes good, we are at the end of the string and no digits/character
     // is here --> return true, but if something was found eg. 12E+12AA return false
-    return(n >= s.length());
+    return (n >= s.length());
 }
 
 std::string MathLib::add(const std::string & first, const std::string & second)
@@ -411,5 +411,5 @@ bool MathLib::isNullValue(const std::string &str)
 
 bool MathLib::isOctalDigit(char c)
 {
-    return(c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7');
+    return (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7');
 }

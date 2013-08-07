@@ -29,8 +29,8 @@ extern std::ostringstream errout;
 
 class TestUnusedVar : public TestFixture {
 public:
-    TestUnusedVar() : TestFixture("TestUnusedVar")
-    { }
+    TestUnusedVar() : TestFixture("TestUnusedVar") {
+    }
 
 private:
     void run() {

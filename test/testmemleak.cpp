@@ -30,8 +30,8 @@ extern std::ostringstream errout;
 
 class TestMemleak : private TestFixture {
 public:
-    TestMemleak() : TestFixture("TestMemleak")
-    { }
+    TestMemleak() : TestFixture("TestMemleak") {
+    }
 
 private:
     void run() {
@@ -120,8 +120,8 @@ static TestMemleak testMemleak;
 
 class TestMemleakInFunction : public TestFixture {
 public:
-    TestMemleakInFunction() : TestFixture("TestMemleakInFunction")
-    { }
+    TestMemleakInFunction() : TestFixture("TestMemleakInFunction") {
+    }
 
 private:
     void check(const char code[], const Settings *settings = NULL) {
@@ -3953,8 +3953,8 @@ static TestMemleakInFunction testMemleakInFunction;
 
 class TestMemleakInClass : public TestFixture {
 public:
-    TestMemleakInClass() : TestFixture("TestMemleakInClass")
-    { }
+    TestMemleakInClass() : TestFixture("TestMemleakInClass") {
+    }
 
 private:
     /**
@@ -5079,8 +5079,8 @@ static TestMemleakInClass testMemleakInClass;
 
 class TestMemleakStructMember : public TestFixture {
 public:
-    TestMemleakStructMember() : TestFixture("TestMemleakStructMember")
-    { }
+    TestMemleakStructMember() : TestFixture("TestMemleakStructMember") {
+    }
 
 private:
     void check(const char code[], const char fname[] = 0) {
@@ -5434,8 +5434,8 @@ static TestMemleakStructMember testMemleakStructMember;
 
 class TestMemleakNoVar : public TestFixture {
 public:
-    TestMemleakNoVar() : TestFixture("TestMemleakNoVar")
-    { }
+    TestMemleakNoVar() : TestFixture("TestMemleakNoVar") {
+    }
 
 private:
     void check(const char code[]) {

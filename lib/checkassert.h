@@ -34,12 +34,12 @@
 
 class CPPCHECKLIB CheckAssert : public Check {
 public:
-    CheckAssert() : Check(myName())
-    {}
+    CheckAssert() : Check(myName()) {
+    }
 
     CheckAssert(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {}
+        : Check(myName(), tokenizer, settings, errorLogger) {
+    }
 
     virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAssert check(tokenizer, settings, errorLogger);

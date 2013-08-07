@@ -31,8 +31,8 @@ extern std::ostringstream errout;
 
 class TestIncompleteStatement : public TestFixture {
 public:
-    TestIncompleteStatement() : TestFixture("TestIncompleteStatement")
-    { }
+    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {
+    }
 
 private:
     void check(const char code[]) {

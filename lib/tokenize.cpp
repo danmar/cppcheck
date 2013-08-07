@@ -3095,7 +3095,7 @@ static bool linkBrackets(Tokenizer* tokenizer, std::stack<const Token*>& type, s
         Token::createMutualLinks(links.top(), token);
         links.pop();
     }
-    return(true);
+    return (true);
 }
 
 bool Tokenizer::createLinks()

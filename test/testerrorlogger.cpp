@@ -23,8 +23,8 @@
 
 class TestErrorLogger : public TestFixture {
 public:
-    TestErrorLogger() : TestFixture("TestErrorLogger")
-    { }
+    TestErrorLogger() : TestFixture("TestErrorLogger") {
+    }
 
 private:
 

@@ -406,7 +406,7 @@ void CheckIO::invalidScanfError(const Token *tok, bool portability)
 static bool isComplexType(const Variable* var, const Token* varTypeTok)
 {
     if (var->type())
-        return(true);
+        return (true);
 
     static std::set<std::string> knownTypes;
     if (knownTypes.empty()) {
@@ -417,12 +417,12 @@ static bool isComplexType(const Variable* var, const Token* varTypeTok)
 
     if (varTypeTok->str() == "std")
         varTypeTok = varTypeTok->tokAt(2);
-    return((knownTypes.find(varTypeTok->str()) != knownTypes.end() || (varTypeTok->strAt(1) == "<" && varTypeTok->linkAt(1) && varTypeTok->linkAt(1)->strAt(1) != "::")) && !var->isPointer() && !var->isArray());
+    return ((knownTypes.find(varTypeTok->str()) != knownTypes.end() || (varTypeTok->strAt(1) == "<" && varTypeTok->linkAt(1) && varTypeTok->linkAt(1)->strAt(1) != "::")) && !var->isPointer() && !var->isArray());
 }
 
 static bool isKnownType(const Variable* var, const Token* varTypeTok)
 {
-    return(varTypeTok->isStandardType() || varTypeTok->next()->isStandardType() || isComplexType(var, varTypeTok));
+    return (varTypeTok->isStandardType() || varTypeTok->next()->isStandardType() || isComplexType(var, varTypeTok));
 }
 
 void CheckIO::checkWrongPrintfScanfArguments()

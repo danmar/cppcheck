@@ -120,8 +120,8 @@ public:
 
     struct SuppressionEntry {
         SuppressionEntry(const std::string &aid, const std::string &afile, unsigned int aline)
-            : id(aid), file(afile), line(aline)
-        { }
+            : id(aid), file(afile), line(aline) {
+        }
 
         std::string id;
         std::string file;

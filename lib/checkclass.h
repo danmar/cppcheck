@@ -36,8 +36,8 @@ class Function;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), symbolDatabase(NULL)
-    { }
+    CheckClass() : Check(myName()), symbolDatabase(NULL) {
+    }
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);

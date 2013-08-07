@@ -2007,7 +2007,7 @@ const Variable* Function::getArgumentVar(unsigned int num) const
 {
     for (std::list<Variable>::const_iterator i = argumentList.begin(); i != argumentList.end(); ++i) {
         if (i->index() == num)
-            return(&*i);
+            return (&*i);
         else if (i->index() > num)
             return 0;
     }

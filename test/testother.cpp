@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class TestOther : public TestFixture {
 public:
-    TestOther() : TestFixture("TestOther")
-    { }
+    TestOther() : TestFixture("TestOther") {
+    }
 
 private:
 
@@ -216,8 +216,8 @@ private:
     class SimpleSuppressor: public ErrorLogger {
     public:
         SimpleSuppressor(Settings &settings, ErrorLogger *next)
-            : _settings(settings), _next(next)
-        { }
+            : _settings(settings), _next(next) {
+        }
         virtual void reportOut(const std::string &outmsg) {
             _next->reportOut(outmsg);
         }

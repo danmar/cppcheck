@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class TestAssignIf : public TestFixture {
 public:
-    TestAssignIf() : TestFixture("TestAssignIf")
-    { }
+    TestAssignIf() : TestFixture("TestAssignIf") {
+    }
 
 private:
 

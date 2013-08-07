@@ -1694,7 +1694,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 continue;
 
             if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
-                return(false);
+                return (false);
 
             const Token* jumpBackToken = 0;
             const Token *lastVarTok = tok1;
@@ -1709,7 +1709,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                         const Variable *var = end->variable();
 
                         if (var && Token::simpleMatch(var->typeStartToken(), "std :: map")) // operator[] changes a map
-                            return(false);
+                            return (false);
                     }
                     if (!jumpBackToken)
                         jumpBackToken = end->next(); // Check inside the [] brackets
@@ -1723,27 +1723,27 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (end->strAt(1) == "(") {
                 const Variable *var = lastVarTok->variable();
                 if (!var)
-                    return(false);
+                    return (false);
                 if (Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy")))
                     ;
                 else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
-                    return(false);
+                    return (false);
             }
 
             // Assignment
             else if (end->next()->type() == Token::eAssignmentOp)
-                return(false);
+                return (false);
 
             // Streaming
             else if (end->strAt(1) == "<<" && tok1->strAt(-1) != "<<")
-                return(false);
+                return (false);
             else if (tok1->strAt(-1) == ">>")
-                return(false);
+                return (false);
 
             // ++/--
             else if (end->next()->type() == Token::eIncDecOp || tok1->previous()->type() == Token::eIncDecOp)
-                return(false);
+                return (false);
 
 
             const Token* start = tok1;
@@ -1751,7 +1751,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 tok1 = tok1->linkAt(-1);
 
             if (start->strAt(-1) == "delete")
-                return(false);
+                return (false);
 
             tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
         }
@@ -1761,7 +1761,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                  isMemberVar(scope, tok1->tokAt(-2))) {
             const Variable* var = tok1->tokAt(-2)->variable();
             if (!var || !var->isMutable())
-                return(false);
+                return (false);
         }
 
 
@@ -1770,7 +1770,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                  !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
             if (isMemberFunc(scope, tok1) && tok1->strAt(-1) != ".") {
                 if (!isConstMemberFunc(scope, tok1))
-                    return(false);
+                    return (false);
                 memberAccessed = true;
             }
             // Member variable given as parameter
@@ -1780,15 +1780,15 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 else if (tok2->isName() && isMemberVar(scope, tok2)) {
                     const Variable* var = tok2->variable();
                     if (!var || !var->isMutable())
-                        return(false); // TODO: Only bailout if function takes argument as non-const reference
+                        return (false); // TODO: Only bailout if function takes argument as non-const reference
                 }
             }
         } else if (Token::simpleMatch(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
-            return(false);
+            return (false);
         }
     }
 
-    return(true);
+    return (true);
 }
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic)

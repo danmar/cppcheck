@@ -29,7 +29,7 @@ static void unencode(const char *src, char *dest)
     *dest = '\0';
 }
 
-int readdata(char * * const data, int sz)
+int readdata(char ** const data, int sz)
 {
     FILE *f = fopen("data.txt", "rt");
     if (!f)
@@ -88,7 +88,7 @@ int getversion(const char *data)
     return ret;
 }
 
-void sortdata(char * * const data, int sz)
+void sortdata(char ** const data, int sz)
 {
     for (int i = 1; i < sz && data[i]; i++) {
         if (strcmp(data[i-1], data[i]) > 0) {

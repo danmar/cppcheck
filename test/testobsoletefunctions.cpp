@@ -27,8 +27,8 @@ extern std::ostringstream errout;
 
 class TestObsoleteFunctions : public TestFixture {
 public:
-    TestObsoleteFunctions() : TestFixture("TestObsoleteFunctions")
-    { }
+    TestObsoleteFunctions() : TestFixture("TestObsoleteFunctions") {
+    }
 
 private:
 

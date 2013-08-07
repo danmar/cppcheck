@@ -35,8 +35,8 @@ extern std::ostringstream output;
 
 class TestCppcheck : public TestFixture {
 public:
-    TestCppcheck() : TestFixture("TestCppcheck")
-    { }
+    TestCppcheck() : TestFixture("TestCppcheck") {
+    }
 
 private:
 

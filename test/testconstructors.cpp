@@ -27,8 +27,8 @@ extern std::ostringstream errout;
 
 class TestConstructors : public TestFixture {
 public:
-    TestConstructors() : TestFixture("TestConstructors")
-    { }
+    TestConstructors() : TestFixture("TestConstructors") {
+    }
 
 private:
 
