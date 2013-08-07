@@ -23,10 +23,12 @@
 
 class TestErrorLogger : public TestFixture {
 public:
-    TestErrorLogger() : TestFixture("TestErrorLogger") {
+    TestErrorLogger() : TestFixture("TestErrorLogger"), fooCpp5("foo.cpp", 5), barCpp8("bar.cpp", 8) {
     }
 
 private:
+    const ErrorLogger::ErrorMessage::FileLocation fooCpp5;
+    const ErrorLogger::ErrorMessage::FileLocation barCpp8;
 
     void run() {
         TEST_CASE(FileLocationDefaults);
@@ -68,11 +70,7 @@ private:
     }
 
     void ErrorMessageConstruct() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, Severity::error, "Programming error.", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -82,15 +80,9 @@ private:
     }
 
     void ErrorMessageConstructLocations() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile("bar.cpp");
-        loc2.line = 8;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
-        locs.push_back(loc2);
+        locs.push_back(fooCpp5);
+        locs.push_back(barCpp8);
         ErrorMessage msg(locs, Severity::error, "Programming error.", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -100,11 +92,7 @@ private:
     }
 
     void ErrorMessageVerbose() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -114,15 +102,9 @@ private:
     }
 
     void ErrorMessageVerboseLocations() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile("bar.cpp");
-        loc2.line = 8;
-        locs.push_back(loc);
-        locs.push_back(loc2);
+        locs.push_back(fooCpp5);
+        locs.push_back(barCpp8);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -132,11 +114,7 @@ private:
     }
 
     void CustomFormat() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -146,11 +124,7 @@ private:
     }
 
     void CustomFormat2() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(1, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -161,15 +135,9 @@ private:
 
     void CustomFormatLocations() const {
         // Check that first location from location stack is used in template
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile("bar.cpp");
-        loc2.line = 8;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
-        locs.push_back(loc2);
+        locs.push_back(fooCpp5);
+        locs.push_back(barCpp8);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -179,11 +147,7 @@ private:
     }
 
     void ToXml() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
@@ -191,15 +155,9 @@ private:
     }
 
     void ToXmlLocations() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile("bar.cpp");
-        loc2.line = 8;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
-        locs.push_back(loc2);
+        locs.push_back(fooCpp5);
+        locs.push_back(barCpp8);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
@@ -207,11 +165,7 @@ private:
     }
 
     void ToVerboseXml() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
@@ -219,15 +173,9 @@ private:
     }
 
     void ToVerboseXmlLocations() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile("bar.cpp");
-        loc2.line = 8;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
-        locs.push_back(loc2);
+        locs.push_back(fooCpp5);
+        locs.push_back(barCpp8);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
         ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
@@ -235,11 +183,7 @@ private:
     }
 
     void ToXmlV2() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "    <cppcheck version=\"";
@@ -254,15 +198,9 @@ private:
     }
 
     void ToXmlV2Locations() const {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile("bar.cpp");
-        loc2.line = 8;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
-        locs.push_back(loc2);
+        locs.push_back(fooCpp5);
+        locs.push_back(barCpp8);
         ErrorMessage msg(locs, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "    <cppcheck version=\"";
@@ -279,11 +217,7 @@ private:
 
     void InconclusiveXml() const {
         // Location
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        loc.line = 5;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(loc);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
 
         // Inconclusive error message
         ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);
