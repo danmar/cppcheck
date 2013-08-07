@@ -144,8 +144,7 @@ private:
         settings._inlineSuppressions = true;
         settings.addEnabled("information");
         if (!suppression.empty()) {
-            std::string r = settings.nomsg.addSuppressionLine(suppression);
-            ASSERT_EQUALS("", r);
+            ASSERT_EQUALS("", settings.nomsg.addSuppressionLine(suppression));
         }
         ThreadExecutor executor(files, settings, *this);
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)

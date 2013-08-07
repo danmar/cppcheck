@@ -83,55 +83,55 @@ private:
         for (int i = 0; i < 500; i++)
             oss << "  {char *a = malloc(10);}\n";
 
-        oss << "  return 0;\n";
-        oss << "}\n";
+        oss << "  return 0;\n"
+            << "}\n";
         check(2, 3, 3, oss.str());
     }
 
     void no_errors_more_files() {
         std::ostringstream oss;
         oss << "int main()\n"
-            << "{\n";
-        oss << "  return 0;\n";
-        oss << "}\n";
+            << "{\n"
+            << "  return 0;\n"
+            << "}\n";
         check(2, 3, 0, oss.str());
     }
 
     void no_errors_less_files() {
         std::ostringstream oss;
         oss << "int main()\n"
-            << "{\n";
-        oss << "  return 0;\n";
-        oss << "}\n";
+            << "{\n"
+            << "  return 0;\n"
+            << "}\n";
         check(2, 1, 0, oss.str());
     }
 
     void no_errors_equal_amount_files() {
         std::ostringstream oss;
         oss << "int main()\n"
-            << "{\n";
-        oss << "  return 0;\n";
-        oss << "}\n";
+            << "{\n"
+            << "  return 0;\n"
+            << "}\n";
         check(2, 2, 0, oss.str());
     }
 
     void one_error_less_files() {
         std::ostringstream oss;
         oss << "int main()\n"
-            << "{\n";
-        oss << "  {char *a = malloc(10);}\n";
-        oss << "  return 0;\n";
-        oss << "}\n";
+            << "{\n"
+            << "  {char *a = malloc(10);}\n"
+            << "  return 0;\n"
+            << "}\n";
         check(2, 1, 1, oss.str());
     }
 
     void one_error_several_files() {
         std::ostringstream oss;
         oss << "int main()\n"
-            << "{\n";
-        oss << "  {char *a = malloc(10);}\n";
-        oss << "  return 0;\n";
-        oss << "}\n";
+            << "{\n"
+            << "  {char *a = malloc(10);}\n"
+            << "  return 0;\n"
+            << "}\n";
         check(2, 20, 20, oss.str());
     }
 };
