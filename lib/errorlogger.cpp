@@ -22,6 +22,8 @@
 #include "tokenlist.h"
 #include "token.h"
 
+#include <tinyxml2.h>
+
 #include <cassert>
 #include <sstream>
 #include <vector>
@@ -177,95 +179,73 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
 {
     // xml_version 1 is the default xml format
 
+    tinyxml2::XMLPrinter printer;
+
     // standard xml header
-    std::ostringstream ostr;
-    ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    printer.PushDeclaration("xml version=\"1.0\" encoding=\"UTF-8\"");
 
-    // version 1 header
-    if (xml_version <= 1) {
-        ostr << "<results>";
-    }
-
+    // header
+    printer.OpenElement("results");
     // version 2 header
-    else {
-        ostr << "<results version=\"" << xml_version << "\">\n";
-        ostr << "  <cppcheck version=\"" << CppCheck::version() << "\"/>\n";
-        ostr << "  <errors>";
+    if (xml_version == 2) {
+        printer.PushAttribute("version", xml_version);
+        printer.OpenElement("cppcheck");
+        printer.PushAttribute("version", CppCheck::version());
+        printer.CloseElement();
+        printer.OpenElement("errors");
     }
 
-    return ostr.str();
+    return std::string(printer.CStr()) + '>';
 }
 
 std::string ErrorLogger::ErrorMessage::getXMLFooter(int xml_version)
 {
-    return (xml_version<=1) ? "</results>" : "  </errors>\n</results>";
-}
-
-static std::string stringToXml(std::string s)
-{
-    // convert a string so it can be save as xml attribute data
-    std::string::size_type pos = 0;
-    while ((pos = s.find_first_of("<>&\"\n", pos)) != std::string::npos) {
-        if (s[pos] == '<')
-            s.insert(pos + 1, "&lt;");
-        else if (s[pos] == '>')
-            s.insert(pos + 1, "&gt;");
-        else if (s[pos] == '&')
-            s.insert(pos + 1, "&amp;");
-        else if (s[pos] == '"')
-            s.insert(pos + 1, "&quot;");
-        else if (s[pos] == '\n')
-            s.insert(pos + 1, "&#xa;");
-        s.erase(pos, 1);
-        ++pos;
-    }
-    return s;
+    return (xml_version<=1) ? "</results>" : "    </errors>\n</results>";
 }
 
 std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 {
-    // Save this ErrorMessage as an XML element
-    std::ostringstream xml;
-
     // The default xml format
     if (version == 1) {
         // No inconclusive messages in the xml version 1
         if (_inconclusive)
             return "";
 
-        xml << "<error";
+        tinyxml2::XMLPrinter printer(0, false, 1);
+        printer.OpenElement("error");
         if (!_callStack.empty()) {
-            xml << " file=\"" << stringToXml(_callStack.back().getfile()) << "\"";
-            xml << " line=\"" << _callStack.back().line << "\"";
+            printer.PushAttribute("file", _callStack.back().getfile().c_str());
+            printer.PushAttribute("line", _callStack.back().line);
         }
-        xml << " id=\"" << _id << "\"";
-        xml << " severity=\"" << (_severity == Severity::error ? "error" : "style") << "\"";
-        xml << " msg=\"" << stringToXml(verbose ? _verboseMessage : _shortMessage) << "\"";
-        xml << "/>";
+        printer.PushAttribute("id", _id.c_str());
+        printer.PushAttribute("severity", (_severity == Severity::error ? "error" : "style"));
+        printer.PushAttribute("msg", (verbose ? _verboseMessage : _shortMessage).c_str());
+        printer.CloseElement();
+        return printer.CStr();
     }
 
     // The xml format you get when you use --xml-version=2
     else if (version == 2) {
-        xml << "  <error";
-        xml << " id=\"" << _id << "\"";
-        xml << " severity=\"" << Severity::toString(_severity) << "\"";
-        xml << " msg=\"" << stringToXml(_shortMessage) << "\"";
-        xml << " verbose=\"" << stringToXml(_verboseMessage) << "\"";
+        tinyxml2::XMLPrinter printer(0, false, 2);
+        printer.OpenElement("error");
+        printer.PushAttribute("id", _id.c_str());
+        printer.PushAttribute("severity", Severity::toString(_severity).c_str());
+        printer.PushAttribute("msg", _shortMessage.c_str());
+        printer.PushAttribute("verbose", _verboseMessage.c_str());
         if (_inconclusive)
-            xml << " inconclusive=\"true\"";
-        xml << ">" << std::endl;
+            printer.PushAttribute("inconclusive", "true");
 
         for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
-            xml << "    <location";
-            xml << " file=\"" << stringToXml((*it).getfile()) << "\"";
-            xml << " line=\"" << (*it).line << "\"";
-            xml << "/>" << std::endl;
+            printer.OpenElement("location");
+            printer.PushAttribute("file", (*it).getfile().c_str());
+            printer.PushAttribute("line", (*it).line);
+            printer.CloseElement();
         }
-
-        xml << "  </error>";
+        printer.CloseElement();
+        return printer.CStr();
     }
 
-    return xml.str();
+    return "";
 }
 
 void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)

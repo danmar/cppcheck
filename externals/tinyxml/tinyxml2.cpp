@@ -1729,11 +1729,11 @@ void XMLDocument::PrintError() const
 }
 
 
-XMLPrinter::XMLPrinter( FILE* file, bool compact ) :
+XMLPrinter::XMLPrinter( FILE* file, bool compact, int depth ) :
     _elementJustOpened( false ),
     _firstElement( true ),
     _fp( file ),
-    _depth( 0 ),
+    _depth( depth ),
     _textDepth( -1 ),
     _processEntities( true ),
     _compactMode( compact )
@@ -1840,7 +1840,7 @@ void XMLPrinter::PrintString( const char* p, bool restricted )
 void XMLPrinter::PushHeader( bool writeBOM, bool writeDec )
 {
     if ( writeBOM ) {
-		static const unsigned char bom[] = { TIXML_UTF_LEAD_0, TIXML_UTF_LEAD_1, TIXML_UTF_LEAD_2, 0 };
+        static const unsigned char bom[] = { TIXML_UTF_LEAD_0, TIXML_UTF_LEAD_1, TIXML_UTF_LEAD_2, 0 };
         Print( "%s", bom );
     }
     if ( writeDec ) {
@@ -1858,6 +1858,8 @@ void XMLPrinter::OpenElement( const char* name )
 
     if ( _textDepth < 0 && !_firstElement && !_compactMode ) {
         Print( "\n" );
+    }
+    if ( !_compactMode ) {
         PrintSpace( _depth );
     }
 
