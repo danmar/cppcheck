@@ -5565,18 +5565,41 @@ void Tokenizer::simplifyStdType()
         else if (tok->str() == "__int64") {
             tok->str("long");
             tok->isLong(true);
+        } else if (tok->str() == "int") {
+            if (tok->strAt(1) == "long") {
+                tok->str("long");
+                tok->deleteNext();
+            }
+            if (tok->strAt(1) == "long") {
+                tok->isLong(true);
+                tok->deleteNext();
+            }
+            if (tok->strAt(1) == "unsigned") {
+                tok->isUnsigned(true);
+                tok->deleteNext();
+                if (tok->strAt(1) == "long")
+                    tok->deleteNext();
+            }
         } else if (tok->str() == "long") {
             if (tok->strAt(1) == "long") {
                 tok->isLong(true);
                 tok->deleteNext();
             }
-
-            if (tok->strAt(1) == "int")
+            if (tok->strAt(1) == "int") {
                 tok->deleteNext();
-            else if (tok->strAt(1) == "double") {
+                if (tok->strAt(1) == "unsigned") {
+                    tok->isUnsigned(true);
+                    tok->deleteNext();
+                }
+            } else if (tok->strAt(1) == "double") {
                 tok->str("double");
                 tok->isLong(true);
                 tok->deleteNext();
+            } else if (tok->strAt(1) == "unsigned") {
+                tok->isUnsigned(true);
+                tok->deleteNext();
+                if (tok->strAt(1) == "int")
+                    tok->deleteNext();
             }
         } else if (tok->str() == "short") {
             if (tok->strAt(1) == "int")

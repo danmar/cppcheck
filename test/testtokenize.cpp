@@ -386,6 +386,8 @@ private:
         TEST_CASE(unsigned2);
         TEST_CASE(unsigned3);   // template arguments
 
+        TEST_CASE(simplifyStdType); // #4947
+
         TEST_CASE(createLinks);
         TEST_CASE(signed1);
 
@@ -6134,6 +6136,39 @@ private:
         {
             const char code[] = "; foo<unsigned int>();";
             const char expected[] = "; foo<int> ( ) ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+    }
+
+    void simplifyStdType() { // #4947
+        {
+            const char code[] = "long long unsigned int x;";
+            const char expected[] = "unsigned long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "long long int unsigned x;";
+            const char expected[] = "unsigned long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "unsigned long long int x;";
+            const char expected[] = "unsigned long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "unsigned int long long x;";
+            const char expected[] = "unsigned long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int unsigned long long x;";
+            const char expected[] = "unsigned long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int long long unsigned x;";
+            const char expected[] = "unsigned long long x ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
     }
