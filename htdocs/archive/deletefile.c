@@ -40,6 +40,11 @@ int main()
         return EXIT_SUCCESS;
     }
 
+    if (strcmp(name,"gtk")==0 || strcmp(name,"windows")==0) {
+        generatepage("Permission denied to delete this file");
+        return EXIT_SUCCESS;
+    }
+
     FILE *f = fopen("data.txt", "wt");
     if (f == NULL) {
         generatepage("Failed to delete file (access denied)");

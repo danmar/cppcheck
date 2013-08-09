@@ -22,7 +22,10 @@ void listAll(char **data)
         printf("<tr><td width=\"200\">%s</td>", name);
         printf("<td><input type=\"button\" onclick=\"editFile(\'%s\','%i')\" value=\"Edit\"/>", name, version);
         printf("<input type=\"button\" onclick=\"renameFile(\'%s\','%i')\" value=\"Rename\"/>", name, version);
-        printf("<input type=\"button\" onclick=\"deleteFile(\'%s\','%i')\" value=\"Delete\"/>&nbsp;</td>", name, version);
+        if (strcmp(name,"gtk")==0 || strcmp(name,"windows")==0)
+            printf("<font color=\"gray\">Delete</font>");
+        else
+            printf("<input type=\"button\" onclick=\"deleteFile(\'%s\','%i')\" value=\"Delete\"/>&nbsp;</td>", name, version);
         printf("</tr>\n");
     }
     puts("</table></td></tr></table>");
