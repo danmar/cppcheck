@@ -682,32 +682,23 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         }
                                         break;
                                     case 'I': // Microsoft extension: I for size_t and ptrdiff_t, I32 for __int32, and I64 for __int64
-                                        if (i != formatString.end()) {
-                                            if (isalpha(*(i+1))) {
-                                                specifier = *i++;
-                                            } else if (*(i+1) == '3' && *(i+2) == '2' && isalpha(*(i+3))) {
-                                                specifier = *i++;
-                                                specifier += *i++;
-                                                specifier += *i++;
-                                            } else if (*(i+1) == '6' && *(i+2) == '4' && isalpha(*(i+3))) {
-                                                specifier = *i++;
-                                                specifier += *i++;
-                                                specifier += *i++;
-                                            }
+                                        if ((*(i+1) == '3' && *(i+2) == '2') ||
+                                            (*(i+1) == '6' && *(i+2) == '4')) {
+                                            specifier += *i++;
+                                            specifier += *i++;
                                         }
-                                        break;
+                                        // fallthrough
                                     case 'j': // intmax_t or uintmax_t
                                     case 'z': // size_t
                                     case 't': // ptrdiff_t
                                     case 'L': // long double
                                         // Expect an alphabetical character after these specifiers
                                         if (i != formatString.end() && !isalpha(*(i+1))) {
-                                            std::string modifier;
-                                            modifier += *i;
-                                            invalidLengthModifierError(tok, numFormat, modifier);
+                                            specifier += *i;
+                                            invalidLengthModifierError(tok, numFormat, specifier);
                                             done = true;
                                         } else {
-                                            specifier = *i++;
+                                            specifier += *i++;
                                         }
                                         break;
                                     default:

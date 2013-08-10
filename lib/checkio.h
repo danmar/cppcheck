@@ -92,7 +92,7 @@ private:
     void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier);
     void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier);
-    void invalidLengthModifierError(const Token* tok, unsigned int numFormat,const  std::string& modifier);
+    void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {

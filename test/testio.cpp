@@ -840,6 +840,39 @@ private:
                       "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires a signed integer given in the argument list.\n"
                       "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires a signed integer given in the argument list.\n", errout.str());
+
+        check("void foo() {\n"
+              "    size_t s;\n"
+              "    int i;\n"
+              "    printf(\"%I\", s);\n"
+              "    printf(\"%I6\", s);\n"
+              "    printf(\"%I6x\", s);\n"
+              "    printf(\"%I16\", s);\n"
+              "    printf(\"%I16x\", s);\n"
+              "    printf(\"%I32\", s);\n"
+              "    printf(\"%I64\", s);\n"
+              "    printf(\"%I%i\", s, i);\n"
+              "    printf(\"%I6%i\", s, i);\n"
+              "    printf(\"%I6x%i\", s, i);\n"
+              "    printf(\"%I16%i\", s, i);\n"
+              "    printf(\"%I16x%i\", s, i);\n"
+              "    printf(\"%I32%i\", s, i);\n"
+              "    printf(\"%I64%i\", s, i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:6]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:7]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:8]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:9]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:10]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:11]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:12]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:13]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:14]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
     }
 
     void testlibrarycfg() {
