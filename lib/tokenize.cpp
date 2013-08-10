@@ -2662,8 +2662,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 ++typeCount;
             }
         } else if ((TemplateSimplifier::templateParameters(tok2) > 0) ||
-                   Token::Match(tok2, "< >") /* Ticket #4764 */)
-        {
+                   Token::Match(tok2, "< >") /* Ticket #4764 */) {
             tok2 = tok2->findClosingBracket();
             if (!Token::Match(tok2, ">|>>"))
                 break;

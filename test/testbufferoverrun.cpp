@@ -3216,7 +3216,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void varid3() { // #4764
         check("struct foo {\n"
               "  void bar() { return; }\n"
