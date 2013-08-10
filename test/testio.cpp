@@ -769,8 +769,8 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hd in format string (no. 1) requires a signed integer given in the argument list.\n"
                       "[test.cpp:3]: (warning) %hhd in format string (no. 1) requires a signed integer given in the argument list.\n"
-                      "[test.cpp:4]: (warning) %ld in format string (no. 1) requires a signed integer given in the argument list.\n"
-                      "[test.cpp:5]: (warning) %lld in format string (no. 1) requires a signed integer given in the argument list.\n" , errout.str());
+                      "[test.cpp:4]: (warning) %ld in format string (no. 1) requires a signed long integer given in the argument list.\n"
+                      "[test.cpp:5]: (warning) %lld in format string (no. 1) requires a signed long long integer given in the argument list.\n" , errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
@@ -779,6 +779,20 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires a signed integer given in the argument list.\n"
                       "[test.cpp:3]: (warning) %tu in format string (no. 1) requires an unsigned integer given in the argument list.\n", errout.str());
 
+        check("void foo(unsigned int i) {\n"
+              "  printf(\"%ld\", i);\n"
+              "  printf(\"%lld\", i);\n"
+              "  printf(\"%lu\", i);\n"
+              "  printf(\"%llu\", i);\n"
+              "  printf(\"%lx\", i);\n"
+              "  printf(\"%llx\", i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %ld in format string (no. 1) requires a signed long integer given in the argument list.\n"
+                      "[test.cpp:3]: (warning) %lld in format string (no. 1) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:4]: (warning) %lu in format string (no. 1) requires an unsigned long integer given in the argument list.\n"
+                      "[test.cpp:5]: (warning) %llu in format string (no. 1) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:6]: (warning) %lx in format string (no. 1) requires a long integer given in the argument list.\n"
+                      "[test.cpp:7]: (warning) %llx in format string (no. 1) requires a long long integer given in the argument list.\n", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
