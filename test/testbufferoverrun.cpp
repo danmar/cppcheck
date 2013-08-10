@@ -215,6 +215,7 @@ private:
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
+        TEST_CASE(varid3);  // ticket #4764
 
         TEST_CASE(assign1);
 
@@ -3213,6 +3214,14 @@ private:
               "        memset(str,0,50);\n"
               "    }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+    
+    void varid3() { // #4764
+        check("struct foo {\n"
+              "  void bar() { return; }\n"
+              "  type<> member[1];\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
