@@ -178,6 +178,7 @@ private:
         TEST_CASE(macro_simple13);
         TEST_CASE(macro_simple14);
         TEST_CASE(macro_simple15);
+        TEST_CASE(macro_simple16);  // #4703: Macro parameters not trimmed
         TEST_CASE(macroInMacro1);
         TEST_CASE(macroInMacro2);
         TEST_CASE(macro_mismatch);
@@ -1925,6 +1926,12 @@ private:
         const char filedata[] = "#define FOO\"foo\"\n"
                                 "FOO\n";
         ASSERT_EQUALS("\n$\"foo\"\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple16() {  // # 4703
+        const char filedata[] = "#define MACRO( A, B, C ) class A##B##C##Creator {};\n"
+                                "MACRO( B\t, U , G )";
+        ASSERT_EQUALS("\n$class BUGCreator{};", OurPreprocessor::expandMacros(filedata));
     }
 
     void macroInMacro1() {
