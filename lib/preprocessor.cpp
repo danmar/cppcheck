@@ -2276,6 +2276,21 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
 }
 
 /**
+ * Remove heading and trailing whitespaces from the input parameter.
+ * #param s The string to trim.
+ */
+static std::string trim(const std::string& s)
+{
+    std::string::size_type beg = s.find_first_not_of(" \t");
+    if (beg == std::string::npos)
+        return s;
+    std::string::size_type end = s.find_last_not_of(" \t");
+    if (end == std::string::npos)
+        return s.substr(beg);
+    return s.substr(beg, end - beg + 1);
+}
+
+/**
  * @brief get parameters from code. For example 'foo(1,2)' => '1','2'
  * @param line in: The code
  * @param pos  in: Position to the '('. out: Position to the ')'
@@ -2319,7 +2334,7 @@ static void getparams(const std::string &line,
             --parlevel;
             if (parlevel <= 0) {
                 endFound = true;
-                params.push_back(par);
+                params.push_back(trim(par));
                 break;
             }
         }
@@ -2342,7 +2357,7 @@ static void getparams(const std::string &line,
 
         // new parameter
         if (parlevel == 1 && line[pos] == ',') {
-            params.push_back(par);
+            params.push_back(trim(par));
             par = "";
         }
 
