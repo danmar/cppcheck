@@ -2277,7 +2277,7 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
 
 /**
  * Remove heading and trailing whitespaces from the input parameter.
- * #param s The string to trim.
+ * @param s The string to trim.
  */
 static std::string trim(const std::string& s)
 {
