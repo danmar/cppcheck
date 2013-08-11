@@ -50,55 +50,8 @@
 		F4043DE5177F093300CD5A40 /* symboldatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD0177F093300CD5A40 /* symboldatabase.cpp */; };
 		F4043DE6177F093300CD5A40 /* templatesimplifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD2177F093300CD5A40 /* templatesimplifier.cpp */; };
 		F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD4177F093300CD5A40 /* tokenlist.cpp */; };
-		F45BDDB717AB8511006C06AF /* options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8717AB8511006C06AF /* options.cpp */; };
-		F45BDDB917AB8511006C06AF /* test64bit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8917AB8511006C06AF /* test64bit.cpp */; };
-		F45BDDBA17AB8511006C06AF /* testassert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8A17AB8511006C06AF /* testassert.cpp */; };
-		F45BDDBB17AB8511006C06AF /* testassignif.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8B17AB8511006C06AF /* testassignif.cpp */; };
-		F45BDDBC17AB8511006C06AF /* testautovariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8C17AB8511006C06AF /* testautovariables.cpp */; };
-		F45BDDBD17AB8511006C06AF /* testbool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8D17AB8511006C06AF /* testbool.cpp */; };
-		F45BDDBE17AB8511006C06AF /* testboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8E17AB8511006C06AF /* testboost.cpp */; };
-		F45BDDBF17AB8511006C06AF /* testbufferoverrun.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8F17AB8511006C06AF /* testbufferoverrun.cpp */; };
-		F45BDDC017AB8511006C06AF /* testcharvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9017AB8511006C06AF /* testcharvar.cpp */; };
-		F45BDDC117AB8511006C06AF /* testclass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9117AB8511006C06AF /* testclass.cpp */; };
-		F45BDDC217AB8511006C06AF /* testcmdlineparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9217AB8511006C06AF /* testcmdlineparser.cpp */; };
-		F45BDDC317AB8511006C06AF /* testconstructors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9317AB8511006C06AF /* testconstructors.cpp */; };
-		F45BDDC417AB8511006C06AF /* testcppcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9417AB8511006C06AF /* testcppcheck.cpp */; };
-		F45BDDC517AB8511006C06AF /* testdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9517AB8511006C06AF /* testdivision.cpp */; };
-		F45BDDC617AB8511006C06AF /* testerrorlogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9617AB8511006C06AF /* testerrorlogger.cpp */; };
-		F45BDDC717AB8511006C06AF /* testexceptionsafety.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9717AB8511006C06AF /* testexceptionsafety.cpp */; };
-		F45BDDC817AB8511006C06AF /* testfilelister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9817AB8511006C06AF /* testfilelister.cpp */; };
-		F45BDDC917AB8511006C06AF /* testincompletestatement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9917AB8511006C06AF /* testincompletestatement.cpp */; };
-		F45BDDCA17AB8511006C06AF /* testinternal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9A17AB8511006C06AF /* testinternal.cpp */; };
-		F45BDDCB17AB8511006C06AF /* testio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9B17AB8511006C06AF /* testio.cpp */; };
-		F45BDDCC17AB8511006C06AF /* testleakautovar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9C17AB8511006C06AF /* testleakautovar.cpp */; };
-		F45BDDCD17AB8511006C06AF /* testmathlib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9D17AB8511006C06AF /* testmathlib.cpp */; };
-		F45BDDCE17AB8511006C06AF /* testmemleak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9E17AB8511006C06AF /* testmemleak.cpp */; };
-		F45BDDCF17AB8511006C06AF /* testnonreentrantfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9F17AB8511006C06AF /* testnonreentrantfunctions.cpp */; };
-		F45BDDD017AB8511006C06AF /* testnullpointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA017AB8511006C06AF /* testnullpointer.cpp */; };
-		F45BDDD117AB8511006C06AF /* testobsoletefunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA117AB8511006C06AF /* testobsoletefunctions.cpp */; };
-		F45BDDD217AB8511006C06AF /* testoptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA217AB8511006C06AF /* testoptions.cpp */; };
-		F45BDDD317AB8511006C06AF /* testother.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA317AB8511006C06AF /* testother.cpp */; };
-		F45BDDD417AB8511006C06AF /* testpath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA417AB8511006C06AF /* testpath.cpp */; };
-		F45BDDD517AB8511006C06AF /* testpathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA517AB8511006C06AF /* testpathmatch.cpp */; };
-		F45BDDD617AB8511006C06AF /* testpostfixoperator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA617AB8511006C06AF /* testpostfixoperator.cpp */; };
-		F45BDDD717AB8511006C06AF /* testpreprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA717AB8511006C06AF /* testpreprocessor.cpp */; };
-		F45BDDD817AB8511006C06AF /* testrunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA817AB8511006C06AF /* testrunner.cpp */; };
-		F45BDDD917AB8511006C06AF /* testsimplifytokens.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA917AB8511006C06AF /* testsimplifytokens.cpp */; };
-		F45BDDDA17AB8511006C06AF /* testsizeof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAA17AB8511006C06AF /* testsizeof.cpp */; };
-		F45BDDDB17AB8511006C06AF /* teststl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAB17AB8511006C06AF /* teststl.cpp */; };
-		F45BDDDC17AB8511006C06AF /* testsuite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAC17AB8511006C06AF /* testsuite.cpp */; };
-		F45BDDDD17AB8511006C06AF /* testsuppressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAD17AB8511006C06AF /* testsuppressions.cpp */; };
-		F45BDDDE17AB8511006C06AF /* testsymboldatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAE17AB8511006C06AF /* testsymboldatabase.cpp */; };
-		F45BDDDF17AB8511006C06AF /* testthreadexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAF17AB8511006C06AF /* testthreadexecutor.cpp */; };
-		F45BDDE017AB8511006C06AF /* testtimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB017AB8511006C06AF /* testtimer.cpp */; };
-		F45BDDE117AB8511006C06AF /* testtoken.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB117AB8511006C06AF /* testtoken.cpp */; };
-		F45BDDE217AB8511006C06AF /* testtokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB217AB8511006C06AF /* testtokenize.cpp */; };
-		F45BDDE317AB8511006C06AF /* testuninitvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB317AB8511006C06AF /* testuninitvar.cpp */; };
-		F45BDDE417AB8511006C06AF /* testunusedfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB417AB8511006C06AF /* testunusedfunctions.cpp */; };
-		F45BDDE517AB8511006C06AF /* testunusedprivfunc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB517AB8511006C06AF /* testunusedprivfunc.cpp */; };
-		F45BDDE617AB8511006C06AF /* testunusedvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB617AB8511006C06AF /* testunusedvar.cpp */; };
-		F47E507E17896A8600C684DC /* environment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E507C17896A8600C684DC /* environment.cpp */; };
 		F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E508117896AEB00C684DC /* tinyxml2.cpp */; };
+		F4CF847D17B6504100522F24 /* library.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CF847C17B6504100522F24 /* library.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -254,10 +207,11 @@
 		F45BDDB417AB8511006C06AF /* testunusedfunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testunusedfunctions.cpp; path = test/testunusedfunctions.cpp; sourceTree = "<group>"; };
 		F45BDDB517AB8511006C06AF /* testunusedprivfunc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testunusedprivfunc.cpp; path = test/testunusedprivfunc.cpp; sourceTree = "<group>"; };
 		F45BDDB617AB8511006C06AF /* testunusedvar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testunusedvar.cpp; path = test/testunusedvar.cpp; sourceTree = "<group>"; };
-		F47E507C17896A8600C684DC /* environment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = environment.cpp; path = lib/environment.cpp; sourceTree = "<group>"; };
-		F47E507D17896A8600C684DC /* environment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = environment.h; path = lib/environment.h; sourceTree = "<group>"; };
 		F47E508117896AEB00C684DC /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml2.cpp; path = externals/tinyxml/tinyxml2.cpp; sourceTree = "<group>"; };
 		F47E508217896AEB00C684DC /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml2.h; path = externals/tinyxml/tinyxml2.h; sourceTree = "<group>"; };
+		F4CF847A17B6504000522F24 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = lib/config.h; sourceTree = "<group>"; };
+		F4CF847B17B6504100522F24 /* library.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = library.h; path = lib/library.h; sourceTree = "<group>"; };
+		F4CF847C17B6504100522F24 /* library.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = library.cpp; path = lib/library.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -321,6 +275,9 @@
 		2C21A45D1178BB0B00D35009 /* Library */ = {
 			isa = PBXGroup;
 			children = (
+				F4CF847A17B6504000522F24 /* config.h */,
+				F4CF847B17B6504100522F24 /* library.h */,
+				F4CF847C17B6504100522F24 /* library.cpp */,
 				39E60E8C1270DE3A00AC0D02 /* check.h */,
 				F4043DB3177F093300CD5A40 /* check64bit.cpp */,
 				F4043DB4177F093300CD5A40 /* check64bit.h */,
@@ -370,8 +327,6 @@
 				F4043DCC177F093300CD5A40 /* checkunusedvar.h */,
 				39E60EA11270DE3A00AC0D02 /* cppcheck.cpp */,
 				39E60EA21270DE3A00AC0D02 /* cppcheck.h */,
-				F47E507C17896A8600C684DC /* environment.cpp */,
-				F47E507D17896A8600C684DC /* environment.h */,
 				39E60EA31270DE3A00AC0D02 /* errorlogger.cpp */,
 				39E60EA41270DE3A00AC0D02 /* errorlogger.h */,
 				39E60EA51270DE3A00AC0D02 /* executionpath.cpp */,
@@ -582,55 +537,8 @@
 				F4043DE5177F093300CD5A40 /* symboldatabase.cpp in Sources */,
 				F4043DE6177F093300CD5A40 /* templatesimplifier.cpp in Sources */,
 				F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */,
-				F47E507E17896A8600C684DC /* environment.cpp in Sources */,
 				F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */,
-				F45BDDB717AB8511006C06AF /* options.cpp in Sources */,
-				F45BDDB917AB8511006C06AF /* test64bit.cpp in Sources */,
-				F45BDDBA17AB8511006C06AF /* testassert.cpp in Sources */,
-				F45BDDBB17AB8511006C06AF /* testassignif.cpp in Sources */,
-				F45BDDBC17AB8511006C06AF /* testautovariables.cpp in Sources */,
-				F45BDDBD17AB8511006C06AF /* testbool.cpp in Sources */,
-				F45BDDBE17AB8511006C06AF /* testboost.cpp in Sources */,
-				F45BDDBF17AB8511006C06AF /* testbufferoverrun.cpp in Sources */,
-				F45BDDC017AB8511006C06AF /* testcharvar.cpp in Sources */,
-				F45BDDC117AB8511006C06AF /* testclass.cpp in Sources */,
-				F45BDDC217AB8511006C06AF /* testcmdlineparser.cpp in Sources */,
-				F45BDDC317AB8511006C06AF /* testconstructors.cpp in Sources */,
-				F45BDDC417AB8511006C06AF /* testcppcheck.cpp in Sources */,
-				F45BDDC517AB8511006C06AF /* testdivision.cpp in Sources */,
-				F45BDDC617AB8511006C06AF /* testerrorlogger.cpp in Sources */,
-				F45BDDC717AB8511006C06AF /* testexceptionsafety.cpp in Sources */,
-				F45BDDC817AB8511006C06AF /* testfilelister.cpp in Sources */,
-				F45BDDC917AB8511006C06AF /* testincompletestatement.cpp in Sources */,
-				F45BDDCA17AB8511006C06AF /* testinternal.cpp in Sources */,
-				F45BDDCB17AB8511006C06AF /* testio.cpp in Sources */,
-				F45BDDCC17AB8511006C06AF /* testleakautovar.cpp in Sources */,
-				F45BDDCD17AB8511006C06AF /* testmathlib.cpp in Sources */,
-				F45BDDCE17AB8511006C06AF /* testmemleak.cpp in Sources */,
-				F45BDDCF17AB8511006C06AF /* testnonreentrantfunctions.cpp in Sources */,
-				F45BDDD017AB8511006C06AF /* testnullpointer.cpp in Sources */,
-				F45BDDD117AB8511006C06AF /* testobsoletefunctions.cpp in Sources */,
-				F45BDDD217AB8511006C06AF /* testoptions.cpp in Sources */,
-				F45BDDD317AB8511006C06AF /* testother.cpp in Sources */,
-				F45BDDD417AB8511006C06AF /* testpath.cpp in Sources */,
-				F45BDDD517AB8511006C06AF /* testpathmatch.cpp in Sources */,
-				F45BDDD617AB8511006C06AF /* testpostfixoperator.cpp in Sources */,
-				F45BDDD717AB8511006C06AF /* testpreprocessor.cpp in Sources */,
-				F45BDDD817AB8511006C06AF /* testrunner.cpp in Sources */,
-				F45BDDD917AB8511006C06AF /* testsimplifytokens.cpp in Sources */,
-				F45BDDDA17AB8511006C06AF /* testsizeof.cpp in Sources */,
-				F45BDDDB17AB8511006C06AF /* teststl.cpp in Sources */,
-				F45BDDDC17AB8511006C06AF /* testsuite.cpp in Sources */,
-				F45BDDDD17AB8511006C06AF /* testsuppressions.cpp in Sources */,
-				F45BDDDE17AB8511006C06AF /* testsymboldatabase.cpp in Sources */,
-				F45BDDDF17AB8511006C06AF /* testthreadexecutor.cpp in Sources */,
-				F45BDDE017AB8511006C06AF /* testtimer.cpp in Sources */,
-				F45BDDE117AB8511006C06AF /* testtoken.cpp in Sources */,
-				F45BDDE217AB8511006C06AF /* testtokenize.cpp in Sources */,
-				F45BDDE317AB8511006C06AF /* testuninitvar.cpp in Sources */,
-				F45BDDE417AB8511006C06AF /* testunusedfunctions.cpp in Sources */,
-				F45BDDE517AB8511006C06AF /* testunusedprivfunc.cpp in Sources */,
-				F45BDDE617AB8511006C06AF /* testunusedvar.cpp in Sources */,
+				F4CF847D17B6504100522F24 /* library.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -647,6 +555,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = externals/tinyxml;
 				INSTALL_PATH = /usr/local/bin;
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				PRODUCT_NAME = cppcheck;
@@ -659,6 +568,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_MODEL_TUNING = "";
+				HEADER_SEARCH_PATHS = externals/tinyxml;
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = cppcheck;
 			};
