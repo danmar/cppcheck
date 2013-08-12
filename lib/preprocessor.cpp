@@ -1642,7 +1642,7 @@ bool Preprocessor::match_cfg_def(std::map<std::string, std::string> cfg, std::st
     return false;
 }
 
-std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const bool validate)
+std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
 {
     // For the error report
     unsigned int lineno = 0;
@@ -1846,7 +1846,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         ret << line << "\n";
     }
 
-    if (validate && !validateCfg(ret.str(), cfg)) {
+    if (!validateCfg(ret.str(), cfg)) {
         return "";
     }
 

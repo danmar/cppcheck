@@ -97,9 +97,8 @@ public:
      * @param filedata file data including preprocessing 'if', 'define', etc
      * @param cfg configuration to read out
      * @param filename name of source file
-     * @param validate true => perform validation that empty configuration macros are not used in the code
      */
-    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const bool validate = false);
+    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
 
     /**
      * simplify condition
