@@ -5570,15 +5570,21 @@ void Tokenizer::simplifyStdType()
             if (tok->strAt(1) == "long") {
                 tok->str("long");
                 tok->deleteNext();
+            } else if (tok->strAt(1) == "short") {
+                tok->str("short");
+                tok->deleteNext();
             }
             if (tok->strAt(1) == "long") {
                 tok->isLong(true);
                 tok->deleteNext();
             }
-            if (tok->strAt(1) == "unsigned") {
-                tok->isUnsigned(true);
+            if (Token::Match(tok->next(), "unsigned|signed")) {
+                tok->isUnsigned(tok->next()->str() == "unsigned");
+                tok->isSigned(tok->next()->str() == "signed");
                 tok->deleteNext();
                 if (tok->strAt(1) == "long")
+                    tok->deleteNext();
+                else if (tok->strAt(1) == "short")
                     tok->deleteNext();
             }
         } else if (tok->str() == "long") {
@@ -5588,16 +5594,18 @@ void Tokenizer::simplifyStdType()
             }
             if (tok->strAt(1) == "int") {
                 tok->deleteNext();
-                if (tok->strAt(1) == "unsigned") {
-                    tok->isUnsigned(true);
+                if (Token::Match(tok->next(), "unsigned|signed")) {
+                    tok->isUnsigned(tok->next()->str() == "unsigned");
+                    tok->isSigned(tok->next()->str() == "signed");
                     tok->deleteNext();
                 }
             } else if (tok->strAt(1) == "double") {
                 tok->str("double");
                 tok->isLong(true);
                 tok->deleteNext();
-            } else if (tok->strAt(1) == "unsigned") {
-                tok->isUnsigned(true);
+            } else if (Token::Match(tok->next(), "unsigned|signed")) {
+                tok->isUnsigned(tok->next()->str() == "unsigned");
+                tok->isSigned(tok->next()->str() == "signed");
                 tok->deleteNext();
                 if (tok->strAt(1) == "int")
                     tok->deleteNext();
@@ -5605,6 +5613,13 @@ void Tokenizer::simplifyStdType()
         } else if (tok->str() == "short") {
             if (tok->strAt(1) == "int")
                 tok->deleteNext();
+            if (Token::Match(tok->next(), "unsigned|signed")) {
+                tok->isUnsigned(tok->next()->str() == "unsigned");
+                tok->isSigned(tok->next()->str() == "signed");
+                tok->deleteNext();
+                if (tok->strAt(1) == "int")
+                    tok->deleteNext();
+            }
         }
     }
 }

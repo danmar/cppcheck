@@ -386,7 +386,7 @@ private:
         TEST_CASE(unsigned2);
         TEST_CASE(unsigned3);   // template arguments
 
-        TEST_CASE(simplifyStdType); // #4947
+        TEST_CASE(simplifyStdType); // #4947, #4950, #4951
 
         TEST_CASE(createLinks);
         TEST_CASE(signed1);
@@ -6140,7 +6140,8 @@ private:
         }
     }
 
-    void simplifyStdType() { // #4947
+    void simplifyStdType() { // #4947, #4950, #4951
+        // usigned long long
         {
             const char code[] = "long long unsigned int x;";
             const char expected[] = "unsigned long long x ;";
@@ -6169,6 +6170,99 @@ private:
         {
             const char code[] = "int long long unsigned x;";
             const char expected[] = "unsigned long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        // signed long long
+        {
+            const char code[] = "long long signed int x;";
+            const char expected[] = "signed long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "long long int signed x;";
+            const char expected[] = "signed long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "signed long long int x;";
+            const char expected[] = "signed long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "signed int long long x;";
+            const char expected[] = "signed long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int signed long long x;";
+            const char expected[] = "signed long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int long long signed x;";
+            const char expected[] = "signed long long x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        // usigned short
+        {
+            const char code[] = "short unsigned int x;";
+            const char expected[] = "unsigned short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "short int unsigned x;";
+            const char expected[] = "unsigned short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "unsigned short int x;";
+            const char expected[] = "unsigned short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "unsigned int short x;";
+            const char expected[] = "unsigned short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int unsigned short x;";
+            const char expected[] = "unsigned short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int short unsigned x;";
+            const char expected[] = "unsigned short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        // signed short
+        {
+            const char code[] = "short signed int x;";
+            const char expected[] = "signed short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "short int signed x;";
+            const char expected[] = "signed short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "signed short int x;";
+            const char expected[] = "signed short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "signed int short x;";
+            const char expected[] = "signed short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int signed short x;";
+            const char expected[] = "signed short x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "int short signed x;";
+            const char expected[] = "signed short x ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
     }
