@@ -830,23 +830,35 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         scope = &(*it);
 
         // add all variables
-        std::list<Variable>::const_iterator var;
+        std::list<Variable>::iterator var;
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             unsigned int varId = var->declarationId();
             if (varId)
                 _variableList[varId] = &(*var);
+            // fix up variables without type
+            if (var->isClass() && !var->type()) {
+                const Type *type = findType(var->typeStartToken(), scope);
+                if (type)
+                    var->type(type);
+            }
         }
 
         // add all function parameters
-        std::list<Function>::const_iterator func;
+        std::list<Function>::iterator func;
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            std::list<Variable>::const_iterator arg;
+            std::list<Variable>::iterator arg;
             for (arg = func->argumentList.begin(); arg != func->argumentList.end(); ++arg) {
                 // check for named parameters
                 if (arg->nameToken() && arg->declarationId()) {
                     const unsigned int declarationId = arg->declarationId();
                     if (declarationId > 0U)
                         _variableList[declarationId] = &(*arg);
+                    // fix up parameters without type
+                    if (!arg->type()) {
+                        const Type *type = findType(arg->typeStartToken(), scope);
+                        if (type)
+                            arg->type(type);
+                    }
                 }
             }
         }
@@ -2655,13 +2667,22 @@ const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope
             return scope->findRecordInNestedList(tok->str());
     }
 
-
     // not a valid path
     return 0;
 }
 
+//---------------------------------------------------------------------------
+
 const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startScope) const
 {
+    // skip over struct or union
+    if (Token::Match(startTok, "struct|union"))
+        startTok = startTok->next();
+
+    // type same as scope
+    if (startTok->str() == startScope->className && startScope->isClassOrStruct())
+        return startScope->definedType;
+
     // absolute path - directly start in global scope
     if (startTok->str() == "::") {
         startTok = startTok->next();
@@ -2686,7 +2707,6 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
         } else
             return scope->findType(tok->str());
     }
-
 
     // not a valid path
     return 0;

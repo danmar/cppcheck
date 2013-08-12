@@ -399,6 +399,17 @@ public:
     }
 
 private:
+    // only symbol database can change the type
+    friend class SymbolDatabase;
+
+    /**
+     * Set Type pointer to known type.
+     * @param t type
+     */
+    void type(const Type * t) {
+        _type = t;
+    }
+
     /** @brief variable name token */
     const Token *_name;
 

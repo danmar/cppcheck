@@ -197,6 +197,7 @@ private:
         TEST_CASE(symboldatabase34); // ticket #4694 (segmentation fault)
         TEST_CASE(symboldatabase35); // ticket #4806 (segmentation fault)
         TEST_CASE(symboldatabase36); // ticket #4892 (segmentation fault)
+        TEST_CASE(symboldatabase37);
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1580,6 +1581,34 @@ private:
     void symboldatabase36() { // ticket #4892
         check("void struct ( ) { if ( 1 ) } int main ( ) { }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase37() {
+        GET_SYMBOL_DB("class Fred {\n"
+                      "public:\n"
+                      "    struct Barney {\n"
+                      "        bool operator == (const struct Barney & b) const { return true; }\n"
+                      "    };\n"
+                      "    Fred(const struct Barney & b) { barney = b; }\n"
+                      "private:\n"
+                      "    struct Barney barney;\n"
+                      "};\n");
+        ASSERT(db && db->typeList.size() == 2);
+        ASSERT(db && db->isClassOrStruct("Fred"));
+        ASSERT(db && db->isClassOrStruct("Barney"));
+        if (!db || db->typeList.size() == 2)
+            return;
+        std::list<Type>::const_iterator i = db->typeList.begin();
+        const Type* Fred = &(*i++);
+        const Type* Barney = &(*i++);
+        ASSERT(Fred && Fred->classDef && Fred->classScope && Fred->enclosingScope && Fred->name() == "Fred");
+        ASSERT(Barney && Barney->classDef && Barney->classScope && Barney->enclosingScope && Barney->name() == "Barney");
+
+        ASSERT(db && db->getVariableListSize() == 4);
+        if (!db || db->getVariableListSize() == 4)
+            return;
+        ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->name() == "Barney");
+        ASSERT(db && db->getVariableFromVarId(2) && db->getVariableFromVarId(2)->type() && db->getVariableFromVarId(2)->type()->name() == "Barney");
     }
 
     void isImplicitlyVirtual() {
