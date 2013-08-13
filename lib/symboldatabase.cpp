@@ -854,7 +854,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (declarationId > 0U)
                         _variableList[declarationId] = &(*arg);
                     // fix up parameters without type
-                    if (!arg->type()) {
+                    if (arg->isClass() && !arg->type()) {
                         const Type *type = findType(arg->typeStartToken(), scope);
                         if (type)
                             arg->type(type);
