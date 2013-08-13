@@ -99,9 +99,22 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
             }
             return true;
         }
-        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
-            // TODO: don't bailout if variable is passed by value
-            return true;
+        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
+            unsigned int argumentNumber = 0;
+            const Token *ftok;
+            for (ftok = tok2; ftok && ftok->str() != "("; ftok = ftok->previous()) {
+                if (ftok->str() == ")")
+                    ftok = ftok->link();
+                else if (ftok->str() == ",")
+                    argumentNumber++;
+            }
+            ftok = ftok ? ftok->previous() : NULL;
+            if (!(ftok && ftok->function()))
+                return true;
+            const Variable *par = ftok->function()->getArgumentVar(argumentNumber);
+            if (par == NULL || par->isReference() || par->isPointer())
+                return true;
+        }
         if (tok2->str() == "}")
             return false;
         if (Token::Match(tok2, "break|continue|return"))

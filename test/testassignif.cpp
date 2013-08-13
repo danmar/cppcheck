@@ -169,10 +169,10 @@ private:
         check("void do_something(int);\n"
               "void f(int x) {\n"
               "    int y = x & 7;\n"
-              "    do_something(y);\n" // passing variable by value => error
+              "    do_something(y);\n"
               "    if (y==8);\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
 
         check("void f(int x) {\n"
               "    extern int y; y = x & 7;\n"
