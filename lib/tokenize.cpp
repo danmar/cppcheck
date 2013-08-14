@@ -2289,7 +2289,7 @@ void Tokenizer::simplifyFileAndLineMacro()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "__FILE__")
-            tok->str(list.file(tok));
+            tok->str("\"" + list.file(tok) + "\"");
         else if (tok->str() == "__LINE__")
             tok->str(MathLib::longToString(tok->linenr()));
     }

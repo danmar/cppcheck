@@ -921,6 +921,7 @@ private:
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
+        ASSERT_EQUALS("\"test.cpp\"", tokenizeAndStringify("__FILE__"));
         ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
     }
 
