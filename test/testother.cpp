@@ -5938,6 +5938,38 @@ private:
               "    return bar(x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // struct member..
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f() {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    ab.a = 2;\n"
+              "    return ab.a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (performance, inconclusive) Variable 'a' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f() {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    ab = do_something();\n"
+              "    return ab.a;\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f() {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    do_something(&ab);\n"
+              "    ab.a = 2;\n"
+              "    return ab.a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {

@@ -596,8 +596,8 @@ static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, co
 
 void CheckOther::checkRedundantAssignment()
 {
-    bool performance = _settings->isEnabled("performance");
-    bool warning = _settings->isEnabled("warning");
+    const bool performance = _settings->isEnabled("performance");
+    const bool warning = _settings->isEnabled("warning");
     if (!warning && !performance)
         return;
 
@@ -637,8 +637,12 @@ void CheckOther::checkRedundantAssignment()
                         initialized.insert(tok->varId());
                 }
 
+                const Token *startToken = tok;
+                while (Token::Match(startToken, "%var%|::|."))
+                    startToken = startToken->previous();
+
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
-                if (tok->next()->isAssignmentOp() && Token::Match(tok->previous(), "[;{}]")) { // Assignment
+                if (tok->next()->isAssignmentOp() && Token::Match(startToken, "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
                         bool error = true; // Ensure that variable is not used on right side
                         for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
