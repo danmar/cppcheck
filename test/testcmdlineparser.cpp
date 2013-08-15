@@ -20,6 +20,7 @@
 #include "cmdlineparser.h"
 #include "settings.h"
 #include "redirect.h"
+#include "timer.h"
 
 class TestCmdlineParser : public TestFixture {
 public:
@@ -74,6 +75,7 @@ private:
         TEST_CASE(enabledInternal);
 #endif
         TEST_CASE(enabledMultiple);
+        TEST_CASE(inconclusive);
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
         TEST_CASE(errorExitcodeStr);
@@ -94,6 +96,7 @@ private:
         TEST_CASE(stdposix);
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
+        TEST_CASE(platform);
         TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
         TEST_CASE(suppressions);
         TEST_CASE(suppressionsNoFile);
@@ -112,6 +115,8 @@ private:
         TEST_CASE(xmlver2both2);
         TEST_CASE(xmlverunknown);
         TEST_CASE(xmlverinvalid);
+        TEST_CASE(doc);
+        TEST_CASE(showtime);
         TEST_CASE(errorlist1);
         TEST_CASE(errorlistverbose1);
         TEST_CASE(errorlistverbose2);
@@ -534,6 +539,14 @@ private:
         ASSERT(settings.isEnabled("missingInclude"));
     }
 
+    void inconclusive() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--inconclusive"};
+        settings.inconclusive = false;
+        ASSERT(defParser.ParseFromArgs(2, argv));
+        ASSERT_EQUALS(true, settings.inconclusive);
+    }
+
     void errorExitcode() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--error-exitcode=5", "file.cpp"};
@@ -688,6 +701,14 @@ private:
         settings.standards.cpp = Standards::CPP03;
         ASSERT(defParser.ParseFromArgs(3, argv));
         ASSERT(settings.standards.cpp == Standards::CPP11);
+    }
+
+    void platform() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--platform=win64", "file.cpp"};
+        settings.platform(Settings::Unspecified);
+        ASSERT(defParser.ParseFromArgs(3, argv));
+        ASSERT(settings.platformType == Settings::Win64);
     }
 
     void suppressionsOld() {
@@ -856,6 +877,21 @@ private:
         const char *argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.ParseFromArgs(4, argv));
+    }
+
+    void doc() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--doc"};
+        ASSERT(defParser.ParseFromArgs(2, argv));
+        ASSERT(defParser.ExitAfterPrinting());
+    }
+
+    void showtime() {
+        REDIRECT;
+        const char *argv[] = {"cppcheck", "--showtime=summary"};
+        settings._showtime = SHOWTIME_NONE;
+        ASSERT(defParser.ParseFromArgs(2, argv));
+        ASSERT(settings._showtime == SHOWTIME_SUMMARY);
     }
 
     void errorlist1() {
