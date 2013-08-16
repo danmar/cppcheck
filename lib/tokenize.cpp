@@ -6233,12 +6233,24 @@ bool Tokenizer::simplifyKnownVariables()
                 const std::string structname;
 
                 const Token *valueToken = tok2->tokAt(3);
-                std::string value(tok2->strAt(3));
+                std::string value(tok2->strAt(3)), savedValue = value;
                 const unsigned int valueVarId = 0;
                 const bool valueIsPointer = false;
 
-                Token *scopeStart = tok2->tokAt(6);
-                ret |= simplifyKnownVariablesSimplify(&scopeStart, scopeStart, varid, structname, value, valueIsPointer, valueVarId, valueToken, -1);
+                // Insert a "%var% = %num% ;" at the beginning of the scope as simplifyKnownVariablesSimplify might compute an updated value
+                Token *scopeStart = tok2->tokAt(5);
+                scopeStart->insertToken(tok2->tokAt(1)->str()); scopeStart = scopeStart->next();
+                Token* artificialAssignment = scopeStart;
+                scopeStart->insertToken("="); scopeStart = scopeStart->next();
+                scopeStart->insertToken(valueToken->str()); scopeStart = scopeStart->next();
+                scopeStart->insertToken(";"); scopeStart = scopeStart->next();
+
+                ret |= simplifyKnownVariablesSimplify(&artificialAssignment, tok2->tokAt(6), varid, structname, value, valueIsPointer, valueVarId, valueToken, -1);
+
+                // Remove the artificial assignment if no modification was done
+                if (artificialAssignment->tokAt(2)->str() == savedValue) {
+                    Token::eraseTokens(tok2->tokAt(5), scopeStart->next());
+                }
             }
 
             else if (Token::Match(tok2, "strcpy|sprintf ( %var% , %str% ) ;")) {
@@ -6351,9 +6363,6 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         _errorLogger->reportProgress(list.getFiles()[0], "Tokenize (simplifyKnownVariables)", tok3->progressValue());
 
     bool ret = false;
-
-    // skip increments and decrements if the given indentlevel is -1
-    const bool skipincdec = (indentlevel == -1);
 
     Token* bailOutFromLoop = 0;
     int indentlevel3 = indentlevel;
@@ -6695,7 +6704,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             }
         }
 
-        if (!skipincdec && indentlevel == indentlevel3 && Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value)) {
+        if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value)) {
             const std::string op(tok3->strAt(2));
             if (Token::Match(tok3, "[{};] %any% %any% ;")) {
                 tok3->deleteNext(3);
@@ -6713,7 +6722,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             ret = true;
         }
 
-        if (!skipincdec && indentlevel == indentlevel3 && Token::Match(tok3->next(), "++|-- %varid%", varid) && MathLib::isInt(value) &&
+        if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "++|-- %varid%", varid) && MathLib::isInt(value) &&
             !Token::Match(tok3->tokAt(3), "[.[]")) {
             incdec(value, tok3->next()->str());
             (*tok2)->tokAt(2)->str(value);
