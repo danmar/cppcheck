@@ -2753,12 +2753,6 @@ private:
                             "        buf[x--] = 0;\n"
                             "    }\n"
                             "}";
-        const char current[] = "void f ( int x ) {\n"
-                               "if ( x == 5 ) {\n"
-                               "buf [ x ++ ] = 0 ;\n"
-                               "buf [ x -- ] = 0 ;\n"
-                               "}\n"
-                               "}";
         // Increment and decrements should be computed
         const char expected[] = "void f ( int x ) {\n"
                                 "if ( x == 5 ) {\n"
@@ -2766,7 +2760,7 @@ private:
                                 "buf [ 6 ] = 0 ;\n"
                                 "}\n"
                                 "}";
-        TODO_ASSERT_EQUALS(expected, current, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
     }
 
     void simplifyKnownVariablesIfEq3() {
@@ -2777,23 +2771,15 @@ private:
                             "        buf[--x] = 0;\n"
                             "    }\n"
                             "}";
-        const char current[] =  "void f ( int x ) {\n"
-                                "if ( x == 5 ) {\n"
-                                "buf [ ++ x ] = 0 ;\n"
-                                "buf [ ++ x ] = 0 ;\n"
-                                "buf [ -- x ] = 0 ;\n"
-                                "}\n"
-                                "}";
-        // Increment and decrements should be computed
         const char expected[] = "void f ( int x ) {\n"
-                                "if ( x == 5 ) {\n"
+                                "if ( x == 5 ) { "
                                 "x = 6 ;\n"
                                 "buf [ 6 ] = 0 ;\n"
                                 "buf [ 7 ] = 0 ;\n"
                                 "buf [ 6 ] = 0 ;\n"
                                 "}\n"
                                 "}";
-        TODO_ASSERT_EQUALS(expected, current, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
     }
 
     void simplifyKnownVariablesBailOutAssign1() {
