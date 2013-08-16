@@ -122,6 +122,20 @@ void TestFixture::assert_(const char *filename, unsigned int linenr, bool condit
     }
 }
 
+void TestFixture::todoAssert(const char *filename, unsigned int linenr, bool condition) const
+{
+    if (condition) {
+        if (gcc_style_errors) {
+            errmsg << filename << ':' << linenr << ": Assertion succeeded unexpectedly." << std::endl;
+        } else {
+            errmsg << "Assertion succeeded unexpectedly in " << filename << " at line " << linenr << std::endl;
+        }
+        ++succeeded_todos_counter;
+    } else {
+        ++todos_counter;
+    }
+}
+
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     if (expected != actual) {

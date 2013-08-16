@@ -1586,29 +1586,34 @@ private:
     void symboldatabase37() {
         GET_SYMBOL_DB("class Fred {\n"
                       "public:\n"
+                      "    struct Wilma { };\n"
                       "    struct Barney {\n"
                       "        bool operator == (const struct Barney & b) const { return true; }\n"
+                      "        bool operator == (const struct Wilma & w) const { return true; }\n"
                       "    };\n"
                       "    Fred(const struct Barney & b) { barney = b; }\n"
                       "private:\n"
                       "    struct Barney barney;\n"
                       "};\n");
-        ASSERT(db && db->typeList.size() == 2);
+        ASSERT(db && db->typeList.size() == 3);
         ASSERT(db && db->isClassOrStruct("Fred"));
+        ASSERT(db && db->isClassOrStruct("Wilma"));
         ASSERT(db && db->isClassOrStruct("Barney"));
-        if (!db || db->typeList.size() == 2)
+        if (!db || db->typeList.size() != 3)
             return;
         std::list<Type>::const_iterator i = db->typeList.begin();
         const Type* Fred = &(*i++);
+        const Type* Wilma = &(*i++);
         const Type* Barney = &(*i++);
         ASSERT(Fred && Fred->classDef && Fred->classScope && Fred->enclosingScope && Fred->name() == "Fred");
+        ASSERT(Wilma && Wilma->classDef && Wilma->classScope && Wilma->enclosingScope && Wilma->name() == "Wilma");
         ASSERT(Barney && Barney->classDef && Barney->classScope && Barney->enclosingScope && Barney->name() == "Barney");
-
-        ASSERT(db && db->getVariableListSize() == 4);
-        if (!db || db->getVariableListSize() == 4)
+        ASSERT(db && db->getVariableListSize() == 5);
+        if (!db || db->getVariableListSize() != 5)
             return;
         ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->name() == "Barney");
-        ASSERT(db && db->getVariableFromVarId(2) && db->getVariableFromVarId(2)->type() && db->getVariableFromVarId(2)->type()->name() == "Barney");
+        TODO_ASSERT(db && db->getVariableFromVarId(2) && db->getVariableFromVarId(2)->type() && db->getVariableFromVarId(2)->type()->name() == "Wilma");
+        ASSERT(db && db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->type() && db->getVariableFromVarId(3)->type()->name() == "Barney");
     }
 
     void isImplicitlyVirtual() {

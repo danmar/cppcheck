@@ -836,7 +836,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             if (varId)
                 _variableList[varId] = &(*var);
             // fix up variables without type
-            if (var->isClass() && !var->type()) {
+            if (!var->type() && !var->typeStartToken()->isStandardType()) {
                 const Type *type = findType(var->typeStartToken(), scope);
                 if (type)
                     var->type(type);
@@ -854,7 +854,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     if (declarationId > 0U)
                         _variableList[declarationId] = &(*arg);
                     // fix up parameters without type
-                    if (arg->isClass() && !arg->type()) {
+                    if (!arg->type() && !arg->typeStartToken()->isStandardType()) {
                         const Type *type = findType(arg->typeStartToken(), scope);
                         if (type)
                             arg->type(type);
