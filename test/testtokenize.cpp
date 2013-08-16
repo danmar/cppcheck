@@ -2754,11 +2754,11 @@ private:
                             "    }\n"
                             "}";
         const char current[] = "void f ( int x ) {\n"
-                                "if ( x == 5 ) {\n"
-                                "buf [ x ++ ] = 0 ;\n"
-                                "buf [ x -- ] = 0 ;\n"
-                                "}\n"
-                                "}";
+                               "if ( x == 5 ) {\n"
+                               "buf [ x ++ ] = 0 ;\n"
+                               "buf [ x -- ] = 0 ;\n"
+                               "}\n"
+                               "}";
         // Increment and decrements should be computed
         const char expected[] = "void f ( int x ) {\n"
                                 "if ( x == 5 ) {\n"
