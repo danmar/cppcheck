@@ -6713,7 +6713,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             ret = true;
         }
 
-        if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "++|-- %varid%", varid) && MathLib::isInt(value) &&
+        if (!skipincdec && indentlevel == indentlevel3 && Token::Match(tok3->next(), "++|-- %varid%", varid) && MathLib::isInt(value) &&
             !Token::Match(tok3->tokAt(3), "[.[]")) {
             incdec(value, tok3->next()->str());
             (*tok2)->tokAt(2)->str(value);
