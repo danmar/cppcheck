@@ -12,13 +12,14 @@ jQuery.fn.listCommits = function(username, repository, branch) {
 
     var target = this;
     $.getJSON('https://api.github.com/repos/' + username + '/' + repository + '/commits?sha=' + branch + '&callback=?', function(response) {
-        var commits = response.data,
-            list = $('<ul class="rssfeeditems"/>');
+        var commits = response.data;
+        var list = $('<ul class="rssfeeditems"/>');
+
         target.empty().append(list);
 
         $(commits).each(function(i) {
-            var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha,
-                shortMessage = htmlEntities(cutLines(this.commit.message));
+            var githubUrl = 'https://github.com/' + username + '/' + repository + '/commit/' + this.sha;
+            var shortMessage = htmlEntities(cutLines(this.commit.message));
 
             if (this.author !== null) {
                 list.append('<li><a href="' + githubUrl + '">' + shortMessage + '</a><em> by <strong><a class="author" href="' + 'https://github.com/' + this.author.login + '">' + this.author.login + '</a></strong></em></li>');
