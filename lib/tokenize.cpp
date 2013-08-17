@@ -6239,11 +6239,15 @@ bool Tokenizer::simplifyKnownVariables()
 
                 // Insert a "%var% = %num% ;" at the beginning of the scope as simplifyKnownVariablesSimplify might compute an updated value
                 Token *scopeStart = tok2->tokAt(5);
-                scopeStart->insertToken(tok2->tokAt(1)->str()); scopeStart = scopeStart->next();
+                scopeStart->insertToken(tok2->tokAt(1)->str());
+                scopeStart = scopeStart->next();
                 Token* artificialAssignment = scopeStart;
-                scopeStart->insertToken("="); scopeStart = scopeStart->next();
-                scopeStart->insertToken(valueToken->str()); scopeStart = scopeStart->next();
-                scopeStart->insertToken(";"); scopeStart = scopeStart->next();
+                scopeStart->insertToken("=");
+                scopeStart = scopeStart->next();
+                scopeStart->insertToken(valueToken->str());
+                scopeStart = scopeStart->next();
+                scopeStart->insertToken(";");
+                scopeStart = scopeStart->next();
 
                 ret |= simplifyKnownVariablesSimplify(&artificialAssignment, tok2->tokAt(6), varid, structname, value, valueIsPointer, valueVarId, valueToken, -1);
 
