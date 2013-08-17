@@ -24,6 +24,7 @@
 
 #include "cppcheck.h"
 #include "mathlib.h"
+#include "path.h"
 
 class CppcheckExecutor : public ErrorLogger {
 private:
@@ -33,7 +34,7 @@ private:
     std::time_t stopTime;
 
 public:
-    CppcheckExecutor(const char *defines, std::size_t linenr, bool hang)
+    CppcheckExecutor(const char *defines, const char * const includePaths[100], std::size_t linenr, bool hang)
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
@@ -44,6 +45,18 @@ public:
 
         if (defines)
             cppcheck.settings().userDefines = defines;
+
+        for (int i = 0; includePaths[i]; i++) {
+            std::string path = Path::fromNativeSeparators(includePaths[i]);
+            path = Path::removeQuotationMarks(path);
+
+            // If path doesn't end with / or \, add it
+            if (path[path.length()-1] != '/')
+                path += '/';
+
+            cppcheck.settings()._includePaths.push_back(path);
+        }
+
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
         cppcheck.settings()._force = true;
@@ -81,6 +94,7 @@ struct ReduceSettings {
     bool hang;
     unsigned int maxtime;
     const char *defines;
+    const char *includePaths[100];
 };
 
 static bool test(const ReduceSettings &settings, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
@@ -97,7 +111,7 @@ static bool test(const ReduceSettings &settings, const std::vector<std::string> 
         fout << ((i>=line1 && i<=line2) ? "" : filedata[i]) << std::endl;
     fout.close();
 
-    CppcheckExecutor cppcheck(settings.defines, settings.linenr, settings.hang);
+    CppcheckExecutor cppcheck(settings.defines, settings.includePaths, settings.linenr, settings.hang);
     return cppcheck.run(tempfilename.c_str(), settings.maxtime);
 }
 
@@ -580,12 +594,14 @@ int main(int argc, char *argv[])
     struct ReduceSettings settings = {0};
     settings.maxtime = 300;  // default timeout = 5 minutes
 
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1, includePathIndex = 0; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
             print = true;
-        else if (strcmp(argv[i], "--hang") == 0) {
+        else if (strcmp(argv[i], "--hang") == 0)
             settings.hang = true;
-        } else if (strncmp(argv[i], "--maxtime=", 10) == 0)
+        else if ((strcmp(argv[i],"-I")==0) && (i+1<argc))
+            settings.includePaths[includePathIndex++] = argv[++i];
+        else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
         else if (strncmp(argv[i],"--cfg=",6)==0)
             settings.defines = argv[i] + 6;
@@ -601,7 +617,7 @@ int main(int argc, char *argv[])
 
     if ((!settings.hang && settings.linenr == 0U) || settings.filename == NULL) {
         std::cerr << "Syntax:" << std::endl
-                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] filename [linenr]" << std::endl;
+                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-I includepath] filename [linenr]" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -609,7 +625,7 @@ int main(int argc, char *argv[])
 
     // Execute Cppcheck on the file..
     {
-        CppcheckExecutor cppcheck(settings.defines, settings.linenr, settings.hang);
+        CppcheckExecutor cppcheck(settings.defines, settings.includePaths, settings.linenr, settings.hang);
         if (!cppcheck.run(settings.filename, settings.maxtime)) {
             std::cerr << "Can't reproduce false positive at line " << settings.linenr << std::endl;
             return EXIT_FAILURE;
