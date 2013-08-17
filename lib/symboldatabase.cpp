@@ -855,7 +855,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         _variableList[declarationId] = &(*arg);
                     // fix up parameters without type
                     if (!arg->type() && !arg->typeStartToken()->isStandardType()) {
-                        const Type *type = findType(arg->typeStartToken(), scope);
+                        const Type *type = findTypeInNested(arg->typeStartToken(), scope);
                         if (type)
                             arg->type(type);
                     }
@@ -2706,6 +2706,58 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
             }
         } else
             return scope->findType(tok->str());
+    }
+
+    // not a valid path
+    return 0;
+}
+//---------------------------------------------------------------------------
+
+const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope *startScope) const
+{
+    // skip over struct or union
+    if (Token::Match(startTok, "struct|union"))
+        startTok = startTok->next();
+
+    // type same as scope
+    if (startTok->str() == startScope->className && startScope->isClassOrStruct())
+        return startScope->definedType;
+
+    bool hasPath = false;
+
+    // absolute path - directly start in global scope
+    if (startTok->str() == "::") {
+        hasPath = true;
+        startTok = startTok->next();
+        startScope = &scopeList.front();
+    }
+
+    const Token* tok = startTok;
+    const Scope* scope = startScope;
+
+    while (scope && tok && tok->isName()) {
+        if (tok->strAt(1) == "::") {
+            hasPath = true;
+            scope = scope->findRecordInNestedList(tok->str());
+            if (scope) {
+                tok = tok->tokAt(2);
+            } else {
+                startScope = startScope->nestedIn;
+                if (!startScope)
+                    break;
+                scope = startScope;
+                tok = startTok;
+            }
+        } else {
+            const Type * type = scope->findType(tok->str());
+            if (hasPath || type)
+                return type;
+            else {
+                scope = scope->nestedIn;
+                if (!scope)
+                    break;
+            }
+        }
     }
 
     // not a valid path

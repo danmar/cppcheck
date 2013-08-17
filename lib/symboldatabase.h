@@ -734,6 +734,7 @@ private:
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
     static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
+    const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;
