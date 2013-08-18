@@ -26,6 +26,20 @@
 #include "mathlib.h"
 #include "path.h"
 
+class ReduceSettings : public Settings {
+public:
+    ReduceSettings() : filename(0), linenr(0), hang(false), maxtime(0) {
+        addEnabled("all");
+        inconclusive = true;
+        _force = true;
+    }
+
+    const char *filename;
+    std::size_t linenr;
+    bool hang;
+    unsigned int maxtime;
+};
+
 class CppcheckExecutor : public ErrorLogger {
 private:
     CppCheck cppcheck;
@@ -34,31 +48,16 @@ private:
     std::time_t stopTime;
 
 public:
-    CppcheckExecutor(const std::string &defines, const char * const includePaths[100], std::size_t linenr, bool hang)
+    CppcheckExecutor(const ReduceSettings & settings)
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
         , stopTime(0) {
 
-        if (!hang)
-            pattern = ":" + MathLib::longToString(linenr) + "]";
+        if (!settings.hang)
+            pattern = ":" + MathLib::longToString(settings.linenr) + "]";
 
-        cppcheck.settings().userDefines = defines;
-
-        for (int i = 0; includePaths[i]; i++) {
-            std::string path = Path::fromNativeSeparators(includePaths[i]);
-            path = Path::removeQuotationMarks(path);
-
-            // If path doesn't end with / or \, add it
-            if (path[path.length()-1] != '/')
-                path += '/';
-
-            cppcheck.settings()._includePaths.push_back(path);
-        }
-
-        cppcheck.settings().addEnabled("all");
-        cppcheck.settings().inconclusive = true;
-        cppcheck.settings()._force = true;
+        cppcheck.settings() = settings;
     }
 
     bool run(const char filename[], unsigned int maxtime) {
@@ -87,15 +86,6 @@ public:
     }
 };
 
-struct ReduceSettings {
-    const char *filename;
-    std::size_t linenr;
-    bool hang;
-    unsigned int maxtime;
-    std::string defines;
-    const char *includePaths[100];
-};
-
 static bool test(const ReduceSettings &settings, const std::vector<std::string> &filedata, const std::size_t line1, const std::size_t line2)
 {
     std::string path(settings.filename);
@@ -110,7 +100,7 @@ static bool test(const ReduceSettings &settings, const std::vector<std::string> 
         fout << ((i>=line1 && i<=line2) ? "" : filedata[i]) << std::endl;
     fout.close();
 
-    CppcheckExecutor cppcheck(settings.defines, settings.includePaths, settings.linenr, settings.hang);
+    CppcheckExecutor cppcheck(settings);
     return cppcheck.run(tempfilename.c_str(), settings.maxtime);
 }
 
@@ -590,7 +580,7 @@ int main(int argc, char *argv[])
     std::cout << "cppcheck tool that reduce code for a hang / false positive" << std::endl;
 
     bool print = false;
-    struct ReduceSettings settings = {0};
+    ReduceSettings settings;
     settings.maxtime = 300;  // default timeout = 5 minutes
 
     for (int i = 1, includePathIndex = 0; i < argc; i++) {
@@ -599,21 +589,56 @@ int main(int argc, char *argv[])
         else if (strcmp(argv[i], "--hang") == 0)
             settings.hang = true;
         else if (strncmp(argv[i],"-D", 2) == 0) {
-            if (!settings.defines.empty())
-                settings.defines += " ";
+            if (!settings.userDefines.empty())
+                settings.userDefines += " ";
             if ((strcmp(argv[i], "-D") == 0) && (i+1<argc))
-                settings.defines += argv[++i];
+                settings.userDefines += argv[++i];
             else
-                settings.defines += argv[i] + 2;
-        } else if ((strcmp(argv[i],"-I")==0) && (i+1<argc))
-            settings.includePaths[includePathIndex++] = argv[++i];
-        else if (strncmp(argv[i], "--maxtime=", 10) == 0)
+                settings.userDefines += argv[i] + 2;
+        } else if (std::strncmp(argv[i], "-I", 2) == 0) {
+            std::string path;
+
+            if ((std::strcmp(argv[i], "-I") == 0) && (i+1<argc))
+                path = argv[++i];
+            else
+                path = argv[i] + 2;
+
+            if (!path.empty()) {
+                path = Path::fromNativeSeparators(path);
+                path = Path::removeQuotationMarks(path);
+
+                // If path doesn't end with / or \, add it
+                if (path[path.length()-1] != '/')
+                    path += '/';
+
+                settings._includePaths.push_back(path);
+            }
+        } else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
         else if (strncmp(argv[i],"--cfg=",6)==0) {
-            if (!settings.defines.empty())
-                settings.defines += " ";
-            settings.defines += argv[i] + 6;
-        } else if (settings.filename==NULL && strchr(argv[i],'.'))
+            if (!settings.userDefines.empty())
+                settings.userDefines += " ";
+            settings.userDefines += argv[i] + 6;
+        } else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
+            std::string platform(11+argv[i]);
+
+            if (platform == "win32A")
+                settings.platform(Settings::Win32A);
+            else if (platform == "win32W")
+                settings.platform(Settings::Win32W);
+            else if (platform == "win64")
+                settings.platform(Settings::Win64);
+            else if (platform == "unix32")
+                settings.platform(Settings::Unix32);
+            else if (platform == "unix64")
+                settings.platform(Settings::Unix64);
+            else {
+                std::cerr << "unrecognized platform: " << platform << std::endl;
+                return EXIT_FAILURE;
+            }
+        } else if (std::strcmp(argv[i], "--debug-warnings") == 0)
+            settings.debugwarnings = true;
+        else if (settings.filename==NULL && strchr(argv[i],'.'))
             settings.filename = argv[i];
         else if (settings.linenr == 0U && MathLib::isInt(argv[i]))
             settings.linenr = std::atoi(argv[i]);
@@ -633,7 +658,7 @@ int main(int argc, char *argv[])
 
     // Execute Cppcheck on the file..
     {
-        CppcheckExecutor cppcheck(settings.defines, settings.includePaths, settings.linenr, settings.hang);
+        CppcheckExecutor cppcheck(settings);
         if (!cppcheck.run(settings.filename, settings.maxtime)) {
             std::cerr << "Can't reproduce false positive at line " << settings.linenr << std::endl;
             return EXIT_FAILURE;
