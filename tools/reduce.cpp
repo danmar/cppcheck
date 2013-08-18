@@ -34,7 +34,7 @@ private:
     std::time_t stopTime;
 
 public:
-    CppcheckExecutor(const char *defines, const char * const includePaths[100], std::size_t linenr, bool hang)
+    CppcheckExecutor(const std::string &defines, const char * const includePaths[100], std::size_t linenr, bool hang)
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
@@ -43,8 +43,7 @@ public:
         if (!hang)
             pattern = ":" + MathLib::longToString(linenr) + "]";
 
-        if (defines)
-            cppcheck.settings().userDefines = defines;
+        cppcheck.settings().userDefines = defines;
 
         for (int i = 0; includePaths[i]; i++) {
             std::string path = Path::fromNativeSeparators(includePaths[i]);
@@ -93,7 +92,7 @@ struct ReduceSettings {
     std::size_t linenr;
     bool hang;
     unsigned int maxtime;
-    const char *defines;
+    std::string defines;
     const char *includePaths[100];
 };
 
@@ -599,13 +598,22 @@ int main(int argc, char *argv[])
             print = true;
         else if (strcmp(argv[i], "--hang") == 0)
             settings.hang = true;
-        else if ((strcmp(argv[i],"-I")==0) && (i+1<argc))
+        else if (strncmp(argv[i],"-D", 2) == 0) {
+            if (!settings.defines.empty())
+                 settings.defines += " ";
+            if ((strcmp(argv[i], "-D") == 0) && (i+1<argc))
+                settings.defines += argv[++i];
+            else
+                settings.defines += argv[i] + 2;
+        } else if ((strcmp(argv[i],"-I")==0) && (i+1<argc))
             settings.includePaths[includePathIndex++] = argv[++i];
         else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
-        else if (strncmp(argv[i],"--cfg=",6)==0)
-            settings.defines = argv[i] + 6;
-        else if (settings.filename==NULL && strchr(argv[i],'.'))
+        else if (strncmp(argv[i],"--cfg=",6)==0) {
+            if (!settings.defines.empty())
+                 settings.defines += " ";
+            settings.defines += argv[i] + 6;
+        } else if (settings.filename==NULL && strchr(argv[i],'.'))
             settings.filename = argv[i];
         else if (settings.linenr == 0U && MathLib::isInt(argv[i]))
             settings.linenr = std::atoi(argv[i]);
@@ -617,7 +625,7 @@ int main(int argc, char *argv[])
 
     if ((!settings.hang && settings.linenr == 0U) || settings.filename == NULL) {
         std::cerr << "Syntax:" << std::endl
-                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-I includepath] filename [linenr]" << std::endl;
+                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-D define] [-I includepath] filename [linenr]" << std::endl;
         return EXIT_FAILURE;
     }
 
