@@ -942,7 +942,9 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string("")));
 
     if (_settings && _settings->_maxConfigs == 1U) {
-        processedFile = handleIncludes(processedFile, filename, includePaths, defs);
+        std::list<std::string> pragmaOnce;
+        std::list<std::string> includes;
+        processedFile = handleIncludes(processedFile, filename, includePaths, defs, pragmaOnce, includes);
         resultConfigurations = getcfgs(processedFile, filename, defs);
     } else {
         handleIncludes(processedFile, filename, includePaths);
@@ -1932,7 +1934,7 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 }
 
 
-std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes)
+std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> &pragmaOnce, std::list<std::string> includes)
 {
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
 
@@ -1975,7 +1977,9 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
         std::stack<bool>::reference elseIsTrue = elseIsTrueStack.top();
 
-        if (line.compare(0,7,"#ifdef ") == 0) {
+        if (line == "#pragma once") {
+            pragmaOnce.push_back(filePath);
+        } else if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch) {
                 const std::string tag = getdef(line,true);
                 if (defs.find(tag) != defs.end()) {
@@ -2115,8 +2119,14 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
                 includes.push_back(filename);
 
+                // Don't include header if it's already included and contains #pragma once
+                if (std::find(pragmaOnce.begin(), pragmaOnce.end(), filename) != pragmaOnce.end()) {
+                    ostr << std::endl;
+                    continue;
+                }
+
                 ostr << "#file \"" << filename << "\"\n"
-                     << handleIncludes(read(fin, filename), filename, includePaths, defs, includes) << std::endl
+                     << handleIncludes(read(fin, filename), filename, includePaths, defs, pragmaOnce, includes) << std::endl
                      << "#endfile\n";
                 continue;
             }
