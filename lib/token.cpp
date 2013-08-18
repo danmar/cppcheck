@@ -969,14 +969,14 @@ void Token::createMutualLinks(Token *begin, Token *end)
 
 void Token::printOut(const char *title) const
 {
-    if (title)
+    if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
     std::cout << stringifyList(true, true, true, true, true, 0, 0) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
-    if (title)
+    if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
     std::cout << stringifyList(true, true, true, true, true, &fileNames, 0) << std::endl;
 }
