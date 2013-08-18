@@ -600,7 +600,7 @@ int main(int argc, char *argv[])
             settings.hang = true;
         else if (strncmp(argv[i],"-D", 2) == 0) {
             if (!settings.defines.empty())
-                 settings.defines += " ";
+                settings.defines += " ";
             if ((strcmp(argv[i], "-D") == 0) && (i+1<argc))
                 settings.defines += argv[++i];
             else
@@ -611,7 +611,7 @@ int main(int argc, char *argv[])
             settings.maxtime = std::atoi(argv[i] + 10);
         else if (strncmp(argv[i],"--cfg=",6)==0) {
             if (!settings.defines.empty())
-                 settings.defines += " ";
+                settings.defines += " ";
             settings.defines += argv[i] + 6;
         } else if (settings.filename==NULL && strchr(argv[i],'.'))
             settings.filename = argv[i];
