@@ -15,16 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "cppcheck.h"
+#include "mathlib.h"
+#include "path.h"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-
-#include "cppcheck.h"
-#include "mathlib.h"
-#include "path.h"
 
 class ReduceSettings : public Settings {
 public:
