@@ -28,11 +28,7 @@
 
 class ReduceSettings : public Settings {
 public:
-    ReduceSettings() : filename(0), linenr(0), hang(false), maxtime(0) {
-        addEnabled("all");
-        inconclusive = true;
-        _force = true;
-    }
+    ReduceSettings() : filename(0), linenr(0), hang(false), maxtime(0) { }
 
     const char *filename;
     std::size_t linenr;
@@ -582,6 +578,8 @@ int main(int argc, char *argv[])
     bool print = false;
     ReduceSettings settings;
     settings.maxtime = 300;  // default timeout = 5 minutes
+    bool def = false;
+    bool maxconfigs = false;
 
     for (int i = 1, includePathIndex = 0; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
@@ -590,11 +588,12 @@ int main(int argc, char *argv[])
             settings.hang = true;
         else if (strncmp(argv[i],"-D", 2) == 0) {
             if (!settings.userDefines.empty())
-                settings.userDefines += " ";
+                settings.userDefines += ";";
             if ((strcmp(argv[i], "-D") == 0) && (i+1<argc))
                 settings.userDefines += argv[++i];
             else
                 settings.userDefines += argv[i] + 2;
+            def = true;
         } else if (std::strncmp(argv[i], "-I", 2) == 0) {
             std::string path;
 
@@ -617,7 +616,7 @@ int main(int argc, char *argv[])
             settings.maxtime = std::atoi(argv[i] + 10);
         else if (strncmp(argv[i],"--cfg=",6)==0) {
             if (!settings.userDefines.empty())
-                settings.userDefines += " ";
+                settings.userDefines += ";";
             settings.userDefines += argv[i] + 6;
         } else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
             std::string platform(11+argv[i]);
@@ -638,7 +637,39 @@ int main(int argc, char *argv[])
             }
         } else if (std::strcmp(argv[i], "--debug-warnings") == 0)
             settings.debugwarnings = true;
-        else if (settings.filename==NULL && strchr(argv[i],'.'))
+        else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
+            settings._force = true;
+        else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
+            std::string errmsg = settings.addEnabled(argv[i] + 9);
+            if (!errmsg.empty()) {
+                errmsg.erase(0, 11); // erase "cppcheck: " from message
+                std::cerr << errmsg << std::endl;
+                return EXIT_FAILURE;
+            }
+            // when "style" is enabled, also enable "warning", "performance" and "portability"
+            if (settings.isEnabled("style")) {
+                settings.addEnabled("warning");
+                settings.addEnabled("performance");
+                settings.addEnabled("portability");
+            }
+        } else if (std::strcmp(argv[i], "--inconclusive") == 0)
+            settings.inconclusive = true;
+        else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
+            settings._force = false;
+
+            std::istringstream iss(14+argv[i]);
+            if (!(iss >> settings._maxConfigs)) {
+                std::cerr << "argument to '--max-configs=' is not a number." << std::endl;
+                return false;
+            }
+
+            if (settings._maxConfigs < 1) {
+                std::cerr << "argument to '--max-configs=' must be greater than 0." << std::endl;
+                return false;
+            }
+
+            maxconfigs = true;
+        } else if (settings.filename==NULL && strchr(argv[i],'.'))
             settings.filename = argv[i];
         else if (settings.linenr == 0U && MathLib::isInt(argv[i]))
             settings.linenr = std::atoi(argv[i]);
@@ -648,9 +679,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (def && !settings._force && !maxconfigs)
+        settings._maxConfigs = 1U;
+
+    if (settings._force)
+        settings._maxConfigs = ~0U;
+
     if ((!settings.hang && settings.linenr == 0U) || settings.filename == NULL) {
         std::cerr << "Syntax:" << std::endl
-                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-D define] [-I includepath] filename [linenr]" << std::endl;
+                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-D define] [-I includepath] [--force] [--enable=<id>] [--inconclusive] [--debug-warnings] [--max-configs=<limit>] filename [linenr]" << std::endl;
         return EXIT_FAILURE;
     }
 

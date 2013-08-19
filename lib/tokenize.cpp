@@ -8880,7 +8880,7 @@ void Tokenizer::simplifyAttribute()
 void Tokenizer::simplifyKeyword()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, "volatile|inline|__inline|__forceinline|register|__restrict|__restrict__")) {
+        while (Token::Match(tok, "volatile|inline|_inline|__inline|__forceinline|register|__restrict|__restrict__")) {
             tok->deleteThis();
         }
     }
@@ -9731,23 +9731,28 @@ void Tokenizer::simplifyReturnStrncat()
 
 void Tokenizer::printUnknownTypes()
 {
-    std::set<std::string> unknowns;
+    std::multimap<std::string, const Token *> unknowns;
 
     for (unsigned int i = 1; i <= _varId; ++i) {
         const Variable *var = _symbolDatabase->getVariableFromVarId(i);
 
         // is unknown type?
         if (var && !var->type() && !var->typeStartToken()->isStandardType()) {
-            std::string    name;
+            std::string name;
+            const Token * nameTok;
 
             // single token type?
-            if (var->typeStartToken() == var->typeEndToken())
+            if (var->typeStartToken() == var->typeEndToken()) {
                 name = var->typeStartToken()->str();
+                nameTok = var->typeStartToken();
+            }
 
             // complicated type
             else {
                 const Token *tok = var->typeStartToken();
                 int level = 0;
+
+                nameTok =  tok;
 
                 while (tok) {
                     // skip pointer and reference part of type
@@ -9772,23 +9777,29 @@ void Tokenizer::printUnknownTypes()
                 }
             }
 
-            unknowns.insert(name);
+            unknowns.insert(std::pair<std::string, const Token *>(name, nameTok));
         }
     }
 
     if (!unknowns.empty()) {
-        std::ostringstream ss;
+        std::multimap<std::string, const Token *>::const_iterator it;
+        std::string last;
+        size_t count;
 
-        ss << unknowns.size() << " unknown types:" << std::endl;
-
-        std::set<std::string>::const_iterator it;
-        std::size_t count = 1;
-
-        for (it = unknowns.begin(); it != unknowns.end(); ++it, ++count)
-            ss << count << ": " << *it << std::endl;
-
-        if (_errorLogger)
-            _errorLogger->reportOut(ss.str());
+        for (it = unknowns.begin(); it != unknowns.end(); ++it) {
+            // skip types is std namespace because they are not interesting
+            if (it->first.find("std::") != 0) {
+                if (it->first != last) {
+                    last = it->first;
+                    count = 1;
+                    reportError(it->second, Severity::debug, "debug", "Unknown type \'" + it->first + "\'.");
+                } else {
+                    if (count < 3) // limit same type to 3
+                        reportError(it->second, Severity::debug, "debug", "Unknown type \'" + it->first + "\'.");
+                    count++;
+                }
+            }
+        }
     }
 }
 

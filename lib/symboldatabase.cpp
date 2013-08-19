@@ -1790,7 +1790,8 @@ void SymbolDatabase::printOut(const char *title) const
     }
 
     for (std::list<Type>::const_iterator type = typeList.begin(); type != typeList.end(); ++type) {
-        std::cout << "Type: " << type->name() << std::endl;
+        std::cout << "Type: " << &(*type) << std::endl;
+        std::cout << "    name: " << type->name() << std::endl;
         std::cout << "    classDef: " << _tokenizer->list.fileLine(type->classDef) << std::endl;
         std::cout << "    classScope: " << type->classScope << std::endl;
         std::cout << "    enclosingScope: " << type->enclosingScope << std::endl;
@@ -1805,13 +1806,13 @@ void SymbolDatabase::printOut(const char *title) const
             if (type->derivedFrom[i].isVirtual)
                 std::cout << "Virtual ";
 
-            std::cout << (type->derivedFrom[i].access == Public    ? " Public " :
-                          type->derivedFrom[i].access == Protected ? " Protected " :
-                          type->derivedFrom[i].access == Private   ? " Private " :
+            std::cout << (type->derivedFrom[i].access == Public    ? " Public" :
+                          type->derivedFrom[i].access == Protected ? " Protected" :
+                          type->derivedFrom[i].access == Private   ? " Private" :
                           " Unknown");
 
             if (type->derivedFrom[i].type)
-                std::cout << type->derivedFrom[i].type;
+                std::cout << " " << type->derivedFrom[i].type;
             else
                 std::cout << " Unknown";
 
