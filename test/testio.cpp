@@ -793,6 +793,17 @@ private:
                       "[test.cpp:5]: (warning) %llu in format string (no. 1) requires an unsigned long long integer given in the argument list.\n"
                       "[test.cpp:6]: (warning) %lx in format string (no. 1) requires a long integer given in the argument list.\n"
                       "[test.cpp:7]: (warning) %llx in format string (no. 1) requires a long long integer given in the argument list.\n", errout.str());
+
+        check("class Foo {\n"
+              "    double d;\n"
+              "};\n"
+              "int a[10];\n"
+              "void foo(const Foo* foo) {\n"
+              "    printf(\"%d\", foo->d);\n"
+              "    printf(\"%f\", a[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:7]: (warning) %f in format string (no. 1) requires a floating point number given in the argument list.\n", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

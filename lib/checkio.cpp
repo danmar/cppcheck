@@ -555,9 +555,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         }
 
                         // Perform type checks
-                        if (argListTok && Token::Match(argListTok->next(), "[,)]")) { // We can currently only check the type of arguments matching this simple pattern.
-                            const Variable *variableInfo = argListTok->variable();
-                            const Token* varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
+                        const Variable *variableInfo;
+                        const Token *varTypeTok;
+
+                        if (getArgumentInfo(argListTok, &variableInfo, &varTypeTok)) {
                             if (varTypeTok && varTypeTok->str() == "static")
                                 varTypeTok = varTypeTok->next();
 
@@ -733,6 +734,33 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 wrongPrintfScanfArgumentsError(tok, tok->str(), numFormat, numFunction);
         }
     }
+}
+
+// We can currently only check the type of arguments matching these simple patterns:
+//   var
+//   var.var
+//   var[...]
+//
+/// @todo add more complex variables, lietrals, functions, and generic expressions
+
+bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Token **typeTok) const
+{
+    if (tok && (Token::Match(tok->next(), "[,)]") ||
+                Token::Match(tok->next(), ". %var% [,)]") ||
+                (Token::simpleMatch(tok->next(), "[") && Token::Match(tok->linkAt(1)->next(), "[,)]")))) {
+        if (tok->next()->str() == ".")
+            tok = tok->tokAt(2);
+
+        const Variable *variableInfo = tok->variable();
+        const Token *varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
+
+        *var = variableInfo;
+        *typeTok = varTypeTok;
+
+        return true;
+    }
+
+    return false;
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
