@@ -35,9 +35,9 @@
 
         // pack.css
 
-        var inCss = cat(["css/all.css",
-                         "css/demo.css",
-                         "css/normalize.css"
+        var inCss = cat(["css/normalize.css",
+                         "css/all.css",
+                         "css/demo.css"
         ]);
 
         var packCss = cleanCSS.process(inCss, {
