@@ -1298,7 +1298,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         bool match = false;
         if (scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) {
             // do the scopes match (same scope) or do their names match (multiple namespaces)
-            if ((*scope == scope1->nestedIn) || (*scope && scope1 &&
+            if ((*scope == scope1->nestedIn) || (*scope) &&
                                                  (*scope)->className == scope1->nestedIn->className &&
                                                  !(*scope)->className.empty() &&
                                                  (*scope)->type == scope1->nestedIn->type)) {
