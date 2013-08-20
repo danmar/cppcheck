@@ -1931,6 +1931,55 @@ void CheckClass::checkPureVirtualFunctionCall()
     }
 }
 
+void CheckClass::checkDuplInheritedMembers()
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    // Iterate over all classes
+    for (std::list<Type>::const_iterator classIt = symbolDatabase->typeList.begin();
+         classIt != symbolDatabase->typeList.end();
+         ++classIt) {
+        // Iterate over the parent classes
+        for (std::vector<Type::BaseInfo>::const_iterator parentClassIt = classIt->derivedFrom.begin();
+             parentClassIt != classIt->derivedFrom.end();
+             ++parentClassIt) {
+            // Check if there is info about the 'Base' class
+            if (!parentClassIt->type || !parentClassIt->type->classScope)
+                continue;
+            // Check if they have a member variable in common
+            for (std::list<Variable>::const_iterator classVarIt = classIt->classScope->varlist.begin();
+                 classVarIt != classIt->classScope->varlist.end();
+                 ++classVarIt) {
+                for (std::list<Variable>::const_iterator parentClassVarIt = parentClassIt->type->classScope->varlist.begin();
+                     parentClassVarIt != parentClassIt->type->classScope->varlist.end();
+                     ++parentClassVarIt) {
+                    if (classVarIt->name() == parentClassVarIt->name()) { // Check if the class and its parent have a common variable
+                        duplInheritedMembersError(classVarIt->nameToken(), parentClassVarIt->nameToken(),
+                                                  classIt->name(), parentClassIt->type->name(), classVarIt->name(),
+                                                  classIt->classScope->type == Scope::eStruct,
+                                                  parentClassIt->type->classScope->type == Scope::eStruct);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
+        const std::string &derivedname, const std::string &basename,
+        const std::string &variablename, bool derivedIsStruct, bool baseIsStruct)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok1);
+    toks.push_back(tok2);
+
+    const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedname +
+                                "' defines member variable with name '" + variablename + "' also defined in its parent " +
+                                std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
+    reportError(toks, Severity::warning, "duplInheritedMember", message);
+}
+
 const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Function & function,
         std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap)
 {

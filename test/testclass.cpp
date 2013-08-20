@@ -176,6 +176,77 @@ private:
         TEST_CASE(pureVirtualFunctionCall);
         TEST_CASE(pureVirtualFunctionCallOtherClass);
         TEST_CASE(pureVirtualFunctionCallWithBody);
+
+        TEST_CASE(duplInheritedMembers);
+    }
+
+    void checkDuplInheritedMembers(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.addEnabled("warning");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkDuplInheritedMembers();
+    }
+
+    void duplInheritedMembers() {
+        checkDuplInheritedMembers("class Base {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+
+        checkDuplInheritedMembers("class Base0 {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "class Base1 {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base0, Base1 {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:2]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
+                      "[test.cpp:8] -> [test.cpp:5]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
+
+        checkDuplInheritedMembers("class Base {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base {\n"
+                                  "   int y;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("class A {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct B {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unknown 'Base' class
+        checkDuplInheritedMembers("class Derived : public UnknownBase {\n"
+                                  "  int x;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("class Base {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "class Derived : public Base {\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void checkCopyConstructor(const char code[]) {
