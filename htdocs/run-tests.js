@@ -32,7 +32,7 @@ if (!test("-f", jshintBin)) {
     exit(1);
 }
 
-if (exec("node" + " " + jshintBin + " " + "make.js run-tests.js js/cppcheck.js js/github.js").code !== 0) {
+if (exec("node" + " " + jshintBin + " " + "make.js run-tests.js site/js/cppcheck.js site/js/github.js").code !== 0) {
     echo("*** JSHint failed! (return code != 0)");
     echo();
 } else {
@@ -56,4 +56,4 @@ if (!test("-f", csslintBin)) {
     echo("*** csslint failed! (return code != 0)");
     echo();
 }*/
-exec("node" + " " + csslintBin + " " + "css/all.css");
+exec("node" + " " + csslintBin + " " + "site/css/all.css");

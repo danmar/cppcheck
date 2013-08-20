@@ -70,4 +70,4 @@ htmlreport/MANIFEST
 # kdevelop 4.x
 *.kdev4
 
-htdocs/site/node_modules
+htdocs/node_modules

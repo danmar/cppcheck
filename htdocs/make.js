@@ -35,9 +35,9 @@
 
         // pack.css
 
-        var inCss = cat(["css/normalize.css",
-                         "css/all.css",
-                         "css/demo.css"
+        var inCss = cat(["site/css/normalize.css",
+                         "site/css/all.css",
+                         "site/css/demo.css"
         ]);
 
         var packCss = cleanCSS.process(inCss, {
@@ -45,17 +45,17 @@
             keepSpecialComments: 0
         });
 
-        fs.writeFileSync("css/pack.css", packCss, "utf8");
+        fs.writeFileSync("site/css/pack.css", packCss, "utf8");
 
         echo();
-        echo("### Finished css/pack.css.");
+        echo("### Finished site/css/pack.css.");
 
         echo();
         echo("### Minifying js files...");
 
-        var inJs = cat(["js/cppcheck.js",
-                        "js/github.js",
-                        "js/picnet.table.filter.min.js"]);
+        var inJs = cat(["site/js/cppcheck.js",
+                        "site/js/github.js",
+                        "site/js/picnet.table.filter.min.js"]);
 
         var minifiedJs = UglifyJS.minify(inJs, {
             compress: true,
@@ -64,10 +64,10 @@
             warnings: false
         });
 
-        fs.writeFileSync("js/pack.js", minifiedJs.code, "utf8");
+        fs.writeFileSync("site/js/pack.js", minifiedJs.code, "utf8");
 
         echo();
-        echo("### Finished js/pack.js.");
+        echo("### Finished site/js/pack.js.");
     };
 
 
