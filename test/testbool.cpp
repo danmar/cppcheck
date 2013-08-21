@@ -47,6 +47,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt4);
         TEST_CASE(comparisonOfBoolWithInt5);
         TEST_CASE(comparisonOfBoolWithInt6); // #4224 - integer is casted to bool
+        TEST_CASE(comparisonOfBoolWithInt7); // #4846 - (!x == true)
 
         TEST_CASE(checkComparisonOfFuncReturningBool1);
         TEST_CASE(checkComparisonOfFuncReturningBool2);
@@ -754,6 +755,13 @@ private:
     void comparisonOfBoolWithInt6() { // #4224 - integer is casted to bool
         check("void SetVisible(bool b, int i) {\n"
               "    if (b == (bool)i) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt7() { // #4846 - (!x==true)
+        check("void f(int x) {\n"
+              "    if (!x == true) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
