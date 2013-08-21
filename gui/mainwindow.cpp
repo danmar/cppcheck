@@ -416,11 +416,15 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
         }
         FormatAndSetTitle();
     } else if (mode == QFileDialog::DirectoryOnly) {
-        QString dir = QFileDialog::getExistingDirectory(this,
-                      tr("Select directory to check"),
-                      GetPath(SETTINGS_LAST_CHECK_PATH));
-        if (!dir.isEmpty()) {
-            qDebug() << "Setting current directory to: " << dir;
+        QFileDialog dialog;
+        dialog.setFileMode(mode);
+        dialog.setWindowTitle("Select directory");
+        QStringList dirs;
+        if (dialog.exec())
+            dirs = dialog.selectedFiles();
+        if (!dirs.isEmpty()) {
+            QString dir = dirs[0];
+            qDebug() << "Setting current directory to: " << dirs[0];
             mCurrentDirectory = dir;
             selected.append(dir);
             dir = QDir::toNativeSeparators(dir);
