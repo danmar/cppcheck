@@ -89,6 +89,51 @@ private:
             "assert(foo() == 3); \n"
         );
         ASSERT_EQUALS("[test.cpp:6]: (warning) Assert statement calls a function which may have desired side effects: 'foo'.\n", errout.str());
+
+        //  Ticket #4937 "false positive: Assert calls a function which may have desired side effects"
+        check("struct SquarePack {\n"
+              "   static bool isRank1Or8( Square sq ) {\n"
+              "      sq &= 0x38;\n"
+              "      return sq == 0 || sq == 0x38;\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   assert( !SquarePack::isRank1Or8(push2) );\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct SquarePack {\n"
+              "   static bool isRank1Or8( Square &sq ) {\n"
+              "      sq &= 0x38;\n"
+              "      return sq == 0 || sq == 0x38;\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   assert( !SquarePack::isRank1Or8(push2) );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+
+        check("struct SquarePack {\n"
+              "   static bool isRank1Or8( Square *sq ) {\n"
+              "      *sq &= 0x38;\n"
+              "      return *sq == 0 || *sq == 0x38;\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   assert( !SquarePack::isRank1Or8(push2) );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+
+        check("struct SquarePack {\n"
+              "   static bool isRank1Or8( Square *sq ) {\n"
+              "      sq &= 0x38;\n"
+              "      return sq == 0 || sq == 0x38;\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   assert( !SquarePack::isRank1Or8(push2) );\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
     }
 
     void assignmentInAssert() {

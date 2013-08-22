@@ -1610,6 +1610,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "    isMutable: " << (var->isMutable() ? "true" : "false") << std::endl;
     std::cout << indent << "    isStatic: " << (var->isStatic() ? "true" : "false") << std::endl;
     std::cout << indent << "    isExtern: " << (var->isExtern() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isLocal: " << (var->isLocal() ? "true" : "false") << std::endl;
     std::cout << indent << "    isConst: " << (var->isConst() ? "true" : "false") << std::endl;
     std::cout << indent << "    isClass: " << (var->isClass() ? "true" : "false") << std::endl;
     std::cout << indent << "    isArray: " << (var->isArray() ? "true" : "false") << std::endl;

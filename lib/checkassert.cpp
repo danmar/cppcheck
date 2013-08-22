@@ -69,7 +69,10 @@ void CheckAssert::assertWithSideEffects()
                     if (tok2->type() != Token::eAssignmentOp && tok2->type() != Token::eIncDecOp) continue;
                     const Variable* var = tok2->previous()->variable();
                     if (!var || var->isLocal()) continue;
-
+                    if (var->isArgument() &&
+                        (var->isConst() || (!var->isReference() && !var->isPointer())))
+                        // see ticket #4937. Assigning function arguments not passed by reference is ok.
+                        continue;
                     std::vector<const Token*> returnTokens; // find all return statements
                     for (const Token *rt = scope->classStart; rt != scope->classEnd; rt = rt->next()) {
                         if (!Token::Match(rt, "return %any%")) continue;
