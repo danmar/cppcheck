@@ -796,14 +796,26 @@ private:
 
         check("class Foo {\n"
               "    double d;\n"
+              "    struct Bar {\n"
+              "        int i;\n"
+              "    } bar[2];\n"
+              "    struct Baz {\n"
+              "        int i;\n"
+              "    } baz;\n"
               "};\n"
               "int a[10];\n"
+              "Foo f[10];\n"
               "void foo(const Foo* foo) {\n"
-              "    printf(\"%d\", foo->d);\n"
-              "    printf(\"%f\", a[0]);\n"
+              "    printf(\"%d %f %f %d %f %f\",\n"
+              "        foo->d, foo->bar[0].i, a[0],\n"
+              "        f[0].d, f[0].baz.i, f[0].bar[0].i);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list.\n"
-                      "[test.cpp:7]: (warning) %f in format string (no. 1) requires a floating point number given in the argument list.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 2) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %d in format string (no. 4) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 5) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

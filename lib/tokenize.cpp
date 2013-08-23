@@ -9513,12 +9513,14 @@ void Tokenizer::createSymbolDatabase()
             // Since it doesn't point at a fixed location it doesn't have varid
             if (tok->variable() != NULL &&
                 tok->variable()->typeScope() &&
-                Token::Match(tok, "%var% [")) {
+                Token::Match(tok, "%var% [|.")) {
 
-                // Locate "]"
                 Token *tok2 = tok->next();
-                while (tok2 && tok2->str() == "[")
-                    tok2 = tok2->link()->next();
+                // Locate "]"
+                if (tok->next()->str() == "[") {
+                    while (tok2 && tok2->str() == "[")
+                        tok2 = tok2->link()->next();
+                }
 
                 Token *membertok = NULL;
                 if (Token::Match(tok2, ". %var%"))

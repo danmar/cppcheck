@@ -736,28 +736,40 @@ void CheckIO::checkWrongPrintfScanfArguments()
     }
 }
 
-// We can currently only check the type of arguments matching these simple patterns:
-//   var
-//   var.var
-//   var[...]
-//
-/// @todo add more complex variables, lietrals, functions, and generic expressions
+// We currently only support string literals and variables.
+/// @todo add non-string literals, functions, and generic expressions
 
 bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Token **typeTok) const
 {
-    if (tok && (Token::Match(tok->next(), "[,)]") ||
-                Token::Match(tok->next(), ". %var% [,)]") ||
-                (Token::simpleMatch(tok->next(), "[") && Token::Match(tok->linkAt(1)->next(), "[,)]")))) {
-        if (tok->next()->str() == ".")
-            tok = tok->tokAt(2);
+    if (tok) {
+        if (tok->type() == Token::eString) {
+            *var = 0;
+            *typeTok = 0;
+            return true;
+        } else if (tok->type() == Token::eVariable) {
+            const Token *varTok = 0;
+            for (const Token *tok1 = tok->next(); tok1; tok1 = tok1->next()) {
+                if (tok1->str() == "," || tok1->str() == ")") {
+                    if (tok1->previous()->str() == "]")
+                        varTok = tok1->linkAt(-1)->previous();
+                    else
+                        varTok = tok1->previous();
+                    break;
+                } else if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
+                    tok1 = tok1->link();
+                else if (tok1->str() == "<" && tok1->link())
+                    tok1 = tok1->link();
+                else if (tok1->str() == ";")
+                    break;
+            }
 
-        const Variable *variableInfo = tok->variable();
-        const Token *varTypeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
-
-        *var = variableInfo;
-        *typeTok = varTypeTok;
-
-        return true;
+            if (varTok) {
+                const Variable *variableInfo = varTok->variable();
+                *var = variableInfo;
+                *typeTok = variableInfo ? variableInfo->typeStartToken() : NULL;;
+                return true;
+            }
+        }
     }
 
     return false;
