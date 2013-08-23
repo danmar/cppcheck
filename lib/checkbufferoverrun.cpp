@@ -2200,11 +2200,18 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                     return;
 
                 // skip comparison
-                if (tok->type() == Token::eComparisonOp && tok->strAt(2) == "&&")
+                if (tok->type() == Token::eComparisonOp)
                     tok = tok->tokAt(2);
 
+                // skip close parenthesis
+                if(tok->str() == ")")
+                {
+                    tok = tok->next();
+                }
+
                 // check if array index is ok
-                if (Token::Match(tok, ("&& " + indexName + " <|<=").c_str()))
+                // statement can be closed in parentheses, so "(| " is using
+                if (Token::Match(tok, ("&& (| " + indexName + " <|<=").c_str()))
                     arrayIndexThenCheckError(tok, indexName);
             }
         }

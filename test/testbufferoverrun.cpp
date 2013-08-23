@@ -3876,6 +3876,19 @@ private:
               "    }"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
+
+        check("void f(const int a[], unsigned i) {\n"
+              "    if((a[i] < 2) && (i <= 42)) {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
+
+        // this one doesn't work for now, hopefully in the future
+        check("void f(const int a[], unsigned i) {\n"
+              "    if(a[i] < func(i) && i <= 42) {\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", "", errout.str());
     }
 
     void bufferNotZeroTerminated() {
