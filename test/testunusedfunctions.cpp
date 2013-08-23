@@ -41,6 +41,7 @@ private:
         TEST_CASE(functionpointer);
         TEST_CASE(template1);
         TEST_CASE(template2);
+        TEST_CASE(template3);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -168,6 +169,17 @@ private:
               "{\n"
               "    f();\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template3() { // #4701
+        check("class X {\n"
+              "public:\n"
+              "    void bar() { foo<int>(0); }\n"
+              "private:\n"
+              "    template<typename T> void foo( T t ) const;\n"
+              "};\n"
+              "template<typename T> void X::foo( T t ) const { }\n");
         ASSERT_EQUALS("", errout.str());
     }
 
