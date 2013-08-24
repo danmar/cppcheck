@@ -1204,7 +1204,7 @@ void CheckNullPointer::nullConstantDereference()
             }
 
             const Variable *ovar = 0;
-            if (Token::Match(tok, "0 ==|!= %var%"))
+            if (Token::Match(tok, "0 ==|!= %var% !!."))
                 ovar = tok->tokAt(2)->variable();
             else if (Token::Match(tok, "%var% ==|!= 0"))
                 ovar = tok->variable();

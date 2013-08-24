@@ -1958,6 +1958,12 @@ private:
               "    std::string s = 0 == x ? \"a\" : \"b\";\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  const std::string s = g();\n"
+              "  ASSERT_MESSAGE(\"Error on s\", 0 == s.compare(\"Some text\"));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerStdStream() {
