@@ -70,7 +70,7 @@ public:
     void checkWrongPrintfScanfArguments();
 
 private:
-    bool getArgumentInfo(const Token *tok, const Variable **var, const Token **typeTok) const;
+    bool getArgumentInfo(const Token *tok, const Variable **var, const Token **typeTok, const Function **func) const;
 
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);

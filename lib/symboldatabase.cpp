@@ -421,6 +421,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         tok1 = tok1->previous();
                     }
 
+                    // find the return type
+                    if (function.type != Function::eConstructor) {
+                        while (tok1 && Token::Match(tok1->next(), "virtual|static|friend|const"))
+                            tok1 = tok1->next();
+
+                        if (tok1)
+                            function.retDef = tok1->next();
+                    }
+
                     const Token *end;
 
                     if (!function.retFuncPtr)
@@ -1224,6 +1233,19 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     function->token = funcStart;
     function->hasBody = true;
 
+    const Token *tok1 = tok;
+
+    // look for end of previous statement
+    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{"))
+        tok1 = tok1->previous();
+
+    // find the return type
+    while (tok1 && Token::Match(tok1->next(), "static|const"))
+        tok1 = tok1->next();
+
+    if (tok1)
+        function->retDef = tok1;
+
     addNewFunction(&scope, &tok);
 
     if (scope) {
@@ -1705,6 +1727,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
             std::cout << "        tokenDef: " << _tokenizer->list.fileLine(func->tokenDef) << std::endl;
             std::cout << "        argDef: " << _tokenizer->list.fileLine(func->argDef) << std::endl;
+            std::cout << "        retDef: " << func->retDef->str() << " " <<_tokenizer->list.fileLine(func->retDef) << std::endl;
             if (func->hasBody) {
                 std::cout << "        token: " << _tokenizer->list.fileLine(func->token) << std::endl;
                 std::cout << "        arg: " << _tokenizer->list.fileLine(func->arg) << std::endl;
