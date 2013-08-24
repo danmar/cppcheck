@@ -2204,8 +2204,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                     tok = tok->tokAt(2);
 
                 // skip close parenthesis
-                if(tok->str() == ")")
-                {
+                if (tok->str() == ")") {
                     tok = tok->next();
                 }
 
