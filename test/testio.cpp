@@ -919,12 +919,35 @@ private:
 
         check("namespace bar { int f() { return 0; } }\n"
               "void foo() { printf(\"%u %lu %f %lf %p\", bar::f(), bar::f(), bar::f(), bar::f(), bar::f()); }");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list.\n"
-                           "[test.cpp:2]: (warning) %lu in format string (no. 2) requires an unsigned long integer given in the argument list.\n"
-                           "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
-                           "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
-                           "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", "",  errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 2) requires an unsigned long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
 
+        check("struct Fred { int i; } f;\n"
+              "void foo() { printf(\"%u %lu %f %lf %p\", f.i, f.i, f.i, f.i, f.i); }");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 2) requires an unsigned long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
+
+        check("struct Fred { unsigned int u; } f;\n"
+              "void foo() { printf(\"%d %ld %f %lf %p\", f.u, f.u, f.u, f.u, f.u); }");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %ld in format string (no. 2) requires a signed long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
+
+        check("struct Fred { unsigned int ui() { return 0; } } f;\n"
+              "void foo() { printf(\"%d %ld %f %lf %p\", f.ui(), f.ui(), f.ui(), f.ui(), f.ui()); }");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %ld in format string (no. 2) requires a signed long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

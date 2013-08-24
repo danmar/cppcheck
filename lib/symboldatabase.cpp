@@ -427,7 +427,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             tok1 = tok1->next();
 
                         if (tok1)
-                            function.retDef = tok1->next();
+                            function.retDef = tok1;
                     }
 
                     const Token *end;
