@@ -5244,7 +5244,11 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                         if (isstatic) {
                             if (Token::Match(tok2->next(), "%num% ,"))
                                 tok2 = tok2->tokAt(2);
-                            else
+                            else if (Token::Match(tok2->next(), "( %num% ) ,")) { // ticket #4450
+                                tok2->deleteNext();
+                                tok2->next()->deleteNext();
+                                tok2 = tok2->tokAt(2);
+                            } else
                                 tok2 = NULL;
                         } else if (isconst && !ispointer) {
                             //do not split const non-pointer variables..
