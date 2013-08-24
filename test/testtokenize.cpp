@@ -5581,6 +5581,13 @@ private:
             const char code[] = "static unsigned int *a=0, *b=0;";
             ASSERT_EQUALS("static unsigned int * a = 0 ; static unsigned int * b = 0 ;", tokenizeAndStringify(code));
         }
+
+        {
+            const char code[] = "static int large_eeprom_type = (13 | (5)), "
+                                "default_flash_type = 42;";
+            ASSERT_EQUALS("static int large_eeprom_type = 13 ; static int default_flash_type = 42 ;",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void vardecl6() {
