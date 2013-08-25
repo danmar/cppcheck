@@ -948,6 +948,13 @@ private:
                       "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
                       "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
+
+        // #4975
+        check("void f(int len, int newline) {\n"
+              "    printf(\"%s\", newline ? a : str + len);\n"
+              "    printf(\"%s\", newline + newline);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

@@ -793,8 +793,8 @@ bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Tok
                     tok1 = tok1->link();
                 else if (tok1->str() == "<" && tok1->link())
                     tok1 = tok1->link();
-                else if (tok1->str() == ";")
-                    break;
+                else if (!(tok1->str() == "." || tok1->type() == Token::eVariable || tok1->type() == Token::eFunction))
+                    return false;
             }
 
             if (varTok) {
