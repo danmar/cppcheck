@@ -7872,8 +7872,8 @@ private:
                                 "wchar_t * pwchar ; "
                                 "unsigned short * pushort ; "
                                 "unsigned short langid ; "
-                                "unsigned long dword64 ; "
-                                "unsigned long ulong64 ; "
+                                "unsigned long long dword64 ; "
+                                "unsigned long long ulong64 ; "
                                 "wchar_t * lpcwstr ; "
                                 "const wchar_t * lpcwstr ;";
 
