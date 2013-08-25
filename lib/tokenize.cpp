@@ -6170,7 +6170,7 @@ bool Tokenizer::simplifyKnownVariables()
                     break;
             }
 
-            else if (tok2->previous()->str() != "*" &&
+            else if (tok2->previous()->str() != "*" && !Token::Match(tok2->tokAt(-2), "* --|++") &&
                      (Token::Match(tok2, "%var% = %bool%|%char%|%num%|%str%|%var% ;") ||
                       Token::Match(tok2, "%var% [ ] = %str% ;") ||
                       Token::Match(tok2, "%var% [ %num% ] = %str% ;") ||
