@@ -2239,6 +2239,7 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
 // the number of bytes provided at the 3. parameter.
 //
 // References:
+//  - http://pubs.opengroup.org/onlinepubs/9699919799/functions/write.html
 //  - http://gd.tuwien.ac.at/languages/c/programming-bbrown/c_075.htm
 //  - http://codewiki.wikidot.com/c:system-calls:write
 // -------------------------------------------------------------------------------------
@@ -2255,7 +2256,7 @@ void CheckBufferOverrun::writeOutsideBufferSize()
             if (Token::Match(tok, "pwrite|write (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str% , %num%")) {
                 const std::string & functionName(tok->str());
                 tok = tok->tokAt(2)->nextArgument(); // set tokenptr to %str% parameter
-                const std::size_t stringLength = Token::getStrLength(tok);
+                const std::size_t stringLength = Token::getStrLength(tok)+1; // zero-terminated string!
                 tok = tok->tokAt(2); // set tokenptr to %num% parameter
                 const MathLib::bigint writeLength = MathLib::toLongNumber(tok->str());
                 if (static_cast<std::size_t>(writeLength) > stringLength)
