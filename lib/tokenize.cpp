@@ -9540,6 +9540,30 @@ void Tokenizer::createSymbolDatabase()
                         membertok->variable(membervar);
                 }
             }
+
+            // check for function returning record type
+            // func(...).var
+            // func(...)[...].var
+            else if (tok->function() && tok->next()->str() == "(" &&
+                     (Token::Match(tok->next()->link(), ") . %var% !!(") ||
+                      (Token::Match(tok->next()->link(), ") [") && Token::Match(tok->next()->link()->next()->link(), "] . %var% !!(")))) {
+                const Type *type = tok->function()->retType;
+                if (type) {
+                    Token *membertok;
+                    if (tok->next()->link()->next()->str() == ".")
+                        membertok = tok->next()->link()->next()->next();
+                    else
+                        membertok = tok->next()->link()->next()->link()->next()->next();
+                    const Variable *membervar = membertok->variable();
+                    if (!membervar) {
+                        if (type->classScope) {
+                            membervar = type->classScope->getVariable(membertok->str());
+                            if (membervar)
+                                membertok->variable(membervar);
+                        }
+                    }
+                }
+            }
         }
     }
 }

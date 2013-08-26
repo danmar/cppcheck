@@ -423,7 +423,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                     // find the return type
                     if (function.type != Function::eConstructor) {
-                        while (tok1 && Token::Match(tok1->next(), "virtual|static|friend|const"))
+                        while (tok1 && Token::Match(tok1->next(), "virtual|static|friend|const|struct|union"))
                             tok1 = tok1->next();
 
                         if (tok1)
@@ -739,6 +739,22 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->isClassOrStruct())
             classAndStructScopes.push_back(&*it);
+    }
+
+    // fill in function return types
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+        std::list<Function>::iterator func;
+
+        for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+            // add return types
+            if (func->retDef) {
+                const Token *type = func->retDef;
+                while (Token::Match(type, "static|const|struct|union"))
+                    type = type->next();
+                if (type)
+                    func->retType = findTypeInNested(type, func->nestedIn);
+            }
+        }
     }
 
     // determine if user defined type needs initialization
@@ -1725,9 +1741,10 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isDelete: " << (func->isDelete ? "true" : "false") << std::endl;
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
             std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
-            std::cout << "        tokenDef: " << _tokenizer->list.fileLine(func->tokenDef) << std::endl;
+            std::cout << "        tokenDef: " << func->tokenDef->str() << " " <<_tokenizer->list.fileLine(func->tokenDef) << std::endl;
             std::cout << "        argDef: " << _tokenizer->list.fileLine(func->argDef) << std::endl;
             std::cout << "        retDef: " << func->retDef->str() << " " <<_tokenizer->list.fileLine(func->retDef) << std::endl;
+            std::cout << "        retType: " << func->retType << std::endl;
             if (func->hasBody) {
                 std::cout << "        token: " << _tokenizer->list.fileLine(func->token) << std::endl;
                 std::cout << "        arg: " << _tokenizer->list.fileLine(func->arg) << std::endl;

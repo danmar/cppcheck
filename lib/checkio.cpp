@@ -594,7 +594,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'X':
                                     case 'o':
                                         specifier += *i;
-                                        if (functionInfo && varTypeTok && (varTypeTok->isStandardType() || !Token::Match(varTypeTok->next(), "*|&"))) {
+                                        if (functionInfo && varTypeTok && ((varTypeTok->isStandardType() || functionInfo->retType) && varTypeTok->next()->str() != "*")) {
                                             if (!Token::Match(varTypeTok, "bool|short|long|int|char|size_t") ||
                                                 (specifier[0] == 'l' && (varTypeTok->str() != "long" || (specifier[1] == 'l' && !varTypeTok->isLong())))) {
                                                 invalidPrintfArgTypeError_int(tok, numFormat, specifier);
@@ -612,7 +612,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'd':
                                     case 'i':
                                         specifier += *i;
-                                        if (functionInfo && varTypeTok && (varTypeTok->isStandardType() || Token::Match(varTypeTok->next(), "*|&"))) {
+                                        if (functionInfo && varTypeTok && (varTypeTok->isStandardType() || functionInfo->retType) && varTypeTok->next()->str() != "*") {
                                             if (((varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "bool|short|long|int")) && varTypeTok->str() != "char") ||
                                                 (specifier[0] == 'l' && (varTypeTok->str() != "long" || (specifier[1] == 'l' && !varTypeTok->isLong())))) {
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier);
@@ -629,7 +629,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         break;
                                     case 'u':
                                         specifier += *i;
-                                        if (functionInfo && varTypeTok && (varTypeTok->isStandardType() || !Token::Match(varTypeTok->next(), "*|&"))) {
+                                        if (functionInfo && varTypeTok && ((varTypeTok->isStandardType() || functionInfo->retType) || varTypeTok->next()->str() != "*")) {
                                             if (((!varTypeTok->isUnsigned() || !Token::Match(varTypeTok, "char|short|long|int|size_t")) && varTypeTok->str() != "bool") ||
                                                 (specifier[0] == 'l' && (varTypeTok->str() != "long" || (specifier[1] == 'l' && !varTypeTok->isLong())))) {
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier);
@@ -659,8 +659,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'g':
                                     case 'G':
                                         specifier += *i;
-                                        if (functionInfo && varTypeTok && ((varTypeTok->isStandardType() && !Token::Match(varTypeTok, "float|double")) ||
-                                                                           Token::Match(varTypeTok->next(), "*|&") ||
+                                        if (functionInfo && varTypeTok && (((varTypeTok->isStandardType() || functionInfo->retType) && !Token::Match(varTypeTok, "float|double")) ||
+                                                                           Token::simpleMatch(varTypeTok->next(), "*") ||
                                                                            (specifier[0] == 'l' && (!varTypeTok->isLong() || varTypeTok->str() != "double")) ||
                                                                            (specifier[0] != 'l' && varTypeTok->isLong())))
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier);

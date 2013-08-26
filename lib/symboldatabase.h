@@ -451,6 +451,7 @@ public:
           token(NULL),
           arg(NULL),
           retDef(NULL),
+          retType(NULL),
           functionScope(NULL),
           nestedIn(NULL),
           initArgCount(0),
@@ -502,7 +503,8 @@ public:
     const Token *argDef;   // function argument start '(' in class definition
     const Token *token;    // function name token in implementation
     const Token *arg;      // function argument start '('
-    const Token *retDef;
+    const Token *retDef;   // function return type token
+    const ::Type *retType; // function return type
     const Scope *functionScope; // scope of function body
     const Scope* nestedIn; // Scope the function is declared in
     std::list<Variable> argumentList; // argument list
