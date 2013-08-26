@@ -801,6 +801,14 @@ static bool checkFunctionUsage(const std::string& name, const Scope* scope)
 
     for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if (func->functionScope) {
+            if (Token::Match(func->tokenDef, "%var% (")) {
+                for (const Token *ftok = func->tokenDef->tokAt(2); ftok && ftok->str() != ")"; ftok = ftok->next()) {
+                    if (Token::Match(ftok, "= %var% (") && ftok->strAt(1) == name)
+                        return true;
+                    if (ftok->str() == "(")
+                        ftok = ftok->link();
+                }
+            }
             for (const Token *ftok = func->functionScope->classDef->linkAt(1); ftok != func->functionScope->classEnd; ftok = ftok->next()) {
                 if (ftok->str() == name) // Function used. TODO: Handle overloads
                     return true;
@@ -856,11 +864,12 @@ void CheckClass::privateFunctions()
             // Check that all private functions are used
             bool used = checkFunctionUsage(funcName, &*scope); // Usage in this class
             // Check in friend classes
-            for (std::list<Type::FriendInfo>::const_iterator it = scope->definedType->friendList.begin(); !used && it != scope->definedType->friendList.end(); ++it)
+            for (std::list<Type::FriendInfo>::const_iterator it = scope->definedType->friendList.begin(); !used && it != scope->definedType->friendList.end(); ++it) {
                 if (it->type)
                     used = checkFunctionUsage(funcName, it->type->classScope);
                 else
                     used = true; // Assume, it is used if we do not see friend class
+            }
 
             if (!used)
                 unusedPrivateFunctionError(FuncList.front()->tokenDef, scope->className, funcName);

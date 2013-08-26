@@ -47,6 +47,7 @@ private:
         TEST_CASE(func_pointer5); // ticket #2233
 
         TEST_CASE(ctor);
+        TEST_CASE(ctor2);
 
         TEST_CASE(classInClass);
         TEST_CASE(sameFunctionNames);
@@ -326,6 +327,18 @@ private:
               "    int numOfThreads;\n"
               "};");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ctor2() {
+        check("struct State {\n"
+              "  State(double const totalWeighting= TotalWeighting()) :\n"
+              "    totalWeighting_(totalWeighting) {}\n"
+              "private:\n"
+              "  double TotalWeighting() { return 123.0; }\n"  // called from constructor
+              "public:\n"
+              "  double totalWeighting_;\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
