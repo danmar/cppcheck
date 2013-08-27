@@ -976,8 +976,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.read(tok->next()->varId(), tok);
             } else // addressof
                 variables.use(tok->next()->varId(), tok); // use = read + write
-        } else if (Token::Match(tok, ">> %var%")) {
-            variables.use(tok->next()->varId(), tok); // use = read + write
+        } else if (Token::Match(tok, ">>|>>= %var%")) {
+            if (_tokenizer->isC() || tok->previous()->isStandardType())
+                variables.read(tok->next()->varId(), tok);
+            else
+                variables.use(tok->next()->varId(), tok); // use = read + write
         } else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]")) {
             variables.read(tok->varId(), tok);
         }
