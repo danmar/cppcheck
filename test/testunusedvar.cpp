@@ -1624,11 +1624,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar32() { // ticket #2330
+    void localvar32() {
+        // ticket #2330 - fstream >> x
         functionVariableUsage("void f() {\n"
                               "    int x;\n"
                               "    fstream &f = getfile();\n"
                               "    f >> x;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket #4596 - if (c >>= x) {}
+        functionVariableUsage("void f() {\n"
+                              "    int x;\n"
+                              "    C c;\n" // possibly some stream class
+                              "    if (c >>= x) {}\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
