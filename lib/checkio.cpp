@@ -558,8 +558,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         const Variable *variableInfo;
                         const Token *varTypeTok;
                         const Function *functionInfo;
+                        bool element;
 
-                        if (getArgumentInfo(argListTok, &variableInfo, &varTypeTok, &functionInfo)) {
+                        if (getArgumentInfo(argListTok, &variableInfo, &varTypeTok, &functionInfo, element)) {
                             if (varTypeTok && varTypeTok->str() == "static")
                                 varTypeTok = varTypeTok->next();
 
@@ -664,7 +665,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                                            (specifier[0] == 'l' && (!varTypeTok->isLong() || varTypeTok->str() != "double")) ||
                                                                            (specifier[0] != 'l' && varTypeTok->isLong())))
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier);
-                                        else if (variableInfo && varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) || variableInfo->isPointer() || variableInfo->isArray()))
+                                        else if (variableInfo && varTypeTok && ((isKnownType(variableInfo, varTypeTok) && !Token::Match(varTypeTok, "float|double")) ||
+                                                                                (!element && variableInfo->isArrayOrPointer()) ||
+                                                                                (element && !variableInfo->isArrayOrPointer())))
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier);
                                         else if (argListTok->type() == Token::eString)
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier);
@@ -760,13 +763,14 @@ void CheckIO::checkWrongPrintfScanfArguments()
 // We currently only support string literals, variables, and functions.
 /// @todo add non-string literals, and generic expressions
 
-bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Token **typeTok, const Function **func) const
+bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Token **typeTok, const Function **func, bool &element) const
 {
     if (tok) {
         if (tok->type() == Token::eString) {
             *var = 0;
             *typeTok = 0;
             *func = 0;
+            element = false;
             return true;
         } else if (tok->type() == Token::eVariable || tok->type() == Token::eFunction || Token::Match(tok, "%type% ::")) {
             while (Token::Match(tok, "%type% ::"))
@@ -774,7 +778,8 @@ bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Tok
             if (!tok || !(tok->type() == Token::eVariable || tok->type() == Token::eFunction))
                 return false;
             const Token *varTok = 0;
-            for (const Token *tok1 = tok->next(); tok1; tok1 = tok1->next()) {
+            const Token *tok1 = tok->next();
+            for (; tok1; tok1 = tok1->next()) {
                 if (tok1->str() == "," || tok1->str() == ")") {
                     if (tok1->previous()->str() == "]")
                         varTok = tok1->linkAt(-1)->previous();
@@ -784,6 +789,7 @@ bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Tok
                             *var = 0;
                             *typeTok = function->retDef;
                             *func = function;
+                            element = false;
                             return true;
                         }
                     } else
@@ -802,6 +808,7 @@ bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Tok
                 *var = variableInfo;
                 *typeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
                 *func = 0;
+                element = tok1->previous()->str() == "]";
                 return true;
             }
         }

@@ -335,6 +335,14 @@ public:
     }
 
     /**
+     * Is array or pointer variable.
+     * @return true if pointer or array, false otherwise
+     */
+    bool isArrayOrPointer() const {
+        return getFlag(fIsArray) || getFlag(fIsPointer);
+    }
+
+    /**
      * Is reference variable.
      * @return true if reference, false otherwise
      */

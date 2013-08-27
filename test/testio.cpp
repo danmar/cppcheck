@@ -1015,6 +1015,12 @@ private:
               "void foo() { printf(\"%d %ld %u %lu %f %lf\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
         ASSERT_EQUALS("", errout.str());
 
+        // #4984
+        check("void f(double *x) {\n"
+              "    printf(\"%f\", x[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
