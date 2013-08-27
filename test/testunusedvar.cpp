@@ -1640,6 +1640,21 @@ private:
                               "    if (c >>= x) {}\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    int x;\n"
+                              "    C c;\n"
+                              "    if (c >>= x) {}\n"
+                              "}", "test.c");
+        TODO_ASSERT_EQUALS("[test.c:2]: (style) Variable 'x' is not assigned a value.\n",
+                           "[test.c:2]: (style) Variable 'x' is not assigned a value.\n"
+                           "[test.c:3]: (style) Variable 'c' is not assigned a value.\n", errout.str());
+
+        functionVariableUsage("void f(int c) {\n"
+                              "    int x;\n"
+                              "    if (c >> x) {}\n"
+                              "}");
+        TODO_ASSERT_EQUALS("[test.c:2]: (style) Variable 'x' is not assigned a value.\n", "", errout.str());
     }
 
     void localvar33() { // ticket #2345
