@@ -661,7 +661,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'G':
                                         specifier += *i;
                                         if (functionInfo && varTypeTok && (((varTypeTok->isStandardType() || functionInfo->retType) && !Token::Match(varTypeTok, "float|double")) ||
-                                                                           Token::simpleMatch(varTypeTok->next(), "*") ||
+                                                                           (!element && Token::simpleMatch(varTypeTok->next(), "*")) ||
+                                                                           (element && !Token::simpleMatch(varTypeTok->next(), "*")) ||
                                                                            (specifier[0] == 'l' && (!varTypeTok->isLong() || varTypeTok->str() != "double")) ||
                                                                            (specifier[0] != 'l' && varTypeTok->isLong())))
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier);
@@ -781,9 +782,19 @@ bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Tok
             const Token *tok1 = tok->next();
             for (; tok1; tok1 = tok1->next()) {
                 if (tok1->str() == "," || tok1->str() == ")") {
-                    if (tok1->previous()->str() == "]")
+                    if (tok1->previous()->str() == "]") {
                         varTok = tok1->linkAt(-1)->previous();
-                    else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->type() == Token::eFunction) {
+                        if (varTok->str() == ")" && varTok->link()->previous()->type() == Token::eFunction) {
+                            const Function * function = varTok->link()->previous()->function();
+                            if (function) {
+                                *var = 0;
+                                *typeTok = function->retDef;
+                                *func = function;
+                                element = true;
+                                return true;
+                            }
+                        }
+                    } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->type() == Token::eFunction) {
                         const Function * function = tok1->linkAt(-1)->previous()->function();
                         if (function) {
                             *var = 0;

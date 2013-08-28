@@ -1021,6 +1021,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int array[10];\n"
+              "int * foo() { return array; }\n"
+              "void f() {\n"
+              "    printf(\"%f\", foo()[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires a floating point number given in the argument list.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
