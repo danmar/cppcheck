@@ -555,9 +555,20 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 // Add any pending inline suppressions that have accumulated.
                 if (!suppressionIDs.empty()) {
                     if (_settings != NULL) {
+                        // Relative filename
+                        std::string relativeFilename(filename);
+                        if (_settings->_relativePaths) {
+                            for (std::size_t j = 0U; j < _settings->_basePaths.size(); ++j) {
+                                const std::string bp = _settings->_basePaths[j] + "/";
+                                if (relativeFilename.compare(0,bp.size(),bp)==0) {
+                                    relativeFilename = relativeFilename.substr(bp.size());
+                                }
+                            }
+                        }
+
                         // Add the suppressions.
                         for (std::size_t j = 0; j < suppressionIDs.size(); ++j) {
-                            const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                            const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], relativeFilename, lineno));
                             if (!errmsg.empty()) {
                                 writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
                             }

@@ -44,6 +44,7 @@ private:
         TEST_CASE(suppressionsPathSeparator);
 
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
+        TEST_CASE(suppressionWithRelativePaths); // #4733
     }
 
     void suppressionsBadId1() const {
@@ -327,6 +328,28 @@ private:
         suppressions.addSuppression("unusedFunction", "test.c", 3U);
         ASSERT_EQUALS(true, suppressions.getUnmatchedLocalSuppressions("test.c").empty());
         ASSERT_EQUALS(false, suppressions.getUnmatchedGlobalSuppressions().empty());
+    }
+
+    void suppressionWithRelativePaths()  {
+        // Clear the error log
+        errout.str("");
+
+        CppCheck cppCheck(*this, true);
+        Settings& settings = cppCheck.settings();
+        settings.addEnabled("style");
+        settings._inlineSuppressions = true;
+        settings._relativePaths = true;
+        settings._basePaths.push_back("/somewhere");
+        const char code[] =
+            "struct Point\n"
+            "{\n"
+            "    // cppcheck-suppress unusedStructMember\n"
+            "    int x;\n"
+            "    // cppcheck-suppress unusedStructMember\n"
+            "    int y;\n"
+            "};";
+        cppCheck.check("/somewhere/test.cpp", code);
+        ASSERT_EQUALS("",errout.str());
     }
 };
 
