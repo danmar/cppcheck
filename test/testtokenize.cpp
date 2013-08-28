@@ -746,7 +746,8 @@ private:
     // #4725 - ^{}
     void tokenize28() {
         ASSERT_EQUALS("void f ( ) { asm ( \"^{}\" ) ; }", tokenizeAndStringify("void f() { ^{} }"));
-        ASSERT_EQUALS("void f ( ) { asm ( \"x(^{});\" ) ; }", tokenizeAndStringify("void f() { x(^{}); }"));
+        ASSERT_EQUALS("void f ( ) { asm ( \"x(^{})\" ) ; }", tokenizeAndStringify("void f() { x(^{}); }"));
+        ASSERT_EQUALS("; asm ( \"voidf^{return}intmain\" ) ; ( ) { }", tokenizeAndStringify("; void f ^ { return } int main ( ) { }"));
     }
 
     void wrong_syntax1() {

@@ -1806,7 +1806,7 @@ bool Tokenizer::tokenize(std::istream &code,
             const Token *last = tok->next()->link();
             if (start != tok) {
                 last = last->next();
-                while (last && !Token::Match(last, "[;{}]"))
+                while (last && !Token::Match(last->next(), "[;{}()]"))
                     last = last->next();
             }
             if (start && last) {
