@@ -1,6 +1,6 @@
 {
   "name": "cppcheck-web",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": "XhmikosR (https://github.com/XhmikosR)",
   "description": "The dependencies to build cppcheck's website",
   "homepage": "https://github.com/danmar/cppcheck",
@@ -42,7 +42,7 @@
     "quotmark": "double",
     "regexp": true,
     "shelljs": true,
-    "strict": false,
+    "strict": true,
     "trailing": true,
     "unused": true
   },

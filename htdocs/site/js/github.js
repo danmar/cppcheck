@@ -2,6 +2,8 @@
 
 /* jshint quotmark:true, jquery:true */
 
+'use strict';
+
 // htmlEntities taken from http://css-tricks.com/snippets/javascript/htmlentities-for-javascript/
 function htmlEntities(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

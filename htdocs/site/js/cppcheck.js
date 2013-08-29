@@ -1,4 +1,6 @@
-/* jshint unused:false, jquery:true */
+/* jshint unused:false, jquery:true, browser:true, devel:true */
+
+"use strict";
 
 function addFile() {
     var name = prompt("Name of library/platform/etc", "");
