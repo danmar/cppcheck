@@ -284,6 +284,9 @@ private:
                         if (!Token::Match(c->var->typeStartToken(), "char|wchar_t")) {
                             continue;
                         }
+                        if (Token::Match(tok->next(), "[")) { // Check if it's not being accesed like: 'str[1]'
+                            continue;
+                        }
                         checkUninitVar->uninitstringError(tok, c->var->name(), c->strncpy_);
                     } else if (c->var->isPointer() && !c->var->isArray() && c->alloc)
                         checkUninitVar->uninitdataError(tok, c->var->name());

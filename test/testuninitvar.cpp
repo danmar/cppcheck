@@ -46,6 +46,7 @@ private:
         TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always null-terminate
         TEST_CASE(uninitvar_memset);    // not null-terminated
         TEST_CASE(uninitvar_memset_nonchar);
+        TEST_CASE(uninitvar_memset_char_access);
         TEST_CASE(uninitvar_func);      // analyse functions
         TEST_CASE(func_uninit_var);     // analyse function calls for: 'int a(int x) { return x+x; }'
         TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
@@ -1627,6 +1628,14 @@ private:
                        "    strncpy(str, buf, 10);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "  char dst[4];\n"
+                       "  const char* source = \"You\";\n"
+                       "  strncpy(dst, source, sizeof(dst));\n"
+                       "  char value = dst[2];\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // initialization with memset (not 0-terminating string)..
@@ -1644,6 +1653,15 @@ private:
                        "    int a[20];\n"
                        "    memset(a, 1, 20);\n"
                        "    a[0] |= 2;\n"
+                       "}");
+        ASSERT_EQUALS(errout.str(), "");
+    }
+
+    void uninitvar_memset_char_access() {
+        checkUninitVar("void f() {\n"
+                       "    unsigned char c[10];\n"
+                       "    memset(c, 32, 10);\n"
+                       "    unsigned char value = c[3];\n"
                        "}");
         ASSERT_EQUALS(errout.str(), "");
     }
