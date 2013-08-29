@@ -817,105 +817,116 @@ private:
                       "[test.cpp:13]: (warning) %f in format string (no. 5) requires a floating point number given in the argument list.\n"
                       "[test.cpp:13]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n", errout.str());
 
-        check("short s() { return 0; }\n"
-              "short * ps() { return 0; }\n"
-              "unsigned short us() { return 0; }\n"
-              "unsigned short * pus() { return 0; }\n"
-              "int i() { return 0; }\n"
-              "int * pi() { return 0; }\n"
-              "unsigned int ui() { return 0; }\n"
-              "unsigned int * pui() { return 0; }\n"
-              "long l() { return 0; }\n"
-              "long * pl() { return 0; }\n"
-              "unsigned long ul() { return 0; }\n"
-              "unsigned long * pul() { return 0; }\n"
-              "float f() { return 0; }\n"
-              "float * pf() { return 0; }\n"
-              "double d() { return 0; }\n"
-              "double * pd() { return 0; }\n"
-              "long double ld() { return 0; }\n"
-              "long double * pld() { return 0; }\n"
-              "void foo() {\n"
-              "    printf(\"%d %p %u %p %d %p %u %p %ld %p %lu %p %f %p %f %p %lf %p\",\n"
-              "        s(), ps(), us(), pus(),\n"
-              "        i(), pi(), ui(), pui(),\n"
-              "        l(), pl(), ul(), upl(),\n"
-              "        f(), pf(), d(), pd(), ld(), pld());\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
         check("short f() { return 0; }\n"
-              "void foo() { printf(\"%u %lu %f %lf %p\", f(), f(), f(), f(), f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 1) requires an unsigned integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 2) requires an unsigned long integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
-
-        check("unsigned short f() { return 0; }\n"
-              "void foo() { printf(\"%d %ld %f %lf %p\", f(), f(), f(), f(), f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires a signed integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %ld in format string (no. 2) requires a signed long integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
-
-        check("int f() { return 0; }\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%d %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 5) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address given in the argument list.\n", errout.str());
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
+
+        check("unsigned short f() { return 0; }\n"
+              "void foo() { printf(\"%u %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 5) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
+
+        check("int f() { return 0; }\n"
+              "void foo() { printf(\"%d %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
 
         check("unsigned int f() { return 0; }\n"
-              "void foo() { printf(\"%u %d %ld %f %lf %p\", f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%u %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 5) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address given in the argument list.\n", errout.str());
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 5) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
 
         check("long f() { return 0; }\n"
-              "void foo() { printf(\"%ld %u %f %lf %p\", f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%ld %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
 
         check("unsigned long f() { return 0; }\n"
-              "void foo() { printf(\"%lu %d %f %lf %p\", f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%lu %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 4) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 5) requires an address given in the argument list.\n", errout.str());
+                      "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 5) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
+
+        check("long long f() { return 0; }\n"
+              "void foo() { printf(\"%lld %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
+
+        check("unsigned long long f() { return 0; }\n"
+              "void foo() { printf(\"%llu %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address given in the argument list.\n", errout.str());
 
         check("float f() { return 0; }\n"
-              "void foo() { printf(\"%f %d %ld %u %lu %lf %p\", f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%f %d %ld %u %lu %I64d %I64u %lf %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %u in format string (no. 4) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 5) requires an unsigned long integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 6) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 7) requires an address given in the argument list.\n", errout.str());
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 6) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 7) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 8) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 9) requires an address given in the argument list.\n", errout.str());
 
         check("double f() { return 0; }\n"
-              "void foo() { printf(\"%f %d %ld %u %lu %lf %p\", f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%f %d %ld %u %lu %I64d %I64u %lf %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %u in format string (no. 4) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 5) requires an unsigned long integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 6) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 7) requires an address given in the argument list.\n", errout.str());
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 6) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 7) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %lf in format string (no. 8) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 9) requires an address given in the argument list.\n", errout.str());
 
         check("long double f() { return 0; }\n"
-              "void foo() { printf(\"%lf %d %ld %u %lu %f %p\", f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%lf %d %ld %u %lu %I64d %I64u %f %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %u in format string (no. 4) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 5) requires an unsigned long integer given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number given in the argument list.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 7) requires an address given in the argument list.\n", errout.str());
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 6) requires a signed long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 7) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 8) requires a floating point number given in the argument list.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 9) requires an address given in the argument list.\n", errout.str());
 
         check("namespace bar { int f() { return 0; } }\n"
               "void foo() { printf(\"%d %u %lu %f %lf %p\", bar::f(), bar::f(), bar::f(), bar::f(), bar::f(), bar::f()); }");
@@ -1073,8 +1084,8 @@ private:
                       "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
                       "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires a signed integer given in the argument list.\n"
-                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
-                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires a signed integer given in the argument list.\n", errout.str());
+                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires an unsigned long long integer given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires a signed long long integer given in the argument list.\n", errout.str());
 
         check("void foo() {\n"
               "    size_t s;\n"
