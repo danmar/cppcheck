@@ -823,9 +823,19 @@ bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Tok
             if (varTok) {
                 const Variable *variableInfo = varTok->variable();
                 *var = variableInfo;
-                *typeTok = variableInfo ? variableInfo->typeStartToken() : NULL;
-                *func = 0;
                 element = tok1->previous()->str() == "]";
+
+                // look for std::vector operator [] and use template type as return type
+                if (variableInfo) {
+                    if (element && Token::Match(variableInfo->typeStartToken(), "std :: vector|array <")) {
+                        *typeTok = variableInfo->typeStartToken()->tokAt(4);
+                        element = false;    // not really an array element
+                    } else
+                        *typeTok = variableInfo->typeStartToken();
+                } else
+                    *typeTok = NULL;
+
+                *func = 0;
                 return true;
             }
         }

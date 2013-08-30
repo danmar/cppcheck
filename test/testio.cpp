@@ -1039,6 +1039,20 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires a floating point number given in the argument list.\n", errout.str());
 
+        check("struct Base { int length() { } };\n"
+              "struct Derived : public Base { };\n"
+              "void foo(Derived * d) {\n"
+              "    printf(\"%f\", d.length());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires a floating point number given in the argument list.\n", errout.str());
+
+        check("std::vector<int> v;\n"
+              "void foo() {\n"
+              "    printf(\"%d %u %f\", v[0], v[0], v[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer given in the argument list.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 3) requires a floating point number given in the argument list.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

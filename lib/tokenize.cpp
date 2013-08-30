@@ -5507,7 +5507,7 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->insertToken("*");
                     tok->insertToken("wchar_t");
                 }
-            } else if (Token::Match(tok, "ULONG64|DWORD64")) {
+            } else if (Token::Match(tok, "ULONG64|DWORD64|ULONGLONG")) {
                 tok->isUnsigned(true);
                 tok->isLong(true);
                 tok->str("long");

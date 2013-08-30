@@ -2499,6 +2499,18 @@ const Function* Scope::findFunction(const Token *tok) const
         }
     }
 
+    // check in base classes
+    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
+        for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
+            const Type *base = definedType->derivedFrom[i].type;
+            if (base && base->classScope) {
+                const Function * func = base->classScope->findFunction(tok);
+                if (func)
+                    return func;
+            }
+        }
+    }
+
     return 0;
 }
 
