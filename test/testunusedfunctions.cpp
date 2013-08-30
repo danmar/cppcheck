@@ -48,6 +48,7 @@ private:
         TEST_CASE(initializationIsNotAFunction);
         TEST_CASE(operator1);   // #3195
         TEST_CASE(returnRef);
+        TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -233,6 +234,12 @@ private:
         check("int& foo() {return x;}");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
+
+    void attribute() { // #3471 - FP __attribute__((constructor))
+        check("void __attribute__((constructor)) f() {}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void multipleFiles() {
         CheckUnusedFunctions c;

@@ -64,6 +64,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         if (Token::Match(tok->previous(), ")|const") || funcname == 0)
             continue;
 
+        // Don't warn about functions that are marked by __attribute__((constructor))
+        if (tok->isAttributeConstructor() || funcname->isAttributeConstructor())
+            continue;
+
         tok = funcname->linkAt(1);
 
         // Check that ") {" is found..

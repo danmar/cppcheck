@@ -108,8 +108,9 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2->isSigned(tok->isSigned());
         tok2->isPointerCompare(tok->isPointerCompare());
         tok2->isLong(tok->isLong());
-        tok2->isUnused(tok->isUnused());
-        tok2->setExpandedMacro(tok->isExpandedMacro());
+        tok2->isExpandedMacro(tok->isExpandedMacro());
+        tok2->isAttributeConstructor(tok->isAttributeConstructor());
+        tok2->isAttributeUnused(tok->isAttributeUnused());
         tok2->varId(tok->varId());
 
         // Check for links and fix them up
@@ -8860,16 +8861,20 @@ void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::simpleMatch(tok, "__attribute__ (") && tok->next()->link() && tok->next()->link()->next()) {
+            if (Token::simpleMatch(tok->tokAt(2), "( constructor )")) {
+                tok->next()->link()->next()->isAttributeConstructor(true);
+            }
+
             if (Token::simpleMatch(tok->tokAt(2), "( unused )")) {
                 // check if after variable name
                 if (Token::Match(tok->next()->link()->next(), ";|=")) {
                     if (Token::Match(tok->previous(), "%type%"))
-                        tok->previous()->isUnused(true);
+                        tok->previous()->isAttributeUnused(true);
                 }
 
                 // check if before variable name
                 else if (Token::Match(tok->next()->link()->next(), "%type%"))
-                    tok->next()->link()->next()->isUnused(true);
+                    tok->next()->link()->next()->isAttributeUnused(true);
             }
 
             Token::eraseTokens(tok, tok->next()->link()->next());

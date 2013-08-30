@@ -261,20 +261,26 @@ public:
     void isLong(bool size) {
         _isLong = size;
     }
-    bool isUnused() const {
-        return _isUnused;
-    }
-    void isUnused(bool used) {
-        _isUnused = used;
-    }
     bool isStandardType() const {
         return _isStandardType;
     }
     bool isExpandedMacro() const {
         return _isExpandedMacro;
     }
-    void setExpandedMacro(bool m) {
+    void isExpandedMacro(bool m) {
         _isExpandedMacro = m;
+    }
+    bool isAttributeConstructor() const {
+        return _isAttributeConstructor;
+    }
+    void isAttributeConstructor(bool ac) {
+        _isAttributeConstructor = ac;
+    }
+    bool isAttributeUnused() const {
+        return _isAttributeUnused;
+    }
+    void isAttributeUnused(bool unused) {
+        _isAttributeUnused = unused;
     }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
@@ -608,9 +614,10 @@ private:
     bool _isSigned;
     bool _isPointerCompare;
     bool _isLong;
-    bool _isUnused;
     bool _isStandardType;
     bool _isExpandedMacro;
+    bool _isAttributeConstructor;  // __attribute__((constructor))
+    bool _isAttributeUnused;       // __attribute__((unused))
 
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */

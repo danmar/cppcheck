@@ -45,9 +45,10 @@ Token::Token(Token **t) :
     _isSigned(false),
     _isPointerCompare(false),
     _isLong(false),
-    _isUnused(false),
     _isStandardType(false),
     _isExpandedMacro(false),
+    _isAttributeConstructor(false),
+    _isAttributeUnused(false),
     _astOperand1(NULL),
     _astOperand2(NULL),
     _astParent(NULL)
@@ -192,9 +193,10 @@ void Token::deleteThis()
         _isSigned = _next->_isSigned;
         _isPointerCompare = _next->_isPointerCompare;
         _isLong = _next->_isLong;
-        _isUnused = _next->_isUnused;
         _isStandardType = _next->_isStandardType;
         _isExpandedMacro = _next->_isExpandedMacro;
+        _isAttributeConstructor = _next->_isAttributeConstructor;
+        _isAttributeUnused = _next->_isAttributeUnused;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -213,9 +215,10 @@ void Token::deleteThis()
         _isSigned = _previous->_isSigned;
         _isPointerCompare = _previous->_isPointerCompare;
         _isLong = _previous->_isLong;
-        _isUnused = _previous->_isUnused;
         _isStandardType = _previous->_isStandardType;
         _isExpandedMacro = _previous->_isExpandedMacro;
+        _isAttributeConstructor = _previous->_isAttributeConstructor;
+        _isAttributeUnused = _previous->_isAttributeUnused;
         _varId = _previous->_varId;
         _fileIndex = _previous->_fileIndex;
         _linenr = _previous->_linenr;

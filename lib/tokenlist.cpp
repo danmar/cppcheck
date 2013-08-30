@@ -128,7 +128,7 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
     _back->isUnsigned(tok->isUnsigned());
     _back->isSigned(tok->isSigned());
     _back->isLong(tok->isLong());
-    _back->isUnused(tok->isUnused());
+    _back->isAttributeUnused(tok->isAttributeUnused());
 }
 //---------------------------------------------------------------------------
 // InsertTokens - Copy and insert tokens
@@ -158,7 +158,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, unsigned int n)
         dest->isSigned(src->isSigned());
         dest->isPointerCompare(src->isPointerCompare());
         dest->isLong(src->isLong());
-        dest->isUnused(src->isUnused());
+        dest->isAttributeUnused(src->isAttributeUnused());
         src  = src->next();
         --n;
     }
@@ -256,12 +256,12 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                 // Add previous token
                 addtoken(CurrentToken.c_str(), lineno, FileIndex);
                 if (!CurrentToken.empty())
-                    _back->setExpandedMacro(expandedMacro);
+                    _back->isExpandedMacro(expandedMacro);
 
                 // Add content of the string
                 addtoken(line.c_str(), lineno, FileIndex);
                 if (!line.empty())
-                    _back->setExpandedMacro(expandedMacro);
+                    _back->isExpandedMacro(expandedMacro);
             }
 
             CurrentToken.clear();
@@ -317,7 +317,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
             addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
             if (!CurrentToken.empty())
-                _back->setExpandedMacro(expandedMacro);
+                _back->isExpandedMacro(expandedMacro);
 
             CurrentToken.clear();
 
@@ -336,7 +336,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             if (std::strchr("+-<>=:&|", ch) && (code.peek() == ch))
                 CurrentToken += (char)code.get();
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            _back->setExpandedMacro(expandedMacro);
+            _back->isExpandedMacro(expandedMacro);
             CurrentToken.clear();
             continue;
         }
@@ -345,7 +345,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
     }
     addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
     if (!CurrentToken.empty())
-        _back->setExpandedMacro(expandedMacro);
+        _back->isExpandedMacro(expandedMacro);
     _front->assignProgressValues();
 
     for (unsigned int i = 1; i < _files.size(); i++)
