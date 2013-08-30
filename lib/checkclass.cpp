@@ -914,6 +914,11 @@ void CheckClass::noMemset()
                     // 3 arguments.
                     continue;
 
+                // Check if it's not a pointer to pointer
+                if (arg1->variable() && arg1->variable()->typeEndToken() &&
+                    Token::Match(arg1->variable()->typeEndToken()->previous(), "* *"))
+                    continue;
+
                 const Token *typeTok = 0;
                 const Scope *type = 0;
                 if (Token::Match(arg3, "sizeof ( %type% ) )"))
