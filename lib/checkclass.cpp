@@ -914,10 +914,6 @@ void CheckClass::noMemset()
                     // 3 arguments.
                     continue;
 
-                // Check if it's not a pointer to pointer
-                if (arg1->variable() && arg1->variable()->typeEndToken() &&
-                    Token::Match(arg1->variable()->typeEndToken()->previous(), "* *"))
-                    continue;
 
                 const Token *typeTok = 0;
                 const Scope *type = 0;
@@ -942,8 +938,12 @@ void CheckClass::noMemset()
 
                     const Variable *var = arg1->variable();
                     if (var && arg1->strAt(1) == ",") {
-                        if (var->isPointer())
+                        if (var->isPointer()) {
                             derefs--;
+                            if (var->typeEndToken() && Token::Match(var->typeEndToken()->previous(), "* *")) // Check if it's a pointer to pointer
+                                derefs--;
+                        }
+
                         if (var->isArray())
                             derefs -= (int)var->dimensions().size();
 

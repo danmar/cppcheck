@@ -2406,16 +2406,19 @@ private:
                       "    C* c1[10][10];\n"
                       "    C* c2[10];\n"
                       "    C c3[10][10];\n"
+                      "    C** c4 = new C*[10];\n"
                       "    memset(**c1, 0, 10);\n"
                       "    memset(*c1, 0, 10);\n"
                       "    memset(*c2, 0, 10);\n"
                       "    memset(*c3, 0, 10);\n"
+                      "    memset(*c4, 0, 10);\n"
                       "    memset(c2, 0, 10);\n"
                       "    memset(c3, 0, 10);\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
-                      "[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
-                      "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
     }
 
     void mallocOnClass() {
