@@ -1074,6 +1074,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 3) requires a floating point number but the argument type is 'int'.\n", errout.str());
 
+        // #4999 (crash)
+        check("int bar(int a);\n"
+              "void foo() {\n"
+              "    printf(\"%d\", bar(0));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

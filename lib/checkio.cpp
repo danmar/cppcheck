@@ -792,23 +792,25 @@ bool CheckIO::getArgumentInfo(const Token * tok, const Variable **var, const Tok
                         varTok = tok1->linkAt(-1)->previous();
                         if (varTok->str() == ")" && varTok->link()->previous()->type() == Token::eFunction) {
                             const Function * function = varTok->link()->previous()->function();
-                            if (function) {
+                            if (function && function->retDef) {
                                 *var = 0;
                                 *typeTok = function->retDef;
                                 *func = function;
                                 element = true;
                                 return true;
-                            }
+                            } else
+                                return false;
                         }
                     } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->type() == Token::eFunction) {
                         const Function * function = tok1->linkAt(-1)->previous()->function();
-                        if (function) {
+                        if (function && function->retDef) {
                             *var = 0;
                             *typeTok = function->retDef;
                             *func = function;
                             element = false;
                             return true;
-                        }
+                        } else
+                            return false;
                     } else
                         varTok = tok1->previous();
                     break;

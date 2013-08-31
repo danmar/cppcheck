@@ -9577,9 +9577,11 @@ void Tokenizer::createSymbolDatabase()
 
                 if (membertok) {
                     const Variable *var = tok->variable();
-                    const Variable *membervar = var->typeScope()->getVariable(membertok->str());
-                    if (membervar)
-                        membertok->variable(membervar);
+                    if (var && var->typeScope()) {
+                        const Variable *membervar = var->typeScope()->getVariable(membertok->str());
+                        if (membervar)
+                            membertok->variable(membervar);
+                    }
                 }
             }
 

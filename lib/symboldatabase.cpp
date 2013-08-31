@@ -612,9 +612,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 break;
                             }
                         }
+
                         // save function prototype in database
                         if (newFunc)
-                            addGlobalFunctionDecl(scope, argStart, funcStart);
+                            addGlobalFunctionDecl(scope, tok, argStart, funcStart);
 
                         tok = argStart->link()->next();
                         continue;
@@ -630,7 +631,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         }
                         // save function prototype in database
                         if (newFunc) {
-                            Function* func = addGlobalFunctionDecl(scope, argStart, funcStart);
+                            Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
                             func->retFuncPtr = true;
                         }
 
@@ -1243,24 +1244,11 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     }
 
     if (!function)
-        function = addGlobalFunctionDecl(scope, argStart, funcStart);
+        function = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
 
     function->arg = argStart;
     function->token = funcStart;
     function->hasBody = true;
-
-    const Token *tok1 = tok;
-
-    // look for end of previous statement
-    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{"))
-        tok1 = tok1->previous();
-
-    // find the return type
-    while (tok1 && Token::Match(tok1->next(), "static|const"))
-        tok1 = tok1->next();
-
-    if (tok1)
-        function->retDef = tok1;
 
     addNewFunction(&scope, &tok);
 
@@ -1272,7 +1260,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     return 0;
 }
 
-Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *argStart, const Token* funcStart)
+Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStart)
 {
     Function function;
 
@@ -1289,6 +1277,19 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *argS
     function.hasBody = false;
     function.type = Function::eFunction;
     function.nestedIn = scope;
+
+    const Token *tok1 = tok;
+
+    // look for end of previous statement
+    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{"))
+        tok1 = tok1->previous();
+
+    // find the return type
+    while (tok1 && Token::Match(tok1->next(), "static|const"))
+        tok1 = tok1->next();
+
+    if (tok1)
+        function.retDef = tok1;
 
     scope->functionList.push_back(function);
     return &scope->functionList.back();
