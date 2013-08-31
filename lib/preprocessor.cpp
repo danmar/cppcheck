@@ -167,6 +167,8 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
         bom = ((unsigned int)istr.get() << 8);
         if (istr.peek() >= 0xfe)
             bom |= (unsigned int)istr.get();
+        else
+            bom = 0; // allowed boms are 0/0xfffe/0xfeff
     }
 
     if (_settings && _settings->terminated())
