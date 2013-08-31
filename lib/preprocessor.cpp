@@ -1908,10 +1908,8 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
     std::replace(result.begin(), result.end(), '\\', '/');
 
     str = result;
-    if (c == '"')
-        return UserHeader;
-    else
-        return SystemHeader;
+
+    return (c == '\"') ? UserHeader : SystemHeader;
 }
 
 /**
