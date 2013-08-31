@@ -557,6 +557,20 @@ public:
     const Token* findClosingBracket() const;
     Token* findClosingBracket();
 
+    /**
+     * Returns the original name.
+     */
+    const std::string & originalName() const {
+        return _originalName;
+    }
+
+    /**
+     * Sets the original name.
+     */
+    void originalName(const std::string & name) {
+        _originalName = name;
+    }
+
 private:
     void next(Token *nextToken) {
         _next = nextToken;
@@ -630,6 +644,10 @@ private:
     Token *_astOperand1;
     Token *_astOperand2;
     Token *_astParent;
+
+    // original name like size_t
+    std::string _originalName;
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);

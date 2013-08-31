@@ -8208,11 +8208,11 @@ private:
                                 "unsigned int sizeof_wchar_t ; sizeof_wchar_t = 4 ; "
                                 "unsigned int sizeof_pointer ; sizeof_pointer = 8 ; "
                                 "unsigned int sizeof_size_t ; sizeof_size_t = 8 ; "
-                                "unsigned long long a ; "
-                                "long long b ; "
-                                "long long c ; "
-                                "long long d ; "
-                                "unsigned long long e ;";
+                                "unsigned long a ; "
+                                "long b ; "
+                                "long c ; "
+                                "long d ; "
+                                "unsigned long e ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unix64));
     }

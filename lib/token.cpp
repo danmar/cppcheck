@@ -226,6 +226,7 @@ void Token::deleteThis()
         _scope = _previous->_scope;
         _function = _previous->_function;
         _variable = _previous->_variable;
+        _originalName = _previous->_originalName;
         if (_link)
             _link->link(this);
 
@@ -991,8 +992,12 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes) const
             os << "unsigned ";
         else if (isSigned())
             os << "signed ";
-        if (isLong())
-            os << "long ";
+        if (isLong()) {
+            if (_type == eString)
+                os << "L";
+            else
+                os << "long ";
+        }
     }
     if (_str[0] != '\"' || _str.find("\0") == std::string::npos)
         os << _str;

@@ -5341,9 +5341,12 @@ void Tokenizer::simplifyPlatformTypes()
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
-    if (_settings->sizeof_size_t == 8)
-        type = isLongLong;
-    else if (_settings->sizeof_size_t == 4 && _settings->sizeof_long == 4)
+    if (_settings->sizeof_size_t == 8) {
+        if (_settings->sizeof_long == 8)
+            type = isLong;
+        else
+            type = isLongLong;
+    } else if (_settings->sizeof_size_t == 4 && _settings->sizeof_long == 4)
         type = isLong;
     else if (_settings->sizeof_size_t == 4)
         type = isInt;
@@ -5351,7 +5354,9 @@ void Tokenizer::simplifyPlatformTypes()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        bool inStd = false;
         if (Token::Match(tok, "std :: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
+            inStd = true;
             tok->deleteNext();
             tok->deleteThis();
         } else if (Token::Match(tok, ":: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
@@ -5359,6 +5364,10 @@ void Tokenizer::simplifyPlatformTypes()
         }
 
         if (Token::Match(tok, "size_t|uintptr_t")) {
+            if (inStd)
+                tok->originalName("std::" + tok->str());
+            else
+                tok->originalName(tok->str());
             tok->isUnsigned(true);
 
             switch (type) {
@@ -5374,6 +5383,10 @@ void Tokenizer::simplifyPlatformTypes()
                 break;
             }
         } else if (Token::Match(tok, "ssize_t|ptrdiff_t|intptr_t")) {
+            if (inStd)
+                tok->originalName("std::" + tok->str());
+            else
+                tok->originalName(tok->str());
             switch (type) {
             case isLongLong:
                 tok->isLong(true);
@@ -5393,29 +5406,41 @@ void Tokenizer::simplifyPlatformTypes()
         _settings->platformType == Settings::Win32W ||
         _settings->platformType == Settings::Win64) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "BOOL|INT|INT32|HFILE|LONG32"))
+            if (Token::Match(tok, "BOOL|INT|INT32|HFILE|LONG32")) {
+                tok->originalName(tok->str());
                 tok->str("int");
-            else if (Token::Match(tok, "BOOLEAN|BYTE|UCHAR")) {
+            } else if (Token::Match(tok, "BOOLEAN|BYTE|UCHAR")) {
+                tok->originalName(tok->str());
                 tok->str("char");
                 tok->isUnsigned(true);
-            } else if (tok->str() == "CHAR")
+            } else if (tok->str() == "CHAR") {
+                tok->originalName(tok->str());
                 tok->str("char");
-            else if (Token::Match(tok, "DWORD|ULONG|COLORREF|LCID|LCTYPE|LGRPID")) {
+            } else if (Token::Match(tok, "DWORD|ULONG|COLORREF|LCID|LCTYPE|LGRPID")) {
                 tok->str("long");
                 tok->isUnsigned(true);
             } else if (Token::Match(tok, "DWORD_PTR|ULONG_PTR|SIZE_T")) {
+                tok->originalName(tok->str());
                 tok->str("long");
                 tok->isUnsigned(true);
                 if (_settings->platformType == Settings::Win64)
                     tok->isLong(true);
-            } else if (tok->str() == "FLOAT")
+            } else if (tok->str() == "FLOAT") {
+                tok->originalName(tok->str());
                 tok->str("float");
-            else if (Token::Match(tok, "HRESULT|LONG"))
+            } else if (Token::Match(tok, "HRESULT|LONG")) {
+                tok->originalName(tok->str());
                 tok->str("long");
-            else if (Token::Match(tok, "INT64|LONG64")) {
+            } else if (Token::Match(tok, "INT8")) {
+                tok->originalName(tok->str());
+                tok->str("char");
+                tok->isSigned(true);
+            } else if (Token::Match(tok, "INT64|LONG64|LONGLONG")) {
+                tok->originalName(tok->str());
                 tok->str("long");
-                tok->insertToken("long");
+                tok->isLong(true);
             } else if (Token::Match(tok, "LONG_PTR|LPARAM|LRESULT|SSIZE_T")) {
+                tok->originalName(tok->str());
                 tok->str("long");
                 if (_settings->platformType == Settings::Win64)
                     tok->isLong(true);
@@ -5461,12 +5486,15 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->isUnsigned(true);
                 tok->str("short");
                 tok->insertToken("*");
-            } else if (tok->str() == "SHORT")
+            } else if (Token::Match(tok, "SHORT|INT16")) {
+                tok->originalName(tok->str());
                 tok->str("short");
-            else if (Token::Match(tok, "UINT|MMRESULT|SOCKET|ULONG32|UINT32|DWORD32")) {
+            } else if (Token::Match(tok, "UINT|MMRESULT|SOCKET|ULONG32|UINT32|DWORD32")) {
+                tok->originalName(tok->str());
                 tok->isUnsigned(true);
                 tok->str("int");
             } else if (Token::Match(tok, "UINT_PTR|WPARAM")) {
+                tok->originalName(tok->str());
                 tok->isUnsigned(true);
                 if (_settings->platformType == Settings::Win64) {
                     tok->str("long");
@@ -5475,17 +5503,21 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->str("int");
                 }
             } else if (Token::Match(tok, "USHORT|WORD|ATOM|LANGID")) {
+                tok->originalName(tok->str());
                 tok->isUnsigned(true);
                 tok->str("short");
-            } else if (tok->str() == "VOID")
+            } else if (tok->str() == "VOID") {
+                tok->originalName(tok->str());
                 tok->str("void");
-            else if (tok->str() == "TCHAR") {
+            } else if (tok->str() == "TCHAR") {
+                tok->originalName(tok->str());
                 if (_settings->platformType == Settings::Win32A)
                     tok->str("char");
                 else {
                     tok->str("wchar_t");
                 }
             } else if (tok->str() == "TBYTE") {
+                tok->originalName(tok->str());
                 tok->isUnsigned(true);
                 if (_settings->platformType == Settings::Win32A)
                     tok->str("short");
@@ -5509,6 +5541,7 @@ void Tokenizer::simplifyPlatformTypes()
                     tok->insertToken("wchar_t");
                 }
             } else if (Token::Match(tok, "ULONG64|DWORD64|ULONGLONG")) {
+                tok->originalName(tok->str());
                 tok->isUnsigned(true);
                 tok->isLong(true);
                 tok->str("long");
@@ -5563,13 +5596,17 @@ void Tokenizer::simplifyStdType()
             tok->isSigned(!isUnsigned);
         }
 
-        if (tok->str() == "__int8")
+        if (tok->str() == "__int8") {
+            tok->originalName(tok->str());
             tok->str("char");
-        else if (tok->str() == "__int16")
+        } else if (tok->str() == "__int16") {
+            tok->originalName(tok->str());
             tok->str("short");
-        else if (tok->str() == "__int32")
+        } else if (tok->str() == "__int32") {
+            tok->originalName(tok->str());
             tok->str("int");
-        else if (tok->str() == "__int64") {
+        } else if (tok->str() == "__int64") {
+            tok->originalName(tok->str());
             tok->str("long");
             tok->isLong(true);
         } else if (tok->str() == "int") {

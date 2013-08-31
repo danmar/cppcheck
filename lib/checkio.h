@@ -89,11 +89,11 @@ private:
     void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
     void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier);
-    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier);
-    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier);
-    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier);
+    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const Token* type);
+    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
+    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
+    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
+    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
     void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
 
@@ -111,11 +111,11 @@ private:
         c.invalidScanfArgTypeError(0, "scanf", 1);
         c.invalidPrintfArgTypeError_s(0, 1);
         c.invalidPrintfArgTypeError_n(0, 1);
-        c.invalidPrintfArgTypeError_p(0, 1);
-        c.invalidPrintfArgTypeError_int(0, 1, "X");
-        c.invalidPrintfArgTypeError_uint(0, 1, "u");
-        c.invalidPrintfArgTypeError_sint(0, 1, "i");
-        c.invalidPrintfArgTypeError_float(0, 1, "f");
+        c.invalidPrintfArgTypeError_p(0, 1, NULL);
+        c.invalidPrintfArgTypeError_int(0, 1, "X", NULL);
+        c.invalidPrintfArgTypeError_uint(0, 1, "u", NULL);
+        c.invalidPrintfArgTypeError_sint(0, 1, "i", NULL);
+        c.invalidPrintfArgTypeError_float(0, 1, "f", NULL);
         c.invalidScanfFormatWidthError(0, 10, 5, NULL);
         c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
     }
