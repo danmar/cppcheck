@@ -73,6 +73,7 @@ private:
         TEST_CASE(varScope16);
         TEST_CASE(varScope17);
         TEST_CASE(varScope18);
+        TEST_CASE(varScope19);      // Ticket #4994
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1005,6 +1006,15 @@ private:
                  "            break;\n"
                  "    }\n"
                  "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope19() { // Ticket #4994
+        varScope("long f () {\n"
+                 "  return a >> extern\n"
+                 "}\n"
+                 "long a = 1 ;\n"
+                 "long b = 2 ;");
         ASSERT_EQUALS("", errout.str());
     }
 
