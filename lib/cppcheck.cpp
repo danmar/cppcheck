@@ -62,15 +62,12 @@ const char * CppCheck::extraVersion()
 
 unsigned int CppCheck::check(const std::string &path)
 {
-    return processFile(path);
+    return processFile(path, "");
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
-    _fileContent = content;
-    const unsigned int retval = processFile(path);
-    _fileContent.clear();
-    return retval;
+    return processFile(path, content);
 }
 
 void CppCheck::replaceAll(std::string& code, const std::string &from, const std::string &to)
@@ -129,7 +126,7 @@ bool CppCheck::findError(std::string code, const char FileName[])
     return true;
 }
 
-unsigned int CppCheck::processFile(const std::string& filename)
+unsigned int CppCheck::processFile(const std::string& filename, const std::string& fileContent)
 {
     exitcode = 0;
 
@@ -151,9 +148,9 @@ unsigned int CppCheck::processFile(const std::string& filename)
         std::list<std::string> configurations;
         std::string filedata = "";
 
-        if (!_fileContent.empty()) {
-            // File content was given as a string
-            std::istringstream iss(_fileContent);
+        if (!fileContent.empty()) {
+            // File content was given as a string (democlient)
+            std::istringstream iss(fileContent);
             preprocessor.preprocess(iss, filedata, configurations, filename, _settings._includePaths);
         } else {
             // Only file name was given, read the content from file

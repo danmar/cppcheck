@@ -135,8 +135,13 @@ private:
     /** @brief There has been a internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
 
-    /** @brief Process one file. */
-    unsigned int processFile(const std::string& filename);
+    /** 
+     * @brief Process one file.
+     * @param filename file name
+     * @param fileContent If this is non-empty then the file will not be loaded
+     * @return amount of errors found
+     */
+    unsigned int processFile(const std::string& filename, const std::string& fileContent);
 
     /** @brief Check file */
     void checkFile(const std::string &code, const char FileName[]);
@@ -179,7 +184,6 @@ private:
 
     std::list<std::string> _errorList;
     Settings _settings;
-    std::string _fileContent;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
 
