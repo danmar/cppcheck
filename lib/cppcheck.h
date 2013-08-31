@@ -124,13 +124,6 @@ public:
      */
     void analyseFile(std::istream &f, const std::string &filename);
 
-    /**
-     * @brief Get dependencies. Use this after calling 'check'.
-     */
-    const std::set<std::string>& dependencies() const {
-        return _dependencies;
-    }
-
     void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
 
     void dontSimplify() {
@@ -187,7 +180,6 @@ private:
     std::list<std::string> _errorList;
     Settings _settings;
     std::string _fileContent;
-    std::set<std::string> _dependencies;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
 

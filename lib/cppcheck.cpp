@@ -361,10 +361,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
         }
 
-        // Update the _dependencies..
-        if (_tokenizer.list.getFiles().size() >= 2)
-            _dependencies.insert(_tokenizer.list.getFiles().begin()+1, _tokenizer.list.getFiles().end());
-
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
