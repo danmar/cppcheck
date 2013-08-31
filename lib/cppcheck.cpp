@@ -159,6 +159,10 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
         }
 
+        if (_settings.checkConfiguration) {
+            return 0;
+        }
+
         // Run rules on this code
         for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
             if (it->tokenlist == "define") {
@@ -179,10 +183,6 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 }
                 break;
             }
-        }
-
-        if (_settings.checkConfiguration) {
-            return 0;
         }
 
         if (!_settings.userDefines.empty() && _settings._maxConfigs==1U) {
