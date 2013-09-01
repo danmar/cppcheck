@@ -174,6 +174,9 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     if (_settings && _settings->terminated())
         return "";
 
+    if (_settings && _settings->checkConfiguration)
+        return readpreprocessor(istr,bom);
+
     // ------------------------------------------------------------------------------------------
     //
     // handling <backslash><newline>
@@ -260,6 +263,74 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
         return "";
 
     return result;
+}
+
+
+/** read preprocessor statements */
+std::string Preprocessor::readpreprocessor(std::istream &istr, const unsigned int bom) const
+{
+    enum { NEWLINE, SPACE, PREPROCESSOR, BACKSLASH, OTHER } state = NEWLINE;
+    std::ostringstream code;
+    unsigned int newlines = 1;
+    char chPrev = ' ';
+    for (unsigned char ch = readChar(istr,bom); istr.good(); ch = readChar(istr,bom)) {
+        // Replace assorted special chars with spaces..
+        if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
+            ch = ' ';
+
+        if (ch == ' ' && chPrev == ' ')
+            continue;
+        if (state == PREPROCESSOR && chPrev == '/' && (ch == '/' || ch == '*'))
+            state = OTHER;
+        chPrev = ch;
+
+        if (ch == '\n') {
+            if (state != BACKSLASH) {
+                state = NEWLINE;
+                code << std::string(newlines, '\n');
+                newlines = 1;
+            } else {
+                ++newlines;
+                state = PREPROCESSOR;
+            }
+            continue;
+        }
+
+        switch (state) {
+        case NEWLINE:
+            if (ch==' ')
+                state = SPACE;
+            else if (ch == '#') {
+                state = PREPROCESSOR;
+                code << ch;
+            } else
+                state = OTHER;
+            break;
+        case SPACE:
+            if (ch == '#') {
+                state = PREPROCESSOR;
+                code << ch;
+            } else if (ch != ' ')
+                state = OTHER;
+            break;
+        case PREPROCESSOR:
+            code << ch;
+            if (ch == '\\')
+                state = BACKSLASH;
+            break;
+        case BACKSLASH:
+            code << ch;
+            if (ch != ' ')
+                state = PREPROCESSOR;
+            break;
+        case OTHER:
+            break;
+        };
+    }
+
+    std::string result = preprocessCleanupDirectives(code.str());
+    result = removeParentheses(result);
+    return removeIf0(result);
 }
 
 std::string Preprocessor::preprocessCleanupDirectives(const std::string &processedFile)

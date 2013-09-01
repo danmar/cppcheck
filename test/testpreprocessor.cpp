@@ -3792,7 +3792,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("[file.c:2]: (information) Include file: \"config.h\" not found.\n", errout.str());
-        ASSERT_EQUALS("\n\n\n\nvoid foo();\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n", actual[""]);
     }
 
     void undef9() {

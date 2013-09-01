@@ -92,6 +92,9 @@ public:
     /** Just read the code into a string. Perform simple cleanup of the code */
     std::string read(std::istream &istr, const std::string &filename);
 
+    /** read preprocessor statements into a string. */
+    std::string readpreprocessor(std::istream &istr, const unsigned int bom) const;
+
     /**
      * Get preprocessed code for a given configuration
      * @param filedata file data including preprocessing 'if', 'define', etc
