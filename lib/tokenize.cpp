@@ -3171,7 +3171,7 @@ void Tokenizer::createLinks2()
         else if (token->str() == ">" || token->str() == ">>") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
-            if (token->next() && !token->next()->isName() && !Token::Match(token->next(), ">|&|*|::|,|(|)"))
+            if (token->next() && !Token::Match(token->next(), "%var%|>|&|*|::|,|(|)|{"))
                 continue;
 
             // Check type of open link

@@ -6441,6 +6441,23 @@ private:
 
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            // #4860
+            const char code[] = "class A : public B<int> {};";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            // B<..>
+            ASSERT_EQUALS(true, tok->tokAt(5) == tok->linkAt(7));
+            ASSERT_EQUALS(true, tok->linkAt(5) == tok->tokAt(7));
+
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void removeExceptionSpecification1() {
