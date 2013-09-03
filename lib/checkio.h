@@ -23,8 +23,7 @@
 
 #include "check.h"
 #include "config.h"
-
-class Variable;
+#include "symboldatabase.h"
 
 /// @addtogroup Checks
 /// @{
@@ -70,7 +69,31 @@ public:
     void checkWrongPrintfScanfArguments();
 
 private:
-    bool getArgumentInfo(const Token *tok, const Variable **var, const Token **typeTok, const Function **func, bool &element) const;
+    class ArgumentInfo {
+    public:
+        ArgumentInfo(const Token *arg, const Settings *settings);
+        ~ArgumentInfo() {
+            delete tempToken;
+        }
+        bool isArrayOrPointer() const {
+            if (variableInfo)
+                return variableInfo->isArrayOrPointer();
+            else if (functionInfo)
+                return typeToken->next()->str() == "*";
+            return false;
+        }
+        bool isComplexType() const;
+        bool isKnownType() const;
+
+        const Variable *variableInfo;
+        const Token *typeToken;
+        const Function *functionInfo;
+        bool element;
+        Token *tempToken;
+    private:
+        ArgumentInfo(const ArgumentInfo &); // not implemented
+        ArgumentInfo operator = (const ArgumentInfo &); // not implemented
+    };
 
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);

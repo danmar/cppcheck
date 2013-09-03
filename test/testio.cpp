@@ -1081,6 +1081,68 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("std::vector<int> v;\n"
+              "std::string s;\n"
+              "void foo() {\n"
+              "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
+              "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+
+        check("std::vector<int> v;\n"
+              "std::string s;\n"
+              "void foo() {\n"
+              "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
+              "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
+              "}\n", false, false, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long long}'.\n", errout.str());
+
+        check("std::vector<int> v;\n"
+              "std::string s;\n"
+              "void foo() {\n"
+              "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
+              "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
+              "}\n", false, false, Settings::Unix32);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+
+        check("std::vector<int> v;\n"
+              "std::string s;\n"
+              "void foo() {\n"
+              "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
+              "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
+              "}\n", false, false, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+
+        check("class Fred : public std::vector<int> {} v;\n"
+              "void foo() {\n"
+              "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
+              "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
+              "}\n", false, false, Settings::Unix64);
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                           "[test.cpp:4]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n"
+                           "[test.cpp:5]: (warning) %d in format string (no. 3) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                           "[test.cpp:5]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'size_t {aka unsigned long}'.\n", "", errout.str());
+
+        check("std::string s;\n"
+              "void foo() {\n"
+              "    printf(\"%s %p %u %d %f\", s.c_str(), s.c_str(), s.c_str(), s.c_str(), s.c_str());\n"
+              "}\n", false, false, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 3) requires an unsigned integer but the argument type is 'const char *'.\n"
+                      "[test.cpp:3]: (warning) %d in format string (no. 4) requires a signed integer but the argument type is 'const char *'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 5) requires a floating point number but the argument type is 'const char *'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
