@@ -5476,6 +5476,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 's' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
 
         checkInitializationListUsage("class Fred {\n"
+                                     "    std::string& s;\n" // Message is invalid for references, since their initialization in initializer list is required anyway and behaves different from assignment (#5004)
+                                     "    Fred(const std::string& s) : s(s_) { s = \"foo\"; }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n"
                                      "    std::vector<int> v;\n"
                                      "    Fred() { v = unknown; }\n"
                                      "};");
