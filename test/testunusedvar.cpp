@@ -92,6 +92,7 @@ private:
         TEST_CASE(localvar43); // ticket #3742
         TEST_CASE(localvar44); // ticket #3602
         TEST_CASE(localvar45); // ticket #4020
+        TEST_CASE(localvar46); // ticket #4899
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1817,6 +1818,15 @@ private:
                               "    int *sp_mem[2] = { 0x00, 0x00 };\n"
                               "    int src = 1, dst = 2;\n"
                               "    sp_mem[(dst + i)][3] = src;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar46() { // #4899 - FP
+        functionVariableUsage("int func() {\n"
+                              "    int a = 123;\n"
+                              "    int b = (short)-a;;\n"
+                              "    return b;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

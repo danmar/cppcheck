@@ -462,6 +462,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                         addressOf = true;
                         tok = tok->next();
                     }
+                } else if (Token::Match(tok, "%cop% %var%")) {
+                    variables.read(tok->next()->varId(), tok);
                 }
             }
 
