@@ -94,6 +94,7 @@ private:
         TEST_CASE(removeCast10);
         TEST_CASE(removeCast11);
         TEST_CASE(removeCast12);
+        TEST_CASE(removeCast13);
 
         TEST_CASE(inlineasm);
 
@@ -1049,6 +1050,27 @@ private:
     void removeCast12() {
         // #3935 - don't remove this cast
         ASSERT_EQUALS("; ( ( short * ) data ) [ 5 ] = 0 ;", tokenizeAndStringify("; ((short*)data)[5] = 0;", true));
+    }
+
+    void removeCast13() {
+        // casting deref / address of
+        ASSERT_EQUALS("; int x ; x = * y ;", tokenizeAndStringify(";int x=(int)*y;",true));
+        ASSERT_EQUALS("; int x ; x = & y ;", tokenizeAndStringify(";int x=(int)&y;",true));
+        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) * y ;",
+                           "; int x ; x = * y ;",
+                           tokenizeAndStringify(";int x=(INT)*y;",true)); // INT might be a variable
+        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) & y ;",
+                           "; int x ; x = & y ;",
+                           tokenizeAndStringify(";int x=(INT)&y;",true)); // INT might be a variable
+
+        // #4899 - False positive on unused variable
+        ASSERT_EQUALS("; float angle ; angle = tilt ;", tokenizeAndStringify("; float angle = (float) tilt;", true)); // status quo
+        TODO_ASSERT_EQUALS("; float angle ; angle = - tilt ;",
+                           "; float angle ; angle = ( float ) - tilt ;",
+                           tokenizeAndStringify("; float angle = (float) -tilt;", true));
+        TODO_ASSERT_EQUALS("; float angle ; angle = tilt ;",
+                           "; float angle ; angle = ( float ) + tilt ;",
+                           tokenizeAndStringify("; float angle = (float) +tilt;", true));
     }
 
     void inlineasm() {
