@@ -278,12 +278,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
     if (function) {
         retref = function->tokenDef->strAt(-1) == "&";
         if (!retref) {
-            const Token *start = function->tokenDef;
-            while (start->previous() && !Token::Match(start->previous(), ";|}|{|public:|private:|protected:")) {
-                if ((start->str() == ")" || start->str() == ">") && start->link())
-                    start = start->link();
-                start = start->previous();
-            }
+            const Token *start = function->retDef;
             if (start->str() == "const")
                 start = start->next();
             if (start->str() == "::")

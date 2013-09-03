@@ -1063,15 +1063,14 @@ void CheckClass::operatorEq()
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->access != Private) {
                 // use definition for check so we don't have to deal with qualification
-                if (!(Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private:|virtual %type% &") &&
-                      func->tokenDef->strAt(-2) == scope->className)) {
+                if (!(Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className)) {
                     // make sure we really have a copy assignment operator
                     if (Token::Match(func->tokenDef->tokAt(2), "const| %var% &")) {
                         if (func->tokenDef->strAt(2) == "const" &&
                             func->tokenDef->strAt(3) == scope->className)
-                            operatorEqReturnError(func->tokenDef->previous(), scope->className);
+                            operatorEqReturnError(func->retDef, scope->className);
                         else if (func->tokenDef->strAt(2) == scope->className)
-                            operatorEqReturnError(func->tokenDef->previous(), scope->className);
+                            operatorEqReturnError(func->retDef, scope->className);
                     }
                 }
             }
@@ -1102,9 +1101,7 @@ void CheckClass::operatorEqRetRefThis()
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody) {
                 // make sure return signature is correct
-                if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private:|virtual %type% &") &&
-                    func->tokenDef->strAt(-2) == scope->className) {
-
+                if (Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className) {
                     checkReturnPtrThis(&(*scope), &(*func), func->functionScope->classStart, func->functionScope->classEnd);
                 }
             }
@@ -1211,8 +1208,7 @@ void CheckClass::operatorEqToSelf()
                     continue;
 
                 // make sure return signature is correct
-                if (Token::Match(func->tokenDef->tokAt(-3), ";|}|{|public:|protected:|private: %type% &") &&
-                    func->tokenDef->strAt(-2) == scope->className) {
+                if (Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className) {
                     // find the parameter name
                     const Token *rhs = func->argumentList.begin()->nameToken();
 
@@ -1473,12 +1469,7 @@ void CheckClass::checkConst()
 
                 // does the function return a pointer or reference?
                 if (Token::Match(previous, "*|&")) {
-                    const Token *temp = previous;
-
-                    while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:"))
-                        temp = temp->previous();
-
-                    if (temp->str() != "const")
+                    if (func->retDef->str() != "const")
                         continue;
                 } else if (Token::Match(previous->previous(), "*|& >")) {
                     const Token *temp = previous;
