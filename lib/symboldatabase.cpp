@@ -422,7 +422,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
 
                     // find the return type
-                    if (function.type != Function::eConstructor) {
+                    if (!function.isConstructor() && !function.isDestructor()) {
                         while (tok1 && Token::Match(tok1->next(), "virtual|static|friend|const|struct|union"))
                             tok1 = tok1->next();
 
@@ -1744,7 +1744,8 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
             std::cout << "        tokenDef: " << func->tokenDef->str() << " " <<_tokenizer->list.fileLine(func->tokenDef) << std::endl;
             std::cout << "        argDef: " << _tokenizer->list.fileLine(func->argDef) << std::endl;
-            std::cout << "        retDef: " << func->retDef->str() << " " <<_tokenizer->list.fileLine(func->retDef) << std::endl;
+            if (!func->isConstructor() && !func->isDestructor())
+                std::cout << "        retDef: " << func->retDef->str() << " " <<_tokenizer->list.fileLine(func->retDef) << std::endl;
             std::cout << "        retType: " << func->retType << std::endl;
             if (func->hasBody) {
                 std::cout << "        token: " << _tokenizer->list.fileLine(func->token) << std::endl;

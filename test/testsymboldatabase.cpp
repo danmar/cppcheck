@@ -638,6 +638,7 @@ private:
             ASSERT(function && function->token == tokenizer.tokens()->next());
             ASSERT(function && function->hasBody);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn != scope);
+            ASSERT(function && function->retDef == tokenizer.tokens());
         }
     }
 
@@ -659,6 +660,7 @@ private:
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
             ASSERT(function && function->hasBody && function->isInline);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
+            ASSERT(function && function->retDef == tokenizer.tokens()->tokAt(3));
 
             ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
         }
@@ -803,21 +805,25 @@ private:
             GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor && !ctor->isExplicit);
+            ASSERT(ctor && ctor->retDef == 0);
         }
         {
             GET_SYMBOL_DB("class Foo { explicit Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(4)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor && ctor->isExplicit);
+            ASSERT(ctor && ctor->retDef == 0);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo&& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
         }
     }
 
