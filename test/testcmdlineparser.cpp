@@ -898,6 +898,7 @@ private:
         REDIRECT;
         const char *argv[] = {"cppcheck", "--errorlist"};
         ASSERT(defParser.ParseFromArgs(2, argv));
+        ASSERT(defParser.GetShowErrorMessages());
     }
 
     void errorlistverbose1() {
