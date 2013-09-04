@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckAutoVariablesH
-#define CheckAutoVariablesH
+#ifndef checkautovariablesH
+#define checkautovariablesH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -113,4 +113,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkautovariablesH

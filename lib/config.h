@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef configH
+#define configH
 
 #ifdef _WIN32
 #  ifdef CPPCHECKLIB_EXPORT
@@ -13,4 +13,4 @@
 #  define CPPCHECKLIB
 #endif
 
-#endif
+#endif // configH

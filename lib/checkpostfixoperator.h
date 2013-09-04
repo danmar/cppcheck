@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckPostfixOperatorH
-#define CheckPostfixOperatorH
+#ifndef checkpostfixoperatorH
+#define checkpostfixoperatorH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -73,4 +73,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkpostfixoperatorH

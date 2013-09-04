@@ -15,9 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef PATH_H_INCLUDED
-#define PATH_H_INCLUDED
+ 
+//---------------------------------------------------------------------------
+#ifndef pathH
+#define pathH
+//---------------------------------------------------------------------------
 
 #include <string>
 #include <vector>
@@ -133,5 +135,5 @@ private:
 };
 
 /// @}
-
-#endif // PATH_H_INCLUDED
+//---------------------------------------------------------------------------
+#endif // pathH

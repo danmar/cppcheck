@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CPPCHECK_H
-#define CPPCHECK_H
+//---------------------------------------------------------------------------
+#ifndef cppcheckH
+#define cppcheckH
+//---------------------------------------------------------------------------
 
 #include "config.h"
 #include "settings.h"
@@ -210,5 +212,5 @@ private:
 };
 
 /// @}
-
-#endif // CPPCHECK_H
+//---------------------------------------------------------------------------
+#endif // cppcheckH
