@@ -16,19 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cmdlineparser.h"
+#include "cppcheck.h"
+#include "filelister.h"
+#include "path.h"
+#include "settings.h"
+#include "timer.h"
+
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <string>
 #include <cstring>
-#include <stdlib.h> // EXIT_FAILURE
-#include "cppcheck.h"
-#include "timer.h"
-#include "settings.h"
-#include "cmdlineparser.h"
-#include "path.h"
-#include "filelister.h"
+#include <cstdlib> // EXIT_FAILURE
 
 #ifdef HAVE_RULES
 // xml is used in rules

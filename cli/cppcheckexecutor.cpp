@@ -17,21 +17,20 @@
  */
 
 #include "cppcheckexecutor.h"
+#include "cmdlineparser.h"
 #include "cppcheck.h"
-#include "threadexecutor.h"
-#include "preprocessor.h"
 #include "errorlogger.h"
+#include "filelister.h"
+#include "path.h"
+#include "pathmatch.h"
+#include "preprocessor.h"
+#include "threadexecutor.h"
 #include <iostream>
 #include <sstream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <algorithm>
 #include <climits>
-
-#include "cmdlineparser.h"
-#include "filelister.h"
-#include "path.h"
-#include "pathmatch.h"
 
 CppCheckExecutor::CppCheckExecutor()
     : _settings(0), time1(0), errorlist(false)

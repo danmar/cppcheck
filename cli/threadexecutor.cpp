@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 #include "cppcheck.h"
+#include "cppcheckexecutor.h"
 #ifdef THREADING_MODEL_FORK
 #include <algorithm>
 #include <iostream>
