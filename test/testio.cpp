@@ -620,7 +620,8 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a char* given in the argument list.\n"
                       "[test.cpp:4]: (warning) %s in format string (no. 2) requires a char* given in the argument list.\n"
-                      "[test.cpp:5]: (warning) %s in format string (no. 1) requires a char* given in the argument list.\n", errout.str());
+                      "[test.cpp:5]: (warning) %s in format string (no. 1) requires a char* given in the argument list.\n"
+                      "[test.cpp:7]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'char *'.\n", errout.str());
 
         check("void foo(const int* cpi, const int ci, int i, int* pi, std::string s) {\n"
               "    printf(\"%n\", cpi);\n"
@@ -681,7 +682,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'foo'.\n"
                       "[test.cpp:4]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'const char *'.\n"
                       "[test.cpp:5]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'double'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'int'.\n", errout.str());
+                      "[test.cpp:6]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'int'.\n"
+                      "[test.cpp:7]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'int *'.\n"
+                      "[test.cpp:9]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, char c) {\n"
@@ -1142,6 +1145,28 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 3) requires an unsigned integer but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %d in format string (no. 4) requires a signed integer but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 5) requires a floating point number but the argument type is 'const char *'.\n", errout.str());
+
+        check("std::vector<int> array;\n"
+              "char * p = 0;\n"
+              "char q[] = \"abc\";\n"
+              "char r[10] = { 0 };\n"
+              "size_t s;\n"
+              "void foo() {\n"
+              "    printf(\"%zu %zu\", array.size(), s);\n"
+              "    printf(\"%u %u %u\", p, q, r);\n"
+              "    printf(\"%u %u\", array.size(), s);\n"
+              "    printf(\"%lu %lu\", array.size(), s);\n"
+              "    printf(\"%llu %llu\", array.size(), s);\n"
+              "}\n", false, false, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:8]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'char *'.\n"
+                      "[test.cpp:8]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'char *'.\n"
+                      "[test.cpp:8]: (warning) %u in format string (no. 3) requires an unsigned integer but the argument type is 'char *'.\n"
+                      "[test.cpp:9]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:9]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:10]: (warning) %lu in format string (no. 1) requires an unsigned long integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:10]: (warning) %lu in format string (no. 2) requires an unsigned long integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:11]: (warning) %llu in format string (no. 1) requires an unsigned long long integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:11]: (warning) %llu in format string (no. 2) requires an unsigned long long integer but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
     }
 
