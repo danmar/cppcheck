@@ -1186,6 +1186,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
     // constants defined through "#define" in the code..
     std::set<std::string> defines;
+    std::map<std::string, std::string> alldefinesmap(defs);
 
     // How deep into included files are we currently parsing?
     // 0=>Source file, 1=>Included by source file, 2=>included by header that was included by source file, etc
@@ -1238,12 +1239,19 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
             if (!valid)
                 line.clear();
-            else if (line.find(" ", 8) == std::string::npos)
-                defines.insert(line.substr(8));
             else {
-                std::string s = line.substr(8);
-                s[s.find(" ")] = '=';
-                defines.insert(s);
+                std::string definestr = line.substr(8);
+                const std::string::size_type spacepos = definestr.find(" ");
+                if (spacepos != std::string::npos)
+                    definestr[spacepos] = '=';
+                defines.insert(definestr);
+
+                const std::string::size_type separatorpos = definestr.find_first_of("=(");
+                if (separatorpos != std::string::npos && definestr[separatorpos] == '=') {
+                    const std::string varname(definestr.substr(0, separatorpos));
+                    const std::string value(definestr.substr(separatorpos + 1));
+                    alldefinesmap[varname] = value;
+                }
             }
         }
 
@@ -1298,20 +1306,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
 
             // Replace defined constants
-            {
-                std::map<std::string, std::string> varmap(defs);
-                for (std::set<std::string>::const_iterator it = defines.begin(); it != defines.end(); ++it) {
-                    std::string::size_type pos = it->find_first_of("=(");
-                    if (pos == std::string::npos)
-                        continue;
-                    if ((*it)[pos] == '(')
-                        continue;
-                    const std::string varname(it->substr(0, pos));
-                    const std::string value(it->substr(pos + 1));
-                    varmap[varname] = value;
-                }
-                simplifyCondition(varmap, def, false);
-            }
+            simplifyCondition(alldefinesmap, def, false);
 
             if (! deflist.empty() && line.compare(0, 6, "#elif ") == 0)
                 deflist.pop_back();
