@@ -666,7 +666,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) %i in format string (no. 1) requires a signed integer but the argument type is 'foo'.\n"
                       "[test.cpp:4]: (warning) %d in format string (no. 1) requires a signed integer but the argument type is 'const char *'.\n"
                       "[test.cpp:5]: (warning) %d in format string (no. 1) requires a signed integer but the argument type is 'double'.\n"
-                      "[test.cpp:6]: (warning) %d in format string (no. 1) requires a signed integer but the argument type is 'unsigned int'.\n", errout.str());
+                      "[test.cpp:6]: (warning) %d in format string (no. 1) requires a signed integer but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:7]: (warning) %d in format string (no. 1) requires a signed integer but the argument type is 'int *'.\n"
+                      "[test.cpp:9]: (warning) %i in format string (no. 1) requires a signed integer but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, double d, int i, bool bo) {\n"
@@ -853,8 +855,7 @@ private:
 
         check("unsigned short f() { return 0; }\n"
               "void foo() { printf(\"%u %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned short'.\n"
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 5) requires an unsigned long long integer but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'unsigned short'.\n"
@@ -1167,6 +1168,54 @@ private:
                       "[test.cpp:10]: (warning) %lu in format string (no. 2) requires an unsigned long integer but the argument type is 'size_t {aka unsigned long}'.\n"
                       "[test.cpp:11]: (warning) %llu in format string (no. 1) requires an unsigned long long integer but the argument type is 'size_t {aka unsigned long}'.\n"
                       "[test.cpp:11]: (warning) %llu in format string (no. 2) requires an unsigned long long integer but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+
+        check("bool b; bool bf(){ return 0; }\n"
+              "char c; char cf(){ return 0; }\n"
+              "signed char sc; signed char scf(){ return 0; }\n"
+              "unsigned char uc; unsigned char ucf(){ return 0; }\n"
+              "short s; short sf(){ return 0; }\n"
+              "unsigned short us; unsigned short usf(){ return 0; }\n"
+              "size_t st; size_t stf(){ return 0; }\n"
+              "ptrdiff_t pt; ptrdiff_t ptf(){ return 0; }\n"
+              "char * pc; char * pcf(){ return 0; }\n"
+              "char cl[] = \"123\";\n"
+              "char ca[3];\n"
+              "void foo() {\n"
+              "    printf(\"%td %zd %d %d %d %d %d %d %d %d %d %d %d\", pt, pt, b, c, sc, uc, s, us, st, pt, pc, cl, ca);\n"
+              "    printf(\"%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\", b, c, sc, uc, s, us, st, pt, pc, cl, ca);\n"
+              "    printf(\"%td %zd %d %d %d %d %d %d %d %d %d\", ptf(), ptf(), bf(), cf(), scf(), ucf(), sf(), usf(), stf(), ptf(), pcf());\n"
+              "    printf(\"%ld %ld %ld %ld %ld %ld %ld %ld %ld\", bf(), cf(), scf(), ucf(), sf(), usf(), stf(), ptf(), pcf());\n"
+              "}\n", false, false, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:13]: (warning) %zd in format string (no. 2) requires a signed integer but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:13]: (warning) %d in format string (no. 9) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:13]: (warning) %d in format string (no. 10) requires a signed integer but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:13]: (warning) %d in format string (no. 11) requires a signed integer but the argument type is 'char *'.\n"
+                      "[test.cpp:13]: (warning) %d in format string (no. 12) requires a signed integer but the argument type is 'char *'.\n"
+                      "[test.cpp:13]: (warning) %d in format string (no. 13) requires a signed integer but the argument type is 'char *'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 1) requires a signed long integer but the argument type is 'bool'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 2) requires a signed long integer but the argument type is 'char'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'signed char'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 4) requires a signed long integer but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 5) requires a signed long integer but the argument type is 'short'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 6) requires a signed long integer but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 7) requires a signed long integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 8) requires a signed long integer but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 9) requires a signed long integer but the argument type is 'char *'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 10) requires a signed long integer but the argument type is 'char *'.\n"
+                      "[test.cpp:14]: (warning) %ld in format string (no. 11) requires a signed long integer but the argument type is 'char *'.\n"
+                      "[test.cpp:15]: (warning) %zd in format string (no. 2) requires a signed integer but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:15]: (warning) %d in format string (no. 9) requires a signed integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:15]: (warning) %d in format string (no. 10) requires a signed integer but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:15]: (warning) %d in format string (no. 11) requires a signed integer but the argument type is 'char *'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 1) requires a signed long integer but the argument type is 'bool'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 2) requires a signed long integer but the argument type is 'char'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'signed char'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 4) requires a signed long integer but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 5) requires a signed long integer but the argument type is 'short'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 6) requires a signed long integer but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 7) requires a signed long integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 8) requires a signed long integer but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:16]: (warning) %ld in format string (no. 9) requires a signed long integer but the argument type is 'char *'.\n", errout.str());
 
     }
 

@@ -585,16 +585,36 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'i':
                                         specifier += *i;
                                         if (argInfo.functionInfo || argInfo.variableInfo) {
-                                            if ((argInfo.isKnownType() && !argInfo.isArrayOrPointer()) &&
-                                                (((argInfo.typeToken->isUnsigned() || !Token::Match(argInfo.typeToken, "bool|short|long|int")) && argInfo.typeToken->str() != "char") ||
-                                                 (specifier[0] == 'l' && (argInfo.typeToken->str() != "long" || (specifier[1] == 'l' && !argInfo.typeToken->isLong()))) ||
-                                                 (specifier.find("I64") != std::string::npos && (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())))) {
+                                            if (argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
+                                                if ((argInfo.typeToken->isUnsigned() || !Token::Match(argInfo.typeToken, "bool|short|long|int")) && !Token::Match(argInfo.typeToken, "char|short")) {
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                                } else if ((specifier[0] == 'l' && (argInfo.typeToken->str() != "long" || (specifier[1] == 'l' && !argInfo.typeToken->isLong()))) ||
+                                                           (specifier.find("I64") != std::string::npos && (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong()))) {
+                                                    // %l requires long and %ll or %I64 requires long long
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                                } else if ((specifier[0] == 't' || (specifier[0] == 'I' && (specifier[1] == 'd' || specifier[1] == 'i'))) &&
+                                                           argInfo.typeToken->originalName() != "ptrdiff_t") {
+                                                    // use %t or %I on ptrdiff_t
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                                } else if (argInfo.typeToken->originalName() == "ptrdiff_t" &&
+                                                           (specifier[0] != 't' && !(specifier[0] == 'I' && (specifier[1] == 'd' || specifier[1] == 'i')))) {
+                                                    // ptrdiff_t requires %t or %I
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                                }
+                                            } else if ((!argInfo.element && argInfo.isArrayOrPointer()) ||
+                                                       (argInfo.element && !argInfo.isArrayOrPointer())) {
+                                                // use %p on pointers and arrays
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                             }
                                         } else if (argInfo.typeToken->type() == Token::eString) {
                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                        } else if (argInfo.typeToken->isUnsigned() || !Token::Match(argInfo.typeToken, "bool|short|int|long")) {
-                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                        } else {
+                                            if ((argInfo.typeToken->isUnsigned() || !Token::Match(argInfo.typeToken, "bool|short|int|long")) && !Token::Match(argInfo.typeToken, "char|short")) {
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            } else if ((specifier[0] == 'l' && (argInfo.typeToken->str() != "long" || (specifier[1] == 'l' && !argInfo.typeToken->isLong()))) ||
+                                                       (specifier.find("I64") != std::string::npos && (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong()))) {
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            }
                                         }
                                         done = true;
                                         break;
