@@ -4103,9 +4103,7 @@ bool Tokenizer::simplifyAddBraces()
 Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
 {
     Token * tokEnd=tok;
-    if (tok->str()=="for" ||
-        tok->str()=="BOOST_FOREACH" ||
-        tok->str()=="switch") {
+    if (Token::Match(tok,"for|switch|BOOST_FOREACH")) {
         tokEnd=simplifyAddBracesPair(tok,true);
     } else if (tok->str()=="while") {
         Token *tokPossibleDo=tok->previous();
@@ -4142,6 +4140,9 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
             if (tokEndNextNext && tokEndNextNext->str()=="if") {
                 // do not change "else if ..." to "else { if ... }"
                 tokEnd=simplifyAddBracesToCommand(tokEndNextNext);
+            } else if (Token::simpleMatch(tokEndNext, "else }")) {
+                syntaxError(tokEndNext);
+                return NULL;
             } else
                 tokEnd=simplifyAddBracesPair(tokEndNext,false);
         }

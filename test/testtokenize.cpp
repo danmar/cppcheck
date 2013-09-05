@@ -116,6 +116,7 @@ private:
         TEST_CASE(ifAddBraces17); // '} else' should be in the same line
         TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
         TEST_CASE(ifAddBraces19); // #3928 - if for if else
+        TEST_CASE(ifAddBraces20); // #5012 - syntax error 'else }'
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -1345,6 +1346,11 @@ private:
                       "}", tokenizeAndStringify(code, true));
     }
 
+    void ifAddBraces20() { // #5012 - syntax error 'else }'
+        const char code[] = "void f() { if(x) {} else }";
+        tokenizeAndStringify(code,true);
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+    }
 
     void whileAddBraces() {
         const char code[] = ";while(a);";
