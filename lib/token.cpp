@@ -993,7 +993,7 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes) const
         else if (isSigned())
             os << "signed ";
         if (isLong()) {
-            if (_type == eString)
+            if (_type == eString || _type == eChar)
                 os << "L";
             else
                 os << "long ";

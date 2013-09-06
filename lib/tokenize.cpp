@@ -9358,6 +9358,13 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
+                while (tok->next() && Token::Match(tok->next(), "_T ( %char%|%str% )")) {
+                    tok->next()->deleteNext();
+                    tok->next()->deleteThis();
+                    tok->next()->deleteNext();
+                    tok->concatStr(tok->next()->str());
+                    tok->deleteNext();
+                }
             }
         }
     } else if (_settings->platformType == Settings::Win32W ||
@@ -9401,6 +9408,14 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
+                tok->isLong(true);
+                while (tok->next() && Token::Match(tok->next(), "_T ( %char%|%str% )")) {
+                    tok->next()->deleteNext();
+                    tok->next()->deleteThis();
+                    tok->next()->deleteNext();
+                    tok->concatStr(tok->next()->str());
+                    tok->deleteNext();
+                }
             }
         }
     }

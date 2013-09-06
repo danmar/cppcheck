@@ -493,6 +493,8 @@ private:
         TEST_CASE(platformWin64);
         TEST_CASE(platformUnix32);
         TEST_CASE(platformUnix64);
+        TEST_CASE(platformWin32AStringCat); // ticket #5015
+        TEST_CASE(platformWin32WStringCat); // ticket #5015
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
 
@@ -8084,18 +8086,18 @@ private:
                                 "const wchar_t * lpctstr ; "
                                 "unsigned char tbyte ; "
                                 "void foo ( ) { "
-                                "wchar_t tc ; tc = \'c\' ; "
-                                "wchar_t src [ 10 ] = \"123456789\" ; "
+                                "wchar_t tc ; tc = L\'c\' ; "
+                                "wchar_t src [ 10 ] = L\"123456789\" ; "
                                 "wchar_t dst [ 10 ] ; "
                                 "wcscpy ( dst , src ) ; "
                                 "dst [ 0 ] = 0 ; "
                                 "wcscat ( dst , src ) ; "
                                 "wchar_t * d ; d = wcsdup ( str ) ; "
-                                "wprintf ( \"Hello world!\n\" ) ; "
-                                "swprintf ( dst , \"Hello!\n\" ) ; "
-                                "snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , \"Hello world!\n\" ) ; "
-                                "wscanf ( \"%s\" , dst ) ; "
-                                "swscanf ( dst , \"%s\" , dst ) ; "
+                                "wprintf ( L\"Hello world!\n\" ) ; "
+                                "swprintf ( dst , L\"Hello!\n\" ) ; "
+                                "snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , L\"Hello world!\n\" ) ; "
+                                "wscanf ( L\"%s\" , dst ) ; "
+                                "swscanf ( dst , L\"%s\" , dst ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32W));
     }
@@ -8260,6 +8262,18 @@ private:
                                 "unsigned long e ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unix64));
+    }
+
+    void platformWin32AStringCat() { //#5150
+        const char code[] = "TCHAR text[] = _T(\"123\") _T(\"456\") _T(\"789\");";
+        const char expected[] = "char text [ 10 ] = \"123456789\" ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32A));
+    }
+
+    void platformWin32WStringCat() { //#5150
+        const char code[] = "TCHAR text[] = _T(\"123\") _T(\"456\") _T(\"789\");";
+        const char expected[] = "wchar_t text [ 10 ] = L\"123456789\" ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32W));
     }
 
     void simplifyMathExpressions() {//#1620
