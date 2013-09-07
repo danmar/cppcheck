@@ -353,6 +353,13 @@ private:
               "  for(int i = 4; i > -1 < 5 ; --i) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+
+        // templates
+        check("struct Tokenizer { TokenList list; };\n"
+              "void Tokenizer::f() {\n"
+              "  std::list<Token*> locationList;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparisonOfFuncReturningBool1() {

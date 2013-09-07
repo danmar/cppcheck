@@ -410,6 +410,9 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                     break;
                 }
                 if (Token::Match(lhs,"<|<=|>|>=")) {
+                    if (_tokenizer->isCPP() && tok->str() == ">" && 
+                        (Token::Match(lhs->previous(), "%var% <") || lhs->str() == ">"))
+                        continue;
                     while (NULL != (lhs = lhs->previous())) {
                         if ((lhs->isName() && lhs->str() != "return") || lhs->isNumber())
                             continue;
