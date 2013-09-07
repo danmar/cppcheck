@@ -2177,32 +2177,27 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                         break;
                     }
                 }
-                bool ifcondition = false;
-                for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+                const Token *tok2;
+                // Look for if condition
+                for (tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                     if (tok2->varId() == varid)
                         break;
-                    if (tok2->str() == "}")
+                    if (Token::Match(tok2, "{|}"))
                         break;
-                    if (Token::Match(tok2, "%var% (")) {
-                        if (Token::simpleMatch(tok2, "if ("))
-                            ifcondition = true;
-                        else if (var->isGlobal() || !tok2->function())
+                    if (Token::Match(tok2, "%var% (") && (var->isGlobal() || !tok2->function()))
+                        break;
+                }
+                // Parse if condition
+                if (Token::simpleMatch(tok2, "if (")) {
+                    while (NULL != (tok2 = tok2->next())) {
+                        if (tok2->str() == "{")
                             break;
-                    }
-                    if (ifcondition) {
-                        if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid)) {
+                        if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid))
                             zerodivcondError(tok2,tok);
-                            continue;
-                        }
-                        if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid)) {
+                        else if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid))
                             zerodivcondError(tok2,tok);
-                            continue;
-                        }
-                        if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid)) {
-
+                        else if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid))
                             zerodivcondError(tok2,tok);
-                            continue;
-                        }
                     }
                 }
             }
