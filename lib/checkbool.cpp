@@ -395,6 +395,44 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                     op = opTok->str()[0]=='>'?'<':'>';
             }
 
+            // boolean result in lhs compared with <|<=|>|>=
+            else if (Token::Match(tok,"<|<=|>|>=")) {
+                const Token *lhs = tok;
+                while (NULL != (lhs = lhs->previous())) {
+                    if (lhs->isName() || lhs->isNumber())
+                        continue;
+                    if (Token::Match(lhs,"[+-*/.]"))
+                        continue;
+                    if (Token::Match(lhs, ")|]")) {
+                        lhs = lhs->previous();
+                        continue;
+                    }
+                    break;
+                }
+                if (Token::Match(lhs,"<|<=|>|>=")) {
+                    while (NULL != (lhs = lhs->previous())) {
+                        if ((lhs->isName() && lhs->str() != "return") || lhs->isNumber())
+                            continue;
+                        if (Token::Match(lhs,"[+-*/.]"))
+                            continue;
+                        if (Token::Match(lhs, ")|]")) {
+                            lhs = lhs->previous();
+                            continue;
+                        }
+                        break;
+                    }
+
+                    std::string expression;
+                    for (const Token *t = lhs ? lhs->next() : _tokenizer->tokens(); t != tok; t = t->next()) {
+                        if (!expression.empty())
+                            expression += ' ';
+                        expression += t->str();
+                    }
+
+                    comparisonOfBoolWithInvalidComparator(tok, expression);
+                }
+            }
+
             if (numTok && opTok) {
                 if (numTok->isNumber()) {
                     if (((numTok->str() != "0" && numTok->str() != "1") || !Token::Match(opTok, "!=|==")) && !((op == '<' && numTok->str() == "1") || (op == '>' && numTok->str() == "0")))
