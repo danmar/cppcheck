@@ -486,6 +486,13 @@ private:
             ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 4.\n", errout.str());
         }
 
+        check("void do_something(int value);\n"
+              "void f(int x) {\n"
+              "  int y = 17 / x;\n"
+              "  do_something(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("int x;\n"
               "void f() {\n"
               "  int y = 17 / x;\n"

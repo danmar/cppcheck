@@ -2177,24 +2177,32 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                         break;
                     }
                 }
+                bool ifcondition = false;
                 for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                     if (tok2->varId() == varid)
                         break;
                     if (tok2->str() == "}")
                         break;
-                    if (Token::Match(tok2, "%var% (") && tok2->str() != "if" && (var->isGlobal() || !tok2->function()))
-                        break;
-                    if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid)) {
-                        zerodivcondError(tok2,tok);
-                        continue;
+                    if (Token::Match(tok2, "%var% (")) {
+                        if (Token::simpleMatch(tok2, "if ("))
+                            ifcondition = true;
+                        else if (var->isGlobal() || !tok2->function())
+                            break;
                     }
-                    if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid)) {
-                        zerodivcondError(tok2,tok);
-                        continue;
-                    }
-                    if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid)) {
-                        zerodivcondError(tok2,tok);
-                        continue;
+                    if (ifcondition) {
+                        if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid)) {
+                            zerodivcondError(tok2,tok);
+                            continue;
+                        }
+                        if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid)) {
+                            zerodivcondError(tok2,tok);
+                            continue;
+                        }
+                        if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid)) {
+
+                            zerodivcondError(tok2,tok);
+                            continue;
+                        }
                     }
                 }
             }
