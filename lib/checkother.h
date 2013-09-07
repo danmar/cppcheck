@@ -90,6 +90,7 @@ public:
 
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
+        checkOther.checkZeroDivisionOrUselessCondition();
         checkOther.checkMathFunctions();
         checkOther.checkCCTypeFunctions();
 
@@ -162,6 +163,9 @@ public:
 
     /** @brief %Check zero division*/
     void checkZeroDivision();
+
+    /** @brief %Check zero division / useless condition */
+    void checkZeroDivisionOrUselessCondition();
 
     /** @brief Check for NaN (not-a-number) in an arithmetic expression */
     void checkNanInArithmeticExpression();
@@ -286,6 +290,7 @@ private:
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok);
+    void zerodivcondError(const Token *tokcond, const Token *tokdiv);
     void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
@@ -332,6 +337,7 @@ private:
         c.sprintfOverlappingDataError(0, "varname");
         c.udivError(0, false);
         c.zerodivError(0);
+        c.zerodivcondError(0,0);
         c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
         c.doubleFreeError(0, "varname");
@@ -410,6 +416,9 @@ private:
                "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "* cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "* provide too big sleep times on POSIX systems\n"
+
+               // warning
+               "* either division by zero or useless condition\n"
 
                //performance
                "* redundant data copying for const variable\n"

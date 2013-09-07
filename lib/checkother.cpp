@@ -2156,6 +2156,74 @@ void CheckOther::zerodivError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
+void CheckOther::checkZeroDivisionOrUselessCondition()
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t numberOfFunctions = symbolDatabase->functionScopes.size();
+    for (std::size_t functionIndex = 0; functionIndex < numberOfFunctions; ++functionIndex) {
+        const Scope * scope = symbolDatabase->functionScopes[functionIndex];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "[/%] %var% !!.")) {
+                const unsigned int varid = tok->next()->varId();
+                const Variable *var = tok->next()->variable();
+                if (!var)
+                    continue;
+                bool isVarUnsigned = var->typeEndToken()->isUnsigned();
+                for (const Token *typetok = var->typeStartToken(); typetok != var->typeEndToken(); typetok = typetok->next()) {
+                    if (typetok->isUnsigned()) {
+                        isVarUnsigned = true;
+                        break;
+                    }
+                }
+                for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+                    if (tok2->varId() == varid)
+                        break;
+                    if (tok2->str() == "}")
+                        break;
+                    if (Token::Match(tok2, "%var% (") && tok2->str() != "if" && (var->isGlobal() || !tok2->function()))
+                        break;
+                    if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid)) {
+                        zerodivcondError(tok2,tok);
+                        continue;
+                    }
+                    if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid)) {
+                        zerodivcondError(tok2,tok);
+                        continue;
+                    }
+                    if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid)) {
+                        zerodivcondError(tok2,tok);
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
+{
+    std::list<const Token *> callstack;
+    while (Token::Match(tokcond, "(|%oror%|&&"))
+        tokcond = tokcond->next();
+    if (tokcond && tokdiv) {
+        callstack.push_back(tokcond);
+        callstack.push_back(tokdiv);
+    }
+    std::string condition;
+    if (Token::Match(tokcond, "%num% <|<=")) {
+        condition = tokcond->strAt(2) + ((tokcond->strAt(1) == "<") ? ">" : ">=") + tokcond->str();
+    } else if (tokcond) {
+        if (tokcond->str() == "!")
+            condition = tokcond->next()->str() + "==0";
+        else
+            condition = tokcond->str() + "!=0";
+    }
+    const std::string linenr(MathLib::longToString(tokdiv ? tokdiv->linenr() : 0));
+    reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".");
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 /** @brief Check for NaN (not-a-number) in an arithmetic expression

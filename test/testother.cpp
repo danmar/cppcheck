@@ -44,6 +44,8 @@ private:
         TEST_CASE(zeroDiv6);
         TEST_CASE(zeroDiv7);  // #4930
 
+        TEST_CASE(zeroDivCond); // division by zero / useless condition
+
         TEST_CASE(nanInArithmeticExpression);
 
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
@@ -426,6 +428,70 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n"
                       "[test.cpp:3]: (error) Division by zero.\n", errout.str());
+    }
+
+    void zeroDivCond() {
+        check("void f(unsigned int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x > 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>0' is useless or there is division by zero at line 2.\n", errout.str());
+
+        check("void f(unsigned int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x >= 1) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>=1' is useless or there is division by zero at line 2.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x == 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x==0' is useless or there is division by zero at line 2.\n", errout.str());
+
+        check("void f(unsigned int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x != 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 2.\n", errout.str());
+
+        // avoid false positives when variable is changed after division
+        check("void f() {\n"
+              "  unsigned int x = do_something();\n"
+              "  int y = 17 / x;\n"
+              "  x = some+calculation;\n"
+              "  if (x != 0) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        {
+            // function is called that might modify global variable
+            check("void do_something();\n"
+                  "int x;\n"
+                  "void f() {\n"
+                  "  int y = 17 / x;\n"
+                  "  do_something();\n"
+                  "  if (x != 0) {}\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+
+            // function is called. but don't care, variable is local
+            check("void do_something();\n"
+                  "void f() {\n"
+                  "  int x = some + calculation;\n"
+                  "  int y = 17 / x;\n"
+                  "  do_something();\n"
+                  "  if (x != 0) {}\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 4.\n", errout.str());
+        }
+
+        check("int x;\n"
+              "void f() {\n"
+              "  int y = 17 / x;\n"
+              "  while (y || x == 0) { x--; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {
