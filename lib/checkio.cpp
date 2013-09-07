@@ -833,9 +833,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                     tok1 = tok1->link();
 
                 // check for some common well known functions
-                else if (Token::Match(tok1->previous(), "%var% . size|empty|c_str ( )") && tok1->previous()->variable() &&
-                         (Token::Match(tok1->previous()->variable()->typeStartToken(), "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <") ||
-                          Token::Match(tok1->previous()->variable()->typeStartToken(), "std :: string|wstring"))) {
+                else if (Token::Match(tok1->previous(), "%var% . size|empty|c_str ( )") && isStdContainer(tok1->previous())) {
                     tempToken = new Token(0);
                     tempToken->fileIndex(tok1->fileIndex());
                     tempToken->linenr(tok1->linenr());
@@ -874,8 +872,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
 
                 // look for std::vector operator [] and use template type as return type
                 if (variableInfo) {
-                    if (element && Token::Match(variableInfo->typeStartToken(), "std :: vector|array <")) {
-                        typeToken = variableInfo->typeStartToken()->tokAt(4);
+                    if (element && isStdVector()) { // isStdVector sets type token if true
                         element = false;    // not really an array element
                     } else
                         typeToken = variableInfo->typeStartToken();
@@ -885,6 +882,42 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
             }
         }
     }
+}
+
+bool CheckIO::ArgumentInfo::isStdVector()
+{
+    if (Token::Match(variableInfo->typeStartToken(), "std :: vector|array <")) {
+        typeToken = variableInfo->typeStartToken()->tokAt(4);
+        return true;
+    } else if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
+        for (std::size_t i = 0, e = variableInfo->type()->derivedFrom.size(); i != e; ++i) {
+            if (Token::Match(variableInfo->type()->derivedFrom[i].nameTok, "std :: vector|array <")) {
+                typeToken = variableInfo->type()->derivedFrom[i].nameTok->tokAt(4);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
+{
+    if (tok && tok->variable()) {
+        if (Token::Match(tok->variable()->typeStartToken(), "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <") ||
+            Token::Match(tok->variable()->typeStartToken(), "std :: string|wstring")) {
+            return true;
+        } else if (tok->variable()->type() && !tok->variable()->type()->derivedFrom.empty()) {
+            for (std::size_t i = 0, e = tok->variable()->type()->derivedFrom.size(); i != e; ++i) {
+                if (Token::Match(tok->variable()->type()->derivedFrom[i].nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <") ||
+                    Token::Match(tok->variable()->type()->derivedFrom[i].nameTok, "std :: string|wstring")) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 bool CheckIO::ArgumentInfo::isComplexType() const

@@ -84,6 +84,8 @@ private:
         }
         bool isComplexType() const;
         bool isKnownType() const;
+        bool isStdVector();
+        bool isStdContainer(const Token *tok);
 
         const Variable *variableInfo;
         const Token *typeToken;
