@@ -650,7 +650,9 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %X in format string (no. 1) requires an integer but the argument type is 'foo'.\n"
                       "[test.cpp:4]: (warning) %c in format string (no. 1) requires an integer but the argument type is 'const char *'.\n"
-                      "[test.cpp:5]: (warning) %o in format string (no. 1) requires an integer but the argument type is 'double'.\n", errout.str());
+                      "[test.cpp:5]: (warning) %o in format string (no. 1) requires an integer but the argument type is 'double'.\n"
+                      "[test.cpp:6]: (warning) %x in format string (no. 1) requires an integer but the argument type is 'int *'.\n"
+                      "[test.cpp:8]: (warning) %X in format string (no. 1) requires an integer but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, double d, unsigned int u, unsigned char uc) {\n"
@@ -1062,7 +1064,7 @@ private:
               "void f() {\n"
               "    printf(\"%f\", foo()[0]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires a floating point number but the argument type is 'int *'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires a floating point number but the argument type is 'int'.\n", errout.str());
 
         check("struct Base { int length() { } };\n"
               "struct Derived : public Base { };\n"
@@ -1224,6 +1226,33 @@ private:
                       "[test.cpp:16]: (warning) %ld in format string (no. 7) requires a signed long integer but the argument type is 'size_t {aka unsigned long}'.\n"
                       "[test.cpp:16]: (warning) %ld in format string (no. 8) requires a signed long integer but the argument type is 'ptrdiff_t {aka long}'.\n"
                       "[test.cpp:16]: (warning) %ld in format string (no. 9) requires a signed long integer but the argument type is 'char *'.\n", errout.str());
+
+        check("struct A {};\n"
+              "class B : public std::vector<const int *> {} b;\n"
+              "class C : public std::vector<const struct A *> {} c;\n"
+              "std::string s;\n"
+              "void foo() {\n"
+              "    printf(\"%zu %u\", b.size(), b.size());\n"
+              "    printf(\"%p %d\", b[0], b[0]);\n"
+              "    printf(\"%p %d\", c[0], c[0]);\n"
+              "    printf(\"%p %d\", s.c_str(), s.c_str());\n"
+              "}\n", false, false, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:6]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:7]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'const int *'.\n"
+                      "[test.cpp:8]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'const struct A *'.\n"
+                      "[test.cpp:9]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'const char *'.\n", errout.str());
+
+        check("class A : public std::vector<std::string> {} a;\n"
+              "class B : public std::string {} b;\n"
+              "std::string s;\n"
+              "void foo() {\n"
+              "    printf(\"%p %d\", a[0].c_str(), a[0].c_str());\n"
+              "    printf(\"%c %p\", b[0], b[0]);\n"
+              "    printf(\"%c %p\", s[0], s[0]);\n"
+              "}\n", false, false, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'const char *'.\n"
+                      "[test.cpp:6]: (warning) %p in format string (no. 2) requires an address but the argument type is 'char'.\n"
+                      "[test.cpp:7]: (warning) %p in format string (no. 2) requires an address but the argument type is 'char'.\n", errout.str());
 
     }
 

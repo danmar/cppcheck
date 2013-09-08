@@ -75,22 +75,17 @@ private:
         ~ArgumentInfo() {
             delete tempToken;
         }
-        bool isArrayOrPointer() const {
-            if (variableInfo)
-                return variableInfo->isArrayOrPointer();
-            else if (functionInfo)
-                return typeToken->next()->str() == "*";
-            return false;
-        }
+        bool isArrayOrPointer() const;
         bool isComplexType() const;
         bool isKnownType() const;
-        bool isStdVector();
+        bool isStdVectorOrString();
         bool isStdContainer(const Token *tok);
 
         const Variable *variableInfo;
         const Token *typeToken;
         const Function *functionInfo;
         bool element;
+        bool _template;
         Token *tempToken;
 
     private:
