@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckBufferOverrunH
-#define CheckBufferOverrunH
+#ifndef checkbufferoverrunH
+#define checkbufferoverrunH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -268,4 +268,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkbufferoverrunH

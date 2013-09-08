@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TokenH
-#define TokenH
+//---------------------------------------------------------------------------
+#ifndef tokenH
+#define tokenH
+//---------------------------------------------------------------------------
 
 #include <string>
 #include <vector>
@@ -678,5 +680,5 @@ public:
 };
 
 /// @}
-
-#endif // TokenH
+//---------------------------------------------------------------------------
+#endif // tokenH

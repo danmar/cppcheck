@@ -17,8 +17,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef CheckIOH
-#define CheckIOH
+#ifndef checkioH
+#define checkioH
 //---------------------------------------------------------------------------
 
 #include "check.h"
@@ -75,21 +75,19 @@ private:
         ~ArgumentInfo() {
             delete tempToken;
         }
-        bool isArrayOrPointer() const {
-            if (variableInfo)
-                return variableInfo->isArrayOrPointer();
-            else if (functionInfo)
-                return typeToken->next()->str() == "*";
-            return false;
-        }
+        bool isArrayOrPointer() const;
         bool isComplexType() const;
         bool isKnownType() const;
+        bool isStdVectorOrString();
+        bool isStdContainer(const Token *tok);
 
         const Variable *variableInfo;
         const Token *typeToken;
         const Function *functionInfo;
         bool element;
+        bool _template;
         Token *tempToken;
+
     private:
         ArgumentInfo(const ArgumentInfo &); // not implemented
         ArgumentInfo operator = (const ArgumentInfo &); // not implemented
@@ -112,13 +110,14 @@ private:
     void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
     void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const Token* type);
-    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
-    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
-    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
-    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const Token* type);
+    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
+    void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckIO c(0, settings, errorLogger);
@@ -161,4 +160,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkioH

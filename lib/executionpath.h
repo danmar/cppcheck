@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//---------------------------------------------------------------------------
 #ifndef executionpathH
 #define executionpathH
+//---------------------------------------------------------------------------
 
 #include <list>
 #include "config.h"
@@ -130,5 +132,5 @@ public:
 
 void checkExecutionPaths(const SymbolDatabase *symbolDatabase, ExecutionPath *c);
 
-
-#endif
+//---------------------------------------------------------------------------
+#endif // executionpathH

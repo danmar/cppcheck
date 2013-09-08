@@ -15,8 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+//---------------------------------------------------------------------------
 #ifndef standardsH
 #define standardsH
+//---------------------------------------------------------------------------
 
 /// @addtogroup Core
 /// @{
@@ -41,5 +44,5 @@ struct Standards {
 };
 
 /// @}
-
+//---------------------------------------------------------------------------
 #endif // standardsH

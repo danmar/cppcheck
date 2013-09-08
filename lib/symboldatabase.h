@@ -17,8 +17,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef SymbolDatabaseH
-#define SymbolDatabaseH
+#ifndef symboldatabaseH
+#define symboldatabaseH
 //---------------------------------------------------------------------------
 
 #include <string>
@@ -758,5 +758,5 @@ private:
     /** list for missing types */
     std::list<Type> _blankTypes;
 };
-
-#endif
+//---------------------------------------------------------------------------
+#endif // symboldatabaseH

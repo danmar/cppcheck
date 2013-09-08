@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//---------------------------------------------------------------------------
 #ifndef checkH
 #define checkH
+//---------------------------------------------------------------------------
 
 #include "config.h"
 #include "token.h"
@@ -154,5 +156,5 @@ inline Check::Check(const std::string &aname)
 }
 
 /// @}
-
-#endif
+//---------------------------------------------------------------------------
+#endif //  checkH

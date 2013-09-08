@@ -2256,8 +2256,11 @@ void Scope::getVariableList()
 
         // skip return and delete
         else if (Token::Match(tok, "return|delete")) {
-            while (tok->next() && tok->next()->str() != ";")
+            while (tok->next() &&
+                   tok->next()->str() != ";" &&
+                   tok->next()->str() != "}" /* ticket #4994 */) {
                 tok = tok->next();
+            }
             continue;
         }
 

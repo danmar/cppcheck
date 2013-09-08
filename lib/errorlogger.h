@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+//---------------------------------------------------------------------------
 #ifndef errorloggerH
 #define errorloggerH
+//---------------------------------------------------------------------------
 
 #include <list>
 #include <string>
@@ -307,5 +308,5 @@ public:
 };
 
 /// @}
-
-#endif
+//---------------------------------------------------------------------------
+#endif // errorloggerH

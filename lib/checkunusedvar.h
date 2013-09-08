@@ -16,10 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
-#ifndef CheckUnusedVarH
-#define CheckUnusedVarH
+#ifndef checkunusedvarH
+#define checkunusedvarH
 //---------------------------------------------------------------------------
 
 #include <map>
@@ -114,4 +113,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkunusedvarH

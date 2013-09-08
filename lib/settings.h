@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//---------------------------------------------------------------------------
 #ifndef settingsH
 #define settingsH
+//---------------------------------------------------------------------------
 
 #include <list>
 #include <vector>
@@ -241,5 +243,5 @@ public:
 };
 
 /// @}
-
-#endif // SETTINGS_H
+//---------------------------------------------------------------------------
+#endif // settingsH

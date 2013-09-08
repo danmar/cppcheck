@@ -16,10 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
-#ifndef CheckNonReentrantFunctionsH
-#define CheckNonReentrantFunctionsH
+#ifndef checknonreentrantfunctionsH
+#define checknonreentrantfunctionsH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -107,4 +106,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checknonreentrantfunctionsH

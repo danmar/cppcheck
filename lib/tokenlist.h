@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef tokenlistH
 #define tokenlistH
@@ -130,4 +129,4 @@ private: /// private
 /// @}
 
 //---------------------------------------------------------------------------
-#endif
+#endif // tokenlistH

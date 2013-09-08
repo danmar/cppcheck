@@ -1,4 +1,4 @@
-# Cppcheck
+# Cppcheck [![Build Status](https://travis-ci.org/danmar/cppcheck.png?branch=master)](https://travis-ci.org/danmar/cppcheck)
 
 ## Donations
 

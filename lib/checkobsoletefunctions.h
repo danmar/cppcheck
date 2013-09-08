@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckObsoleteFunctionsH
-#define CheckObsoleteFunctionsH
+#ifndef checkobsoletefunctionsH
+#define checkobsoletefunctionsH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -146,4 +146,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkobsoletefunctionsH

@@ -40,6 +40,7 @@ private:
         TEST_CASE(comparisonOfBoolExpressionWithInt1);
         TEST_CASE(comparisonOfBoolExpressionWithInt2);
         TEST_CASE(comparisonOfBoolExpressionWithInt3);
+        TEST_CASE(comparisonOfBoolExpressionWithInt4);
 
         TEST_CASE(comparisonOfBoolWithInt1);
         TEST_CASE(comparisonOfBoolWithInt2);
@@ -342,6 +343,21 @@ private:
     void comparisonOfBoolExpressionWithInt3() {
         check("int f(int x) {\n"
               "    return t<0>() && x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolExpressionWithInt4() {
+        // #5016
+        check("void f() {\n"
+              "  for(int i = 4; i > -1 < 5 ; --i) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+
+        // templates
+        check("struct Tokenizer { TokenList list; };\n"
+              "void Tokenizer::f() {\n"
+              "  std::list<Token*> locationList;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

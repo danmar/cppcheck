@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 //---------------------------------------------------------------------------
 #ifndef checkmemoryleakH
 #define checkmemoryleakH
@@ -470,4 +468,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkmemoryleakH

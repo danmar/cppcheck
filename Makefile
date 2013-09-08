@@ -352,10 +352,10 @@ $(SRCDIR)/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/errorlogger.h lib/conf
 $(SRCDIR)/tokenlist.o: lib/tokenlist.cpp lib/tokenlist.h lib/config.h lib/token.h lib/mathlib.h lib/path.h lib/preprocessor.h lib/settings.h lib/library.h lib/suppressions.h lib/standards.h lib/errorlogger.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $(SRCDIR)/tokenlist.o $(SRCDIR)/tokenlist.cpp
 
-cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/timer.h cli/cmdlineparser.h lib/path.h cli/filelister.h
+cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlineparser.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/suppressions.h lib/standards.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h cli/filelister.h lib/path.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/cppcheck.h lib/settings.h lib/library.h lib/standards.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h cli/threadexecutor.h lib/preprocessor.h cli/cmdlineparser.h cli/filelister.h lib/path.h cli/pathmatch.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h cli/cmdlineparser.h lib/cppcheck.h lib/settings.h lib/library.h lib/standards.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h cli/filelister.h lib/path.h cli/pathmatch.h lib/preprocessor.h cli/threadexecutor.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
 cli/filelister.o: cli/filelister.cpp cli/filelister.h lib/path.h lib/config.h
@@ -367,7 +367,7 @@ cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/config.h l
 cli/pathmatch.o: cli/pathmatch.cpp cli/pathmatch.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o cli/pathmatch.o cli/pathmatch.cpp
 
-cli/threadexecutor.o: cli/threadexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h cli/threadexecutor.h lib/cppcheck.h lib/settings.h lib/library.h lib/standards.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h
+cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/cppcheck.h lib/settings.h lib/library.h lib/standards.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h cli/cppcheckexecutor.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o cli/threadexecutor.o cli/threadexecutor.cpp
 
 test/options.o: test/options.cpp test/options.h
@@ -427,7 +427,7 @@ test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.
 test/testinternal.o: test/testinternal.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkinternal.h lib/check.h lib/token.h lib/settings.h lib/library.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o test/testinternal.o test/testinternal.cpp
 
-test/testio.o: test/testio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h test/testsuite.h test/redirect.h
+test/testio.o: test/testio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/symboldatabase.h lib/mathlib.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o test/testio.o test/testio.cpp
 
 test/testleakautovar.o: test/testleakautovar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkleakautovar.h lib/check.h lib/token.h lib/settings.h lib/library.h lib/standards.h test/testsuite.h test/redirect.h
