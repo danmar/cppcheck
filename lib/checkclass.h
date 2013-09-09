@@ -197,7 +197,7 @@ private:
                "* Order of initializations\n"
                "* Suggest usage of initialization list\n"
                "* Suspicious subtraction from 'this'\n"
-               "* Call of pure virtual function in constructor/desctructor\n"
+               "* Call of pure virtual function in constructor/destructor\n"
                "* Duplicated inherited data members\n";
     }
 
