@@ -5477,7 +5477,7 @@ private:
 
         checkInitializationListUsage("class Fred {\n"
                                      "    std::string& s;\n" // Message is invalid for references, since their initialization in initializer list is required anyway and behaves different from assignment (#5004)
-                                     "    Fred(const std::string& s) : s(s_) { s = \"foo\"; }\n"
+                                     "    Fred(const std::string& s_) : s(s_) { s = \"foo\"; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
