@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckOtherH
-#define CheckOtherH
+#ifndef checkotherH
+#define checkotherH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -39,13 +39,13 @@ class Variable;
 class CPPCHECKLIB CheckOther : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckOther() : Check(myName())
-    { }
+    CheckOther() : Check(myName()) {
+    }
 
     /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    { }
+        : Check(myName(), tokenizer, settings, errorLogger) {
+    }
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
@@ -57,16 +57,9 @@ public:
         checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
         checkOther.strPlusChar();
-        checkOther.sizeofsizeof();
-        checkOther.sizeofCalculation();
-        checkOther.suspiciousSizeofCalculation();
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkSuspiciousCaseInSwitch();
-        checkOther.checkAssignmentInAssert();
-        checkOther.checkSizeofForArrayParameter();
-        checkOther.checkSizeofForPointerSize();
-        checkOther.checkSizeofForNumericParameter();
         checkOther.checkSelfAssignment();
         checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
@@ -75,12 +68,12 @@ public:
         checkOther.checkSuspiciousSemicolon();
         checkOther.checkVariableScope();
         checkOther.clarifyCondition();   // not simplified because ifAssign
-        checkOther.checkComparisonOfBoolExpressionWithInt();
-        checkOther.checkComparisonOfBoolWithInt();
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
         checkOther.checkIncompleteArrayFill();
         checkOther.checkSuspiciousStringCompare();
         checkOther.checkVarFuncNullUB();
+        checkOther.checkNanInArithmeticExpression();
+        checkOther.checkCommaSeparatedReturn();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -97,24 +90,20 @@ public:
 
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
+        checkOther.checkZeroDivisionOrUselessCondition();
         checkOther.checkMathFunctions();
         checkOther.checkCCTypeFunctions();
 
         checkOther.redundantGetAndSetUserId();
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
-        checkOther.checkComparisonOfFuncReturningBool();
-        checkOther.checkComparisonOfBoolWithBool();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkIncorrectStringCompare();
-        checkOther.checkIncrementBoolean();
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
         checkOther.checkModuloAlwaysTrueFalse();
         checkOther.checkPipeParameterSize();
 
-        checkOther.checkAssignBoolToPointer();
-        checkOther.checkBitwiseOnBoolean();
         checkOther.checkInvalidFree();
         checkOther.checkDoubleFree();
         checkOther.checkRedundantCopy();
@@ -157,6 +146,9 @@ public:
     void checkVariableScope();
     static bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
 
+    /** @brief %Check for comma separated statements in return */
+    void checkCommaSeparatedReturn();
+
     /** @brief %Check for constant function parameter */
     void checkConstantFunctionParameter();
 
@@ -172,23 +164,20 @@ public:
     /** @brief %Check zero division*/
     void checkZeroDivision();
 
+    /** @brief %Check zero division / useless condition */
+    void checkZeroDivisionOrUselessCondition();
+
+    /** @brief Check for NaN (not-a-number) in an arithmetic expression */
+    void checkNanInArithmeticExpression();
+
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
 
     /** @brief %Check for parameters given to cctype function that do make error*/
     void checkCCTypeFunctions();
 
-    /** @brief %Check for 'sizeof sizeof ..' */
-    void sizeofsizeof();
-
-    /** @brief %Check for calculations inside sizeof */
-    void sizeofCalculation();
-
     /** @brief % Check for seteuid(geteuid()) or setuid(getuid())*/
     void redundantGetAndSetUserId();
-
-    /** @brief %Check for suspicious calculations with sizeof results */
-    void suspiciousSizeofCalculation();
 
     /** @brief copying to memory or assigning to a variable twice */
     void checkRedundantAssignment();
@@ -208,44 +197,20 @@ public:
     /** @brief %Check for assigning a variable to itself*/
     void checkSelfAssignment();
 
-    /** @brief %Check for assignment to a variable in an assert test*/
-    void checkAssignmentInAssert();
-
     /** @brief %Check for testing for mutual exclusion over ||*/
     void checkIncorrectLogicOperator();
 
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
 
-    /** @brief %Check for comparison of function returning bool*/
-    void checkComparisonOfFuncReturningBool();
-
-    /** @brief %Check for comparison of variable of type bool*/
-    void checkComparisonOfBoolWithBool();
-
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
-
-    /** @brief %Check for using sizeof with array given as function argument */
-    void checkSizeofForArrayParameter();
-
-    /** @brief %Check for using sizeof of a variable when allocating it */
-    void checkSizeofForPointerSize();
-
-    /** @brief %Check for using sizeof with numeric given as function argument */
-    void checkSizeofForNumericParameter();
 
     /** @brief %Check for using bad usage of strncmp and substr */
     void checkIncorrectStringCompare();
 
     /** @brief %Check for comparison of a string literal with a char* variable */
     void checkSuspiciousStringCompare();
-
-    /** @brief %Check for using postfix increment on bool */
-    void checkIncrementBoolean();
-
-    /** @brief %Check for suspicious comparison of a bool and a non-zero (and non-one) value (e.g. "if (!x==4)") */
-    void checkComparisonOfBoolWithInt();
 
     /** @brief %Check for suspicious code where multiple if have the same expression (e.g "if (a) { } else if (a) { }") */
     void checkDuplicateIf();
@@ -265,17 +230,8 @@ public:
     /** @brief %Check for code that gets never executed, such as duplicate break statements */
     void checkUnreachableCode();
 
-    /** @brief assigning bool to pointer */
-    void checkAssignBoolToPointer();
-
     /** @brief %Check for testing sign of unsigned variable */
     void checkSignOfUnsignedVariable();
-
-    /** @brief %Check for using bool in bitwise expression */
-    void checkBitwiseOnBoolean();
-
-    /** @brief %Check for comparing a bool expression with an integer other than 0 or 1 */
-    void checkComparisonOfBoolExpressionWithInt();
 
     /** @brief %Check for suspicious use of semicolon */
     void checkSuspiciousSemicolon();
@@ -321,11 +277,7 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void clarifyStatementError(const Token* tok);
-    void sizeofsizeofError(const Token *tok);
-    void sizeofCalculationError(const Token *tok, bool inconclusive);
     void redundantGetAndSetUserIdError(const Token *tok);
-    void multiplySizeofError(const Token *tok);
-    void divideSizeofError(const Token *tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void dangerousUsageStrtolError(const Token *tok, const std::string& funcname);
@@ -338,6 +290,8 @@ private:
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok);
+    void zerodivcondError(const Token *tokcond, const Token *tokdiv);
+    void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
@@ -349,22 +303,12 @@ private:
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
-    void assignmentInAssertError(const Token *tok, const std::string &varname);
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
     void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void comparisonOfFuncReturningBoolError(const Token *tok, const std::string &expression);
-    void comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2);
-    void comparisonOfBoolWithBoolError(const Token *tok, const std::string &expression);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
-    void sizeofForArrayParameterError(const Token *tok);
-    void sizeofForPointerError(const Token *tok, const std::string &varname);
-    void sizeofForNumericParameterError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
-    void incrementBooleanError(const Token *tok);
-    void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
-    void comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression);
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
@@ -373,13 +317,10 @@ private:
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
-    void assignBoolToPointerError(const Token *tok);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
     void pointerLessThanZeroError(const Token *tok, bool inconclusive);
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void pointerPositiveError(const Token *tok, bool inconclusive);
-    void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
-    void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void SuspiciousSemicolonError(const Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
@@ -387,23 +328,18 @@ private:
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
+    void commaSeparatedReturnError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
 
         // error
-        c.assignBoolToPointerError(0);
         c.sprintfOverlappingDataError(0, "varname");
         c.udivError(0, false);
         c.zerodivError(0);
+        c.zerodivcondError(0,0);
         c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
-        c.comparisonOfFuncReturningBoolError(0, "func_name");
-        c.comparisonOfTwoFuncsReturningBoolError(0, "func_name1", "func_name2");
-        c.comparisonOfBoolWithBoolError(0, "var_name");
-        c.sizeofForArrayParameterError(0);
-        c.sizeofForPointerError(0, "varname");
-        c.sizeofForNumericParameterError(0);
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
@@ -426,17 +362,12 @@ private:
         c.charBitOpError(0);
         c.variableScopeError(0, "varname");
         c.strPlusCharError(0);
-        c.sizeofsizeofError(0);
-        c.sizeofCalculationError(0, false);
-        c.multiplySizeofError(0);
-        c.divideSizeofError(0);
         c.redundantAssignmentInSwitchError(0, 0, "var");
         c.redundantCopyInSwitchError(0, 0, "var");
         c.switchCaseFallThrough(0);
         c.suspiciousCaseInSwitchError(0, "||");
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
-        c.assignmentInAssertError(0, "varname");
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
         c.redundantConditionError(0, "If x > 10 the condition x > 11 is always true.");
         c.memsetZeroBytesError(0, "varname");
@@ -446,8 +377,6 @@ private:
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
         c.suspiciousStringCompareError(0, "foo");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
-        c.incrementBooleanError(0);
-        c.comparisonOfBoolWithIntError(0, "varname", true);
         c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
@@ -459,13 +388,13 @@ private:
         c.unsignedPositiveError(0, "varname", false);
         c.pointerLessThanZeroError(0, false);
         c.pointerPositiveError(0, false);
-        c.bitwiseOnBooleanError(0, "varname", "&&");
-        c.comparisonOfBoolExpressionWithIntError(0, true);
         c.SuspiciousSemicolonError(0);
         c.cctypefunctionCallError(0, "funname", "value");
         c.moduloAlwaysTrueFalseError(0, "1");
         c.incompleteArrayFillError(0, "buffer", "memset", false);
         c.varFuncNullUBError(0);
+        c.nanInArithmeticExpressionError(0);
+        c.commaSeparatedReturnError(0);
     }
 
     static std::string myName() {
@@ -480,9 +409,6 @@ private:
                "* division with zero\n"
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
-               "* sizeof for array given as function argument\n"
-               "* sizeof for numeric given as function argument\n"
-               "* using sizeof(pointer) instead of the size of pointed data\n"
                "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* free() or delete of an invalid memory location\n"
                "* double free() or double closedir()\n"
@@ -490,6 +416,9 @@ private:
                "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "* cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "* provide too big sleep times on POSIX systems\n"
+
+               // warning
+               "* either division by zero or useless condition\n"
 
                //performance
                "* redundant data copying for const variable\n"
@@ -512,19 +441,11 @@ private:
                "* redundant pre/post operation in a switch statement\n"
                "* redundant bitwise operation in a switch statement\n"
                "* redundant strcpy in a switch statement\n"
-               "* look for 'sizeof sizeof ..'\n"
-               "* look for calculations inside sizeof()\n"
-               "* look for suspicious calculations with sizeof()\n"
                "* assignment of a variable to itself\n"
                "* Suspicious case labels in switch()\n"
                "* Suspicious equality comparisons\n"
                "* mutual exclusion over || always evaluating to true\n"
                "* Clarify calculation with parentheses\n"
-               "* using increment on boolean\n"
-               "* comparison of a boolean with a non-zero integer\n"
-               "* comparison of a boolean expression with an integer other than 0 or 1\n"
-               "* comparison of a function returning boolean value using relational operator\n"
-               "* comparison of a boolean value with boolean value using relational operator\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
                "* suspicious condition (string literals as boolean)\n"
@@ -533,13 +454,14 @@ private:
                "* unreachable code\n"
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
-               "* using bool in bitwise expression\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "* incorrect usage of functions from ctype library.\n"
                "* Comparisons of modulo results that are always true/false.\n"
                "* Array filled incompletely using memset/memcpy/memmove.\n"
                "* redundant get and set function of user id (--std=posix).\n"
-               "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n";
+               "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n"
+               "* NaN (not a number) value used in arithmetic expression.\n"
+               "* comma in return statement (the comma can easily be misread as a semicolon).\n";
     }
 
     void checkExpressionRange(const std::list<const Function*> &constFunctions,
@@ -554,4 +476,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkotherH

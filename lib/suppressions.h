@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef SUPPRESSIONS_H
-#define SUPPRESSIONS_H
+//---------------------------------------------------------------------------
+#ifndef suppressionsH
+#define suppressionsH
+//---------------------------------------------------------------------------
 
 #include <list>
 #include <string>
@@ -120,8 +121,8 @@ public:
 
     struct SuppressionEntry {
         SuppressionEntry(const std::string &aid, const std::string &afile, unsigned int aline)
-            : id(aid), file(afile), line(aline)
-        { }
+            : id(aid), file(afile), line(aline) {
+        }
 
         std::string id;
         std::string file;
@@ -142,5 +143,5 @@ public:
 };
 
 /// @}
-
-#endif // SUPPRESSIONS_H
+//---------------------------------------------------------------------------
+#endif // suppressionsH

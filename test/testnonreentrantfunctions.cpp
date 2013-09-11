@@ -27,8 +27,8 @@ extern std::ostringstream errout;
 
 class TestNonReentrantFunctions : public TestFixture {
 public:
-    TestNonReentrantFunctions() : TestFixture("TestNonReentrantFunctions")
-    { }
+    TestNonReentrantFunctions() : TestFixture("TestNonReentrantFunctions") {
+    }
 
 private:
 

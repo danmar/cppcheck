@@ -34,13 +34,13 @@
 #include <pcre.h>
 #endif
 
-static const char Version[] = "1.60 dev";
+static const char Version[] = "1.62 dev";
 static const char ExtraVersion[] = "";
 
 static TimerResults S_timerResults;
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : _errorLogger(errorLogger), exitcode(0), _useGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false)
+    : _errorLogger(errorLogger), exitcode(0), _useGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), _simplify(true)
 {
 }
 
@@ -62,15 +62,12 @@ const char * CppCheck::extraVersion()
 
 unsigned int CppCheck::check(const std::string &path)
 {
-    return processFile(path);
+    return processFile(path, "");
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
-    _fileContent = content;
-    const unsigned int retval = processFile(path);
-    _fileContent.clear();
-    return retval;
+    return processFile(path, content);
 }
 
 void CppCheck::replaceAll(std::string& code, const std::string &from, const std::string &to)
@@ -129,7 +126,7 @@ bool CppCheck::findError(std::string code, const char FileName[])
     return true;
 }
 
-unsigned int CppCheck::processFile(const std::string& filename)
+unsigned int CppCheck::processFile(const std::string& filename, const std::string& fileContent)
 {
     exitcode = 0;
 
@@ -151,9 +148,9 @@ unsigned int CppCheck::processFile(const std::string& filename)
         std::list<std::string> configurations;
         std::string filedata = "";
 
-        if (!_fileContent.empty()) {
-            // File content was given as a string
-            std::istringstream iss(_fileContent);
+        if (!fileContent.empty()) {
+            // File content was given as a string (democlient)
+            std::istringstream iss(fileContent);
             preprocessor.preprocess(iss, filedata, configurations, filename, _settings._includePaths);
         } else {
             // Only file name was given, read the content from file
@@ -166,7 +163,29 @@ unsigned int CppCheck::processFile(const std::string& filename)
             return 0;
         }
 
-        if (!_settings.userDefines.empty()) {
+        // Run rules on this code
+        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+            if (it->tokenlist == "define") {
+                Tokenizer tokenizer2(&_settings, this);
+                std::istringstream istr2(filedata);
+                tokenizer2.list.createTokens(istr2, filename);
+
+                for (const Token *tok = tokenizer2.list.front(); tok; tok = tok->next()) {
+                    if (tok->str() == "#define") {
+                        std::string code = std::string(tok->linenr()-1U, '\n');
+                        for (const Token *tok2 = tok; tok2 && tok2->linenr() == tok->linenr(); tok2 = tok2->next())
+                            code += " " + tok2->str();
+                        Tokenizer tokenizer3(&_settings, this);
+                        std::istringstream istr3(code);
+                        tokenizer3.list.createTokens(istr3, tokenizer2.list.file(tok));
+                        executeRules("define", tokenizer3);
+                    }
+                }
+                break;
+            }
+        }
+
+        if (!_settings.userDefines.empty() && _settings._maxConfigs==1U) {
             configurations.clear();
             configurations.push_back(_settings.userDefines);
         }
@@ -195,8 +214,14 @@ unsigned int CppCheck::processFile(const std::string& filename)
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
             }
 
+            if (!_settings.userDefines.empty()) {
+                if (!cfg.empty())
+                    cfg = ";" + cfg;
+                cfg = _settings.userDefines + cfg;
+            }
+
             Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-            const std::string codeWithoutCfg = preprocessor.getcode(filedata, *it, filename, _settings.userDefines.empty());
+            const std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename);
             t.Stop();
 
             const std::string &appendCode = _settings.append();
@@ -210,18 +235,41 @@ unsigned int CppCheck::processFile(const std::string& filename)
             }
         }
     } catch (const std::runtime_error &e) {
-        // Exception was thrown when checking this file..
-        const std::string fixedpath = Path::toNativeSeparators(filename);
-        _errorLogger.reportOut("Bailing out from checking " + fixedpath + ": " + e.what());
+        internalError(filename, e.what());
+    } catch (const InternalError &e) {
+        internalError(filename, e.errorMessage);
     }
 
-    if (!_settings._errorsOnly)
+    if (_settings.isEnabled("information") || _settings.checkConfiguration)
         reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename));
 
     _errorList.clear();
     return exitcode;
 }
 
+void CppCheck::internalError(const std::string &filename, const std::string &msg)
+{
+    const std::string fixedpath = Path::toNativeSeparators(filename);
+    const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was a internal error: " + msg);
+
+    if (_settings.isEnabled("information")) {
+        const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        callstack.push_back(loc1);
+
+        ErrorLogger::ErrorMessage errmsg(callstack,
+                                         Severity::information,
+                                         fullmsg,
+                                         "internalError",
+                                         false);
+
+        _errorLogger.reportErr(errmsg);
+
+    } else {
+        // Report on stdout
+        _errorLogger.reportOut(fullmsg);
+    }
+}
 
 
 void CppCheck::checkFunctionUsage()
@@ -288,6 +336,17 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     try {
         bool result;
 
+        // Execute rules for "raw" code
+        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+            if (it->tokenlist == "raw") {
+                Tokenizer tokenizer2(&_settings, this);
+                std::istringstream istr(code);
+                tokenizer2.list.createTokens(istr, FileName);
+                executeRules("raw", tokenizer2);
+                break;
+            }
+        }
+
         // Tokenize the file
         std::istringstream istr(code);
 
@@ -298,10 +357,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             // File had syntax errors, abort
             return;
         }
-
-        // Update the _dependencies..
-        if (_tokenizer.list.getFiles().size() >= 2)
-            _dependencies.insert(_tokenizer.list.getFiles().begin()+1, _tokenizer.list.getFiles().end());
 
         // call all "runChecks" in all registered Check classes
         if (!Path::isQt(FileName)) {
@@ -316,6 +371,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
             _checkUnusedFunctions.parseTokens(_tokenizer, &_settings);
+
+        executeRules("normal", _tokenizer);
+
+        if (!_simplify)
+            return;
 
         Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
         result = _tokenizer.simplifyTokenList();
@@ -332,75 +392,13 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
         }
 
-#ifdef HAVE_RULES
-        // Are there extra rules?
-        if (!_settings.rules.empty()) {
-            std::ostringstream ostr;
-            for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            const std::string str(ostr.str());
-            for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-                const Settings::Rule &rule = *it;
-                if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty())
-                    continue;
+        if (_settings.terminated())
+            return;
 
-                const char *error = 0;
-                int erroffset = 0;
-                pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
-                if (!re && error) {
-                    ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
-                                                     Severity::error,
-                                                     error,
-                                                     "pcre_compile",
-                                                     false);
+        executeRules("simple", _tokenizer);
 
-                    reportErr(errmsg);
-                }
-                if (!re)
-                    continue;
-
-                int pos = 0;
-                int ovector[30];
-                while (0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
-                    unsigned int pos1 = (unsigned int)ovector[0];
-                    unsigned int pos2 = (unsigned int)ovector[1];
-
-                    // jump to the end of the match for the next pcre_exec
-                    pos = (int)pos2;
-
-                    // determine location..
-                    ErrorLogger::ErrorMessage::FileLocation loc;
-                    loc.setfile(_tokenizer.getSourceFilePath());
-                    loc.line = 0;
-
-                    unsigned int len = 0;
-                    for (const Token *tok = _tokenizer.tokens(); tok; tok = tok->next()) {
-                        len = len + 1 + tok->str().size();
-                        if (len > pos1) {
-                            loc.setfile(_tokenizer.list.getFiles().at(tok->fileIndex()));
-                            loc.line = tok->linenr();
-                            break;
-                        }
-                    }
-
-                    const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
-
-                    // Create error message
-                    std::string summary;
-                    if (rule.summary.empty())
-                        summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
-                    else
-                        summary = rule.summary;
-                    const ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id, false);
-
-                    // Report error
-                    reportErr(errmsg);
-                }
-
-                pcre_free(re);
-            }
-        }
-#endif
+        if (_settings.terminated())
+            return;
     } catch (const InternalError &e) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         ErrorLogger::ErrorMessage::FileLocation loc2;
@@ -423,6 +421,93 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         _errorLogger.reportErr(errmsg);
     }
+}
+
+void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
+{
+    (void)tokenlist;
+    (void)tokenizer;
+
+#ifdef HAVE_RULES
+    // Are there rules to execute?
+    bool isrule = false;
+    for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+        if (it->tokenlist == tokenlist)
+            isrule = true;
+    }
+
+    // There is no rule to execute
+    if (isrule == false)
+        return;
+
+    // Write all tokens in a string that can be parsed by pcre
+    std::ostringstream ostr;
+    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        ostr << " " << tok->str();
+    const std::string str(ostr.str());
+
+    for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+        const Settings::Rule &rule = *it;
+        if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty() || rule.tokenlist != tokenlist)
+            continue;
+
+        const char *error = 0;
+        int erroffset = 0;
+        pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
+        if (!re) {
+            if (error) {
+                ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                                                 Severity::error,
+                                                 error,
+                                                 "pcre_compile",
+                                                 false);
+
+                reportErr(errmsg);
+            }
+            continue;
+        }
+
+        int pos = 0;
+        int ovector[30];
+        while (pos < (int)str.size() && 0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
+            unsigned int pos1 = (unsigned int)ovector[0];
+            unsigned int pos2 = (unsigned int)ovector[1];
+
+            // jump to the end of the match for the next pcre_exec
+            pos = (int)pos2;
+
+            // determine location..
+            ErrorLogger::ErrorMessage::FileLocation loc;
+            loc.setfile(tokenizer.getSourceFilePath());
+            loc.line = 0;
+
+            std::size_t len = 0;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+                len = len + 1U + tok->str().size();
+                if (len > pos1) {
+                    loc.setfile(tokenizer.list.getFiles().at(tok->fileIndex()));
+                    loc.line = tok->linenr();
+                    break;
+                }
+            }
+
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack(1, loc);
+
+            // Create error message
+            std::string summary;
+            if (rule.summary.empty())
+                summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
+            else
+                summary = rule.summary;
+            const ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id, false);
+
+            // Report error
+            reportErr(errmsg);
+        }
+
+        pcre_free(re);
+    }
+#endif
 }
 
 Settings &CppCheck::settings()

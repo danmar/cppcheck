@@ -516,6 +516,9 @@ Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
 
+    const QString applicationFilePath = QCoreApplication::applicationFilePath();
+    result.library.load(applicationFilePath.toLatin1(), "std");
+
     // If project file loaded, read settings from it
     if (mProject) {
         ProjectFile *pfile = mProject->GetProjectFile();
@@ -529,6 +532,10 @@ Settings MainWindow::GetCppcheckSettings()
                 result.userDefines += ";";
             result.userDefines += define.toStdString();
         }
+
+        // Only check the given -D configuration
+        if (!defines.isEmpty())
+            result._maxConfigs = 1;
     }
 
     // Include directories (and files) are searched in listed order.

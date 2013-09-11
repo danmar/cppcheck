@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class TestExceptionSafety : public TestFixture {
 public:
-    TestExceptionSafety() : TestFixture("TestExceptionSafety")
-    { }
+    TestExceptionSafety() : TestFixture("TestExceptionSafety") {
+    }
 
 private:
 

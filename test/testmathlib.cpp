@@ -23,8 +23,8 @@
 
 class TestMathLib : public TestFixture {
 public:
-    TestMathLib() : TestFixture("TestMathLib")
-    { }
+    TestMathLib() : TestFixture("TestMathLib") {
+    }
 
 private:
 
@@ -41,6 +41,7 @@ private:
         TEST_CASE(isNotEqual)
         TEST_CASE(isLess)
         TEST_CASE(isLessEqual)
+        TEST_CASE(naninf)
     }
 
     void isGreater() const {
@@ -124,6 +125,7 @@ private:
         ASSERT_EQUALS("7.0" , MathLib::divide("21.", "3"));
         ASSERT_EQUALS("1"   , MathLib::divide("3", "2"));
         ASSERT_THROW(MathLib::divide("123", "0"), InternalError); // throw
+        ASSERT_THROW(MathLib::divide("-9223372036854775808", "-1"), InternalError); // #4520 - out of range => throw
         MathLib::divide("123", "0.0"); // don't throw
 
         // Unknown action should throw exception
@@ -342,6 +344,12 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E-1"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
+    }
+
+    void naninf() {
+        ASSERT_EQUALS("inf.0", MathLib::divide("0.0", "0.0")); // nan
+        ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.0")); // inf
+        ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "0.0")); // -inf
     }
 };
 

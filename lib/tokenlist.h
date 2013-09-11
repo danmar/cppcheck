@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef tokenlistH
 #define tokenlistH
@@ -105,7 +104,7 @@ public:
      */
     std::string fileLine(const Token *tok) const;
 
-    void createAst();
+    void createAst() const;
 
 private:
     /** Disable copy constructor, no implementation */
@@ -130,4 +129,4 @@ private: /// private
 /// @}
 
 //---------------------------------------------------------------------------
-#endif
+#endif // tokenlistH

@@ -10,18 +10,18 @@
         href="https://github.com/danmar/cppcheck/commits/master.atom" />
   <link rel="alternate" type="application/atom+xml" title="Trac Timeline"
         href="http://sourceforge.net/apps/trac/cppcheck/timeline?changeset=on&amp;ticket=on&amp;milestone=on&amp;wiki=on&amp;max=50&amp;daysback=90&amp;format=rss" />
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
-  <script src="/site/js/pack.js" type="text/javascript"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript">
-    $(function() {
-      $("#github-commits").listCommits("danmar", "cppcheck", "master");
-    });
+    //<![CDATA[
+    window.jQuery || document.write('<script type="text/javascript" src="/site/js/jquery-1.10.2.min.js"><\/script>')
+    //]]>
   </script>
+  <script src="/site/js/pack.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="header">
   <div class="wrap">
-    <h1>Cppcheck</h1>
+    <h1><a href="/">Cppcheck</a></h1>
     <p>A tool for static C/C++ code analysis</p>
   </div> <!-- .wrap -->
 </div> <!-- #header -->
@@ -34,6 +34,7 @@
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><strong><a href="/devinfo/" title="Developer Information">Developer Info</a></strong></li>
       <li><a href="/demo/">Online Demo</a></li>
+      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
@@ -51,7 +52,7 @@
 </div> <!-- #anchors -->
 <div id="content">
   <div class="wrap">
-<h2><a id="source-code">Source Code</a></h2>
+<h2 id="source-code">Source Code</h2>
 <p>Latest version can be found in the <a href="https://github.com/danmar/cppcheck/">
 cppcheck git repository</a>.</p>
 <p>To get the source code using git:</p>
@@ -63,7 +64,7 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
 <h3>Recent Commits</h3>
 <div id="github-commits"><a href="https://github.com/danmar/cppcheck/commits/master">View recent commits&hellip;</a></div>
 <p><a href="https://github.com/danmar/cppcheck/commits/master">View all commits&hellip;</a></p>
-<h2><a id="trac-timeline">Trac Timeline</a></h2>
+<h2 id="trac-timeline">Trac Timeline</h2>
 <?php
   require '../site/simplepie/simplepie.php';
 
@@ -79,7 +80,7 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   print("</ul>\n");
 ?>
 <p><a href="http://sourceforge.net/apps/trac/cppcheck/timeline">View complete Trac timeline&hellip;</a></p>
-<h2><a id="active-forum-topics">Active Forum Topics</a></h2>
+<h2 id="active-forum-topics">Active Forum Topics</h2>
 <?php
   require '../site/activetopics.php';
 
@@ -96,12 +97,12 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   print("</ul>\n");
 ?>
 <p><a href="http://sourceforge.net/apps/phpbb/cppcheck/search.php?st=0&amp;search_id=active_topics">View all active topics&hellip;</a></p>
-<h2><a id="doxygen">Doxygen</a></h2>
+<h2 id="doxygen">Doxygen</h2>
 <ul>
   <li><a href="doxyoutput/">Output</a></li>
   <li><a href="doxygen-errors.txt">Errors</a></li>
 </ul>
-<h2><a id="other">Other</a></h2>
+<h2 id="other">Other</h2>
 <ul>
   <li><a href="coverage_report/">Coverage report</a></li>
   <li><a href="cpd.txt">CPD report (duplicate code)</a></li>

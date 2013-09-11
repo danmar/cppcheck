@@ -8,8 +8,6 @@ CONFIG -= qt app_bundle
 
 include(../console_common.pri)
 
-BASEPATH = ../externals/tinyxml/
-include($$PWD/../externals/tinyxml/tinyxml.pri)
 BASEPATH = ../lib/
 include($$PWD/../lib/lib.pri)
 

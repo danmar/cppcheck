@@ -16,19 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cmdlineparser.h"
+#include "cppcheck.h"
+#include "filelister.h"
+#include "path.h"
+#include "settings.h"
+#include "timer.h"
+
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <string>
 #include <cstring>
-#include <stdlib.h> // EXIT_FAILURE
-#include "cppcheck.h"
-#include "timer.h"
-#include "settings.h"
-#include "cmdlineparser.h"
-#include "path.h"
-#include "filelister.h"
+#include <cstdlib> // EXIT_FAILURE
 
 #ifdef HAVE_RULES
 // xml is used in rules
@@ -102,6 +103,9 @@ void CmdLineParser::PrintMessage(const std::string &message)
 
 bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 {
+    bool def = false;
+    bool maxconfigs = false;
+
     for (int i = 1; i < argc; i++) {
         if (std::strcmp(argv[i], "--version") == 0) {
             _showVersion = true;
@@ -311,6 +315,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        // Check configuration
+        else if (std::strcmp(argv[i], "--check-config") == 0) {
+            _settings->checkConfiguration = true;
+        }
+
+        // Check library definitions
+        else if (std::strcmp(argv[i], "--check-library") == 0) {
+            _settings->checkLibrary = true;
+        }
+
         else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
             const std::string errmsg = _settings->addEnabled(argv[i] + 9);
             if (!errmsg.empty()) {
@@ -366,6 +380,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             if (!_settings->userDefines.empty())
                 _settings->userDefines += ";";
             _settings->userDefines += define;
+
+            def = true;
         }
         // User undef
         else if (std::strncmp(argv[i], "-U", 2) == 0) {
@@ -462,6 +478,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                         path += '/';
                 }
                 _ignoredPaths.push_back(path);
+            }
+        }
+
+        // --library
+        else if (std::strncmp(argv[i], "--library=", 10) == 0) {
+            if (!_settings->library.load(argv[0], argv[i]+10)) {
+                PrintMessage("cppcheck: Failed to load library configuration file '" + std::string(argv[i]+10) + "'");
+                return false;
             }
         }
 
@@ -593,6 +617,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                     Settings::Rule rule;
 
+                    tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                    if (tokenlist)
+                        rule.tokenlist = tokenlist->GetText();
+
                     tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
                     if (pattern) {
                         rule.pattern = pattern->GetText();
@@ -610,7 +638,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                         tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
                         if (summary)
-                            rule.summary = summary->GetText();
+                            rule.summary = summary->GetText() ? summary->GetText() : "";
                     }
 
                     if (!rule.pattern.empty())
@@ -619,11 +647,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 #endif
-
-        // Check configuration
-        else if (std::strcmp(argv[i], "--check-config") == 0) {
-            _settings->checkConfiguration = true;
-        }
 
         // Specify platform
         else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
@@ -662,6 +685,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 PrintMessage("cppcheck: argument to '--max-configs=' must be greater than 0.");
                 return false;
             }
+
+            maxconfigs = true;
         }
 
         // Print help
@@ -687,8 +712,18 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
     }
 
+    if (def && !_settings->_force && !maxconfigs)
+        _settings->_maxConfigs = 1U;
+
+    if (_settings->_force)
+        _settings->_maxConfigs = ~0U;
+
     if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option, so it's disabled.");
+    }
+
+    if (_settings->inconclusive && _settings->_xml && _settings->_xml_version == 1U) {
+        PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible. It's recommended to use the new xml format (use --xml-version=2).");
     }
 
     if (argc <= 1)
@@ -726,16 +761,22 @@ void CmdLineParser::PrintHelp()
               "                         by providing an implementation for them.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
-              "    -D<ID>               By default Cppcheck checks all configurations. Use -D\n"
-              "                         to limit the checking to a particular configuration.\n"
+              "    --check-library      Show information messages when library files have\n"
+              "                         incomplete info.\n"
+              "    -D<ID>               Define preprocessor symbol. Unless --max-configs or\n"
+              "                         --force is used, Cppcheck will only check the given\n"
+              "                         configuration when -D is used.\n"
               "                         Example: '-DDEBUG=1 -D__cplusplus'.\n"
-              "    -U<ID>               By default Cppcheck checks all configurations. Use -U\n"
-              "                         to explicitly hide certain #ifdef <ID> code paths from\n"
-              "                         checking.\n"
+              "    -U<ID>               Undefine preprocessor symbol. Use -U to explicitly\n"
+              "                         hide certain #ifdef <ID> code paths from checking.\n"
               "                         Example: '-UDEBUG'\n"
               "    --enable=<id>        Enable additional checks. The available ids are:\n"
               "                          * all\n"
-              "                                  Enable all checks\n"
+              "                                  Enable all checks. It is recommended to only\n"
+              "                                  use --enable=all when the whole program is\n"
+              "                                  scanned, because this enables unusedFunction.\n"
+              "                          * warning\n"
+              "                                  Enable warning messages\n"
               "                          * style\n"
               "                                  Enable all coding style checks. All messages\n"
               "                                  with the severities 'style', 'performance' and\n"
@@ -747,7 +788,9 @@ void CmdLineParser::PrintHelp()
               "                          * information\n"
               "                                  Enable information messages\n"
               "                          * unusedFunction\n"
-              "                                  Check for unused functions\n"
+              "                                  Check for unused functions. It is recommend\n"
+              "                                  to only enable this when the whole program is\n"
+              "                                  scanned.\n"
               "                          * missingInclude\n"
               "                                  Warn if there are missing includes. For\n"
               "                                  detailed information, use '--check-config'.\n"
@@ -803,6 +846,8 @@ void CmdLineParser::PrintHelp()
               "    --language=<language>, -x <language>\n"
               "                         Forces cppcheck to check all files as the given\n"
               "                         language. Valid values are: c, c++\n"
+              "    --library=<cfg>\n"
+              "                         Use library configuration.\n"
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"
@@ -862,7 +907,8 @@ void CmdLineParser::PrintHelp()
               "                         is in the same format as <spec> above.\n"
               "    --template='<text>'  Format the error messages. E.g.\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"
-              "                         '{file}({line}):({severity}) {message}'\n"
+              "                         '{file}({line}):({severity}) {message}' or\n"
+              "                         '{callstack} {message}'\n"
               "                         Pre-defined templates: gcc, vs, edit.\n"
               "    -v, --verbose        Output more detailed error information.\n"
               "    --version            Print out version number.\n"
@@ -886,5 +932,5 @@ void CmdLineParser::PrintHelp()
               "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
               "\n"
               "For more information:\n"
-              "    http://cppcheck.sf.net/manual.pdf\n";
+              "    http://cppcheck.sourceforge.net/manual.pdf\n";
 }

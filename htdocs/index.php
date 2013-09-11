@@ -13,12 +13,12 @@ uninitialized variables, unused functions" />
   <link rel="stylesheet" type="text/css" href="/site/css/pack.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="alternate" type="application/rss+xml" title="Project News"
-        href="http://sourceforge.net/export/rss2_projnews.php?group_id=195752" />
+        href="http://sourceforge.net/p/cppcheck/news/feed" />
 </head>
 <body>
 <div id="header">
   <div class="wrap">
-    <h1>Cppcheck</h1>
+    <h1><a href="/">Cppcheck</a></h1>
     <p>A tool for static C/C++ code analysis</p>
   </div> <!-- .wrap -->
 </div> <!-- #header -->
@@ -31,6 +31,7 @@ uninitialized variables, unused functions" />
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
       <li><a href="/demo/">Online Demo</a></li>
+      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
@@ -57,10 +58,11 @@ bugs that the compilers normally do not detect. The goal is to detect only real
 errors in the code (i.e. have zero false positives).
 </p>
 
-<h2><a id="download">Download</a></h2>
+<h2 id="download">Download</h2>
 <p>
-    <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.59/cppcheck-1.59-x86-Setup.msi">
-    <strong>Download Now!</strong> <em>Version 1.59 for Windows</em>
+    <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.61/cppcheck-1.61-x86-Setup.msi">
+        <span class="downButtonText">Download Now!</span>
+        <span class="downButtonVersion">Version 1.61 for Windows</span>
     </a>
 </p>
 <p>You can download the standalone Cppcheck from our
@@ -73,11 +75,16 @@ as a plugin for your favorite IDE:</p>
   <li><strong>gedit</strong> - <a href="http://github.com/odamite/gedit-cppcheck">gedit plugin</a></li>
   <li><strong>Hudson</strong> - <a href="http://wiki.hudson-ci.org/display/HUDSON/Cppcheck+Plugin">Cppcheck Plugin</a></li>
   <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
+  <li><strong>Tortoise SVN</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Tortoisesvn">Adding a pre-commit hook script</a></li>
+  <li><strong>Mercurial (Linux)</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Mercurialhook">pre-commit hook</a> - Check for new errors on commit (requires interactive terminal)</li>
 </ul>
 <p>There is no plugin for <strong>Visual Studio</strong>, but it is possible to
-add Cppcheck as an external tool.</p>
+add Cppcheck as an external tool. You can also try the proprietary
+<a href="http://www.viva64.com/en/pvs-studio/">PVS-Studio</a> (there is a free trial),
+which is oriented for this environment. A comparison of Cppcheck and PVS-Studio can be found
+<a href="http://www.viva64.com/en/b/0149/">here</a> and we believe it's a good and honest comparison.</p>
 
-<h2><a id="features">Features</a></h2>
+<h2 id="features">Features</h2>
 <ul>
   <li>Out of bounds checking</li>
   <li>Check the code for each class</li>
@@ -88,12 +95,12 @@ add Cppcheck as an external tool.</p>
   <li>Check for uninitialized variables and unused functions</li>
 </ul>
 
-<h2><a id="news">News</a></h2>
+<h2 id="news">News</h2>
 <?php
   require './site/simplepie/simplepie.php';
 
   $feed = new SimplePie();
-  $feed->set_feed_url('http://sourceforge.net/export/rss2_projnews.php?group_id=195752');
+  $feed->set_feed_url('http://sourceforge.net/p/cppcheck/news/feed');
   $feed->set_cache_location('./site/simplepie/cache');
   $feed->init();
   print("<ul class=\"rssfeeditems\">\n");
@@ -102,13 +109,13 @@ add Cppcheck as an external tool.</p>
   }
   print("</ul>\n");
 ?>
-<p><a href="http://sourceforge.net/news/?group_id=195752">View all news&hellip;</a></p>
+<p><a href="http://sourceforge.net/p/cppcheck/news/">View all news&hellip;</a></p>
 
-<h2><a id="documentation">Documentation</a></h2>
-<p>You can read the <a href="manual.pdf">manual</a> or download some 
+<h2 id="documentation">Documentation</h2>
+<p>You can read the <a href="manual.pdf">manual</a> or download some
 <a href="http://sourceforge.net/projects/cppcheck/files/Articles/">articles</a>.</p>
 
-<h2><a id="support">Support</a></h2>
+<h2 id="support">Support</h2>
 <ul>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report
   bugs and feature requests</li>
@@ -117,7 +124,7 @@ add Cppcheck as an external tool.</p>
   <li>For more details look at the <a href="http://sourceforge.net/apps/mediawiki/cppcheck/">wiki</a></li>
 </ul>
 
-<h2><a id="contribute">Contribute</a></h2>
+<h2 id="contribute">Contribute</h2>
 <p>You are welcome to contribute. Help is needed.</p>
 <dl>
   <dt>Testing</dt>

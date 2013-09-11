@@ -52,7 +52,12 @@ void CheckAssignIf::assignIf()
                 bitop = tok->strAt(2).at(0);
                 num = MathLib::toLongNumber(tok->next()->str());
             } else {
-                const Token * const endToken = Token::findsimplematch(tok, ";");
+                const Token *endToken = Token::findsimplematch(tok, ";");
+
+                // Casting address
+                if (Token::Match(endToken->tokAt(-4), "* ) & %any% ;"))
+                    endToken = NULL;
+
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
                     num = MathLib::toLongNumber(endToken->previous()->str());
@@ -65,7 +70,7 @@ void CheckAssignIf::assignIf()
             if (num < 0 && bitop == '|')
                 continue;
 
-            assignIfParseScope(tok, tok->tokAt(4), var->varId(), var->isLocal(), bitop, num);
+            assignIfParseScope(tok, tok->tokAt(4), var->declarationId(), var->isLocal(), bitop, num);
         }
     }
 }
@@ -78,6 +83,8 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                                        const char bitop,
                                        const MathLib::bigint num)
 {
+    bool ret = false;
+
     for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
         if (Token::Match(tok2->tokAt(2), "%varid% %cop% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
             const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
@@ -92,9 +99,27 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
             }
             return true;
         }
-        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid))
-            return true;
+        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
+            unsigned int argumentNumber = 0;
+            const Token *ftok;
+            for (ftok = tok2; ftok && ftok->str() != "("; ftok = ftok->previous()) {
+                if (ftok->str() == ")")
+                    ftok = ftok->link();
+                else if (ftok->str() == ",")
+                    argumentNumber++;
+            }
+            ftok = ftok ? ftok->previous() : NULL;
+            if (!(ftok && ftok->function()))
+                return true;
+            const Variable *par = ftok->function()->getArgumentVar(argumentNumber);
+            if (par == NULL || par->isReference() || par->isPointer())
+                return true;
+        }
         if (tok2->str() == "}")
+            return false;
+        if (Token::Match(tok2, "break|continue|return"))
+            ret = true;
+        if (ret && tok2->str() == ";")
             return false;
         if (!islocal && Token::Match(tok2, "%var% (") && !Token::simpleMatch(tok2->next()->link(), ") {"))
             return true;

@@ -40,21 +40,21 @@ bool CheckAutoVariables::isPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return(var && var->isArgument() && var->isPointer());
+    return (var && var->isArgument() && var->isPointer());
 }
 
 bool CheckAutoVariables::isRefPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return(var && var->isArgument() && var->isReference() && var->isPointer());
+    return (var && var->isArgument() && var->isReference() && var->isPointer());
 }
 
 bool CheckAutoVariables::isNonReferenceArg(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return(var && var->isArgument() && !var->isReference() && (var->isPointer() || var->typeStartToken()->isStandardType() || var->type()));
+    return (var && var->isArgument() && !var->isReference() && (var->isPointer() || var->typeStartToken()->isStandardType() || var->type()));
 }
 
 bool CheckAutoVariables::isAutoVar(const Token *tok)
@@ -82,9 +82,21 @@ bool CheckAutoVariables::isAutoVarArray(const Token *tok)
 }
 
 // Verification that we really take the address of a local variable
-static bool checkRvalueExpression(const Variable* var, const Token* next)
+static bool checkRvalueExpression(const Token * const vartok)
 {
-    return((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
+    const Variable * const var = vartok->variable();
+    if (var == NULL)
+        return false;
+
+    const Token * const next = vartok->next();
+
+    // &a.b[0]
+    if (Token::Match(vartok, "%var% . %var% [") && !var->isPointer()) {
+        const Variable *var2 = next->next()->variable();
+        return var2 && !var2->isPointer();
+    }
+
+    return ((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
 static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)
@@ -112,12 +124,10 @@ void CheckAutoVariables::autoVariables()
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Critical assignment
             if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
-                const Variable * var = tok->tokAt(4)->variable();
-                if (checkRvalueExpression(var, tok->tokAt(5)))
+                if (checkRvalueExpression(tok->tokAt(4)))
                     errorAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] * %var% = & %var%") && isPtrArg(tok->tokAt(2)) && isAutoVar(tok->tokAt(5))) {
-                const Variable * var = tok->tokAt(5)->variable();
-                if (checkRvalueExpression(var, tok->tokAt(6)))
+                if (checkRvalueExpression(tok->tokAt(5)))
                     errorAutoVariableAssignment(tok->next(), false);
             } else if (reportWarnings &&
                        Token::Match(tok, "[;{}] %var% =") &&
@@ -129,8 +139,8 @@ void CheckAutoVariables::autoVariables()
                 if (_settings->inconclusive) {
                     const Variable * var1 = tok->next()->variable();
                     if (var1 && var1->isArgument() && var1->isPointer()) {
-                        const Variable * var2 = tok->tokAt(6)->variable();
-                        if (isAutoVar(tok->tokAt(6)) && checkRvalueExpression(var2, tok->tokAt(7)))
+                        const Token * const var2tok = tok->tokAt(6);
+                        if (isAutoVar(var2tok) && checkRvalueExpression(var2tok))
                             errorAutoVariableAssignment(tok->next(), true);
                     }
                 }
@@ -154,8 +164,7 @@ void CheckAutoVariables::autoVariables()
                 tok = tok->tokAt(4);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::Match(tok->linkAt(2), "] = & %var%") && isPtrArg(tok->next()) && isAutoVar(tok->linkAt(2)->tokAt(3))) {
                 const Token* const varTok = tok->linkAt(2)->tokAt(3);
-                const Variable * var = varTok->variable();
-                if (checkRvalueExpression(var, varTok->next()))
+                if (checkRvalueExpression(varTok))
                     errorAutoVariableAssignment(tok->next(), false);
             }
             // Critical return
@@ -269,12 +278,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
     if (function) {
         retref = function->tokenDef->strAt(-1) == "&";
         if (!retref) {
-            const Token *start = function->tokenDef;
-            while (start->previous() && !Token::Match(start->previous(), ";|}|{|public:|private:|protected:")) {
-                if ((start->str() == ")" || start->str() == ">") && start->link())
-                    start = start->link();
-                start = start->previous();
-            }
+            const Token *start = function->retDef;
             if (start->str() == "const")
                 start = start->next();
             if (start->str() == "::")

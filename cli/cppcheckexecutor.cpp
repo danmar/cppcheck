@@ -17,21 +17,20 @@
  */
 
 #include "cppcheckexecutor.h"
+#include "cmdlineparser.h"
 #include "cppcheck.h"
-#include "threadexecutor.h"
-#include "preprocessor.h"
 #include "errorlogger.h"
+#include "filelister.h"
+#include "path.h"
+#include "pathmatch.h"
+#include "preprocessor.h"
+#include "threadexecutor.h"
 #include <iostream>
 #include <sstream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <algorithm>
 #include <climits>
-
-#include "cmdlineparser.h"
-#include "filelister.h"
-#include "path.h"
-#include "pathmatch.h"
 
 CppCheckExecutor::CppCheckExecutor()
     : _settings(0), time1(0), errorlist(false)
@@ -152,6 +151,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     Settings& settings = cppCheck.settings();
     _settings = &settings;
 
+    settings.library.load(argv[0], "std");
+
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         return EXIT_FAILURE;
     }
@@ -207,10 +208,10 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         returnValue = executor.check();
     }
 
-    if (!settings.checkConfiguration) {
-        if (!settings._errorsOnly)
-            reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+    if (settings.isEnabled("information") || settings.checkConfiguration)
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
 
+    if (!settings.checkConfiguration) {
         cppCheck.tooManyConfigsError("",0U);
 
         if (settings.isEnabled("missingInclude") && Preprocessor::missingIncludeFlag) {

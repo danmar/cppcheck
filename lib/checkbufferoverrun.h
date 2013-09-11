@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckBufferOverrunH
-#define CheckBufferOverrunH
+#ifndef checkbufferoverrunH
+#define checkbufferoverrunH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -51,13 +51,13 @@ class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
 
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName())
-    { }
+    CheckBufferOverrun() : Check(myName()) {
+    }
 
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    { }
+        : Check(myName(), tokenizer, settings, errorLogger) {
+    }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
@@ -125,13 +125,13 @@ public:
         /** size of each element in array */
         MathLib::bigint _element_size;
 
-        /** variable id */
-        unsigned int _varid;
+        /** declaration id */
+        unsigned int _declarationId;
 
     public:
         ArrayInfo();
         ArrayInfo(const ArrayInfo &);
-        ArrayInfo(const Variable *var, const Tokenizer *tokenizer);
+        ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcedeclid = 0);
         ArrayInfo & operator=(const ArrayInfo &ai);
 
         /**
@@ -164,11 +164,11 @@ public:
         }
 
         /** Variable name */
-        unsigned int varid() const {
-            return _varid;
+        unsigned int declarationId() const {
+            return _declarationId;
         }
-        void varid(unsigned int id) {
-            _varid = id;
+        void declarationId(unsigned int id) {
+            _declarationId = id;
         }
 
         /** Variable name */
@@ -217,7 +217,7 @@ public:
 
 private:
 
-    bool isArrayOfStruct(const Token* tok, int &position);
+    static bool isArrayOfStruct(const Token* tok, int &position);
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void bufferOverrunError(const Token *tok, const std::string &varnames = "");
     void bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames = "");
@@ -268,4 +268,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkbufferoverrunH

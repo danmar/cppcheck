@@ -92,14 +92,16 @@ public:
     /** Just read the code into a string. Perform simple cleanup of the code */
     std::string read(std::istream &istr, const std::string &filename);
 
+    /** read preprocessor statements into a string. */
+    std::string readpreprocessor(std::istream &istr, const unsigned int bom) const;
+
     /**
      * Get preprocessed code for a given configuration
      * @param filedata file data including preprocessing 'if', 'define', etc
      * @param cfg configuration to read out
      * @param filename name of source file
-     * @param validate true => perform validation that empty configuration macros are not used in the code
      */
-    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const bool validate = false);
+    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
 
     /**
      * simplify condition
@@ -122,7 +124,7 @@ public:
      * @return true => configuration is valid
      */
     bool validateCfg(const std::string &code, const std::string &cfg);
-    void validateCfgError(const std::string &cfg);
+    void validateCfgError(const std::string &cfg, const std::string &macro);
 
     void handleUndef(std::list<std::string> &configurations) const;
 
@@ -142,7 +144,7 @@ public:
      * @param str The string to be converted
      * @return The replaced string
      */
-    static std::string replaceIfDefined(const std::string &str);
+    std::string replaceIfDefined(const std::string &str) const;
 
     /**
      * expand macros in code. ifdefs etc are ignored so the code must be a single configuration
@@ -202,15 +204,15 @@ private:
      */
     static std::string removeSpaceNearNL(const std::string &str);
 
+    static std::string getdef(std::string line, bool def);
+
+public:
+
     /**
      * Get all possible configurations sorted in alphabetical order.
      * By looking at the ifdefs and ifndefs in filedata
      */
-    std::list<std::string> getcfgs(const std::string &filedata, const std::string &filename);
-
-    static std::string getdef(std::string line, bool def);
-
-public:
+    std::list<std::string> getcfgs(const std::string &filedata, const std::string &filename, const std::map<std::string, std::string> &defs);
 
     /**
      * Remove asm(...) from a string
@@ -234,10 +236,11 @@ public:
      * @param filePath filename of code
      * @param includePaths Paths where headers might be
      * @param defs defines (only values)
+     * @param pragmaOnce includes that has already been included and contains a #pragma once statement
      * @param includes provide a empty list. this is just used to prevent recursive inclusions.
      * \return resulting string
      */
-    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes = std::list<std::string>());
+    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> &pragmaOnce, std::list<std::string> includes);
 
     void setFile0(const std::string &f) {
         file0 = f;
@@ -270,6 +273,5 @@ private:
 };
 
 /// @}
-
 //---------------------------------------------------------------------------
-#endif
+#endif // preprocessorH

@@ -26,15 +26,14 @@ extern std::ostringstream errout;
 
 class TestOther : public TestFixture {
 public:
-    TestOther() : TestFixture("TestOther")
-    { }
+    TestOther() : TestFixture("TestOther") {
+    }
 
 private:
 
 
     void run() {
         TEST_CASE(oppositeInnerCondition);
-        TEST_CASE(assignBoolToPointer);
         TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
@@ -43,6 +42,11 @@ private:
         TEST_CASE(zeroDiv4);
         TEST_CASE(zeroDiv5);
         TEST_CASE(zeroDiv6);
+        TEST_CASE(zeroDiv7);  // #4930
+
+        TEST_CASE(zeroDivCond); // division by zero / useless condition
+
+        TEST_CASE(nanInArithmeticExpression);
 
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
@@ -71,6 +75,7 @@ private:
         TEST_CASE(varScope16);
         TEST_CASE(varScope17);
         TEST_CASE(varScope18);
+        TEST_CASE(varScope19);      // Ticket #4994
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -81,9 +86,6 @@ private:
 
         TEST_CASE(mathfunctionCall1);
         TEST_CASE(cctypefunctionCall);
-
-        TEST_CASE(sizeofsizeof);
-        TEST_CASE(sizeofCalculation);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -107,12 +109,10 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickUsedObject);
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
+        TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
-
-        TEST_CASE(assignmentInAssert);
-
         TEST_CASE(modulo);
 
         TEST_CASE(incorrectLogicOperator1);
@@ -124,12 +124,7 @@ private:
 
         TEST_CASE(memsetZeroBytes);
 
-        TEST_CASE(sizeofForArrayParameter);
-        TEST_CASE(sizeofForNumericParameter);
-
         TEST_CASE(redundantGetAndSetUserId);
-
-        TEST_CASE(suspiciousSizeofCalculation);
 
         TEST_CASE(clarifyCalculation);
         TEST_CASE(clarifyStatement);
@@ -140,30 +135,8 @@ private:
         TEST_CASE(clarifyCondition4);     // ticket #3110
         TEST_CASE(clarifyCondition5);     // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
         TEST_CASE(clarifyCondition6);     // #3818
-        TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
-
-        TEST_CASE(comparisonOfBoolExpressionWithInt1);
-        TEST_CASE(comparisonOfBoolExpressionWithInt2);
-        TEST_CASE(comparisonOfBoolExpressionWithInt3);
 
         TEST_CASE(incorrectStringCompare);
-
-        TEST_CASE(incrementBoolean);
-        TEST_CASE(comparisonOfBoolWithInt1);
-        TEST_CASE(comparisonOfBoolWithInt2);
-        TEST_CASE(comparisonOfBoolWithInt3);
-        TEST_CASE(comparisonOfBoolWithInt4);
-        TEST_CASE(comparisonOfBoolWithInt5);
-        TEST_CASE(comparisonOfBoolWithInt6); // #4224 - integer is casted to bool
-
-        TEST_CASE(checkComparisonOfFuncReturningBool1);
-        TEST_CASE(checkComparisonOfFuncReturningBool2);
-        TEST_CASE(checkComparisonOfFuncReturningBool3);
-        TEST_CASE(checkComparisonOfFuncReturningBool4);
-        TEST_CASE(checkComparisonOfFuncReturningBool5);
-        TEST_CASE(checkComparisonOfFuncReturningBool6);
-
-        TEST_CASE(checkComparisonOfBoolWithBool);
 
         TEST_CASE(duplicateIf);
         TEST_CASE(duplicateIf1); // ticket 3689
@@ -179,7 +152,6 @@ private:
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(suspiciousStringCompare);
-        TEST_CASE(checkPointerSizeof);
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
 
@@ -205,40 +177,50 @@ private:
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
 
         TEST_CASE(checkSleepTimeIntervall)
+
+        TEST_CASE(checkCommaSeparatedReturn);
     }
 
-    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false) {
+    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.addEnabled("performance");
-        settings.inconclusive = inconclusive;
-        settings.experimental = experimental;
-        settings.standards.posix = posix;
+        if (!settings) {
+            static Settings _settings;
+            settings = &_settings;
+        }
+        settings->addEnabled("style");
+        settings->addEnabled("warning");
+        settings->addEnabled("portability");
+        settings->addEnabled("performance");
+        settings->inconclusive = inconclusive;
+        settings->experimental = experimental;
+        settings->standards.posix = posix;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename ? filename : "test.cpp");
 
         // Check..
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.runChecks(&tokenizer, &settings, this);
+        CheckOther checkOther(&tokenizer, settings, this);
+        checkOther.runChecks(&tokenizer, settings, this);
 
-        // Simplify token list..
-        tokenizer.simplifyTokenList();
-        checkOther.runSimplifiedChecks(&tokenizer, &settings, this);
+        if (runSimpleChecks) {
+            const std::string str1(tokenizer.tokens()->stringifyList(0,true));
+            tokenizer.simplifyTokenList();
+            const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+            if (str1 != str2)
+                warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
+            checkOther.runSimplifiedChecks(&tokenizer, settings, this);
+        }
     }
 
     class SimpleSuppressor: public ErrorLogger {
     public:
         SimpleSuppressor(Settings &settings, ErrorLogger *next)
-            : _settings(settings), _next(next)
-        { }
+            : _settings(settings), _next(next) {
+        }
         virtual void reportOut(const std::string &outmsg) {
             _next->reportOut(outmsg);
         }
@@ -324,14 +306,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void assignBoolToPointer() {
-        check("void foo(bool *p) {\n"
-              "    p = false;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
-    }
-
     void emptyBrackets() {
         check("{\n"
               "}");
@@ -340,33 +314,21 @@ private:
 
 
     void zeroDiv1() {
-        check("void foo()\n"
-              "{\n"
-              "    int a = 0;\n"
-              "    double b = 1.;\n"
-              "    cout<<b/a;\n"
+        check("void foo() {\n"
+              "    cout << 1. / 0;\n"
               "}");
-
-
-        ASSERT_EQUALS("[test.cpp:5]: (error) Division by zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDiv2() {
         check("void foo()\n"
               "{\n"
               "    int sum = 0;\n"
-              "    int n = 100;\n"
               "    for(int i = 0; i < n; i ++)\n"
               "    {\n"
               "        sum += i;\n"
               "    }\n"
               "    cout<<b/sum;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    int a = 0 ? (2/0) : 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -460,6 +422,127 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
 
+    void zeroDiv7() {
+        check("void f() {\n"
+              "  int a = 1/2*3/0;\n"
+              "  int b = 1/2*3%0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n"
+                      "[test.cpp:3]: (error) Division by zero.\n", errout.str());
+    }
+
+    void zeroDivCond() {
+        check("void f(unsigned int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x > 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>0' is useless or there is division by zero at line 2.\n", errout.str());
+
+        check("void f(unsigned int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x >= 1) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>=1' is useless or there is division by zero at line 2.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x == 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x==0' is useless or there is division by zero at line 2.\n", errout.str());
+
+        check("void f(unsigned int x) {\n"
+              "  int y = 17 / x;\n"
+              "  if (x != 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 2.\n", errout.str());
+
+        // avoid false positives when variable is changed after division
+        check("void f() {\n"
+              "  unsigned int x = do_something();\n"
+              "  int y = 17 / x;\n"
+              "  x = some+calculation;\n"
+              "  if (x != 0) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        {
+            // function is called that might modify global variable
+            check("void do_something();\n"
+                  "int x;\n"
+                  "void f() {\n"
+                  "  int y = 17 / x;\n"
+                  "  do_something();\n"
+                  "  if (x != 0) {}\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+
+            // function is called. but don't care, variable is local
+            check("void do_something();\n"
+                  "void f() {\n"
+                  "  int x = some + calculation;\n"
+                  "  int y = 17 / x;\n"
+                  "  do_something();\n"
+                  "  if (x != 0) {}\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 4.\n", errout.str());
+        }
+
+        check("void do_something(int value);\n"
+              "void f(int x) {\n"
+              "  int y = 17 / x;\n"
+              "  do_something(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int x;\n"
+              "void f() {\n"
+              "  int y = 17 / x;\n"
+              "  while (y || x == 0) { x--; }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nanInArithmeticExpression() {
+        check("void f()\n"
+              "{\n"
+              "   double x = 3.0 / 0.0 + 1.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 3.0 / 0.0 - 1.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 1.0 + 3.0 / 0.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 1.0 - 3.0 / 0.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   double x = 3.0 / 0.0\n"
+              "   printf(\"%f\n\", x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+    }
 
     void sprintfUsage(const char code[]) {
         // Clear the error buffer..
@@ -996,6 +1079,15 @@ private:
                  "            break;\n"
                  "    }\n"
                  "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope19() { // Ticket #4994
+        varScope("long f () {\n"
+                 "  return a >> extern\n"
+                 "}\n"
+                 "long a = 1 ;\n"
+                 "long b = 2 ;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1564,49 +1656,6 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Passing value -10000 to isgraph() causes undefined behavior which may lead to a crash.\n", errout.str());
     }
 
-    void sizeofsizeof() {
-        check("void foo()\n"
-              "{\n"
-              "    int i = sizeof sizeof char;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    int i = sizeof (sizeof long);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
-
-        check("void foo(long *p)\n"
-              "{\n"
-              "    int i = sizeof (sizeof (p));\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
-    }
-
-    void sizeofCalculation() {
-        check("int a, b; int a,sizeof(a+b)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("int a, b; sizeof(a*b)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("int a, b; sizeof(-a)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("int a, b; sizeof(*a)");
-        ASSERT_EQUALS("", errout.str());
-
-        check("sizeof(void * const)");
-        ASSERT_EQUALS("", errout.str());
-
-        check("sizeof(foo++)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("sizeof(--foo)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-    }
-
     void switchRedundantAssignmentTest() {
 
         check("void foo()\n"
@@ -1664,7 +1713,7 @@ private:
               "    case 2:\n"
               "      {\n"
               "        y = 2;\n"
-              "        if (y)\n"
+              "        if (z)\n"
               "            printf(\"%d\", y);\n"
               "      }\n"
               "    case 3:\n"
@@ -1682,22 +1731,6 @@ private:
               "    {\n"
               "    case 2:\n"
               "        x = 2;\n"
-              "    case 3:\n"
-              "        y = 3;\n"
-              "    }\n"
-              "    bar(y);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    int y = 1;\n"
-              "    switch (x)\n"
-              "    {\n"
-              "    case 2:\n"
-              "      {\n"
-              "        int y = 2;\n"
-              "      }\n"
               "    case 3:\n"
               "        y = 3;\n"
               "    }\n"
@@ -1809,7 +1842,7 @@ private:
               "    case 3:\n"
               "      strcpy(str, \"b'\");\n"
               "    }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(char *str, int a)\n"
@@ -1836,7 +1869,7 @@ private:
               "      strcpy(str, \"b'\");\n"
               "      z++;\n"
               "    }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(char *str, int a)\n"
@@ -1863,13 +1896,7 @@ private:
               "    case 3:\n"
               "      strcpy(str, \"b'\");\n"
               "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"  // Ticket #4356
-              "    int x = 0;\n"  // <- ignore assignment with 0
-              "    x = 3;\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2021,7 +2048,7 @@ private:
               "        y++;\n"
               "    }\n"
               "    bar(y);\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
         check("void foo()\n"
               "{\n"
@@ -2075,7 +2102,7 @@ private:
               "        y--;\n"
               "    }\n"
               "    bar(y);\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
         check("void foo()\n"
               "{\n"
@@ -2701,20 +2728,28 @@ private:
               "            continue;\n"
               "        }\n"
               "    }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("int foo(int a) {\n"
               "    return 0;\n"
               "    return(a-1);\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("int foo(int a) {\n"
               "  A:"
               "    return(0);\n"
               "    goto A;\n"
-              "}");
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        Settings settings;
+        settings.library.setnoreturn("exit", true);
+        check("void foo() {\n"
+              "    exit(0);\n"
+              "    break;\n"
+              "}", 0, false, false, false, false, &settings);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo(int a)\n"
@@ -2728,7 +2763,7 @@ private:
               "            c++;\n"
               "            break;\n"
               "         }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:7]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo(int a)\n"
@@ -2746,30 +2781,30 @@ private:
 
         check("void foo(int a)\n"
               "{\n"
-              "        while(1) {\n"
+              "        while(true) {\n"
               "          if (a++ >= 100) {\n"
               "            break;\n"
               "            break;\n"
               "          }\n"
               "       }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
-              "        while(1) {\n"
+              "        while(true) {\n"
               "          if (a++ >= 100) {\n"
               "            continue;\n"
               "            continue;\n"
               "          }\n"
               "          a+=2;\n"
               "       }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
-              "        while(1) {\n"
+              "        while(true) {\n"
               "          if (a++ >= 100) {\n"
               "            continue;\n"
               "          }\n"
@@ -2781,25 +2816,25 @@ private:
         check("int foo() {\n"
               "    throw 0;\n"
               "    return 1;\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
               "    throw 0;\n"
               "    return;\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"
               "    return 1;\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"
               "    foo();\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
 
         check("int foo() {\n"
@@ -2817,7 +2852,7 @@ private:
               "        return 0;\n"
               "    }\n"
               "    return 124;\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo() {\n"
@@ -2825,14 +2860,14 @@ private:
               "        return;\n"
               "        break;\n"
               "    }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"
               "  label:\n"
               "    throw 0;\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
@@ -2882,15 +2917,35 @@ private:
               "    return 0;\n"
               "\n" // #endif
               "    return 1;\n"
-              "}", 0, false, false);
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
         check("int foo() {\n"
               "\n" // #ifdef A
               "    return 0;\n"
               "\n" // #endif
               "    return 1;\n"
-              "}");
+              "}", 0, false, true, false, false);
         ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        // #4711 lambda functions
+        check("int f() {\n"
+              "    return g([](int x){x+1; return x;});\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        // #4756
+        check("template <>\n"
+              "inline uint16_t htobe(uint16_t value) {\n"
+              "     return ( __extension__ ({\n"
+              "         register unsigned short int __v, __x = (unsigned short int) (value);\n"
+              "         if (__builtin_constant_p (__x))\n"
+              "             __v = ((unsigned short int) ((((__x) >> 8) & 0xff) | (((__x) & 0xff) << 8)));\n"
+              "         else\n"
+              "             __asm__ (\"rorw $8, %w0\" : \"=r\" (__v) : \"0\" (__x) : \"cc\");\n"
+              "         __v;\n"
+              "     }));\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -2901,7 +2956,7 @@ private:
               "            foo();\n"
               "        case (A||B):\n"
               "            foo();\n"
-              "        case 1||5:\n"
+              "        case A||B:\n"
               "            foo();\n"
               "    }\n"
               "}");
@@ -2927,13 +2982,6 @@ private:
     }
 
     void suspiciousEqualityComparison() {
-        check("void foo(int c) {\n"
-              "    if (c == 1) {\n"
-              "        c == 0;\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
-
         check("void foo(int c) {\n"
               "    if (c == 1) c == 0;\n"
               "}");
@@ -3000,13 +3048,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int c) {\n"
-              "    for (; running == 1;) {\n"
-              "        c ++;\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo(int c) {\n"
               "    printf(\"%i\n\", ({x==0;}));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -3022,7 +3063,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
         check("void foo(int x) {\n"
-              "    for (const Token* const end = tok->link(); tok != end; tok = (tok == end) ? end : tok->next()) {\n"
+              "    for (const Token* end = tok->link(); tok != end; tok = (tok == end) ? end : tok->next()) {\n"
               "        x++;\n"
               "    }\n"
               "}");
@@ -3164,7 +3205,7 @@ private:
               "    b = 300\n"
               "  };\n"
               "};\n"
-              "const int DFLT_TIMEOUT = A::b % 1000000 ;\n");
+              "const int DFLT_TIMEOUT = A::b % 1000000 ;\n", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3331,6 +3372,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void testMisusedScopeObjectInConstructor() {
+        const char code[] = "class Foo {\n"
+                            "public:\n"
+                            "  Foo(char x) {\n"
+                            "    Foo(x, 0);\n"
+                            "  }\n"
+                            "  Foo(char x, int y) { }\n"
+                            "};\n";
+        check(code, "test.cpp");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
+    }
+
     void trac2084() {
         check("void f()\n"
               "{\n"
@@ -3353,65 +3406,6 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void assignmentInAssert() {
-        check("void f() {\n"
-              "    int a = 0;\n"
-              "    assert(a = 2);\n"
-              "    return a;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
-
-        check("void f() {\n"
-              "    int a = 0;\n"
-              "    assert(a == 2);\n"
-              "    return a;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int a = 0;\n"
-              "    int b = 0;\n"
-              "    assert(a == 2 && b = 1);\n"
-              "    return a;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Assert statement modifies 'b'.\n", errout.str());
-
-        check("void f() {\n"
-              "    int a = 0;\n"
-              "    assert(a += 2);\n"
-              "    return a;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
-
-        check("void f() {\n"
-              "    int a = 0;\n"
-              "    assert(a *= 2);\n"
-              "    return a;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
-
-        check("void f() {\n"
-              "    int a = 0;\n"
-              "    assert(a -= 2);\n"
-              "    return a;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
-
-        check("void f() {\n"
-              "    int a = 0;\n"
-              "    assert(a --);\n"
-              "    return a;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
     }
 
     void modulo() {
@@ -3521,21 +3515,11 @@ private:
 
 
         check("void f(int x) {\n"
-              "    const int ERR1 = 5;\n"
-              "    const int ERR2 = 6;\n"
-              "    if ((x != ERR1) || (x != ERR2))\n"
+              "    if ((x != 5) || (x != 6))\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n", errout.str());
-
-        check("void f(int x, int y) {\n"
-              "    const int ERR1 = 5;\n"
-              "    if ((x != ERR1) || (y != ERR1))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n", errout.str());
 
         check("void f(unsigned int a, unsigned int b, unsigned int c) {\n"
               "    if((a != b) || (c != b) || (c != a))\n"
@@ -3902,265 +3886,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt1() {
-        check("void f(int x) {\n"
-              "    if ((x && 0x0f)==6)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x && 0x0f)==0)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x || 0x0f)==6)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x || 0x0f)==0)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x & 0x0f)==6)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((x | 0x0f)==6)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-
-        check("void f(int x) {\n"
-              "    if ((5 && x)==3)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 && x)==3 || (8 && x)==9)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 && x)!=3)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-
-        check("void f(int x) {\n"
-              "    if ((5 && x) > 3)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 && x) > 0)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 && x) < 0)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 && x) < 1)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if ((5 && x) > 1)\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-
-        check("void f(int x) {\n"
-              "    if (0 < (5 && x))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (0 > (5 && x))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (1 > (5 && x))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (1 < (5 && x))\n"
-              "        a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( x > false )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( false < x )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( x < false )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( false > x )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( x >= false )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( false >= x )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( x <= false )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("void f(bool x ) {\n"
-              "  if ( false <= x )\n"
-              "      a++;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
-
-        check("typedef int (*func)(bool invert);\n"
-              "void x(int, func f);\n"
-              "void foo(int error) {\n"
-              "  if (error == ABC) { }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void comparisonOfBoolExpressionWithInt2() {
-        check("void f(int x) {\n"
-              "    if (!x == 10) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (!x != 10) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (x != 10) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (10 == !x) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (10 != !x) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
-        check("void f(int x, int y) {\n"
-              "    if (y != !x) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
-
-        check("void f(int x, bool y) {\n"
-              "    if (y != !x) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int x) {\n"
-              "    if (10 != x) {\n"
-              "        printf(\"x not equal to 10\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void comparisonOfBoolExpressionWithInt3() {
-        check("int f(int x) {\n"
-              "    return t<0>() && x;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void memsetZeroBytes() {
         check("void f() {\n"
               "    memset(p, 10, 0x0);\n"
@@ -4175,368 +3900,10 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
 
         check("void f() {\n"
-              "    memset(p, sizeof(p), i+0);\n"
+              "    memset(p, sizeof(p), i);\n"
               "}\n"
              );
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void sizeofForArrayParameter() {
-        check("void f() {\n"
-              "    int a[10];\n"
-              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    unsigned int a = 2;\n"
-              "    unsigned int b = 2;\n"
-              "    int c[(a+b)];\n"
-              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    unsigned int a = { 2 };\n"
-              "    unsigned int b[] = { 0 };\n"
-              "    int c[a[b[0]]];\n"
-              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-
-        check("void f() {\n"
-              "    unsigned int a[] = { 1 };\n"
-              "    unsigned int b = 2;\n"
-              "    int c[(a[0]+b)];\n"
-              "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int a[] = { 1, 2, 3 };\n"
-              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int a[3] = { 1, 2, 3 };\n"
-              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f( int a[]) {\n"
-              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (error) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
-
-        check("void f( int a[]) {\n"
-              "    std::cout << sizeof a / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (error) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
-
-        check("void f( int a[3] ) {\n"
-              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (error) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
-
-        check("void f(int *p) {\n"
-              "    p[0] = 0;\n"
-              "    int unused = sizeof(p);\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    char p[] = \"test\";\n"
-              "    int unused = sizeof(p);\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket #2495
-        check("void f() {\n"
-              "    static float col[][3]={\n"
-              "      {1,0,0},\n"
-              "      {0,0,1},\n"
-              "      {0,1,0},\n"
-              "      {1,0,1},\n"
-              "      {1,0,1},\n"
-              "      {1,0,1},\n"
-              "    };\n"
-              "    const int COL_MAX=sizeof(col)/sizeof(col[0]);\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket #155
-        check("void f() {\n"
-              "    char buff1[1024*64],buff2[sizeof(buff1)*2];\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket #2510
-        check("void f( int a[], int b) {\n"
-              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (error) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
-
-        // ticket #2510
-        check("void f( int a[3] , int b[2] ) {\n"
-              "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (error) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
-
-        // ticket #2510
-        check("void f() {\n"
-              "    char buff1[1024*64],buff2[sizeof(buff1)*(2+1)];\n"
-              "}\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-    }
-
-    void checkComparisonOfFuncReturningBool1() {
-        check("void f(){\n"
-              "     int temp = 4;\n"
-              "     if(compare1(temp) > compare2(temp)){\n"
-              "         printf(\"foo\");\n"
-              "     }\n"
-              "}\n"
-              "bool compare1(int temp){\n"
-              "     if(temp==4){\n"
-              "         return true;\n"
-              "     }\n"
-              "     else\n"
-              "         return false;\n"
-              "}\n"
-              "bool compare2(int temp){\n"
-              "     if(temp==4){\n"
-              "         return false;\n"
-              "     }\n"
-              "     else\n"
-              "         return true;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-    }
-
-    void checkComparisonOfFuncReturningBool2() {
-        check("void f(){\n"
-              " int temp = 4;\n"
-              " bool a = true;\n"
-              " if(compare(temp) > a){\n"
-              "     printf(\"foo\");\n"
-              " }\n"
-              "}\n"
-              "bool compare(int temp){\n"
-              "  if(temp==4){\n"
-              "     return true;\n"
-              "  }\n"
-              "    else\n"
-              "     return false;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-    }
-
-    void checkComparisonOfFuncReturningBool3() {
-        check("void f(){\n"
-              " int temp = 4;\n"
-              " if(compare(temp) > temp){\n"
-              "         printf(\"foo\");\n"
-              "   }\n"
-              "}\n"
-              "bool compare(int temp){\n"
-              "   if(temp==4){\n"
-              "     return true;\n"
-              "   }\n"
-              " else\n"
-              "     return false;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-    }
-
-    void checkComparisonOfFuncReturningBool4() {
-        check("void f(){\n"
-              "   int temp = 4;\n"
-              " bool b = compare2(6);\n"
-              " if(compare1(temp)> b){\n"
-              "         printf(\"foo\");\n"
-              " }\n"
-              "}\n"
-              "bool compare1(int temp){\n"
-              " if(temp==4){\n"
-              "     return true;\n"
-              "     }\n"
-              " else\n"
-              "     return false;\n"
-              "}\n"
-              "bool compare2(int temp){\n"
-              " if(temp == 5){\n"
-              "     return true;\n"
-              " }\n"
-              " else\n"
-              "     return false;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-    }
-
-    void checkComparisonOfFuncReturningBool5() {
-        check("void f(){\n"
-              "     int temp = 4;\n"
-              "     if(compare1(temp) > !compare2(temp)){\n"
-              "         printf(\"foo\");\n"
-              "     }\n"
-              "}\n"
-              "bool compare1(int temp){\n"
-              "     if(temp==4){\n"
-              "         return true;\n"
-              "     }\n"
-              "     else\n"
-              "         return false;\n"
-              "}\n"
-              "bool compare2(int temp){\n"
-              "     if(temp==4){\n"
-              "         return false;\n"
-              "     }\n"
-              "     else\n"
-              "         return true;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-    }
-
-    void checkComparisonOfFuncReturningBool6() {
-        check("int compare1(int temp);\n"
-              "namespace Foo {\n"
-              "    bool compare1(int temp);\n"
-              "}\n"
-              "void f(){\n"
-              "    int temp = 4;\n"
-              "    if(compare1(temp) > compare2(temp)){\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("namespace Foo {\n"
-              "    bool compare1(int temp);\n"
-              "}\n"
-              "int compare1(int temp);\n"
-              "void f(){\n"
-              "    int temp = 4;\n"
-              "    if(compare1(temp) > compare2(temp)){\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("int compare1(int temp);\n"
-              "namespace Foo {\n"
-              "    bool compare1(int temp);\n"
-              "    void f(){\n"
-              "        int temp = 4;\n"
-              "        if(compare1(temp) > compare2(temp)){\n"
-              "            printf(\"foo\");\n"
-              "        }\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-
-        check("int compare1(int temp);\n"
-              "namespace Foo {\n"
-              "    bool compare1(int temp);\n"
-              "    void f(){\n"
-              "        int temp = 4;\n"
-              "        if(::compare1(temp) > compare2(temp)){\n"
-              "            printf(\"foo\");\n"
-              "        }\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("bool compare1(int temp);\n"
-              "void f(){\n"
-              "    int temp = 4;\n"
-              "    if(foo.compare1(temp) > compare2(temp)){\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void checkComparisonOfBoolWithBool() {
-        const char code[] = "void f(){\n"
-                            "    int temp = 4;\n"
-                            "    bool b = compare2(6);\n"
-                            "    bool a = compare1(4);\n"
-                            "    if(b > a){\n"
-                            "        printf(\"foo\");\n"
-                            "    }\n"
-                            "}\n"
-                            "bool compare1(int temp){\n"
-                            "    if(temp==4){\n"
-                            "        return true;\n"
-                            "    }\n"
-                            "    else\n"
-                            "        return false;\n"
-                            "}\n"
-                            "bool compare2(int temp){\n"
-                            "    if(temp == 5){\n"
-                            "        return true;\n"
-                            "    }\n"
-                            "    else\n"
-                            "        return false;\n"
-                            "}\n";
-        check(code, "test.cpp", true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-        check(code, "test.cpp");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void sizeofForNumericParameter() {
-        check("void f() {\n"
-              "    std::cout << sizeof(10) << std::endl;\n"
-              "}\n",
-              NULL, true
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
-
-        check("void f() {\n"
-              "    std::cout << sizeof(-10) << std::endl;\n"
-              "}\n",
-              NULL, true
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
-
-        check("void f() {\n"
-              "    std::cout << sizeof 10  << std::endl;\n"
-              "}\n",
-              NULL, true
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
-
-        check("void f() {\n"
-              "    std::cout << sizeof -10  << std::endl;\n"
-              "}\n",
-              NULL, true
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
     }
 
     void redundantGetAndSetUserId() {
@@ -4551,42 +3918,9 @@ private:
 
         check("seteuid(getuid());\n", NULL, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("seteuid(getuid());\n", NULL, false , false, true);
-        ASSERT_EQUALS("", errout.str());
         check("seteuid(foo());\n", NULL, false , false, true);
         ASSERT_EQUALS("", errout.str());
         check("foo(getuid());\n", NULL, false , false, true);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void suspiciousSizeofCalculation() {
-        check("int* p;\n"
-              "return sizeof(p)/5;");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
-
-        check("unknown p;\n"
-              "return sizeof(p)/5;");
-        ASSERT_EQUALS("", errout.str());
-
-        check("return sizeof(unknown)/5;");
-        ASSERT_EQUALS("", errout.str());
-
-        check("int p;\n"
-              "return sizeof(p)/5;");
-        ASSERT_EQUALS("", errout.str());
-
-        check("int* p[5];\n"
-              "return sizeof(p)/5;");
-        ASSERT_EQUALS("", errout.str());
-
-
-        check("return sizeof(foo)*sizeof(bar);");
-        ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Multiplying sizeof() with sizeof() indicates a logic error.\n", errout.str());
-
-        check("return (foo)*sizeof(bar);");
-        ASSERT_EQUALS("", errout.str());
-
-        check("return sizeof(foo)*bar;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4609,7 +3943,7 @@ private:
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 1 + 1 ? 1 : 2);\n" // "1+1" is simplified away
-              "}");
+              "}",0,false,false,false,false);
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '+' and '?'.\n", "", errout.str()); // TODO: Is that really necessary, or is this pattern too unlikely?
 
         check("void f() {\n"
@@ -4629,7 +3963,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '>>' and '?'.\n", errout.str());
 
         check("int f() {\n"
-              "   return (shift < sizeof(int64_t)*8 ? 1 : 2);\n"
+              "   return shift < sizeof(int64_t)*8 ? 1 : 2;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4700,8 +4034,8 @@ private:
     // clarify conditions with = and comparison
     void clarifyCondition1() {
         check("void f() {\n"
-              "    if (x = b() < 0) {}\n"
-              "}");
+              "    if (x = b() < 0) {}\n" // don't simplify and verify this code
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment + comparison); Clarify expression with parentheses.\n", errout.str());
 
         check("void f(int i) {\n"
@@ -4710,7 +4044,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
-              "    if (x = a<int>()) {}\n"
+              "    x = a<int>(); if (x) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -4754,8 +4088,8 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
-              "    if (result != (char *)&inline_result) { }\n"
-              "}");
+              "    if (result != (char *)&inline_result) { }\n" // don't simplify and verify cast
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4768,7 +4102,7 @@ private:
               "         ( PairType const & left\n"
               "         , PairType const & right) const\n"
               "     {\n"
-              "         return (left.first < right.first);\n"
+              "         return left.first < right.first;\n"
               "     }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -4788,72 +4122,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void bitwiseOnBoolean() { // 3062
-        check("void f(_Bool a, _Bool b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
-
-        check("void f(_Bool a, _Bool b) {\n"
-              "    if(a | b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a & !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
-
-        check("void f(bool a, bool b) {\n"
-              "    if(a | !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a & !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a | b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
-
-        check("bool a, b;\n"
-              "void f() {\n"
-              "    if(a | !b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
-
-        check("void f(bool a, int b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
-
-        check("void f(int a, bool b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean variable 'b' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
-
-        check("void f(int a, int b) {\n"
-              "    if(a & b) {}\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(bool b) {\n"
-              "    foo(bar, &b);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void incorrectStringCompare() {
         check("int f() {\n"
               "    return test.substr( 0 , 4 ) == \"Hello\" ? : 0 : 1 ;\n"
@@ -4866,226 +4134,76 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " return \"Hello\" == test.substr( 0 , 4 ) ? : 0 : 1 ;\n"
+              "    return \"Hello\" == test.substr( 0 , 4 ) ? : 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
 
         check("int f() {\n"
-              " return \"Hello\" == test.substr( 0 , 5 ) ? : 0 : 1 ;\n"
+              "    return \"Hello\" == foo.bar<int>().z[1].substr(i+j*4, 4) ? : 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
+
+        check("int f() {\n"
+              "    return \"Hello\" == test.substr( 0 , 5 ) ? : 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " if (\"Hello\") { }\n"
+              "    if (\"Hello\") { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " if (\"Hello\" && 1) { }\n"
+              "    if (\"Hello\" && test) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " if (1 && \"Hello\") { }\n"
+              "    if (test && \"Hello\") { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " while (\"Hello\") { }\n"
+              "    while (\"Hello\") { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " assert (test || \"Hello\");\n"
+              "    assert (test || \"Hello\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " assert (test && \"Hello\");\n"
+              "    assert (test && \"Hello\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " assert (\"Hello\" || test);\n"
+              "    assert (\"Hello\" || test);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
-              " assert (\"Hello\" && test);\n"
+              "    assert (\"Hello\" && test);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " BOOST_ASSERT (\"Hello\" && test);\n"
+              "    BOOST_ASSERT (\"Hello\" && test);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
-              " return f2(\"Hello\");\n"
+              "    return f2(\"Hello\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void incrementBoolean() {
-        check("bool bValue = true;\n"
-              "void f() { bValue++; }");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
-
-        check("_Bool bValue = true;\n"
-              "void f() { bValue++; }");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
-
-        check("void f(bool test){\n"
-              "    test++;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
-
-        check("void f(int test){\n"
-              "    test++;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void comparisonOfBoolWithInt1() {
-        check("void f(bool x) {\n"
-              "    if (x < 10) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
-
-        check("void f(bool x) {\n"
-              "    if (10 >= x) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
-
-        check("void f(bool x) {\n"
-              "    if (x != 0) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(bool x) {\n"  // #3356
-              "    if (x == 1) {\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(bool x) {\n"
-              "    if (x != 10) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer that is neither 1 nor 0.\n", errout.str());
-
-        check("void f(bool x) {\n"
-              "    if (x == 10) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer that is neither 1 nor 0.\n", errout.str());
-
-        check("void f(bool x) {\n"
-              "    if (x == 0) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("DensePropertyMap<int, true> visited;"); // #4075
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void comparisonOfBoolWithInt2() {
-        check("void f(bool x, int y) {\n"
-              "    if (x == y) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
-
-        check("void f(int x, bool y) {\n"
-              "    if (x == y) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
-
-        check("void f(bool x, bool y) {\n"
-              "    if (x == y) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(bool x, fooClass y) {\n"
-              "    if (x == y) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void comparisonOfBoolWithInt3() {
-        check("void f(int y) {\n"
-              "    if (y > false) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
-
-        check("void f(int y) {\n"
-              "    if (true == y) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
-
-        check("void f(bool y) {\n"
-              "    if (y == true) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(bool y) {\n"
-              "    if (false < 5) {\n"
-              "        printf(\"foo\");\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
-    }
-
-    void comparisonOfBoolWithInt4() {
-        check("void f(int x) {\n"
-              "    if (!x == 1) { }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void comparisonOfBoolWithInt5() {
-        check("void SetVisible(int index, bool visible) {\n"
-              "    bool (SciTEBase::*ischarforsel)(char ch);\n"
-              "    if (visible != GetVisible(index)) { }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void comparisonOfBoolWithInt6() { // #4224 - integer is casted to bool
-        check("void SetVisible(bool b, int i) {\n"
-              "    if (b == (bool)i) { }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
 
     void duplicateIf() {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
-              "    else if (a) { b = 2; }\n"
+              "    else { if (a) { b = 2; } }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
 
@@ -5097,45 +4215,46 @@ private:
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
-              "    else if (a == 2) { b = 2; }\n"
-              "    else if (a == 1) { b = 3; }\n"
+              "    else { if (a == 2) { b = 2; }\n"
+              "    else { if (a == 1) { b = 3; } } }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
-              "    else if (a == 2) { b = 2; }\n"
-              "    else if (a == 2) { b = 3; }\n"
+              "    else { if (a == 2) { b = 2; }\n"
+              "    else { if (a == 2) { b = 3; } } }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) {\n"
               "        b = 1;\n"
-              "        if (b == 1) { }\n"
+              "        if (b == 1) { }\n" // condition is always true. must skip simplifications
               "        else if (b == 1) { }\n"
               "    } else if (a == 2) { b = 2; }\n"
               "    else if (a == 2) { b = 3; }\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (style) Duplicate conditions in 'if' and related 'else if'.\n"
                       "[test.cpp:5] -> [test.cpp:4]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a++) { b = 1; }\n"
-              "    else if (a++) { b = 2; }\n"
-              "    else if (a++) { b = 3; }\n"
+              "    else { if (a++) { b = 2; }\n"
+              "    else { if (a++) { b = 3; } } }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (!strtok(NULL," ")) { b = 1; }\n"
-              "    else if (!strtok(NULL," ")) { b = 2; }\n"
+              "    else { if (!strtok(NULL," ")) { b = 2; } }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int &b) {\n"
-              "   if ((x = x / 2) < 100) { b = 1; }\n"
-              "   else if ((x = x / 2) < 100) { b = 2; }\n"
+              "   x = x / 2;\n"
+              "   if (x < 100) { b = 1; }\n"
+              "   else { x = x / 2; if (x < 100) { b = 2; } }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -5151,13 +4270,15 @@ private:
               "   {\n"
               "        std::cout << \"C\";\n"
               "   }\n"
-              "   else if ( token == \"A\" )\n"
+              "   else { if ( token == \"A\" )\n"
               "   {\n"
               "       std::cout << \"A\";\n"
               "   }\n"
-              "   else if ( token == \"A\" )\n"
+              "   else { if ( token == \"A\" )\n"
               "   {\n"
               "       std::cout << \"A\";\n"
+              "   }\n"
+              "   }\n"
               "   }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:7]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
@@ -5186,21 +4307,23 @@ private:
         check("void f(int a, int &b) {\n"
               "    if (a == 1)\n"
               "        b = 1;\n"
-              "    else if (a)\n"
-              "        b = 2;\n"
-              "    else\n"
-              "        b = 2;\n"
+              "    else {\n"
+              "        if (a)\n"
+              "            b = 2;\n"
+              "        else\n"
+              "            b = 2;\n"
+              "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("int f(int signed, unsigned char value) {\n"
               "    int ret;\n"
               "    if (signed)\n"
-              "        ret = (signed char)value;\n"
+              "        ret = (signed char)value;\n"  // cast must be kept so the simplifications and verification is skipped
               "    else\n"
               "        ret = (unsigned char)value;\n"
               "    return ret;\n"
-              "}");
+              "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
@@ -5227,27 +4350,18 @@ private:
         check("void f()\n"
               "{\n"
               "  if (front < 0)\n"
-              "    frac = (front)/(front-back);\n"
+              "    frac = front/(front-back);\n"
               "  else\n"
-              "    frac = (front)/(front-back);\n"
+              "    frac = front/(front-back);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  if (front < 0)\n"
-              "  { frac = (front)/(front-back);}\n"
+              "  { frac = front/(front-back);}\n"
               "  else\n"
-              "    frac = (front)/(front-back);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "  if (front < 0)\n"
-              "  { frac = (front)/(front-back);}\n"
-              "  else\n"
-              "    frac = (front)/((front-back));\n"
+              "    frac = front/((front-back));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
     }
@@ -5271,12 +4385,12 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
         check("void fun() {\n"
-              "    return (a && a ||\n"
+              "    return  a && a ||\n"
               "            b == b &&\n"
               "            c - c &&\n"
               "            d > d &&\n"
               "            e < e &&\n"
-              "            f);\n"
+              "            f ;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n"
                       "[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n"
@@ -5364,35 +4478,27 @@ private:
               "    {\n"
               "        return 48;\n"
               "    }\n"
-              "    else if( nValue < 0x7fffffffffffffffLL )\n"
-              "    {\n"
-              "        return 64;\n"
-              "    } else\n"
-              "    {\n"
-              "        return -1;\n"
+              "    else {\n"
+              "        if( nValue < 0x7fffffffffffffffLL )\n"
+              "        {\n"
+              "            return 64;\n"
+              "        } else\n"
+              "        {\n"
+              "            return -1;\n"
+              "        }\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf
-        check("int main()\n" // ticket #2730
-              "{\n"
-              "    long double ldbl;\n"
-              "    double dbl, in;\n"
-              "    float  flt;\n"
-              "    int have_nan = 0;\n"
-              "    ldbl = sqrtl(-1.0);\n"
-              "    dbl = sqrt(-1.0);\n"
-              "    flt = sqrtf(-1.0);\n"
+        check("int f(long double ldbl, double dbl, float flt) {\n" // ticket #2730
               "    if (ldbl != ldbl) have_nan = 1;\n"
               "    if (!(dbl == dbl)) have_nan = 1;\n"
               "    if (flt != flt) have_nan = 1;\n"
               "    return have_nan;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Passing value -1.0 to sqrtl() leads to undefined result.\n"
-                      "[test.cpp:8]: (error) Passing value -1.0 to sqrt() leads to undefined result.\n"
-                      "[test.cpp:9]: (error) Passing value -1.0 to sqrtf() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("float f(float x) { return x-x; }"); // ticket #4485 (Inf)
         ASSERT_EQUALS("", errout.str());
@@ -5633,208 +4739,6 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n",
                            "",
                            errout.str());
-    }
-
-    void checkPointerSizeof() {
-        check("void f() {\n"
-              "    char *x = malloc(10);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(*x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(&x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(100 * sizeof(x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(x) * 100);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof *x);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof x);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(100 * sizeof x);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = calloc(1, sizeof(*x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = calloc(1, sizeof *x);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = calloc(1, sizeof(x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = calloc(1, sizeof x);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = calloc(1, sizeof(int));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    char x[10];\n"
-              "    memset(x, 0, sizeof(x));\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    char* x[10];\n"
-              "    memset(x, 0, sizeof(x));\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    char x[10];\n"
-              "    memset(x, 0, sizeof x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int));\n"
-              "    memset(x, 0, sizeof(int));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int));\n"
-              "    memset(x, 0, sizeof(*x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int));\n"
-              "    memset(x, 0, sizeof *x);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int));\n"
-              "    memset(x, 0, sizeof x);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int));\n"
-              "    memset(x, 0, sizeof(x));\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int) * 10);\n"
-              "    memset(x, 0, sizeof(x) * 10);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int) * 10);\n"
-              "    memset(x, 0, sizeof x * 10);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Size of pointer 'x' used instead of size of its data.\n", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int) * 10);\n"
-              "    memset(x, 0, sizeof(*x) * 10);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int) * 10);\n"
-              "    memset(x, 0, sizeof *x * 10);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    int *x = malloc(sizeof(int) * 10);\n"
-              "    memset(x, 0, sizeof(int) * 10);\n"
-              "    free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int fun(const char *buf1)\n"
-            "{\n"
-            "  const char *buf1_ex = \"foobarbaz\";\n"
-            "  return strncmp(buf1, buf1_ex, sizeof(buf1_ex)) == 0;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Size of pointer 'buf1_ex' used instead of size of its data.\n", errout.str());
-
-        check(
-            "int fun(const char *buf1) {\n"
-            "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Size of pointer 'buf1' used instead of size of its data.\n", errout.str());
-
-        // #ticket 3874
-        check("void f()\n"
-              "{\n"
-              " int * pIntArray[10];\n"
-              " memset(pIntArray, 0, sizeof(pIntArray));\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
@@ -6149,6 +5053,22 @@ private:
             "    bar();\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "void foo() {\n"
+            "  int (*t)(void *a, void *b);\n"
+            "  if (t(a, b) < 0)\n"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "void foo() {\n"
+            "  int (*t)(void *a, void *b);\n"
+            "  if (0 > t(a, b))\n"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkForSuspiciousSemicolon1() {
@@ -6162,16 +5082,6 @@ private:
         check(
             "void foo() {\n"
             "  for(int i = 0; i < 10; ++i); {\n"
-            "  }\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'for' statement.\n", errout.str());
-
-        // Block with some tokens to make sure the tokenizer output
-        // stays the same for "for(); {}"
-        check(
-            "void foo() {\n"
-            "  for(int i = 0; i < 10; ++i); {\n"
-            "  int j = 123;\n"
             "  }\n"
             "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Suspicious use of ; at the end of 'for' statement.\n", errout.str());
@@ -6256,7 +5166,7 @@ private:
         check(
             "void foo(char *p) {\n"
             "  if (x < 3) free(p);\n"
-            "  else if (x > 9) free(p);\n"
+            "  else { if (x > 9) free(p); }\n"
             "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -6279,7 +5189,7 @@ private:
         check(
             "void foo(char *p) {\n"
             "  free(p);\n"
-            "  printf(\"Freed memory at location %x\", (unsigned int) p);\n"
+            "  printf(\"Freed memory at location %x\", p);\n"
             "  free(p);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
@@ -6301,7 +5211,7 @@ private:
         check(
             "void foo(DIR *p) {\n"
             "  if (x < 3) closedir(p);\n"
-            "  else if (x > 9) closedir(p);\n"
+            "  else { if (x > 9) closedir(p); }\n"
             "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -6330,7 +5240,7 @@ private:
 
         check(
             "void f() {\n"
-            "    char *p = malloc(100);\n"
+            "    char *p; p = malloc(100);\n"
             "    if (x) {\n"
             "        free(p);\n"
             "        exit();\n"
@@ -6341,7 +5251,7 @@ private:
 
         check(
             "void f() {\n"
-            "    char *p = malloc(100);\n"
+            "    char *p; p = malloc(100);\n"
             "    if (x) {\n"
             "        free(p);\n"
             "        x = 0;\n"
@@ -6352,7 +5262,7 @@ private:
 
         check(
             "void f() {\n"
-            "    char *p = do_something();\n"
+            "    char *p; p = do_something();\n"
             "    free(p);\n"
             "    p = do_something();\n"
             "    free(p);\n"
@@ -6464,7 +5374,7 @@ private:
         check(
             "void foo()\n"
             "{\n"
-            "  int* ptr = NULL;\n"
+            "  int* ptr; ptr = NULL;\n"
             "  try\n"
             "    {\n"
             "      ptr = new int(4);\n"
@@ -6482,8 +5392,8 @@ private:
         check(
             "int foo()\n"
             "{\n"
-            "   int* a = new int;\n"
-            "   bool doDelete = true;\n"
+            "   int* a; a = new int;\n"
+            "   bool doDelete; doDelete = true;\n"
             "   if (a != 0)\n"
             "   {\n"
             "       doDelete = false;\n"
@@ -6499,8 +5409,8 @@ private:
         check(
             "void foo(int y)\n"
             "{\n"
-            "    char * x = NULL;\n"
-            "    while(1) {\n"
+            "    char * x; x = NULL;\n"
+            "    while(true) {\n"
             "        x = new char[100];\n"
             "        if (y++ > 100)\n"
             "            break;\n"
@@ -6514,7 +5424,7 @@ private:
         check(
             "void foo(int y)\n"
             "{\n"
-            "    char * x = NULL;\n"
+            "    char * x; x = NULL;\n"
             "    for (int i = 0; i < 10000; i++) {\n"
             "        x = new char[100];\n"
             "        delete[] x;\n"
@@ -6527,7 +5437,7 @@ private:
         check(
             "void foo(int y)\n"
             "{\n"
-            "    char * x = NULL;\n"
+            "    char * x; x = NULL;\n"
             "    while (isRunning()) {\n"
             "        x = new char[100];\n"
             "        delete[] x;\n"
@@ -6540,7 +5450,7 @@ private:
         check(
             "void foo(int y)\n"
             "{\n"
-            "    char * x = NULL;\n"
+            "    char * x; x = NULL;\n"
             "    while (isRunning()) {\n"
             "        x = malloc(100);\n"
             "        free(x);\n"
@@ -6553,7 +5463,7 @@ private:
         check(
             "void foo(int y)\n"
             "{\n"
-            "    char * x = NULL;\n"
+            "    char * x; x = NULL;\n"
             "    for (;;) {\n"
             "        x = new char[100];\n"
             "        if (y++ > 100)\n"
@@ -6568,13 +5478,13 @@ private:
         check(
             "void foo(int y)\n"
             "{\n"
-            "    char * x = NULL;\n"
+            "    char * x; x = NULL;\n"
             "    do {\n"
             "        x = new char[100];\n"
             "        if (y++ > 100)\n"
             "            break;\n"
             "        delete[] x;\n"
-            "    } while (1);\n"
+            "    } while (true);\n"
             "    delete[] x;\n"
             "}"
         );
@@ -6583,7 +5493,7 @@ private:
         check(
             "void f()\n"
             "{\n"
-            "    char *p = 0;\n"
+            "    char *p; p = 0;\n"
             "    if (x < 100) {\n"
             "        p = malloc(10);\n"
             "        free(p);\n"
@@ -6594,9 +5504,9 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", "", errout.str());
 
         check(
-            "void MyFuction()\n"
+            "void MyFunction()\n"
             "{\n"
-            "    char* data = new char[100];\n"
+            "    char* data; data = new char[100];\n"
             "    try\n"
             "    {\n"
             "    }\n"
@@ -6616,9 +5526,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check(
-            "void MyFuction()\n"
+            "void MyFunction()\n"
             "{\n"
-            "    char* data = new char[100];\n"
+            "    char* data; data = new char[100];\n"
             "    try\n"
             "    {\n"
             "    }\n"
@@ -6644,78 +5554,78 @@ private:
     void checkInvalidFree() {
         check(
             "void foo(char *p) {\n"
-            "  char *a = (char *)malloc(1024);\n"
+            "  char *a; a = malloc(1024);\n"
             "  free(a + 10);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = (char *)malloc(1024);\n"
+            "  char *a; a = malloc(1024);\n"
             "  free(a - 10);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = (char *)malloc(1024);\n"
+            "  char *a; a = malloc(1024);\n"
             "  free(10 + a);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = new char[1024];\n"
+            "  char *a; a = new char[1024];\n"
             "  delete[] (a + 10);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = new char;\n"
-            "  delete (a + 10);\n"
+            "  char *a; a = new char;\n"
+            "  delete a + 10;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = new char;\n"
+            "  char *a; a = new char;\n"
             "  bar(a);\n"
-            "  delete (a + 10);\n"
+            "  delete a + 10;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = new char;\n"
-            "  char *b = new char;\n"
+            "  char *a; a = new char;\n"
+            "  char *b; b = new char;\n"
             "  bar(a);\n"
-            "  delete (a + 10);\n"
-            "  delete (b + 10);\n"
+            "  delete a + 10;\n"
+            "  delete b + 10;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Invalid memory address freed.\n", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = new char;\n"
-            "  char *b = new char;\n"
+            "  char *a; a = new char;\n"
+            "  char *b; b = new char;\n"
             "  bar(a, b);\n"
-            "  delete (a + 10);\n"
-            "  delete (b + 10);\n"
+            "  delete a + 10;\n"
+            "  delete b + 10;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
 
         check(
             "void foo(char *p) {\n"
-            "  char *a = new char;\n"
+            "  char *a; a = new char;\n"
             "  bar()\n"
-            "  delete (a + 10);\n"
+            "  delete a + 10;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Invalid memory address freed.\n", errout.str());
 
         check(
             "void foo(size_t xx) {\n"
-            "  char *ptr = malloc(42);\n"
+            "  char *ptr; ptr = malloc(42);\n"
             "  ptr += xx;\n"
             "  free(ptr - xx - 1);\n"
             "}");
@@ -6723,10 +5633,10 @@ private:
 
         check(
             "void foo(size_t xx) {\n"
-            "  char *ptr = malloc(42);\n"
+            "  char *ptr; ptr = malloc(42);\n"
             "  std::cout << ptr;\n"
             "  ptr = otherPtr;\n"
-            "  free(ptr - xx - 1);\n"
+            "  free(otherPtr - xx - 1);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -6820,47 +5730,28 @@ private:
     void checkNegativeShift() {
         check("void foo()\n"
               "{\n"
-              "   int a = 123;\n"
+              "   int a; a = 123;\n"
               "   a << -1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
         check("void foo()\n"
               "{\n"
-              "   int a = 123;\n"
-              "   int i = -1;\n"
-              "   a << i;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n", errout.str());
-        check("void foo()\n"
-              "{\n"
-              "   int a = 123;\n"
+              "   int a; a = 123;\n"
               "   a >> -1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
         check("void foo()\n"
               "{\n"
-              "   int a = 123;\n"
-              "   int i = -1;\n"
-              "   a >> i;\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Shifting by a negative value.\n", "", errout.str());
-        check("void foo()\n"
-              "{\n"
-              "   int a = 123;\n"
+              "   int a; a = 123;\n"
               "   a <<= -1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
         check("void foo()\n"
               "{\n"
-              "   int a = 123;\n"
+              "   int a; a = 123;\n"
               "   a >>= -1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
-        check("void foo()\n"
-              "{\n"
-              "   int a = 123 << -1;\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Shifting by a negative value.\n", "", errout.str());
         check("void foo()\n"
               "{\n"
               "   std::cout << -1;\n"
@@ -6885,8 +5776,7 @@ private:
               "    memcpy(a, b, 5);\n"
               "    memmove(a, b, 5);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n"
-                      "[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n"
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n"
                       "[test.cpp:3]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n"
                       "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
                       "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'?\n", errout.str());
@@ -6924,18 +5814,6 @@ private:
 
         check("void f() {\n"
               "    bool a[5];\n"
-              "    memset(a, false, 5*sizeof(bool));\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    bool a[5];\n"
-              "    memset(a, false, 5*sizeof(*a));\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    bool a[5];\n"
               "    memset(a, false, 5);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability, inconclusive) Array 'a' might be filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
@@ -6960,7 +5838,7 @@ private:
               "    int i;\n"
               "    i = 1;\n"
               "    i = 1;\n"
-              "}");
+              "}", NULL, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void f() {\n"
@@ -7021,7 +5899,7 @@ private:
               "    i = 1;\n"
               "    bar();\n"
               "    i = 1;\n"
-              "}");
+              "}", NULL, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void bar(int i) {}\n"
@@ -7029,7 +5907,7 @@ private:
               "    i = 1;\n"
               "    bar(i);\n" // Passed as argument
               "    i = 1;\n"
-              "}");
+              "}", NULL, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         // Branch tests
@@ -7105,7 +5983,7 @@ private:
               "    x = 1;\n"
               "    x = 1;\n"
               "    return x + 1;\n"
-              "}");
+              "}", NULL, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
 
         // from #3103 (avoid a false positive)
@@ -7113,8 +5991,66 @@ private:
               "    int x;\n"
               "    x = 1;\n"
               "    if (y)\n" // <-- cppcheck does not know anything about 'y'
-              " 	   x = 2;\n"
+              "        x = 2;\n"
               "    return x + 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"  // Ticket #4356
+              "    int x = 0;\n"  // <- ignore assignment with 0
+              "    x = 3;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int i = 54;\n"
+              "    i = 0;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "    int i = 54;\n"
+              "    i = 1;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("int foo() {\n" // #4420
+              "    int x;\n"
+              "    bar(++x);\n"
+              "    x = 5;\n"
+              "    return bar(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // struct member..
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f() {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    ab.a = 2;\n"
+              "    return ab.a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (performance, inconclusive) Variable 'a' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f() {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    ab = do_something();\n"
+              "    return ab.a;\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f() {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    do_something(&ab);\n"
+              "    ab.a = 2;\n"
+              "    return ab.a;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -7203,6 +6139,21 @@ private:
               "        memset(a, 0, size);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4455 - initialization of local buffer
+        check("void f(void) {"
+              "    char buf[10];\n"
+              "    memset(buf, 0, 10);\n"
+              "    strcpy(buf, string);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void) {\n"
+              "    char buf[10] = {0};\n"
+              "    memset(buf, 0, 10);\n"
+              "    strcpy(buf, string);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'buf' is being written before its old content has been used.\n", errout.str());
     }
 
     void varFuncNullUB() { // #4482
@@ -7263,16 +6214,60 @@ private:
               "  }\n"
               "}",NULL,false,false,true);
         ASSERT_EQUALS("", errout.str());
+
+        // avoid crash with pointer variable
+        check("void foo (int* arrayPtr)\n"
+              "{\n"
+              "  if (pipe (arrayPtr) < 0)\n"
+              "  {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid crash with pointer variable - for local variable on stack as well - see #4801
+        check("void foo {\n"
+              "  int *cp;\n"
+              "  if ( pipe (cp) == -1 ) {\n"
+              "     return;\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // test with unknown variable
+        check("void foo {\n"
+              "  if ( pipe (cp) == -1 ) {\n"
+              "     return;\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid crash with pointer variable - for local variable on stack as well - see #4801
+        check("void foo {\n"
+              "  int *cp;\n"
+              "  if ( pipe (cp) == -1 ) {\n"
+              "     return;\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // test with unknown variable
+        check("void foo {\n"
+              "  if ( pipe (cp) == -1 ) {\n"
+              "     return;\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void checkCastIntToCharAndBack() { // #160
 
         // check getchar
         check("void f() {\n"
-              "unsigned char c;\n"
-              "  while( (c = getchar()) != EOF)\n"
+              "unsigned char c; c = getchar();\n"
+              "  while( c != EOF)\n"
               "  {\n"
               "    bar(c);\n"
+              "    c = getchar();\n"
               "  } ;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
@@ -7287,28 +6282,31 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
         check("void f() {\n"
-              "unsigned char c;\n"
-              "  while( EOF != (c = getchar()) )\n"
+              "  unsigned char c; c = getchar();\n"
+              "  while( EOF != c )\n"
               "  {\n"
               "    bar(c);\n"
+              "    c = getchar();\n"
               "  } ;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing getchar() return value in char variable and then comparing with EOF.\n", errout.str());
 
         check("void f() {\n"
-              "int i;\n"
-              "  while( (i = getchar()) != EOF)\n"
+              "  int i; i = getchar();\n"
+              "  while( i != EOF)\n"
               "  {\n"
               "    bar(i);\n"
+              "    i = getchar();\n"
               "  } ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
-              "int i;\n"
-              "  while( EOF != (i = getchar()) )\n"
+              "  int i; i = getchar();\n"
+              "  while( EOF != i )\n"
               "  {\n"
               "    bar(i);\n"
+              "    i = getchar();\n"
               "  } ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -7391,65 +6389,37 @@ private:
 
         // cin.get()
         check("void f(){\n"
-              "   char ch;\n"
-              "   while ((ch = std::cin.get()) != EOF) {\n"
+              "   char ch; ch = std::cin.get();\n"
+              "   while (EOF != ch) {\n"
               "        std::cout << ch;\n"
+              "        ch = std::cin.get();\n"
               "   }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
 
         check("void f(){\n"
-              "   char ch;\n"
-              "   while ((ch = cin.get()) != EOF) {\n"
+              "   char ch; ch = std::cin.get();\n"
+              "   while (ch != EOF) {\n"
               "        std::cout << ch;\n"
+              "        ch = std::cin.get();\n"
               "   }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
 
         check("void f(){\n"
-              "   int i;\n"
-              "   while ((i = cin.get()) != EOF) {\n"
+              "   int i; i = std::cin.get();\n"
+              "   while ( EOF != i ) {\n"
               "        std::cout << i;\n"
+              "        i = std::cin.get();\n"
               "   }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(){\n"
-              "   int i;\n"
-              "   while ((i = std::cin.get()) != EOF) {\n"
+              "   int i; i = std::cin.get();\n"
+              "   while ( i != EOF ) {\n"
               "        std::cout << i;\n"
-              "   }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(){\n"
-              "   char ch;\n"
-              "   while ( EOF != (ch = std::cin.get()) ) {\n"
-              "        std::cout << ch;\n"
-              "   }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
-
-        check("void f(){\n"
-              "   char ch;\n"
-              "   while ( EOF != (ch = cin.get()) ) {\n"
-              "        std::cout << ch;\n"
-              "   }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Storing cin.get() return value in char variable and then comparing with EOF.\n", errout.str());
-
-        check("void f(){\n"
-              "   int i;\n"
-              "    while ( EOF != (i = cin.get()) ) {\n"
-              "        std::cout << i;\n"
-              "   }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(){\n"
-              "   int i;\n"
-              "   while ( EOF != (i = std::cin.get()) ) {\n"
-              "        std::cout << i;\n"
+              "        i = std::cin.get();\n"
               "   }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -7476,6 +6446,57 @@ private:
               "usleep(1000001);\n"
               "}",NULL,false,false,true);
         ASSERT_EQUALS("[test.cpp:2]: (error) The argument of usleep must be less than 1000000.\n", errout.str());
+    }
+
+    void checkCommaSeparatedReturn() {
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a++,\n"
+              "  do_something();\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a++, do_something();\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a+5,\n"
+              "  do_something();\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return a+5, do_something();\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int fun(int a) {\n"
+              "  if (a < 0)\n"
+              "    return c<int,\nint>::b;\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket #4927 Segfault in CheckOther::checkCommaSeparatedReturn() on invalid code
+        check("int main() {\n"
+              "   return 0\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        // #4943 take care of C++11 initializer lists
+        check("std::vector<Foo> Bar() {\n"
+              "    return\n"
+              "    {\n"
+              "        { \"1\" },\n"
+              "        { \"2\" },\n"
+              "        { \"3\" }\n"
+              "    };\n"
+              "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

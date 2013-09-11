@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CPPCHECK_H
-#define CPPCHECK_H
+//---------------------------------------------------------------------------
+#ifndef cppcheckH
+#define cppcheckH
+//---------------------------------------------------------------------------
 
 #include "config.h"
 #include "settings.h"
@@ -124,22 +126,34 @@ public:
      */
     void analyseFile(std::istream &f, const std::string &filename);
 
-    /**
-     * @brief Get dependencies. Use this after calling 'check'.
-     */
-    const std::set<std::string>& dependencies() const {
-        return _dependencies;
-    }
-
     void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
+
+    void dontSimplify() {
+        _simplify = false;
+    }
 
 private:
 
-    /** @brief Process one file. */
-    unsigned int processFile(const std::string& filename);
+    /** @brief There has been a internal error => Report information message */
+    void internalError(const std::string &filename, const std::string &msg);
+
+    /**
+     * @brief Process one file.
+     * @param filename file name
+     * @param fileContent If this is non-empty then the file will not be loaded
+     * @return amount of errors found
+     */
+    unsigned int processFile(const std::string& filename, const std::string& fileContent);
 
     /** @brief Check file */
     void checkFile(const std::string &code, const char FileName[]);
+
+    /**
+     * @brief Execute rules, if any
+     * @param tokenlist token list to use (normal / simple)
+     * @param tokenizer tokenizer
+     */
+    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
 
     /**
      * @brief Errors and warnings are directed here.
@@ -172,8 +186,6 @@ private:
 
     std::list<std::string> _errorList;
     Settings _settings;
-    std::string _fileContent;
-    std::set<std::string> _dependencies;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
 
@@ -194,8 +206,11 @@ private:
 
     /** Are there too many configs? */
     bool tooManyConfigs;
+
+    /** Simplify code? true by default */
+    bool _simplify;
 };
 
 /// @}
-
-#endif // CPPCHECK_H
+//---------------------------------------------------------------------------
+#endif // cppcheckH

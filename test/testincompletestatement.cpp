@@ -31,8 +31,8 @@ extern std::ostringstream errout;
 
 class TestIncompleteStatement : public TestFixture {
 public:
-    TestIncompleteStatement() : TestFixture("TestIncompleteStatement")
-    { }
+    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {
+    }
 
 private:
     void check(const char code[]) {
@@ -189,6 +189,15 @@ private:
     void returnstruct() {
         check("struct s foo() {\n"
               "    return (struct s){0,0};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #4754
+        check("unordered_map<string, string>  foo() {\n"
+              "    return {\n"
+              "        {\"hi\", \"there\"},\n"
+              "        {\"happy\", \"sad\"}\n"
+              "    };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

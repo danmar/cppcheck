@@ -31,8 +31,8 @@
 class TestFileLister: public TestFixture {
 public:
     TestFileLister()
-        :TestFixture("TestFileLister")
-    {}
+        :TestFixture("TestFileLister") {
+    }
 
 private:
     void run() {

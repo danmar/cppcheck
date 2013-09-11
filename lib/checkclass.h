@@ -17,8 +17,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef CheckClassH
-#define CheckClassH
+#ifndef checkclassH
+#define checkclassH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -36,8 +36,8 @@ class Function;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), symbolDatabase(NULL)
-    { }
+    CheckClass() : Check(myName()), symbolDatabase(NULL) {
+    }
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
@@ -74,6 +74,8 @@ public:
         checkClass.checkConst();
         checkClass.copyconstructors();
         checkClass.checkPureVirtualFunctionCall();
+
+        checkClass.checkDuplInheritedMembers();
     }
 
 
@@ -122,6 +124,9 @@ public:
     /** @brief call of pure virtual funcion */
     void checkPureVirtualFunctionCall();
 
+    /** @brief Check duplicated inherited members */
+    void checkDuplInheritedMembers();
+
 private:
     const SymbolDatabase *symbolDatabase;
 
@@ -146,6 +151,7 @@ private:
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
     void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
+    void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
@@ -168,6 +174,7 @@ private:
         c.checkConstError(0, "class", "function", true);
         c.initializerListError(0, 0, "class", "variable");
         c.suggestInitializationList(0, "variable");
+        c.duplInheritedMembersError(0, 0, "class", "class", "variable", false, false);
     }
 
     static std::string myName() {
@@ -190,7 +197,8 @@ private:
                "* Order of initializations\n"
                "* Suggest usage of initialization list\n"
                "* Suspicious subtraction from 'this'\n"
-               "* Call of pure virtual function in constructor/desctructor\n";
+               "* Call of pure virtual function in constructor/destructor\n"
+               "* Duplicated inherited data members\n";
     }
 
     // operatorEqRetRefThis helper function
@@ -279,7 +287,9 @@ private:
         std::list<const Token *> & pureFuncStack);
 
     static bool canNotCopy(const Scope *scope);
+
+    static bool canNotMove(const Scope *scope);
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkclassH

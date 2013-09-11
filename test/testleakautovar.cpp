@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class TestLeakAutoVar : public TestFixture {
 public:
-    TestLeakAutoVar() : TestFixture("TestLeakAutoVar")
-    { }
+    TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {
+    }
 
 private:
 
@@ -56,6 +56,7 @@ private:
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
+        TEST_CASE(doublefree3); // #4914
 
         // exit
         TEST_CASE(exit1);
@@ -111,6 +112,13 @@ private:
 
         // Tokenize..
         Settings settings;
+        int id = 0;
+        while (!settings.library.ismemory(++id));
+        settings.library.setalloc("malloc",id);
+        settings.library.setdealloc("free",id);
+        while (!settings.library.isresource(++id));
+        settings.library.setalloc("fopen",id);
+        settings.library.setdealloc("fclose",id);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.c");
@@ -118,7 +126,8 @@ private:
 
         // Check for leaks..
         CheckLeakAutoVar c;
-        settings.experimental = true;
+        settings.checkLibrary = true;
+        settings.addEnabled("information");
         c.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
@@ -216,7 +225,7 @@ private:
               "    char *p = malloc(10);\n"
               "    x = a(b(p));\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) b configuration is needed to establish if there is a leak or not\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function b() should have <use>/<ignore> configuration\n", errout.str());
     }
 
     void assign12() { // #4236: FP. bar(&x)
@@ -258,13 +267,13 @@ private:
               "    free(p);\n"
               "    strcpy(a, p);\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        TODO_ASSERT_EQUALS("error (free,use)", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
 
         check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
               "    free(p);\n"
               "    strcpy(a, p=b());\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
     }
 
     void deallocuse3() {
@@ -320,6 +329,24 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree3() {  // #4914
+        check("void foo() {\n"
+              "   bool done = false;\n"
+              "   do {\n"
+              "       char *bar = malloc(10)\n"
+              "       if(condition()) {\n"
+              "           free(bar);\n"
+              "           continue;\n"
+              "       }\n"
+              "       done = true;\n"
+              "       free(bar)\n"
+              "   } while(!done);\n"
+              "   return;"
+              "}"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -333,7 +360,9 @@ private:
               "    char *p = malloc(10);\n"
               "    fatal_error();\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) fatal_error configuration is needed to establish if there is a leak or not\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n"
+                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<ignore> configuration\n",
+                      errout.str());
     }
 
     void goto1() {
@@ -576,7 +605,9 @@ private:
               "    char *p = malloc(10);\n"
               "    x(p);\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) x configuration is needed to establish if there is a leak or not\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function x() should have <noreturn> configuration\n"
+                      "[test.c:4]: (information) --check-library: Function x() should have <use>/<ignore> configuration\n",
+                      errout.str());
     }
 
     void configuration2() {
@@ -586,7 +617,9 @@ private:
               "    char *p = malloc(10);\n"
               "    x(&p);\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) x configuration is needed to establish if there is a leak or not\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function x() should have <noreturn> configuration\n"
+                      "[test.c:4]: (information) --check-library: Function x() should have <use>/<ignore> configuration\n",
+                      errout.str());
     }
 
     void configuration3() {
@@ -594,14 +627,14 @@ private:
               "    char *p = malloc(10);\n"
               "    if (set_data(p)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) set_data configuration is needed to establish if there is a leak or not\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n", errout.str());
 
         check("void f() {\n"
               "    char *p = malloc(10);\n"
               "    if (set_data(p)) { return; }\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (information) set_data configuration is needed to establish if there is a leak or not\n"
-                      "[test.c:4]: (information) set_data configuration is needed to establish if there is a leak or not\n"
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n"
+                      "[test.c:4]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n"
                       , errout.str());
     }
 
@@ -611,7 +644,7 @@ private:
               "    int ret = set_data(p);\n"
               "    return ret;\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) set_data configuration is needed to establish if there is a leak or not\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n", errout.str());
     }
 
     void ptrptr() {

@@ -122,6 +122,42 @@ static std::string unify(const std::string &s, char separator)
     return join(parts, separator);
 }
 
+
+/**
+ * Get cfgmap - a map of macro names and values
+ */
+static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
+{
+    std::map<std::string, std::string> cfgmap;
+
+    if (!cfg.empty()) {
+        std::string::size_type pos = 0;
+        for (;;) {
+            std::string::size_type pos2 = cfg.find_first_of(";=", pos);
+            if (pos2 == std::string::npos) {
+                cfgmap[cfg.substr(pos)] = "";
+                break;
+            }
+            if (cfg[pos2] == ';') {
+                cfgmap[cfg.substr(pos, pos2-pos)] = "";
+            } else {
+                std::string::size_type pos3 = pos2;
+                pos2 = cfg.find(";", pos2);
+                if (pos2 == std::string::npos) {
+                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1);
+                    break;
+                } else {
+                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1, pos2 - pos3 - 1);
+                }
+            }
+            pos = pos2 + 1;
+        }
+    }
+
+    return cfgmap;
+}
+
+
 /** Just read the code into a string. Perform simple cleanup of the code */
 std::string Preprocessor::read(std::istream &istr, const std::string &filename)
 {
@@ -131,7 +167,15 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
         bom = ((unsigned int)istr.get() << 8);
         if (istr.peek() >= 0xfe)
             bom |= (unsigned int)istr.get();
+        else
+            bom = 0; // allowed boms are 0/0xfffe/0xfeff
     }
+
+    if (_settings && _settings->terminated())
+        return "";
+
+    if (_settings && _settings->checkConfiguration)
+        return readpreprocessor(istr,bom);
 
     // ------------------------------------------------------------------------------------------
     //
@@ -195,22 +239,98 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     //
     // Remove all comments..
     result = removeComments(result, filename);
+    if (_settings && _settings->terminated())
+        return "";
 
     // ------------------------------------------------------------------------------------------
     //
     // Clean up all preprocessor statements
     result = preprocessCleanupDirectives(result);
+    if (_settings && _settings->terminated())
+        return "";
 
     // ------------------------------------------------------------------------------------------
     //
     // Clean up preprocessor #if statements with Parentheses
     result = removeParentheses(result);
+    if (_settings && _settings->terminated())
+        return "";
 
     // Remove '#if 0' blocks
     if (result.find("#if 0\n") != std::string::npos)
         result = removeIf0(result);
+    if (_settings && _settings->terminated())
+        return "";
 
     return result;
+}
+
+
+/** read preprocessor statements */
+std::string Preprocessor::readpreprocessor(std::istream &istr, const unsigned int bom) const
+{
+    enum { NEWLINE, SPACE, PREPROCESSOR, BACKSLASH, OTHER } state = NEWLINE;
+    std::ostringstream code;
+    unsigned int newlines = 1;
+    char chPrev = ' ';
+    for (unsigned char ch = readChar(istr,bom); istr.good(); ch = readChar(istr,bom)) {
+        // Replace assorted special chars with spaces..
+        if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
+            ch = ' ';
+
+        if (ch == ' ' && chPrev == ' ')
+            continue;
+        if (state == PREPROCESSOR && chPrev == '/' && (ch == '/' || ch == '*'))
+            state = OTHER;
+        chPrev = ch;
+
+        if (ch == '\n') {
+            if (state != BACKSLASH) {
+                state = NEWLINE;
+                code << std::string(newlines, '\n');
+                newlines = 1;
+            } else {
+                ++newlines;
+                state = PREPROCESSOR;
+            }
+            continue;
+        }
+
+        switch (state) {
+        case NEWLINE:
+            if (ch==' ')
+                state = SPACE;
+            else if (ch == '#') {
+                state = PREPROCESSOR;
+                code << ch;
+            } else
+                state = OTHER;
+            break;
+        case SPACE:
+            if (ch == '#') {
+                state = PREPROCESSOR;
+                code << ch;
+            } else if (ch != ' ')
+                state = OTHER;
+            break;
+        case PREPROCESSOR:
+            code << ch;
+            if (ch == '\\')
+                state = BACKSLASH;
+            break;
+        case BACKSLASH:
+            code << ch;
+            if (ch != ' ')
+                state = PREPROCESSOR;
+            break;
+        case OTHER:
+            break;
+        };
+    }
+
+    std::string result = preprocessCleanupDirectives(code.str());
+    result = removeParentheses(result);
+    return removeIf0(result);
 }
 
 std::string Preprocessor::preprocessCleanupDirectives(const std::string &processedFile)
@@ -356,6 +476,9 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             writeError(filename, lineno, _errorLogger, "syntaxError", errmsg.str());
         }
 
+        if (_settings && _settings->terminated())
+            return "";
+
         if ((str.compare(i, 7, "#error ") == 0 && (!_settings || _settings->userDefines.empty())) ||
             str.compare(i, 9, "#warning ") == 0) {
 
@@ -455,11 +578,17 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             while (i < str.size() && std::isspace(str[i]))
                 code << str[i++];
             if (str[i] == '{') {
+                // Ticket 4873: Extract comments from the __asm / __asm__'s content
+                std::string asmBody;
                 while (i < str.size() && str[i] != '}') {
-                    if (str[i] == ';')
-                        i = str.find("\n", i);
-                    code << str[i++];
+                    if (str[i] == ';') {
+                        std::string::size_type backslashN = str.find("\n", i);
+                        if (backslashN != std::string::npos) // Ticket #4922: Don't go in infinite loop or crash if there is no '\n'
+                            i = backslashN;
+                    }
+                    asmBody += str[i++];
                 }
+                code << removeComments(asmBody, filename);
                 code << '}';
             } else
                 --i;
@@ -499,9 +628,20 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 // Add any pending inline suppressions that have accumulated.
                 if (!suppressionIDs.empty()) {
                     if (_settings != NULL) {
+                        // Relative filename
+                        std::string relativeFilename(filename);
+                        if (_settings->_relativePaths) {
+                            for (std::size_t j = 0U; j < _settings->_basePaths.size(); ++j) {
+                                const std::string bp = _settings->_basePaths[j] + "/";
+                                if (relativeFilename.compare(0,bp.size(),bp)==0) {
+                                    relativeFilename = relativeFilename.substr(bp.size());
+                                }
+                            }
+                        }
+
                         // Add the suppressions.
                         for (std::size_t j = 0; j < suppressionIDs.size(); ++j) {
-                            const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
+                            const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], relativeFilename, lineno));
                             if (!errmsg.empty()) {
                                 writeError(filename, lineno, _errorLogger, "cppcheckError", errmsg);
                             }
@@ -710,8 +850,9 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     std::string data;
     preprocess(istr, data, configs, filename, includePaths);
     for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
-        if (_settings && (_settings->userUndefs.find(*it) == _settings->userUndefs.end()))
+        if (_settings && (_settings->userUndefs.find(*it) == _settings->userUndefs.end())) {
             result[ *it ] = getcode(data, *it, filename);
+        }
     }
 }
 
@@ -735,7 +876,7 @@ std::string Preprocessor::removeSpaceNearNL(const std::string &str)
     return tmp;
 }
 
-std::string Preprocessor::replaceIfDefined(const std::string &str)
+std::string Preprocessor::replaceIfDefined(const std::string &str) const
 {
     std::string ret(str);
     std::string::size_type pos;
@@ -751,6 +892,9 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
             ret.insert(pos + 3, "def ");
         }
         ++pos;
+
+        if (_settings && _settings->terminated())
+            return "";
     }
 
     pos = 0;
@@ -764,6 +908,9 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
             ret.insert(pos + 3, "ndef ");
         }
         ++pos;
+
+        if (_settings && _settings->terminated())
+            return "";
     }
 
     pos = 0;
@@ -776,6 +923,9 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
             ret.erase(pos + 6, 8);
         }
         ++pos;
+
+        if (_settings && _settings->terminated())
+            return "";
     }
 
     return ret;
@@ -803,7 +953,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
     processedFile = read(srcCodeStream, filename);
 
-    if (_settings && !_settings->userIncludes.empty()) {
+    if (_settings) {
         for (std::list<std::string>::iterator it = _settings->userIncludes.begin();
              it != _settings->userIncludes.end();
              ++it) {
@@ -821,7 +971,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
                               );
                 continue;
             }
-            std::string fileData = read(fin, filename);
+            const std::string fileData = read(fin, filename);
 
             fin.close();
 
@@ -863,6 +1013,9 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
                         line += ")";
                     else
                         line.insert(pos, ")");
+
+                    if (_settings && _settings->terminated())
+                        return;
                 }
             }
             ostr << line << "\n";
@@ -870,46 +1023,20 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    if (_settings && !_settings->userDefines.empty()) {
-        std::map<std::string, std::string> defs;
+    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string("")));
 
-        // TODO: break out this code. There is other similar code.
-        std::string::size_type pos1 = 0;
-        while (pos1 != std::string::npos) {
-            const std::string::size_type pos2 = _settings->userDefines.find_first_of(";=", pos1);
-            const std::string::size_type pos3 = _settings->userDefines.find(";", pos1);
-
-            std::string name, value;
-            if (pos2 == std::string::npos)
-                name = _settings->userDefines.substr(pos1);
-            else
-                name = _settings->userDefines.substr(pos1, pos2 - pos1);
-            if (pos2 != pos3) {
-                if (pos3 == std::string::npos)
-                    value = _settings->userDefines.substr(pos2+1);
-                else
-                    value = _settings->userDefines.substr(pos2+1, pos3 - pos2 - 1);
-            }
-
-            defs[name] = value;
-
-            pos1 = pos3;
-            if (pos1 != std::string::npos)
-                pos1++;
-        }
-
-        processedFile = handleIncludes(processedFile, filename, includePaths, defs);
-        if (_settings->userIncludes.empty())
-            resultConfigurations = getcfgs(processedFile, filename);
-
+    if (_settings && _settings->_maxConfigs == 1U) {
+        std::list<std::string> pragmaOnce;
+        std::list<std::string> includes;
+        processedFile = handleIncludes(processedFile, filename, includePaths, defs, pragmaOnce, includes);
+        resultConfigurations = getcfgs(processedFile, filename, defs);
     } else {
-
         handleIncludes(processedFile, filename, includePaths);
 
         processedFile = replaceIfDefined(processedFile);
 
         // Get all possible configurations..
-        resultConfigurations = getcfgs(processedFile, filename);
+        resultConfigurations = getcfgs(processedFile, filename, defs);
 
         // Remove configurations that are disabled by -U
         handleUndef(resultConfigurations);
@@ -1050,7 +1177,7 @@ static void simplifyVarMap(std::map<std::string, std::string> &variables)
     }
 }
 
-std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename)
+std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename, const std::map<std::string, std::string> &defs)
 {
     std::list<std::string> ret;
     ret.push_back("");
@@ -1059,6 +1186,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
     // constants defined through "#define" in the code..
     std::set<std::string> defines;
+    std::map<std::string, std::string> alldefinesmap(defs);
 
     // How deep into included files are we currently parsing?
     // 0=>Source file, 1=>Included by source file, 2=>included by header that was included by source file, etc
@@ -1071,6 +1199,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     std::string line;
     while (std::getline(istr, line)) {
         ++linenr;
+
+        if (_settings && _settings->terminated())
+            return ret;
 
         if (_errorLogger)
             _errorLogger->reportProgress(filename, "Preprocessing (get configurations 1)", 0);
@@ -1108,12 +1239,19 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
             if (!valid)
                 line.clear();
-            else if (line.find(" ", 8) == std::string::npos)
-                defines.insert(line.substr(8));
             else {
-                std::string s = line.substr(8);
-                s[s.find(" ")] = '=';
-                defines.insert(s);
+                std::string definestr = line.substr(8);
+                const std::string::size_type spacepos = definestr.find(" ");
+                if (spacepos != std::string::npos)
+                    definestr[spacepos] = '=';
+                defines.insert(definestr);
+
+                const std::string::size_type separatorpos = definestr.find_first_of("=(");
+                if (separatorpos != std::string::npos && definestr[separatorpos] == '=') {
+                    const std::string varname(definestr.substr(0, separatorpos));
+                    const std::string value(definestr.substr(separatorpos + 1));
+                    alldefinesmap[varname] = value;
+                }
             }
         }
 
@@ -1168,20 +1306,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
 
             // Replace defined constants
-            {
-                std::map<std::string, std::string> varmap;
-                for (std::set<std::string>::const_iterator it = defines.begin(); it != defines.end(); ++it) {
-                    std::string::size_type pos = it->find_first_of("=(");
-                    if (pos == std::string::npos)
-                        continue;
-                    if ((*it)[pos] == '(')
-                        continue;
-                    const std::string varname(it->substr(0, pos));
-                    const std::string value(it->substr(pos + 1));
-                    varmap[varname] = value;
-                }
-                simplifyCondition(varmap, def, false);
-            }
+            simplifyCondition(alldefinesmap, def, false);
 
             if (! deflist.empty() && line.compare(0, 6, "#elif ") == 0)
                 deflist.pop_back();
@@ -1534,6 +1659,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         modified = false;
         modified |= tokenizer.simplifySizeof();
         modified |= tokenizer.simplifyCalculations();
+        modified |= tokenizer.simplifyConstTernaryOp();
         modified |= tokenizer.simplifyRedundantParentheses();
         for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next()) {
             if (Token::Match(tok, "! %num%")) {
@@ -1597,43 +1723,7 @@ bool Preprocessor::match_cfg_def(std::map<std::string, std::string> cfg, std::st
     return false;
 }
 
-
-/**
- * Get cfgmap - a map of macro names and values
- */
-static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
-{
-    std::map<std::string, std::string> cfgmap;
-
-    if (!cfg.empty()) {
-        std::string::size_type pos = 0;
-        for (;;) {
-            std::string::size_type pos2 = cfg.find_first_of(";=", pos);
-            if (pos2 == std::string::npos) {
-                cfgmap[cfg.substr(pos)] = "";
-                break;
-            }
-            if (cfg[pos2] == ';') {
-                cfgmap[cfg.substr(pos, pos2-pos)] = "";
-            } else {
-                std::string::size_type pos3 = pos2;
-                pos2 = cfg.find(";", pos2);
-                if (pos2 == std::string::npos) {
-                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1);
-                    break;
-                } else {
-                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1, pos2 - pos3 - 1);
-                }
-            }
-            pos = pos2 + 1;
-        }
-    }
-
-    return cfgmap;
-}
-
-
-std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, const bool validate)
+std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
 {
     // For the error report
     unsigned int lineno = 0;
@@ -1656,6 +1746,9 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::string line;
     while (std::getline(istr, line)) {
         ++lineno;
+
+        if (_settings && _settings->terminated())
+            return "";
 
         if (line.compare(0, 11, "#pragma asm") == 0) {
             ret << "\n";
@@ -1755,13 +1848,18 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             }
         }
 
+        else if (line.compare(0,4,"#if ") == 0) {
+            matching_ifdef.push_back(match_cfg_def(cfgmap, line.substr(4)));
+            matched_ifdef.push_back(matching_ifdef.back());
+        }
+
         else if (! def.empty()) {
-            matching_ifdef.push_back(match_cfg_def(cfgmap, def));
+            matching_ifdef.push_back(cfgmap.find(def) != cfgmap.end());
             matched_ifdef.push_back(matching_ifdef.back());
         }
 
         else if (! ndef.empty()) {
-            matching_ifdef.push_back(! match_cfg_def(cfgmap, ndef));
+            matching_ifdef.push_back(cfgmap.find(ndef) == cfgmap.end());
             matched_ifdef.push_back(matching_ifdef.back());
         }
 
@@ -1829,7 +1927,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         ret << line << "\n";
     }
 
-    if (validate && !validateCfg(ret.str(), cfg)) {
+    if (!validateCfg(ret.str(), cfg)) {
         return "";
     }
 
@@ -1876,10 +1974,8 @@ Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
     std::replace(result.begin(), result.end(), '\\', '/');
 
     str = result;
-    if (c == '"')
-        return UserHeader;
-    else
-        return SystemHeader;
+
+    return (c == '\"') ? UserHeader : SystemHeader;
 }
 
 /**
@@ -1915,7 +2011,7 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 }
 
 
-std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> includes)
+std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> &pragmaOnce, std::list<std::string> includes)
 {
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
 
@@ -1936,15 +2032,15 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
     if (_errorLogger)
         _errorLogger->reportProgress(filePath, "Preprocessor (handleIncludes)", 0);
 
-    if (_settings && _settings->terminated())
-        return "";
-
     std::ostringstream ostr;
     std::istringstream istr(code);
     std::string line;
     bool suppressCurrentCodePath = false;
     while (std::getline(istr,line)) {
         ++linenr;
+
+        if (_settings && _settings->terminated())
+            return "";
 
         // has there been a true #if condition at the current indentmatch level?
         // then no more #elif or #else can be true before the #endif is seen.
@@ -1958,7 +2054,9 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
         std::stack<bool>::reference elseIsTrue = elseIsTrueStack.top();
 
-        if (line.compare(0,7,"#ifdef ") == 0) {
+        if (line == "#pragma once") {
+            pragmaOnce.push_back(filePath);
+        } else if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch) {
                 const std::string tag = getdef(line,true);
                 if (defs.find(tag) != defs.end()) {
@@ -1991,15 +2089,15 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
             if (indent == indentmatch + 1)
                 elseIsTrue = true;
 
-        } else if (!suppressCurrentCodePath && line.compare(0,4,"#if ") == 0) {
-            if (indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
+        } else if (line.compare(0,4,"#if ") == 0) {
+            if (!suppressCurrentCodePath && indent == indentmatch && match_cfg_def(defs, line.substr(4))) {
                 elseIsTrue = false;
                 indentmatch++;
             }
             ++indent;
 
             if (indent == indentmatch + 1)
-                elseIsTrue = true;
+                elseIsTrue = true;  // this value doesn't matter when suppressCurrentCodePath is true
         } else if (line.compare(0,6,"#elif ") == 0 || line.compare(0,5,"#else") == 0) {
             if (!elseIsTrue) {
                 if (indentmatch == indent) {
@@ -2014,10 +2112,6 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                         elseIsTrue = false;
                     }
                 }
-            }
-            if (suppressCurrentCodePath) {
-                suppressCurrentCodePath = false;
-                indentmatch = indent;
             }
         } else if (line.compare(0, 6, "#endif") == 0) {
             if (indent > 0)
@@ -2102,8 +2196,14 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
                 includes.push_back(filename);
 
+                // Don't include header if it's already included and contains #pragma once
+                if (std::find(pragmaOnce.begin(), pragmaOnce.end(), filename) != pragmaOnce.end()) {
+                    ostr << std::endl;
+                    continue;
+                }
+
                 ostr << "#file \"" << filename << "\"\n"
-                     << handleIncludes(read(fin, filename), filename, includePaths, defs, includes) << std::endl
+                     << handleIncludes(read(fin, filename), filename, includePaths, defs, pragmaOnce, includes) << std::endl
                      << "#endfile\n";
                 continue;
             }
@@ -2131,6 +2231,9 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     std::string::size_type endfilePos = 0;
     std::set<std::string> handledFiles;
     while ((pos = code.find("#include", pos)) != std::string::npos) {
+        if (_settings && _settings->terminated())
+            return;
+
         // Accept only includes that are at the start of a line
         if (pos > 0 && code[pos-1] != '\n') {
             pos += 8; // length of "#include"
@@ -2260,6 +2363,21 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
 }
 
 /**
+ * Remove heading and trailing whitespaces from the input parameter.
+ * @param s The string to trim.
+ */
+static std::string trim(const std::string& s)
+{
+    std::string::size_type beg = s.find_first_not_of(" \t");
+    if (beg == std::string::npos)
+        return s;
+    std::string::size_type end = s.find_last_not_of(" \t");
+    if (end == std::string::npos)
+        return s.substr(beg);
+    return s.substr(beg, end - beg + 1);
+}
+
+/**
  * @brief get parameters from code. For example 'foo(1,2)' => '1','2'
  * @param line in: The code
  * @param pos  in: Position to the '('. out: Position to the ')'
@@ -2303,7 +2421,7 @@ static void getparams(const std::string &line,
             --parlevel;
             if (parlevel <= 0) {
                 endFound = true;
-                params.push_back(par);
+                params.push_back(trim(par));
                 break;
             }
         }
@@ -2326,7 +2444,7 @@ static void getparams(const std::string &line,
 
         // new parameter
         if (parlevel == 1 && line[pos] == ',') {
-            params.push_back(par);
+            params.push_back(trim(par));
             par = "";
         }
 
@@ -2741,7 +2859,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
                     continue;
                 // macro is used in code, return false
                 if (_settings->isEnabled("information"))
-                    validateCfgError(cfg);
+                    validateCfgError(cfg, macro);
                 return false;
             }
         }
@@ -2750,7 +2868,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
     return true;
 }
 
-void Preprocessor::validateCfgError(const std::string &cfg)
+void Preprocessor::validateCfgError(const std::string &cfg, const std::string &macro)
 {
     const std::string id = "ConfigurationNotChecked";
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -2758,7 +2876,7 @@ void Preprocessor::validateCfgError(const std::string &cfg)
     loc.line = 1;
     loc.setfile(file0);
     locationList.push_back(loc);
-    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' because it seems to be invalid. Use -D if you want to check it.", id, false);
+    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     _errorLogger->reportInfo(errmsg);
 }
 
@@ -3041,6 +3159,6 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
     settings2.checkConfiguration=true;
     preprocessor.missingInclude("", 1, "", UserHeader);
     preprocessor.missingInclude("", 1, "", SystemHeader);
-    preprocessor.validateCfgError("X");
+    preprocessor.validateCfgError("X", "X");
     preprocessor.error("", 1, "#error message");   // #error ..
 }

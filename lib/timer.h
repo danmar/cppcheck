@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef TIMER_H
-#define TIMER_H
+//---------------------------------------------------------------------------
+#ifndef timerH
+#define timerH
+//---------------------------------------------------------------------------
 
 #include <string>
 #include <map>
@@ -80,5 +81,5 @@ private:
     const unsigned int _showtimeMode;
     bool _stopped;
 };
-
-#endif // TIMER_H
+//---------------------------------------------------------------------------
+#endif // timerH

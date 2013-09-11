@@ -3,9 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.60 dev</title>
+    <title>Cppcheck 1.62 dev</title>
 
-    <date>2013-01-12</date>
+    <date>2013-07-14</date>
   </bookinfo>
 
   <chapter>
@@ -104,9 +104,10 @@ Checking path/file2.cpp...
       <para>All files under <filename class="directory">src/a</filename> and
       <filename class="directory">src/b</filename> are then checked.</para>
 
-      <para>The second option is to use <parameter class="command">-i</parameter>,
-      with it you specify files/paths to ignore. With this command no files in
-      <filename class="directory">src/c</filename> are checked:</para>
+      <para>The second option is to use <parameter
+      class="command">-i</parameter>, with it you specify files/paths to
+      ignore. With this command no files in <filename
+      class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
     </section>
@@ -147,9 +148,10 @@ Checking path/file2.cpp...
           <term>performance</term>
 
           <listitem>
-            <para>Suggestions for making the code faster. These suggestions are
-            only based on common knowledge. It is not certain you'll get any
-            measurable difference in speed by fixing these messages.</para>
+            <para>Suggestions for making the code faster. These suggestions
+            are only based on common knowledge. It is not certain you'll get
+            any measurable difference in speed by fixing these
+            messages.</para>
           </listitem>
         </varlistentry>
 
@@ -175,67 +177,49 @@ Checking path/file2.cpp...
     <section>
       <title>Enable messages</title>
 
-      <para>By default only <parameter class="command">error</parameter> messages
-      are shown. Through the <parameter class="command">--enable</parameter>
-      command more checks can be enabled.</para>
+      <para>By default only <parameter class="command">error</parameter>
+      messages are shown. Through the <parameter
+      class="command">--enable</parameter> command more checks can be
+      enabled.</para>
 
-      <section>
-        <title>Stylistic issues</title>
+      <programlisting># enable warning messages
+cppcheck --enable=warning file.c
 
-        <para>With <parameter class="command">--enable=style</parameter> you
-        enable most <parameter class="command">warning</parameter>,
-        <parameter class="command">style</parameter> and
-        <parameter class="command">performance</parameter> messages.</para>
+# enable performance messages
+cppcheck --enable=performance file.c
 
-        <para>Here is a simple code example:</para>
+# enable information messages
+cppcheck --enable=information file.c
 
-        <programlisting>void f(int x)
-{
-    int i;
-    if (x == 0)
-    {
-        i = 0;
-    }
-}</programlisting>
+# For historical reasons, --enable=style enables warning, performance,
+# portability and style messages. These are all reported as "style" when
+# using the old xml format.
+cppcheck --enable=style file.c
 
-        <para>There are no bugs in that code so Cppcheck won't report anything
-        by default. To enable the stylistic messages, use the
-        <parameter class="command">--enable=style</parameter> command:</para>
+# enable warning and information messages
+cppcheck --enable=warning,information file.c
 
-        <programlisting>cppcheck --enable=style file3.c</programlisting>
+# enable unusedFunction checking. This is not enabled by --enable=style
+# because it doesn't work well on libraries.
+cppcheck --enable=unusedFunction file.c
 
-        <para>The output from Cppcheck is now:</para>
+# enable all messages
+cppcheck --enable=all</programlisting>
 
-        <programlisting>Checking file3.c...
-[file3.c:3]: (style) Variable 'i' is assigned a value that is never used
-[file3.c:3]: (style) The scope of the variable i can be reduced</programlisting>
-      </section>
-
-      <section>
-        <title>Unused functions</title>
-
-        <para>This check will try to find unused functions. It is best to use
-        this when the whole program is checked, so that all usages is seen by
-        cppcheck.</para>
-
-        <programlisting>cppcheck --enable=unusedFunction path</programlisting>
-      </section>
-
-      <section>
-        <title>Enable all checks</title>
-
-        <para>To enable all checks your can use the
-        <parameter class="command">--enable=all</parameter> flag:</para>
-
-        <programlisting>cppcheck --enable=all path</programlisting>
-      </section>
+      <para>Please note that <literal>--enable=unusedFunction</literal> should
+      only be used when the whole program is scanned. And therefore
+      <literal>--enable=all</literal> should also only be used when the whole
+      program is scanned. The reason is that the unusedFunction checking will
+      warn if a function is not called. There will be noise if function calls
+      are not seen.</para>
 
       <section>
         <title>Inconclusive checks</title>
 
         <para>By default Cppcheck only writes error messages if it is certain.
         With <parameter class="command">--inconclusive</parameter> error
-        messages will also be written when the analysis is inconclusive.</para>
+        messages will also be written when the analysis is
+        inconclusive.</para>
 
         <programlisting>cppcheck --inconclusive path</programlisting>
 
@@ -258,8 +242,9 @@ Checking path/file2.cpp...
     <section>
       <title>Multithreaded checking</title>
 
-      <para>The option -j is used to specify the number of threads you want to use.
-      For example, to use 4 threads to check the files in a folder:</para>
+      <para>The option -j is used to specify the number of threads you want to
+      use. For example, to use 4 threads to check the files in a
+      folder:</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
     </section>
@@ -269,22 +254,30 @@ Checking path/file2.cpp...
     <title>Preprocessor configurations</title>
 
     <para>By default Cppcheck will check all preprocessor configurations
-    (except those that have #error in them). This is the recommended
-    behaviour.</para>
+    (except those that have #error in them).</para>
 
-    <para>But if you want to manually limit the checking you can do so with
-    <parameter class="command">-D</parameter>.</para>
+    <para>You can use -D to change this. When you use -D, cppcheck will by
+    default only check the given configuration and nothing else. This is how
+    compilers work. But you can use <literal>--force</literal> or
+    <literal><literal>--max-configs</literal></literal> to override the number
+    of configurations.</para>
 
-    <para>Beware that only the macros, which are given here and the macros
-    defined in source files and known header files are considered. That
-    excludes all the macros defined in some system header files, which are by
-    default not examined by Cppcheck.</para>
+    <programlisting># check all configurations
+cppcheck file.c
 
-    <para>The usage: if you, for example, want to limit the checking so the
-    only configuration to check should be <literal>DEBUG=1;__cplusplus</literal>
-    then something like this can be used:</para>
+# only check the configuration A
+cppcheck -DA file.c
 
-    <programlisting>cppcheck -DDEBUG=1 -D__cplusplus path</programlisting>
+# check all configurations when macro A is defined
+cppcheck -DA --force file.c</programlisting>
+
+    <para>Another useful flag might be -U. It undefines a symbol. Example
+    usage:</para>
+
+    <programlisting>cppcheck -UX file.c</programlisting>
+
+    <para>That will mean that X is not defined. Cppcheck will not check what
+    happens when X is defined.</para>
   </chapter>
 
   <chapter>
@@ -403,7 +396,7 @@ Checking path/file2.cpp...
 
           <listitem>
             <para>this attribute doesn't exist yet. But in the future we may
-            add a short message for each location. </para>
+            add a short message for each location.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -416,8 +409,8 @@ Checking path/file2.cpp...
     <para>If you want to reformat the output so it looks different you can use
     templates.</para>
 
-    <para>To get Visual Studio compatible output you can use
-    <parameter class="command">--template=vs</parameter>:</para>
+    <para>To get Visual Studio compatible output you can use <parameter
+    class="command">--template=vs</parameter>:</para>
 
     <programlisting>cppcheck --template=vs gui/test.cpp</programlisting>
 
@@ -427,8 +420,8 @@ Checking path/file2.cpp...
 gui/test.cpp(31): error: Memory leak: b
 gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
 
-    <para>To get gcc compatible output you can use
-    <parameter class="command">--template=gcc</parameter>:</para>
+    <para>To get gcc compatible output you can use <parameter
+    class="command">--template=gcc</parameter>:</para>
 
     <programlisting>cppcheck --template=gcc gui/test.cpp</programlisting>
 
@@ -449,7 +442,60 @@ gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisti
 gui/test.cpp,31,error,memleak,Memory leak: b
 gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
 
-    <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and \t (horizontal tab) are supported.</para>
+    <para>The following format specifiers are supported:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>callstack</term>
+
+        <listitem>
+          <para>callstack - if available</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>file</term>
+
+        <listitem>
+          <para>filename</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>id</term>
+
+        <listitem>
+          <para>message id</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>line</term>
+
+        <listitem>
+          <para>line number</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>message</term>
+
+        <listitem>
+          <para>verbose message text</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>severity</term>
+
+        <listitem>
+          <para>severity</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and
+    \t (horizontal tab) are supported.</para>
   </chapter>
 
   <chapter>
@@ -549,59 +595,251 @@ Checking test.c...
   </chapter>
 
   <chapter>
-    <title>Leaks</title>
+    <title>Rules</title>
 
-    <para>Looking for memory leaks and resource leaks is a key feature of
-    Cppcheck. Cppcheck can detect many common mistakes by default. But through
-    some tweaking you can improve the checking.</para>
+    <para>You can define custom rules using regular expressions.</para>
+
+    <para>These rules can not perform sophisticated analysis of the code. But
+    they give you an easy way to check for various simple patterns in the
+    code.</para>
+
+    <para>To get started writing rules, see the related articles here:</para>
+
+    <para><uri>http://sourceforge.net/projects/cppcheck/files/Articles/</uri></para>
+
+    <para>The file format for rules is:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;rule&gt;
+  &lt;tokenlist&gt;LIST&lt;/tokenlist&gt;
+  &lt;pattern&gt;PATTERN&lt;/pattern&gt;
+  &lt;message&gt;
+    &lt;id&gt;ID&lt;/id&gt;
+    &lt;severity&gt;SEVERITY&lt;/severity&gt;
+    &lt;summary&gt;SUMMARY&lt;/summary&gt;
+  &lt;/message&gt;
+&lt;/rule&gt;</programlisting>
 
     <section>
-      <title>User-defined allocation/deallocation functions</title>
+      <title>&lt;tokenlist&gt;</title>
 
-      <para>Cppcheck understands standard allocation and
-      deallocation functions. But it doesn't know what library functions
-      do.</para>
+      <para>The <literal>&lt;tokenlist&gt;</literal> element is optional. With
+      this element you can control what tokens are checked. The
+      <literal>LIST</literal> can be either <literal>define</literal>,
+      <literal>raw</literal>, <literal>normal</literal> or
+      <literal>simple</literal>.</para>
 
-      <para>Here is example code that might leak memory or resources:</para>
+      <variablelist>
+        <varlistentry>
+          <term>define</term>
 
-      <programlisting>void foo(int x)
-{
-    void *f = CreateFred();
-    if (x == 1)
-        return;
-    DestroyFred(f);
-}</programlisting>
+          <listitem>
+            <para>used to check #define preprocessor statements.</para>
+          </listitem>
+        </varlistentry>
 
-      <para>If you analyse that with Cppcheck it won't find any leaks:</para>
+        <varlistentry>
+          <term>raw</term>
 
-      <programlisting>cppcheck fred1.c</programlisting>
+          <listitem>
+            <para>used to check the preprocessor output.</para>
+          </listitem>
+        </varlistentry>
 
-      <para>You can add some custom leaks checking by providing simple
-      implementations for the allocation and deallocation functions. Write
-      this in a separate file <literal>fred.def</literal>:</para>
+        <varlistentry>
+          <term>normal</term>
 
-      <programlisting>void *CreateFred()
-{
-    return malloc(100);
-}
+          <listitem>
+            <para>used to check the <literal>normal</literal> token list.
+            There are some simplifications.</para>
+          </listitem>
+        </varlistentry>
 
-void DestroyFred(void *p)
-{
-    free(p);
-}</programlisting>
+        <varlistentry>
+          <term>simple</term>
 
-      <para>When Cppcheck see this it understands that <function>CreateFred()
-      </function> will return allocated memory and that <function>DestroyFred()
-      </function> will deallocate memory.</para>
+          <listitem>
+            <para>used to check the simple token list. All simplifications are
+            used. Most Cppcheck checks use the simple token list.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
 
-      <para>Now, execute <command>cppcheck</command> this way:</para>
+      <para>If there is no &lt;tokenlist&gt; element then
+      <literal>simple</literal> is used automatically.</para>
+    </section>
 
-      <programlisting>cppcheck --include=fred.def fred1.c</programlisting>
+    <section>
+      <title>&lt;pattern&gt;</title>
 
-      <para>The output from <command>cppcheck</command> is:</para>
+      <para>The <literal>PATTERN</literal> is the
+      <literal>PCRE</literal>-compatible regular expression that will be
+      executed.</para>
+    </section>
 
-      <programlisting>Checking fred1.c...
-[fred1.c:5]: (error) Memory leak: f</programlisting>
+    <section>
+      <title>&lt;id&gt;</title>
+
+      <para>The ID specify the user-defined message id.</para>
+    </section>
+
+    <section>
+      <title>&lt;severity&gt;</title>
+
+      <para>The <literal>SEVERITY</literal> must be one of the
+      <literal>Cppcheck</literal> severities: <literal>information</literal>,
+      <literal>performance</literal>, <literal>portability</literal>,
+      <literal>style</literal>, <literal>warning</literal>, or
+      <literal>error</literal>.</para>
+    </section>
+
+    <section>
+      <title>&lt;summary&gt;</title>
+
+      <para>Optional. The summary for the message. If no summary is given, the
+      matching tokens is written.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Library configuration</title>
+
+    <para><literal>Cppcheck</literal> has internal knowledge about how
+    standard C/C++ functions work. There is no internal knowledge about how
+    all libraries and environments work, and there can't be.
+    <literal>Cppcheck</literal> can be told how libraries and environments
+    work by using configuration files.</para>
+
+    <para>The idea is that users will be able to download library
+    configuration files for all popular libraries and environments
+    here:</para>
+
+    <para><uri>http://cppcheck.sourceforge.net/archive</uri></para>
+
+    <para>Ideally, all you need to do is choose and download the configuration
+    files you need.</para>
+
+    <para>The archive is not complete however. If you can't find the
+    configuration file you need in the archive, you can wait - maybe somebody
+    else will write it and share it. Or you can write your own configuration
+    file (and then it's possible to share your configuration file with
+    others).</para>
+
+    <para>A minimal configuration file looks like this:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+&lt;/def&gt;</programlisting>
+
+    <para>This configuration file is filled up with various options:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;alloc&gt;CreateFred&lt;/alloc&gt;
+    &lt;dealloc&gt;CloseFred&lt;/dealloc&gt;
+
+    &lt;use&gt;AppendFred&lt;/use&gt;
+  &lt;/memory&gt;
+
+  &lt;memory&gt;
+    &lt;alloc init="false"&gt;AllocWilma&lt;/alloc&gt;
+    &lt;alloc init="true"&gt;CAllocWilma&lt;/alloc&gt;
+    &lt;dealloc&gt;CloseWilma&lt;/dealloc&gt;
+  &lt;/memory&gt;
+
+  &lt;resource&gt;
+    &lt;alloc&gt;Lock&lt;/alloc&gt;
+    &lt;dealloc&gt;Unlock&lt;/dealloc&gt;
+  &lt;/resource&gt;
+
+  &lt;function name="IsEqual"&gt;
+    &lt;leak-ignore/&gt;
+  &lt;/function&gt;
+
+  &lt;function name="AssignFred"&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"&gt;
+      &lt;not-uninit/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="3"&gt;
+      &lt;strz/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="4"&gt;
+      &lt;formatstr/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+
+    <para>In the <literal>&lt;memory&gt;</literal> and
+    <literal>&lt;resource&gt;</literal> the allocation and deallocation
+    functions are configured. Putting allocation and deallocation functions in
+    different <literal>&lt;memory&gt;</literal> and
+    <literal>&lt;resource&gt;</literal> blocks means they are mismatching -
+    you'll get a warning message if you allocate memory with
+    <literal>CreateFred</literal> and try to close it with
+    <literal>CloseWilma</literal>.</para>
+
+    <para>The <literal>&lt;use&gt;</literal> and
+    <literal>&lt;leak-ignore&gt;</literal> elements are used to control the
+    leaks checking. If it should be ignored that a function is called, use
+    <literal>&lt;leak-ignore&gt;</literal>. If there is no leak whenever the
+    memory is passed to a function, use <literal>&lt;use&gt;</literal>.</para>
+
+    <para>In the <literal>&lt;function&gt;</literal> block some useful info is
+    added about function behaviour. The <literal>&lt;noreturn&gt;</literal>
+    tells <literal>Cppcheck</literal> if the function is a no return function.
+    The <literal>&lt;arg&gt;</literal> is used to validate arguments. If it's
+    invalid to pass NULL, use <literal>&lt;not-null&gt;</literal>. If it's
+    invalid to pass uninitialized data, use
+    <literal>&lt;not-uninit&gt;</literal>. If the argument is a
+    zero-terminated string, use <literal>&lt;strz&gt;</literal>. If the
+    argument is a formatstring, use
+    <literal>&lt;formatstr&gt;</literal>.</para>
+
+    <section>
+      <title>Example: strcpy()</title>
+
+      <para>The strcpy() was chosen in this example for demonstration purposes
+      because its behaviour is well-known.</para>
+
+      <para>The proper configuration for the standard strcpy() function would
+      be:</para>
+
+      <programlisting>  &lt;function name="strcpy"&gt;
+    &lt;leak-ignore/&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"&gt;
+      &lt;not-null/&gt;
+      &lt;not-uninit/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;</programlisting>
+
+      <para>The <literal>&lt;leak-ignore/&gt;</literal> is optional and it
+      tells Cppcheck to ignore this function call in the leaks checking.
+      Passing allocated memory to this function won't mean it will be
+      deallocated.</para>
+
+      <para>The <literal>&lt;noreturn&gt;</literal> is optional. But it's
+      recommended.</para>
+
+      <para>The first argument that the function takes is a pointer. It must
+      not be a null pointer, a uninitialized pointer nor a dead pointer. It
+      must point at some data, this data can be initialized but it is not
+      wrong if it isn't. Using <literal>&lt;not-null&gt;</literal> is correct.
+      <literal>Cppcheck</literal> will check by default that the pointer is
+      not uninitialized nor dead.</para>
+
+      <para>The second argument the function takes is a pointer. It must not
+      be null. And it must point at initialized data. Using
+      <literal>&lt;not-null&gt;</literal> and
+      <literal>&lt;not-uninit&gt;</literal> is correct.</para>
     </section>
   </chapter>
 
@@ -609,11 +847,11 @@ void DestroyFred(void *p)
     <title>HTML report</title>
 
     <para>You can convert the XML output from cppcheck into a HTML report.
-    You'll need Python and the pygments module
-    (<ulink url="http://pygments.org/">http://pygments.org/</ulink>) for this to
-    work. In the Cppcheck source tree there is a folder
-    <filename class="directory">htmlreport</filename> that contains a script
-    that transforms a Cppcheck XML file into HTML output.</para>
+    You'll need Python and the pygments module (<ulink
+    url="http://pygments.org/">http://pygments.org/</ulink>) for this to work.
+    In the Cppcheck source tree there is a folder <filename
+    class="directory">htmlreport</filename> that contains a script that
+    transforms a Cppcheck XML file into HTML output.</para>
 
     <para>This command generates the help screen:</para>
 
@@ -675,9 +913,11 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
       <para>The language can be changed at any time by using the
       <guimenu>Language</guimenu> menu.</para>
 
-      <para>More settings are available in
-      <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem>
-      </menuchoice>.</para>
+      <para>More settings are available in <menuchoice>
+          <guimenu>Edit</guimenu>
+
+          <guimenuitem>Preferences</guimenuitem>
+        </menuchoice>.</para>
     </section>
 
     <section>
@@ -696,9 +936,10 @@ htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.<
         </listitem>
       </itemizedlist>
 
-      <para>As you can read in <link linkend="preprocessor-configurations">chapter
-      3</link> in this manual the default is that Cppcheck checks all configurations.
-      So only provide preprocessor defines if you want to limit the checking.</para>
+      <para>As you can read in <link
+      linkend="preprocessor-configurations">chapter 3</link> in this manual
+      the default is that Cppcheck checks all configurations. So only provide
+      preprocessor defines if you want to limit the checking.</para>
     </section>
   </chapter>
 </book>

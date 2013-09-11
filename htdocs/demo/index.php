@@ -6,20 +6,18 @@
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Orbitron&amp;text=Cppcheck" />
   <link rel="stylesheet" type="text/css" href="/site/css/pack.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript">
-    function checkCodeLength() {
-      if (document.f.code.value.length > 1024) {
-        alert('code length exceeded');
-        return false;
-      }
-      return true;
-    }
+    //<![CDATA[
+    window.jQuery || document.write('<script type="text/javascript" src="/site/js/jquery-1.10.2.min.js"><\/script>')
+    //]]>
   </script>
+  <script src="/site/js/pack.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="header">
   <div class="wrap">
-    <h1>Cppcheck</h1>
+    <h1><a href="/">Cppcheck</a></h1>
     <p>A tool for static C/C++ code analysis</p>
   </div> <!-- .wrap -->
 </div> <!-- #header -->
@@ -32,6 +30,7 @@
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
       <li><strong><a href="/demo/">Online Demo</a></strong></li>
+      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
@@ -40,7 +39,7 @@
   <div class="wrap">
 <h2>Online Demo</h2>
 <form action="/demo/report/" name="f" onsubmit="return checkCodeLength();" method="post" target="_blank">
-<p><label for="code">Enter code:</label> <i class="maxChars">(max 1024 characters)</i><br />
+<p><label for="code">Enter code:</label> <span class="maxChars">(max 1024 characters)</span><br />
 <textarea id="code" name="code" rows="20" cols="80">
 void f()
 {

@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "filelister.h"
+#include "path.h"
 #include <cstring>
 #include <string>
 #include <sstream>
-#include "filelister.h"
-#include "path.h"
 
 
 #ifdef _WIN32

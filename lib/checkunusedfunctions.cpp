@@ -64,6 +64,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
         if (Token::Match(tok->previous(), ")|const") || funcname == 0)
             continue;
 
+        // Don't warn about functions that are marked by __attribute__((constructor))
+        if (tok->isAttributeConstructor() || funcname->isAttributeConstructor())
+            continue;
+
         tok = funcname->linkAt(1);
 
         // Check that ") {" is found..
@@ -155,6 +159,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             funcname = tok->next();
         }
 
+        else if (Token::Match(tok->next(), "%var% <") && Token::simpleMatch(tok->linkAt(2), "> (")) {
+            funcname = tok->next();
+        }
+
         else if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
             funcname = tok->next();
 
@@ -172,8 +180,11 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             continue;
 
         // funcname ( => Assert that the end parentheses isn't followed by {
-        if (Token::Match(funcname, "%var% (")) {
-            if (Token::Match(funcname->linkAt(1), ") const|throw|{"))
+        if (Token::Match(funcname, "%var% (|<")) {
+            const Token *ftok = funcname->next();
+            if (ftok->str() == "<")
+                ftok = ftok->link();
+            if (Token::Match(ftok->linkAt(1), ") const|throw|{"))
                 funcname = NULL;
         }
 

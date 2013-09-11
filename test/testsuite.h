@@ -39,12 +39,14 @@ protected:
     std::string testToRun;
     bool gcc_style_errors;
     bool quiet_tests;
+    std::string currentTest;
 
     virtual void run() = 0;
 
     bool runTest(const char testname[]);
 
     void assert_(const char *filename, unsigned int linenr, bool condition) const;
+    void todoAssert(const char *filename, unsigned int linenr, bool condition) const;
 
     void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "") const;
     void assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg="") const;
@@ -60,6 +62,7 @@ public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     void run(const std::string &str);
+    void warn(const char msg[]);
 
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }
@@ -68,8 +71,9 @@ public:
     static std::size_t runTests(const options& args);
 };
 
-#define TEST_CASE( NAME )  if ( runTest(#NAME) ) { if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
+#define TEST_CASE( NAME )  if ( runTest(#NAME) ) { currentTest = classname + "::" + #NAME; if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
 #define ASSERT( CONDITION )  assert_(__FILE__, __LINE__, CONDITION)
+#define TODO_ASSERT( CONDITION )  todoAssert(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED , ACTUAL )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)

@@ -33,8 +33,8 @@ extern std::ostringstream errout;
 
 class TestSimplifyTokens : public TestFixture {
 public:
-    TestSimplifyTokens() : TestFixture("TestSimplifyTokens")
-    { }
+    TestSimplifyTokens() : TestFixture("TestSimplifyTokens") {
+    }
 
 
 private:
@@ -91,6 +91,7 @@ private:
         TEST_CASE(casting);
 
         TEST_CASE(strlen1);
+        TEST_CASE(strlen2);
 
         TEST_CASE(template1);
         TEST_CASE(template2);
@@ -124,9 +125,13 @@ private:
         TEST_CASE(template30);  // #3529 - template < template < ..
         TEST_CASE(template31);  // #4010 - reference type
         TEST_CASE(template32);  // #3818 - mismatching template not handled well
-        TEST_CASE(template33);  // #3818 - inner templates in template instantiation not handled well
+        TEST_CASE(template33);  // #3818,#4544 - inner templates in template instantiation not handled well
         TEST_CASE(template34);  // #3706 - namespace => hang
         TEST_CASE(template35);  // #4074 - A<'x'> a;
+        TEST_CASE(template36);  // #4310 - passing unknown template instantiation as template argument
+        TEST_CASE(template37);  // #4544 - A<class B> a;
+        TEST_CASE(template38);  // #4832 - crash on C++11 right angle brackets
+        TEST_CASE(template39);  // #4742 - freeze
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -145,6 +150,8 @@ private:
         TEST_CASE(whileAssign1);
         TEST_CASE(whileAssign2);
         TEST_CASE(whileAssign3); // varid
+        TEST_CASE(doWhileAssign); // varid
+        TEST_CASE(test_4881); // similar to doWhileAssign (#4911), taken from #4881 with full code
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
@@ -167,6 +174,7 @@ private:
 
         // Simplify calculations
         TEST_CASE(calculations);
+        TEST_CASE(comparisons);
 
         // Simplify goto..
         TEST_CASE(goto1);
@@ -302,6 +310,8 @@ private:
         TEST_CASE(simplifyTypedefFunction7);
         TEST_CASE(simplifyTypedefFunction8);
 
+        TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
+
         TEST_CASE(simplifyOperator1);
 
         TEST_CASE(reverseArraySyntax)
@@ -358,6 +368,8 @@ private:
         TEST_CASE(enum34); // ticket #4141 (division by zero)
         TEST_CASE(enum35); // ticket #3953 (avoid simplification of type)
         TEST_CASE(enum36); // ticket #4378
+        TEST_CASE(enum37); // ticket #4280 (shadow variable)
+        TEST_CASE(enum38); // ticket #4463 (when throwing enum id, don't warn about shadow variable)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -485,7 +497,7 @@ private:
     }
 
     void simplifyTokenList1() {
-        // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAssign..
+        // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAndWhileAssign..
         ASSERT_EQUALS("; x = f ( ) ; while ( x == -1 ) { x = f ( ) ; }",
                       tok(";while((x=f())==-1 && errno==EINTR){}",true));
     }
@@ -1645,7 +1657,11 @@ private:
 
     }
 
-
+    void strlen2() {
+        // #4530 - make sure calculation with strlen is simplified
+        ASSERT_EQUALS("i = -4 ;",
+                      tok("i = (strlen(\"abcd\") - 8);"));
+    }
 
 
 
@@ -1892,6 +1908,7 @@ private:
                             "{\n"
                             "public:\n"
                             "    static AA<T> create(T* newObject);\n"
+                            "    static int size();\n"
                             "};\n"
                             "\n"
                             "class CC { public: CC(AA<BB>, int) {} };\n"
@@ -1904,7 +1921,9 @@ private:
                             "\n"
                             "XX::XX():\n"
                             "    y(AA<CC>::create(new CC(AA<BB>(), 0)))\n"
-                            "    {}\n";
+                            "    {}\n"
+                            "\n"
+                            "int yy[AA<CC>::size()];";
 
         // Just run it and check that there are not assertions.
         tok(code);
@@ -2212,15 +2231,30 @@ private:
     }
 
     void template33() {
-        // #3818 - inner templates in template instantiation not handled well
-        const char code[] = "template<class T> struct A { };\n"
-                            "template<class T> struct B { };\n"
-                            "template<class T> struct C { A<B<X<T> > > ab; };\n"
-                            "C<int> c;";
-        ASSERT_EQUALS("C<int> c ; "
-                      "struct C<int> { A<B<X<int>>> ab ; } "
-                      "struct B<X<int>> { } "  // <- redundant.. but nevermind
-                      "struct A<B<X<int>>> { }", tok(code));
+        {
+            // #3818 - inner templates in template instantiation not handled well
+            const char code[] = "template<class T> struct A { };\n"
+                                "template<class T> struct B { };\n"
+                                "template<class T> struct C { A<B<X<T> > > ab; };\n"
+                                "C<int> c;";
+            ASSERT_EQUALS("C<int> c ; "
+                          "struct C<int> { A<B<X<int>>> ab ; } "
+                          "struct B<X<int>> { } "  // <- redundant.. but nevermind
+                          "struct A<B<X<T>>> { } "  // <- redundant.. but nevermind
+                          "struct A<B<X<int>>> { }", tok(code));
+        }
+
+        {
+            // #4544
+            const char code[] = "struct A { };\n"
+                                "template<class T> struct B { };\n"
+                                "template<class T> struct C { };\n"
+                                "C< B<A> > c;";
+            ASSERT_EQUALS("struct A { } ; "
+                          "template < class T > struct B { } ; "  // <- redundant.. but nevermind
+                          "C<B<A>> c ; struct C<B<A>> { }",
+                          tok(code));
+        }
     }
 
     void template34() {
@@ -2241,9 +2275,53 @@ private:
         ASSERT_EQUALS("A<'x'> a ; class A<'x'> { }", tok(code));
     }
 
+    void template36() { // #4310 - Passing unknown template instantiation as template argument
+        const char code[] = "template <class T> struct X { T t; };\n"
+                            "template <class C> struct Y { Foo < X< Bar<C> > > _foo; };\n" // <- Bar is unknown
+                            "Y<int> bar;";
+        ASSERT_EQUALS("Y<int> bar ; "
+                      "struct Y<int> { Foo < X<Bar<int>> > _foo ; } "
+                      "struct X<Bar<int>> { Bar < int > t ; }",
+                      tok(code));
+    }
+
+    void template37() { // #4544 - A<class B> a;
+        const char code[] = "class A { };\n"
+                            "template<class T> class B {};\n"
+                            "B<class A> b1;\n"
+                            "B<A> b2;";
+        ASSERT_EQUALS("class A { } ; B<A> b1 ; B<A> b2 ; class B<A> { }",
+                      tok(code));
+    }
+
     void template_unhandled() {
         // An unhandled template usage should be simplified..
         ASSERT_EQUALS("x<int> ( ) ;", tok("x<int>();"));
+    }
+
+    void template38() { // #4832 - Crash on C++11 right angle brackets
+        const char code[] = "template <class T> class A {\n"
+                            "  T mT;\n"
+                            "public:\n"
+                            "  void foo() {}\n"
+                            "};\n"
+                            "\n"
+                            "int main() {\n"
+                            "    A<A<BLA>>   gna1;\n"
+                            "    A<BLA>      gna2;\n"
+                            "}\n";
+        tok(code); // Don't crash or freeze
+    }
+
+    void template39() { // #4742 - Used to freeze in 1.60
+        const char code[] = "template<typename T> struct vector {"
+                            "  operator T() const;"
+                            "};"
+                            "void f() {"
+                            "  vector<vector<int>> v;"
+                            "  const vector<int> vi = static_cast<vector<int>>(v);"
+                            "}";
+        tok(code);
     }
 
     void template_default_parameter() {
@@ -2457,7 +2535,7 @@ private:
     }
 
 
-    std::string simplifyIfAssign(const char code[]) {
+    std::string simplifyIfAndWhileAssign(const char code[]) {
         errout.str("");
         Settings settings;
         // tokenize..
@@ -2465,17 +2543,17 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyIfAssign();
+        tokenizer.simplifyIfAndWhileAssign();
 
         return tokenizer.tokens()->stringifyList(0, false);
     }
 
     void ifassign1() {
-        ASSERT_EQUALS("; a = b ; if ( a ) { ; }", simplifyIfAssign(";if(a=b);"));
-        ASSERT_EQUALS("; a = b ( ) ; if ( a ) { ; }", simplifyIfAssign(";if((a=b()));"));
-        ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAssign(";if(!(a=b()));"));
-        ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAssign(";if(!(a->x=b()));"));
-        ASSERT_EQUALS("A ( ) a = b ; if ( a ) { ; }", simplifyIfAssign("A() if(a=b);"));
+        ASSERT_EQUALS("; a = b ; if ( a ) { ; }", simplifyIfAndWhileAssign(";if(a=b);"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( a ) { ; }", simplifyIfAndWhileAssign(";if((a=b()));"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a=b()));"));
+        ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a->x=b()));"));
+        ASSERT_EQUALS("void f ( ) { A ( ) a = b ; if ( a ) { ; } }", simplifyIfAndWhileAssign("void f() { A() if(a=b); }"));
         ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( 0 <= a ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
         TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }",
                            "void foo ( A a ) { a . c = b ( ) ; if ( a . c >= 0 ) { ; } }",
@@ -2504,8 +2582,8 @@ private:
     }
 
     void whileAssign1() {
-        ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAssign(";while(a=b) { b = 0; }"));
-        ASSERT_EQUALS("; a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; }", simplifyIfAssign(";while(a.b=c) { c=0; }"));
+        ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAndWhileAssign(";while(a=b) { b = 0; }"));
+        ASSERT_EQUALS("; a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; }", simplifyIfAndWhileAssign(";while(a.b=c) { c=0; }"));
         ASSERT_EQUALS("struct hfs_bnode * node ; "
                       "struct hfs_btree * tree ; "
                       "node = tree . node_hash [ i ++ ] ; "
@@ -2543,12 +2621,25 @@ private:
                       "4: }\n", tokenizeDebugListing(code, true, "test.c"));
     }
 
+    void doWhileAssign() {
+        ASSERT_EQUALS("; do { a = b ; } while ( a ) ;", simplifyIfAndWhileAssign(";do { } while(a=b);"));
+        ASSERT_EQUALS("; do { a . a = 0 ; a . b = c ; } while ( a . b ) ;", simplifyIfAndWhileAssign(";do { a.a = 0; } while(a.b=c);"));
+        ASSERT_EQUALS("struct hfs_bnode * node ; "
+                      "struct hfs_btree * tree ; "
+                      "do { node = tree . node_hash [ i ++ ] ; } while ( node ) ;",
+                      tok("struct hfs_bnode *node;"
+                          "struct hfs_btree *tree;"
+                          "do { } while((node = tree->node_hash[i++]));"));
+        ASSERT_EQUALS("char * s ; do { s = new char [ 10 ] ; } while ( ! s ) ;",
+                      tok("char *s; do { } while (0 == (s=new char[10]));"));
+        // #4911
+        ASSERT_EQUALS("; do { current = f ( ) ; } while ( current ) ;", simplifyIfAndWhileAssign(";do { } while((current=f()) != NULL);"));
+    }
 
     void ifnot() {
         ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(0==x);", false));
         ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(x==0);", false));
         ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if(0==(a=b));", false));
-        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(x==0);", false));
         ASSERT_EQUALS("if ( ! a && b ( ) ) { ; }", tok("if( 0 == a && b() );", false));
         ASSERT_EQUALS("if ( b ( ) && ! a ) { ; }", tok("if( b() && 0 == a );", false));
         ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if((a=b)==0);", false));
@@ -2694,6 +2785,12 @@ private:
                                 "    char *ptrs[BUFSIZ], **pp;\n"
                                 "}\n";
             ASSERT_EQUALS("void f ( ) { char buf [ BUFSIZ ] ; char * * p ; char * ptrs [ BUFSIZ ] ; char * * pp ; }", tok(code));
+        }
+
+        {
+            // #4786 - don't replace , with ; in ".. : public B, C .." code
+            const char code[] = "template < class T = X > class A : public B , C { } ;";
+            ASSERT_EQUALS(code, tok(code));
         }
     }
 
@@ -2958,6 +3055,12 @@ private:
         ASSERT_EQUALS("( 4 )", tok("(1 * 2 / 1 * 2)")); // #3722
     }
 
+    void comparisons() {
+        ASSERT_EQUALS("( 1 )", tok("( 1 < 2 )"));
+        ASSERT_EQUALS("( x )", tok("( x && 1 < 2 )"));
+        ASSERT_EQUALS("( 5 )", tok("( 1 < 2 && 3 < 4 ? 5 : 6 )"));
+        ASSERT_EQUALS("( 6 )", tok("( 1 > 2 && 3 > 4 ? 5 : 6 )"));
+    }
 
     void goto1() {
         {
@@ -6488,6 +6591,15 @@ private:
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (debug) Function::addArguments found argument 'int' with varid 0.\n", errout.str());  // make sure that there is no internal error
     }
 
+    void simplifyTypedefShadow() { // shadow variable (#4445)
+        const char code[] = "typedef struct { int x; } xyz;;\n"
+                            "void f(){\n"
+                            "    int abc, xyz;\n" // <- shadow variable
+                            "}\n";
+        ASSERT_EQUALS("struct xyz { int x ; } ; void f ( ) { int abc ; int xyz ; }",
+                      tok(code,false));
+    }
+
     void simplifyOperator1() {
         // #3237 - error merging namespaces with operators
         const char code[] = "class c {\n"
@@ -7187,7 +7299,21 @@ private:
                             "    x+=1;\n"
                             "}\n";
         checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
+                      "[test.cpp:6] -> [test.cpp:1]: (style) Function argument 'x' hides enumerator with same name\n",
+                      errout.str());
+
+        // avoid false positive: in other scope
+        const char code2[] = "class C1 { enum en { x = 0 }; };\n"
+                             "class C2 { bool x; };\n";
+        checkSimplifyEnum(code2);
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid false positive: inner if-scope
+        const char code3[] = "enum en { x = 0 };\n"
+                             "void f() { if (aa) ; else if (bb==x) df; }\n";
+        checkSimplifyEnum(code3);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enum23() { // ticket #2804
@@ -7287,6 +7413,30 @@ private:
     void enum36() {  // #4378
         const char code[] = "struct X { enum Y { a, b }; X(Y) { Y y = (Y)1; } };";
         ASSERT_EQUALS("struct X { X ( int ) { int y ; y = ( int ) 1 ; } } ;", checkSimplifyEnum(code));
+    }
+
+    void enum37() {  // #4280 - shadow variables
+        const char code1[] = "enum { a, b }; void f(int a) { return a + 1; }";
+        ASSERT_EQUALS("void f ( int a ) { return a + 1 ; }", checkSimplifyEnum(code1));
+
+        const char code2[] = "enum { a, b }; void f() { int a; }";
+        ASSERT_EQUALS("void f ( ) { int a ; }", checkSimplifyEnum(code2));
+
+        const char code3[] = "enum { a, b }; void f() { int *a=do_something(); }";
+        ASSERT_EQUALS("void f ( ) { int * a ; a = do_something ( ) ; }", checkSimplifyEnum(code3));
+
+        const char code4[] = "enum { a, b }; void f() { int &a=x; }";
+        ASSERT_EQUALS("void f ( ) { int & a = x ; }", checkSimplifyEnum(code4));
+
+        // #4857 - not shadow variable
+        checkSimplifyEnum("enum { a,b }; void f() { if (x) { } else if ( x & a ) {} }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum38() { // #4463
+        const char code[] = "enum { a,b }; void f() { throw a; }";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
@@ -8064,6 +8214,19 @@ private:
         ASSERT_EQUALS("'w' ;", tok("\"hello\nworld\"[6] ;"));
         ASSERT_EQUALS("\"hello\" [ 7 ] ;", tok("\"hello\"[7] ;"));
         ASSERT_EQUALS("\"hello\" [ -1 ] ;", tok("\"hello\"[-1] ;"));
+    }
+
+    void test_4881() {
+        const char code[] = "int evallex() {\n"
+                            "  int c, t;\n"
+                            "again:\n"
+                            "   do {\n"
+                            "      if ((c = macroid(c)) == EOF_CHAR || c == '\n') {\n"
+                            "      }\n"
+                            "   } while ((t = type[c]) == LET && catenate());\n"
+                            "}\n";
+        ASSERT_EQUALS("int evallex ( ) { int c ; int t ; do { c = macroid ( c ) ; if ( c == EOF_CHAR || c == '\n' ) { } t = type [ c ] ; } while ( t == LET && catenate ( ) ) ; }",
+                      tok(code, true));
     }
 };
 

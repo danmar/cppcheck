@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class Test64BitPortability : public TestFixture {
 public:
-    Test64BitPortability() : TestFixture("Test64BitPortability")
-    { }
+    Test64BitPortability() : TestFixture("Test64BitPortability") {
+    }
 
 private:
 

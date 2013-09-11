@@ -12,6 +12,9 @@
 # cppcheck --xml-version=2 --errorlist > errlist.xml
 # xmllint --noout errlist.xml
 #
+# Update AUTHORS using output from:
+#   git log --format='%aN' | sort -u
+#
 # Update version numbers in:
 # - cli/main.cpp
 # - lib/cppcheck.cpp

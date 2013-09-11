@@ -26,8 +26,8 @@ extern std::ostringstream errout;
 
 class TestCharVar : public TestFixture {
 public:
-    TestCharVar() : TestFixture("TestCharVar")
-    { }
+    TestCharVar() : TestFixture("TestCharVar") {
+    }
 
 private:
 

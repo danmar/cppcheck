@@ -425,13 +425,13 @@ void XMLUtil::ToStr( bool v, char* buffer, int bufferSize )
 
 void XMLUtil::ToStr( float v, char* buffer, int bufferSize )
 {
-    TIXML_SNPRINTF( buffer, bufferSize, "%g", v );
+    TIXML_SNPRINTF( buffer, bufferSize, "%f", v );
 }
 
 
 void XMLUtil::ToStr( double v, char* buffer, int bufferSize )
 {
-    TIXML_SNPRINTF( buffer, bufferSize, "%g", v );
+    TIXML_SNPRINTF( buffer, bufferSize, "%f", v );
 }
 
 
@@ -499,8 +499,8 @@ char* XMLDocument::Identify( char* p, XMLNode** node )
     // What is this thing?
     // - Elements start with a letter or underscore, but xml is reserved.
     // - Comments: <!--
-    // - Decleration: <?
-    // - Everthing else is unknown to tinyxml.
+    // - Declaration: <?
+    // - Everything else is unknown to tinyxml.
     //
 
     static const char* xmlHeader		= { "<?" };
@@ -581,7 +581,8 @@ XMLNode::XMLNode( XMLDocument* doc ) :
     _document( doc ),
     _parent( 0 ),
     _firstChild( 0 ), _lastChild( 0 ),
-    _prev( 0 ), _next( 0 )
+    _prev( 0 ), _next( 0 ),
+    _memPool( 0 )
 {
 }
 
@@ -1608,6 +1609,7 @@ XMLError XMLDocument::LoadFile( FILE* fp )
     fseek( fp, 0, SEEK_SET );
 
     if ( size == 0 ) {
+        SetError( XML_ERROR_EMPTY_DOCUMENT, 0, 0 );
         return _errorID;
     }
 
@@ -1662,6 +1664,7 @@ XMLError XMLDocument::SaveFile( FILE* fp, bool compact )
 
 XMLError XMLDocument::Parse( const char* p, size_t len )
 {
+	const char* start = p;
     Clear();
 
     if ( !p || !*p ) {
@@ -1682,12 +1685,13 @@ XMLError XMLDocument::Parse( const char* p, size_t len )
         return _errorID;
     }
 
-    ParseDeep( _charBuffer, 0 );
+    ptrdiff_t delta = p - start;	// skip initial whitespace, BOM, etc.
+    ParseDeep( _charBuffer+delta, 0 );
     return _errorID;
 }
 
 
-void XMLDocument::Print( XMLPrinter* streamer )
+void XMLDocument::Print( XMLPrinter* streamer ) const
 {
     XMLPrinter stdStreamer( stdout );
     if ( !streamer ) {
@@ -1725,11 +1729,11 @@ void XMLDocument::PrintError() const
 }
 
 
-XMLPrinter::XMLPrinter( FILE* file, bool compact ) :
+XMLPrinter::XMLPrinter( FILE* file, bool compact, int depth ) :
     _elementJustOpened( false ),
     _firstElement( true ),
     _fp( file ),
-    _depth( 0 ),
+    _depth( depth ),
     _textDepth( -1 ),
     _processEntities( true ),
     _compactMode( compact )
@@ -1835,8 +1839,8 @@ void XMLPrinter::PrintString( const char* p, bool restricted )
 
 void XMLPrinter::PushHeader( bool writeBOM, bool writeDec )
 {
-    static const unsigned char bom[] = { TIXML_UTF_LEAD_0, TIXML_UTF_LEAD_1, TIXML_UTF_LEAD_2, 0 };
     if ( writeBOM ) {
+        static const unsigned char bom[] = { TIXML_UTF_LEAD_0, TIXML_UTF_LEAD_1, TIXML_UTF_LEAD_2, 0 };
         Print( "%s", bom );
     }
     if ( writeDec ) {
@@ -1854,6 +1858,8 @@ void XMLPrinter::OpenElement( const char* name )
 
     if ( _textDepth < 0 && !_firstElement && !_compactMode ) {
         Print( "\n" );
+    }
+    if ( !_compactMode ) {
         PrintSpace( _depth );
     }
 

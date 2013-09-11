@@ -3,11 +3,9 @@ compiler:
   - gcc
   - clang
 script:
-  - make test
-  - $CXX -o cppcheck -O2 cli/*.cpp lib/*.cpp -Ilib
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch -q cli gui lib -igui/test
   - mkdir build
-  - make test SRCDIR=build
+  - make test SRCDIR=build VERIFY=1
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch -q cli gui lib -igui/test
 notifications:
   irc:
     channels:

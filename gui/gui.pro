@@ -5,6 +5,12 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
+
+# In Qt 5 widgets are in separate module
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT += widgets
+}
+
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
     DEFINES += CPPCHECKLIB_IMPORT

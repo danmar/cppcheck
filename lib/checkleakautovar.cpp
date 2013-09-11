@@ -33,6 +33,9 @@
 
 //---------------------------------------------------------------------------
 
+const int DEALLOC = -1;
+const int NOALLOC = 0;
+
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckLeakAutoVar instance;
@@ -43,7 +46,7 @@ namespace {
 void VarInfo::print()
 {
     std::cout << "size=" << alloctype.size() << std::endl;
-    std::map<unsigned int, std::string>::const_iterator it;
+    std::map<unsigned int, int>::const_iterator it;
     for (it = alloctype.begin(); it != alloctype.end(); ++it) {
         std::string strusage;
         std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(it->first);
@@ -58,39 +61,32 @@ void VarInfo::print()
 void VarInfo::possibleUsageAll(const std::string &functionName)
 {
     possibleUsage.clear();
-    std::map<unsigned int, std::string>::const_iterator it;
+    std::map<unsigned int, int>::const_iterator it;
     for (it = alloctype.begin(); it != alloctype.end(); ++it)
         possibleUsage[it->first] = functionName;
 }
 
 
-void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, const std::string &type)
+void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, int type)
 {
-    const Standards standards;
-    CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, standards);
-    if (type == "fopen")
+    const CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, _settings);
+    if (_settings->library.isresource(type))
         checkmemleak.resourceLeakError(tok, varname);
     else
         checkmemleak.memleakError(tok, varname);
-    //reportError(tok, Severity::error, "newleak", "New memory leak: " + varname);
 }
 
 void CheckLeakAutoVar::mismatchError(const Token *tok, const std::string &varname)
 {
-    const Standards standards;
-    CheckMemoryLeak c(_tokenizer, _errorLogger, standards);
-    std::list<const Token *> callstack;
-    callstack.push_back(tok);
+    const CheckMemoryLeak c(_tokenizer, _errorLogger, _settings);
+    std::list<const Token *> callstack(1, tok);
     c.mismatchAllocDealloc(callstack, varname);
-    //reportError(tok, Severity::error, "newmismatch", "New mismatching allocation and deallocation: " + varname);
 }
 
 void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varname)
 {
-    const Standards standards;
-    CheckMemoryLeak c(_tokenizer, _errorLogger, standards);
+    const CheckMemoryLeak c(_tokenizer, _errorLogger, _settings);
     c.deallocuseError(tok, varname);
-    //reportError(tok, Severity::error, "newdeallocuse", "Using deallocated pointer " + varname);
 }
 
 void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &varname)
@@ -100,86 +96,11 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &v
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (((!cfgalloc.empty() || !cfgdealloc.empty()) && _settings->isEnabled("information")) || _settings->experimental) {
+    if (_settings->checkLibrary && _settings->isEnabled("information")) {
         reportError(tok,
                     Severity::information,
-                    "leakconfiguration",
-                    functionName + " configuration is needed to establish if there is a leak or not");
-    }
-}
-
-void CheckLeakAutoVar::parseConfigurationFile(const std::string &filename)
-{
-    std::ifstream fin(filename.c_str());
-    if (!fin.is_open())
-        return;
-
-    std::string line;
-    while (std::getline(fin,line)) {
-        if (line.compare(0,4,"MEM ",0,4) == 0) {
-            std::string f1;
-            enum {ALLOC, DEALLOC} type = ALLOC;
-            std::string::size_type pos1 = line.find_first_not_of(" ", 4U);
-            while (pos1 < line.size()) {
-                const std::string::size_type pos2 = line.find(" ", pos1);
-                std::string f;
-                if (pos2 == std::string::npos)
-                    f = line.substr(pos1);
-                else
-                    f = line.substr(pos1, pos2-pos1);
-                if (f1.empty())
-                    f1 = f;
-                if (f == ":")
-                    type = DEALLOC;
-                else if (type == ALLOC)
-                    cfgalloc[f] = f1;
-                else if (type == DEALLOC)
-                    cfgdealloc[f] = f1;
-                pos1 = line.find_first_not_of(" ", pos2);
-            }
-        }
-
-        else if (line.compare(0,7,"IGNORE ",0,7) == 0) {
-            std::string::size_type pos1 = line.find_first_not_of(" ", 7U);
-            while (pos1 < line.size()) {
-                std::string::size_type pos2 = line.find_first_of(" ", pos1);
-                std::string functionName;
-                if (pos2 == std::string::npos)
-                    functionName = line.substr(pos1);
-                else
-                    functionName = line.substr(pos1, pos2-pos1);
-                cfgignore.insert(functionName);
-                pos1 = line.find_first_not_of(" ", pos2);
-            }
-        }
-
-        else if (line.compare(0,4,"USE ",0,4) == 0) {
-            std::string::size_type pos1 = line.find_first_not_of(" ", 4U);
-            while (pos1 < line.size()) {
-                std::string::size_type pos2 = line.find_first_of(" ", pos1);
-                std::string functionName;
-                if (pos2 == std::string::npos)
-                    functionName = line.substr(pos1);
-                else
-                    functionName = line.substr(pos1, pos2-pos1);
-                cfguse.insert(functionName);
-                pos1 = line.find_first_not_of(" ", pos2);
-            }
-        }
-
-        else if (line.compare(0,9,"NORETURN ",0,9) == 0) {
-            std::string::size_type pos1 = line.find_first_not_of(" ", 9U);
-            while (pos1 < line.size()) {
-                std::string::size_type pos2 = line.find_first_of(" ", pos1);
-                std::string functionName;
-                if (pos2 == std::string::npos)
-                    functionName = line.substr(pos1);
-                else
-                    functionName = line.substr(pos1, pos2-pos1);
-                cfgnoreturn.insert(functionName);
-                pos1 = line.find_first_not_of(" ", pos2);
-            }
-        }
+                    "checkLibraryUseIgnore",
+                    "--check-library: Function " + functionName + "() should have <use>/<ignore> configuration");
     }
 }
 
@@ -195,14 +116,14 @@ void CheckLeakAutoVar::check()
         VarInfo varInfo;
 
         // Local variables that are known to be non-zero.
-        const std::set<unsigned int> notzero;
+        static const std::set<unsigned int> notzero;
 
         checkScope(scope->classStart, &varInfo, notzero);
 
         varInfo.conditionalAlloc.clear();
 
         // Clear reference arguments from varInfo..
-        std::map<unsigned int, std::string>::iterator it = varInfo.alloctype.begin();
+        std::map<unsigned int, int>::iterator it = varInfo.alloctype.begin();
         while (it != varInfo.alloctype.end()) {
             const Variable *var = symbolDatabase->getVariableFromVarId(it->first);
             if (!var ||
@@ -221,29 +142,18 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
                                   std::set<unsigned int> notzero)
 {
-    std::map<unsigned int, std::string> &alloctype = varInfo->alloctype;
+    std::map<unsigned int, int> &alloctype = varInfo->alloctype;
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
     const std::set<unsigned int> conditionalAlloc(varInfo->conditionalAlloc);
-
-    // Allocation functions. key = function name, value = allocation type
-    std::map<std::string, std::string> allocFunctions(cfgalloc);
-    allocFunctions["malloc"] = "malloc";
-    allocFunctions["strdup"] = "malloc";
-    allocFunctions["fopen"] = "fopen";
-
-    // Deallocation functions. key = function name, value = allocation type
-    std::map<std::string, std::string> deallocFunctions(cfgdealloc);
-    deallocFunctions["free"] = "malloc";
-    deallocFunctions["fclose"] = "fopen";
 
     // Parse all tokens
     const Token * const endToken = startToken->link();
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
         // Deallocation and then dereferencing pointer..
         if (tok->varId() > 0) {
-            const std::map<unsigned int, std::string>::iterator var = alloctype.find(tok->varId());
+            const std::map<unsigned int, int>::iterator var = alloctype.find(tok->varId());
             if (var != alloctype.end()) {
-                if (var->second == "dealloc" && !Token::Match(tok->previous(), "[;{},=] %var% =")) {
+                if (var->second == DEALLOC && !Token::Match(tok->previous(), "[;{},=] %var% =")) {
                     deallocUseError(tok, tok->str());
                 } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                     varInfo->erase(tok->varId());
@@ -256,7 +166,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         if (tok->str() == "(" && tok->previous()->isName()) {
-            functionCall(tok->previous(), varInfo, "");
+            functionCall(tok->previous(), varInfo, NOALLOC);
             tok = tok->link();
             continue;
         }
@@ -322,9 +232,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // allocation?
             if (Token::Match(tok->tokAt(2), "%type% (")) {
-                const std::map<std::string, std::string>::const_iterator it = allocFunctions.find(tok->strAt(2));
-                if (it != allocFunctions.end()) {
-                    alloctype[tok->varId()] = it->second;
+                int i = _settings->library.alloc(tok->strAt(2));
+                if (i > 0) {
+                    alloctype[tok->varId()] = i;
                 }
             }
 
@@ -345,15 +255,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (innerTok->str() == ")")
                     break;
                 if (innerTok->str() == "(" && innerTok->previous()->isName()) {
-                    std::string dealloc;
-                    {
-                        const std::map<std::string, std::string>::iterator func = deallocFunctions.find(tok->str());
-                        if (func != deallocFunctions.end()) {
-                            dealloc = func->second;
-                        }
-                    }
-
-                    functionCall(innerTok->previous(), varInfo, dealloc);
+                    const int deallocId = _settings->library.dealloc(tok->str());
+                    functionCall(innerTok->previous(), varInfo, deallocId);
                     innerTok = innerTok->link();
                 }
             }
@@ -386,7 +289,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 old.swap(*varInfo);
 
                 // Conditional allocation in varInfo1
-                std::map<unsigned int, std::string>::const_iterator it;
+                std::map<unsigned int, int>::const_iterator it;
                 for (it = varInfo1.alloctype.begin(); it != varInfo1.alloctype.end(); ++it) {
                     if (varInfo2.alloctype.find(it->first) == varInfo2.alloctype.end() &&
                         old.alloctype.find(it->first) == old.alloctype.end()) {
@@ -404,13 +307,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
                 // Conditional allocation/deallocation
                 for (it = varInfo1.alloctype.begin(); it != varInfo1.alloctype.end(); ++it) {
-                    if (it->second == "dealloc" && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
+                    if (it->second == DEALLOC && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
                         varInfo->conditionalAlloc.erase(it->first);
                         varInfo2.erase(it->first);
                     }
                 }
                 for (it = varInfo2.alloctype.begin(); it != varInfo2.alloctype.end(); ++it) {
-                    if (it->second == "dealloc" && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
+                    if (it->second == DEALLOC && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
                         varInfo->conditionalAlloc.erase(it->first);
                         varInfo1.erase(it->first);
                     }
@@ -432,24 +335,18 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // Function call..
         else if (Token::Match(tok, "%type% (") && tok->str() != "return") {
-            std::string dealloc;
-            {
-                const std::map<std::string, std::string>::iterator func = deallocFunctions.find(tok->str());
-                if (func != deallocFunctions.end()) {
-                    dealloc = func->second;
-                }
-            }
+            const int dealloc = _settings->library.dealloc(tok->str());
 
             functionCall(tok, varInfo, dealloc);
 
             tok = tok->next()->link();
 
             // Handle scopes that might be noreturn
-            if (dealloc.empty() && Token::simpleMatch(tok, ") ; }")) {
+            if (dealloc == NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 const std::string &functionName(tok->link()->previous()->str());
                 bool unknown = false;
-                if (cfgignore.find(functionName) == cfgignore.end() &&
-                    cfguse.find(functionName) == cfguse.end() &&
+                if (_settings->library.leakignore.find(functionName) == _settings->library.leakignore.end() &&
+                    _settings->library.use.find(functionName) == _settings->library.use.end() &&
                     _tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (unknown) {
                         //const std::string &functionName(tok->link()->previous()->str());
@@ -474,6 +371,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             varInfo->clear();
         }
 
+        // continue/break
+        else if (Token::Match(tok, "continue|break ;")) {
+            varInfo->clear();
+        }
+
         // throw
         // TODO: if the execution leave the function then treat it as return
         else if (tok->str() == "throw") {
@@ -482,14 +384,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
     }
 }
 
-void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const std::string &dealloc)
+void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const int dealloc)
 {
-    std::map<unsigned int, std::string> &alloctype = varInfo->alloctype;
+    std::map<unsigned int, int> &alloctype = varInfo->alloctype;
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
 
     // Ignore function call?
-    const bool ignore = bool(cfgignore.find(tok->str()) != cfgignore.end());
-    //const bool use = bool(cfguse.find(tok->str()) != cfguse.end());
+    const bool ignore = bool(_settings->library.leakignore.find(tok->str()) != _settings->library.leakignore.end());
 
     if (ignore)
         return;
@@ -503,14 +404,14 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
                 arg = arg->next();
 
             // Is variable allocated?
-            const std::map<unsigned int,std::string>::iterator var = alloctype.find(arg->varId());
+            const std::map<unsigned int,int>::iterator var = alloctype.find(arg->varId());
             if (var != alloctype.end()) {
-                if (dealloc.empty()) {
+                if (dealloc == NOALLOC) {
                     // possible usage
                     possibleUsage[arg->varId()] = tok->str();
-                    if (var->second == "dealloc" && arg->previous()->str() == "&")
+                    if (var->second == DEALLOC && arg->previous()->str() == "&")
                         varInfo->erase(arg->varId());
-                } else if (var->second == "dealloc") {
+                } else if (var->second == DEALLOC) {
                     CheckOther checkOther(_tokenizer, _settings, _errorLogger);
                     checkOther.doubleFreeError(tok, arg->str());
                 } else if (var->second != dealloc) {
@@ -519,10 +420,10 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
                     varInfo->erase(arg->varId());
                 } else {
                     // deallocation
-                    var->second = "dealloc";
+                    var->second = DEALLOC;
                 }
-            } else if (!dealloc.empty()) {
-                alloctype[arg->varId()] = "dealloc";
+            } else if (dealloc != NOALLOC) {
+                alloctype[arg->varId()] = DEALLOC;
             }
         } else if (Token::Match(arg, "%var% (")) {
             functionCall(arg, varInfo, dealloc);
@@ -534,11 +435,11 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const st
 void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
                                        const VarInfo &varInfo)
 {
-    const std::map<unsigned int, std::string> &alloctype = varInfo.alloctype;
+    const std::map<unsigned int, int> &alloctype = varInfo.alloctype;
     const std::map<unsigned int, std::string> &possibleUsage = varInfo.possibleUsage;
 
-    const std::map<unsigned int,std::string>::const_iterator var = alloctype.find(vartok->varId());
-    if (var != alloctype.end() && var->second != "dealloc") {
+    const std::map<unsigned int,int>::const_iterator var = alloctype.find(vartok->varId());
+    if (var != alloctype.end() && var->second != DEALLOC) {
         const std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(vartok->varId());
         if (use == possibleUsage.end()) {
             leakError(vartok, vartok->str(), var->second);
@@ -550,13 +451,13 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
 
 void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
 {
-    const std::map<unsigned int, std::string> &alloctype = varInfo.alloctype;
+    const std::map<unsigned int, int> &alloctype = varInfo.alloctype;
     const std::map<unsigned int, std::string> &possibleUsage = varInfo.possibleUsage;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (std::map<unsigned int, std::string>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
+    for (std::map<unsigned int, int>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
         // don't warn if variable is conditionally allocated
-        if (it->second != "dealloc" && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
+        if (it->second != DEALLOC && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
             continue;
 
         // don't warn if there is a reference of the variable
@@ -581,10 +482,10 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
             }
 
             // return deallocated pointer
-            if (used && it->second == "dealloc")
+            if (used && it->second == DEALLOC)
                 deallocReturnError(tok, var->name());
 
-            else if (!used && it->second != "dealloc") {
+            else if (!used && it->second != DEALLOC) {
 
                 const std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(varid);
                 if (use == possibleUsage.end()) {

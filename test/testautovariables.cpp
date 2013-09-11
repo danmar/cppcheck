@@ -27,14 +27,14 @@ extern std::ostringstream errout;
 
 class TestAutoVariables : public TestFixture {
 public:
-    TestAutoVariables() : TestFixture("TestAutoVariables")
-    { }
+    TestAutoVariables() : TestFixture("TestAutoVariables") {
+    }
 
 private:
 
 
 
-    void check(const char code[], bool inconclusive=false) {
+    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true) {
         // Clear the error buffer..
         errout.str("");
 
@@ -50,11 +50,20 @@ private:
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();
 
-        tokenizer.simplifyTokenList();
+        if (runSimpleChecks) {
+            const std::string str1(tokenizer.tokens()->stringifyList(0,true));
+            tokenizer.simplifyTokenList();
+            const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+            if (str1 != str2)
+                warn(("Unsimplified code in test case. It looks like this test "
+                      "should either be cleaned up or moved to TestTokenizer or "
+                      "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
 
-        // Check auto variables
-        checkAutoVariables.autoVariables();
-        checkAutoVariables.returnPointerToLocalArray();
+
+            // Check auto variables
+            checkAutoVariables.autoVariables();
+            checkAutoVariables.returnPointerToLocalArray();
+        }
     }
 
     void run() {
@@ -68,6 +77,7 @@ private:
         TEST_CASE(testautovar8);
         TEST_CASE(testautovar9);
         TEST_CASE(testautovar10); // ticket #2930 - void f(char *p) { p = '\0'; }
+        TEST_CASE(testautovar11); // ticket #4641 - fp, assign local struct member address to function parameter
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -222,8 +232,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void foo(std::string& s) {\n"
-              "    char* p = foo;\n"
-              "    s = &p[0];\n"
+              "    s = foo;\n"
               "}", false);
         ASSERT_EQUALS("", errout.str());
     }
@@ -295,6 +304,26 @@ private:
               "    p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar11() { // #4641 - fp, assign local struct member address to function parameter
+        check("struct A {\n"
+              "    char *data[10];\n"
+              "};\n"
+              "void foo(char** p) {\n"
+              "    struct A a = bar();\n"
+              "    *p = &a.data[0];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    char data[10];\n"
+              "};\n"
+              "void foo(char** p) {\n"
+              "    struct A a = bar();\n"
+              "    *p = &a.data[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_array1() {
@@ -382,7 +411,7 @@ private:
               "    char tmp2[256];\n"
               "    delete tmp2;\n"
               "    char tmp3[256];\n"
-              "    delete (tmp3);\n"
+              "    delete tmp3;\n"
               "    char tmp4[256];\n"
               "    delete[] (tmp4);\n"
               "    char tmp5[256];\n"
@@ -659,7 +688,7 @@ private:
               "    double ret = getValue();\n"
               "    rd = ret;\n"
               "    return rd;\n"
-              "}");
+              "}", false, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -667,8 +696,7 @@ private:
     void returnReference4() {
         check("double a;\n"
               "double & f() {\n"
-              "    double & ref = a;\n"
-              "    return ref;\n"
+              "    return a;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

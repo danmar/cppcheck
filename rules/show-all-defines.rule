@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<rule version="1.0">
+    <tokenlist>define</tokenlist>
+    <pattern>.*</pattern>
+    <message>
+        <id>showalldefines</id>
+        <severity>information</severity>
+        <summary/>
+    </message>
+</rule>
+

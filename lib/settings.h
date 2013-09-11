@@ -16,14 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//---------------------------------------------------------------------------
 #ifndef settingsH
 #define settingsH
+//---------------------------------------------------------------------------
 
 #include <list>
 #include <vector>
 #include <string>
 #include <set>
 #include "config.h"
+#include "library.h"
 #include "suppressions.h"
 #include "standards.h"
 
@@ -174,14 +177,19 @@ public:
     /** @brief --report-progress */
     bool reportProgress;
 
+    /** Library (--library) */
+    Library library;
+
     /** Rule */
     class CPPCHECKLIB Rule {
     public:
         Rule()
-            : id("rule") // default id
+            : tokenlist("simple") // use simple tokenlist
+            , id("rule")          // default id
             , severity("style") { // default severity
         }
 
+        std::string tokenlist;
         std::string pattern;
         std::string id;
         std::string severity;
@@ -195,6 +203,9 @@ public:
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
+
+    /** Check for incomplete info in library files? */
+    bool checkLibrary;
 
     /** Struct contains standards settings */
     Standards standards;
@@ -232,5 +243,5 @@ public:
 };
 
 /// @}
-
-#endif // SETTINGS_H
+//---------------------------------------------------------------------------
+#endif // settingsH

@@ -38,13 +38,13 @@ class SymbolDatabase;
 class CPPCHECKLIB CheckNullPointer : public Check {
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
-    CheckNullPointer() : Check(myName())
-    { }
+    CheckNullPointer() : Check(myName()) {
+    }
 
     /** @brief This constructor is used when running checks. */
     CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    { }
+        : Check(myName(), tokenizer, settings, errorLogger) {
+    }
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
@@ -63,11 +63,13 @@ public:
      * @brief parse a function call and extract information about variable usage
      * @param tok first token
      * @param var variables that the function read / write.
+     * @param library --library files data
      * @param value 0 => invalid with null pointers as parameter.
      *              non-zero => invalid with uninitialized data.
      */
     static void parseFunctionCall(const Token &tok,
                                   std::list<const Token *> &var,
+                                  const Library *library,
                                   unsigned char value);
 
     /**
@@ -153,6 +155,11 @@ private:
     void nullPointerDefaultArgument();
 
     /**
+     * @brief Removes any variable that may be assigned from pointerArgs.
+     */
+    static void removeAssignedVarFromSet(const Token* tok, std::set<unsigned int>& pointerArgs);
+
+    /**
      * @brief Investigate if function call can make pointer null. If
      * the pointer is passed by value it can't be made a null pointer.
      */
@@ -160,4 +167,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checknullpointerH

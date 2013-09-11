@@ -17,14 +17,13 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef CheckIOH
-#define CheckIOH
+#ifndef checkioH
+#define checkioH
 //---------------------------------------------------------------------------
 
 #include "check.h"
 #include "config.h"
-
-class Variable;
+#include "symboldatabase.h"
 
 /// @addtogroup Checks
 /// @{
@@ -33,13 +32,13 @@ class Variable;
 class CPPCHECKLIB CheckIO : public Check {
 public:
     /** @brief This constructor is used when registering CheckIO */
-    CheckIO() : Check(myName())
-    { }
+    CheckIO() : Check(myName()) {
+    }
 
     /** @brief This constructor is used when running checks. */
     CheckIO(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    { }
+        : Check(myName(), tokenizer, settings, errorLogger) {
+    }
 
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
@@ -70,6 +69,30 @@ public:
     void checkWrongPrintfScanfArguments();
 
 private:
+    class ArgumentInfo {
+    public:
+        ArgumentInfo(const Token *arg, const Settings *settings);
+        ~ArgumentInfo() {
+            delete tempToken;
+        }
+        bool isArrayOrPointer() const;
+        bool isComplexType() const;
+        bool isKnownType() const;
+        bool isStdVectorOrString();
+        bool isStdContainer(const Token *tok);
+
+        const Variable *variableInfo;
+        const Token *typeToken;
+        const Function *functionInfo;
+        bool element;
+        bool _template;
+        Token *tempToken;
+
+    private:
+        ArgumentInfo(const ArgumentInfo &); // not implemented
+        ArgumentInfo operator = (const ArgumentInfo &); // not implemented
+    };
+
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
@@ -82,16 +105,19 @@ private:
                                         const std::string &function,
                                         unsigned int numFormat,
                                         unsigned int numFunction);
+    void wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
+            unsigned int index, unsigned int numFunction);
     void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
     void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, char c);
-    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, char c);
-    void invalidLengthModifierError(const Token* tok, unsigned int numFormat, std::string& modifier);
+    void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
+    void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckIO c(0, settings, errorLogger);
@@ -107,12 +133,13 @@ private:
         c.invalidScanfArgTypeError(0, "scanf", 1);
         c.invalidPrintfArgTypeError_s(0, 1);
         c.invalidPrintfArgTypeError_n(0, 1);
-        c.invalidPrintfArgTypeError_p(0, 1);
-        c.invalidPrintfArgTypeError_int(0, 1, 'X');
-        c.invalidPrintfArgTypeError_uint(0, 1, 'u');
-        c.invalidPrintfArgTypeError_sint(0, 1, 'i');
-        c.invalidPrintfArgTypeError_float(0, 1, 'f');
+        c.invalidPrintfArgTypeError_p(0, 1, NULL);
+        c.invalidPrintfArgTypeError_int(0, 1, "X", NULL);
+        c.invalidPrintfArgTypeError_uint(0, 1, "u", NULL);
+        c.invalidPrintfArgTypeError_sint(0, 1, "i", NULL);
+        c.invalidPrintfArgTypeError_float(0, 1, "f", NULL);
         c.invalidScanfFormatWidthError(0, 10, 5, NULL);
+        c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
     }
 
     static std::string myName() {
@@ -133,4 +160,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkioH

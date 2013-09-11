@@ -27,8 +27,8 @@
 extern std::ostringstream errout;
 class TestToken : public TestFixture {
 public:
-    TestToken() : TestFixture("TestToken")
-    { }
+    TestToken() : TestFixture("TestToken") {
+    }
 
 private:
     std::vector<std::string> arithmeticalOps;
@@ -122,54 +122,54 @@ private:
 
     void multiCompare() const {
         // Test for found
-        Token *one = new Token(0);
-        one->str("one");
-        ASSERT_EQUALS(1, Token::multiCompare(one, "one|two", "one"));
+        Token one(0);
+        one.str("one");
+        ASSERT_EQUALS(1, Token::multiCompare(&one, "one|two", "one"));
 
-        Token *two = new Token(0);
-        two->str("two");
-        ASSERT_EQUALS(1, Token::multiCompare(two, "one|two", "two"));
-        ASSERT_EQUALS(1, Token::multiCompare(two, "verybig|two|", "two"));
+        Token two(0);
+        two.str("two");
+        ASSERT_EQUALS(1, Token::multiCompare(&two, "one|two", "two"));
+        ASSERT_EQUALS(1, Token::multiCompare(&two, "verybig|two|", "two"));
 
         // Test for empty string found
-        Token *notfound = new Token(0);
-        notfound->str("notfound");
-        ASSERT_EQUALS(0, Token::multiCompare(notfound, "|one|two", "notfound"));
-        ASSERT_EQUALS(0, Token::multiCompare(notfound, "one||two", "notfound"));
-        ASSERT_EQUALS(0, Token::multiCompare(notfound, "one|two|", "notfound"));
+        Token notfound(0);
+        notfound.str("notfound");
+        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "|one|two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one||two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one|two|", "notfound"));
 
         // Test for not found
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(notfound, "one|two", "notfound")));
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&notfound, "one|two", "notfound")));
 
-        Token *s = new Token(0);
-        s->str("s");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(s, "verybig|two", "s")));
+        Token s(0);
+        s.str("s");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&s, "verybig|two", "s")));
 
-        Token *ne = new Token(0);
-        ne->str("ne");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(ne, "one|two", "ne")));
+        Token ne(0);
+        ne.str("ne");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&ne, "one|two", "ne")));
 
-        Token *a = new Token(0);
-        a->str("a");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(a, "abc|def", "a")));
+        Token a(0);
+        a.str("a");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&a, "abc|def", "a")));
 
-        Token *abcd = new Token(0);
-        abcd->str("abcd");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(abcd, "abc|def", "abcd")));
+        Token abcd(0);
+        abcd.str("abcd");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&abcd, "abc|def", "abcd")));
 
-        Token *def = new Token(0);
-        def->str("default");
-        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(def, "abc|def", "default")));
+        Token def(0);
+        def.str("default");
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&def, "abc|def", "default")));
 
         // %op%
-        Token *plus = new Token(0);
-        plus->str("+");
-        ASSERT_EQUALS(1, Token::multiCompare(plus, "one|%op%", "+"));
-        ASSERT_EQUALS(1, Token::multiCompare(plus, "%op%|two", "+"));
-        Token *x = new Token(0);
-        x->str("x");
-        ASSERT_EQUALS(-1, Token::multiCompare(x, "one|%op%", "x"));
-        ASSERT_EQUALS(-1, Token::multiCompare(x, "%op%|two", "x"));
+        Token plus(0);
+        plus.str("+");
+        ASSERT_EQUALS(1, Token::multiCompare(&plus, "one|%op%", "+"));
+        ASSERT_EQUALS(1, Token::multiCompare(&plus, "%op%|two", "+"));
+        Token x(0);
+        x.str("x");
+        ASSERT_EQUALS(-1, Token::multiCompare(&x, "one|%op%", "x"));
+        ASSERT_EQUALS(-1, Token::multiCompare(&x, "%op%|two", "x"));
     }
 
     void multiCompare2() const { // #3294
@@ -279,12 +279,16 @@ private:
     void nextArgument() const {
         givenACodeSampleToTokenize example1("foo(1, 2, 3, 4);");
         ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
+        ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(4)->nextArgument(), "3 , 4"));
 
         givenACodeSampleToTokenize example2("foo();");
         ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == 0);
 
         givenACodeSampleToTokenize example3("foo(bar(a, b), 2, 3);");
         ASSERT_EQUALS(true, Token::simpleMatch(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
+
+        givenACodeSampleToTokenize example4("foo(x.i[1], \"\", 3);");
+        ASSERT_EQUALS(true, Token::simpleMatch(example4.tokens()->tokAt(2)->nextArgument(), "\"\" , 3"));
     }
 
     void eraseTokens() const {
@@ -828,18 +832,14 @@ private:
     void canFindMatchingBracketsNeedsOpen() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        const Token* t = 0;
-        bool found = var.tokens()->findClosingBracket(t);
-        ASSERT(! found);
-        ASSERT(! t);
+        const Token* t = var.tokens()->findClosingBracket();
+        ASSERT(t == NULL);
     }
 
     void canFindMatchingBracketsInnerPair() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        Token* t = 0;
-        bool found = var.tokens()->tokAt(7)->findClosingBracket(t);
-        ASSERT(found);
+        Token* t = const_cast<Token*>(var.tokens()->tokAt(7))->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(9) == t);
     }
@@ -847,20 +847,15 @@ private:
     void canFindMatchingBracketsOuterPair() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        const Token* t = 0;
-        bool found = var.tokens()->tokAt(3)->findClosingBracket(t);
-        ASSERT(found);
+        const Token* t = var.tokens()->tokAt(3)->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(10) == t);
-
     }
 
     void canFindMatchingBracketsWithTooManyClosing() const {
         givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
 
-        const Token* t = 0;
-        bool found = var.tokens()->next()->findClosingBracket(t);
-        ASSERT(found);
+        const Token* t = var.tokens()->next()->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(3) == t);
     }
@@ -868,14 +863,12 @@ private:
     void canFindMatchingBracketsWithTooManyOpening() const {
         givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
 
-        const Token* t = 0;
-        bool found = var.tokens()->next()->findClosingBracket(t);
-        ASSERT(found);
+        const Token* t = var.tokens()->next()->findClosingBracket();
+        ASSERT(t != NULL && t->str() == ">");
 
-        found = var.tokens()->tokAt(4)->findClosingBracket(t);
-        ASSERT(!found);
+        t = var.tokens()->tokAt(4)->findClosingBracket();
+        ASSERT(t != NULL && t->str() == ")");
     }
-
 };
 
 REGISTER_TEST(TestToken)

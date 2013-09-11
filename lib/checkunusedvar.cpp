@@ -57,7 +57,7 @@ public:
 
         /** variable is used.. set both read+write */
         void use(std::list<std::set<unsigned int> > & varReadInScope) {
-            varReadInScope.back().insert(_var->varId());
+            varReadInScope.back().insert(_var->declarationId());
             _read = true;
             _write = true;
         }
@@ -161,7 +161,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
             VariableUsage *temp = find(*i);
 
             if (temp)
-                temp->_aliases.erase(var1->_var->varId());
+                temp->_aliases.erase(var1->_var->declarationId());
         }
 
         // remove all aliases from var1
@@ -196,7 +196,7 @@ void Variables::clearAliases(unsigned int varid)
             VariableUsage *temp = find(*i);
 
             if (temp)
-                temp->_aliases.erase(usage->_var->varId());
+                temp->_aliases.erase(usage->_var->declarationId());
         }
 
         // remove all aliases from usage
@@ -226,9 +226,9 @@ void Variables::addVar(const Variable *var,
                        VariableType type,
                        bool write_)
 {
-    if (var->varId() > 0) {
-        _varAddedInScope.back().insert(var->varId());
-        _varUsage.insert(std::make_pair(var->varId(), VariableUsage(var, type, false, write_, false)));
+    if (var->declarationId() > 0) {
+        _varAddedInScope.back().insert(var->declarationId());
+        _varUsage.insert(std::make_pair(var->declarationId(), VariableUsage(var, type, false, write_, false)));
     }
 }
 
@@ -462,6 +462,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                         addressOf = true;
                         tok = tok->next();
                     }
+                } else if (Token::Match(tok, "%cop% %var%")) {
+                    variables.read(tok->next()->varId(), tok);
                 }
             }
 
@@ -625,9 +627,9 @@ static bool isPartOfClassStructUnion(const Token* tok)
         if (tok->str() == "}" || tok->str() == ")")
             tok = tok->link();
         else if (tok->str() == "(")
-            return(false);
+            return (false);
         else if (tok->str() == "{") {
-            return(tok->strAt(-1) == "struct" || tok->strAt(-2) == "struct" || tok->strAt(-1) == "class" || tok->strAt(-2) == "class" || tok->strAt(-1) == "union" || tok->strAt(-2) == "union");
+            return (tok->strAt(-1) == "struct" || tok->strAt(-2) == "struct" || tok->strAt(-1) == "class" || tok->strAt(-2) == "class" || tok->strAt(-1) == "union" || tok->strAt(-2) == "union");
         }
     }
     return false;
@@ -705,7 +707,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 }
             }
             if (i->isArray() && i->isClass()) // Array of class/struct members. Initialized by ctor.
-                variables.write(i->varId(), i->nameToken());
+                variables.write(i->declarationId(), i->nameToken());
             if (i->isArray() && Token::Match(i->nameToken(), "%var% [ %var% ]")) // Array index variable read.
                 variables.read(i->nameToken()->tokAt(2)->varId(), i->nameToken());
 
@@ -976,8 +978,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.read(tok->next()->varId(), tok);
             } else // addressof
                 variables.use(tok->next()->varId(), tok); // use = read + write
-        } else if (Token::Match(tok, ">> %var%")) {
-            variables.use(tok->next()->varId(), tok); // use = read + write
+        } else if (Token::Match(tok, ">>|>>= %var%")) {
+            if (_tokenizer->isC() || tok->previous()->isStandardType())
+                variables.read(tok->next()->varId(), tok);
+            else
+                variables.use(tok->next()->varId(), tok); // use = read + write
         } else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]")) {
             variables.read(tok->varId(), tok);
         }
@@ -1076,7 +1081,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Variable* var = symbolDatabase->getVariableFromVarId(it->first);
 
             // variable has been marked as unused so ignore it
-            if (usage._var->nameToken()->isUnused())
+            if (usage._var->nameToken()->isAttributeUnused())
                 continue;
 
             // skip things that are only partially implemented to prevent false positives

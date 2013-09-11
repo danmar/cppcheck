@@ -45,8 +45,8 @@ public:
         ,vartok(NULL)
         ,typetok(NULL)
         ,t(NULL)
-        ,found(false)
-    {}
+        ,found(false) {
+    }
 
 private:
     const Scope si;
@@ -118,7 +118,11 @@ private:
         TEST_CASE(isVariableDeclarationIdentifiesReference);
         TEST_CASE(isVariableDeclarationDoesNotIdentifyTemplateClass);
         TEST_CASE(isVariableDeclarationPointerConst);
+        TEST_CASE(isVariableDeclarationRValueRef);
 
+        TEST_CASE(arrayMemberVar1);
+        TEST_CASE(arrayMemberVar2);
+        TEST_CASE(arrayMemberVar3);
         TEST_CASE(staticMemberVar);
 
         TEST_CASE(hasRegularFunction);
@@ -131,6 +135,7 @@ private:
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
         TEST_CASE(hasSubClassConstructor);
+        TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
 
@@ -189,6 +194,10 @@ private:
         TEST_CASE(symboldatabase30);
         TEST_CASE(symboldatabase31);
         TEST_CASE(symboldatabase33); // ticket #4682 (false negatives)
+        TEST_CASE(symboldatabase34); // ticket #4694 (segmentation fault)
+        TEST_CASE(symboldatabase35); // ticket #4806 (segmentation fault)
+        TEST_CASE(symboldatabase36); // ticket #4892 (segmentation fault)
+        TEST_CASE(symboldatabase37);
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -527,6 +536,79 @@ private:
         ASSERT(false == v.isReference());
     }
 
+    void isVariableDeclarationRValueRef() {
+        reset();
+        givenACodeSampleToTokenize var("int&& i;");
+        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0);
+        ASSERT(false == v.isArray());
+        ASSERT(false == v.isPointer());
+        ASSERT(true == v.isReference());
+        ASSERT(true == v.isRValueReference());
+        ASSERT(var.tokens()->tokAt(2)->scope() != 0);
+    }
+
+    void arrayMemberVar1() {
+        const char code[] = "struct Foo {\n"
+                            "    int x;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    struct Foo foo[10];\n"
+                            "    foo[1].x = 123;\n"  // <- x should get a variable() pointer
+                            "}";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        tok = tok ? tok->next() : NULL;
+        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
+    }
+
+    void arrayMemberVar2() {
+        const char code[] = "struct Foo {\n"
+                            "    int x;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    struct Foo foo[10][10];\n"
+                            "    foo[1][2].x = 123;\n"  // <- x should get a variable() pointer
+                            "}";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        tok = tok ? tok->next() : NULL;
+        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
+    }
+
+    void arrayMemberVar3() {
+        const char code[] = "struct Foo {\n"
+                            "    int x;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    struct Foo foo[10];\n"
+                            "    (foo[1]).x = 123;\n"  // <- x should get a variable() pointer
+                            "}";
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        tok = tok ? tok->next() : NULL;
+        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
+    }
+
     void staticMemberVar() {
         GET_SYMBOL_DB("class Foo {\n"
                       "    static const double d;\n"
@@ -556,6 +638,7 @@ private:
             ASSERT(function && function->token == tokenizer.tokens()->next());
             ASSERT(function && function->hasBody);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn != scope);
+            ASSERT(function && function->retDef == tokenizer.tokens());
         }
     }
 
@@ -577,6 +660,7 @@ private:
             ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
             ASSERT(function && function->hasBody && function->isInline);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
+            ASSERT(function && function->retDef == tokenizer.tokens()->tokAt(3));
 
             ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
         }
@@ -716,6 +800,33 @@ private:
         }
     }
 
+    void testConstructors() {
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor && !ctor->isExplicit);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { explicit Foo(Foo f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(4)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor && ctor->isExplicit);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo&& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+    }
+
     void functionDeclarationTemplate() {
         GET_SYMBOL_DB("std::map<int, string> foo() {}")
 
@@ -756,6 +867,8 @@ private:
             ASSERT(foo_int && foo_int->tokenDef->str() == "foo");
             ASSERT(foo_int && !foo_int->hasBody);
             ASSERT(foo_int && foo_int->tokenDef->strAt(2) == "int");
+
+            ASSERT(&foo_int->argumentList.front() == db->getVariableFromVarId(1));
         }
     }
 
@@ -1454,6 +1567,59 @@ private:
                       "static struct A::B w({0});\n"
                       "void foo() { }");
         ASSERT(db && db->functionScopes.size() == 1);
+    }
+
+    void symboldatabase34() { // ticket #4694
+        check("typedef _Atomic(int(A::*)) atomic_mem_ptr_to_int;\n"
+              "typedef _Atomic(int)&atomic_int_ref;\n"
+              "struct S {\n"
+              "  _Atomic union { int n; };\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase35() { // ticket #4806 and #4841
+        check("class FragmentQueue : public CL_NS(util)::PriorityQueue<CL_NS(util)::Deletor::Object<TextFragment> >\n"
+              "{};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase36() { // ticket #4892
+        check("void struct ( ) { if ( 1 ) } int main ( ) { }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase37() {
+        GET_SYMBOL_DB("class Fred {\n"
+                      "public:\n"
+                      "    struct Wilma { };\n"
+                      "    struct Barney {\n"
+                      "        bool operator == (const struct Barney & b) const { return true; }\n"
+                      "        bool operator == (const struct Wilma & w) const { return true; }\n"
+                      "    };\n"
+                      "    Fred(const struct Barney & b) { barney = b; }\n"
+                      "private:\n"
+                      "    struct Barney barney;\n"
+                      "};\n");
+        ASSERT(db && db->typeList.size() == 3);
+        ASSERT(db && db->isClassOrStruct("Fred"));
+        ASSERT(db && db->isClassOrStruct("Wilma"));
+        ASSERT(db && db->isClassOrStruct("Barney"));
+        if (!db || db->typeList.size() != 3)
+            return;
+        std::list<Type>::const_iterator i = db->typeList.begin();
+        const Type* Fred = &(*i++);
+        const Type* Wilma = &(*i++);
+        const Type* Barney = &(*i++);
+        ASSERT(Fred && Fred->classDef && Fred->classScope && Fred->enclosingScope && Fred->name() == "Fred");
+        ASSERT(Wilma && Wilma->classDef && Wilma->classScope && Wilma->enclosingScope && Wilma->name() == "Wilma");
+        ASSERT(Barney && Barney->classDef && Barney->classScope && Barney->enclosingScope && Barney->name() == "Barney");
+        ASSERT(db && db->getVariableListSize() == 5);
+        if (!db || db->getVariableListSize() != 5)
+            return;
+        ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->name() == "Barney");
+        ASSERT(db && db->getVariableFromVarId(2) && db->getVariableFromVarId(2)->type() && db->getVariableFromVarId(2)->type()->name() == "Wilma");
+        ASSERT(db && db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->type() && db->getVariableFromVarId(3)->type()->name() == "Barney");
     }
 
     void isImplicitlyVirtual() {

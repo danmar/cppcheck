@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef tokenizeH
 #define tokenizeH
@@ -63,7 +62,7 @@ public:
      * \param unknown set to true if it's unknown if the scope is noreturn
      * \return true if scope ends with a function call that might be 'noreturn'
      */
-    static bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0);
+    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0) const;
 
     /**
      * Tokenize code
@@ -165,6 +164,13 @@ public:
      */
     bool simplifyCalculations();
 
+    /**
+     * Simplify dereferencing a pointer offset by a number:
+     *     "*(ptr + num)" => "ptr[num]"
+     *     "*(ptr - num)" => "ptr[-num]"
+     */
+    void simplifyOffsetPointerDereference();
+
     /** Insert array size where it isn't given */
     void arraySize();
 
@@ -201,6 +207,7 @@ public:
      * \param only_k_r_fpar Only simplify K&R function parameters
      */
     void simplifyVarDecl(bool only_k_r_fpar);
+    void simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_fpar);
 
     /**
      * Simplify variable initialization
@@ -237,10 +244,12 @@ public:
     void simplifyCompoundAssignment();
 
     /**
-     * simplify if-assignments
+     * Simplify assignments in "if" and "while" conditions
      * Example: "if(a=b);" => "a=b;if(a);"
+     * Example: "while(a=b) { f(a); }" => "a = b; while(a){ f(a); a = b; }"
+     * Example: "do { f(a); } while(a=b);" => "do { f(a); a = b; } while(a);"
      */
-    void simplifyIfAssign();
+    void simplifyIfAndWhileAssign();
 
     /**
      * Simplify multiple assignments.
@@ -561,7 +570,7 @@ public:
     void syntaxError(const Token *tok, char c) const;
 
     /** Report that there is an unhandled "class x y {" code */
-    void unhandled_macro_class_x_y(const Token *tok);
+    void unhandled_macro_class_x_y(const Token *tok) const;
 
     /**
      * assert that tokens are ok - used during debugging for example
@@ -780,4 +789,4 @@ private:
 /// @}
 
 //---------------------------------------------------------------------------
-#endif
+#endif // tokenizeH

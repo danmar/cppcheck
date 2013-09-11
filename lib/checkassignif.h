@@ -93,7 +93,7 @@ private:
     }
 
     static std::string myName() {
-        return "Match assignments and conditions";
+        return "AssignIf";
     }
 
     std::string classInfo() const {
@@ -106,4 +106,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif
+#endif // checkassignifH

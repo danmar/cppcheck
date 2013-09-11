@@ -17,8 +17,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef SymbolDatabaseH
-#define SymbolDatabaseH
+#ifndef symboldatabaseH
+#define symboldatabaseH
 //---------------------------------------------------------------------------
 
 #include <string>
@@ -111,7 +111,8 @@ class CPPCHECKLIB Variable {
         fIsArray     = (1 << 5), /** @brief array variable */
         fIsPointer   = (1 << 6), /** @brief pointer variable */
         fIsReference = (1 << 7), /** @brief reference variable */
-        fHasDefault  = (1 << 8)  /** @brief function argument with default value */
+        fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
+        fHasDefault  = (1 << 9)  /** @brief function argument with default value */
     };
 
     /**
@@ -194,10 +195,10 @@ public:
     }
 
     /**
-     * Get variable ID.
-     * @return variable ID
+     * Get declaration ID (varId used for variable in its declaration).
+     * @return declaration ID
      */
-    unsigned int varId() const {
+    unsigned int declarationId() const {
         // name may not exist for function arguments
         if (_name)
             return _name->varId();
@@ -334,11 +335,27 @@ public:
     }
 
     /**
+     * Is array or pointer variable.
+     * @return true if pointer or array, false otherwise
+     */
+    bool isArrayOrPointer() const {
+        return getFlag(fIsArray) || getFlag(fIsPointer);
+    }
+
+    /**
      * Is reference variable.
      * @return true if reference, false otherwise
      */
     bool isReference() const {
         return getFlag(fIsReference);
+    }
+
+    /**
+     * Is reference variable.
+     * @return true if reference, false otherwise
+     */
+    bool isRValueReference() const {
+        return getFlag(fIsRValueRef);
     }
 
     /**
@@ -390,6 +407,17 @@ public:
     }
 
 private:
+    // only symbol database can change the type
+    friend class SymbolDatabase;
+
+    /**
+     * Set Type pointer to known type.
+     * @param t type
+     */
+    void type(const Type * t) {
+        _type = t;
+    }
+
     /** @brief variable name token */
     const Token *_name;
 
@@ -423,13 +451,15 @@ private:
 
 class CPPCHECKLIB Function {
 public:
-    enum Type { eConstructor, eCopyConstructor, eOperatorEqual, eDestructor, eFunction };
+    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
     Function()
         : tokenDef(NULL),
           argDef(NULL),
           token(NULL),
           arg(NULL),
+          retDef(NULL),
+          retType(NULL),
           functionScope(NULL),
           nestedIn(NULL),
           initArgCount(0),
@@ -467,10 +497,22 @@ public:
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
 
+    bool isConstructor() const {
+        return type==eConstructor ||
+               type==eCopyConstructor ||
+               type==eMoveConstructor;
+    }
+
+    bool isDestructor() const {
+        return type==eDestructor;
+    }
+
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
     const Token *token;    // function name token in implementation
     const Token *arg;      // function argument start '('
+    const Token *retDef;   // function return type token
+    const ::Type *retType; // function return type
     const Scope *functionScope; // scope of function body
     const Scope* nestedIn; // Scope the function is declared in
     std::list<Variable> argumentList; // argument list
@@ -521,7 +563,7 @@ public:
     const Scope *nestedIn;
     std::list<Scope *> nestedList;
     unsigned int numConstructors;
-    unsigned int numCopyConstructors;
+    unsigned int numCopyOrMoveConstructors;
     std::list<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;
@@ -700,10 +742,11 @@ private:
     friend class Scope;
 
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
-    Function *addGlobalFunctionDecl(Scope*& scope, const Token *argStart, const Token* funcStart);
+    Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
     static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
+    const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;
@@ -711,6 +754,9 @@ private:
 
     /** variable symbol table */
     std::vector<const Variable *> _variableList;
-};
 
-#endif
+    /** list for missing types */
+    std::list<Type> _blankTypes;
+};
+//---------------------------------------------------------------------------
+#endif // symboldatabaseH

@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PATH_H_INCLUDED
-#define PATH_H_INCLUDED
+//---------------------------------------------------------------------------
+#ifndef pathH
+#define pathH
+//---------------------------------------------------------------------------
 
 #include <string>
 #include <vector>
@@ -104,7 +106,7 @@ public:
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
-     * @param path filename to check. path info is optional
+     * @param filename filename to check. path info is optional
      * @return returns true if the file extension indicates it should be checked
      */
     static bool acceptFile(const std::string &filename);
@@ -118,7 +120,7 @@ public:
 
     /**
      * @brief Identify language based on file extension.
-     * @param path filename to check. path info is optional
+     * @param extensionInLowerCase filename to check. path info is optional
      * @return true if extension is meant for C++ files
      */
     static bool isCPP(const std::string &extensionInLowerCase);
@@ -140,5 +142,5 @@ private:
 };
 
 /// @}
-
-#endif // PATH_H_INCLUDED
+//---------------------------------------------------------------------------
+#endif // pathH

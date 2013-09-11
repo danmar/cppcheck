@@ -1,7 +1,0 @@
-#!/bin/bash
-# install node.js and then run:
-# npm install -g clean-css
-# npm install -g uglify-js
-
-cat css/all.css css/demo.css css/normalize.css | cleancss --s0 -o css/pack.css
-uglifyjs js/github.js js/picnet.table.filter.min.js -o js/pack.js --compress --mangle

@@ -45,9 +45,10 @@ Token::Token(Token **t) :
     _isSigned(false),
     _isPointerCompare(false),
     _isLong(false),
-    _isUnused(false),
     _isStandardType(false),
     _isExpandedMacro(false),
+    _isAttributeConstructor(false),
+    _isAttributeUnused(false),
     _astOperand1(NULL),
     _astOperand2(NULL),
     _astParent(NULL)
@@ -125,7 +126,7 @@ void Token::update_property_isStandardType()
     if (_str.size() < 3)
         return;
 
-    static const char * const stdtype[] = {"int", "char", "bool", "long", "short", "float", "double", "wchar_t", "size_t", 0};
+    static const char * const stdtype[] = {"int", "char", "bool", "long", "short", "float", "double", "wchar_t", "size_t", "void", 0};
     for (int i = 0; stdtype[i]; i++) {
         if (_str == stdtype[i]) {
             _isStandardType = true;
@@ -192,9 +193,10 @@ void Token::deleteThis()
         _isSigned = _next->_isSigned;
         _isPointerCompare = _next->_isPointerCompare;
         _isLong = _next->_isLong;
-        _isUnused = _next->_isUnused;
         _isStandardType = _next->_isStandardType;
         _isExpandedMacro = _next->_isExpandedMacro;
+        _isAttributeConstructor = _next->_isAttributeConstructor;
+        _isAttributeUnused = _next->_isAttributeUnused;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -213,9 +215,10 @@ void Token::deleteThis()
         _isSigned = _previous->_isSigned;
         _isPointerCompare = _previous->_isPointerCompare;
         _isLong = _previous->_isLong;
-        _isUnused = _previous->_isUnused;
         _isStandardType = _previous->_isStandardType;
         _isExpandedMacro = _previous->_isExpandedMacro;
+        _isAttributeConstructor = _previous->_isAttributeConstructor;
+        _isAttributeUnused = _previous->_isAttributeUnused;
         _varId = _previous->_varId;
         _fileIndex = _previous->_fileIndex;
         _linenr = _previous->_linenr;
@@ -223,6 +226,7 @@ void Token::deleteThis()
         _scope = _previous->_scope;
         _function = _previous->_function;
         _variable = _previous->_variable;
+        _originalName = _previous->_originalName;
         if (_link)
             _link->link(this);
 
@@ -302,7 +306,7 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->_str : empty_str;
 }
 
-static int multiComparePercent(const Token *tok, const char * * haystack_p,
+static int multiComparePercent(const Token *tok, const char ** haystack_p,
                                const char * needle,
                                bool emptyStringFound)
 {
@@ -336,6 +340,13 @@ static int multiComparePercent(const Token *tok, const char * * haystack_p,
             if (needle[0] == '|' && needle[1] == '|')
                 return 1;
             *haystack_p = haystack = haystack + 6;
+        } else if (haystack[1] == 'v' && // "%var%"
+                   haystack[2] == 'a' &&
+                   haystack[3] == 'r' &&
+                   haystack[4] == '%') {
+            if (tok->isName())
+                return 1;
+            *haystack_p = haystack = haystack + 5;
         }
 
         if (*haystack == '|')
@@ -829,30 +840,38 @@ Token* Token::nextArgument() const
     return 0;
 }
 
-bool Token::findClosingBracket(const Token*& closing) const
+const Token * Token::findClosingBracket() const
 {
+    const Token *closing = 0;
+
     if (_str == "<") {
         unsigned int depth = 0;
         for (closing = this; closing != NULL; closing = closing->next()) {
             if (closing->str() == "{" || closing->str() == "[" || closing->str() == "(")
                 closing = closing->link();
             else if (closing->str() == "}" || closing->str() == "]" || closing->str() == ")" || closing->str() == ";" || closing->str() == "=")
-                return false;
+                break;
             else if (closing->str() == "<")
                 ++depth;
             else if (closing->str() == ">") {
                 if (--depth == 0)
-                    return true;
+                    break;
             } else if (closing->str() == ">>") {
                 if (--depth == 0)
-                    return true;
+                    break;
                 if (--depth == 0)
-                    return true;
+                    break;
             }
         }
     }
 
-    return false;
+    return closing;
+}
+
+Token * Token::findClosingBracket()
+{
+    // return value of const function
+    return const_cast<Token*>(const_cast<const Token*>(this)->findClosingBracket());
 }
 
 //---------------------------------------------------------------------------
@@ -954,14 +973,14 @@ void Token::createMutualLinks(Token *begin, Token *end)
 
 void Token::printOut(const char *title) const
 {
-    if (title)
+    if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
     std::cout << stringifyList(true, true, true, true, true, 0, 0) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
-    if (title)
+    if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
     std::cout << stringifyList(true, true, true, true, true, &fileNames, 0) << std::endl;
 }
@@ -973,8 +992,12 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes) const
             os << "unsigned ";
         else if (isSigned())
             os << "signed ";
-        if (isLong())
-            os << "long ";
+        if (isLong()) {
+            if (_type == eString || _type == eChar)
+                os << "L";
+            else
+                os << "long ";
+        }
     }
     if (_str[0] != '\"' || _str.find("\0") == std::string::npos)
         os << _str;

@@ -27,8 +27,8 @@ extern std::ostringstream errout;
 
 class TestStl : public TestFixture {
 public:
-    TestStl() : TestFixture("TestStl")
-    { }
+    TestStl() : TestFixture("TestStl") {
+    }
 
 private:
     void run() {
@@ -107,7 +107,6 @@ private:
         // Redundant conditions..
         // if (ints.find(123) != ints.end()) ints.remove(123);
         TEST_CASE(redundantCondition1);
-        TEST_CASE(redundantCondition2);
 
         // missing inner comparison when incrementing iterator inside loop
         TEST_CASE(missingInnerComparison1);
@@ -124,6 +123,8 @@ private:
 
         TEST_CASE(uselessCalls);
         TEST_CASE(stabilityOfChecks); // #4684 cppcheck crash in template function call
+
+        TEST_CASE(dereferenceInvalidIterator);
 
     }
 
@@ -1656,15 +1657,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void redundantCondition1() {
-        check("void f(string haystack)\n"
-              "{\n"
-              "    if (haystack.find(needle) != haystack.end())\n"
-              "        haystack.remove(needle);"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element existence before removing it.\n", errout.str());
-    }
-
     void size2() {
         check("struct Fred {\n"
               "    std::list<int> x;\n"
@@ -1720,13 +1712,11 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void redundantCondition2() {
+    void redundantCondition1() {
         check("void f(string haystack)\n"
               "{\n"
               "    if (haystack.find(needle) != haystack.end())\n"
-              "    {\n"
-              "        haystack.remove(needle);\n"
-              "    }\n"
+              "        haystack.remove(needle);"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant checking of STL container element existence before removing it.\n", errout.str());
     }
@@ -2155,6 +2145,16 @@ private:
         // ticket #2967 (segmentation fault)
         check("auto_ptr<x>\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #4390
+        check("auto_ptr<ConnectionStringReadStorage> CreateRegistryStringStorage() {\n"
+              "    return auto_ptr<ConnectionStringReadStorage>(new RegistryConnectionStringStorage());\n"
+              "}\n"
+              "\n"
+              "void LookupWindowsUserAccountName() {\n"
+              "    auto_ptr_array<char> domainName(new char[42]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
@@ -2244,6 +2244,112 @@ private:
               "    }\n"
               "    void shift() { EffectivityRangeData<int>::iterator it;  } \n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void dereferenceInvalidIterator() {
+        // Test simplest "if" with && case
+        check("void foo(std::string::iterator& i) {\n"
+              "    if (std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test suggested correction doesn't report an error
+        check("void foo(std::string::iterator& i) {\n"
+              "    if (i != str.end() && std::isalpha(*i)) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test "while" with "&&" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test "while" with "||" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (!(!std::isalpha(*i) || i == str.end())) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test fix for "while" with "||" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (!(i == str.end() || !std::isalpha(*i))) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test "for" with "&&" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    for (; std::isalpha(*i) && i != str.end() ;) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test "for" with "||" case
+        check("void foo(std::string::iterator& i) {\n"
+              "    for (; std::isalpha(*i) || i == str.end() ;) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test that a dereference outside the condition part of a "for"
+        // loop does not result in a false positive
+        check("void foo(std::string::iterator& i) {\n"
+              "    for (char c = *i; isRunning && i != str.end() ;) {\n"
+              "        std::cout << c;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test that other "&&" terms in the condition don't invalidate the check
+        check("void foo(char* c, std::string::iterator& i) {\n"
+              "    if (*c && std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test that dereference of different variable doesn't trigger a false positive
+        check("void foo(const char* c, std::string::iterator& i) {\n"
+              "    if (std::isalpha(*c) && i != str.end()) {\n"
+              "        std::cout << *c;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test case involving "rend()" instead of "end()"
+        check("void foo(std::string::iterator& i) {\n"
+              "    while (std::isalpha(*i) && i != str.rend()) {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        // Test that mixed "&&" and "||" don't result in a false positive
+        check("void foo(std::string::iterator& i) {\n"
+              "    if ((i == str.end() || *i) || (isFoo() && i != str.end())) {\n"
+              "        std::cout << \"foo\";\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

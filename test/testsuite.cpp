@@ -24,6 +24,7 @@
 
 std::ostringstream errout;
 std::ostringstream output;
+std::ostringstream warnings;
 
 /**
  * TestRegistry
@@ -118,6 +119,20 @@ void TestFixture::assert_(const char *filename, unsigned int linenr, bool condit
         } else {
             errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl << "_____" << std::endl;
         }
+    }
+}
+
+void TestFixture::todoAssert(const char *filename, unsigned int linenr, bool condition) const
+{
+    if (condition) {
+        if (gcc_style_errors) {
+            errmsg << filename << ':' << linenr << ": Assertion succeeded unexpectedly." << std::endl;
+        } else {
+            errmsg << "Assertion succeeded unexpectedly in " << filename << " at line " << linenr << std::endl;
+        }
+        ++succeeded_todos_counter;
+    } else {
+        ++todos_counter;
     }
 }
 
@@ -223,6 +238,11 @@ void TestFixture::run(const std::string &str)
     run();
 }
 
+void TestFixture::warn(const char msg[])
+{
+    warnings << "Warning: " << currentTest << " " << msg << std::endl;
+}
+
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
@@ -250,6 +270,10 @@ std::size_t TestFixture::runTests(const options& args)
         }
     }
 
+    const std::string &w(warnings.str());
+    if (!w.empty()) {
+        std::cout << "\n\n" << w;
+    }
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
     std::cout << "Number of todos: " << todos_counter;
     if (succeeded_todos_counter > 0)
