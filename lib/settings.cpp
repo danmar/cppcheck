@@ -83,7 +83,6 @@ std::string Settings::addEnabled(const std::string &str)
         id.insert("information");
         id.insert("missingInclude");
         id.insert("unusedFunction");
-        id.insert("qt");
 #ifndef NDEBUG
         id.insert("internal");
 #endif
