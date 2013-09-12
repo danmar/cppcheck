@@ -655,8 +655,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         else if (argInfo.isKnownType() && (!argInfo.isArrayOrPointer() || argInfo.element)) {
                                             if (!Token::Match(argInfo.typeToken, "float|double")) {
                                                 invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            } else if (((specifier[0] == 'l' || specifier[0] == 'L') && (!argInfo.typeToken->isLong() || argInfo.typeToken->str() != "double")) ||
-                                                       ((specifier[0] != 'l' && specifier[0] != 'L') && argInfo.typeToken->isLong())) {
+                                            } else if ((specifier[0] == 'L' && (!argInfo.typeToken->isLong() || argInfo.typeToken->str() != "double")) ||
+                                                       (specifier[0] != 'L' && argInfo.typeToken->isLong())) {
                                                 invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                             }
                                         } else if ((!argInfo.element && argInfo.isArrayOrPointer()) ||
