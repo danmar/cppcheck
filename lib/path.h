@@ -109,7 +109,7 @@ public:
      * @param filename filename to check. path info is optional
      * @return returns true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename);
+	static bool acceptFile(const std::string &filename, const class Library *library = 0);
 
     /**
      * @brief Identify language based on file extension.
@@ -124,13 +124,6 @@ public:
      * @return true if extension is meant for C++ files
      */
     static bool isCPP(const std::string &extensionInLowerCase);
-
-    /**
-     * @brief Identify language based on file extension
-     * &param path filename to check.
-     * @return true if extension is a QT file
-     */
-    static bool isQt(const std::string &path);
 
 private:
     /**

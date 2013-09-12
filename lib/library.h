@@ -121,6 +121,14 @@ public:
         return arg && arg->strz;
     }
 
+	bool acceptFile(const std::string &path) const {
+		return false; // TODO(struscott): Fix
+	}
+
+	bool reportErrors(const std::string &path) const {
+		return false; // TODO(struscott): Fix
+	}
+
     std::set<std::string> returnuninitdata;
 
 private:

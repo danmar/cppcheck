@@ -22,6 +22,7 @@
 #include <cstring>
 #include <cctype>
 #include "path.h"
+#include "library.h"
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
@@ -206,15 +207,9 @@ bool Path::isCPP(const std::string &path)
     return (getFilenameExtension(path) == ".C");
 }
 
-bool Path::isQt(const std::string &path)
-{
-	const std::string extension = getFilenameExtensionInLowerCase(path);
-	return(extension == ".qml");
-}
-
-bool Path::acceptFile(const std::string &path)
-{
-    return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path) || isQt(path));
+bool Path::acceptFile(const std::string &path, const class Library *library)
+{	
+	return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path) || library ? library->acceptFile(path) : false );
 }
 
 bool Path::isHeader(const std::string &path)

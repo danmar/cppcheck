@@ -131,7 +131,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     exitcode = 0;
 
     // only show debug warnings for accepted C/C++ source files
-    if (!Path::acceptFile(filename))
+	if (!Path::acceptFile(filename, &_settings.library))
         _settings.debugwarnings = false;
 
     if (_settings.terminated())
@@ -359,14 +359,12 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
 
         // call all "runChecks" in all registered Check classes
-        if (!Path::isQt(FileName)) {
-            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-                if (_settings.terminated())
-                    return;
+        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+            if (_settings.terminated())
+                return;
 
-                Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
-                (*it)->runChecks(&_tokenizer, &_settings, this);
-            }
+            Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
+            (*it)->runChecks(&_tokenizer, &_settings, this);
         }
 
         if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
@@ -559,7 +557,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (Path::isQt(msg.file0))
+	if (!_settings.library.reportErrors(msg.file0))
         return;
 
     std::string errmsg = msg.toString(_settings._verbose);
