@@ -59,13 +59,13 @@ bool Library::load(const char exename[], const char path[])
     }
 
     // open file..
-    FILE *fp = fopen(path, "rt");
+    FILE *fp = fopen(path, "rb");
     if (fp == NULL) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename) == "") {
             fullfilename += ".cfg";
-            fp = fopen(fullfilename.c_str(), "rt");
+            fp = fopen(fullfilename.c_str(), "rb");
         }
 
         if (fp==NULL) {
@@ -74,7 +74,7 @@ bool Library::load(const char exename[], const char path[])
             std::replace(temp.begin(), temp.end(), '\\', '/');
             const std::string installfolder = Path::getPathFromFilename(temp);
             const std::string filename = installfolder + "cfg/" + fullfilename;
-            fp = fopen(filename.c_str(), "rt");
+            fp = fopen(filename.c_str(), "rb");
         }
 
         if (fp == NULL)
@@ -117,32 +117,43 @@ bool Library::load(const char exename[], const char path[])
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 else if (strcmp(functionnode->Name(),"leak-ignore")==0)
                     leakignore.insert(name);
-                else if (strcmp(functionnode->Name(),"arg")==0 && functionnode->Attribute("nr") != NULL) {
-                    const int nr = atoi(functionnode->Attribute("nr"));
-                    bool notnull = false;
-                    bool notuninit = false;
-                    bool formatstr = false;
-                    bool strz = false;
-                    for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
-                        if (strcmp(argnode->Name(), "not-null") == 0)
-                            notnull = true;
-                        else if (strcmp(argnode->Name(), "not-uninit") == 0)
-                            notuninit = true;
-                        else if (strcmp(argnode->Name(), "formatstr") == 0)
-                            notuninit = true;
-                        else if (strcmp(argnode->Name(), "strz") == 0)
-                            notuninit = true;
-                        else
-                            return false;
-                    }
-                    argumentChecks[name][nr].notnull = notnull;
-                    argumentChecks[name][nr].notuninit = notuninit;
-                    argumentChecks[name][nr].formatstr = formatstr;
-                    argumentChecks[name][nr].strz = strz;
+				else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != NULL) {
+					const int nr = atoi(functionnode->Attribute("nr"));
+					bool notnull = false;
+					bool notuninit = false;
+					bool formatstr = false;
+					bool strz = false;
+					for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
+						if (strcmp(argnode->Name(), "not-null") == 0)
+							notnull = true;
+						else if (strcmp(argnode->Name(), "not-uninit") == 0)
+							notuninit = true;
+						else if (strcmp(argnode->Name(), "formatstr") == 0)
+							notuninit = true;
+						else if (strcmp(argnode->Name(), "strz") == 0)
+							notuninit = true;
+						else
+							return false;
+					}
+					argumentChecks[name][nr].notnull = notnull;
+					argumentChecks[name][nr].notuninit = notuninit;
+					argumentChecks[name][nr].formatstr = formatstr;
+					argumentChecks[name][nr].strz = strz;
+				} else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
+					_ignorefunction[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 } else
                     return false;
             }
-        } else
+		}
+		else if (strcmp(node->Name(), "files")==0) {
+			_fileextensions.clear();
+			for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+				if (strcmp(functionnode->Name(), "file") == 0) {
+					_fileextensions.push_back(functionnode->Attribute("ext"));
+				} else 
+					return false;
+			}
+		} else
             return false;
     }
     return true;

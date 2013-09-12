@@ -25,6 +25,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <list>
+
+#include "path.h"
 
 /// @addtogroup Core
 /// @{
@@ -122,11 +125,19 @@ public:
     }
 
 	bool acceptFile(const std::string &path) const {
-		return false; // TODO(struscott): Fix
+		std::list<std::string>::const_iterator it;
+		std::string extension = Path::getFilenameExtensionInLowerCase(path);
+		it = std::find(_fileextensions.begin(), _fileextensions.end(), extension);
+		return it != _fileextensions.end();
 	}
 
 	bool reportErrors(const std::string &path) const {
 		return false; // TODO(struscott): Fix
+	}
+
+	bool ignorefunction(const std::string &function) const {
+		std::map<std::string, bool>::const_iterator it = _ignorefunction.find(function);
+		return (it != _ignorefunction.end() && it->second);
 	}
 
     std::set<std::string> returnuninitdata;
@@ -136,6 +147,8 @@ private:
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
+	std::map<std::string, bool> _ignorefunction; // functions that are false-positive pure-virtual
+	std::list<std::string> _fileextensions; // accepted file extensions
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {
         std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
