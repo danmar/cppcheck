@@ -57,7 +57,7 @@ public:
     static void recursiveAddFiles2(std::set<std::string> &seen_paths,
                                    std::map<std::string, std::size_t> &files,
                                    const std::string &path,
-								   const class Library * library);
+                                   const class Library * library);
 #endif
 };
 
