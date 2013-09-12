@@ -35,7 +35,10 @@ Library::Library(const Library &lib) :
     allocid(lib.allocid),
     _alloc(lib._alloc),
     _dealloc(lib._dealloc),
-    _noreturn(lib._noreturn)
+    _noreturn(lib._noreturn),
+    _ignorefunction(lib._ignorefunction),
+    _reporterrors(lib._reporterrors),
+    _fileextensions(lib._fileextensions)
 {
 }
 
@@ -117,30 +120,30 @@ bool Library::load(const char exename[], const char path[])
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 else if (strcmp(functionnode->Name(),"leak-ignore")==0)
                     leakignore.insert(name);
-				else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != NULL) {
-					const int nr = atoi(functionnode->Attribute("nr"));
-					bool notnull = false;
-					bool notuninit = false;
-					bool formatstr = false;
-					bool strz = false;
-					for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
-						if (strcmp(argnode->Name(), "not-null") == 0)
-							notnull = true;
-						else if (strcmp(argnode->Name(), "not-uninit") == 0)
-							notuninit = true;
-						else if (strcmp(argnode->Name(), "formatstr") == 0)
-							notuninit = true;
-						else if (strcmp(argnode->Name(), "strz") == 0)
-							notuninit = true;
-						else
-							return false;
-					}
-					argumentChecks[name][nr].notnull = notnull;
-					argumentChecks[name][nr].notuninit = notuninit;
-					argumentChecks[name][nr].formatstr = formatstr;
-					argumentChecks[name][nr].strz = strz;
-				} else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
-					_ignorefunction[name] = (strcmp(functionnode->GetText(), "true") == 0);
+                else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != NULL) {
+                    const int nr = atoi(functionnode->Attribute("nr"));
+                    bool notnull = false;
+                    bool notuninit = false;
+                    bool formatstr = false;
+                    bool strz = false;
+                    for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
+                        if (strcmp(argnode->Name(), "not-null") == 0)
+                            notnull = true;
+                        else if (strcmp(argnode->Name(), "not-uninit") == 0)
+                            notuninit = true;
+                        else if (strcmp(argnode->Name(), "formatstr") == 0)
+                            notuninit = true;
+                        else if (strcmp(argnode->Name(), "strz") == 0)
+                            notuninit = true;
+                        else
+                            return false;
+                    }
+                    argumentChecks[name][nr].notnull = notnull;
+                    argumentChecks[name][nr].notuninit = notuninit;
+                    argumentChecks[name][nr].formatstr = formatstr;
+                    argumentChecks[name][nr].strz = strz;
+                } else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
+                    _ignorefunction[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 } else
                     return false;
             }

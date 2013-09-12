@@ -26,6 +26,7 @@
 #include <set>
 #include <string>
 #include <list>
+#include <algorithm>
 
 #include "path.h"
 
@@ -124,27 +125,27 @@ public:
         return arg && arg->strz;
     }
 
-	bool acceptFile(const std::string &path) const {
-		std::list<std::string>::const_iterator it;
-		std::string extension = Path::getFilenameExtensionInLowerCase(path);
-		it = std::find(_fileextensions.begin(), _fileextensions.end(), extension);
-		return it != _fileextensions.end();
-	}
+    bool acceptFile(const std::string &path) const {
+        const std::string extension = Path::getFilenameExtensionInLowerCase(path);
+        std::list<std::string>::const_iterator it =
+                std::find(_fileextensions.begin(), _fileextensions.end(), extension);
+        return it != _fileextensions.end();
+    }
 
-	bool reportErrors(const std::string &path) const {
-		std::string extension = Path::getFilenameExtensionInLowerCase(path);
-		std::map<std::string, bool>::const_iterator it = _reporterrors.find(extension);
-		if (it != _reporterrors.end()) {
-			return it->second;
-		}
-		// assume true if we don't know as it'll be a core-type (c/cpp etc)
-		return true;
-	}
+    bool reportErrors(const std::string &path) const {
+        std::string extension = Path::getFilenameExtensionInLowerCase(path);
+        std::map<std::string, bool>::const_iterator it = _reporterrors.find(extension);
+        if (it != _reporterrors.end()) {
+            return it->second;
+        }
+        // assume true if we don't know as it'll be a core-type (c/cpp etc)
+        return true;
+    }
 
-	bool ignorefunction(const std::string &function) const {
-		std::map<std::string, bool>::const_iterator it = _ignorefunction.find(function);
-		return (it != _ignorefunction.end() && it->second);
-	}
+    bool ignorefunction(const std::string &function) const {
+        std::map<std::string, bool>::const_iterator it = _ignorefunction.find(function);
+        return (it != _ignorefunction.end() && it->second);
+    }
 
     std::set<std::string> returnuninitdata;
 
@@ -153,9 +154,9 @@ private:
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
-	std::map<std::string, bool> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
-	std::map<std::string, bool> _reporterrors;
-	std::list<std::string> _fileextensions; // accepted file extensions
+    std::map<std::string, bool> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
+    std::map<std::string, bool> _reporterrors;
+    std::list<std::string> _fileextensions; // accepted file extensions
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {
         std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
