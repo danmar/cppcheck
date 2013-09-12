@@ -178,6 +178,34 @@ bool Library::load(const char exename[], const char path[])
             }
         }
 
+        else if (strcmp(node->Name(), "exported") == 0) {
+            _exporters.clear();
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "exporter") == 0) {
+                    const char * prefix = (functionnode->Attribute("prefix"));
+                    if (prefix) {
+                        std::map<std::string, std::list<std::string> >::const_iterator
+                            it = _exporters.find(prefix);
+                        if (it == _exporters.end()) {
+                            // add the missing list for later on
+                            std::list<std::string> exporter;
+                            _exporters[prefix] = exporter;
+                        }
+                    } else
+                        return false;
+
+                    for (const tinyxml2::XMLElement *enode = functionnode->FirstChildElement(); enode; enode = enode->NextSiblingElement()) {
+                        if (strcmp(enode->Name(), "prefix") == 0) {
+                            _exporters[prefix].push_back(enode->Attribute("name"));
+                        } else 
+                            return false;
+                    }
+                }
+                else
+                    return false;
+            }
+        }
+
         else if (strcmp(node->Name(), "codeblocks") == 0) {
             _executableblocks.clear();
             _codeblockstart = "}";

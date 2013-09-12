@@ -171,6 +171,22 @@ public:
         return it != _keywords.end();
     }
 
+    bool isexporter(const std::string &prefix) const {
+        std::map<std::string, std::list<std::string> >::const_iterator it =
+            _exporters.find(prefix);
+        return it != _exporters.end();
+    }
+
+    bool isexported(const std::string &prefix, const std::string &token) const {
+        std::map<std::string, std::list<std::string> >::const_iterator it = _exporters.find(prefix);
+        std::list<std::string>::const_iterator token_it;
+        if (it != _exporters.end()) {
+            token_it = std::find(it->second.begin(), it->second.end(), token);
+            return token_it != it->second.end();
+        } else
+            return false;
+    }
+
     std::set<std::string> returnuninitdata;
 
 private:
@@ -183,6 +199,7 @@ private:
     std::list<std::string> _fileextensions; // accepted file extensions
     std::list<std::string> _keywords; // keywords for code in the library
     std::list<std::string> _executableblocks; // keywords for blocks of executable code
+    std::map<std::string, std::list<std::string> > _exporters; // keywords that export variables to libraries (meta-code/macros)
     std::string _codeblockstart;
     std::string _codeblockend;
     int _codeblockoffset;

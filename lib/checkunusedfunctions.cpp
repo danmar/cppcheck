@@ -119,23 +119,19 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             }
         }
 
-        if(true || settings->isEnabled("qt")) {
-
-            // look for QT properties (read/write/notify)
-            if (tok->str() == "Q_PROPERTY") {
-                const Token * qPropToken = tok;
-                while(qPropToken->str() != ")") {
-                    if(qPropToken->str() == "READ" ||
-                       qPropToken->str() == "WRITE" ||
-                       qPropToken->str() == "NOTIFY")
-                    {
-                        qPropToken = qPropToken->next();
-                        if (_functions.find(qPropToken->str()) != _functions.end())
-                            _functions[qPropToken->str()].usedOtherFile = true;
+        if (settings->library.isexporter(tok->str()) && tok->next() != 0) {
+            const Token * qPropToken = tok;
+            qPropToken = qPropToken->next();
+            while (qPropToken && qPropToken->str() != ")") {
+                if (settings->library.isexported(tok->str(), qPropToken->str())) {
+                    qPropToken = qPropToken->next();
+                    const std::string value = qPropToken->str();
+                    if (_functions.find(value) != _functions.end()) {
+                        _functions[value].usedOtherFile = true;
                         continue;
                     }
-                    qPropToken = qPropToken->next();
                 }
+                qPropToken = qPropToken->next();
             }
         }
 
