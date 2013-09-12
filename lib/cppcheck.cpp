@@ -131,7 +131,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     exitcode = 0;
 
     // only show debug warnings for accepted C/C++ source files
-	if (!Path::acceptFile(filename, &_settings.library))
+    if (!Path::acceptFile(filename, &_settings.library))
         _settings.debugwarnings = false;
 
     if (_settings.terminated())
@@ -557,7 +557,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-	if (!_settings.library.reportErrors(msg.file0))
+    if (!_settings.library.reportErrors(msg.file0))
         return;
 
     std::string errmsg = msg.toString(_settings._verbose);
