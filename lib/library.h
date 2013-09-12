@@ -132,7 +132,13 @@ public:
 	}
 
 	bool reportErrors(const std::string &path) const {
-		return false; // TODO(struscott): Fix
+		std::string extension = Path::getFilenameExtensionInLowerCase(path);
+		std::map<std::string, bool>::const_iterator it = _reporterrors.find(extension);
+		if (it != _reporterrors.end()) {
+			return it->second;
+		}
+		// assume true if we don't know as it'll be a core-type (c/cpp etc)
+		return true;
 	}
 
 	bool ignorefunction(const std::string &function) const {
@@ -147,7 +153,8 @@ private:
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
-	std::map<std::string, bool> _ignorefunction; // functions that are false-positive pure-virtual
+	std::map<std::string, bool> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
+	std::map<std::string, bool> _reporterrors;
 	std::list<std::string> _fileextensions; // accepted file extensions
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {

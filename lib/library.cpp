@@ -150,6 +150,9 @@ bool Library::load(const char exename[], const char path[])
 			for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
 				if (strcmp(functionnode->Name(), "file") == 0) {
 					_fileextensions.push_back(functionnode->Attribute("ext"));
+					const char * report = functionnode->Attribute("reporterrors");
+					if (report)
+						_reporterrors[functionnode->Attribute("ext")] = strcmp(report, "true")==0;
 				} else 
 					return false;
 			}
