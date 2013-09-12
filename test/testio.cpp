@@ -846,106 +846,106 @@ private:
                       "[test.cpp:13]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'int'.\n", errout.str());
 
         check("short f() { return 0; }\n"
-              "void foo() { printf(\"%d %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%d %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'short'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'short'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer but the argument type is 'short'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires a signed long long integer but the argument type is 'short'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'short'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'short'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'short'.\n", errout.str());
 
         check("unsigned short f() { return 0; }\n"
-              "void foo() { printf(\"%u %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%u %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 5) requires an unsigned long long integer but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'unsigned short'.\n", errout.str());
 
         check("int f() { return 0; }\n"
-              "void foo() { printf(\"%d %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%d %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires a signed long long integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("unsigned int f() { return 0; }\n"
-              "void foo() { printf(\"%u %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%u %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 5) requires an unsigned long long integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'unsigned int'.\n", errout.str());
 
         check("long f() { return 0; }\n"
-              "void foo() { printf(\"%ld %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%ld %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'long'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'long'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer but the argument type is 'long'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires a signed long long integer but the argument type is 'long'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'long'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'long'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'long'.\n", errout.str());
 
         check("unsigned long f() { return 0; }\n"
-              "void foo() { printf(\"%lu %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%lu %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'unsigned long'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned long'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer but the argument type is 'unsigned long'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 5) requires an unsigned long long integer but the argument type is 'unsigned long'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'unsigned long'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned long'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned long'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'unsigned long'.\n", errout.str());
 
         check("long long f() { return 0; }\n"
-              "void foo() { printf(\"%lld %u %lu %I64u %I64d %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%lld %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'long long'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'long long'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires an unsigned long long integer but the argument type is 'long long'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'long long'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'long long'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'long long'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'long long'.\n", errout.str());
 
         check("unsigned long long f() { return 0; }\n"
-              "void foo() { printf(\"%llu %d %ld %I64d %I64u %f %lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%llu %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'unsigned long long'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned long long'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 4) requires a signed long long integer but the argument type is 'unsigned long long'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 6) requires a floating point number but the argument type is 'unsigned long long'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned long long'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires a floating point number but the argument type is 'unsigned long long'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'unsigned long long'.\n", errout.str());
 
         check("float f() { return 0; }\n"
-              "void foo() { printf(\"%f %d %ld %u %lu %I64d %I64u %lf %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%f %d %ld %u %lu %I64d %I64u %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'float'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'float'.\n"
                       "[test.cpp:2]: (warning) %u in format string (no. 4) requires an unsigned integer but the argument type is 'float'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 5) requires an unsigned long integer but the argument type is 'float'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 6) requires a signed long long integer but the argument type is 'float'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 7) requires an unsigned long long integer but the argument type is 'float'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 8) requires a floating point number but the argument type is 'float'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 8) requires a floating point number but the argument type is 'float'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 9) requires an address but the argument type is 'float'.\n", errout.str());
 
         check("double f() { return 0; }\n"
-              "void foo() { printf(\"%f %d %ld %u %lu %I64d %I64u %lf %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%f %d %ld %u %lu %I64d %I64u %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'double'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'double'.\n"
                       "[test.cpp:2]: (warning) %u in format string (no. 4) requires an unsigned integer but the argument type is 'double'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 5) requires an unsigned long integer but the argument type is 'double'.\n"
                       "[test.cpp:2]: (warning) %I64d in format string (no. 6) requires a signed long long integer but the argument type is 'double'.\n"
                       "[test.cpp:2]: (warning) %I64u in format string (no. 7) requires an unsigned long long integer but the argument type is 'double'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 8) requires a floating point number but the argument type is 'double'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 8) requires a floating point number but the argument type is 'double'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 9) requires an address but the argument type is 'double'.\n", errout.str());
 
         check("long double f() { return 0; }\n"
-              "void foo() { printf(\"%lf %d %ld %u %lu %I64d %I64u %f %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
+              "void foo() { printf(\"%Lf %d %ld %u %lu %I64d %I64u %f %p\", f(), f(), f(), f(), f(), f(), f(), f(), f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'long double'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'long double'.\n"
                       "[test.cpp:2]: (warning) %u in format string (no. 4) requires an unsigned integer but the argument type is 'long double'.\n"
@@ -956,35 +956,35 @@ private:
                       "[test.cpp:2]: (warning) %p in format string (no. 9) requires an address but the argument type is 'long double'.\n", errout.str());
 
         check("namespace bar { int f() { return 0; } }\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", bar::f(), bar::f(), bar::f(), bar::f(), bar::f(), bar::f()); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar::f(), bar::f(), bar::f(), bar::f(), bar::f(), bar::f()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", f.i, f.i, f.i, f.i, f.i, f.i); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", f.i, f.i, f.i, f.i, f.i, f.i); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { unsigned int u; } f;\n"
-              "void foo() { printf(\"%u %d %ld %f %lf %p\", f.u, f.u, f.u, f.u, f.u, f.u); }");
+              "void foo() { printf(\"%u %d %ld %f %Lf %p\", f.u, f.u, f.u, f.u, f.u, f.u); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'unsigned int'.\n", errout.str());
 
         check("struct Fred { unsigned int ui() { return 0; } } f;\n"
-              "void foo() { printf(\"%u %d %ld %f %lf %p\", f.ui(), f.ui(), f.ui(), f.ui(), f.ui(), f.ui()); }");
+              "void foo() { printf(\"%u %d %ld %f %Lf %p\", f.ui(), f.ui(), f.ui(), f.ui(), f.ui(), f.ui()); }");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %ld in format string (no. 3) requires a signed long integer but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'unsigned int'.\n", errout.str());
 
         // #4975
@@ -996,61 +996,61 @@ private:
 
         check("struct Fred { int i; } f;\n"
               "struct Fred & bar() { };\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "const struct Fred & bar() { };\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "static const struct Fred & bar() { };\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int i; } f[2];\n"
               "struct Fred * bar() { return f; };\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int i; } f[2];\n"
               "const struct Fred * bar() { return f; };\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int i; } f[2];\n"
               "static const struct Fred * bar() { return f; };\n"
-              "void foo() { printf(\"%d %u %lu %f %lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
+              "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %lu in format string (no. 3) requires an unsigned long integer but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 4) requires a floating point number but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires a floating point number but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int32_t i; } f;\n"
               "struct Fred & bar() { };\n"
-              "void foo() { printf(\"%d %ld %u %lu %f %lf\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
+              "void foo() { printf(\"%d %ld %u %lu %f %Lf\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
         ASSERT_EQUALS("", errout.str());
 
         // #4984
