@@ -2002,12 +2002,12 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
                     (tok->previous() && tok->previous()->str()=="."))
                     continue;
 
-                if (tok->previous() && 
+                if (tok->previous() &&
                     tok->previous()->str()=="(") {
                     const Token * prev = tok->previous();
-                    if (prev->previous() && 
-                        (prev->previous()->str() == "SIGNAL" ||
-                         prev->previous()->str() == "SLOT"))
+                    if (prev->previous() &&
+                        (_settings->library.ignorefunction(tok->str())
+                        || _settings->library.ignorefunction(prev->previous()->str())))
                         continue;
                 }
 

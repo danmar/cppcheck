@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 
@@ -247,14 +247,6 @@ Example: '-UDEBUG'</para>
                 <glossterm>missingInclude</glossterm>
                 <glossdef>
                   <para>Warn if there are missing includes. For detailed information use --check-config</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>qt</glossterm>
-                <glossdef>
-                  <para>If a directory containing qt .qml files is added to the source list these
-                  will be parsed to find and resolve functions that may be reported as unused as no C/C++ code
-                  will reference them</para>
                 </glossdef>
               </glossentry>
             </glosslist>

@@ -35,7 +35,15 @@ Library::Library(const Library &lib) :
     allocid(lib.allocid),
     _alloc(lib._alloc),
     _dealloc(lib._dealloc),
-    _noreturn(lib._noreturn)
+    _noreturn(lib._noreturn),
+    _ignorefunction(lib._ignorefunction),
+    _reporterrors(lib._reporterrors),
+    _fileextensions(lib._fileextensions),
+    _keywords(lib._keywords),
+    _executableblocks(lib._executableblocks),
+    _codeblockstart(lib._codeblockstart),
+    _codeblockend(lib._codeblockend),
+    _codeblockoffset(lib._codeblockoffset)
 {
 }
 
@@ -59,13 +67,13 @@ bool Library::load(const char exename[], const char path[])
     }
 
     // open file..
-    FILE *fp = fopen(path, "rt");
+    FILE *fp = fopen(path, "rb");
     if (fp == NULL) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename) == "") {
             fullfilename += ".cfg";
-            fp = fopen(fullfilename.c_str(), "rt");
+            fp = fopen(fullfilename.c_str(), "rb");
         }
 
         if (fp==NULL) {
@@ -74,7 +82,7 @@ bool Library::load(const char exename[], const char path[])
             std::replace(temp.begin(), temp.end(), '\\', '/');
             const std::string installfolder = Path::getPathFromFilename(temp);
             const std::string filename = installfolder + "cfg/" + fullfilename;
-            fp = fopen(filename.c_str(), "rt");
+            fp = fopen(filename.c_str(), "rb");
         }
 
         if (fp == NULL)
@@ -117,7 +125,7 @@ bool Library::load(const char exename[], const char path[])
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 else if (strcmp(functionnode->Name(),"leak-ignore")==0)
                     leakignore.insert(name);
-                else if (strcmp(functionnode->Name(),"arg")==0 && functionnode->Attribute("nr") != NULL) {
+                else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != NULL) {
                     const int nr = atoi(functionnode->Attribute("nr"));
                     bool notnull = false;
                     bool notuninit = false;
@@ -139,10 +147,89 @@ bool Library::load(const char exename[], const char path[])
                     argumentChecks[name][nr].notuninit = notuninit;
                     argumentChecks[name][nr].formatstr = formatstr;
                     argumentChecks[name][nr].strz = strz;
+                } else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
+                    _ignorefunction[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 } else
                     return false;
             }
-        } else
+		}
+
+		else if (strcmp(node->Name(),"files")==0) {
+			_fileextensions.clear();
+			for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+				if (strcmp(functionnode->Name(), "file") == 0) {
+					_fileextensions.push_back(functionnode->Attribute("ext"));
+					const char * report = functionnode->Attribute("reporterrors");
+					if (report)
+						_reporterrors[functionnode->Attribute("ext")] = strcmp(report, "true")==0;
+				} else 
+					return false;
+			}
+        }
+
+        else if (strcmp(node->Name(), "keywords") == 0) {
+            _keywords.clear();
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "keyword") == 0) {
+                    _keywords.push_back(functionnode->Attribute("name"));
+                }
+                else
+                    return false;
+            }
+        }
+
+        else if (strcmp(node->Name(), "exported") == 0) {
+            _exporters.clear();
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "exporter") == 0) {
+                    const char * prefix = (functionnode->Attribute("prefix"));
+                    if (prefix) {
+                        std::map<std::string, std::list<std::string> >::const_iterator
+                            it = _exporters.find(prefix);
+                        if (it == _exporters.end()) {
+                            // add the missing list for later on
+                            std::list<std::string> exporter;
+                            _exporters[prefix] = exporter;
+                        }
+                    } else
+                        return false;
+
+                    for (const tinyxml2::XMLElement *enode = functionnode->FirstChildElement(); enode; enode = enode->NextSiblingElement()) {
+                        if (strcmp(enode->Name(), "prefix") == 0) {
+                            _exporters[prefix].push_back(enode->Attribute("name"));
+                        } else 
+                            return false;
+                    }
+                }
+                else
+                    return false;
+            }
+        }
+
+        else if (strcmp(node->Name(), "codeblocks") == 0) {
+            _executableblocks.clear();
+            _codeblockstart = "}";
+            _codeblockend = "{";
+            _codeblockoffset = 0;
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "block") == 0) {
+                    _executableblocks.push_back(functionnode->Attribute("name"));
+                }
+                else if (strcmp(functionnode->Name(), "structure") == 0) {
+                    const char * start = functionnode->Attribute("start");
+                    if (start)
+                        _codeblockstart = start;
+                    const char * end = functionnode->Attribute("end");
+                    if (end)
+                        _codeblockend = end;
+                    const char * offset = functionnode->Attribute("offset");
+                    if (offset)
+                        _codeblockoffset = atoi(offset);
+                } else
+                    return false;
+            }
+
+		} else
             return false;
     }
     return true;
