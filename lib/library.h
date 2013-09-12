@@ -42,7 +42,7 @@ public:
     Library(const Library &);
     ~Library();
 
-    bool load(const char exename[], const char path[]);
+    bool load(const char exename [], const char path []);
 
     /** get allocation id for function (by name) */
     int alloc(const std::string &name) const {
@@ -82,12 +82,12 @@ public:
     std::set<std::string> leakignore;
 
     bool isnoreturn(const std::string &name) const {
-        std::map<std::string,bool>::const_iterator it = _noreturn.find(name);
+        std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
         return (it != _noreturn.end() && it->second);
     }
 
     bool isnotnoreturn(const std::string &name) const {
-        std::map<std::string,bool>::const_iterator it = _noreturn.find(name);
+        std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
         return (it != _noreturn.end() && !it->second);
     }
 
@@ -106,29 +106,29 @@ public:
     std::map<std::string, std::map<int, ArgumentChecks> > argumentChecks;
 
     bool isnullargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName,argnr);
+        const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->notnull;
     }
 
     bool isuninitargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName,argnr);
+        const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->notuninit;
     }
 
     bool isargformatstr(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName,argnr);
+        const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->formatstr;
     }
 
     bool isargstrz(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName,argnr);
+        const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->strz;
     }
 
     bool acceptFile(const std::string &path) const {
         const std::string extension = Path::getFilenameExtensionInLowerCase(path);
         std::list<std::string>::const_iterator it =
-                std::find(_fileextensions.begin(), _fileextensions.end(), extension);
+            std::find(_fileextensions.begin(), _fileextensions.end(), extension);
         return it != _fileextensions.end();
     }
 
@@ -147,6 +147,30 @@ public:
         return (it != _ignorefunction.end() && it->second);
     }
 
+    bool isexecutableblock(const std::string &token) const {
+        std::list<std::string>::const_iterator it =
+            std::find(_executableblocks.begin(), _executableblocks.end(), token);
+        return it != _executableblocks.end();
+    }
+
+    int blockstartoffset() const {
+        return _codeblockoffset;
+    }
+
+    std::string blockstart() const {
+        return _codeblockstart;
+    }
+
+    std::string blockend() const {
+        return _codeblockend;
+    }
+
+    bool iskeyword(const std::string &keyword) const {
+        std::list<std::string>::const_iterator it =
+            std::find(_keywords.begin(), _keywords.end(), keyword);
+        return it != _keywords.end();
+    }
+
     std::set<std::string> returnuninitdata;
 
 private:
@@ -157,6 +181,11 @@ private:
     std::map<std::string, bool> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
     std::map<std::string, bool> _reporterrors;
     std::list<std::string> _fileextensions; // accepted file extensions
+    std::list<std::string> _keywords; // keywords for code in the library
+    std::list<std::string> _executableblocks; // keywords for blocks of executable code
+    std::string _codeblockstart;
+    std::string _codeblockend;
+    int _codeblockoffset;
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {
         std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;

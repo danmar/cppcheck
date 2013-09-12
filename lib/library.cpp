@@ -38,7 +38,12 @@ Library::Library(const Library &lib) :
     _noreturn(lib._noreturn),
     _ignorefunction(lib._ignorefunction),
     _reporterrors(lib._reporterrors),
-    _fileextensions(lib._fileextensions)
+    _fileextensions(lib._fileextensions),
+    _keywords(lib._keywords),
+    _executableblocks(lib._executableblocks),
+    _codeblockstart(lib._codeblockstart),
+    _codeblockend(lib._codeblockend),
+    _codeblockoffset(lib._codeblockoffset)
 {
 }
 
@@ -148,7 +153,8 @@ bool Library::load(const char exename[], const char path[])
                     return false;
             }
 		}
-		else if (strcmp(node->Name(), "files")==0) {
+
+		else if (strcmp(node->Name(),"files")==0) {
 			_fileextensions.clear();
 			for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
 				if (strcmp(functionnode->Name(), "file") == 0) {
@@ -159,6 +165,42 @@ bool Library::load(const char exename[], const char path[])
 				} else 
 					return false;
 			}
+        }
+
+        else if (strcmp(node->Name(), "keywords") == 0) {
+            _keywords.clear();
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "keyword") == 0) {
+                    _keywords.push_back(functionnode->Attribute("name"));
+                }
+                else
+                    return false;
+            }
+        }
+
+        else if (strcmp(node->Name(), "codeblocks") == 0) {
+            _executableblocks.clear();
+            _codeblockstart = "}";
+            _codeblockend = "{";
+            _codeblockoffset = 0;
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "block") == 0) {
+                    _executableblocks.push_back(functionnode->Attribute("name"));
+                }
+                else if (strcmp(functionnode->Name(), "structure") == 0) {
+                    const char * start = functionnode->Attribute("start");
+                    if (start)
+                        _codeblockstart = start;
+                    const char * end = functionnode->Attribute("end");
+                    if (end)
+                        _codeblockend = end;
+                    const char * offset = functionnode->Attribute("offset");
+                    if (offset)
+                        _codeblockoffset = atoi(offset);
+                } else
+                    return false;
+            }
+
 		} else
             return false;
     }

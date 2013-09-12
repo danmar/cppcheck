@@ -97,30 +97,29 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
     const Token *scopeEnd = NULL;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
-        if(settings->isEnabled("qt")) {
-            // parsing of QT QML calls
-            if (tok->str() == "onClicked" || tok->str() == "onFinished" || tok->str() == "onTriggered") {
-                const Token * qmlVarToken = tok->tokAt(3);
-                int scope = 1;
-                // find all function calls in qml code (starts with '(', not if or while etc)
-                while (scope)
-                {
-                    if(qmlVarToken->str() == "{") {
-                        scope++;
-                    } else if(qmlVarToken->str() == "}")
-                        scope--;
-                    else if(qmlVarToken->next()->str() == "(" &&
-                        (qmlVarToken->str() != "if" &&
-                         qmlVarToken->str() != "while" &&
-                         qmlVarToken->str() != "typeof" &&
-                         qmlVarToken->str() != "for"))
-                    {
-                        if (_functions.find(qmlVarToken->str()) != _functions.end())
-                            _functions[qmlVarToken->str()].usedOtherFile = true;
-                    }
-                    qmlVarToken = qmlVarToken->next();
+        // parsing of library code to find called functions
+        if (settings->library.isexecutableblock(tok->str())) {
+            const Token * qmlVarToken = tok->tokAt(settings->library.blockstartoffset());
+            int scope = 1;
+            // find all function calls in library code (starts with '(', not if or while etc)
+            while (scope)
+            {
+                if (qmlVarToken->str() == settings->library.blockstart()) {
+                    scope++;
                 }
+                else if (qmlVarToken->str() == settings->library.blockend())
+                    scope--;
+                else if (qmlVarToken->next()->str() == "(" &&
+                    (!settings->library.iskeyword(qmlVarToken->str())))
+                {
+                    if (_functions.find(qmlVarToken->str()) != _functions.end())
+                        _functions[qmlVarToken->str()].usedOtherFile = true;
+                }
+                qmlVarToken = qmlVarToken->next();
             }
+        }
+
+        if(true || settings->isEnabled("qt")) {
 
             // look for QT properties (read/write/notify)
             if (tok->str() == "Q_PROPERTY") {
