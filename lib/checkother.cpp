@@ -2262,7 +2262,7 @@ void CheckOther::checkMathFunctions()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
-            if (Token::Match(tok, "log|log10 ( %num% )")) {
+            if (Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
                 bool isNegative = MathLib::isNegative(tok->strAt(2));
                 bool isInt = MathLib::isInt(tok->strAt(2));
                 bool isFloat = MathLib::isFloat(tok->strAt(2));
@@ -2278,7 +2278,7 @@ void CheckOther::checkMathFunctions()
             }
 
             // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
-            else if (Token::Match(tok, "acos|asin ( %num% )") &&
+            else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )") &&
                      std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0) {
                 mathfunctionCallError(tok);
             }
@@ -2288,19 +2288,19 @@ void CheckOther::checkMathFunctions()
                 mathfunctionCallError(tok);
             }
             // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
-            else if (Token::Match(tok, "atan2 ( %num% , %num% )") &&
+            else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )") &&
                      MathLib::isNullValue(tok->strAt(2)) &&
                      MathLib::isNullValue(tok->strAt(4))) {
                 mathfunctionCallError(tok, 2);
             }
             // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
-            else if (Token::Match(tok, "fmod ( %any%")) {
+            else if (Token::Match(tok, "fmod|fmodf|fmodl ( %any%")) {
                 const Token* nextArg = tok->tokAt(2)->nextArgument();
                 if (nextArg && nextArg->isNumber() && MathLib::isNullValue(nextArg->str()))
                     mathfunctionCallError(tok, 2);
             }
             // pow ( x , y) If x is zero, and y is negative --> division by zero
-            else if (Token::Match(tok, "pow ( %num% , %num% )") &&
+            else if (Token::Match(tok, "pow|powf|powl ( %num% , %num% )") &&
                      MathLib::isNullValue(tok->strAt(2))  &&
                      MathLib::isNegative(tok->strAt(4))) {
                 mathfunctionCallError(tok, 2);

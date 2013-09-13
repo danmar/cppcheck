@@ -1335,64 +1335,71 @@ private:
     }
 
     void mathfunctionCall1() {
-        // log|log10
+        // log,log10,logf,logl,log10f,log10l
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(-2) << std::endl;\n"
+              "    std::cout <<  logf(-2) << std::endl;\n"
+              "    std::cout <<  logl(-2) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -2 to log() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -2 to log() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -2 to logf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -2 to logl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
-              "    std::cout <<  log(-1.) << std::endl;\n"
+              "    std::cout <<  log(-1) << std::endl;\n"
+              "    std::cout <<  logf(-1) << std::endl;\n"
+              "    std::cout <<  logl(-1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1. to log() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to log() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -1 to logf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -1 to logl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(-1.0) << std::endl;\n"
+              "    std::cout <<  logf(-1.0) << std::endl;\n"
+              "    std::cout <<  logl(-1.0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.0 to log() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.0 to log() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -1.0 to logf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -1.0 to logl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(-0.1) << std::endl;\n"
+              "    std::cout <<  logf(-0.1) << std::endl;\n"
+              "    std::cout <<  logl(-0.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -0.1 to log() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -0.1 to log() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -0.1 to logf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -0.1 to logl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(0) << std::endl;\n"
+              "    std::cout <<  logf(0.) << std::endl;\n"
+              "    std::cout <<  logl(0.0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0 to log() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0 to log() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value 0. to logf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value 0.0 to logl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
-              "    std::cout <<  log(0.) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0. to log() leads to undefined result.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  log(0.0) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0.0 to log() leads to undefined result.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  log(1.0E+3) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  log(1.0E-3) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  log(1E-3) << std::endl;\n"
+              "    std::cout <<  log(1E-3)    << std::endl;\n"
+              "    std::cout <<  logf(1E-3)   << std::endl;\n"
+              "    std::cout <<  logl(1E-3)   << std::endl;\n"
+              "    std::cout <<  log(1.0E-3)  << std::endl;\n"
+              "    std::cout <<  logf(1.0E-3) << std::endl;\n"
+              "    std::cout <<  logl(1.0E-3) << std::endl;\n"
+              "    std::cout <<  log(1.0E+3)  << std::endl;\n"
+              "    std::cout <<  logf(1.0E+3) << std::endl;\n"
+              "    std::cout <<  logl(1.0E+3) << std::endl;\n"
+              "    std::cout <<  log(2.0)     << std::endl;\n"
+              "    std::cout <<  logf(2.0)    << std::endl;\n"
+              "    std::cout <<  logf(2.0)    << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -1402,52 +1409,128 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  log(2.0) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
         // #3473 - no warning if "log" is a variable
         check("Fred::Fred() : log(0) { }");
         ASSERT_EQUALS("", errout.str());
 
-        // acos
+        // acos, acosf, acosl
         check("void foo()\n"
               "{\n"
-              "    std::cout <<  acos(1)        << std::endl;\n"
-              "    std::cout <<  acos(-1)       << std::endl;\n"
-              "    std::cout <<  acos(0.1)      << std::endl;\n"
-              "    std::cout <<  acos(0.0001)   << std::endl;\n"
-              "    std::cout <<  acos(0.01)     << std::endl;\n"
-              "    std::cout <<  acos(1.0E-1)   << std::endl;\n"
-              "    std::cout <<  acos(-1.0E-1)  << std::endl;\n"
-              "    std::cout <<  acos(+1.0E-1)  << std::endl;\n"
-              "    std::cout <<  acos(0.1E-1)   << std::endl;\n"
-              "    std::cout <<  acos(+0.1E-1)  << std::endl;\n"
-              "    std::cout <<  acos(-0.1E-1)  << std::endl;\n"
+              " return acos(1)       \n"
+              "    + acos(-1)        \n"
+              "    + acos(0.1)       \n"
+              "    + acos(0.0001)    \n"
+              "    + acos(0.01)      \n"
+              "    + acos(1.0E-1)    \n"
+              "    + acos(-1.0E-1)   \n"
+              "    + acos(+1.0E-1)   \n"
+              "    + acos(0.1E-1)    \n"
+              "    + acos(+0.1E-1)   \n"
+              "    + acos(-0.1E-1)   \n"
+              "    + acosf(1)        \n"
+              "    + acosf(-1)       \n"
+              "    + acosf(0.1)      \n"
+              "    + acosf(0.0001)   \n"
+              "    + acosf(0.01)     \n"
+              "    + acosf(1.0E-1)   \n"
+              "    + acosf(-1.0E-1)  \n"
+              "    + acosf(+1.0E-1)  \n"
+              "    + acosf(0.1E-1)   \n"
+              "    + acosf(+0.1E-1)  \n"
+              "    + acosf(-0.1E-1)  \n"
+              "    + acosl(1)        \n"
+              "    + acosl(-1)       \n"
+              "    + acosl(0.1)      \n"
+              "    + acosl(0.0001)   \n"
+              "    + acosl(0.01)     \n"
+              "    + acosl(1.0E-1)   \n"
+              "    + acosl(-1.0E-1)  \n"
+              "    + acosl(+1.0E-1)  \n"
+              "    + acosl(0.1E-1)   \n"
+              "    + acosl(+0.1E-1)  \n"
+              "    + acosl(-0.1E-1); \n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  acos(1.1) << std::endl;\n"
+              "    std::cout <<  acosf(1.1) << std::endl;\n"
+              "    std::cout <<  acosl(1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 1.1 to acos() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 1.1 to acos() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value 1.1 to acosf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value 1.1 to acosl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  acos(-1.1) << std::endl;\n"
+              "    std::cout <<  acosf(-1.1) << std::endl;\n"
+              "    std::cout <<  acosl(-1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to acos() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to acos() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -1.1 to acosf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -1.1 to acosl() leads to undefined result.\n", errout.str());
+
+
+        // asin, asinf, asinl
+        check("void foo()\n"
+              "{\n"
+              " return asin(1)       \n"
+              "    + asin(-1)        \n"
+              "    + asin(0.1)       \n"
+              "    + asin(0.0001)    \n"
+              "    + asin(0.01)      \n"
+              "    + asin(1.0E-1)    \n"
+              "    + asin(-1.0E-1)   \n"
+              "    + asin(+1.0E-1)   \n"
+              "    + asin(0.1E-1)    \n"
+              "    + asin(+0.1E-1)   \n"
+              "    + asin(-0.1E-1)   \n"
+              "    + asinf(1)        \n"
+              "    + asinf(-1)       \n"
+              "    + asinf(0.1)      \n"
+              "    + asinf(0.0001)   \n"
+              "    + asinf(0.01)     \n"
+              "    + asinf(1.0E-1)   \n"
+              "    + asinf(-1.0E-1)  \n"
+              "    + asinf(+1.0E-1)  \n"
+              "    + asinf(0.1E-1)   \n"
+              "    + asinf(+0.1E-1)  \n"
+              "    + asinf(-0.1E-1)  \n"
+              "    + asinl(1)        \n"
+              "    + asinl(-1)       \n"
+              "    + asinl(0.1)      \n"
+              "    + asinl(0.0001)   \n"
+              "    + asinl(0.01)     \n"
+              "    + asinl(1.0E-1)   \n"
+              "    + asinl(-1.0E-1)  \n"
+              "    + asinl(+1.0E-1)  \n"
+              "    + asinl(0.1E-1)   \n"
+              "    + asinl(+0.1E-1)  \n"
+              "    + asinl(-0.1E-1); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
-              "    std::cout <<  acos(-110) << std::endl;\n"
+              "    std::cout <<  asin(1.1) << std::endl;\n"
+              "    std::cout <<  asinf(1.1) << std::endl;\n"
+              "    std::cout <<  asinl(1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -110 to acos() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 1.1 to asin() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value 1.1 to asinf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value 1.1 to asinl() leads to undefined result.\n", errout.str());
 
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  asin(-1.1) << std::endl;\n"
+              "    std::cout <<  asinf(-1.1) << std::endl;\n"
+              "    std::cout <<  asinl(-1.1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to asin() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -1.1 to asinf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -1.1 to asinl() leads to undefined result.\n", errout.str());
 
         // atan2
         check("void foo()\n"
@@ -1463,57 +1546,99 @@ private:
               "    std::cout <<  atan2(0.1E-1,3)   << std::endl;\n"
               "    std::cout <<  atan2(+0.1E-1,1)  << std::endl;\n"
               "    std::cout <<  atan2(-0.1E-1,8)  << std::endl;\n"
+              "    std::cout <<  atan2f(1,1)        << std::endl;\n"
+              "    std::cout <<  atan2f(-1,-1)      << std::endl;\n"
+              "    std::cout <<  atan2f(0.1,1)      << std::endl;\n"
+              "    std::cout <<  atan2f(0.0001,100) << std::endl;\n"
+              "    std::cout <<  atan2f(0.01m-1)    << std::endl;\n"
+              "    std::cout <<  atan2f(1.0E-1,-3)  << std::endl;\n"
+              "    std::cout <<  atan2f(-1.0E-1,+2) << std::endl;\n"
+              "    std::cout <<  atan2f(+1.0E-1,0)  << std::endl;\n"
+              "    std::cout <<  atan2f(0.1E-1,3)   << std::endl;\n"
+              "    std::cout <<  atan2f(+0.1E-1,1)  << std::endl;\n"
+              "    std::cout <<  atan2f(-0.1E-1,8)  << std::endl;\n"
+              "    std::cout <<  atan2l(1,1)        << std::endl;\n"
+              "    std::cout <<  atan2l(-1,-1)      << std::endl;\n"
+              "    std::cout <<  atan2l(0.1,1)      << std::endl;\n"
+              "    std::cout <<  atan2l(0.0001,100) << std::endl;\n"
+              "    std::cout <<  atan2l(0.01m-1)    << std::endl;\n"
+              "    std::cout <<  atan2l(1.0E-1,-3)  << std::endl;\n"
+              "    std::cout <<  atan2l(-1.0E-1,+2) << std::endl;\n"
+              "    std::cout <<  atan2l(+1.0E-1,0)  << std::endl;\n"
+              "    std::cout <<  atan2l(0.1E-1,3)   << std::endl;\n"
+              "    std::cout <<  atan2l(+0.1E-1,1)  << std::endl;\n"
+              "    std::cout <<  atan2l(-0.1E-1,8)  << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  atan2(0,0) << std::endl;\n"
+              "    std::cout <<  atan2f(0,0) << std::endl;\n"
+              "    std::cout <<  atan2l(0,0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and 0 to atan2() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and 0 to atan2() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing values 0 and 0 to atan2f() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing values 0 and 0 to atan2l() leads to undefined result.\n", errout.str());
 
 
-        // fmod
+        // fmod, fmodl, fmodf
         check("void foo()\n"
               "{\n"
               "    std::cout <<  fmod(1.0,0) << std::endl;\n"
+              "    std::cout <<  fmodf(1.0,0) << std::endl;\n"
+              "    std::cout <<  fmodl(1.0,0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 1.0 and 0 to fmod() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 1.0 and 0 to fmod() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing values 1.0 and 0 to fmodf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing values 1.0 and 0 to fmodl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  fmod(1.0,1) << std::endl;\n"
+              "    std::cout <<  fmodf(1.0,1) << std::endl;\n"
+              "    std::cout <<  fmodl(1.0,1) << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
 
-        // pow
+        // pow, powf, powl
         check("void foo()\n"
               "{\n"
               "    std::cout <<  pow(0,-10) << std::endl;\n"
+              "    std::cout <<  powf(0,-10) << std::endl;\n"
+              "    std::cout <<  powl(0,-10) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and -10 to pow() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and -10 to pow() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing values 0 and -10 to powf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing values 0 and -10 to powl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  pow(0,10) << std::endl;\n"
+              "    std::cout <<  powf(0,10) << std::endl;\n"
+              "    std::cout <<  powl(0,10) << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // sqrt
+        // sqrt, sqrtf, sqrtl
         check("void foo()\n"
               "{\n"
               "    std::cout <<  sqrt(-1) << std::endl;\n"
+              "    std::cout <<  sqrtf(-1) << std::endl;\n"
+              "    std::cout <<  sqrtl(-1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to sqrt() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to sqrt() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -1 to sqrtf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -1 to sqrtl() leads to undefined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  sqrt(1) << std::endl;\n"
+              "    std::cout <<  sqrtf(1) << std::endl;\n"
+              "    std::cout <<  sqrtl(1) << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-
     }
 
     void cctypefunctionCall() {
