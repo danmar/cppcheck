@@ -59,13 +59,13 @@ bool Library::load(const char exename[], const char path[])
     }
 
     // open file..
-    FILE *fp = fopen(path, "rt");
+    FILE *fp = fopen(path, "rb");
     if (fp == NULL) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename) == "") {
             fullfilename += ".cfg";
-            fp = fopen(fullfilename.c_str(), "rt");
+            fp = fopen(fullfilename.c_str(), "rb");
         }
 
         if (fp==NULL) {
@@ -74,7 +74,7 @@ bool Library::load(const char exename[], const char path[])
             std::replace(temp.begin(), temp.end(), '\\', '/');
             const std::string installfolder = Path::getPathFromFilename(temp);
             const std::string filename = installfolder + "cfg/" + fullfilename;
-            fp = fopen(filename.c_str(), "rt");
+            fp = fopen(filename.c_str(), "rb");
         }
 
         if (fp == NULL)
