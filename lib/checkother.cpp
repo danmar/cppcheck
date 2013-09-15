@@ -2165,7 +2165,7 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
     for (std::size_t functionIndex = 0; functionIndex < numberOfFunctions; ++functionIndex) {
         const Scope * scope = symbolDatabase->functionScopes[functionIndex];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "[/%] %var% !!.")) {
+            if (Token::Match(tok, "[/%] %var% !!.") || Token::Match(tok, "[(,] %var% [,)]")) {
                 const unsigned int varid = tok->next()->varId();
                 const Variable *var = tok->next()->variable();
                 if (!var)
@@ -2177,8 +2177,61 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                         break;
                     }
                 }
-                const Token *tok2;
+
+                const Token *divtok = tok;
+
+                // Check if variable is divided by function..
+                if (Token::Match(tok, "[(,]")) {
+                    const Token *ftok = tok;
+                    unsigned int parnum = 0U;
+                    while (ftok && ftok->str() != "(") {
+                        if (ftok->str() == ")")
+                            ftok = ftok->link();
+                        else if (ftok->str() == ",")
+                            parnum++;
+                        ftok = ftok ? ftok->previous() : NULL;
+                    }
+                    ftok = ftok ? ftok->previous() : NULL;
+                    if (!Token::Match(ftok, "%var% (") && ftok->function())
+                        continue;
+
+                    const Function * const function = ftok->function();
+                    const Variable * const arg = function ? function->getArgumentVar(parnum) : NULL;
+                    const Token *argtok = arg ? arg->typeStartToken() : NULL;
+
+                    if (!argtok)
+                        continue;
+
+                    if (argtok->str() == "const")
+                        argtok = argtok->next();
+
+                    if (!Token::Match(argtok,"%type% %var% ,|)"))
+                        continue;
+
+                    const Scope * const functionScope = function ? function->functionScope : NULL;
+                    if (!functionScope)
+                        continue;
+
+                    const unsigned int varid2 = argtok->next()->varId();
+                    divtok = NULL;
+                    bool use = false;
+                    for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
+                        if (Token::Match(tok2, "[%/] %varid%", varid2)) {
+                            divtok = tok2;
+                            tok2 = tok2->next();
+                        } else if (tok2->str() != "&" && Token::Match(tok2, "%cop% %varid%",varid2)) {
+                            tok2 = tok2->next();
+                        } else if (tok2->varId() == varid2 || tok2->str() == "{") {
+                            use = true;
+                            break;
+                        }
+                    }
+                    if (!divtok || use)
+                        continue;
+                }
+
                 // Look for if condition
+                const Token *tok2;
                 for (tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                     if (tok2->varId() == varid)
                         break;
@@ -2193,11 +2246,11 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                         if (tok2->str() == "{")
                             break;
                         if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,tok);
+                            zerodivcondError(tok2,divtok);
                         else if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,tok);
+                            zerodivcondError(tok2,divtok);
                         else if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,tok);
+                            zerodivcondError(tok2,divtok);
                     }
                 }
             }

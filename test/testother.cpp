@@ -456,6 +456,14 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 2.\n", errout.str());
 
+        // function call
+        check("void f1(int x, int y) { c=x/y; }\n"
+              "void f2(unsigned int y) {\n"
+              "    f1(123,y);\n"
+              "    if (y>0){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is useless or there is division by zero at line 1.\n", errout.str());
+
         // avoid false positives when variable is changed after division
         check("void f() {\n"
               "  unsigned int x = do_something();\n"
