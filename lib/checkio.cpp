@@ -1072,7 +1072,10 @@ void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numF
 void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a floating point number but the argument type is ";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a \'";
+    if (specifier[0] == 'L')
+        errmsg << "long ";
+    errmsg << "double\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
     reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
