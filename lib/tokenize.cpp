@@ -9205,31 +9205,51 @@ void Tokenizer::simplifyNamespaceStd()
         return;
 
     static const char* stdTypes_[] = { // Types and objects in std namespace that are neither functions nor templates
-        "string", "wstring",
-        "iostream", "ostream", "ofstream", "ostringstream", "istream", "ifstream", "istringstream", "fstream", "stringstream",
+        "string", "wstring", "u16string", "u32string",
+        "iostream", "ostream", "ofstream", "ostringstream",
+        "istream", "ifstream", "istringstream", "fstream", "stringstream",
+        "wstringstream", "wistringstream", "wostringstream", "wstringbuf",
         "stringbuf", "streambuf", "ios", "filebuf", "ios_base",
-        "exception", "bad_exception",
-        "logic_error", "domain_error", "invalid_argument_", "length_error", "out_of_rage", "runtime_error", "range_error", "overflow_error", "underflow_error",
+        "exception", "bad_exception", "bad_alloc",
+        "logic_error", "domain_error", "invalid_argument_", "length_error",
+        "out_of_range", "runtime_error", "range_error", "overflow_error", "underflow_error",
         "locale",
-        "cout", "cerr", "clog", "cin", "endl",
+        "cout", "cerr", "clog", "cin",
+        "wcerr", "wcin", "wclog", "wcout",
+        "endl", "ends", "flush",
+        "boolalpha", "noboolalpha", "showbase", "noshowbase",
+        "showpoint", "noshowpoint", "showpos", "noshowpos",
+        "skipws", "noskipws", "unitbuf", "nounitbuf", "uppercase", "nouppercase",
+        "dec", "hex", "oct",
+        "fixed", "scientific",
+        "internal", "left", "right",
         "fpos", "streamoff", "streampos", "streamsize"
     };
     static const std::set<std::string> stdTypes(stdTypes_, stdTypes_+sizeof(stdTypes_)/sizeof(*stdTypes_));
     static const char* stdTemplates_[] = {
-        "basic_string", "bitset", "deque", "list", "map", "multimap", "priority_queue", "queue", "set", "stack", "vector", "pair",
-        "iterator", "iterator_traits"
+        "array", "basic_string", "bitset", "deque", "list", "map", "multimap",
+        "priority_queue", "queue", "set", "multiset", "stack", "vector", "pair",
+        "iterator", "iterator_traits",
+        "unordered_map", "unordered_multimap", "unordered_set", "unordered_multiset",
+        "tuple", "function"
     };
     static const std::set<std::string> stdTemplates(stdTemplates_, stdTemplates_+sizeof(stdTemplates_)/sizeof(*stdTemplates_));
     static const char* stdFunctions_[] = {
         "getline",
-        "for_each", "find", "find_if", "find_end", "find_first_of", "adjacent_find", "count", "count_if", "mismatch", "equal", "search", "search_n",
-        "copy", "copy_backward", "swap", "swap_ranges", "iter_swap", "transform", "replace", "replace_if", "replace_copy", "replace_copy_if", "fill", "fill_n", "generate", "generate_n", "remove",
-        "remove_if", "remove_copy", "remove_copy_if", "unique", "unique_copy", "reverse", "reverse_copy", "rotate", "rotate_copy", "random_shuffle", "partition", "stable_partition",
-        "sort", "stable_sort", "partial_sort", "partial_sort_copy", "nth_element", "lower_bound", "upper_bound", "equal_range", "binary_search", "merge", "inplace_merge", "includes",
-        "set_union", "set_intersection", "set_difference", "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
+        "for_each", "find", "find_if", "find_end", "find_first_of",
+        "adjacent_find", "count", "count_if", "mismatch", "equal", "search", "search_n",
+        "copy", "copy_backward", "swap", "swap_ranges", "iter_swap", "transform", "replace",
+        "replace_if", "replace_copy", "replace_copy_if", "fill", "fill_n", "generate", "generate_n", "remove",
+        "remove_if", "remove_copy", "remove_copy_if",
+        "unique", "unique_copy", "reverse", "reverse_copy",
+        "rotate", "rotate_copy", "random_shuffle", "partition", "stable_partition",
+        "sort", "stable_sort", "partial_sort", "partial_sort_copy", "nth_element",
+        "lower_bound", "upper_bound", "equal_range", "binary_search", "merge", "inplace_merge", "includes",
+        "set_union", "set_intersection", "set_difference",
+        "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
         "min", "max", "min_element", "max_element", "lexicographical_compare", "next_permutation", "prev_permutation",
         "advance", "back_inserter", "distance", "front_inserter", "inserter",
-        "make_pair"
+        "make_pair", "make_shared", "make_tuple"
     };
     static const std::set<std::string> stdFunctions(stdFunctions_, stdFunctions_+sizeof(stdFunctions_)/sizeof(*stdFunctions_));
 
