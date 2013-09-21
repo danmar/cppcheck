@@ -5135,6 +5135,10 @@ private:
 
         // local struct variable
         TEST_CASE(localvars);
+
+        // Segmentation fault in CheckMemoryLeakStructMember
+        TEST_CASE(trac5030);
+
     }
 
     void err() {
@@ -5421,6 +5425,16 @@ private:
         check(code_ok, "test.cpp");
         ASSERT_EQUALS("", errout.str());
         check(code_ok, "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // don't crash
+    void trac5030() {
+        check("bool bob( char const **column_ptrs ) {\n"
+              "unique_ptr<char[]>otherbuffer{new char[otherbufsize+1]};\n"
+              "char *const oldbuffer = otherbuffer.get();\n"
+              "int const oldbufsize = otherbufsize;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
