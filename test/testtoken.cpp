@@ -417,19 +417,19 @@ private:
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
         givenACodeSampleToTokenize floatingPoint("0.0f", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(floatingPoint.tokens(), "%num%"));
 
         givenACodeSampleToTokenize doublePrecision("0.0d", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(doublePrecision.tokens(), "%num%"));
 
         givenACodeSampleToTokenize unsignedInt("0U", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(unsignedInt.tokens(), "%num%"));
 
         givenACodeSampleToTokenize unsignedLong("0UL", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(unsignedLong.tokens(), "%num%"));
 
         givenACodeSampleToTokenize unsignedLongLong("0ULL", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(unsignedLongLong.tokens(), "%num%"));
 
         givenACodeSampleToTokenize positive("+666", true);
         ASSERT_EQUALS(true, Token::Match(positive.tokens(), "+ %num%"));
