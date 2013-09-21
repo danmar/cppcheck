@@ -2192,6 +2192,8 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                         ftok = ftok ? ftok->previous() : NULL;
                     }
                     ftok = ftok ? ftok->previous() : NULL;
+                    if (!ftok)
+                        continue;
                     if (!Token::Match(ftok, "%var% (") && ftok->function())
                         continue;
 

@@ -508,6 +508,15 @@ private:
               "  while (y || x == 0) { x--; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket 5033 segmentation fault (valid code) in CheckOther::checkZeroDivisionOrUselessCondition
+        check("void f() {\n"
+              "double* p1= new double[1];\n"
+              "double* p2= new double[1];\n"
+              "double* p3= new double[1];\n"
+              "double* pp[3] = {p1,p2,p3};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {
