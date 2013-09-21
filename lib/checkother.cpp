@@ -522,7 +522,7 @@ void CheckOther::checkPipeParameterSize()
                 const Variable *var = varTok->variable();
                 MathLib::bigint dim;
                 if (var && var->isArray() && !var->isArgument() && ((dim=var->dimension(0U)) < 2)) {
-                    const std::string strDim = MathLib::longToString(dim);
+                    const std::string strDim = MathLib::toString(dim);
                     checkPipeParameterSizeError(varTok,varTok->str(), strDim);
                 }
             }
@@ -2278,7 +2278,7 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
         else
             condition = tokcond->str() + "!=0";
     }
-    const std::string linenr(MathLib::longToString(tokdiv ? tokdiv->linenr() : 0));
+    const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
     reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".");
 }
 //---------------------------------------------------------------------------
