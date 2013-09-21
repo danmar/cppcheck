@@ -8247,7 +8247,11 @@ void Tokenizer::cppcheckError(const Token *tok) const
                 "Analysis failed. If the code is valid then please report this failure.");
 }
 
-
+// ------------------------------------------------------
+// Simplify math functions.
+// It simplifies following functions: atol(),abs(),fabs()
+// labs(),llabs() in the tokenlist.
+// ------------------------------------------------------
 void Tokenizer::simplifyMathFunctions()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -8272,6 +8276,26 @@ void Tokenizer::simplifyMathFunctions()
             // Convert string into a number
             tok->str(MathLib::longToString(MathLib::toLongNumber(tok->strValue())));
 
+            // Delete remaining )
+            tok->deleteNext();
+        } else if (Token::Match(tok, "abs|fabs|labs|llabs ( %num% )")) {
+
+            if (tok->previous() &&
+                Token::simpleMatch(tok->tokAt(-2), "std ::")) {
+                // Delete "std ::"
+                tok = tok->tokAt(-2);
+                tok->deleteNext();
+                tok->deleteThis();
+            }
+
+            // Delete abs (
+            tok->deleteNext();
+            tok->deleteThis();
+            std::string strNumber(tok->str());
+            if (!strNumber.empty() && strNumber[0] == '-')
+                strNumber = strNumber.substr(1);
+            // insert result into token list
+            tok->str(strNumber);
             // Delete remaining )
             tok->deleteNext();
         }

@@ -496,6 +496,8 @@ private:
         TEST_CASE(platformWin32AStringCat); // ticket #5015
         TEST_CASE(platformWin32WStringCat); // ticket #5015
 
+        TEST_CASE(simplifyMathFunctions); // ticket #5031
+
         TEST_CASE(simplifyMathExpressions); //ticket #1620
 
         // AST data
@@ -8275,6 +8277,46 @@ private:
         const char expected[] = "wchar_t text [ 10 ] = L\"123456789\" ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32W));
     }
+
+    void simplifyMathFunctions() { //#5031
+        const char code1[] = "void foo() {\n"
+                             "    std::cout<<std::abs(0);\n"    // in std:: namespeace
+                             "    std::cout<<std::fabs(0.0);\n" // in std:: namespeace
+                             "    std::cout<<abs(0);\n"
+                             "    std::cout<<fabs(0.0);\n"
+                             "    std::cout<<labs(0);\n"
+                             "    std::cout<<llabs(0);\n"
+                             "    std::cout<<std::abs(-1);\n"    // in std:: namespeace
+                             "    std::cout<<std::fabs(-1.0);\n" // in std:: namespeace
+                             "    std::cout<<abs(-1);\n"
+                             "    std::cout<<fabs(-1.0);\n"
+                             "    std::cout<<labs(-1);\n"
+                             "    std::cout<<llabs(-1);\n"
+                             "    std::cout<<atol(\"1\");\n"
+                             "}";
+        const char expected1[] = "void foo ( ) {\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 0.0 ;\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 0.0 ;\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1.0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1.0 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "}";
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
+
+        // testcase from ticket #5031
+        const char code2[]     = "extern int a; void f(){printf(\"%i\", abs(--a));}\n";
+        const char expected2[] = "extern int a ; void f ( ) { printf ( \"%i\" , abs ( -- a ) ) ; }";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
+    }
+
 
     void simplifyMathExpressions() {//#1620
         const char code1[] = "void foo() {\n"
