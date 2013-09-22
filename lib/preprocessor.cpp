@@ -272,7 +272,7 @@ std::string Preprocessor::readpreprocessor(std::istream &istr, const unsigned in
     enum { NEWLINE, SPACE, PREPROCESSOR, BACKSLASH, OTHER } state = NEWLINE;
     std::ostringstream code;
     unsigned int newlines = 1;
-    char chPrev = ' ';
+    unsigned char chPrev = ' ';
     for (unsigned char ch = readChar(istr,bom); istr.good(); ch = readChar(istr,bom)) {
         // Replace assorted special chars with spaces..
         if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
