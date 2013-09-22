@@ -336,9 +336,26 @@ private:
     void zeroDiv3() {
         check("void f()\n"
               "{\n"
-              "   div_t divresult = div (1,0);\n"
+              "   div_t divresult = std::div (1,0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   div_t divresult = std::div (1,0L);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   div_t divresult = std::div (1,0x5);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #4929 - we don't know if this "div" is the standard function
+              "   div (1,0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void zeroDiv4() {
@@ -365,18 +382,6 @@ private:
               "   long a = b / 0ul;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "   div_t divresult = div (1,0L);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "   div_t divresult = div (1,0x5);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
 
         // Don't warn about floating points (gcc doesn't warn either)
         // and floating points are handled differently than integers.
