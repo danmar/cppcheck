@@ -5364,7 +5364,7 @@ void Tokenizer::simplifyPlatformTypes()
             tok->deleteThis();
         }
 
-        if (Token::Match(tok, "size_t|uintptr_t")) {
+        if (Token::Match(tok, "size_t|uintptr_t|uintmax_t")) {
             if (inStd)
                 tok->originalName("std::" + tok->str());
             else
@@ -5383,7 +5383,7 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->str("int");
                 break;
             }
-        } else if (Token::Match(tok, "ssize_t|ptrdiff_t|intptr_t")) {
+        } else if (Token::Match(tok, "ssize_t|ptrdiff_t|intptr_t|intmax_t")) {
             if (inStd)
                 tok->originalName("std::" + tok->str());
             else

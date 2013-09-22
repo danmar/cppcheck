@@ -86,6 +86,7 @@ private:
         const Function *functionInfo;
         bool element;
         bool _template;
+        bool address;
         Token *tempToken;
 
     private:
@@ -107,9 +108,11 @@ private:
                                         unsigned int numFunction);
     void wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
             unsigned int index, unsigned int numFunction);
-    void invalidScanfArgTypeError(const Token* tok, const std::string &functionName, unsigned int numFormat);
+    void invalidScanfArgTypeError_s(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
+    void invalidScanfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo, bool isUnsigned);
+    void invalidScanfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
-    void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
@@ -130,9 +133,11 @@ private:
         c.useClosedFileError(0);
         c.invalidScanfError(0, false);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
-        c.invalidScanfArgTypeError(0, "scanf", 1);
+        c.invalidScanfArgTypeError_s(0, 1, "s", NULL);
+        c.invalidScanfArgTypeError_int(0, 1, "d", NULL, false);
+        c.invalidScanfArgTypeError_float(0, 1, "f", NULL);
         c.invalidPrintfArgTypeError_s(0, 1);
-        c.invalidPrintfArgTypeError_n(0, 1);
+        c.invalidPrintfArgTypeError_n(0, 1, NULL);
         c.invalidPrintfArgTypeError_p(0, 1, NULL);
         c.invalidPrintfArgTypeError_int(0, 1, "X", NULL);
         c.invalidPrintfArgTypeError_uint(0, 1, "u", NULL);
