@@ -35,8 +35,7 @@ public:
     typedef long long bigint;
 
     static bigint toLongNumber(const std::string & str);
-    template<class T> static std::string toString(T value)
-    {
+    template<class T> static std::string toString(T value) {
         std::ostringstream result;
         result << value;
         return result.str();
