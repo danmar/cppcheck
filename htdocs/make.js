@@ -23,13 +23,13 @@
     var fs = require("fs"),
         cleanCSS = require("clean-css"),
         UglifyJS = require("uglify-js"),
-        ROOT_DIR = __dirname + "/";     // absolute path to project's root
+        rootDir = __dirname + "/";      // absolute path to project's root
 
     //
     // make minify
     //
     target.minify = function () {
-        cd(ROOT_DIR);
+        cd(rootDir);
         echo();
         echo("### Minifying css files...");
 
