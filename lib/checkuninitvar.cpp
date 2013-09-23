@@ -1518,10 +1518,17 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                 else {
                     bool assign = true;
                     if (tok->strAt(1) == "=") {
+                        unsigned int indentlevel = 0; // Handle '(a=1)..'
                         for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                             if (tok2->varId() == var.declarationId()) {
                                 assign = false;
                                 break;
+                            } else if (tok2->str() == "(") {
+                                ++indentlevel;
+                            } else if (tok2->str() == ")") {
+                                if (indentlevel <= 1U)
+                                    break;
+                                --indentlevel;
                             }
                         }
                     }

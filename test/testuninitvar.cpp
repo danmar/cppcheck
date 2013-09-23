@@ -2950,8 +2950,19 @@ private:
                         "       }\n"
                         "   }\n"
                         "   return x;\n"
-                        "}\n", "test.c");
+                        "}\n");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        checkUninitVar2("int f(void) {\n"
+                        "   int x;\n"
+                        "   while (a()) {\n"
+                        "       if (b() && (x=1)) {\n"
+                        "           return x;\n"
+                        "       }\n"
+                        "   }\n"
+                        "   return 0;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("void f(void) {\n"
                         "   int x;\n"
