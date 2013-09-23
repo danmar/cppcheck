@@ -2788,20 +2788,6 @@ private:
                         "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar2("struct PIXEL {\n" // union in struct #4970
-                        "    union  {\n"
-                        "        struct { unsigned char red,green,blue,alpha; };\n"
-                        "        unsigned int color;\n"
-                        "    };\n"
-                        "};\n"
-                        "\n"
-                        "unsigned char f() {\n"
-                        "    struct PIXEL p1;\n"
-                        "    p1.color = 255;\n"
-                        "    return p1.red;\n"
-                        "}");
-        ASSERT_EQUALS("", errout.str());
-
         // return
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"

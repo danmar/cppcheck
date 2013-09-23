@@ -1101,22 +1101,11 @@ void CheckUninitVar::checkScope(const Scope* scope)
             for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
                 const Scope *scope2 = symbolDatabase->classAndStructScopes[j];
                 if (scope2->className == structname && scope2->numConstructors == 0U) {
-                    bool hasUnion = false;
-                    for (std::list<Scope*>::const_iterator childscope = scope2->nestedList.begin();
-                         childscope != scope2->nestedList.end();
-                         ++childscope) {
-                        if ((*childscope)->type == Scope::eUnion)
-                            hasUnion = true;
-                    }
-                    if (hasUnion)
-                        break;
-
                     for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
                         const Variable &var = *it;
                         if (!var.isArray())
                             checkScopeForVariable(scope, tok, *i, NULL, NULL, var.name());
                     }
-                    break;
                 }
             }
         }
