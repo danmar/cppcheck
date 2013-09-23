@@ -2142,9 +2142,9 @@ void CheckOther::checkZeroDivision()
             MathLib::isInt(tok->next()->str()) &&
             MathLib::toLongNumber(tok->next()->str()) == 0L) {
             zerodivError(tok);
-        } else if (Token::Match(tok, "std :: div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
-                   MathLib::isInt(tok->strAt(6)) &&
-                   MathLib::toLongNumber(tok->strAt(6)) == 0L) {
+        } else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
+                   MathLib::isInt(tok->strAt(4)) &&
+                   MathLib::toLongNumber(tok->strAt(4)) == 0L) {
             zerodivError(tok);
         }
     }
