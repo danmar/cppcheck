@@ -2003,6 +2003,32 @@ private:
                       "[test.cpp:6]: (warning) %p in format string (no. 2) requires an address but the argument type is 'char'.\n"
                       "[test.cpp:7]: (warning) %p in format string (no. 2) requires an address but the argument type is 'char'.\n", errout.str());
 
+        check("template <class T>\n"
+              "struct buffer {\n"
+              "    size_t size();\n"
+              "};\n"
+              "buffer<int> b;\n"
+              "void foo() {\n"
+              "    printf(\"%u\", b.size());\n"
+              "}\n", false, false, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:7]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+
+        check("DWORD a;\n"
+              "DWORD_PTR b;\n"
+              "void foo() {\n"
+              "    printf(\"%u %u\", a, b);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %u in format string (no. 1) requires an unsigned integer but the argument type is 'DWORD {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires an unsigned integer but the argument type is 'DWORD_PTR {aka unsigned long}'.\n", errout.str());
+
+        check("unsigned long a[] = { 1, 2 };\n"
+              "void foo() {\n"
+              "    printf(\"%d %d %x \", a[0], a[0], a[0]);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires a signed integer but the argument type is 'unsigned long'.\n"
+                      "[test.cpp:3]: (warning) %d in format string (no. 2) requires a signed integer but the argument type is 'unsigned long'.\n"
+                      "[test.cpp:3]: (warning) %x in format string (no. 3) requires an integer but the argument type is 'unsigned long'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

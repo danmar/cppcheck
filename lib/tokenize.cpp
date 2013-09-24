@@ -5418,6 +5418,7 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->originalName(tok->str());
                 tok->str("char");
             } else if (Token::Match(tok, "DWORD|ULONG|COLORREF|LCID|LCTYPE|LGRPID")) {
+                tok->originalName(tok->str());
                 tok->str("long");
                 tok->isUnsigned(true);
             } else if (Token::Match(tok, "DWORD_PTR|ULONG_PTR|SIZE_T")) {
@@ -9919,7 +9920,7 @@ void Tokenizer::printUnknownTypes()
     if (!unknowns.empty()) {
         std::multimap<std::string, const Token *>::const_iterator it;
         std::string last;
-        size_t count;
+        size_t count = 0;
 
         for (it = unknowns.begin(); it != unknowns.end(); ++it) {
             // skip types is std namespace because they are not interesting

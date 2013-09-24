@@ -204,6 +204,7 @@ void Token::deleteThis()
         _scope = _next->_scope;
         _function = _next->_function;
         _variable = _next->_variable;
+        _originalName = _next->_originalName;
         if (_link)
             _link->link(this);
 
@@ -925,6 +926,47 @@ void Token::insertToken(const std::string &tokenStr, bool prepend)
     else
         newToken = new Token(tokensBack);
     newToken->str(tokenStr);
+    newToken->_linenr = _linenr;
+    newToken->_fileIndex = _fileIndex;
+    newToken->_progressValue = _progressValue;
+
+    if (newToken != this) {
+        if (prepend) {
+            /*if (this->previous())*/ {
+                newToken->previous(this->previous());
+                newToken->previous()->next(newToken);
+            } /*else if (tokensFront?) {
+                *tokensFront? = newToken;
+            }*/
+            this->previous(newToken);
+            newToken->next(this);
+        } else {
+            if (this->next()) {
+                newToken->next(this->next());
+                newToken->next()->previous(newToken);
+            } else if (tokensBack) {
+                *tokensBack = newToken;
+            }
+            this->next(newToken);
+            newToken->previous(this);
+        }
+    }
+}
+
+void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
+{
+    Token *newToken;
+
+    //TODO: Find a solution for the first token on the list
+    if (prepend && !this->previous())
+        return;
+
+    if (_str.empty())
+        newToken = this;
+    else
+        newToken = new Token(tokensBack);
+    newToken->str(tokenStr);
+    newToken->_originalName = originalNameStr;
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
     newToken->_progressValue = _progressValue;

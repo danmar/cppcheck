@@ -541,7 +541,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                     const Token *from = (*it)->next();
                     std::stack<Token *> links;
                     while (from && (!links.empty() || (from->str() != "," && from->str() != ">"))) {
-                        tok->insertToken(from->str());
+                        tok->insertToken(from->str(), from->originalName());
                         tok = tok->next();
                         if (Token::Match(tok, "(|["))
                             links.push(tok);
