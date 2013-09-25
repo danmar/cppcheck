@@ -8279,6 +8279,229 @@ private:
     }
 
     void simplifyMathFunctions() { //#5031
+
+        // verify pow(),pow(),powl() simplifcation
+        const char code_pow[] ="void f() {\n"
+                               " std::cout << pow(-1.0,1);\n"
+                               " std::cout << pow(1.0,1);\n"
+                               " std::cout << pow(0,1);\n"
+                               " std::cout << powf(-1.0,1.0f);\n"
+                               " std::cout << powf(1.0,1.0f);\n"
+                               " std::cout << powf(0,1.0f);\n"
+                               " std::cout << powl(-1.0,1.0);\n"
+                               " std::cout << powl(1.0,1.0);\n"
+                               " std::cout << powl(0,1.0);\n"
+                               "}";
+
+        const char expected_pow[] = "void f ( ) {\n"
+                                    "std :: cout << -1.0 ;\n"
+                                    "std :: cout << 1.0 ;\n"
+                                    "std :: cout << 0 ;\n"
+                                    "std :: cout << -1.0 ;\n"
+                                    "std :: cout << 1.0 ;\n"
+                                    "std :: cout << 0 ;\n"
+                                    "std :: cout << -1.0 ;\n"
+                                    "std :: cout << 1.0 ;\n"
+                                    "std :: cout << 0 ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_pow, tokenizeAndStringify(code_pow));
+
+        // verify if code is simplified correctly.
+        // Do not simplify class members.
+        const char code_pow1[] = "int f(const Fred &fred) {return fred.pow(12,3);}";
+        const char expected_pow1[] = "int f ( const Fred & fred ) { return fred . pow ( 12 , 3 ) ; }";
+        ASSERT_EQUALS(expected_pow1, tokenizeAndStringify(code_pow1));
+
+        // verify islessgreater() simplification
+        const char code_islessgreater[] = "bool f(){\n"
+                                          "return islessgreater(1,0);\n" // (1 < 0) or (1 > 0) --> true
+                                          "}";
+        const char expected_islessgreater[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_islessgreater, tokenizeAndStringify(code_islessgreater));
+
+        const char code_islessgreater1[] = "bool f(){\n"
+                                           "return islessgreater(0,1);\n" // (0 < 1) or (0 > 1) --> true
+                                           "}";
+        const char expected_islessgreater1[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_islessgreater1, tokenizeAndStringify(code_islessgreater1));
+
+        const char code_islessgreater2[] = "bool f(){\n"
+                                           "return islessgreater(0,0);\n" // (0 < 0) or (0 > 0) --> false
+                                           "}";
+        const char expected_islessgreater2[] = "bool f ( ) {\nreturn false ;\n}";
+        ASSERT_EQUALS(expected_islessgreater2, tokenizeAndStringify(code_islessgreater2));
+
+        const char code_islessgreater3[] = "bool f(int i){\n"
+                                           "return islessgreater(i,0);\n" // <-- Do not simplify this
+                                           "}";
+        const char expected_islessgreater3[] = "bool f ( int i ) {\nreturn islessgreater ( i , 0 ) ;\n}";
+        ASSERT_EQUALS(expected_islessgreater3, tokenizeAndStringify(code_islessgreater3));
+
+        // verify islessequal() simplification
+        const char code_islessequal[] = "bool f(){\n"
+                                        "return islessequal(1,0);\n" // (1 <= 0) --> false
+                                        "}";
+        const char expected_islessequal[] = "bool f ( ) {\nreturn false ;\n}";
+        ASSERT_EQUALS(expected_islessequal, tokenizeAndStringify(code_islessequal));
+
+        const char code_islessequal1[] = "bool f(){\n"
+                                         "return islessequal(0,1);\n" // (0 <= 1) --> true
+                                         "}";
+        const char expected_islessequal1[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_islessequal1, tokenizeAndStringify(code_islessequal1));
+
+        const char code_islessequal2[] = "bool f(){\n"
+                                         "return islessequal(0,0);\n" // (0 <= 0) --> true
+                                         "}";
+        const char expected_islessequal2[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_islessequal2, tokenizeAndStringify(code_islessequal2));
+
+        const char code_islessequal3[] = "bool f(int i){\n"
+                                         "return islessequal(i,0);\n" // <-- Do not simplify this
+                                         "}";
+        const char expected_islessequal3[] = "bool f ( int i ) {\nreturn islessequal ( i , 0 ) ;\n}";
+        ASSERT_EQUALS(expected_islessequal3, tokenizeAndStringify(code_islessequal3));
+
+
+        // verify isless() simplification
+        const char code_isless[] = "bool f(){\n"
+                                   "return isless(1,0);\n" // (1 < 0) --> false
+                                   "}";
+        const char expected_isless[] = "bool f ( ) {\nreturn false ;\n}";
+        ASSERT_EQUALS(expected_isless, tokenizeAndStringify(code_isless));
+
+        const char code_isless1[] = "bool f(){\n"
+                                    "return isless(0,1);\n" // (0 < 1) --> true
+                                    "}";
+        const char expected_isless1[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_isless1, tokenizeAndStringify(code_isless1));
+
+        const char code_isless2[] = "bool f(){\n"
+                                    "return isless(0,0);\n" // (0 < 0) --> false
+                                    "}";
+        const char expected_isless2[] = "bool f ( ) {\nreturn false ;\n}";
+        ASSERT_EQUALS(expected_isless2, tokenizeAndStringify(code_isless2));
+
+        const char code_isless3[] = "bool f(int i){\n"
+                                    "return isless(i,0);\n" // <-- Do not simplify this
+                                    "}";
+        const char expected_isless3[] = "bool f ( int i ) {\nreturn isless ( i , 0 ) ;\n}";
+        ASSERT_EQUALS(expected_isless3, tokenizeAndStringify(code_isless3));
+
+        // verify isgreaterequal() simplification
+        const char code_isgreaterequal[] = "bool f(){\n"
+                                           "return isgreaterequal(1,0);\n" // (1 >= 0) --> true
+                                           "}";
+        const char expected_isgreaterequal[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_isgreaterequal, tokenizeAndStringify(code_isgreaterequal));
+
+        const char code_isgreaterequal1[] = "bool f(){\n"
+                                            "return isgreaterequal(0,1);\n" // (0 >= 1) --> false
+                                            "}";
+        const char expected_isgreaterequal1[] = "bool f ( ) {\nreturn false ;\n}";
+        ASSERT_EQUALS(expected_isgreaterequal1, tokenizeAndStringify(code_isgreaterequal1));
+
+        const char code_isgreaterequal2[] = "bool f(){\n"
+                                            "return isgreaterequal(0,0);\n" // (0 >= 0) --> true
+                                            "}";
+        const char expected_isgreaterequal2[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_isgreaterequal2, tokenizeAndStringify(code_isgreaterequal2));
+
+        const char code_isgreaterequal3[] = "bool f(int i){\n"
+                                            "return isgreaterequal(i,0);\n" // <-- Do not simplify this
+                                            "}";
+        const char expected_isgreaterequal3[] = "bool f ( int i ) {\nreturn isgreaterequal ( i , 0 ) ;\n}";
+        ASSERT_EQUALS(expected_isgreaterequal3, tokenizeAndStringify(code_isgreaterequal3));
+
+        // verify isgreater() simplification
+        const char code_isgreater[] = "bool f(){\n"
+                                      "return isgreater(1,0);\n" // (1 > 0) --> true
+                                      "}";
+        const char expected_isgreater[] = "bool f ( ) {\nreturn true ;\n}";
+        ASSERT_EQUALS(expected_isgreater, tokenizeAndStringify(code_isgreater));
+
+        const char code_isgreater1[] = "bool f(){\n"
+                                       "return isgreater(0,1);\n" // (0 > 1) --> false
+                                       "}";
+        const char expected_isgreater1[] = "bool f ( ) {\nreturn false ;\n}";
+        ASSERT_EQUALS(expected_isgreater1, tokenizeAndStringify(code_isgreater1));
+
+        const char code_isgreater2[] = "bool f(){\n"
+                                       "return isgreater(0,0);\n" // (0 > 0) --> false
+                                       "}";
+        const char expected_isgreater2[] = "bool f ( ) {\nreturn false ;\n}";
+        ASSERT_EQUALS(expected_isgreater2, tokenizeAndStringify(code_isgreater2));
+
+        const char code_isgreater3[] = "bool f(int i){\n"
+                                       "return isgreater(i,0);\n" // <-- Do not simplify this
+                                       "}";
+        const char expected_isgreater3[] = "bool f ( int i ) {\nreturn isgreater ( i , 0 ) ;\n}";
+        ASSERT_EQUALS(expected_isgreater3, tokenizeAndStringify(code_isgreater3));
+
+        // verify fmax(),fmax(),fmaxl() simplifcation
+        const char code_fmax[] ="void f() {\n"
+                                " std::cout << fmax(-1.0,0);\n"
+                                " std::cout << fmax(1.0,0);\n"
+                                " std::cout << fmax(0,0);\n"
+                                " std::cout << fmaxf(-1.0,0);\n"
+                                " std::cout << fmaxf(1.0,0);\n"
+                                " std::cout << fmaxf(0,0);\n"
+                                " std::cout << fmaxl(-1.0,0);\n"
+                                " std::cout << fmaxl(1.0,0);\n"
+                                " std::cout << fmaxl(0,0);\n"
+                                "}";
+
+        const char expected_fmax[] = "void f ( ) {\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_fmax, tokenizeAndStringify(code_fmax));
+
+        // do not simplify this case
+        const char code_fmax1[] = "float f(float f) { return fmax(f,0);}";
+        const char expected_fmax1[] = "float f ( float f ) { return fmax ( f , 0 ) ; }";
+        ASSERT_EQUALS(expected_fmax1, tokenizeAndStringify(code_fmax1));
+
+        // verify fmin,fminl,fminl simplifcation
+        const char code_fmin[] ="void f() {\n"
+                                " std::cout << fmin(-1.0,0);\n"
+                                " std::cout << fmin(1.0,0);\n"
+                                " std::cout << fmin(0,0);\n"
+                                " std::cout << fminf(-1.0,0);\n"
+                                " std::cout << fminf(1.0,0);\n"
+                                " std::cout << fminf(0,0);\n"
+                                " std::cout << fminl(-1.0,0);\n"
+                                " std::cout << fminl(1.0,0);\n"
+                                " std::cout << fminl(0,0);\n"
+                                "}";
+
+        const char expected_fmin[] = "void f ( ) {\n"
+                                     "std :: cout << -1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << -1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << -1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_fmin, tokenizeAndStringify(code_fmin));
+
+        // do not simplify this case
+        const char code_fmin1[] = "float f(float f) { return fmin(f,0);}";
+        const char expected_fmin1[] = "float f ( float f ) { return fmin ( f , 0 ) ; }";
+        ASSERT_EQUALS(expected_fmin1, tokenizeAndStringify(code_fmin1));
+
+
+        // verify abs,fabs,labs,llabs,atol simplifcation
         const char code1[] = "void foo() {\n"
                              "    std::cout<<std::abs(0);\n"    // in std:: namespeace
                              "    std::cout<<std::fabs(0.0);\n" // in std:: namespeace
@@ -8293,6 +8516,7 @@ private:
                              "    std::cout<<labs(-1);\n"
                              "    std::cout<<llabs(-1);\n"
                              "    std::cout<<atol(\"1\");\n"
+                             "    std::cout<<atol(\"x\");\n"
                              "}";
         const char expected1[] = "void foo ( ) {\n"
                                  "std :: cout << 0 ;\n"
@@ -8308,6 +8532,7 @@ private:
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
+                                 "std :: cout << atol ( \"x\" ) ;\n"
                                  "}";
         ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
 
@@ -8316,7 +8541,6 @@ private:
         const char expected2[] = "extern int a ; void f ( ) { printf ( \"%i\" , abs ( -- a ) ) ; }";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
-
 
     void simplifyMathExpressions() {//#1620
         const char code1[] = "void foo() {\n"

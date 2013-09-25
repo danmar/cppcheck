@@ -8250,55 +8250,151 @@ void Tokenizer::cppcheckError(const Token *tok) const
 
 // ------------------------------------------------------
 // Simplify math functions.
-// It simplifies following functions: atol(),abs(),fabs()
-// labs(),llabs() in the tokenlist.
+// It simplifies following functions: atol(), abs(), fabs()
+// labs(), llabs(), fmin(), fminl(), fminf(), fmax(), fmaxl()
+// fmaxf(), isgreater(), isgreaterequal(), isless()
+// islessgreater(), islessequal(), pow(), powf(), powl()
+// in the tokenlist.
+//
+// Reference:
+// - http://www.cplusplus.com/reference/cmath/
 // ------------------------------------------------------
 void Tokenizer::simplifyMathFunctions()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "atol ( %str% )")) {
-            if (!MathLib::isInt(tok->tokAt(2)->strValue())) {
+        if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
+            if (tok->previous() &&
+                Token::simpleMatch(tok->tokAt(-2), "std ::")) {
+                tok = tok->tokAt(-2);// set token index two steps back
+                tok->deleteNext(2);  // delete "std ::"
+            }
+            const std::string strNumber = tok->tokAt(2)->strValue(); // get number
+            const bool isNotAnInteger = (!MathLib::isInt(strNumber));// check: is not an integer
+            if (!strNumber.empty() && isNotAnInteger) {
                 // Ignore strings which we can't convert
                 continue;
             }
-
-            if (tok->previous() &&
-                Token::simpleMatch(tok->tokAt(-2), "std ::")) {
-                // Delete "std ::"
-                tok = tok->tokAt(-2);
-                tok->deleteNext();
-                tok->deleteThis();
-            }
-
-            // Delete atol(
-            tok->deleteNext();
-            tok->deleteThis();
-
-            // Convert string into a number
-            tok->str(MathLib::toString(MathLib::toLongNumber(tok->strValue())));
-
-            // Delete remaining )
-            tok->deleteNext();
+            // remove atol ( %num%
+            tok->deleteNext(3);
+            // Convert string into a number and insert into token list
+            tok->str(MathLib::toString(MathLib::toLongNumber(strNumber)));
         } else if (Token::Match(tok, "abs|fabs|labs|llabs ( %num% )")) {
-
             if (tok->previous() &&
                 Token::simpleMatch(tok->tokAt(-2), "std ::")) {
-                // Delete "std ::"
-                tok = tok->tokAt(-2);
-                tok->deleteNext();
-                tok->deleteThis();
+                tok = tok->tokAt(-2);// set token index two steps back
+                tok->deleteNext(2);  // delete "std ::"
             }
+            // get number string
+            std::string strNumber(tok->tokAt(2)->str());
+            // is the string negative?
+            if (!strNumber.empty() && strNumber[0] == '-') {
+                strNumber = strNumber.substr(1); // remove '-' sign
+            }
+            tok->deleteNext(3);  // delete e.g. abs ( 1 )
+            tok->str(strNumber); // insert result into token list
+        } else if (Token::Match(tok, "fmin|fminl|fminf ( %num% , %num% )")) {
+            // @todo if one of the parameters is NaN the other is returned
+            // e.g. printf ("fmin (NaN, -1.0) = %f\n", fmin(NaN,-1.0));
+            // e.g. printf ("fmin (-1.0, NaN) = %f\n", fmin(-1.0,NaN));
+            const std::string strLeftNumber(tok->tokAt(2)->str());
+            const std::string strRightNumber(tok->tokAt(4)->str());
+            const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
+            // case: left <= right ==> insert left
+            if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
+                tok->deleteNext(5);      // delete e.g. fmin ( -1.0, 1.0 )
+                tok->str(strLeftNumber); // insert e.g. -1.0
+            } else { // case left > right ==> insert right
+                tok->deleteNext(5);       // delete e.g. fmin ( 1.0, 0.0 )
+                tok->str(strRightNumber); // insert e.g. 0.0
+            }
+        } else if (Token::Match(tok, "fmax|fmaxl|fmaxf ( %num% , %num% )")) {
+            // @todo if one of the parameters is NaN the other is returned
+            // e.g. printf ("fmax (NaN, -1.0) = %f\n", fmax(NaN,-1.0));
+            // e.g. printf ("fmax (-1.0, NaN) = %f\n", fmax(-1.0,NaN));
+            const std::string strLeftNumber(tok->tokAt(2)->str());
+            const std::string strRightNumber(tok->tokAt(4)->str());
+            const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
+            // case: left <= right ==> insert right
+            if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
+                tok->deleteNext(5);      // delete e.g. fmax ( -1.0, 1.0 )
+                tok->str(strRightNumber);// insert e.g. 1.0
+            } else { // case left > right ==> insert left
+                tok->deleteNext(5);       // delete e.g. fmax ( 1.0, 0.0 )
+                tok->str(strLeftNumber);  // insert e.g. 1.0
+            }
+        } else if (Token::Match(tok, "isgreater ( %num% , %num% )")) {
+            // The isgreater(x,y) function is the same as writing (x)>(y).
+            // It returns true (1) if x is greater than y and false (0) otherwise.
+            const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
+            const std::string strRightNumber(tok->tokAt(4)->str()); // get right number
+            if (!strRightNumber.empty() && !strLeftNumber.empty()) {
+                const bool isGreater =  MathLib::isGreater(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isGreater == true) ? "true": "false");  // insert results
+            }
+        } else if (Token::Match(tok, "isgreaterequal ( %num% , %num% )")) {
+            // The isgreaterequal(x,y) function is the same as writing (x)>=(y).
+            // It returns true (1) if x is greater than or equal to y.
+            // False (0) is returned otherwise.
+            const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
+            const std::string strRightNumber(tok->tokAt(4)->str()); // get right number
+            if (!strRightNumber.empty() && !strLeftNumber.empty()) {
+                const bool isGreaterEqual =  MathLib::isGreaterEqual(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isGreaterEqual == true) ? "true": "false");  // insert results
+            }
+        } else if (Token::Match(tok, "isless ( %num% , %num% )")) {
+            // The is (x,y) function is the same as writing (x)<(y).
+            // It returns true (1) if x is less than y.
+            // False (0) is returned otherwise.
+            const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
+            const std::string strRightNumber(tok->tokAt(4)->str()); // get right number
+            if (!strRightNumber.empty() && !strLeftNumber.empty()) {
+                const bool isLess = MathLib::isLess(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isLess == true) ? "true": "false");  // insert results
+            }
+        } else if (Token::Match(tok, "islessequal ( %num% , %num% )")) {
+            // The is (x,y) function is the same as writing (x)<=(y).
+            // It returns true (1) if x is less or equal to y.
+            // False (0) is returned otherwise.
+            const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
+            const std::string strRightNumber(tok->tokAt(4)->str()); // get right number
+            if (!strRightNumber.empty() && !strLeftNumber.empty()) {
+                const bool isLessEqual = MathLib::isLessEqual(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isLessEqual == true) ? "true": "false");  // insert results
+            }
+        } else if (Token::Match(tok, "islessgreater ( %num% , %num% )")) {
+            // The is (x,y) function is the same as writing (x)<(y) || (x)>(y).
+            // It returns true (1) if x is less than y or x is greater than y.
+            // False (0) is returned otherwise.
+            const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
+            const std::string strRightNumber(tok->tokAt(4)->str()); // get right number
+            if (!strRightNumber.empty() && !strLeftNumber.empty()) {
+                const bool isLessOrGreater(MathLib::isLess(strLeftNumber, strRightNumber) ||
+                                           MathLib::isGreater(strLeftNumber, strRightNumber));  // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isLessOrGreater == true) ? "true": "false");  // insert results
+            }
+        }
 
-            // Delete abs (
-            tok->deleteNext();
-            tok->deleteThis();
-            std::string strNumber(tok->str());
-            if (!strNumber.empty() && strNumber[0] == '-')
-                strNumber = strNumber.substr(1);
-            // insert result into token list
-            tok->str(strNumber);
-            // Delete remaining )
-            tok->deleteNext();
+        else if (Token::Match(tok, "pow|powf|powl ( %any% , %num% )")) {
+            // pow( anyNumber,1 ) --> can be simplified to anynumber
+            const std::string base = (tok->tokAt(2)->str()); // get the base
+            const std::string exponent(tok->tokAt(4)->str()); // get exponent number
+            if (!exponent.empty()) {
+                const bool isNegative = MathLib::isNegative(exponent);
+                const bool isInteger = MathLib::isInt(exponent);
+                const bool isFloat = MathLib::isFloat(exponent);
+                if (!isNegative && isInteger && (MathLib::toLongNumber(exponent) == 1L)) {
+                    tok->deleteNext(5); // delete tokens
+                    tok->str(base);  // insert results
+                } else if (!isNegative && isFloat && (MathLib::toDoubleNumber(exponent)-1.0) <= 0.) {
+                    tok->deleteNext(5); // delete tokens
+                    tok->str(base);  // insert results
+                }
+            }
         }
     }
 }
