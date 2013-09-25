@@ -82,10 +82,31 @@ private:
 
 
     void assignBoolToPointer() {
+
         check("void foo(bool *p) {\n"
               "    p = false;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
+
+        // check against potential false positives
+        check("void foo(bool *p) {\n"
+              "    *p = false;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket #5046 - false positive: Boolean value assigned to pointer
+        check("struct S {\n"
+              "    bool *p;\n"
+              "};\n"
+              "void f() {\n"
+              "    std::vector<S> sv;\n"
+              "    sv.push_back(S());\n"
+              "    S &s = sv[0];\n"
+              "    *s.p = true;\n"
+              "    *(s.p) = true;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("","[test.cpp:8]: (error) Boolean value assigned to pointer.\n"
+                           "[test.cpp:9]: (error) Boolean value assigned to pointer.\n", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
