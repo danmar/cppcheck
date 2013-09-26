@@ -176,6 +176,7 @@ private:
         TEST_CASE(pureVirtualFunctionCall);
         TEST_CASE(pureVirtualFunctionCallOtherClass);
         TEST_CASE(pureVirtualFunctionCallWithBody);
+        TEST_CASE(pureVirtualFunctionCallPrevented);
 
         TEST_CASE(duplInheritedMembers);
     }
@@ -5729,6 +5730,45 @@ private:
                                      "{}\n");
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    void pureVirtualFunctionCallPrevented() {
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    void nonpure(bool bCallPure)\n"
+                                     "    { if (bCallPure) pure();}\n"
+                                     "    A(); \n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{nonpure(false);}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    void nonpure(bool bCallPure)\n"
+                                     "    { if (!bCallPure) ; else pure();}\n"
+                                     "    A(); \n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{nonpure(false);}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    void nonpure(bool bCallPure)\n"
+                                     "    {\n"
+                                     "        switch (bCallPure) {\n"
+                                     "        case true: pure(); break;\n"
+                                     "        }\n"
+                                     "    }\n"
+                                     "    A(); \n"
+                                     "};\n"
+                                     "A::A()\n"
+                                     "{nonpure(false);}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

@@ -1994,8 +1994,17 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
     if (found.second) {
         if (function.hasBody) {
             for (const Token *tok = function.arg->link();
-                 tok != function.functionScope->classEnd;
+                 tok && tok != function.functionScope->classEnd;
                  tok = tok->next()) {
+                if ((Token::simpleMatch(tok,") {") &&
+                     tok->link() &&
+                     Token::Match(tok->link()->previous(),"if|switch")) ||
+                    Token::simpleMatch(tok,"else {")
+                   ) {
+                    // Assume pure virtual function call is prevented by "if|else|switch" condition
+                    tok = tok->linkAt(1);
+                    continue;
+                }
                 const Function * callFunction=tok->function();
                 if (!callFunction ||
                     function.nestedIn != callFunction->nestedIn ||
