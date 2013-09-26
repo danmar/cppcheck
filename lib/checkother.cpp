@@ -3244,6 +3244,53 @@ void CheckOther::suspiciousStringCompareError(const Token* tok, const std::strin
                 "String literal compared with variable '" + var + "'. Did you intend to use strcmp() instead?");
 }
 
+//-----------------------------------------------------------------------------
+// Check is a comparision of two variables leads to condition, which is
+// allways true or false.
+// For instance: int a = 1; if(isless(a,a)){...}
+// In this case isless(a,a) evaluates allways to false.
+//
+// Reference:
+// - http://www.cplusplus.com/reference/cmath/
+//-----------------------------------------------------------------------------
+void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse(void)
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->isName() && Token::Match(tok, "isgreater|isless|islessgreater|isgreaterequal|islessequal ( %var% , %var% )")) {
+                const std::string functionName = tok->str(); // store function name
+                const std::string varNameLeft = tok->tokAt(2)->str(); // get the left variable name
+                const unsigned int varidLeft = tok->tokAt(2)->varId();// get the left varid
+                const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
+                // compare varids: if they are not zero but equal
+                // --> the comparison function is calles with the same variables
+                if (varidLeft != 0 && varidRight != 0 && varidLeft == varidRight) {
+                    if (functionName == "isgreater" || functionName == "isless" || functionName == "islessgreater") {
+                        // e.g.: isgreater(x,x) --> (x)>(x) --> false
+                        checkComparisonFunctionIsAlwaysTrueOrFalseError(tok,functionName,varNameLeft,false);
+                    } else { // functionName == "isgreaterequal" || functionName == "islessequal"
+                        // e.g.: isgreaterequal(x,x) --> (x)>=(x) --> true
+                        checkComparisonFunctionIsAlwaysTrueOrFalseError(tok,functionName,varNameLeft,true);
+                    }
+                }
+            }
+        }
+    }
+}
+void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result)
+{
+    const std::string strResult = result ? "true" : "false";
+    reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
+                "Comparison of two identical variables with "+functionName+"("+varName+","+varName+") evaluates always to "+strResult+".\n"
+                "The function "+functionName+" is designed to compare two variables. Calling this function with one variable ("+varName+") "
+                "for both parameters leads to a statement which is always "+strResult+".");
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

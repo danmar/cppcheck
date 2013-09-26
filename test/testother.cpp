@@ -179,6 +179,8 @@ private:
         TEST_CASE(checkSleepTimeIntervall)
 
         TEST_CASE(checkCommaSeparatedReturn);
+
+        TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
     }
 
     void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6638,6 +6640,40 @@ private:
               "        { \"3\" }\n"
               "    };\n"
               "}", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkComparisonFunctionIsAlwaysTrueOrFalse() {
+        // positive test
+        check("bool f(int x){\n"
+              "   return isless(x,x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of two identical variables with isless(x,x) evaluates always to false.\n", errout.str());
+
+        check("bool f(int x){\n"
+              "   return isgreater(x,x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of two identical variables with isgreater(x,x) evaluates always to false.\n", errout.str());
+
+        check("bool f(int x){\n"
+              "   return islessgreater(x,x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of two identical variables with islessgreater(x,x) evaluates always to false.\n", errout.str());
+
+        check("bool f(int x){\n"
+              "   return islessequal(x,x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of two identical variables with islessequal(x,x) evaluates always to true.\n", errout.str());
+
+        check("bool f(int x){\n"
+              "   return isgreaterequal(x,x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of two identical variables with isgreaterequal(x,x) evaluates always to true.\n", errout.str());
+
+        // no warning should be reported for
+        check("bool f(int x, int y){\n"
+              "   return isgreaterequal(x,y) && islessequal(x,y) && islessgreater(x,y) && isgreater(x,y) && isless(x,y);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

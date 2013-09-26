@@ -110,6 +110,7 @@ public:
         checkOther.checkNegativeBitwiseShift();
         checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkSleepTimeInterval();
+        checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }
 
     /** To check the dead code in a program, which is inaccessible due to the counter-conditions check in nested-if statements **/
@@ -265,11 +266,15 @@ public:
     /** @brief %Check providing too big sleep time intervals on POSIX systems. */
     void checkSleepTimeInterval();
 
+    /** @brief %Check for using of comparision functions evaluating always to true or false. */
+    void checkComparisonFunctionIsAlwaysTrueOrFalse(void);
+
 private:
     bool isUnsigned(const Variable *var) const;
     static bool isSigned(const Variable *var);
 
     // Error messages..
+    void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
     void checkSleepTimeError(const Token *tok, const std::string &strDim);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
@@ -352,6 +357,7 @@ private:
         c.redundantAssignmentError(0, 0, "var", false);
 
         // style/warning
+        c.checkComparisonFunctionIsAlwaysTrueOrFalseError(0,"isless","varName","false");
         c.checkCastIntToCharAndBackError(0,"func_name");
         c.oppositeInnerConditionError(0);
         c.cstyleCastError(0);
@@ -445,6 +451,7 @@ private:
                "* Suspicious case labels in switch()\n"
                "* Suspicious equality comparisons\n"
                "* mutual exclusion over || always evaluating to true\n"
+               "* Comparison of values leading always to true or false\n"
                "* Clarify calculation with parentheses\n"
                "* suspicious condition (assignment+comparison)\n"
                "* suspicious condition (runtime comparison of string literals)\n"
