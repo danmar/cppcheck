@@ -8323,7 +8323,7 @@ void Tokenizer::simplifyMathFunctions()
                 tok->str(strLeftNumber);  // insert e.g. 1.0
             }
         } else if (Token::Match(tok, "isgreater ( %num% , %num% )")) {
-            // The isgreater(x,y) function is the same as writing (x)>(y).
+            // The isgreater(x,y) function is the same as calculating (x)>(y).
             // It returns true (1) if x is greater than y and false (0) otherwise.
             const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
             const std::string strRightNumber(tok->tokAt(4)->str()); // get right number
@@ -8333,7 +8333,7 @@ void Tokenizer::simplifyMathFunctions()
                 tok->str((isGreater == true) ? "true": "false");  // insert results
             }
         } else if (Token::Match(tok, "isgreaterequal ( %num% , %num% )")) {
-            // The isgreaterequal(x,y) function is the same as writing (x)>=(y).
+            // The isgreaterequal(x,y) function is the same as calculating (x)>=(y).
             // It returns true (1) if x is greater than or equal to y.
             // False (0) is returned otherwise.
             const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
@@ -8344,7 +8344,7 @@ void Tokenizer::simplifyMathFunctions()
                 tok->str((isGreaterEqual == true) ? "true": "false");  // insert results
             }
         } else if (Token::Match(tok, "isless ( %num% , %num% )")) {
-            // The is (x,y) function is the same as writing (x)<(y).
+            // Calling this function is the same as calculating (x)<(y).
             // It returns true (1) if x is less than y.
             // False (0) is returned otherwise.
             const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
@@ -8355,7 +8355,7 @@ void Tokenizer::simplifyMathFunctions()
                 tok->str((isLess == true) ? "true": "false");  // insert results
             }
         } else if (Token::Match(tok, "islessequal ( %num% , %num% )")) {
-            // The is (x,y) function is the same as writing (x)<=(y).
+            // Calling this function is the same as calculating (x)<=(y).
             // It returns true (1) if x is less or equal to y.
             // False (0) is returned otherwise.
             const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
@@ -8366,7 +8366,7 @@ void Tokenizer::simplifyMathFunctions()
                 tok->str((isLessEqual == true) ? "true": "false");  // insert results
             }
         } else if (Token::Match(tok, "islessgreater ( %num% , %num% )")) {
-            // The is (x,y) function is the same as writing (x)<(y) || (x)>(y).
+            // Calling this function is the same as calculating (x)<(y) || (x)>(y).
             // It returns true (1) if x is less than y or x is greater than y.
             // False (0) is returned otherwise.
             const std::string strLeftNumber(tok->tokAt(2)->str()); // get left number
@@ -8377,22 +8377,21 @@ void Tokenizer::simplifyMathFunctions()
                 tok->deleteNext(5); // delete tokens
                 tok->str((isLessOrGreater == true) ? "true": "false");  // insert results
             }
-        }
-
-        else if (Token::Match(tok, "pow|powf|powl ( %any% , %num% )")) {
-            // pow( anyNumber,1 ) --> can be simplified to anynumber
-            const std::string base = (tok->tokAt(2)->str()); // get the base
-            const std::string exponent(tok->tokAt(4)->str()); // get exponent number
-            if (!exponent.empty()) {
-                const bool isNegative = MathLib::isNegative(exponent);
-                const bool isInteger = MathLib::isInt(exponent);
-                const bool isFloat = MathLib::isFloat(exponent);
-                if (!isNegative && isInteger && (MathLib::toLongNumber(exponent) == 1L)) {
+        } else if (Token::Match(tok, "div|ldiv|lldiv|pow|powf|powl ( %any% , %num% )")) {
+            // Calling the function 'div(x,y)' is the same as calculating (x)/(y). In case y has the value 1
+            // (the identity element), the call can be simplified to (x).
+            // In case of pow( anyNumber,1 ): It can be simplified to anynumber.
+            const std::string leftParameter(tok->tokAt(2)->str()); // get the left parameter
+            const std::string rightNumber(tok->tokAt(4)->str()); // get right number
+            if (!rightNumber.empty() && !leftParameter.empty()) {
+                const bool isNegative = MathLib::isNegative(rightNumber);
+                const bool isInteger = MathLib::isInt(rightNumber);
+                const bool isFloat = MathLib::isFloat(rightNumber);
+                const bool allowToSimplify = ((!isNegative && isInteger && (MathLib::toLongNumber(rightNumber) == 1L)) // case: integer numbers
+                                              || (!isNegative && isFloat && (MathLib::toDoubleNumber(rightNumber)-1.0) <= 0.)); // case: float numbers
+                if (allowToSimplify == true) {
                     tok->deleteNext(5); // delete tokens
-                    tok->str(base);  // insert results
-                } else if (!isNegative && isFloat && (MathLib::toDoubleNumber(exponent)-1.0) <= 0.) {
-                    tok->deleteNext(5); // delete tokens
-                    tok->str(base);  // insert results
+                    tok->str(leftParameter);  // insert simplified result
                 }
             }
         }

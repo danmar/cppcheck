@@ -8280,7 +8280,41 @@ private:
 
     void simplifyMathFunctions() { //#5031
 
-        // verify pow(),pow(),powl() simplifcation
+        // verify div(), ldiv(), lldiv() - simplifcation
+        const char code_div[] ="void f(int x) {\n"
+                               " std::cout << div(x,1);\n" //simplify
+                               " std::cout << div(x,-1);\n" // do not simplify
+                               " std::cout << ldiv(10L,1L);\n" // simplify
+                               " std::cout << ldiv(10L,132L);\n" // do not simplify
+                               " std::cout << lldiv(10LL,1LL);\n" // simplify
+                               " std::cout << lldiv(10LL,132LL);\n" // do not simplify
+                               "}";
+
+        const char expected_div[] = "void f ( int x ) {\n"
+                                    "std :: cout << x ;\n"
+                                    "std :: cout << div ( x , -1 ) ;\n"
+                                    "std :: cout << 10L ;\n"
+                                    "std :: cout << ldiv ( 10L , 132L ) ;\n"
+                                    "std :: cout << 10LL ;\n"
+                                    "std :: cout << lldiv ( 10LL , 132LL ) ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_div, tokenizeAndStringify(code_div));
+
+        // Do not simplify class members.
+        // case: div
+        const char code_div1[] = "int f(const Fred &fred) {return fred.div(12,3);}";
+        const char expected_div1[] = "int f ( const Fred & fred ) { return fred . div ( 12 , 3 ) ; }";
+        ASSERT_EQUALS(expected_div1, tokenizeAndStringify(code_div1));
+        // case: ldiv
+        const char code_div2[] = "int f(const Fred &fred) {return fred.ldiv(12,3);}";
+        const char expected_div2[] = "int f ( const Fred & fred ) { return fred . ldiv ( 12 , 3 ) ; }";
+        ASSERT_EQUALS(expected_div2, tokenizeAndStringify(code_div2));
+        // case: lldiv
+        const char code_div3[] = "int f(const Fred &fred) {return fred.lldiv(12,3);}";
+        const char expected_div3[] = "int f ( const Fred & fred ) { return fred . lldiv ( 12 , 3 ) ; }";
+        ASSERT_EQUALS(expected_div3, tokenizeAndStringify(code_div3));
+
+        // verify pow(),pow(),powl() - simplifcation
         const char code_pow[] ="void f() {\n"
                                " std::cout << pow(-1.0,1);\n"
                                " std::cout << pow(1.0,1);\n"
