@@ -49,6 +49,7 @@ private:
         TEST_CASE(testPosixPrintfScanfParameterPosition);  // #4900
 
         TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
+        TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
 
         TEST_CASE(testlibrarycfg); // library configuration
     }
@@ -2130,6 +2131,33 @@ private:
                       "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+    }
+
+    void testMicrosoftCStringFormatArguments() { // ticket #4920
+        check("void foo() {\n"
+              "    unsigned __int32 u32;\n"
+              "    String string;\n"
+              "    string.Format(\"%I32d\", u32);\n"
+              "    string.AppendFormat(\"%I32d\", u32);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    unsigned __int32 u32;\n"
+              "    CString string;\n"
+              "    string.Format(\"%I32d\", u32);\n"
+              "    string.AppendFormat(\"%I32d\", u32);\n"
+              "}", false, false, Settings::Unix32);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    unsigned __int32 u32;\n"
+              "    CString string;\n"
+              "    string.Format(\"%I32d\", u32);\n"
+              "    string.AppendFormat(\"%I32d\", u32);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %I32d in format string (no. 1) requires a signed integer but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
+                      "[test.cpp:5]: (warning) %I32d in format string (no. 1) requires a signed integer but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout.str());
     }
 
     void testlibrarycfg() {

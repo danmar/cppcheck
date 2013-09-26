@@ -407,6 +407,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     bool warning = _settings->isEnabled("warning");
+    bool windows = _settings->isWindowsPlatform();
 
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
@@ -437,7 +438,11 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             if (!formatString.empty()) {
                 /* formatstring found in library */
-            } else if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%")) {
+            } else if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%") ||
+                       (windows && (Token::Match(tok, "Format|AppendFormat ( %str%") &&
+                                    Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
+                                    tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString"))) {
+
                 formatString = tok->strAt(2);
                 if (tok->strAt(3) == ",") {
                     argListTok = tok->tokAt(4);
