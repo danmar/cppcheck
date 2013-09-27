@@ -101,6 +101,9 @@ static bool checkRvalueExpression(const Token * const vartok)
 
 static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)
 {
+    if(!start) // Ticket #5024
+        return false;
+    
     for (const Token *tok = start; tok != scope->classEnd; tok = tok->next()) {
         if (tok->varId() == varId)
             return true;
