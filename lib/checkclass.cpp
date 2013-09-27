@@ -1996,14 +1996,19 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
             for (const Token *tok = function.arg->link();
                  tok && tok != function.functionScope->classEnd;
                  tok = tok->next()) {
-                if ((Token::simpleMatch(tok,") {") &&
-                     tok->link() &&
-                     Token::Match(tok->link()->previous(),"if|switch")) ||
-                    Token::simpleMatch(tok,"else {")
-                   ) {
-                    // Assume pure virtual function call is prevented by "if|else|switch" condition
-                    tok = tok->linkAt(1);
-                    continue;
+                if (function.type != Function::eConstructor &&
+                    function.type != Function::eCopyConstructor &&
+                    function.type != Function::eMoveConstructor &&
+                    function.type != Function::eDestructor) {
+                    if ((Token::simpleMatch(tok,") {") &&
+                         tok->link() &&
+                         Token::Match(tok->link()->previous(),"if|switch")) ||
+                        Token::simpleMatch(tok,"else {")
+                       ) {
+                        // Assume pure virtual function call is prevented by "if|else|switch" condition
+                        tok = tok->linkAt(1);
+                        continue;
+                    }
                 }
                 const Function * callFunction=tok->function();
                 if (!callFunction ||

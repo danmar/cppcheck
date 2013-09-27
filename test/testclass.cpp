@@ -5679,6 +5679,26 @@ private:
                                      "A::~A()\n"
                                      "{nonpure();}\n");
         ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     "{\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    A(bool b);\n"
+                                     "};\n"
+                                     "A::A(bool b)\n"
+                                     "{if (b) pure();}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+
+        checkPureVirtualFunctionCall("class A\n"
+                                     " {\n"
+                                     "    virtual void pure()=0; \n"
+                                     "    virtual ~A(); \n"
+                                     "    int m; \n"
+                                     "};\n"
+                                     "A::~A()\n"
+                                     "{if (b) pure();}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
+
     }
 
     void pureVirtualFunctionCallOtherClass() {
