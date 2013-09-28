@@ -326,7 +326,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
-    
+
     void testautovar12() { // Ticket #5024 - Crash on invalid input
         check("void f(int* a) { a = }");
     }
