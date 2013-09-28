@@ -125,6 +125,7 @@ private:
         TEST_CASE(stabilityOfChecks); // #4684 cppcheck crash in template function call
 
         TEST_CASE(dereferenceInvalidIterator);
+        TEST_CASE(dereference_auto);
 
     }
 
@@ -490,6 +491,16 @@ private:
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
     }
 
+    void dereference_auto() {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int> ints;\n"
+              "    auto iter = ints.begin() + 2;\n"
+              "    ints.erase(iter);\n"
+              "    std::cout << (*iter) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+    }
 
     void STLSize() {
         check("void foo()\n"
