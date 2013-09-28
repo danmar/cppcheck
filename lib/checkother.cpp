@@ -2171,7 +2171,9 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                 if (!var)
                     continue;
                 bool isVarUnsigned = var->typeEndToken()->isUnsigned();
-                for (const Token *typetok = var->typeStartToken(); typetok != var->typeEndToken(); typetok = typetok->next()) {
+                for (const Token *typetok = var->typeStartToken(); typetok; typetok = typetok->next()) {
+                    if (!typetok->isName() || typetok == var->typeEndToken())
+                        break;
                     if (typetok->isUnsigned()) {
                         isVarUnsigned = true;
                         break;
