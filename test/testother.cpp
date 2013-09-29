@@ -341,6 +341,13 @@ private:
               "   div_t divresult = div (1,0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
+
+        // #4929 - if there is a user function with the name "div" don't warn
+        check("void div(int a, int b);\n"
+              "void f() {\n"
+              "   div (1,0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void zeroDiv4() {

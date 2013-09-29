@@ -2145,6 +2145,12 @@ void CheckOther::checkZeroDivision()
         } else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
                    MathLib::isInt(tok->strAt(4)) &&
                    MathLib::toLongNumber(tok->strAt(4)) == 0L) {
+            if (tok->str() == "div") {
+                if (tok->strAt(-1) == ".")
+                    continue;
+                if (tok->variable() || tok->function())
+                    continue;
+            }
             zerodivError(tok);
         }
     }
