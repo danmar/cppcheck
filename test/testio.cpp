@@ -2030,6 +2030,10 @@ private:
                       "[test.cpp:3]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'unsigned long'.\n"
                       "[test.cpp:3]: (warning) %x in format string (no. 3) requires 'unsigned int' but the argument type is 'unsigned long'.\n", errout.str());
 
+        check("void foo (wchar_t c) {\n" // ticket #5051 false positive
+              "    printf(\"%c\", c);\n"
+              "}\n", false, false, Settings::Win64);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

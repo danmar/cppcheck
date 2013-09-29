@@ -859,7 +859,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                                 // use %p on pointers and arrays
                                                 invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                            } else if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char"))
+                                            } else if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char|wchar_t"))
                                                 invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                             else {
                                                 switch (specifier[0]) {
@@ -895,7 +895,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 default:
-                                                    if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
+                                                    if (!Token::Match(argInfo.typeToken, "bool|char|short|wchar_t|int"))
                                                         invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 }
