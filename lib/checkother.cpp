@@ -3278,7 +3278,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse(void)
                 const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
                 // compare varids: if they are not zero but equal
                 // --> the comparison function is calles with the same variables
-                if (varidLeft != 0 && varidRight != 0 && varidLeft == varidRight) {
+                if (varidLeft != 0 && varidLeft == varidRight) {
                     if (functionName == "isgreater" || functionName == "isless" || functionName == "islessgreater") {
                         // e.g.: isgreater(x,x) --> (x)>(x) --> false
                         checkComparisonFunctionIsAlwaysTrueOrFalseError(tok,functionName,varNameLeft,false);
