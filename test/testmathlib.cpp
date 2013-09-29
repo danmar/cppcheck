@@ -34,6 +34,7 @@ private:
         TEST_CASE(convert);
         TEST_CASE(isint);
         TEST_CASE(isnegative);
+        TEST_CASE(ispositive);
         TEST_CASE(isfloat);
         TEST_CASE(isGreater)
         TEST_CASE(isGreaterEqual)
@@ -310,6 +311,20 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E+2"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E-2"));
+    }
+
+    void ispositive() const {
+        ASSERT_EQUALS(false, MathLib::isPositive("-1"));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1."));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1.0"));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1.0E+2"));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1.0E-2"));
+
+        ASSERT_EQUALS(true , MathLib::isPositive("+1"));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1."));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1.0"));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1.0E+2"));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1.0E-2"));
     }
 
     void isfloat() const {

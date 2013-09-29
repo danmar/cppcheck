@@ -8346,6 +8346,18 @@ private:
         const char expected_pow1[] = "int f ( const Fred & fred ) { return fred . pow ( 12 , 3 ) ; }";
         ASSERT_EQUALS(expected_pow1, tokenizeAndStringify(code_pow1));
 
+        const char code_pow2[] = "int f() {return pow(0,0);}";
+        const char expected_pow2[] = "int f ( ) { return 1 ; }";
+        ASSERT_EQUALS(expected_pow2, tokenizeAndStringify(code_pow2));
+
+        const char code_pow3[] = "int f() {return pow(0,1);}";
+        const char expected_pow3[] = "int f ( ) { return 0 ; }";
+        ASSERT_EQUALS(expected_pow3, tokenizeAndStringify(code_pow3));
+
+        const char code_pow4[] = "int f() {return pow(1,0);}";
+        const char expected_pow4[] = "int f ( ) { return 1 ; }";
+        ASSERT_EQUALS(expected_pow4, tokenizeAndStringify(code_pow4));
+
         // verify islessgreater() simplification
         const char code_islessgreater[] = "bool f(){\n"
                                           "return islessgreater(1,0);\n" // (1 < 0) or (1 > 0) --> true

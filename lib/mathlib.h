@@ -45,6 +45,7 @@ public:
     static bool isInt(const std::string & str);
     static bool isFloat(const std::string &str);
     static bool isNegative(const std::string &str);
+    static bool isPositive(const std::string &str);
     static bool isHex(const std::string& str);
     static bool isOct(const std::string& str);
     static bool isBin(const std::string& str);

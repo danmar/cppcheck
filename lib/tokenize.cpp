@@ -8377,10 +8377,9 @@ void Tokenizer::simplifyMathFunctions()
                 tok->deleteNext(5); // delete tokens
                 tok->str((isLessOrGreater == true) ? "true": "false");  // insert results
             }
-        } else if (Token::Match(tok, "div|ldiv|lldiv|pow|powf|powl ( %any% , %num% )")) {
+        } else if (Token::Match(tok, "div|ldiv|lldiv ( %any% , %num% )")) {
             // Calling the function 'div(x,y)' is the same as calculating (x)/(y). In case y has the value 1
             // (the identity element), the call can be simplified to (x).
-            // In case of pow( anyNumber,1 ): It can be simplified to anynumber.
             const std::string leftParameter(tok->tokAt(2)->str()); // get the left parameter
             const std::string rightNumber(tok->tokAt(4)->str()); // get right number
             if (!rightNumber.empty() && !leftParameter.empty()) {
@@ -8388,10 +8387,66 @@ void Tokenizer::simplifyMathFunctions()
                 const bool isInteger = MathLib::isInt(rightNumber);
                 const bool isFloat = MathLib::isFloat(rightNumber);
                 const bool allowToSimplify = ((!isNegative && isInteger && (MathLib::toLongNumber(rightNumber) == 1L)) // case: integer numbers
-                                              || (!isNegative && isFloat && (MathLib::toDoubleNumber(rightNumber)-1.0) <= 0.)); // case: float numbers
+                                              || (!isNegative && isFloat && (MathLib::toDoubleNumber(rightNumber)-1.0) >= 0.)); // case: float numbers
                 if (allowToSimplify == true) {
                     tok->deleteNext(5); // delete tokens
                     tok->str(leftParameter);  // insert simplified result
+                }
+            }
+        } else if (Token::Match(tok, "pow|powf|powl (")) {
+            if (tok && Token::Match(tok->tokAt(2), " %any% , %num% )")) {
+                // In case of pow( x , 1 ): It can be simplified to x.
+                const std::string leftParameter(tok->tokAt(2)->str()); // get the left parameter
+                const std::string rightNumber(tok->tokAt(4)->str()); // get right number
+                if (!rightNumber.empty() && !leftParameter.empty()) {
+                    const bool isNegative = MathLib::isNegative(rightNumber);
+                    const bool isInteger = MathLib::isInt(rightNumber);
+                    const bool isFloat = MathLib::isFloat(rightNumber);
+                    const bool rightParameterIsOne = ((!isNegative && isInteger && (MathLib::toLongNumber(rightNumber) == 1L)) // case: integer numbers
+                                                      || (!isNegative && isFloat && (MathLib::toDoubleNumber(rightNumber)-1.0) >= 0.)); // case: float numbers
+                    const bool rightParameterIsZero = ((!isNegative && isInteger && (MathLib::toLongNumber(rightNumber) == 0L)) // case: integer numbers
+                                                       || (!isNegative && isFloat && (MathLib::toDoubleNumber(rightNumber)) >= 0.)); // case: float numbers
+                    if (rightParameterIsOne) { // case: x^(1) = x
+                        tok->deleteNext(5); // delete tokens
+                        tok->str(leftParameter);  // insert simplified result
+                    } else if (rightParameterIsZero) { // case: x^(0) = 1
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("1");  // insert simplified result
+                    }
+                }
+            }
+            if (tok && Token::Match(tok->tokAt(2), " %num% , %num% )")) {
+                // In case of pow ( 0 , anyNumber > 0): It can be simplified to 0
+                // In case of pow ( 0 , 0 ): It simplified to 1
+                // In case of pow ( 1 , anyNumber ): It simplified to 1
+                const std::string leftNumber(tok->tokAt(2)->str()); // get the left parameter
+                const std::string rightNumber(tok->tokAt(4)->str()); // get the right parameter
+                if (!leftNumber.empty()) {
+                    const bool isLeftNumberNegative = MathLib::isNegative(leftNumber);
+                    const bool isLeftNumberInteger = MathLib::isInt(leftNumber);
+                    const bool isLeftNumberFloat = MathLib::isFloat(leftNumber);
+                    const bool isRightNumberNegative = MathLib::isNegative(rightNumber);
+                    const bool isRightNumberInteger = MathLib::isInt(rightNumber);
+                    const bool isRightNumberFloat = MathLib::isFloat(rightNumber);
+                    const bool isLeftNumberZero = ((!isLeftNumberNegative && isLeftNumberInteger && (MathLib::toLongNumber(leftNumber) == 0L)) // case: integer numbers
+                                                   || (!isLeftNumberNegative && isLeftNumberFloat && (MathLib::toDoubleNumber(leftNumber)) >= 0.)); // case: float numbers
+                    const bool isLeftNumberOne = ((isLeftNumberNegative && isLeftNumberInteger && (MathLib::toLongNumber(leftNumber) == 1L)) // case: integer numbers
+                                                  || (!isLeftNumberNegative && isLeftNumberFloat && (MathLib::toDoubleNumber(leftNumber)) >= 1.)); // case: float numbers
+                    const bool isRightNumberZero = ((!isRightNumberNegative && isRightNumberInteger && (MathLib::toLongNumber(rightNumber) == 0L)) // case: integer numbers
+                                                    || (!isRightNumberNegative && isRightNumberFloat && (MathLib::toDoubleNumber(rightNumber)) >= 0.)); // case: float numbers
+
+                    if (isLeftNumberZero && !isRightNumberZero && MathLib::isPositive(rightNumber)) { // case: 0^(y) = 0 and y > 0
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("0");  // insert simplified result
+                    }
+                    if (isLeftNumberZero && isRightNumberZero) { // case: 0^0 = 1
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("1");  // insert simplified result
+                    }
+                    if (isLeftNumberOne) { // case 1^(y) = 1
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("1");  // insert simplified result
+                    }
                 }
             }
         }

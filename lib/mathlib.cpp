@@ -121,6 +121,11 @@ bool MathLib::isNegative(const std::string &s)
     return (s[n] == '-');
 }
 
+bool MathLib::isPositive(const std::string &s)
+{
+    return !MathLib::isNegative(s);
+}
+
 bool MathLib::isOct(const std::string& str)
 {
     bool sign = str[0]=='-' || str[0]=='+';
