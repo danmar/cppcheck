@@ -128,19 +128,19 @@ bool MathLib::isPositive(const std::string &s)
 
 bool MathLib::isOct(const std::string& str)
 {
-    bool sign = str[0]=='-' || str[0]=='+';
+    const bool sign = str[0]=='-' || str[0]=='+';
     return (str[sign?1:0] == '0' && (str.size() == 1 || isOctalDigit(str[sign?2:1])) && !isFloat(str));
 }
 
 bool MathLib::isHex(const std::string& str)
 {
-    bool sign = str[0]=='-' || str[0]=='+';
+    const bool sign = str[0]=='-' || str[0]=='+';
     return (str.compare(sign?1:0, 2, "0x") == 0 || str.compare(sign?1:0, 2, "0X") == 0);
 }
 
 bool MathLib::isBin(const std::string& str)
 {
-    bool sign = str[0]=='-' || str[0]=='+';
+    const bool sign = str[0]=='-' || str[0]=='+';
     return ((str.compare(sign?1:0, 2, "0b") == 0 || str.compare(sign?1:0, 2, "0B") == 0) && str.find_first_not_of("10bB", 1) == std::string::npos);
 }
 
@@ -279,8 +279,8 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        bigint a = toLongNumber(first);
-        bigint b = toLongNumber(second);
+        const bigint a = toLongNumber(first);
+        const bigint b = toLongNumber(second);
         if (a == std::numeric_limits<bigint>::min())
             throw InternalError(0, "Internal Error: Division overflow");
         if (b == 0)
