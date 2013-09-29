@@ -1483,16 +1483,45 @@ void CheckIO::invalidPrintfArgTypeError_p(const Token* tok, unsigned int numForm
     errmsg << ".";
     reportError(tok, Severity::warning, "invalidPrintfArgType_p", errmsg.str());
 }
+static void printfFormatType(std::ostream& os, const std::string& specifier, bool isUnsigned)
+{
+    os << "\'";
+    if (specifier[0] == 'l') {
+        if (specifier[1] == 'l')
+            os << (isUnsigned ? "unsigned " : "") << "long long";
+        else
+            os << (isUnsigned ? "unsigned " : "") << "long";
+    } else if (specifier.find("I32") != std::string::npos) {
+        os << (isUnsigned ? "unsigned " : "") << "__int32";
+    } else if (specifier.find("I64") != std::string::npos) {
+        os << (isUnsigned ? "unsigned " : "") << "__int64";
+    } else if (specifier[0] == 'I') {
+        os << (isUnsigned ? "size_t" : "ptrdiff_t");
+    } else if (specifier[0] == 'j') {
+        if (isUnsigned)
+            os << "uintmax_t";
+        else
+            os << "intmax_t";
+    } else if (specifier[0] == 'z') {
+        if (specifier[1] == 'd')
+            os << "ssize_t";
+        else
+            os << "size_t";
+    } else if (specifier[0] == 't') {
+        os << (isUnsigned ? "unsigned " : "") << "ptrdiff_t";
+    } else if (specifier[0] == 'L') {
+        os << (isUnsigned ? "unsigned " : "") << "long long";
+    } else {
+        os << (isUnsigned ? "unsigned " : "") << "int";
+    }
+    os << "\'";
+}
 void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a";
-    if (specifier.find("I64") != std::string::npos)
-        errmsg << " long long ";
-    else
-        errmsg << (specifier[0] == 'l' ? " long " : "n ")
-               << (specifier[0] == 'l' && specifier[1] == 'l' ? "long " : "");
-    errmsg << "integer but the argument type is ";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires ";
+    printfFormatType(errmsg, specifier, true);
+    errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
     reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str());
@@ -1500,27 +1529,20 @@ void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFo
 void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires an unsigned ";
-    if (specifier.find("I64") != std::string::npos)
-        errmsg << "long long ";
-    else
-        errmsg << (specifier[0] == 'l' ? "long " : "")
-               << (specifier[0] == 'l' && specifier[1] == 'l' ? "long " : "");
-    errmsg << "integer but the argument type is ";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires ";
+    printfFormatType(errmsg, specifier, true);
+    errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
     reportError(tok, Severity::warning, "invalidPrintfArgType_uint", errmsg.str());
 }
+
 void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a signed ";
-    if (specifier.find("I64") != std::string::npos)
-        errmsg << "long long ";
-    else
-        errmsg << (specifier[0] == 'l' ? "long " : "")
-               << (specifier[0] == 'l' && specifier[1] == 'l' ? "long " : "");
-    errmsg << "integer but the argument type is ";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires ";
+    printfFormatType(errmsg, specifier, false);
+    errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
     reportError(tok, Severity::warning, "invalidPrintfArgType_sint", errmsg.str());
@@ -1528,7 +1550,7 @@ void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numF
 void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
     std::ostringstream errmsg;
-    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a \'";
+    errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires \'";
     if (specifier[0] == 'L')
         errmsg << "long ";
     errmsg << "double\' but the argument type is ";
