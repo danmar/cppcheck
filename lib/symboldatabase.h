@@ -166,6 +166,10 @@ public:
 
     /**
      * Get type start token.
+     * The type start token doesn't account 'static' and 'const' qualifiers
+     * E.g.:
+     *     static const int * const p = ...;
+     * type start token ^
      * @return type start token
      */
     const Token *typeStartToken() const {
@@ -174,6 +178,10 @@ public:
 
     /**
      * Get type end token.
+     * The type end token doesn't account the forward 'const' qualifier
+     * E.g.:
+     *     static const int * const p = ...;
+     *       type end token ^
      * @return type end token
      */
     const Token *typeEndToken() const {
