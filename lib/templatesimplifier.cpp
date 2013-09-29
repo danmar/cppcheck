@@ -76,6 +76,27 @@ void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
         if (tok->str() == "(")
             tok = tok->link();
 
+        else if (Token::Match(tok, "template < > %var%")) {
+            const Token *end = tok;
+            while (end) {
+                if (end->str() == ";")
+                    break;
+                if (end->str() == "{") {
+                    end = end->link()->next();
+                    break;
+                }
+                if (!Token::Match(end, "%var%|::|<|>|>>|,")) {
+                    end = NULL;
+                    break;
+                }
+                end = end->next();
+            }
+            if (end) {
+                Token::eraseTokens(tok,end);
+                tok->deleteThis();
+            }
+        }
+
         else if (Token::Match(tok, "%type% <") &&
                  (!tok->previous() || tok->previous()->str() == ";")) {
             const Token *tok2 = tok->tokAt(2);

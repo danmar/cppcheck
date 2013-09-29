@@ -132,6 +132,7 @@ private:
         TEST_CASE(template37);  // #4544 - A<class B> a;
         TEST_CASE(template38);  // #4832 - crash on C++11 right angle brackets
         TEST_CASE(template39);  // #4742 - freeze
+        TEST_CASE(template40);  // #5055 - template specialization outside struct
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2322,6 +2323,14 @@ private:
                             "  const vector<int> vi = static_cast<vector<int>>(v);"
                             "}";
         tok(code);
+    }
+
+    void template40() { // #5055 - false negatives when there is template specialization outside struct
+        const char code[] = "struct A {"
+                            "  template<typename T> struct X { T t; };"
+                            "};"
+                            "template<> struct A::X<int> { int *t; };";
+        ASSERT_EQUALS("struct A { template < typename T > struct X { T t ; } ; } ;", tok(code));
     }
 
     void template_default_parameter() {
