@@ -50,6 +50,8 @@ private:
 
         TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
         TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
+        TEST_CASE(testMicrosoftSecurePrintfArgument);
+        TEST_CASE(testMicrosoftSecureScanfArgument);
 
         TEST_CASE(testlibrarycfg); // library configuration
     }
@@ -460,7 +462,7 @@ private:
               "    scanf(\"aa%ld\", &a);\n" // No %s
               "    scanf(\"%*[^~]\");\n" // Ignore input
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string has 0 parameters but 1 are given.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string requires 0 parameters but 1 is given.\n", errout.str());
     }
 
     void testScanf3() {
@@ -507,10 +509,10 @@ private:
               "    fscanf(bar, \"%1d\", &foo, &bar);\n"
               "    scanf(\"%*1x %1x %29s\", &count, KeyName, foo);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) scanf format string has 0 parameters but 1 are given.\n"
-                      "[test.cpp:3]: (warning) scanf format string has 1 parameters but 2 are given.\n"
-                      "[test.cpp:4]: (warning) fscanf format string has 1 parameters but 2 are given.\n"
-                      "[test.cpp:5]: (warning) scanf format string has 2 parameters but 3 are given.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) scanf format string requires 0 parameters but 1 is given.\n"
+                      "[test.cpp:3]: (warning) scanf format string requires 1 parameter but 2 are given.\n"
+                      "[test.cpp:4]: (warning) fscanf format string requires 1 parameter but 2 are given.\n"
+                      "[test.cpp:5]: (warning) scanf format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
               "    scanf(\"%1d\");\n"
@@ -518,10 +520,10 @@ private:
               "    sscanf(bar, \"%1d%1d\", &foo);\n"
               "    scanf(\"%*1x %1x %29s\", &count);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) scanf format string has 1 parameters but only 0 are given.\n"
-                      "[test.cpp:3]: (error) scanf format string has 2 parameters but only 1 are given.\n"
-                      "[test.cpp:4]: (error) sscanf format string has 2 parameters but only 1 are given.\n"
-                      "[test.cpp:5]: (error) scanf format string has 2 parameters but only 1 are given.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) scanf format string requires 1 parameter but only 0 are given.\n"
+                      "[test.cpp:3]: (error) scanf format string requires 2 parameters but only 1 is given.\n"
+                      "[test.cpp:4]: (error) sscanf format string requires 2 parameters but only 1 is given.\n"
+                      "[test.cpp:5]: (error) scanf format string requires 2 parameters but only 1 is given.\n", errout.str());
 
         check("void foo() {\n"
               "    char input[10];\n"
@@ -1316,24 +1318,24 @@ private:
               "    sprintf(string1, \"%-*.*s\", 32, string2);\n" // #3364
               "    snprintf(a, 9, \"%s%d\", \"11223344\");\n" // #3655
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) printf format string has 1 parameters but only 0 are given.\n"
-                      "[test.cpp:3]: (error) printf format string has 2 parameters but only 1 are given.\n"
-                      "[test.cpp:4]: (error) printf format string has 3 parameters but only 2 are given.\n"
-                      "[test.cpp:5]: (error) printf format string has 3 parameters but only 2 are given.\n"
-                      "[test.cpp:6]: (error) printf format string has 3 parameters but only 2 are given.\n"
-                      "[test.cpp:7]: (error) fprintf format string has 2 parameters but only 0 are given.\n"
-                      "[test.cpp:8]: (error) snprintf format string has 2 parameters but only 0 are given.\n"
-                      "[test.cpp:9]: (error) sprintf format string has 3 parameters but only 2 are given.\n"
-                      "[test.cpp:10]: (error) snprintf format string has 2 parameters but only 1 are given.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) printf format string requires 1 parameter but only 0 are given.\n"
+                      "[test.cpp:3]: (error) printf format string requires 2 parameters but only 1 is given.\n"
+                      "[test.cpp:4]: (error) printf format string requires 3 parameters but only 2 are given.\n"
+                      "[test.cpp:5]: (error) printf format string requires 3 parameters but only 2 are given.\n"
+                      "[test.cpp:6]: (error) printf format string requires 3 parameters but only 2 are given.\n"
+                      "[test.cpp:7]: (error) fprintf format string requires 2 parameters but only 0 are given.\n"
+                      "[test.cpp:8]: (error) snprintf format string requires 2 parameters but only 0 are given.\n"
+                      "[test.cpp:9]: (error) sprintf format string requires 3 parameters but only 2 are given.\n"
+                      "[test.cpp:10]: (error) snprintf format string requires 2 parameters but only 1 is given.\n", errout.str());
 
         check("void foo(char *str) {\n"
               "    printf(\"\", 0);\n"
               "    printf(\"%u\", 123, bar());\n"
               "    printf(\"%u%s\", 0, bar(), 43123);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) printf format string has 0 parameters but 1 are given.\n"
-                      "[test.cpp:3]: (warning) printf format string has 1 parameters but 2 are given.\n"
-                      "[test.cpp:4]: (warning) printf format string has 2 parameters but 3 are given.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) printf format string requires 0 parameters but 1 is given.\n"
+                      "[test.cpp:3]: (warning) printf format string requires 1 parameter but 2 are given.\n"
+                      "[test.cpp:4]: (warning) printf format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n" // swprintf exists as MSVC extension and as standard function: #4790
               "    swprintf(string1, L\"%u\", 32, string2);\n" // MSVC implementation
@@ -1341,8 +1343,8 @@ private:
               "    swprintf(string1, 6, L\"%u\", 32, string2);\n" // Standard implementation
               "    swprintf(string1, 6, L\"%u%s\", 32, string2);\n" // Standard implementation
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) swprintf format string has 1 parameters but 2 are given.\n"
-                      "[test.cpp:4]: (warning) swprintf format string has 1 parameters but 2 are given.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) swprintf format string requires 1 parameter but 2 are given.\n"
+                      "[test.cpp:4]: (warning) swprintf format string requires 1 parameter but 2 are given.\n", errout.str());
 
         check("void foo(char *str) {\n"
               "    printf(\"%u\", 0);\n"
@@ -2052,7 +2054,7 @@ private:
               "  scanf(\"%2$d\", &bar);\n"
               "  printf(\"%0$f\", 0.0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) printf format string has 1 parameters but only 0 are given.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (error) printf format string requires 1 parameter but only 0 are given.\n"
                       "[test.cpp:4]: (warning) printf: referencing parameter 4 while 3 arguments given\n"
                       "[test.cpp:5]: (warning) scanf: referencing parameter 2 while 1 arguments given\n"
                       "[test.cpp:6]: (warning) printf: parameter positions start at 1, not 0\n"
@@ -2164,6 +2166,110 @@ private:
                       "[test.cpp:5]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout.str());
     }
 
+    void testMicrosoftSecurePrintfArgument() {
+        check("void foo() {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _tprintf_s(_T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) _tprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _tprintf_s(_T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) _tprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    TCHAR str[10];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _stprintf_s(str, sizeof(str) / sizeof(TCHAR), _T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    TCHAR str[10];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _stprintf_s(str, sizeof(str) / sizeof(TCHAR), _T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    TCHAR str[10];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _sntprintf_s(str, sizeof(str) / sizeof(TCHAR), _TRUNCATE, _T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    TCHAR str[10];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _sntprintf_s(str, sizeof(str) / sizeof(TCHAR), _TRUNCATE, _T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+    }
+
+    void testMicrosoftSecureScanfArgument() {
+        check("void foo() {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    TCHAR str[10];\n"
+              "    _tscanf_s(\"%s %d %u\", str, 10, &u, &i, 0)\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) _tscanf_s format string requires 4 parameters but 5 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    TCHAR str[10];\n"
+              "    _tscanf_s(\"%s %d %u\", str, 10, &u, &i, 0)\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) _tscanf_s format string requires 4 parameters but 5 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    TCHAR txt[100];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    TCHAR str[10];\n"
+              "    _stscanf_s(txt, \"%s %d %u\", str, 10, &u, &i, 0)\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) _stscanf_s format string requires 4 parameters but 5 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    TCHAR txt[100];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    TCHAR str[10];\n"
+              "    _stscanf_s(txt, \"%s %d %u\", str, 10, &u, &i, 0)\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) _stscanf_s format string requires 4 parameters but 5 are given.\n", errout.str());
+    }
+
     void testlibrarycfg() {
         const char code[] = "void f() {\n"
                             "    format(\"%s\");\n"
@@ -2177,7 +2283,7 @@ private:
         Library lib;
         lib.argumentChecks["format"][1].formatstr = true;
         check(code, false, false, Settings::Unspecified, &lib);
-        ASSERT_EQUALS("[test.cpp:2]: (error) format format string has 1 parameters but only 0 are given.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) format format string requires 1 parameter but only 0 are given.\n", errout.str());
     }
 };
 

@@ -439,9 +439,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
             if (!formatString.empty()) {
                 /* formatstring found in library */
             } else if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%") ||
-                       (windows && (Token::Match(tok, "Format|AppendFormat ( %str%") &&
-                                    Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
-                                    tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString"))) {
+                       (windows && (Token::Match(tok, "printf_s|wprintf_s|scanf_s|wscanf_s ( %str%") ||
+                                    (Token::Match(tok, "Format|AppendFormat ( %str%") &&
+                                     Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
+                                     tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString")))) {
 
                 formatString = tok->strAt(2);
                 if (tok->strAt(3) == ",") {
@@ -451,7 +452,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
-            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%") || (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%"))) {
+            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%") ||
+                       (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) ||
+                       (windows && Token::Match(tok, "sscanf_s|swscanf_s ( %any%"))) {
                 const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
                 if (Token::Match(formatStringTok, "%str% [,)]")) {
                     argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
@@ -459,7 +462,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
-            } else if (Token::Match(tok, "snprintf|fnprintf (") || (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%"))) {
+            } else if (Token::Match(tok, "snprintf|fnprintf (") ||
+                       (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) ||
+                       (windows && Token::Match(tok, "sprintf_s|swprintf_s ("))) {
                 const Token* formatStringTok = tok->tokAt(2);
                 for (int i = 0; i < 2 && formatStringTok; i++) {
                     formatStringTok = formatStringTok->nextArgument(); // Find third parameter (format string)
@@ -470,13 +475,27 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
+            } else if (windows && Token::Match(tok, "snprintf_s|snwprintf_s (")) {
+                const Token* formatStringTok = tok->tokAt(2);
+                for (int i = 0; i < 3 && formatStringTok; i++) {
+                    formatStringTok = formatStringTok->nextArgument(); // Find forth parameter (format string)
+                }
+                if (Token::Match(formatStringTok, "%str% [,)]")) {
+                    argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
+                    formatString = formatStringTok->str();
+                } else {
+                    continue;
+                }
+
             } else {
                 continue;
             }
 
             // Count format string parameters..
-            bool scan = Token::Match(tok, "sscanf|fscanf|scanf|swscanf|fwscanf|wscanf");
+            bool scanf_s = windows ? Token::Match(tok, "scanf_s|wscanf_s|sscanf_s|swscanf_s") : false;
+            bool scan = Token::Match(tok, "sscanf|fscanf|scanf|swscanf|fwscanf|wscanf") || scanf_s;
             unsigned int numFormat = 0;
+            unsigned int numSecure = 0;
             bool percent = false;
             const Token* argListTok2 = argListTok;
             std::set<unsigned int> parameterPositionsUsed;
@@ -560,6 +579,21 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             (!Token::Match(argInfo.typeToken, "char|wchar_t") ||
                                              argInfo.typeToken->strAt(-1) == "const")) {
                                             invalidScanfArgTypeError_s(tok, numFormat, specifier, &argInfo);
+                                        }
+                                        if (scanf_s) {
+                                            numSecure++;
+                                            if (argListTok) {
+                                                argListTok = argListTok->nextArgument();
+                                            }
+                                        }
+                                        done = true;
+                                        break;
+                                    case 'c':
+                                        if (scanf_s) {
+                                            numSecure++;
+                                            if (argListTok) {
+                                                argListTok = argListTok->nextArgument();
+                                            }
                                         }
                                         done = true;
                                         break;
@@ -1134,8 +1168,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
             }
 
             // Mismatching number of parameters => warning
-            if (numFormat != numFunction)
-                wrongPrintfScanfArgumentsError(tok, tok->str(), numFormat, numFunction);
+            if ((numFormat + numSecure) != numFunction)
+                wrongPrintfScanfArgumentsError(tok, tok->originalName().empty() ? tok->str() : tok->originalName(), numFormat + numSecure, numFunction);
         }
     }
 }
@@ -1374,12 +1408,13 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
 
     std::ostringstream errmsg;
     errmsg << functionName
-           << " format string has "
+           << " format string requires "
            << numFormat
-           << " parameters but "
+           << " parameter" << (numFormat != 1 ? "s" : "") << " but "
            << (numFormat > numFunction ? "only " : "")
            << numFunction
-           << " are given.";
+           << (numFunction != 1 ? " are" : " is")
+           << " given.";
 
     reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str());
 }
