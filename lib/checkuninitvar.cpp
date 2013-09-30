@@ -1103,8 +1103,24 @@ void CheckUninitVar::checkScope(const Scope* scope)
                 if (scope2->className == structname && scope2->numConstructors == 0U) {
                     for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
                         const Variable &var = *it;
-                        if (!var.isArray())
-                            checkScopeForVariable(scope, tok, *i, NULL, NULL, var.name());
+                        if (!var.isArray()) {
+                            // is the variable declared in a inner union?
+                            bool innerunion = false;
+                            for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); it2++) {
+                                const Scope &innerScope = *it2;
+                                if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
+                                    if (var.typeStartToken()->linenr() >= innerScope.classStart->linenr() &&
+                                        var.typeStartToken()->linenr() <= innerScope.classEnd->linenr()) {
+                                        innerunion = true;
+                                        break;
+                                    }
+
+                                }
+                            }
+
+                            if (!innerunion)
+                                checkScopeForVariable(scope, tok, *i, NULL, NULL, var.name());
+                        }
                     }
                 }
             }
