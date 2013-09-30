@@ -422,6 +422,15 @@ private:
         givenACodeSampleToTokenize doublePrecision("0.0d", true);
         ASSERT_EQUALS(true, Token::Match(doublePrecision.tokens(), "%num%"));
 
+        givenACodeSampleToTokenize signedLong("0L", true);
+        ASSERT_EQUALS(true, Token::Match(signedLong.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize negativeSignedLong("-0L", true);
+        ASSERT_EQUALS(true, Token::Match(negativeSignedLong.tokens(), "- %num%"));
+
+        givenACodeSampleToTokenize positiveSignedLong("+0L", true);
+        ASSERT_EQUALS(true, Token::Match(positiveSignedLong.tokens(), "+ %num%"));
+
         givenACodeSampleToTokenize unsignedInt("0U", true);
         ASSERT_EQUALS(true, Token::Match(unsignedInt.tokens(), "%num%"));
 
@@ -436,6 +445,12 @@ private:
 
         givenACodeSampleToTokenize negative("-42", true);
         ASSERT_EQUALS(true, Token::Match(negative.tokens(), "- %num%"));
+
+        givenACodeSampleToTokenize negativeNull("-.0", true);
+        ASSERT_EQUALS(true, Token::Match(negativeNull.tokens(), "- %num%"));
+
+        givenACodeSampleToTokenize positiveNull("+.0", true);
+        ASSERT_EQUALS(true, Token::Match(positiveNull.tokens(), "+ %num%"));
     }
 
 
