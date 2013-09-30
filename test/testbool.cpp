@@ -359,6 +359,11 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x, int y) {\n"
+              "    return (!y == !x);\n"
+              "}");
+        TODO_ASSERT_EQUALS("","[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt3() {
