@@ -357,7 +357,7 @@ private:
         c.redundantAssignmentError(0, 0, "var", false);
 
         // style/warning
-        c.checkComparisonFunctionIsAlwaysTrueOrFalseError(0,"isless","varName","false");
+        c.checkComparisonFunctionIsAlwaysTrueOrFalseError(0,"isless","varName",false);
         c.checkCastIntToCharAndBackError(0,"func_name");
         c.oppositeInnerConditionError(0);
         c.cstyleCastError(0);
