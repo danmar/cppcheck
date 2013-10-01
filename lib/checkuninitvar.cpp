@@ -1106,7 +1106,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
                         if (!var.isArray()) {
                             // is the variable declared in a inner union?
                             bool innerunion = false;
-                            for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); it2++) {
+                            for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {
                                 const Scope &innerScope = *it2;
                                 if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
                                     if (var.typeStartToken()->linenr() >= innerScope.classStart->linenr() &&
