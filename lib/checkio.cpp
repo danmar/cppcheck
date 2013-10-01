@@ -475,7 +475,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 } else {
                     continue;
                 }
-            } else if (windows && Token::Match(tok, "snprintf_s|snwprintf_s (")) {
+            } else if (windows && Token::Match(tok, "_snprintf_s|_snwprintf_s (")) {
                 const Token* formatStringTok = tok->tokAt(2);
                 for (int i = 0; i < 3 && formatStringTok; i++) {
                     formatStringTok = formatStringTok->nextArgument(); // Find forth parameter (format string)
@@ -513,17 +513,25 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         }
                         ++i;
                     }
+                    if (scanf_s) {
+                        numSecure++;
+                        if (argListTok) {
+                            argListTok = argListTok->nextArgument();
+                        }
+                    }
                     if (i == formatString.end())
                         break;
                 } else if (percent) {
                     percent = false;
 
                     bool _continue = false;
+                    bool skip = false;
                     std::string width;
                     unsigned int parameterPosition = 0;
                     bool hasParameterPosition = false;
-                    while (i != formatString.end() && *i != ']' && !std::isalpha(*i)) {
+                    while (i != formatString.end() && *i != '[' && !std::isalpha(*i)) {
                         if (*i == '*') {
+                            skip = true;
                             if (scan)
                                 _continue = true;
                             else {
@@ -539,6 +547,26 @@ void CheckIO::checkWrongPrintfScanfArguments()
                             width.clear();
                         }
                         ++i;
+                    }
+                    if (*i == '[') {
+                        while (i != formatString.end()) {
+                            if (*i == ']') {
+                                if (!skip) {
+                                    numFormat++;
+                                    if (argListTok)
+                                        argListTok = argListTok->nextArgument();
+                                }
+                                break;
+                            }
+                            ++i;
+                        }
+                        if (scanf_s && !skip) {
+                            numSecure++;
+                            if (argListTok) {
+                                argListTok = argListTok->nextArgument();
+                            }
+                        }
+                        _continue = true;
                     }
                     if (i == formatString.end())
                         break;

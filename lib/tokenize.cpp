@@ -5587,6 +5587,9 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->str("const");
                 tok->insertToken("*");
                 tok->insertToken("wchar_t");
+            } else if (tok->str() == "WCHAR") {
+                tok->originalName(tok->str());
+                tok->str("wchar_t");
             }
         }
     }
@@ -9612,7 +9615,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("sprintf_s");
                 tok->originalName("_stprintf_s");
             } else if (Token::simpleMatch(tok, "_sntprintf_s (")) {
-                tok->str("snprintf_s");
+                tok->str("_snprintf_s");
                 tok->originalName("_sntprintf_s");
             } else if (Token::simpleMatch(tok, "_tscanf_s (")) {
                 tok->str("scanf_s");
@@ -9682,7 +9685,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("swprintf_s");
                 tok->originalName("_stprintf_s");
             } else if (Token::simpleMatch(tok, "_sntprintf_s (")) {
-                tok->str("snwprintf_s");
+                tok->str("_snwprintf_s");
                 tok->originalName("_sntprintf_s");
             } else if (Token::simpleMatch(tok, "_tscanf_s (")) {
                 tok->str("wscanf_s");
