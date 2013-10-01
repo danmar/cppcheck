@@ -76,6 +76,8 @@ public:
     static bool isOctalDigit(char c);
 };
 
+template<> CPPCHECKLIB std::string MathLib::toString(double value); // Declare specialization to avoid linker problems
+
 /// @}
 //---------------------------------------------------------------------------
 #endif // mathlibH
