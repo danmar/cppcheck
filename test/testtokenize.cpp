@@ -309,6 +309,9 @@ private:
 
         TEST_CASE(doublesharp);
 
+        TEST_CASE(isZeroNumber);
+        TEST_CASE(isOneNumber);
+
         TEST_CASE(macrodoublesharp);
 
         TEST_CASE(simplifyFunctionParameters);
@@ -8278,13 +8281,121 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32W));
     }
 
+    void isZeroNumber() const {
+        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("0.0"));
+        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("+0.0"));
+        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("-0.0"));
+        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("+0L"));
+        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("+0"));
+        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("-0"));
+        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("-0E+0"));
+
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("1.0"));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("+1.0"));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("-1"));
+    }
+
+    void isOneNumber() const {
+        ASSERT_EQUALS(true, Tokenizer::isOneNumber("1.0"));
+        ASSERT_EQUALS(true, Tokenizer::isOneNumber("+1.0"));
+        ASSERT_EQUALS(true, Tokenizer::isOneNumber("1.0e+0"));
+        ASSERT_EQUALS(true, Tokenizer::isOneNumber("+1L"));
+        ASSERT_EQUALS(true, Tokenizer::isOneNumber("+1"));
+        ASSERT_EQUALS(true, Tokenizer::isOneNumber("1"));
+        ASSERT_EQUALS(true, Tokenizer::isOneNumber("+1E+0"));
+
+        ASSERT_EQUALS(false, Tokenizer::isOneNumber("0.0"));
+        ASSERT_EQUALS(false, Tokenizer::isOneNumber("+0.0"));
+        ASSERT_EQUALS(false, Tokenizer::isOneNumber("-0"));
+    }
+
     void simplifyMathFunctions() { //#5031
+
+        // verify log2(), log2f(), log2l() - simplifcation
+        const char code_log2[] ="void f(int x) {\n"
+                                " std::cout << log2(x);\n" // do not simplify
+                                " std::cout << log2(10);\n" // do not simplify
+                                " std::cout << log2(1L);\n" // simplify to 0
+                                "}";
+        const char expected_log2[] = "void f ( int x ) {\n"
+                                     "std :: cout << log2 ( x ) ;\n"
+                                     "std :: cout << log2 ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_log2, tokenizeAndStringify(code_log2));
+
+        const char code_log2f[] ="void f(float x) {\n"
+                                 " std::cout << log2f(x);\n" // do not simplify
+                                 " std::cout << log2f(10);\n" // do not simplify
+                                 " std::cout << log2f(1.0f);\n" // simplify to 0
+                                 "}";
+        const char expected_log2f[] = "void f ( float x ) {\n"
+                                      "std :: cout << log2f ( x ) ;\n"
+                                      "std :: cout << log2f ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_log2f, tokenizeAndStringify(code_log2f));
+
+        const char code_log2l[] ="void f(long double x) {\n"
+                                 " std::cout << log2l(x);\n" // do not simplify
+                                 " std::cout << log2l(10.0d);\n" // do not simplify
+                                 " std::cout << log2l(1.0d);\n" // simplify to 0
+                                 "}";
+        const char expected_log2l[] = "void f ( long double x ) {\n"
+                                      "std :: cout << log2l ( x ) ;\n"
+                                      "std :: cout << log2l ( 10.0d ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_log2l, tokenizeAndStringify(code_log2l));
+
+        // verify exp2(), exp2f(), exp2l() - simplifcation
+        const char code_exp2[] ="void f(int x) {\n"
+                                " std::cout << exp2(x);\n" // do not simplify
+                                " std::cout << exp2(-1);\n" // do not simplify
+                                " std::cout << exp2(0L);\n" // simplify to 0
+                                " std::cout << exp2(1L);\n" // do not simplify
+                                "}";
+        const char expected_exp2[] = "void f ( int x ) {\n"
+                                     "std :: cout << exp2 ( x ) ;\n"
+                                     "std :: cout << exp2 ( -1 ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "std :: cout << exp2 ( 1L ) ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_exp2, tokenizeAndStringify(code_exp2));
+
+        const char code_exp2f[] ="void f(float x) {\n"
+                                 " std::cout << exp2f(x);\n" // do not simplify
+                                 " std::cout << exp2f(-1.0);\n" // do not simplify
+                                 " std::cout << exp2f(0.0);\n" // simplify to 1
+                                 " std::cout << exp2f(1.0);\n" // do not simplify
+                                 "}";
+        const char expected_exp2f[] = "void f ( float x ) {\n"
+                                      "std :: cout << exp2f ( x ) ;\n"
+                                      "std :: cout << exp2f ( -1.0 ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "std :: cout << exp2f ( 1.0 ) ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_exp2f, tokenizeAndStringify(code_exp2f));
+
+        const char code_exp2l[] ="void f(long double x) {\n"
+                                 " std::cout << exp2l(x);\n" // do not simplify
+                                 " std::cout << exp2l(-1.0);\n" // do not simplify
+                                 " std::cout << exp2l(0.0);\n" // simplify to 1
+                                 " std::cout << exp2l(1.0);\n" // do not simplify
+                                 "}";
+        const char expected_exp2l[] = "void f ( long double x ) {\n"
+                                      "std :: cout << exp2l ( x ) ;\n"
+                                      "std :: cout << exp2l ( -1.0 ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "std :: cout << exp2l ( 1.0 ) ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_exp2l, tokenizeAndStringify(code_exp2l));
 
         // verify exp(), expf(), expl() - simplifcation
         const char code_exp[] ="void f(int x) {\n"
                                " std::cout << exp(x);\n" // do not simplify
                                " std::cout << exp(-1);\n" // do not simplify
-                               " std::cout << exp(0L);\n" // simplify to 0
+                               " std::cout << exp(0L);\n" // simplify to 1
                                " std::cout << exp(1L);\n" // do not simplify
                                "}";
         const char expected_exp[] = "void f ( int x ) {\n"
@@ -8298,7 +8409,7 @@ private:
         const char code_expf[] ="void f(float x) {\n"
                                 " std::cout << expf(x);\n" // do not simplify
                                 " std::cout << expf(-1.0);\n" // do not simplify
-                                " std::cout << expf(0.0);\n" // simplify to 0
+                                " std::cout << expf(0.0);\n" // simplify to 1
                                 " std::cout << expf(1.0);\n" // do not simplify
                                 "}";
         const char expected_expf[] = "void f ( float x ) {\n"
@@ -8312,7 +8423,7 @@ private:
         const char code_expl[] ="void f(long double x) {\n"
                                 " std::cout << expl(x);\n" // do not simplify
                                 " std::cout << expl(-1.0);\n" // do not simplify
-                                " std::cout << expl(0.0);\n" // simplify to 0
+                                " std::cout << expl(0.0);\n" // simplify to 1
                                 " std::cout << expl(1.0);\n" // do not simplify
                                 "}";
         const char expected_expl[] = "void f ( long double x ) {\n"

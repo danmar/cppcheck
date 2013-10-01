@@ -8272,27 +8272,26 @@ void Tokenizer::cppcheckError(const Token *tok) const
                 "Analysis failed. If the code is valid then please report this failure.");
 }
 // ------------------------------------------------------------------------
-// Helper function to check wether number is zero (0,0.0 or 0E+0) or not?
+// Helper function to check wether number is zero (0 or 0.0 or 0E+0) or not?
 // @param s --> a string to check
 // @return true in case s is zero and false otherwise.
 // ------------------------------------------------------------------------
-static bool isZeroNumber(const std::string &s)
+bool Tokenizer::isZeroNumber(const std::string &s)
 {
-    const bool isPositive = MathLib::isPositive(s);
     const bool isInteger = MathLib::isInt(s);
     const bool isFloat = MathLib::isFloat(s);
-    const bool isZeroValue = ((isPositive && isInteger && (MathLib::toLongNumber(s) == 0L)) // case: integer number
-                              || (isPositive && isFloat && MathLib::toString(MathLib::toDoubleNumber(s)) == "0.0")); // case: float number
+    const bool isZeroValue = ((isInteger && (MathLib::toLongNumber(s) == 0L)) // case: integer number
+                              || (isFloat && MathLib::toString(MathLib::toDoubleNumber(s)) == "0.0")); // case: float number
 
     return isZeroValue;
 }
 
 // ------------------------------------------------------------------------
-// Helper function to check wether number is one (1,0.1 or 1E+0) or not?
+// Helper function to check wether number is one (1 or 0.1E+1 or 1E+0) or not?
 // @param s --> a string to check
 // @return true in case s is zero and false otherwise.
 // ------------------------------------------------------------------------
-static bool isOneNumber(const std::string &s)
+bool Tokenizer::isOneNumber(const std::string &s)
 {
     const bool isPositive = MathLib::isPositive(s);
     const bool isInteger = MathLib::isInt(s);
@@ -8310,7 +8309,8 @@ static bool isOneNumber(const std::string &s)
 // fmaxf(), isgreater(), isgreaterequal(), isless()
 // islessgreater(), islessequal(), pow(), powf(), powl(),
 // div(),ldiv(),lldiv(), cbrt(), cbrtl(), cbtrf(), sqrt(),
-// sqrtf(), sqrtl(), exp(), expf(), expl()
+// sqrtf(), sqrtl(), exp(), expf(), expl(), exp2(),
+// exp2f(), exp2l(), log2(), log2f(), log2l()
 // in the tokenlist.
 //
 // Reference:
@@ -8362,14 +8362,23 @@ void Tokenizer::simplifyMathFunctions()
                 tok->deleteNext(3);  // delete tokens
                 tok->str("1"); // insert result into token list
             }
-        } else if (Token::Match(tok, "exp|expf|expl ( %num% )")) {
-            // Simplify: exp(0) = 1
+        } else if (Token::Match(tok, "exp|expf|expl|exp2|exp2f|exp2l ( %num% )")) {
+            // Simplify: exp[f|l](0) = 1 and exp2[f|l](0) = 1
             // get number string
             const std::string parameter(tok->tokAt(2)->str());
             // is parameter 0 ?
             if (isZeroNumber(parameter)) {
                 tok->deleteNext(3);  // delete tokens
                 tok->str("1"); // insert result into token list
+            }
+        } else if (Token::Match(tok, "log2|log2f|log2l ( %num% )")) {
+            // Simplify: log2[f|l](1) = 0
+            // get number string
+            const std::string parameter(tok->tokAt(2)->str());
+            // is parameter 0 ?
+            if (isOneNumber(parameter)) {
+                tok->deleteNext(3);  // delete tokens
+                tok->str("0"); // insert result into token list
             }
         } else if (Token::Match(tok, "fmin|fminl|fminf ( %num% , %num% )")) {
             // @todo if one of the parameters is NaN the other is returned

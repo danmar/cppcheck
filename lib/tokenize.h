@@ -748,6 +748,20 @@ public:
      */
     static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
+    /**
+    * Helper function to check wether number is zero (0 or 0.0 or 0E+0) or not?
+    * @param s --> a string to check
+    * @return true in case s is zero and false otherwise.
+    */
+    static bool isZeroNumber(const std::string &s);
+
+    /**
+    * Helper function to check wether number is one (1 or 0.1E+1 or 1E+0) or not?
+    * @param s --> a string to check
+    * @return true in case s is zero and false otherwise.
+    */
+    static bool isOneNumber(const std::string &s);
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
