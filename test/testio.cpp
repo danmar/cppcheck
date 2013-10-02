@@ -2036,6 +2036,13 @@ private:
               "    printf(\"%c\", c);\n"
               "}\n", false, false, Settings::Win64);
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    printf(\"%f %d\", static_cast<int>(1.0f), reinterpret_cast<const void *>(0));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
