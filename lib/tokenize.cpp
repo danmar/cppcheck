@@ -5569,14 +5569,16 @@ void Tokenizer::simplifyPlatformTypes()
                 tok->isLong(true);
                 tok->str("long");
             } else if (tok->str() == "HALF_PTR") {
+                tok->originalName(tok->str());
                 if (_settings->platformType == Settings::Win64)
                     tok->str("int");
                 else
                     tok->str("short");
             } else if (tok->str() == "INT_PTR") {
+                tok->originalName(tok->str());
                 if (_settings->platformType == Settings::Win64) {
                     tok->str("long");
-                    tok->insertToken("long");
+                    tok->isLong(true);
                 } else {
                     tok->str("int");
                 }
