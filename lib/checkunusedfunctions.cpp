@@ -31,7 +31,7 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Settings *settings)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
 {
     // Function declarations..
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
@@ -98,7 +98,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
-        if (settings->library.isexecutableblock(tok->str())) {
+        if (settings->library.acceptFile(FileName)
+                && settings->library.isexecutableblock(tok->str())) {
             const Token * qmlVarToken = tok->tokAt(settings->library.blockstartoffset());
             int scope = 1;
             // find all function calls in library code (starts with '(', not if or while etc)
@@ -119,7 +120,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             }
         }
 
-        if (settings->library.isexporter(tok->str()) && tok->next() != 0) {
+        if (settings->library.acceptFile(FileName)
+                && settings->library.isexporter(tok->str()) && tok->next() != 0) {
             const Token * qPropToken = tok;
             qPropToken = qPropToken->next();
             while (qPropToken && qPropToken->str() != ")") {

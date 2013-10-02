@@ -368,7 +368,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
 
         if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
-            _checkUnusedFunctions.parseTokens(_tokenizer, &_settings);
+            _checkUnusedFunctions.parseTokens(_tokenizer, FileName, &_settings);
 
         executeRules("normal", _tokenizer);
 
