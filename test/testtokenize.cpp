@@ -311,6 +311,7 @@ private:
 
         TEST_CASE(isZeroNumber);
         TEST_CASE(isOneNumber);
+        TEST_CASE(isTwoNumber);
 
         TEST_CASE(macrodoublesharp);
 
@@ -8309,6 +8310,20 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isOneNumber("-0"));
     }
 
+    void isTwoNumber() const {
+        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("2.0"));
+        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2.0"));
+        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("2.0e+0"));
+        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2L"));
+        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2"));
+        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("2"));
+        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2E+0"));
+
+        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("0.0"));
+        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("+0.0"));
+        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("-0"));
+    }
+
     void simplifyMathFunctions() { //#5031
 
         // verify log2(), log2f(), log2l() - simplifcation
@@ -8838,9 +8853,21 @@ private:
                              "    std::cout<<cosh(0);\n"
                              "    std::cout<<ln(1);\n"
                              "    std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
-                             "    std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
+                             "    std::cout<<pow(sin(x),2.0)+pow(cos(x),2.0);\n"
+                             "    std::cout<<pow(sin(x*y+z),2.0)+pow(cos(x*y+z),2.0);\n"
                              "    std::cout<<pow(sin(x*y+z),2)+pow(cos(x*y+z),2);\n"
+                             "    std::cout<<pow(cos(x),2)+pow(sin(x),2);\n"
+                             "    std::cout<<pow(cos(x),2.0)+pow(sin(x),2.0);\n"
+                             "    std::cout<<pow(cos(x*y+z),2.0)+pow(sin(x*y+z),2.0);\n"
+                             "    std::cout<<pow(cos(x*y+z),2)+pow(sin(x*y+z),2);\n"
                              "    std::cout<<pow(sinh(x*y+z),2)-pow(cosh(x*y+z),2);\n"
+                             "    std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
+                             "    std::cout<<pow(sinh(x*y+z),2.0)-pow(cosh(x*y+z),2.0);\n"
+                             "    std::cout<<pow(sinh(x),2.0)-pow(cosh(x),2.0);\n"
+                             "    std::cout<<pow(cosh(x*y+z),2)-pow(sinh(x*y+z),2);\n"
+                             "    std::cout<<pow(cosh(x),2)-pow(sinh(x),2);\n"
+                             "    std::cout<<pow(cosh(x*y+z),2.0)-pow(sinh(x*y+z),2.0);\n"
+                             "    std::cout<<pow(cosh(x),2.0)-pow(sinh(x),2.0);\n"
                              "}";
 
         const char expected1[] = "void foo ( ) {\n"
@@ -8850,15 +8877,33 @@ private:
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 0 ;\n"
                                  "std :: cout << 1 ;\n"
-                                 "std :: cout << -1 ;\n"
                                  "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
                                  "std :: cout << -1 ;\n"
                                  "}";
         ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
 
         const char code2[] = "void f ( ) {\n"
-                             "z = pow ( sin ( x ) , 2 ) + pow ( cos ( y ) , 2 ) ;\n"
-                             "t = pow ( sinh ( x ) , 2 ) - pow ( cosh ( y ) , 2 ) ;\n"
+                             "a = pow ( sin ( x ) , 2 ) + pow ( cos ( y ) , 2 ) ;\n"
+                             "b = pow ( sinh ( x ) , 2 ) - pow ( cosh ( y ) , 2 ) ;\n"
+                             "c = pow ( sin ( x ) , 2.0 ) + pow ( cos ( y ) , 2.0 ) ;\n"
+                             "d = pow ( sinh ( x ) , 2.0 ) - pow ( cosh ( y ) , 2.0 ) ;\n"
+                             "e = pow ( cos ( x ) , 2 ) + pow ( sin ( y ) , 2 ) ;\n"
+                             "f = pow ( cosh ( x ) , 2 ) - pow ( sinh ( y ) , 2 ) ;\n"
+                             "g = pow ( cos ( x ) , 2.0 ) + pow ( sin ( y ) , 2.0 ) ;\n"
+                             "h = pow ( cosh ( x ) , 2.0 ) - pow ( sinh ( y ) , 2.0 ) ;\n"
                              "}";
         ASSERT_EQUALS(code2, tokenizeAndStringify(code2));
     }
