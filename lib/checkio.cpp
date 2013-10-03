@@ -454,7 +454,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 }
             } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%") ||
                        (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) ||
-                       (windows && Token::Match(tok, "sscanf_s|swscanf_s ( %any%"))) {
+                       (windows && Token::Match(tok, "sscanf_s|swscanf_s|fscanf_s|fwscanf_s|fprintf_s|fwprintf_s ( %any%"))) {
                 const Token* formatStringTok = tok->tokAt(2)->nextArgument(); // Find second parameter (format string)
                 if (Token::Match(formatStringTok, "%str% [,)]")) {
                     argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
@@ -492,7 +492,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
             }
 
             // Count format string parameters..
-            bool scanf_s = windows ? Token::Match(tok, "scanf_s|wscanf_s|sscanf_s|swscanf_s") : false;
+            bool scanf_s = windows ? Token::Match(tok, "scanf_s|wscanf_s|sscanf_s|swscanf_s|fscanf_s|fwscanf_s") : false;
             bool scan = Token::Match(tok, "sscanf|fscanf|scanf|swscanf|fwscanf|wscanf") || scanf_s;
             unsigned int numFormat = 0;
             unsigned int numSecure = 0;
@@ -661,7 +661,14 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'I':
-                                                    if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    if (specifier.find("I64") != std::string::npos) {
+                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                                    } else if (specifier.find("I32") != std::string::npos) {
+                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                                    } else if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                               argInfo.typeToken->originalName() != "size_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'j':
@@ -726,7 +733,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 'I':
-                                                    if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    if (specifier.find("I64") != std::string::npos) {
+                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                                    } else if (specifier.find("I32") != std::string::npos) {
+                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                                    } else if (argInfo.typeToken->originalName() != "ptrdiff_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 'j':
@@ -787,7 +800,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'I':
-                                                    if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    if (specifier.find("I64") != std::string::npos) {
+                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                                    } else if (specifier.find("I32") != std::string::npos) {
+                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                                    } else if (argInfo.typeToken->originalName() != "size_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'j':
@@ -853,8 +872,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         done = true;
                                         break;
                                     case 'I':
-                                        if (i+1 != formatString.end() && *(i+1) == '6' &&
-                                            i+2 != formatString.end() && *(i+2) == '4') {
+                                        if ((i+1 != formatString.end() && *(i+1) == '6' &&
+                                             i+2 != formatString.end() && *(i+2) == '4') ||
+                                            (i+1 != formatString.end() && *(i+1) == '3' &&
+                                             i+2 != formatString.end() && *(i+2) == '2')) {
                                             specifier += *i++;
                                             specifier += *i++;
                                             if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
@@ -865,9 +886,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                 specifier += *i++;
                                             }
                                         } else {
-                                            specifier += *i;
-                                            invalidLengthModifierError(tok, numFormat, specifier);
-                                            done = true;
+                                            if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
+                                                specifier += *i;
+                                                invalidLengthModifierError(tok, numFormat, specifier);
+                                                done = true;
+                                            } else {
+                                                specifier += *i++;
+                                            }
                                         }
                                         break;
                                     case 'h':
@@ -1497,8 +1522,12 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFor
             errmsg << (isUnsigned ? "unsigned " : "") << "long long";
         else
             errmsg << (isUnsigned ? "unsigned " : "") << "long";
-    } else if (specifier[0] == 'I') {
+    } else if (specifier.find("I32") != std::string::npos) {
+        errmsg << (isUnsigned ? "unsigned " : "") << "__int32";
+    } else if (specifier.find("I64") != std::string::npos) {
         errmsg << (isUnsigned ? "unsigned " : "") << "__int64";
+    } else if (specifier[0] == 'I') {
+        errmsg << (isUnsigned ? "size_t" : "ptrdiff_t");
     } else if (specifier[0] == 'j') {
         if (isUnsigned)
             errmsg << "uintmax_t";

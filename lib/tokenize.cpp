@@ -9604,6 +9604,9 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("strstr");
             } else if (Token::simpleMatch(tok, "_tcstok (")) {
                 tok->str("strtok");
+            } else if (Token::simpleMatch(tok, "_ftprintf (")) {
+                tok->str("fprintf");
+                tok->originalName("_ftprintf");
             } else if (Token::simpleMatch(tok, "_tprintf (")) {
                 tok->str("printf");
                 tok->originalName("_tprintf");
@@ -9613,12 +9616,18 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             } else if (Token::simpleMatch(tok, "_sntprintf (")) {
                 tok->str("snprintf");
                 tok->originalName("_sntprintf");
+            } else if (Token::simpleMatch(tok, "_ftscanf (")) {
+                tok->str("fscanf");
+                tok->originalName("_ftscanf");
             } else if (Token::simpleMatch(tok, "_tscanf (")) {
                 tok->str("scanf");
                 tok->originalName("_tscanf");
             } else if (Token::simpleMatch(tok, "_stscanf (")) {
                 tok->str("sscanf");
                 tok->originalName("_stscanf");
+            } else if (Token::simpleMatch(tok, "_ftprintf_s (")) {
+                tok->str("fprintf_s");
+                tok->originalName("_ftprintf_s");
             } else if (Token::simpleMatch(tok, "_tprintf_s (")) {
                 tok->str("printf_s");
                 tok->originalName("_tprintf_s");
@@ -9628,6 +9637,9 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             } else if (Token::simpleMatch(tok, "_sntprintf_s (")) {
                 tok->str("_snprintf_s");
                 tok->originalName("_sntprintf_s");
+            } else if (Token::simpleMatch(tok, "_ftscanf_s (")) {
+                tok->str("fscanf_s");
+                tok->originalName("_ftscanf_s");
             } else if (Token::simpleMatch(tok, "_tscanf_s (")) {
                 tok->str("scanf_s");
                 tok->originalName("_tscanf_s");
@@ -9674,6 +9686,9 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("wcsstr");
             } else if (Token::simpleMatch(tok, "_tcstok (")) {
                 tok->str("wcstok");
+            } else if (Token::simpleMatch(tok, "_ftprintf (")) {
+                tok->str("fwprintf");
+                tok->originalName("_ftprintf");
             } else if (Token::simpleMatch(tok, "_tprintf (")) {
                 tok->str("wprintf");
                 tok->originalName("_tprintf");
@@ -9683,12 +9698,18 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             } else if (Token::simpleMatch(tok, "_sntprintf (")) {
                 tok->str("snwprintf");
                 tok->originalName("_sntprintf");
+            } else if (Token::simpleMatch(tok, "_ftscanf (")) {
+                tok->str("fwscanf");
+                tok->originalName("_ftscanf");
             } else if (Token::simpleMatch(tok, "_tscanf (")) {
                 tok->str("wscanf");
                 tok->originalName("_tscanf");
             } else if (Token::simpleMatch(tok, "_stscanf (")) {
                 tok->str("swscanf");
                 tok->originalName("_stscanf");
+            } else if (Token::simpleMatch(tok, "_ftprintf_s (")) {
+                tok->str("fwprintf_s");
+                tok->originalName("_ftprintf_s");
             } else if (Token::simpleMatch(tok, "_tprintf_s (")) {
                 tok->str("wprintf_s");
                 tok->originalName("_tprintf_s");
@@ -9698,6 +9719,9 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             } else if (Token::simpleMatch(tok, "_sntprintf_s (")) {
                 tok->str("_snwprintf_s");
                 tok->originalName("_sntprintf_s");
+            } else if (Token::simpleMatch(tok, "_ftscanf_s (")) {
+                tok->str("fwscanf_s");
+                tok->originalName("_ftscanf_s");
             } else if (Token::simpleMatch(tok, "_tscanf_s (")) {
                 tok->str("wscanf_s");
                 tok->originalName("_tscanf_s");

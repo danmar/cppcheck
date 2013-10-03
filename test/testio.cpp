@@ -49,6 +49,7 @@ private:
         TEST_CASE(testPosixPrintfScanfParameterPosition);  // #4900
 
         TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
+        TEST_CASE(testMicrosoftScanfArgument);
         TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
         TEST_CASE(testMicrosoftSecurePrintfArgument);
         TEST_CASE(testMicrosoftSecureScanfArgument);
@@ -2146,6 +2147,83 @@ private:
                       "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
     }
 
+    void testMicrosoftScanfArgument() {
+        check("void foo() {\n"
+              "    size_t s;\n"
+              "    ptrdiff_t p;\n"
+              "    __int32 i32;\n"
+              "    unsigned __int32 u32;\n"
+              "    __int64 i64;\n"
+              "    unsigned __int64 u64;\n"
+              "    scanf(\"%Id %Iu %Ix\", &s, &s, &s);\n"
+              "    scanf(\"%Id %Iu %Ix\", &p, &p, &p);\n"
+              "    scanf(\"%I32d %I32u %I32x\", &i32, &i32, &i32);\n"
+              "    scanf(\"%I32d %I32u %I32x\", &u32, &u32, &u32);\n"
+              "    scanf(\"%I64d %I64u %I64x\", &i64, &i64, &i64);\n"
+              "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
+                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
+                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka int *}'.\n"
+                      "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
+                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka long long *}'.\n"
+                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    size_t s;\n"
+              "    ptrdiff_t p;\n"
+              "    __int32 i32;\n"
+              "    unsigned __int32 u32;\n"
+              "    __int64 i64;\n"
+              "    unsigned __int64 u64;\n"
+              "    scanf(\"%Id %Iu %Ix\", &s, &s, &s);\n"
+              "    scanf(\"%Id %Iu %Ix\", &p, &p, &p);\n"
+              "    scanf(\"%I32d %I32u %I32x\", &i32, &i32, &i32);\n"
+              "    scanf(\"%I32d %I32u %I32x\", &u32, &u32, &u32);\n"
+              "    scanf(\"%I64d %I64u %I64x\", &i64, &i64, &i64);\n"
+              "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
+              "}", false, false, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
+                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
+                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka int *}'.\n"
+                      "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
+                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka long long *}'.\n"
+                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    size_t s;\n"
+              "    int i;\n"
+              "    scanf(\"%I\", &s);\n"
+              "    scanf(\"%I6\", &s);\n"
+              "    scanf(\"%I6x\", &s);\n"
+              "    scanf(\"%I16\", &s);\n"
+              "    scanf(\"%I16x\", &s);\n"
+              "    scanf(\"%I32\", &s);\n"
+              "    scanf(\"%I64\", &s);\n"
+              "    scanf(\"%I%i\", &s, &i);\n"
+              "    scanf(\"%I6%i\", &s, &i);\n"
+              "    scanf(\"%I6x%i\", &s, &i);\n"
+              "    scanf(\"%I16%i\", &s, &i);\n"
+              "    scanf(\"%I16x%i\", &s, &i);\n"
+              "    scanf(\"%I32%i\", &s, &i);\n"
+              "    scanf(\"%I64%i\", &s, &i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:6]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:7]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:8]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:9]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:10]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:11]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:12]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:13]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:14]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+    }
+
     void testMicrosoftCStringFormatArguments() { // ticket #4920
         check("void foo() {\n"
               "    unsigned __int32 u32;\n"
@@ -2289,6 +2367,42 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
                       "[test.cpp:5]: (warning) _snwprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _ftprintf_s(fp, _T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    _ftprintf_s(fp, _T(\"%d %u\"), u, i, 0);\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    fprintf_s(fp, \"%d %u\", u, i, 0);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) fprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    fwprintf_s(fp, L\"%d %u\", u, i, 0);\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) fwprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
     }
 
     void testMicrosoftSecureScanfArgument() {
@@ -2375,6 +2489,46 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
                       "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
                       "[test.cpp:6]: (warning) swscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    TCHAR str[10];\n"
+              "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    TCHAR str[10];\n"
+              "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    char str[10];\n"
+              "    fscanf_s(fp, \"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) fscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
+
+        check("void foo(FILE * fp) {\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    wchar_t str[10];\n"
+              "    fwscanf_s(fp, L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) fwscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
               "    WCHAR msStr1[5] = {0};\n"
