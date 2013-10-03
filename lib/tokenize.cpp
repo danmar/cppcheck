@@ -8526,22 +8526,7 @@ bool Tokenizer::simplifyMathFunctions()
                 }
             }
         } else if (Token::Match(tok, "pow|powf|powl (")) {
-            if (tok && Token::Match(tok->tokAt(2), " %any% , %num% )")) {
-                // In case of pow( x , 1 ): It can be simplified to x.
-                const std::string leftParameter(tok->tokAt(2)->str()); // get the left parameter
-                const std::string rightNumber(tok->tokAt(4)->str()); // get right number
-                if (!rightNumber.empty() && !leftParameter.empty()) {
-                    if (isOneNumber(rightNumber)) { // case: x^(1) = x
-                        tok->deleteNext(5); // delete tokens
-                        tok->str(leftParameter);  // insert simplified result
-                        simplifcationMade = true;
-                    } else if (isZeroNumber(rightNumber)) { // case: x^(0) = 1
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("1");  // insert simplified result
-                        simplifcationMade = true;
-                    }
-                }
-            } else if (tok && Token::Match(tok->tokAt(2), " %num% , %num% )")) {
+            if (tok && Token::Match(tok->tokAt(2), "%num% , %num% )")) {
                 // In case of pow ( 0 , anyNumber > 0): It can be simplified to 0
                 // In case of pow ( 0 , 0 ): It simplified to 1
                 // In case of pow ( 1 , anyNumber ): It simplified to 1
@@ -8560,6 +8545,22 @@ bool Tokenizer::simplifyMathFunctions()
                         tok->str("1");  // insert simplified result
                         simplifcationMade = true;
                     } else if (isLeftNumberOne) { // case 1^(y) = 1
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("1");  // insert simplified result
+                        simplifcationMade = true;
+                    }
+                }
+            }
+            if (tok && Token::Match(tok->tokAt(2), "%any% , %num% )")) {
+                // In case of pow( x , 1 ): It can be simplified to x.
+                const std::string leftParameter(tok->tokAt(2)->str()); // get the left parameter
+                const std::string rightNumber(tok->tokAt(4)->str()); // get right number
+                if (!rightNumber.empty() && !leftParameter.empty()) {
+                    if (isOneNumber(rightNumber)) { // case: x^(1) = x
+                        tok->deleteNext(5); // delete tokens
+                        tok->str(leftParameter);  // insert simplified result
+                        simplifcationMade = true;
+                    } else if (isZeroNumber(rightNumber)) { // case: x^(0) = 1
                         tok->deleteNext(5); // delete tokens
                         tok->str("1");  // insert simplified result
                         simplifcationMade = true;

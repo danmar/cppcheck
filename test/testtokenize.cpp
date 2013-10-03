@@ -8730,24 +8730,30 @@ private:
                                " std::cout << pow(-1.0,1);\n"
                                " std::cout << pow(1.0,1);\n"
                                " std::cout << pow(0,1);\n"
+                               " std::cout << pow(1,-6);\n"
                                " std::cout << powf(-1.0,1.0f);\n"
                                " std::cout << powf(1.0,1.0f);\n"
                                " std::cout << powf(0,1.0f);\n"
+                               " std::cout << powf(1.0,-6.0f);\n"
                                " std::cout << powl(-1.0,1.0);\n"
                                " std::cout << powl(1.0,1.0);\n"
                                " std::cout << powl(0,1.0);\n"
+                               " std::cout << powl(1.0,-6.0d);\n"
                                "}";
 
         const char expected_pow[] = "void f ( ) {\n"
                                     "std :: cout << -1.0 ;\n"
-                                    "std :: cout << 1.0 ;\n"
+                                    "std :: cout << 1 ;\n"
                                     "std :: cout << 0 ;\n"
+                                    "std :: cout << 1 ;\n"
                                     "std :: cout << -1.0 ;\n"
-                                    "std :: cout << 1.0 ;\n"
+                                    "std :: cout << 1 ;\n"
                                     "std :: cout << 0 ;\n"
+                                    "std :: cout << 1 ;\n"
                                     "std :: cout << -1.0 ;\n"
-                                    "std :: cout << 1.0 ;\n"
+                                    "std :: cout << 1 ;\n"
                                     "std :: cout << 0 ;\n"
+                                    "std :: cout << 1 ;\n"
                                     "}";
         ASSERT_EQUALS(expected_pow, tokenizeAndStringify(code_pow));
 
