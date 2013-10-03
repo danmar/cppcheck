@@ -8294,6 +8294,8 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber("1.0"));
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber("+1.0"));
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber("-1"));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber(""));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("garbage"));
     }
 
     void isOneNumber() const {
@@ -8308,6 +8310,8 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isOneNumber("0.0"));
         ASSERT_EQUALS(false, Tokenizer::isOneNumber("+0.0"));
         ASSERT_EQUALS(false, Tokenizer::isOneNumber("-0"));
+        ASSERT_EQUALS(false, Tokenizer::isOneNumber(""));
+        ASSERT_EQUALS(false, Tokenizer::isOneNumber("garbage"));
     }
 
     void isTwoNumber() const {
@@ -8322,9 +8326,159 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber("0.0"));
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber("+0.0"));
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber("-0"));
+        ASSERT_EQUALS(false, Tokenizer::isTwoNumber(""));
+        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("garbage"));
     }
 
     void simplifyMathFunctions() { //#5031
+
+        // verify logb(), logbf(), logbl() - simplifcation
+        const char code_logb[] ="void f(int x) {\n"
+                                " std::cout << logb(x);\n" // do not simplify
+                                " std::cout << logb(10);\n" // do not simplify
+                                " std::cout << logb(1L);\n" // simplify to 0
+                                "}";
+        const char expected_logb[] = "void f ( int x ) {\n"
+                                     "std :: cout << logb ( x ) ;\n"
+                                     "std :: cout << logb ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_logb, tokenizeAndStringify(code_logb));
+
+        const char code_logbf[] ="void f(float x) {\n"
+                                 " std::cout << logbf(x);\n" // do not simplify
+                                 " std::cout << logbf(10);\n" // do not simplify
+                                 " std::cout << logbf(1.0f);\n" // simplify to 0
+                                 "}";
+        const char expected_logbf[] = "void f ( float x ) {\n"
+                                      "std :: cout << logbf ( x ) ;\n"
+                                      "std :: cout << logbf ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_logbf, tokenizeAndStringify(code_logbf));
+
+        const char code_logbl[] ="void f(long double x) {\n"
+                                 " std::cout << logbl(x);\n" // do not simplify
+                                 " std::cout << logbl(10.0d);\n" // do not simplify
+                                 " std::cout << logbl(1.0d);\n" // simplify to 0
+                                 "}";
+        const char expected_logbl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << logbl ( x ) ;\n"
+                                      "std :: cout << logbl ( 10.0d ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_logbl, tokenizeAndStringify(code_logbl));
+
+        // verify log1p(), log1pf(), log1pl() - simplifcation
+        const char code_log1p[] ="void f(int x) {\n"
+                                 " std::cout << log1p(x);\n" // do not simplify
+                                 " std::cout << log1p(10);\n" // do not simplify
+                                 " std::cout << log1p(0L);\n" // simplify to 0
+                                 "}";
+        const char expected_log1p[] = "void f ( int x ) {\n"
+                                      "std :: cout << log1p ( x ) ;\n"
+                                      "std :: cout << log1p ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_log1p, tokenizeAndStringify(code_log1p));
+
+        const char code_log1pf[] ="void f(float x) {\n"
+                                  " std::cout << log1pf(x);\n" // do not simplify
+                                  " std::cout << log1pf(10);\n" // do not simplify
+                                  " std::cout << log1pf(0.0f);\n" // simplify to 0
+                                  "}";
+        const char expected_log1pf[] = "void f ( float x ) {\n"
+                                       "std :: cout << log1pf ( x ) ;\n"
+                                       "std :: cout << log1pf ( 10 ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_log1pf, tokenizeAndStringify(code_log1pf));
+
+        const char code_log1pl[] ="void f(long double x) {\n"
+                                  " std::cout << log1pl(x);\n" // do not simplify
+                                  " std::cout << log1pl(10.0d);\n" // do not simplify
+                                  " std::cout << log1pl(0.0d);\n" // simplify to 0
+                                  "}";
+        const char expected_log1pl[] = "void f ( long double x ) {\n"
+                                       "std :: cout << log1pl ( x ) ;\n"
+                                       "std :: cout << log1pl ( 10.0d ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_log1pl, tokenizeAndStringify(code_log1pl));
+
+        // verify log10(), log10f(), log10l() - simplifcation
+        const char code_log10[] ="void f(int x) {\n"
+                                 " std::cout << log10(x);\n" // do not simplify
+                                 " std::cout << log10(10);\n" // do not simplify
+                                 " std::cout << log10(1L);\n" // simplify to 0
+                                 "}";
+        const char expected_log10[] = "void f ( int x ) {\n"
+                                      "std :: cout << log10 ( x ) ;\n"
+                                      "std :: cout << log10 ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_log10, tokenizeAndStringify(code_log10));
+
+        const char code_log10f[] ="void f(float x) {\n"
+                                  " std::cout << log10f(x);\n" // do not simplify
+                                  " std::cout << log10f(10);\n" // do not simplify
+                                  " std::cout << log10f(1.0f);\n" // simplify to 0
+                                  "}";
+        const char expected_log10f[] = "void f ( float x ) {\n"
+                                       "std :: cout << log10f ( x ) ;\n"
+                                       "std :: cout << log10f ( 10 ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_log10f, tokenizeAndStringify(code_log10f));
+
+        const char code_log10l[] ="void f(long double x) {\n"
+                                  " std::cout << log10l(x);\n" // do not simplify
+                                  " std::cout << log10l(10.0d);\n" // do not simplify
+                                  " std::cout << log10l(1.0d);\n" // simplify to 0
+                                  "}";
+        const char expected_log10l[] = "void f ( long double x ) {\n"
+                                       "std :: cout << log10l ( x ) ;\n"
+                                       "std :: cout << log10l ( 10.0d ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_log10l, tokenizeAndStringify(code_log10l));
+
+        // verify log(), logf(), logl() - simplifcation
+        const char code_log[] ="void f(int x) {\n"
+                               " std::cout << log(x);\n" // do not simplify
+                               " std::cout << log(10);\n" // do not simplify
+                               " std::cout << log(1L);\n" // simplify to 0
+                               "}";
+        const char expected_log[] = "void f ( int x ) {\n"
+                                    "std :: cout << log ( x ) ;\n"
+                                    "std :: cout << log ( 10 ) ;\n"
+                                    "std :: cout << 0 ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_log, tokenizeAndStringify(code_log));
+
+        const char code_logf[] ="void f(float x) {\n"
+                                " std::cout << logf(x);\n" // do not simplify
+                                " std::cout << logf(10);\n" // do not simplify
+                                " std::cout << logf(1.0f);\n" // simplify to 0
+                                "}";
+        const char expected_logf[] = "void f ( float x ) {\n"
+                                     "std :: cout << logf ( x ) ;\n"
+                                     "std :: cout << logf ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_logf, tokenizeAndStringify(code_logf));
+
+        const char code_logl[] ="void f(long double x) {\n"
+                                " std::cout << logl(x);\n" // do not simplify
+                                " std::cout << logl(10.0d);\n" // do not simplify
+                                " std::cout << logl(1.0d);\n" // simplify to 0
+                                "}";
+        const char expected_logl[] = "void f ( long double x ) {\n"
+                                     "std :: cout << logl ( x ) ;\n"
+                                     "std :: cout << logl ( 10.0d ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_logl, tokenizeAndStringify(code_logl));
 
         // verify log2(), log2f(), log2l() - simplifcation
         const char code_log2[] ="void f(int x) {\n"
@@ -8851,8 +9005,8 @@ private:
                              "    std::cout<<cos(0);\n"
                              "    std::cout<<sinh(0);\n"
                              "    std::cout<<cosh(0);\n"
-                             "    std::cout<<ln(1);\n"
                              "    std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
+                             "    std::cout<<pow(sin(pow(sin(y),2)+pow(cos(y),2)),2)+pow(cos(pow(sin(y),2)+pow(cos(y),2)),2);\n"
                              "    std::cout<<pow(sin(x),2.0)+pow(cos(x),2.0);\n"
                              "    std::cout<<pow(sin(x*y+z),2.0)+pow(cos(x*y+z),2.0);\n"
                              "    std::cout<<pow(sin(x*y+z),2)+pow(cos(x*y+z),2);\n"
@@ -8868,6 +9022,7 @@ private:
                              "    std::cout<<pow(cosh(x),2)-pow(sinh(x),2);\n"
                              "    std::cout<<pow(cosh(x*y+z),2.0)-pow(sinh(x*y+z),2.0);\n"
                              "    std::cout<<pow(cosh(x),2.0)-pow(sinh(x),2.0);\n"
+                             "    std::cout<<pow(cosh(pow(x,1)),2.0)-pow(sinh(pow(x,1)),2.0);\n"
                              "}";
 
         const char expected1[] = "void foo ( ) {\n"
@@ -8875,7 +9030,6 @@ private:
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 0 ;\n"
                                  "std :: cout << 1 ;\n"
-                                 "std :: cout << 0 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
@@ -8884,6 +9038,8 @@ private:
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << -1 ;\n"
                                  "std :: cout << -1 ;\n"
                                  "std :: cout << -1 ;\n"
                                  "std :: cout << -1 ;\n"

@@ -2047,7 +2047,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyInitVar();
 
     // Convert e.g. atol("0") into 0
-    simplifyMathFunctions();
+    while (simplifyMathFunctions()) {};
 
     simplifyDoublePlusAndDoubleMinus();
 
@@ -2149,7 +2149,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     while (simplifyLogicalOperators()) { }
 
     // Convert e.g. atol("0") into 0
-    simplifyMathFunctions();
+    while (simplifyMathFunctions()) {};
 
     simplifyDoublePlusAndDoubleMinus();
 
@@ -3611,6 +3611,8 @@ bool Tokenizer::simplifyTokenList()
     simplifyRedundantConsecutiveBraces();
 
     simplifyEmptyNamespaces();
+
+    while (simplifyMathFunctions()) {};
 
     if (!validate())
         return false;
@@ -8328,14 +8330,17 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 // islessgreater(), islessequal(), pow(), powf(), powl(),
 // div(),ldiv(),lldiv(), cbrt(), cbrtl(), cbtrf(), sqrt(),
 // sqrtf(), sqrtl(), exp(), expf(), expl(), exp2(),
-// exp2f(), exp2l(), log2(), log2f(), log2l()
+// exp2f(), exp2l(), log2(), log2f(), log2l(), log1p(),
+// log1pf(), log1pl(), log10(), log10l(), log10f(),
+// log(),logf(),logl(),logb(),logbf(),logbl()
 // in the tokenlist.
 //
 // Reference:
 // - http://www.cplusplus.com/reference/cmath/
 // ------------------------------------------------------
-void Tokenizer::simplifyMathFunctions()
+bool Tokenizer::simplifyMathFunctions()
 {
+    bool simplifcationMade = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
             if (tok->previous() &&
@@ -8353,6 +8358,7 @@ void Tokenizer::simplifyMathFunctions()
             tok->deleteNext(3);
             // Convert string into a number and insert into token list
             tok->str(MathLib::toString(MathLib::toLongNumber(strNumber)));
+            simplifcationMade = true;
         } else if (Token::Match(tok, "abs|fabs|labs|llabs ( %num% )")) {
             if (tok->previous() &&
                 Token::simpleMatch(tok->tokAt(-2), "std ::")) {
@@ -8367,6 +8373,7 @@ void Tokenizer::simplifyMathFunctions()
             }
             tok->deleteNext(3);  // delete e.g. abs ( 1 )
             tok->str(strNumber); // insert result into token list
+            simplifcationMade = true;
         } else if (Token::Match(tok, "sqrt|sqrtf|sqrtl|cbrt|cbrtf|cbrtl ( %num% )")) {
             // Simplify: sqrt(0) = 0 and cbrt(0) == 0
             //           sqrt(1) = 1 and cbrt(1) == 1
@@ -8376,9 +8383,11 @@ void Tokenizer::simplifyMathFunctions()
             if (isZeroNumber(parameter)) {
                 tok->deleteNext(3);  // delete tokens
                 tok->str("0"); // insert result into token list
+                simplifcationMade = true;
             } else if (isOneNumber(parameter)) {
                 tok->deleteNext(3);  // delete tokens
                 tok->str("1"); // insert result into token list
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "exp|expf|expl|exp2|exp2f|exp2l ( %num% )")) {
             // Simplify: exp[f|l](0) = 1 and exp2[f|l](0) = 1
@@ -8388,15 +8397,27 @@ void Tokenizer::simplifyMathFunctions()
             if (isZeroNumber(parameter)) {
                 tok->deleteNext(3);  // delete tokens
                 tok->str("1"); // insert result into token list
+                simplifcationMade = true;
             }
-        } else if (Token::Match(tok, "log2|log2f|log2l ( %num% )")) {
-            // Simplify: log2[f|l](1) = 0
+        } else if (Token::Match(tok, "log1p|log1pf|log1pl ( %num% )")) {
+            // Simplify: log1p[f|l](0) = 0
             // get number string
             const std::string parameter(tok->tokAt(2)->str());
             // is parameter 0 ?
+            if (isZeroNumber(parameter)) {
+                tok->deleteNext(3);  // delete tokens
+                tok->str("0"); // insert result into token list
+                simplifcationMade = true;
+            }
+        } else if (Token::Match(tok, "log2|log2f|log2l|log|logf|logl|log10|log10f|log10l|logb|logbf|logbl ( %num% )")) {
+            // Simplify: log2[f|l](1) = 0
+            // get number string
+            const std::string parameter(tok->tokAt(2)->str());
+            // is parameter 1 ?
             if (isOneNumber(parameter)) {
                 tok->deleteNext(3);  // delete tokens
                 tok->str("0"); // insert result into token list
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "fmin|fminl|fminf ( %num% , %num% )")) {
             // @todo if one of the parameters is NaN the other is returned
@@ -8409,9 +8430,11 @@ void Tokenizer::simplifyMathFunctions()
             if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
                 tok->deleteNext(5);      // delete e.g. fmin ( -1.0, 1.0 )
                 tok->str(strLeftNumber); // insert e.g. -1.0
+                simplifcationMade = true;
             } else { // case left > right ==> insert right
                 tok->deleteNext(5);       // delete e.g. fmin ( 1.0, 0.0 )
                 tok->str(strRightNumber); // insert e.g. 0.0
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "fmax|fmaxl|fmaxf ( %num% , %num% )")) {
             // @todo if one of the parameters is NaN the other is returned
@@ -8424,9 +8447,11 @@ void Tokenizer::simplifyMathFunctions()
             if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
                 tok->deleteNext(5);      // delete e.g. fmax ( -1.0, 1.0 )
                 tok->str(strRightNumber);// insert e.g. 1.0
+                simplifcationMade = true;
             } else { // case left > right ==> insert left
                 tok->deleteNext(5);       // delete e.g. fmax ( 1.0, 0.0 )
                 tok->str(strLeftNumber);  // insert e.g. 1.0
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "isgreater ( %num% , %num% )")) {
             // The isgreater(x,y) function is the same as calculating (x)>(y).
@@ -8437,6 +8462,7 @@ void Tokenizer::simplifyMathFunctions()
                 const bool isGreater =  MathLib::isGreater(strLeftNumber, strRightNumber); // compare numbers
                 tok->deleteNext(5); // delete tokens
                 tok->str((isGreater == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "isgreaterequal ( %num% , %num% )")) {
             // The isgreaterequal(x,y) function is the same as calculating (x)>=(y).
@@ -8448,6 +8474,7 @@ void Tokenizer::simplifyMathFunctions()
                 const bool isGreaterEqual =  MathLib::isGreaterEqual(strLeftNumber, strRightNumber); // compare numbers
                 tok->deleteNext(5); // delete tokens
                 tok->str((isGreaterEqual == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "isless ( %num% , %num% )")) {
             // Calling this function is the same as calculating (x)<(y).
@@ -8459,6 +8486,7 @@ void Tokenizer::simplifyMathFunctions()
                 const bool isLess = MathLib::isLess(strLeftNumber, strRightNumber); // compare numbers
                 tok->deleteNext(5); // delete tokens
                 tok->str((isLess == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "islessequal ( %num% , %num% )")) {
             // Calling this function is the same as calculating (x)<=(y).
@@ -8470,6 +8498,7 @@ void Tokenizer::simplifyMathFunctions()
                 const bool isLessEqual = MathLib::isLessEqual(strLeftNumber, strRightNumber); // compare numbers
                 tok->deleteNext(5); // delete tokens
                 tok->str((isLessEqual == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "islessgreater ( %num% , %num% )")) {
             // Calling this function is the same as calculating (x)<(y) || (x)>(y).
@@ -8482,6 +8511,7 @@ void Tokenizer::simplifyMathFunctions()
                                            MathLib::isGreater(strLeftNumber, strRightNumber));  // compare numbers
                 tok->deleteNext(5); // delete tokens
                 tok->str((isLessOrGreater == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             }
         } else if (Token::Match(tok, "div|ldiv|lldiv ( %any% , %num% )")) {
             // Calling the function 'div(x,y)' is the same as calculating (x)/(y). In case y has the value 1
@@ -8492,6 +8522,7 @@ void Tokenizer::simplifyMathFunctions()
                 if (isOneNumber(rightNumber)) {
                     tok->deleteNext(5); // delete tokens
                     tok->str(leftParameter);  // insert simplified result
+                    simplifcationMade = true;
                 }
             }
         } else if (Token::Match(tok, "pow|powf|powl (")) {
@@ -8503,9 +8534,11 @@ void Tokenizer::simplifyMathFunctions()
                     if (isOneNumber(rightNumber)) { // case: x^(1) = x
                         tok->deleteNext(5); // delete tokens
                         tok->str(leftParameter);  // insert simplified result
+                        simplifcationMade = true;
                     } else if (isZeroNumber(rightNumber)) { // case: x^(0) = 1
                         tok->deleteNext(5); // delete tokens
                         tok->str("1");  // insert simplified result
+                        simplifcationMade = true;
                     }
                 }
             } else if (tok && Token::Match(tok->tokAt(2), " %num% , %num% )")) {
@@ -8521,17 +8554,22 @@ void Tokenizer::simplifyMathFunctions()
                     if (isLeftNumberZero && !isRightNumberZero && MathLib::isPositive(rightNumber)) { // case: 0^(y) = 0 and y > 0
                         tok->deleteNext(5); // delete tokens
                         tok->str("0");  // insert simplified result
+                        simplifcationMade = true;
                     } else if (isLeftNumberZero && isRightNumberZero) { // case: 0^0 = 1
                         tok->deleteNext(5); // delete tokens
                         tok->str("1");  // insert simplified result
+                        simplifcationMade = true;
                     } else if (isLeftNumberOne) { // case 1^(y) = 1
                         tok->deleteNext(5); // delete tokens
                         tok->str("1");  // insert simplified result
+                        simplifcationMade = true;
                     }
                 }
             }
         }
     }
+    // returns true if a simplifcation was performed and false otherwise.
+    return simplifcationMade;
 }
 
 void Tokenizer::simplifyComma()
@@ -10243,7 +10281,7 @@ void Tokenizer::simplifyMathExpressions()
             tok->str("1");
         }
 
-        if (Token::Match(tok,"sin|sinh ( 0 )") || Token::simpleMatch(tok,"ln ( 1 )")) {
+        if (Token::Match(tok,"sin|sinh ( 0 )")) {
             tok->deleteNext(3);
             tok->str("0");
         }
