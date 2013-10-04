@@ -8054,7 +8054,7 @@ private:
                                 "char * d ; d = strdup ( str ) ; "
                                 "printf ( \"Hello world!\n\" ) ; "
                                 "sprintf ( dst , \"Hello!\n\" ) ; "
-                                "snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\n\" ) ; "
+                                "_snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\n\" ) ; "
                                 "scanf ( \"%s\" , dst ) ; "
                                 "sscanf ( dst , \"%s\" , dst ) ; "
                                 "} "
@@ -8101,7 +8101,7 @@ private:
                                 "wchar_t * d ; d = wcsdup ( str ) ; "
                                 "wprintf ( L\"Hello world!\n\" ) ; "
                                 "swprintf ( dst , L\"Hello!\n\" ) ; "
-                                "snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , L\"Hello world!\n\" ) ; "
+                                "_snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , L\"Hello world!\n\" ) ; "
                                 "wscanf ( L\"%s\" , dst ) ; "
                                 "swscanf ( dst , L\"%s\" , dst ) ; "
                                 "}";

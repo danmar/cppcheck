@@ -2403,6 +2403,25 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
                       "[test.cpp:4]: (warning) fwprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    char lineBuffer [600];\n"
+              "    const char * const format = \"%15s%17s%17s%17s%17s\n\";\n"
+              "    sprintf_s(lineBuffer, format, \"type\", \"sum\", \"avg\", \"min\", \"max\");\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    const char * const format1 = \"%15s%17s%17s%17s%17s\n\";\n"
+              "    const char format2[] = \"%15s%17s%17s%17s%17s\n\";\n"
+              "    const char * const format3 = format1;\n"
+              "    sprintf_s(lineBuffer, format1, \"type\", \"sum\", \"avg\", \"min\", \"max\", 0);\n"
+              "    sprintf_s(lineBuffer, format2, \"type\", \"sum\", \"avg\", \"min\", \"max\", 0);\n"
+              "    sprintf_s(lineBuffer, format3, \"type\", \"sum\", \"avg\", \"min\", \"max\", 0);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:6]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n", errout.str());
+
     }
 
     void testMicrosoftSecureScanfArgument() {

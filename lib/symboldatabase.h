@@ -414,6 +414,14 @@ public:
         return _dimensions[index_].num;
     }
 
+    /**
+     * Get array dimension known.
+     * @return length of dimension known
+     */
+    bool dimensionKnown(std::size_t index_) const {
+        return _dimensions[index_].known;
+    }
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;

@@ -9669,7 +9669,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("sprintf");
                 tok->originalName("_stprintf");
             } else if (Token::simpleMatch(tok, "_sntprintf (")) {
-                tok->str("snprintf");
+                tok->str("_snprintf");
                 tok->originalName("_sntprintf");
             } else if (Token::simpleMatch(tok, "_ftscanf (")) {
                 tok->str("fscanf");
@@ -9751,7 +9751,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("swprintf");
                 tok->originalName("_stprintf");
             } else if (Token::simpleMatch(tok, "_sntprintf (")) {
-                tok->str("snwprintf");
+                tok->str("_snwprintf");
                 tok->originalName("_sntprintf");
             } else if (Token::simpleMatch(tok, "_ftscanf (")) {
                 tok->str("fwscanf");
