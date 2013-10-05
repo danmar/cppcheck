@@ -349,6 +349,38 @@ void CheckBool::assignBoolToPointerError(const Token *tok)
                 "Boolean value assigned to pointer.");
 }
 
+static bool isBoolExpr(const Token *tok)
+{
+
+    bool boolExpr = true;
+
+    int indentlevel = 0;
+
+
+    for (; tok; tok = tok->previous()) {
+        if (tok->str() == ")" || tok->str() == "]")
+            ++indentlevel;
+        else if (tok->str() == "(" || tok->str() == "[") {
+            if (indentlevel <= 0)
+                break;
+            --indentlevel;
+        } else if (tok->isNumber())
+            boolExpr = false;
+        else if (tok->varId() && isNonBoolStdType(tok->variable()))
+            boolExpr = false;
+        else if (tok->isArithmeticalOp())
+            boolExpr = false;
+        else if (tok->str() == "!" || tok->isComparisonOp())
+            return true;
+        else if (indentlevel == 0 && Token::Match(tok,"[;{}=?:&|^,]"))
+            break;
+        else if (Token::Match(tok, "&&|%oror%|and|or"))
+            break;
+    }
+
+    return boolExpr;
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CheckBool::checkComparisonOfBoolExpressionWithInt()
@@ -388,7 +420,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 opTok = tok->tokAt(2);
                 if (Token::Match(opTok, "<|>"))
                     op = opTok->str()[0];
-            } else if (Token::Match(tok, "%any% %comp% ! %var%")) {
+            } else if (Token::Match(tok, "%any% %comp% ! %var%") && !isBoolExpr(tok)) {
                 numTok = tok;
                 opTok = tok->next();
                 if (Token::Match(opTok, "<|>"))
