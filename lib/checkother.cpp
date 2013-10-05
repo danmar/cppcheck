@@ -2078,6 +2078,10 @@ void CheckOther::checkIncompleteStatement()
         else if (Token::Match(tok,"> %var% {") || Token::Match(tok, "[;{}] return {"))
             tok = tok->linkAt(2);
 
+        // C++11 initialize set in initalizer list : [,:] std::set<int>{1} [{,]
+        else if (Token::Match(tok,"> {") && tok->link())
+            tok = tok->next()->link();
+
         else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%")) {
             // No warning if numeric constant is followed by a "." or ","
             if (Token::Match(tok->next(), "%num% [,.]"))

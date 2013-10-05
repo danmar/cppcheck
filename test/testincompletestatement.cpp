@@ -181,6 +181,10 @@ private:
         check("A::A() : abc{0} {}");
         ASSERT_EQUALS("", errout.str());
 
+        // #5042 - C++11 initializer list
+        check("A::A() : abc::def<int>{0} {}");
+        ASSERT_EQUALS("", errout.str());
+
         // #4503 - vector init
         check("void f() { vector<int> v{1}; }");
         ASSERT_EQUALS("", errout.str());
