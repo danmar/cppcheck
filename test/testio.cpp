@@ -2044,6 +2044,21 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'int'.\n"
                       "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout.str());
 
+        check("void foo() {\n"
+              "    UNKNOWN * u;\n"
+              "    printf(\"%d %x %u %f\", u[i], u[i], u[i], u[i]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    long * l;\n"
+              "    printf(\"%d %x %u %f\", l[i], l[i], l[i], l[i]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'long'.\n"
+                      "[test.cpp:3]: (warning) %x in format string (no. 2) requires 'unsigned int' but the argument type is 'long'.\n"
+                      "[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'long'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'long'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

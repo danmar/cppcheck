@@ -1024,7 +1024,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     break;
                                                 }
                                             }
-                                        } else if (argInfo.isArrayOrPointer()) {
+                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                             // use %p on pointers and arrays
                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                         }
@@ -1083,7 +1083,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     break;
                                                 }
                                             }
-                                        } else if (argInfo.isArrayOrPointer()) {
+                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                             // use %p on pointers and arrays
                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                         }
@@ -1141,7 +1141,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     break;
                                                 }
                                             }
-                                        } else if (argInfo.isArrayOrPointer()) {
+                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                         }
                                         done = true;
@@ -1171,7 +1171,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                      (specifier[0] != 'L' && argInfo.typeToken->isLong()))
                                                 invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
 
-                                        } else if (argInfo.isArrayOrPointer()) {
+                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                             // use %p on pointers and arrays
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                         }
@@ -1717,7 +1717,7 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
                     type = type->next();
                 }
                 type->stringify(os, false, true);
-                if (type->strAt(1) == "*" && !(argInfo->functionInfo && argInfo->element))
+                if (type->strAt(1) == "*" && !argInfo->element)
                     os << " *";
                 else if (argInfo->variableInfo && !argInfo->element && argInfo->variableInfo->isArray())
                     os << " *";
