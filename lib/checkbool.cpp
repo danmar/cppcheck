@@ -354,13 +354,18 @@ void CheckBool::assignBoolToPointerError(const Token *tok)
                 "Boolean value assigned to pointer.");
 }
 
-static bool isBoolExpr(const Token *tok)
+/**
+ * @brief Is the result of the LHS expression non-bool?
+ * @param tok last token in lhs
+ * @return true => lhs result is non-bool. false => lhs result type is unknown or bool
+ */
+static bool isNonBoolLHSExpr(const Token *tok)
 {
+    // return value. only return true if we "know" it's a non-bool expression
+    bool nonBoolExpr = false;
 
-    bool boolExpr = true;
-
+    // look into () and []
     int indentlevel = 0;
-
 
     for (; tok; tok = tok->previous()) {
         if (tok->str() == ")" || tok->str() == "]")
@@ -370,20 +375,20 @@ static bool isBoolExpr(const Token *tok)
                 break;
             --indentlevel;
         } else if (tok->isNumber())
-            boolExpr = false;
+            nonBoolExpr = true;
         else if (tok->varId() && isNonBoolStdType(tok->variable()))
-            boolExpr = false;
+            nonBoolExpr = true;
         else if (tok->isArithmeticalOp())
-            boolExpr = false;
+            nonBoolExpr = true;
         else if (tok->str() == "!" || tok->isComparisonOp())
-            return true;
+            return false;
         else if (indentlevel == 0 && Token::Match(tok,"[;{}=?:&|^,]"))
             break;
         else if (Token::Match(tok, "&&|%oror%|and|or"))
             break;
     }
 
-    return boolExpr;
+    return nonBoolExpr;
 }
 
 //-----------------------------------------------------------------------------
@@ -425,7 +430,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 opTok = tok->tokAt(2);
                 if (Token::Match(opTok, "<|>"))
                     op = opTok->str()[0];
-            } else if (Token::Match(tok, "%any% %comp% ! %var%") && !isBoolExpr(tok)) {
+            } else if (Token::Match(tok, "%any% %comp% ! %var%") && isNonBoolLHSExpr(tok)) {
                 numTok = tok;
                 opTok = tok->next();
                 if (Token::Match(opTok, "<|>"))
