@@ -9246,7 +9246,7 @@ void Tokenizer::simplifyKeyword()
 
     if (_settings->standards.cpp >= Standards::CPP11) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            while (Token::Match(tok, "constexpr|override")) {
+            while (tok->str() == "constexpr") {
                 tok->deleteThis();
             }
 
@@ -9255,6 +9255,13 @@ void Tokenizer::simplifyKeyword()
             // struct name final { };   <- struct is final
             if (Token::Match(tok, ") final [{;]") || Token::Match(tok, "%type% final [:{]"))
                 tok->deleteNext();
+
+            // override
+            // void f() override;
+            else if (Token::Match(tok, ") override [{;]"))
+                tok->deleteNext();
+            else if (Token::Match(tok, ") const override [{;]"))
+                tok->next()->deleteNext();
         }
     }
 }

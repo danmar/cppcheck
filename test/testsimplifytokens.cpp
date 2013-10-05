@@ -447,6 +447,7 @@ private:
 
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
         TEST_CASE(simplifyCharAt);
+        TEST_CASE(simplifyOverride); // ticket #5069
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -8237,6 +8238,16 @@ private:
         ASSERT_EQUALS("int evallex ( ) { int c ; int t ; do { c = macroid ( c ) ; if ( c == EOF_CHAR || c == '\n' ) { } t = type [ c ] ; } while ( t == LET && catenate ( ) ) ; }",
                       tok(code, true));
     }
+
+    void simplifyOverride() { // ticket #5069
+        const char code[] = "void fun() {\n"
+                            "    unsigned char override[] = {0x01, 0x02};\n"
+                            "    doSomething(override, sizeof(override));\n"
+                            "}\n";
+        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 1 , 2 } ; doSomething ( override , 2 ) ; }",
+                      tok(code, true));
+    }
+
 };
 
 REGISTER_TEST(TestSimplifyTokens)
