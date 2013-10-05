@@ -2162,6 +2162,15 @@ private:
               "sendto(s, str, 4, 0, 0x0, 0x0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        // #4968 - not standard function
+        check("void f() {\n"
+              "    char str[3];\n"
+              "    foo.memset(str, 0, 100);\n"
+              "    foo::memset(str, 0, 100);\n"
+              "    std::memset(str, 0, 100);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", errout.str());
     }
 
 

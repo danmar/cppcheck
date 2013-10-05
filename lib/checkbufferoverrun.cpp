@@ -577,14 +577,19 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     }
 
     else if (par == 2) {
-        total_size["read"] = 3;
-        total_size["pread"] = 3;
-        total_size["write"] = 3;
-        total_size["recv"] = 3;
-        total_size["recvfrom"] = 3;
-        total_size["send"] = 3;
-        total_size["sendto"] = 3;
+        if (_settings->standards.posix) {
+            total_size["read"] = 3;
+            total_size["pread"] = 3;
+            total_size["write"] = 3;
+            total_size["recv"] = 3;
+            total_size["recvfrom"] = 3;
+            total_size["send"] = 3;
+            total_size["sendto"] = 3;
+        }
     }
+
+    if (Token::Match(tok.previous(), ".") || Token::Match(tok.tokAt(-2), "!!std ::"))
+        total_size.clear();
 
     std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
     if (it != total_size.end()) {
