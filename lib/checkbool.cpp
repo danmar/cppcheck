@@ -332,12 +332,17 @@ void CheckBool::checkAssignBoolToPointer()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "!!* %var% = %bool% ;")) {
-                const Variable *var1(tok->next()->variable());
+            if (Token::Match(tok, "%var% = %bool% ;")) {
+                // Todo: properly check if there is a deref
+                // *x.p = true;  // <- don't warn
+                // x.p = true;   // <- warn
+                if (Token::Match(tok->previous(), "[*.)]"))
+                    continue;
 
                 // Is variable a pointer?
+                const Variable *var1(tok->variable());
                 if (var1 && var1->isPointer())
-                    assignBoolToPointerError(tok->next());
+                    assignBoolToPointerError(tok);
             }
         }
     }

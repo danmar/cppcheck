@@ -99,14 +99,19 @@ private:
               "    bool *p;\n"
               "};\n"
               "void f() {\n"
-              "    std::vector<S> sv;\n"
-              "    sv.push_back(S());\n"
-              "    S &s = sv[0];\n"
+              "    S s = {0};\n"
               "    *s.p = true;\n"
-              "    *(s.p) = true;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("","[test.cpp:8]: (error) Boolean value assigned to pointer.\n"
-                           "[test.cpp:9]: (error) Boolean value assigned to pointer.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    bool *p;\n"
+              "};\n"
+              "void f() {\n"
+              "    S s = {0};\n"
+              "    s.p = true;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
