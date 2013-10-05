@@ -477,24 +477,24 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             if (formatStringTok) {
                 /* formatstring found in library */
-            } else if (Token::Match(tok, "printf|scanf|wprintf|wscanf ( %str%") ||
-                       (windows && (Token::Match(tok, "printf_s|wprintf_s|scanf_s|wscanf_s ( %str%") ||
-                                    (Token::Match(tok, "Format|AppendFormat ( %str%") &&
+            } else if (Token::Match(tok, "printf|scanf|wprintf|wscanf (") ||
+                       (windows && (Token::Match(tok, "printf_s|wprintf_s|scanf_s|wscanf_s (") ||
+                                    (Token::Match(tok, "Format|AppendFormat (") &&
                                      Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
                                      tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString")))) {
-                // Find first parameter and format string
+                // Find second parameter and format string
                 if (!findFormat(0, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
             } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%") ||
                        (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) ||
                        (windows && Token::Match(tok, "sscanf_s|swscanf_s|fscanf_s|fwscanf_s|fprintf_s|fwprintf_s ( %any%"))) {
-                // Find second parameter and format string
+                // Find third parameter and format string
                 if (!findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
             } else if (Token::Match(tok, "snprintf|fnprintf (") ||
                        (windows && Token::Match(tok, "_snprintf|_snwprintf (")) ||
                        (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%"))) {
-                // Find third parameter and format string
+                // Find forth parameter and format string
                 if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
             } else if (windows && Token::Match(tok, "sprintf_s|swprintf_s (")) {
@@ -525,6 +525,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             if (formatStringTok)
                 formatString = formatStringTok->str();
+            else
+                continue;
 
             // Count format string parameters..
             bool scanf_s = windows ? Token::Match(tok, "scanf_s|wscanf_s|sscanf_s|swscanf_s|fscanf_s|fwscanf_s") : false;
