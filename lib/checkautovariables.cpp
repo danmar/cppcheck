@@ -90,6 +90,9 @@ static bool checkRvalueExpression(const Token * const vartok)
 
     const Token * const next = vartok->next();
 
+    if (Token::Match(vartok->previous(), "& %var% [") && var->isPointer())
+        return false;
+
     // &a.b[0]
     if (Token::Match(vartok, "%var% . %var% [") && !var->isPointer()) {
         const Variable *var2 = next->next()->variable();

@@ -325,6 +325,19 @@ private:
               "    *p = &a.data[0];\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        // #4998
+        check("void f(s8**out) {\n"
+              "  s8 *p;\n"  // <- p is pointer => no error
+              "  *out = &p[1];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(s8**out) {\n"
+              "  s8 p[10];\n"  // <- p is array => error
+              "  *out = &p[1];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar12() { // Ticket #5024 - Crash on invalid input
