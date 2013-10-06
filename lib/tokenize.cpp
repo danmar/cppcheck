@@ -3320,9 +3320,17 @@ bool Tokenizer::simplifySizeof()
             for (Token *tempToken = tok->next(); tempToken; tempToken = tempToken->next()) {
                 if (tempToken->str() == "(")
                     ++parlevel;
-                else if (tempToken->str() == ")")
+                else if (tempToken->str() == ")") {
                     --parlevel;
-                if (Token::Match(tempToken, "%var%")) {
+                    if (parlevel == 0 && !Token::Match(tempToken, ") . %var%")) {
+                        // Ok, we should be clean. Add ) after tempToken
+                        tok->insertToken("(");
+                        tempToken->insertToken(")");
+                        Token::createMutualLinks(tok->next(), tempToken->next());
+                        break;
+                    }
+                }
+                if (parlevel == 0 && Token::Match(tempToken, "%var%")) {
                     while (tempToken && tempToken->next() && tempToken->next()->str() == "[") {
                         tempToken = tempToken->next()->link();
                     }

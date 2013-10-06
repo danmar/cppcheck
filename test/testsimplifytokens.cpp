@@ -1325,6 +1325,9 @@ private:
                                 " int aa ; aa = sizeof ( * ( * a ) . b ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
+
+        // #5064 - sizeof !! (a == 1);
+        ASSERT_EQUALS("sizeof ( ! ! ( a == 1 ) ) ;", tok("sizeof !!(a==1);"));
     }
 
     void sizeof15() {
