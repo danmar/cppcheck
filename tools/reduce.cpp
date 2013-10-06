@@ -51,7 +51,7 @@ public:
         , stopTime(0) {
 
         if (!settings.hang)
-            pattern = ":" + MathLib::longToString(settings.linenr) + "]";
+            pattern = ":" + MathLib::toString(settings.linenr) + "]";
 
         cppcheck.settings() = settings;
     }
