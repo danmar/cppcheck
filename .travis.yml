@@ -6,6 +6,9 @@ script:
   - mkdir build
   - make test SRCDIR=build VERIFY=1
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch -q cli gui lib -igui/test
+  - sudo apt-get update
+  - sudo apt-get install python-pygments
+  - ./htmlreport/test_htmlreport.py
 notifications:
   irc:
     channels:
