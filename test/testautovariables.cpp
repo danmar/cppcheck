@@ -49,6 +49,7 @@ private:
 
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();
+        checkAutoVariables.assignFunctionArg();
 
         if (runSimpleChecks) {
             const std::string str1(tokenizer.tokens()->stringifyList(0,true));
@@ -304,6 +305,13 @@ private:
         check("void foo(int& p) {\n"
               "    p = 0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("double foo(double d) {\n" // #5005
+              "    int i = d;\n"
+              "    d = i;\n"
+              "    return d;"
+              "}",false,false);
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -44,6 +44,7 @@ public:
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
+        checkAutoVariables.assignFunctionArg();
         checkAutoVariables.returnReference();
     }
 
@@ -52,6 +53,9 @@ public:
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
     }
+
+    /** assign function argument */
+    void assignFunctionArg();
 
     /** Check auto variables */
     void autoVariables();

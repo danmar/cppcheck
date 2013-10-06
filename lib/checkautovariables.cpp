@@ -118,12 +118,27 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
     return false;
 }
 
+void CheckAutoVariables::assignFunctionArg()
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "[;{}] %var% =") &&
+                isNonReferenceArg(tok->next()) &&
+                !variableIsUsedInScope(Token::findsimplematch(tok->tokAt(2), ";"), tok->next()->varId(), scope)) {
+                errorUselessAssignmentPtrArg(tok->next());
+            }
+        }
+    }
+}
+
 void CheckAutoVariables::autoVariables()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    const bool reportWarnings(_settings->isEnabled("warning"));
-
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -135,11 +150,6 @@ void CheckAutoVariables::autoVariables()
             } else if (Token::Match(tok, "[;{}] * %var% = & %var%") && isPtrArg(tok->tokAt(2)) && isAutoVar(tok->tokAt(5))) {
                 if (checkRvalueExpression(tok->tokAt(5)))
                     errorAutoVariableAssignment(tok->next(), false);
-            } else if (reportWarnings &&
-                       Token::Match(tok, "[;{}] %var% =") &&
-                       isNonReferenceArg(tok->next()) &&
-                       !variableIsUsedInScope(Token::findsimplematch(tok->tokAt(2), ";"), tok->next()->varId(), scope)) {
-                errorUselessAssignmentPtrArg(tok->next());
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (_settings->inconclusive) {
