@@ -369,6 +369,11 @@ private:
               "    return (!y == !x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int a) {\n"
+              "  return (x()+1 == !a);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt3() {
@@ -385,10 +390,31 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
 
+        check("void f(int a, int b, int c) {\n"
+              "  return (a > b) < c;\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void f(int a, int b, int c) {\n"
+              "  return x(a > b) < c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b, int c) {\n"
+              "  return a > b == c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // templates
         check("struct Tokenizer { TokenList list; };\n"
               "void Tokenizer::f() {\n"
               "  std::list<Token*> locationList;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5063 - or
+        check("void f() {\n"
+              "  return a > b or c < d;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

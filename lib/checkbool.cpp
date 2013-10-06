@@ -438,20 +438,21 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             }
 
             // boolean result in lhs compared with <|<=|>|>=
-            else if (Token::Match(tok,"<|<=|>|>=")) {
+            else if (tok->isComparisonOp() && !Token::Match(tok,"==|!=") && !isNonBoolLHSExpr(tok->previous())) {
                 const Token *lhs = tok;
                 while (NULL != (lhs = lhs->previous())) {
-                    if (lhs->isName() || lhs->isNumber())
+                    if ((lhs->isName() && !Token::Match(lhs,"or|and")) || lhs->isNumber())
                         continue;
-                    if (Token::Match(lhs,"[+-*/.]"))
+                    if (lhs->isArithmeticalOp())
                         continue;
                     if (Token::Match(lhs, ")|]")) {
-                        lhs = lhs->previous();
+                        if (Token::Match(lhs->link()->previous(), "%var% ("))
+                            lhs = lhs->link();
                         continue;
                     }
                     break;
                 }
-                if (Token::Match(lhs,"<|<=|>|>=")) {
+                if (lhs && (lhs->isComparisonOp() || lhs->str() == "!")) {
                     if (_tokenizer->isCPP() && tok->str() == ">" &&
                         (Token::Match(lhs->previous(), "%var% <") || lhs->str() == ">"))
                         continue;
