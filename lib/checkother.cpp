@@ -3380,11 +3380,17 @@ void CheckOther::checkSignOfUnsignedVariable()
         const Scope * scope = symbolDatabase->functionScopes[i];
         // check all the code in the function
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
+            if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->tokAt(3), "+|-")) {
+                // TODO: handle a[10].b , a::b , (unsigned int)x , etc
+                const Token *prev = tok->previous();
+                while (prev && (prev->isName() || prev->str() == "."))
+                    prev = prev->previous();
+                if (!Token::Match(prev, "(|&&|%oror%"))
+                    continue;
                 const Variable *var = tok->variable();
                 if (var && var->typeEndToken()->isUnsigned())
                     unsignedLessThanZeroError(tok, var->name(), inconclusive);
-                else if (var && var->isPointer() && tok->strAt(-1) != "*")
+                else if (var && (var->isPointer() || var->isArray()))
                     pointerLessThanZeroError(tok, inconclusive);
             } else if (Token::Match(tok, "0 >|>= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
                 const Variable *var = tok->tokAt(2)->variable();

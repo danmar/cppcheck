@@ -5220,6 +5220,27 @@ private:
             "    bar();\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct object_info { int *typep; };\n"
+            "void packed_object_info(struct object_info *oi) {\n"
+            "  if (oi->typep < 0);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct object_info { int typep[10]; };\n"
+            "void packed_object_info(struct object_info *oi) {\n"
+            "  if (oi->typep < 0);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct object_info { int *typep; };\n"
+            "void packed_object_info(struct object_info *oi) {\n"
+            "  if (*oi->typep < 0);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkForSuspiciousSemicolon1() {
