@@ -378,9 +378,11 @@ static bool isNonBoolLHSExpr(const Token *tok)
             nonBoolExpr = true;
         else if (tok->varId() && isNonBoolStdType(tok->variable()))
             nonBoolExpr = true;
-        else if (tok->isArithmeticalOp())
+        else if (tok->isArithmeticalOp()) {
+            if (indentlevel == 0)
+                return true;
             nonBoolExpr = true;
-        else if (tok->isComparisonOp() || (tok->str() == "!" && tok->previous()->str()=="("))
+        } else if (tok->isComparisonOp() || (tok->str() == "!" && tok->previous()->str()=="("))
             return false;
         else if (indentlevel == 0 && Token::Match(tok,"[;{}=?:&|^,]"))
             break;
@@ -425,7 +427,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                     op = opTok->str()[0]=='>'?'<':'>';
             }
 
-            else if (Token::Match(tok, "! %var% %comp% %any%")) {
+            else if (Token::Match(tok, "! %var% %comp% %any%") && !isNonBoolLHSExpr(tok)) {
                 numTok = tok->tokAt(3);
                 opTok = tok->tokAt(2);
                 if (Token::Match(opTok, "<|>"))

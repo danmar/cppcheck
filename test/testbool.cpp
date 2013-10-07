@@ -307,8 +307,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-		check("int f() { return !a+b<c; }");
-		ASSERT_EQUALS("",errout.str());
+        check("int f() { return !a+b<c; }"); // #5072
+        ASSERT_EQUALS("",errout.str());
+
+        check("int f() { return (!a+b<c); }");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt2() {
@@ -377,6 +380,9 @@ private:
               "  return (x()+1 == !a);\n"
               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void f() { if (!!a+!!b+!!c>1){} }");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt3() {
