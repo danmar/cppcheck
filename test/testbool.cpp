@@ -355,7 +355,7 @@ private:
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int x, bool y) {\n"
               "    if (y != !x) {\n"
@@ -382,6 +382,9 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
         check("void f() { if (!!a+!!b+!!c>1){} }");
+        ASSERT_EQUALS("",errout.str());
+
+        check("void f(int a, int b, int c) { if (a != !b || c) {} }");
         ASSERT_EQUALS("",errout.str());
     }
 
