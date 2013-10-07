@@ -306,6 +306,9 @@ private:
               "  if (error == ABC) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+		check("int f() { return !a+b<c; }");
+		ASSERT_EQUALS("",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt2() {

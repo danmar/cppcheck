@@ -380,7 +380,7 @@ static bool isNonBoolLHSExpr(const Token *tok)
             nonBoolExpr = true;
         else if (tok->isArithmeticalOp())
             nonBoolExpr = true;
-        else if (tok->str() == "!" || tok->isComparisonOp())
+        else if (tok->isComparisonOp() || (tok->str() == "!" && tok->previous()->str()=="("))
             return false;
         else if (indentlevel == 0 && Token::Match(tok,"[;{}=?:&|^,]"))
             break;
