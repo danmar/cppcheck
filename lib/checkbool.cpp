@@ -431,10 +431,23 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 if (Token::Match(opTok, "<|>"))
                     op = opTok->str()[0];
             } else if (Token::Match(tok->previous(), "(|&&|%oror% %num% %comp% !")) {
-                numTok = tok;
-                opTok = tok->next();
-                if (Token::Match(opTok, "<|>"))
-                    op = opTok->str()[0]=='>'?'<':'>';
+                const Token *rhs = tok->tokAt(3);
+                while (rhs) {
+                    if (rhs->str() == "!") {
+                        if (Token::simpleMatch(rhs, "! ("))
+                            rhs = rhs->next()->link();
+                        rhs = rhs->next();
+                    } else if (rhs->isName() || rhs->isNumber())
+                        rhs = rhs->next();
+                    else
+                        break;
+                }
+                if (Token::Match(rhs, "&&|%oror%|)")) {
+                    numTok = tok;
+                    opTok = tok->next();
+                    if (Token::Match(opTok, "<|>"))
+                        op = opTok->str()[0]=='>'?'<':'>';
+                }
             }
 
             // boolean result in lhs compared with <|<=|>|>=

@@ -386,6 +386,12 @@ private:
 
         check("void f(int a, int b, int c) { if (a != !b || c) {} }");
         ASSERT_EQUALS("",errout.str());
+
+        check("void f(int a, int b, int c) { if (1 < !!a + !!b + !!c) {} }");
+        ASSERT_EQUALS("",errout.str());
+
+        check("void f(int a, int b, int c) { if (1 < !(a+b)) {} }");
+        TODO_ASSERT_EQUALS("error","",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt3() {
