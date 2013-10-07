@@ -119,7 +119,7 @@ static bool isNonBoolStdType(const Variable* var)
 }
 void CheckBool::checkComparisonOfBoolWithInt()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled("warning") || !_tokenizer->isCPP())
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();

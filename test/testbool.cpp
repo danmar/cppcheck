@@ -58,7 +58,7 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool6);
     }
 
-    void check(const char code[], bool experimental = false) {
+    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -71,7 +71,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         // Check...
         CheckBool checkBool(&tokenizer, &settings, this);
@@ -312,6 +312,16 @@ private:
 
         check("int f() { return (!a+b<c); }");
         ASSERT_EQUALS("",errout.str());
+
+        {
+            const char code[] = "void f(int x, bool y) { if ( x != y ) {} }";
+
+            check(code, false, "test.cpp");
+            ASSERT_EQUALS("[test.cpp:1]: (warning) Comparison of a boolean with an integer.\n", errout.str());
+
+            check(code, false, "test.c");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void comparisonOfBoolExpressionWithInt2() {
