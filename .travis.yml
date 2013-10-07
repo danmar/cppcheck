@@ -7,7 +7,11 @@ script:
   - make test SRCDIR=build VERIFY=1
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch cli gui lib -igui/test
   - sudo apt-get update
-  - sudo apt-get install python-pygments
+  - sudo apt-get install python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake
+  - cd gui
+  - qmake
+  - make
+  - cd ../
   - ./htmlreport/test_htmlreport.py
 notifications:
   irc:
