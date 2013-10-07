@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+Checking example.cc...
+    <error file="example.cc" line="5" id="unassignedVariable" severity="style" msg="Variable &apos;x&apos; is not assigned a value."/>
+    <error file="example.cc" line="6" id="uninitvar" severity="error" msg="Uninitialized variable: x"/>
+Checking usage of global functions..
+    <error id="missingInclude" severity="style" msg="Cppcheck cannot find all the include files (use --check-config for details)"/>
+</results>

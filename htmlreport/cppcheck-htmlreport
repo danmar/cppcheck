@@ -187,7 +187,7 @@ class CppCheckHandler(XmlContentHandler):
 
         self.errors.append({
             "file" : attributes.get("file", ""),
-            "line" : int(attributes.get("line"), 0),
+            "line" : int(attributes.get("line", 0)),
             "id" : attributes["id"],
             "severity" : attributes["severity"],
             "msg" : attributes["msg"]
