@@ -24,9 +24,14 @@ HTML_REPORT_BIN = os.path.join(os.path.abspath(os.path.dirname(__file__)),
 class TestHTMLReport(unittest.TestCase):
 
     def testReportError(self):
-        with runCheck(os.path.join(
-                ROOT_DIR,
-                'samples', 'memleak', 'bad.c')) as (report, output_directory):
+        for xml_version in ['1', '2']:
+            self.checkReportError(xml_version)
+
+    def checkReportError(self, xml_version):
+        with runCheck(
+            os.path.join(ROOT_DIR, 'samples', 'memleak', 'bad.c'),
+            xml_version=xml_version
+        ) as (report, output_directory):
             self.assertIn('<html', report)
 
             self.assertIn('Memory leak:', report)
@@ -42,9 +47,14 @@ class TestHTMLReport(unittest.TestCase):
                 self.assertIn('Memory leak:', detail_contents)
 
     def testReportNoError(self):
-        with runCheck(os.path.join(
-                ROOT_DIR,
-                'samples', 'memleak', 'good.c')) as (report, output_directory):
+        for xml_version in ['1', '2']:
+            self.checkReportNoError(xml_version)
+
+    def checkReportNoError(self, xml_version):
+        with runCheck(
+            os.path.join(ROOT_DIR, 'samples', 'memleak', 'good.c'),
+            xml_version=xml_version
+        ) as (report, output_directory):
             self.assertIn('<html', report)
 
             self.assertNotIn('Memory leak:', report)
@@ -55,7 +65,7 @@ class TestHTMLReport(unittest.TestCase):
 
 
 @contextlib.contextmanager
-def runCheck(source_file):
+def runCheck(source_file, xml_version):
     """Run cppcheck and cppcheck-htmlreport.
 
     Yield a tuple containing the resulting HTML report index and the directory
@@ -67,7 +77,8 @@ def runCheck(source_file):
 
     with open(xml_filename, 'w') as output_file:
         subprocess.check_call(
-            [CPPCHECK_BIN, '--xml', source_file],
+            [CPPCHECK_BIN, '--xml', source_file,
+             '--xml-version=' + xml_version],
             stderr=output_file)
 
     assert os.path.exists(xml_filename)
