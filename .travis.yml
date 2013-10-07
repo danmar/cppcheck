@@ -9,6 +9,10 @@ script:
   - sudo apt-get update
   - sudo apt-get install python-pygments
   - ./htmlreport/test_htmlreport.py
+  - cd htmlreport
+  - ./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v1.xml --title "this is a test" --report-dir . --source-dir ../test/
+  - ./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v2.xml --title "this is a test" --report-dir . --source-dir ../test/
+  - cd ../
 notifications:
   irc:
     channels:
