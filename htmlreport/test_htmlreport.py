@@ -63,9 +63,21 @@ class TestHTMLReport(unittest.TestCase):
             self.assertFalse(
                 os.path.exists(os.path.join(output_directory, '0.html')))
 
+    def testMissingInclude(self):
+        with runCheck(
+            xml_filename=os.path.join(ROOT_DIR, 'htmlreport', 'example.xml'),
+        ) as (report, output_directory):
+            self.assertIn('<html', report)
+
+            self.assertIn('Uninitialized variable:', report)
+            self.assertIn('example.cc', report)
+
+            self.assertTrue(
+                os.path.exists(os.path.join(output_directory, '0.html')))
+
 
 @contextlib.contextmanager
-def runCheck(source_file, xml_version):
+def runCheck(source_filename=None, xml_version='1', xml_filename=None):
     """Run cppcheck and cppcheck-htmlreport.
 
     Yield a tuple containing the resulting HTML report index and the directory
@@ -73,13 +85,15 @@ def runCheck(source_file, xml_version):
 
     """
     output_directory = tempfile.mkdtemp(dir='.')
-    xml_filename = os.path.join(output_directory, 'output.xml')
+    if xml_filename is None:
+        assert source_filename
+        xml_filename = os.path.join(output_directory, 'output.xml')
 
-    with open(xml_filename, 'w') as output_file:
-        subprocess.check_call(
-            [CPPCHECK_BIN, '--xml', source_file,
-             '--xml-version=' + xml_version],
-            stderr=output_file)
+        with open(xml_filename, 'w') as output_file:
+            subprocess.check_call(
+                [CPPCHECK_BIN, '--xml', source_filename,
+                 '--xml-version=' + xml_version],
+                stderr=output_file)
 
     assert os.path.exists(xml_filename)
 
