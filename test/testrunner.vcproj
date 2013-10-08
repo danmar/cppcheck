@@ -284,13 +284,9 @@
 			<File
 				RelativePath="..\lib\timer.cpp" />
 			<File
-				RelativePath="..\externals\tinyxml\tinystr.cpp" />
+				RelativePath="..\externals\tinyxml\tinyxml2.cpp" />
 			<File
-				RelativePath="..\externals\tinyxml\tinyxml.cpp" />
-			<File
-				RelativePath="..\externals\tinyxml\tinyxmlerror.cpp" />
-			<File
-				RelativePath="..\externals\tinyxml\tinyxmlparser.cpp" />
+				RelativePath="..\lib\library.cpp" />
 			<File
 				RelativePath="..\lib\token.cpp" />
 			<File
@@ -383,9 +379,9 @@
 			<File
 				RelativePath="..\lib\timer.h" />
 			<File
-				RelativePath="..\externals\tinyxml\tinystr.h" />
+				RelativePath="..\externals\tinyxml\tinyxml2.h" />
 			<File
-				RelativePath="..\externals\tinyxml\tinyxml.h" />
+				RelativePath="..\lib\library.h" />
 			<File
 				RelativePath="..\lib\token.h" />
 			<File
