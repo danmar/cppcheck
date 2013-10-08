@@ -193,6 +193,12 @@ private:
               " return 1 + p->i;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("static void __iomem *f(unsigned int port_no) {\n"
+              "  void __iomem *mmio = hpriv->mmio;\n"
+              "  return mmio + (port_no * 0x80);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
