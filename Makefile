@@ -234,6 +234,7 @@ tags:
 install: cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}
+	install htmlreport/cppcheck-htmlreport ${BIN}
 
 
 ###### Build
