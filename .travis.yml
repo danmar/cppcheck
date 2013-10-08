@@ -4,13 +4,13 @@ compiler:
   - clang
 script:
   - mkdir build
-  - make test SRCDIR=build VERIFY=1
+  - make test SRCDIR=build VERIFY=1 -j 4
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch cli gui lib -igui/test
   - sudo apt-get update
   - sudo apt-get install python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake
   - cd gui
   - qmake
-  - make
+  - make -j 4
   - cd ../
   - ./htmlreport/test_htmlreport.py
   - cd htmlreport
