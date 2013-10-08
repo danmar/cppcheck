@@ -501,6 +501,19 @@ private:
         TEST_CASE(platformWin32WStringCat); // ticket #5015
 
         TEST_CASE(simplifyMathFunctions); // ticket #5031
+        TEST_CASE(simplifyMathFunctions_sqrt);
+        TEST_CASE(simplifyMathFunctions_cbrt);
+        TEST_CASE(simplifyMathFunctions_exp);
+        TEST_CASE(simplifyMathFunctions_log);
+        TEST_CASE(simplifyMathFunctions_div);
+        TEST_CASE(simplifyMathFunctions_pow);
+        TEST_CASE(simplifyMathFunctions_islessgreater);
+        TEST_CASE(simplifyMathFunctions_islessequal);
+        TEST_CASE(simplifyMathFunctions_isless);
+        TEST_CASE(simplifyMathFunctions_isgreaterequal);
+        TEST_CASE(simplifyMathFunctions_isgreater);
+        TEST_CASE(simplifyMathFunctions_fmin);
+        TEST_CASE(simplifyMathFunctions_fmax);
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
 
@@ -8330,7 +8343,185 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber("garbage"));
     }
 
-    void simplifyMathFunctions() { //#5031
+    void simplifyMathFunctions_sqrt() {
+        // verify sqrt(), sqrtf(), sqrtl() - simplifcation
+        const char code_sqrt[] ="void f(int x) {\n"
+                                " std::cout << sqrt(x);\n" // do not simplify
+                                " std::cout << sqrt(-1);\n" // do not simplify
+                                " std::cout << sqrt(0L);\n" // simplify to 0
+                                " std::cout << sqrt(1L);\n" // simplify to 1
+                                "}";
+        const char expected_sqrt[] = "void f ( int x ) {\n"
+                                     "std :: cout << sqrt ( x ) ;\n"
+                                     "std :: cout << sqrt ( -1 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_sqrt, tokenizeAndStringify(code_sqrt));
+
+        const char code_sqrtf[] ="void f(float x) {\n"
+                                 " std::cout << sqrtf(x);\n" // do not simplify
+                                 " std::cout << sqrtf(-1.0f);\n" // do not simplify
+                                 " std::cout << sqrtf(0.0f);\n" // simplify to 0
+                                 " std::cout << sqrtf(1.0);\n" // simplify to 1
+                                 "}";
+        const char expected_sqrtf[] = "void f ( float x ) {\n"
+                                      "std :: cout << sqrtf ( x ) ;\n"
+                                      "std :: cout << sqrtf ( -1.0f ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_sqrtf, tokenizeAndStringify(code_sqrtf));
+
+        const char code_sqrtl[] ="void f(long double x) {\n"
+                                 " std::cout << sqrtf(x);\n" // do not simplify
+                                 " std::cout << sqrtf(-1.0);\n" // do not simplify
+                                 " std::cout << sqrtf(0.0);\n" // simplify to 0
+                                 " std::cout << sqrtf(1.0);\n" // simplify to 1
+                                 "}";
+        const char expected_sqrtl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << sqrtf ( x ) ;\n"
+                                      "std :: cout << sqrtf ( -1.0 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_sqrtl, tokenizeAndStringify(code_sqrtl));
+    }
+
+    void simplifyMathFunctions_cbrt() {
+        // verify cbrt(), cbrtf(), cbrtl() - simplifcation
+        const char code_cbrt[] ="void f(int x) {\n"
+                                " std::cout << cbrt(x);\n" // do not simplify
+                                " std::cout << cbrt(-1);\n" // do not simplify
+                                " std::cout << cbrt(0L);\n" // simplify to 0
+                                " std::cout << cbrt(1L);\n" // simplify to 1
+                                "}";
+        const char expected_cbrt[] = "void f ( int x ) {\n"
+                                     "std :: cout << cbrt ( x ) ;\n"
+                                     "std :: cout << cbrt ( -1 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_cbrt, tokenizeAndStringify(code_cbrt));
+
+        const char code_cbrtf[] ="void f(float x) {\n"
+                                 " std::cout << cbrtf(x);\n" // do not simplify
+                                 " std::cout << cbrtf(-1.0f);\n" // do not simplify
+                                 " std::cout << cbrtf(0.0f);\n" // simplify to 0
+                                 " std::cout << cbrtf(1.0);\n" // simplify to 1
+                                 "}";
+        const char expected_cbrtf[] = "void f ( float x ) {\n"
+                                      "std :: cout << cbrtf ( x ) ;\n"
+                                      "std :: cout << cbrtf ( -1.0f ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_cbrtf, tokenizeAndStringify(code_cbrtf));
+
+        const char code_cbrtl[] ="void f(long double x) {\n"
+                                 " std::cout << cbrtl(x);\n" // do not simplify
+                                 " std::cout << cbrtl(-1.0);\n" // do not simplify
+                                 " std::cout << cbrtl(0.0);\n" // simplify to 0
+                                 " std::cout << cbrtl(1.0);\n" // simplify to 1
+                                 "}";
+        const char expected_cbrtl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << cbrtl ( x ) ;\n"
+                                      "std :: cout << cbrtl ( -1.0 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_cbrtl, tokenizeAndStringify(code_cbrtl));
+    }
+
+    void simplifyMathFunctions_exp() {
+        // verify exp2(), exp2f(), exp2l() - simplifcation
+        const char code_exp2[] ="void f(int x) {\n"
+                                " std::cout << exp2(x);\n" // do not simplify
+                                " std::cout << exp2(-1);\n" // do not simplify
+                                " std::cout << exp2(0L);\n" // simplify to 0
+                                " std::cout << exp2(1L);\n" // do not simplify
+                                "}";
+        const char expected_exp2[] = "void f ( int x ) {\n"
+                                     "std :: cout << exp2 ( x ) ;\n"
+                                     "std :: cout << exp2 ( -1 ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "std :: cout << exp2 ( 1L ) ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_exp2, tokenizeAndStringify(code_exp2));
+
+        const char code_exp2f[] ="void f(float x) {\n"
+                                 " std::cout << exp2f(x);\n" // do not simplify
+                                 " std::cout << exp2f(-1.0);\n" // do not simplify
+                                 " std::cout << exp2f(0.0);\n" // simplify to 1
+                                 " std::cout << exp2f(1.0);\n" // do not simplify
+                                 "}";
+        const char expected_exp2f[] = "void f ( float x ) {\n"
+                                      "std :: cout << exp2f ( x ) ;\n"
+                                      "std :: cout << exp2f ( -1.0 ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "std :: cout << exp2f ( 1.0 ) ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_exp2f, tokenizeAndStringify(code_exp2f));
+
+        const char code_exp2l[] ="void f(long double x) {\n"
+                                 " std::cout << exp2l(x);\n" // do not simplify
+                                 " std::cout << exp2l(-1.0);\n" // do not simplify
+                                 " std::cout << exp2l(0.0);\n" // simplify to 1
+                                 " std::cout << exp2l(1.0);\n" // do not simplify
+                                 "}";
+        const char expected_exp2l[] = "void f ( long double x ) {\n"
+                                      "std :: cout << exp2l ( x ) ;\n"
+                                      "std :: cout << exp2l ( -1.0 ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "std :: cout << exp2l ( 1.0 ) ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_exp2l, tokenizeAndStringify(code_exp2l));
+
+        // verify exp(), expf(), expl() - simplifcation
+        const char code_exp[] ="void f(int x) {\n"
+                               " std::cout << exp(x);\n" // do not simplify
+                               " std::cout << exp(-1);\n" // do not simplify
+                               " std::cout << exp(0L);\n" // simplify to 1
+                               " std::cout << exp(1L);\n" // do not simplify
+                               "}";
+        const char expected_exp[] = "void f ( int x ) {\n"
+                                    "std :: cout << exp ( x ) ;\n"
+                                    "std :: cout << exp ( -1 ) ;\n"
+                                    "std :: cout << 1 ;\n"
+                                    "std :: cout << exp ( 1L ) ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_exp, tokenizeAndStringify(code_exp));
+
+        const char code_expf[] ="void f(float x) {\n"
+                                " std::cout << expf(x);\n" // do not simplify
+                                " std::cout << expf(-1.0);\n" // do not simplify
+                                " std::cout << expf(0.0);\n" // simplify to 1
+                                " std::cout << expf(1.0);\n" // do not simplify
+                                "}";
+        const char expected_expf[] = "void f ( float x ) {\n"
+                                     "std :: cout << expf ( x ) ;\n"
+                                     "std :: cout << expf ( -1.0 ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "std :: cout << expf ( 1.0 ) ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_expf, tokenizeAndStringify(code_expf));
+
+        const char code_expl[] ="void f(long double x) {\n"
+                                " std::cout << expl(x);\n" // do not simplify
+                                " std::cout << expl(-1.0);\n" // do not simplify
+                                " std::cout << expl(0.0);\n" // simplify to 1
+                                " std::cout << expl(1.0);\n" // do not simplify
+                                "}";
+        const char expected_expl[] = "void f ( long double x ) {\n"
+                                     "std :: cout << expl ( x ) ;\n"
+                                     "std :: cout << expl ( -1.0 ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "std :: cout << expl ( 1.0 ) ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_expl, tokenizeAndStringify(code_expl));
+    }
+
+    void simplifyMathFunctions_log() {
 
         // verify logb(), logbf(), logbl() - simplifcation
         const char code_logb[] ="void f(int x) {\n"
@@ -8516,181 +8707,9 @@ private:
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_log2l, tokenizeAndStringify(code_log2l));
+    }
 
-        // verify exp2(), exp2f(), exp2l() - simplifcation
-        const char code_exp2[] ="void f(int x) {\n"
-                                " std::cout << exp2(x);\n" // do not simplify
-                                " std::cout << exp2(-1);\n" // do not simplify
-                                " std::cout << exp2(0L);\n" // simplify to 0
-                                " std::cout << exp2(1L);\n" // do not simplify
-                                "}";
-        const char expected_exp2[] = "void f ( int x ) {\n"
-                                     "std :: cout << exp2 ( x ) ;\n"
-                                     "std :: cout << exp2 ( -1 ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "std :: cout << exp2 ( 1L ) ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_exp2, tokenizeAndStringify(code_exp2));
-
-        const char code_exp2f[] ="void f(float x) {\n"
-                                 " std::cout << exp2f(x);\n" // do not simplify
-                                 " std::cout << exp2f(-1.0);\n" // do not simplify
-                                 " std::cout << exp2f(0.0);\n" // simplify to 1
-                                 " std::cout << exp2f(1.0);\n" // do not simplify
-                                 "}";
-        const char expected_exp2f[] = "void f ( float x ) {\n"
-                                      "std :: cout << exp2f ( x ) ;\n"
-                                      "std :: cout << exp2f ( -1.0 ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "std :: cout << exp2f ( 1.0 ) ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_exp2f, tokenizeAndStringify(code_exp2f));
-
-        const char code_exp2l[] ="void f(long double x) {\n"
-                                 " std::cout << exp2l(x);\n" // do not simplify
-                                 " std::cout << exp2l(-1.0);\n" // do not simplify
-                                 " std::cout << exp2l(0.0);\n" // simplify to 1
-                                 " std::cout << exp2l(1.0);\n" // do not simplify
-                                 "}";
-        const char expected_exp2l[] = "void f ( long double x ) {\n"
-                                      "std :: cout << exp2l ( x ) ;\n"
-                                      "std :: cout << exp2l ( -1.0 ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "std :: cout << exp2l ( 1.0 ) ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_exp2l, tokenizeAndStringify(code_exp2l));
-
-        // verify exp(), expf(), expl() - simplifcation
-        const char code_exp[] ="void f(int x) {\n"
-                               " std::cout << exp(x);\n" // do not simplify
-                               " std::cout << exp(-1);\n" // do not simplify
-                               " std::cout << exp(0L);\n" // simplify to 1
-                               " std::cout << exp(1L);\n" // do not simplify
-                               "}";
-        const char expected_exp[] = "void f ( int x ) {\n"
-                                    "std :: cout << exp ( x ) ;\n"
-                                    "std :: cout << exp ( -1 ) ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "std :: cout << exp ( 1L ) ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_exp, tokenizeAndStringify(code_exp));
-
-        const char code_expf[] ="void f(float x) {\n"
-                                " std::cout << expf(x);\n" // do not simplify
-                                " std::cout << expf(-1.0);\n" // do not simplify
-                                " std::cout << expf(0.0);\n" // simplify to 1
-                                " std::cout << expf(1.0);\n" // do not simplify
-                                "}";
-        const char expected_expf[] = "void f ( float x ) {\n"
-                                     "std :: cout << expf ( x ) ;\n"
-                                     "std :: cout << expf ( -1.0 ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "std :: cout << expf ( 1.0 ) ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_expf, tokenizeAndStringify(code_expf));
-
-        const char code_expl[] ="void f(long double x) {\n"
-                                " std::cout << expl(x);\n" // do not simplify
-                                " std::cout << expl(-1.0);\n" // do not simplify
-                                " std::cout << expl(0.0);\n" // simplify to 1
-                                " std::cout << expl(1.0);\n" // do not simplify
-                                "}";
-        const char expected_expl[] = "void f ( long double x ) {\n"
-                                     "std :: cout << expl ( x ) ;\n"
-                                     "std :: cout << expl ( -1.0 ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "std :: cout << expl ( 1.0 ) ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_expl, tokenizeAndStringify(code_expl));
-
-        // verify cbrt(), cbrtf(), cbrtl() - simplifcation
-        const char code_cbrt[] ="void f(int x) {\n"
-                                " std::cout << cbrt(x);\n" // do not simplify
-                                " std::cout << cbrt(-1);\n" // do not simplify
-                                " std::cout << cbrt(0L);\n" // simplify to 0
-                                " std::cout << cbrt(1L);\n" // simplify to 1
-                                "}";
-        const char expected_cbrt[] = "void f ( int x ) {\n"
-                                     "std :: cout << cbrt ( x ) ;\n"
-                                     "std :: cout << cbrt ( -1 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_cbrt, tokenizeAndStringify(code_cbrt));
-
-        const char code_cbrtf[] ="void f(float x) {\n"
-                                 " std::cout << cbrtf(x);\n" // do not simplify
-                                 " std::cout << cbrtf(-1.0f);\n" // do not simplify
-                                 " std::cout << cbrtf(0.0f);\n" // simplify to 0
-                                 " std::cout << cbrtf(1.0);\n" // simplify to 1
-                                 "}";
-        const char expected_cbrtf[] = "void f ( float x ) {\n"
-                                      "std :: cout << cbrtf ( x ) ;\n"
-                                      "std :: cout << cbrtf ( -1.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_cbrtf, tokenizeAndStringify(code_cbrtf));
-
-        const char code_cbrtl[] ="void f(long double x) {\n"
-                                 " std::cout << cbrtl(x);\n" // do not simplify
-                                 " std::cout << cbrtl(-1.0);\n" // do not simplify
-                                 " std::cout << cbrtl(0.0);\n" // simplify to 0
-                                 " std::cout << cbrtl(1.0);\n" // simplify to 1
-                                 "}";
-        const char expected_cbrtl[] = "void f ( long double x ) {\n"
-                                      "std :: cout << cbrtl ( x ) ;\n"
-                                      "std :: cout << cbrtl ( -1.0 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_cbrtl, tokenizeAndStringify(code_cbrtl));
-
-
-        // verify sqrt(), sqrtf(), sqrtl() - simplifcation
-        const char code_sqrt[] ="void f(int x) {\n"
-                                " std::cout << sqrt(x);\n" // do not simplify
-                                " std::cout << sqrt(-1);\n" // do not simplify
-                                " std::cout << sqrt(0L);\n" // simplify to 0
-                                " std::cout << sqrt(1L);\n" // simplify to 1
-                                "}";
-        const char expected_sqrt[] = "void f ( int x ) {\n"
-                                     "std :: cout << sqrt ( x ) ;\n"
-                                     "std :: cout << sqrt ( -1 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_sqrt, tokenizeAndStringify(code_sqrt));
-
-        const char code_sqrtf[] ="void f(float x) {\n"
-                                 " std::cout << sqrtf(x);\n" // do not simplify
-                                 " std::cout << sqrtf(-1.0f);\n" // do not simplify
-                                 " std::cout << sqrtf(0.0f);\n" // simplify to 0
-                                 " std::cout << sqrtf(1.0);\n" // simplify to 1
-                                 "}";
-        const char expected_sqrtf[] = "void f ( float x ) {\n"
-                                      "std :: cout << sqrtf ( x ) ;\n"
-                                      "std :: cout << sqrtf ( -1.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_sqrtf, tokenizeAndStringify(code_sqrtf));
-
-        const char code_sqrtl[] ="void f(long double x) {\n"
-                                 " std::cout << sqrtf(x);\n" // do not simplify
-                                 " std::cout << sqrtf(-1.0);\n" // do not simplify
-                                 " std::cout << sqrtf(0.0);\n" // simplify to 0
-                                 " std::cout << sqrtf(1.0);\n" // simplify to 1
-                                 "}";
-        const char expected_sqrtl[] = "void f ( long double x ) {\n"
-                                      "std :: cout << sqrtf ( x ) ;\n"
-                                      "std :: cout << sqrtf ( -1.0 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_sqrtl, tokenizeAndStringify(code_sqrtl));
-
-
+    void simplifyMathFunctions_div() {
         // verify div(), ldiv(), lldiv() - simplifcation
         const char code_div[] ="void f(int x) {\n"
                                " std::cout << div(x,1);\n" //simplify
@@ -8724,7 +8743,9 @@ private:
         const char code_div3[] = "int f(const Fred &fred) {return fred.lldiv(12,3);}";
         const char expected_div3[] = "int f ( const Fred & fred ) { return fred . lldiv ( 12 , 3 ) ; }";
         ASSERT_EQUALS(expected_div3, tokenizeAndStringify(code_div3));
+    }
 
+    void simplifyMathFunctions_pow() {
         // verify pow(),pow(),powl() - simplifcation
         const char code_pow[] ="void f() {\n"
                                " std::cout << pow(-1.0,1);\n"
@@ -8774,7 +8795,9 @@ private:
         const char code_pow4[] = "int f() {return pow(1,0);}";
         const char expected_pow4[] = "int f ( ) { return 1 ; }";
         ASSERT_EQUALS(expected_pow4, tokenizeAndStringify(code_pow4));
+    }
 
+    void simplifyMathFunctions_islessgreater() {
         // verify islessgreater() simplification
         const char code_islessgreater[] = "bool f(){\n"
                                           "return islessgreater(1,0);\n" // (1 < 0) or (1 > 0) --> true
@@ -8799,7 +8822,9 @@ private:
                                            "}";
         const char expected_islessgreater3[] = "bool f ( int i ) {\nreturn islessgreater ( i , 0 ) ;\n}";
         ASSERT_EQUALS(expected_islessgreater3, tokenizeAndStringify(code_islessgreater3));
+    }
 
+    void simplifyMathFunctions_islessequal() {
         // verify islessequal() simplification
         const char code_islessequal[] = "bool f(){\n"
                                         "return islessequal(1,0);\n" // (1 <= 0) --> false
@@ -8824,8 +8849,9 @@ private:
                                          "}";
         const char expected_islessequal3[] = "bool f ( int i ) {\nreturn islessequal ( i , 0 ) ;\n}";
         ASSERT_EQUALS(expected_islessequal3, tokenizeAndStringify(code_islessequal3));
+    }
 
-
+    void simplifyMathFunctions_isless() {
         // verify isless() simplification
         const char code_isless[] = "bool f(){\n"
                                    "return isless(1,0);\n" // (1 < 0) --> false
@@ -8850,7 +8876,9 @@ private:
                                     "}";
         const char expected_isless3[] = "bool f ( int i ) {\nreturn isless ( i , 0 ) ;\n}";
         ASSERT_EQUALS(expected_isless3, tokenizeAndStringify(code_isless3));
+    }
 
+    void simplifyMathFunctions_isgreaterequal() {
         // verify isgreaterequal() simplification
         const char code_isgreaterequal[] = "bool f(){\n"
                                            "return isgreaterequal(1,0);\n" // (1 >= 0) --> true
@@ -8875,7 +8903,9 @@ private:
                                             "}";
         const char expected_isgreaterequal3[] = "bool f ( int i ) {\nreturn isgreaterequal ( i , 0 ) ;\n}";
         ASSERT_EQUALS(expected_isgreaterequal3, tokenizeAndStringify(code_isgreaterequal3));
+    }
 
+    void simplifyMathFunctions_isgreater() {
         // verify isgreater() simplification
         const char code_isgreater[] = "bool f(){\n"
                                       "return isgreater(1,0);\n" // (1 > 0) --> true
@@ -8900,38 +8930,9 @@ private:
                                        "}";
         const char expected_isgreater3[] = "bool f ( int i ) {\nreturn isgreater ( i , 0 ) ;\n}";
         ASSERT_EQUALS(expected_isgreater3, tokenizeAndStringify(code_isgreater3));
+    }
 
-        // verify fmax(),fmax(),fmaxl() simplifcation
-        const char code_fmax[] ="void f() {\n"
-                                " std::cout << fmax(-1.0,0);\n"
-                                " std::cout << fmax(1.0,0);\n"
-                                " std::cout << fmax(0,0);\n"
-                                " std::cout << fmaxf(-1.0,0);\n"
-                                " std::cout << fmaxf(1.0,0);\n"
-                                " std::cout << fmaxf(0,0);\n"
-                                " std::cout << fmaxl(-1.0,0);\n"
-                                " std::cout << fmaxl(1.0,0);\n"
-                                " std::cout << fmaxl(0,0);\n"
-                                "}";
-
-        const char expected_fmax[] = "void f ( ) {\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_fmax, tokenizeAndStringify(code_fmax));
-
-        // do not simplify this case
-        const char code_fmax1[] = "float f(float f) { return fmax(f,0);}";
-        const char expected_fmax1[] = "float f ( float f ) { return fmax ( f , 0 ) ; }";
-        ASSERT_EQUALS(expected_fmax1, tokenizeAndStringify(code_fmax1));
-
+    void simplifyMathFunctions_fmin() {
         // verify fmin,fminl,fminl simplifcation
         const char code_fmin[] ="void f() {\n"
                                 " std::cout << fmin(-1.0,0);\n"
@@ -8962,8 +8963,42 @@ private:
         const char code_fmin1[] = "float f(float f) { return fmin(f,0);}";
         const char expected_fmin1[] = "float f ( float f ) { return fmin ( f , 0 ) ; }";
         ASSERT_EQUALS(expected_fmin1, tokenizeAndStringify(code_fmin1));
+    }
 
+    void simplifyMathFunctions_fmax() {
+        // verify fmax(),fmax(),fmaxl() simplifcation
+        const char code_fmax[] ="void f() {\n"
+                                " std::cout << fmax(-1.0,0);\n"
+                                " std::cout << fmax(1.0,0);\n"
+                                " std::cout << fmax(0,0);\n"
+                                " std::cout << fmaxf(-1.0,0);\n"
+                                " std::cout << fmaxf(1.0,0);\n"
+                                " std::cout << fmaxf(0,0);\n"
+                                " std::cout << fmaxl(-1.0,0);\n"
+                                " std::cout << fmaxl(1.0,0);\n"
+                                " std::cout << fmaxl(0,0);\n"
+                                "}";
 
+        const char expected_fmax[] = "void f ( ) {\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "std :: cout << 1.0 ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_fmax, tokenizeAndStringify(code_fmax));
+
+        // do not simplify this case
+        const char code_fmax1[] = "float f(float f) { return fmax(f,0);}";
+        const char expected_fmax1[] = "float f ( float f ) { return fmax ( f , 0 ) ; }";
+        ASSERT_EQUALS(expected_fmax1, tokenizeAndStringify(code_fmax1));
+    }
+
+    void simplifyMathFunctions() { //#5031
         // verify abs,fabs,labs,llabs,atol simplifcation
         const char code1[] = "void foo() {\n"
                              "    std::cout<<std::abs(0);\n"    // in std:: namespeace
