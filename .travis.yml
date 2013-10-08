@@ -18,6 +18,8 @@ script:
   - ./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v2.xml --title "xml2 test" --report-dir . --source-dir ../test/
   - ../cppcheck ../gui/test --enable=all  --inconclusive --xml-version=2 2> gui_test.xml
   - ./cppcheck-htmlreport --file ./gui_test.xml --title "xml2 + inconclusive test" --report-dir . --source-dir ../gui/test
+    - ../cppcheck ../gui/test --enable=all --inconclusive --verbose --xml-version=2 2> gui_test.xml
+  - ./cppcheck-htmlreport --file ./gui_test.xml --title "xml2 + inconclusive + verbose test" --report-dir . --source-dir ../gui/test
   - cd ../
   - mkdir install_test
   - make DESTDIR=install_test install
