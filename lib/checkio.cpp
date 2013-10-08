@@ -585,7 +585,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         }
                         ++i;
                     }
-                    if (*i == '[') {
+                    if (i != formatString.end() && *i == '[') {
                         while (i != formatString.end()) {
                             if (*i == ']') {
                                 if (!skip) {
