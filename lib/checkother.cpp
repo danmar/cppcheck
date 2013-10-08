@@ -1882,6 +1882,10 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 
 void CheckOther::checkCommaSeparatedReturn()
 {
+    // This is experimental for now. See #5076
+    if (!_settings->experimental)
+        return;
+
     if (!_settings->isEnabled("style"))
         return;
 
