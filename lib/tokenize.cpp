@@ -8343,7 +8343,7 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 // exp2f(), exp2l(), log2(), log2f(), log2l(), log1p(),
 // log1pf(), log1pl(), log10(), log10l(), log10f(),
 // log(),logf(),logl(),logb(),logbf(),logbl(), acosh()
-// acoshf(), acoshl()
+// acoshf(), acoshl(), acos(), acosf(), acosl()
 // in the tokenlist.
 //
 // Reference:
@@ -8420,11 +8420,10 @@ bool Tokenizer::simplifyMathFunctions()
                 tok->str("0"); // insert result into token list
                 simplifcationMade = true;
             }
-        } else if (Token::Match(tok, "log2|log2f|log2l|log|logf|logl|log10|log10f|log10l|logb|logbf|logbl|acosh|acoshf|acoshl ( %num% )")) {
+        } else if (Token::Match(tok, "log2|log2f|log2l|log|logf|logl|log10|log10f|log10l|logb|logbf|logbl|acosh|acoshf|acoshl|acos|acosf|acosl ( %num% )")) {
             // Simplify: log2[f|l](1) = 0 , log10[f|l](1) = 0
             //           log[f|l](1) = 0 , logb10[f|l](1) = 0
-            //           acosh[f|l](1) = 0
-            // TODO: acos[f|l](1) = 0
+            //           acosh[f|l](1) = 0, acos[f|l](1) = 0
             // get number string
             const std::string parameter(tok->tokAt(2)->str());
             // is parameter 1 ?

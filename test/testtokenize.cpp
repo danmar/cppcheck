@@ -515,6 +515,7 @@ private:
         TEST_CASE(simplifyMathFunctions_fmin);
         TEST_CASE(simplifyMathFunctions_fmax);
         TEST_CASE(simplifyMathFunctions_acosh);
+        TEST_CASE(simplifyMathFunctions_acos);
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
 
@@ -8342,6 +8343,39 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber("-0"));
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber(""));
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber("garbage"));
+    }
+
+    void simplifyMathFunctions_acos() {
+        // verify acos(), acosf(), acosl() - simplifcation
+        const char code_acos[] ="void f(int x) {\n"
+                                " std::cout << acos(x);\n" // do not simplify
+                                " std::cout << acos(1L);\n" // simplify to 0
+                                "}";
+        const char expected_acos[] = "void f ( int x ) {\n"
+                                     "std :: cout << acos ( x ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_acos, tokenizeAndStringify(code_acos));
+
+        const char code_acosf[] ="void f(float x) {\n"
+                                 " std::cout << acosf(x);\n" // do not simplify
+                                 " std::cout << acosf(1.0f);\n" // simplify to 0
+                                 "}";
+        const char expected_acosf[] = "void f ( float x ) {\n"
+                                      "std :: cout << acosf ( x ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_acosf, tokenizeAndStringify(code_acosf));
+
+        const char code_acosl[] ="void f(long double x) {\n"
+                                 " std::cout << acosl(x);\n" // do not simplify
+                                 " std::cout << acosl(1.0d);\n" // simplify to 0
+                                 "}";
+        const char expected_acosl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << acosl ( x ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_acosl, tokenizeAndStringify(code_acosl));
     }
 
     void simplifyMathFunctions_acosh() {
