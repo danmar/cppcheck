@@ -84,7 +84,13 @@ private:
 
         TEST_CASE(passedByValue);
 
-        TEST_CASE(mathfunctionCall1);
+        TEST_CASE(mathfunctionCall_fmod);
+        TEST_CASE(mathfunctionCall_sqrt);
+        TEST_CASE(mathfunctionCall_log);
+        TEST_CASE(mathfunctionCall_acos);
+        TEST_CASE(mathfunctionCall_asin);
+        TEST_CASE(mathfunctionCall_pow);
+        TEST_CASE(mathfunctionCall_atan2);
         TEST_CASE(cctypefunctionCall);
 
         TEST_CASE(switchRedundantAssignmentTest);
@@ -1360,7 +1366,28 @@ private:
 
     }
 
-    void mathfunctionCall1() {
+    void mathfunctionCall_sqrt() {
+        // sqrt, sqrtf, sqrtl
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  sqrt(-1) << std::endl;\n"
+              "    std::cout <<  sqrtf(-1) << std::endl;\n"
+              "    std::cout <<  sqrtl(-1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to sqrt() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing value -1 to sqrtf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing value -1 to sqrtl() leads to undefined result.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  sqrt(1) << std::endl;\n"
+              "    std::cout <<  sqrtf(1) << std::endl;\n"
+              "    std::cout <<  sqrtl(1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void mathfunctionCall_log() {
         // log,log10,logf,logl,log10f,log10l
         check("void foo()\n"
               "{\n"
@@ -1438,7 +1465,9 @@ private:
         // #3473 - no warning if "log" is a variable
         check("Fred::Fred() : log(0) { }");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void mathfunctionCall_acos() {
         // acos, acosf, acosl
         check("void foo()\n"
               "{\n"
@@ -1497,8 +1526,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to acos() leads to undefined result.\n"
                       "[test.cpp:4]: (error) Passing value -1.1 to acosf() leads to undefined result.\n"
                       "[test.cpp:5]: (error) Passing value -1.1 to acosl() leads to undefined result.\n", errout.str());
+    }
 
-
+    void mathfunctionCall_asin() {
         // asin, asinf, asinl
         check("void foo()\n"
               "{\n"
@@ -1557,7 +1587,30 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to asin() leads to undefined result.\n"
                       "[test.cpp:4]: (error) Passing value -1.1 to asinf() leads to undefined result.\n"
                       "[test.cpp:5]: (error) Passing value -1.1 to asinl() leads to undefined result.\n", errout.str());
+    }
 
+    void mathfunctionCall_pow() {
+        // pow, powf, powl
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  pow(0,-10) << std::endl;\n"
+              "    std::cout <<  powf(0,-10) << std::endl;\n"
+              "    std::cout <<  powl(0,-10) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and -10 to pow() leads to undefined result.\n"
+                      "[test.cpp:4]: (error) Passing values 0 and -10 to powf() leads to undefined result.\n"
+                      "[test.cpp:5]: (error) Passing values 0 and -10 to powl() leads to undefined result.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  pow(0,10) << std::endl;\n"
+              "    std::cout <<  powf(0,10) << std::endl;\n"
+              "    std::cout <<  powl(0,10) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void mathfunctionCall_atan2() {
         // atan2
         check("void foo()\n"
               "{\n"
@@ -1606,8 +1659,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and 0 to atan2() leads to undefined result.\n"
                       "[test.cpp:4]: (error) Passing values 0 and 0 to atan2f() leads to undefined result.\n"
                       "[test.cpp:5]: (error) Passing values 0 and 0 to atan2l() leads to undefined result.\n", errout.str());
+    }
 
-
+    void mathfunctionCall_fmod() {
         // fmod, fmodl, fmodf
         check("void foo()\n"
               "{\n"
@@ -1624,45 +1678,6 @@ private:
               "    std::cout <<  fmod(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodf(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodl(1.0,1) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-
-        // pow, powf, powl
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  pow(0,-10) << std::endl;\n"
-              "    std::cout <<  powf(0,-10) << std::endl;\n"
-              "    std::cout <<  powl(0,-10) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and -10 to pow() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing values 0 and -10 to powf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing values 0 and -10 to powl() leads to undefined result.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  pow(0,10) << std::endl;\n"
-              "    std::cout <<  powf(0,10) << std::endl;\n"
-              "    std::cout <<  powl(0,10) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // sqrt, sqrtf, sqrtl
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  sqrt(-1) << std::endl;\n"
-              "    std::cout <<  sqrtf(-1) << std::endl;\n"
-              "    std::cout <<  sqrtl(-1) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to sqrt() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -1 to sqrtf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -1 to sqrtl() leads to undefined result.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::cout <<  sqrt(1) << std::endl;\n"
-              "    std::cout <<  sqrtf(1) << std::endl;\n"
-              "    std::cout <<  sqrtl(1) << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
