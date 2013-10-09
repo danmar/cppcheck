@@ -364,25 +364,19 @@ static bool isNonBoolLHSExpr(const Token *tok)
     // return value. only return true if we "know" it's a non-bool expression
     bool nonBoolExpr = false;
 
-    // look into () and []
-    int indentlevel = 0;
-
     for (; tok; tok = tok->previous()) {
-        if (tok->str() == ")" || tok->str() == "]")
-            ++indentlevel;
-        else if (tok->str() == "(" || tok->str() == "[") {
-            if (indentlevel <= 0)
-                break;
-            --indentlevel;
-        } else if (tok->isNumber())
+        if (tok->str() == ")") {
+            if (!Token::Match(tok->link()->previous(), "&&|%oror%|( ("))
+                tok = tok->link();
+        } else if (tok->str() == "(" || tok->str() == "[")
+            break;
+        else if (tok->isNumber())
             nonBoolExpr = true;
         else if (tok->isArithmeticalOp()) {
-            if (indentlevel == 0)
-                return true;
-            nonBoolExpr = true;
+            return true;
         } else if (tok->isComparisonOp() || (tok->str() == "!" && tok->previous()->str()=="("))
             return false;
-        else if (indentlevel == 0 && Token::Match(tok,"[;{}=?:&|^,]"))
+        else if (Token::Match(tok,"[;{}=?:&|^,]"))
             break;
         else if (Token::Match(tok, "&&|%oror%|and|or"))
             break;

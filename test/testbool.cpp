@@ -322,6 +322,9 @@ private:
             check(code, false, "test.c");
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("int f() { return (a+(b<5)<=c); }");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt2() {
