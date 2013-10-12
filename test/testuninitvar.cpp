@@ -1963,6 +1963,12 @@ private:
                        "    TYPEOF(s->status);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    #define w(x) ({ x z;  (x*)z; })\n"
+                       "    int *n = w(typeof(*n));\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
