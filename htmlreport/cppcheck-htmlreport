@@ -196,6 +196,8 @@ class CppCheckHandler(XmlContentHandler):
     def handleVersion2(self, name, attributes):
         if name == "error":
             self.errors.append({
+                "file" : "",
+                "line" : 0,
                 "id" : attributes["id"],
                 "severity" : attributes["severity"],
                 "msg" : attributes["msg"]
