@@ -114,7 +114,7 @@ HTML_FOOTER = """
 </html>
 """
 
-HTML_ERROR = "<span style=\"border-width: 2px;border-color: black;border-style: solid;background: #ffaaaa;padding: 3px;\">&lt;--- %s</span>\n"
+HTML_ERROR = "<span style=\"border-width: 1px;border-color: black;border-style: solid;background: #ffaaaa;padding: 1px;font-size: 11px;\">&lt;--- %s</span>\n"
 
 
 class AnnotateCodeFormatter(HtmlFormatter):
