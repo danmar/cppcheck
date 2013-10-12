@@ -78,8 +78,12 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   $feed->init();
   print("<ul class=\"rssfeeditems\">\n");
   foreach ($feed->get_items() as $item) { //for the last timeline items...
-    $author = $item->get_author();
-    print("  <li><a href=\"".$item->get_link()."\">".$item->get_title()."</a> <em>by <strong>".$author->get_name()."</strong> on ".$item->get_date('Y-m-d')."</em></li>\n");
+    if ($author = $item->get_author()) {
+      $author = trim($author->get_name());
+    } else {
+      $author = 'anonymous';
+    }
+    print("  <li><a href=\"".$item->get_link()."\">".$item->get_title()."</a> <em>by <strong>".$author."</strong> on ".$item->get_date('Y-m-d')."</em></li>\n");
   }
   print("</ul>\n");
 ?>
