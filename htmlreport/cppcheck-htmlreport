@@ -51,7 +51,7 @@ body {
     text-align: left;
     float: left;
     width: 100px;
-    height: 300px;
+    height: auto;
 }
 
 #menu > a {
@@ -61,7 +61,7 @@ body {
 
 #content {
     float: left;
-    width: 720px;
+    width: 80%;
     margin: 5px;
     padding: 0 10px 10px 10px;
     border-left: thin solid #aaa;
