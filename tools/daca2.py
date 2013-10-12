@@ -68,21 +68,30 @@ for package in packages:
         subprocess.call(['tar', 'xzvf', filename])
         subprocess.call(['rm', filename])
 
-    dirname = None
-    for s in glob.glob(filename[:2] + '*'):
-        if os.path.isdir(s):
-            dirname = s
-    if dirname is None:
-        continue
+        dirname = None
+        for s in glob.glob(filename[:2] + '*'):
+            if os.path.isdir(s):
+                dirname = s
+        if dirname is None:
+            continue
 
-    print('cppcheck "' + dirname + '"')
-    p = subprocess.Popen(['nice', '../cppcheck-O2', '-j2', '-D__GCC__', '--enable=style', '--suppressions-list=../suppressions.txt', dirname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
+        print('cppcheck "' + dirname + '"')
+        p = subprocess.Popen(
+            ['nice',
+             '../cppcheck-O2',
+             '-j2',
+             '-D__GCC__',
+             '--enable=style',
+             '--suppressions-list=../suppressions.txt',
+             dirname],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        comm = p.communicate()
 
-    results = open('results.txt', 'at')
-    results.write(fullpath + '\n')
-    results.write(comm[1] + '\n')
-    results.close()
+        results = open('results.txt', 'at')
+        results.write(fullpath + '\n')
+        results.write(comm[1] + '\n')
+        results.close()
 
-    # remove all files/folders except results.txt
-    removeAllExceptResults()
+        # remove all files/folders except results.txt
+        removeAllExceptResults()
