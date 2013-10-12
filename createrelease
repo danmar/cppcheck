@@ -16,17 +16,17 @@
 #   git log --format='%aN' | sort -u
 #
 # Update version numbers in:
-# - cli/main.cpp
-# - lib/cppcheck.cpp
-# - lib/version.h
-# - man/manual.docbook
-# - win_installer/productInfo.wxs
-#
-# Update the Changelog..
-# wget http://josefsson.org/git2cl/git2cl
-# chmod 744 git2cl
-# ./git2cl > Changelog
-# git commit -a -m "1.43: Updated Changelog"
+# sed -i "s/1.[0-9][0-9].99/1.62/" cli/main.cpp
+# sed -i "s/1.[0-9][0-9] dev/1.62/" lib/cppcheck.cpp
+# sed -i "s/1,[0-9][0-9],99,0/1,62,0,0/" lib/version.h
+# sed -i "s/1.[0-9][0-9] dev/1.62/" lib/version.h
+# sed -i "s/1.[0-9][0-9] dev/1.62/" man/manual.docbook
+# sed -i "s/1.[0-9][0-9] dev/1.62/" win_installer/productInfo.wxi
+# sed -i "s/1.[0-9][0-9].99/1.62/" win_installer/productInfo.wxi#
+# Verify:
+# grep '\.99' */*.[ch]*
+# grep '[0-9][0-9] dev' */*.[ch]*
+# git commit -a -m "1.43: Set versions"
 #
 # Update the Makefile:
 # make dmake
