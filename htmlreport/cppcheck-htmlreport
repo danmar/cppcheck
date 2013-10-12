@@ -37,6 +37,7 @@ body {
     border-right: 2px solid #aaa;
     background-color: white;
     padding: 20px;
+    overflow: auto;
 }
 
 #header {
