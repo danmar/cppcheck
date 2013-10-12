@@ -61,7 +61,7 @@ errors in the code (i.e. have zero false positives).
 <p>
     <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.62/cppcheck-1.62-x86-Setup.msi">
         <span class="downButtonText">Download Now!</span>
-        <span class="downButtonVersion">Version 1.61 for Windows</span>
+        <span class="downButtonVersion">Version 1.62 for Windows</span>
     </a>
 </p>
 <p>You can download the standalone Cppcheck from our
