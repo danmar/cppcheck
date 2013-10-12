@@ -1603,7 +1603,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
     if (vartok->previous()->str() == "return")
         return true;
 
-    // Passing variable to typeof
+    // Passing variable to typeof/__alignof__
     if (Token::Match(vartok->tokAt(-3), "typeof|__alignof__ ( * %var%"))
         return false;
 
