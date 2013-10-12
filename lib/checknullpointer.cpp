@@ -520,6 +520,10 @@ void CheckNullPointer::nullPointerLinkedList()
                 // Variable id for dereferenced variable
                 const unsigned int varid(tok2->varId());
 
+                // We don't support variables without a varid
+                if (varid == 0)
+                    continue;
+
                 if (Token::Match(tok2->tokAt(-2), "%varid% ?", varid))
                     continue;
 
