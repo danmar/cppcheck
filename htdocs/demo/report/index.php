@@ -72,6 +72,11 @@
     //]]>
   </script>
   <script src="/site/js/pack.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("#resultsTable").tableFilter();
+    });
+  </script>
 </head>
 <body>
 <div id="header">

@@ -13,6 +13,15 @@
     //]]>
   </script>
   <script src="/site/js/pack.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    function checkCodeLength() {
+      if (document.f.code.value.length > 1024) {
+        alert("code length exceeded");
+        return false;
+      }
+      return true;
+    }
+  </script>
 </head>
 <body>
 <div id="header">

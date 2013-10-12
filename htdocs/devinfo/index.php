@@ -17,6 +17,11 @@
     //]]>
   </script>
   <script src="/site/js/pack.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    $(function() {
+      $("#github-commits").listCommits("danmar", "cppcheck", "master");
+    });
+  </script>
 </head>
 <body>
 <div id="header">
