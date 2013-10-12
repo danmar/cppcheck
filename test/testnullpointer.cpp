@@ -1679,6 +1679,11 @@ private:
               "    itoa(x,NULL,10);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+
+        check("void f() {\n"
+              "    typeof(*NULL) y;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void gcc_statement_expression() {
