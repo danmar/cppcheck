@@ -1,6 +1,6 @@
 /* Source Code */
 .geshicode {
-  padding: .5em;
+  padding: 0.5em;
   background: #f7f7f7;
   border: 1px solid #e2e2e2;
 }
@@ -11,14 +11,14 @@
 }
 
 #resultsTable th {
-  padding: .25em;
+  padding: 0.25em;
   text-align: left;
   background: #e2e2e2;
   border: 1px solid #e2e2e2;
 }
 
 #resultsTable td {
-  padding: .25em;
+  padding: 0.25em;
   background: #f7f7f7;
   border: 1px solid #e2e2e2;
 }

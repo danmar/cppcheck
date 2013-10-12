@@ -69,7 +69,7 @@ a:visited   { color: #369; }
 
 #tabs li {
   display: inline;
-  padding: 0 .5em;
+  padding: 0 0.5em;
   border-right: 1px solid black;
 }
 
@@ -92,14 +92,14 @@ a:visited   { color: #369; }
 /* Anchors */
 #anchors ul {
   margin: 0;
-  padding: .5em 0;
+  padding: 0.5em 0;
   list-style-type: none;
   font-size: smaller;
 }
 
 #anchors li {
   display: inline;
-  padding: 0 .5em;
+  padding: 0 0.5em;
 }
 
 #anchors li:first-child {
@@ -115,7 +115,7 @@ a:visited   { color: #369; }
 .wrap {
   width: 50em;
   margin: 0 auto;
-  padding: .5em;
+  padding: 0.5em;
   -webkit-box-sizing: content-box;
      -moz-box-sizing: content-box;
           box-sizing: content-box;
@@ -124,7 +124,7 @@ a:visited   { color: #369; }
 
 /* RSS feed items */
 .rssfeeditems em {
-  margin-left: .5em;
+  margin-left: 0.5em;
   color: #888;
   font-size: smaller;
 }
@@ -177,7 +177,7 @@ a.downloadnow:hover {
 
 /* Command */
 .cmd {
-  padding: .5em;
+  padding: 0.5em;
   background-color: #f7f7f7;
   border: 1px solid silver;
   border-left: 10px solid silver;
