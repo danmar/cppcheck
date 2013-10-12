@@ -15,7 +15,9 @@ import glob
 import os
 import socket
 
-FOLDER = 'a'
+FTPSERVER = 'ftp.sunet.se'
+FTPPATH   = '/pub/Linux/distributions/Debian/debian/pool/main/'
+FOLDER    = 'b'
 
 def removeAllExceptResults():
   filenames = glob.glob('[A-Za-z]*')
@@ -25,34 +27,33 @@ def removeAllExceptResults():
     elif filename != 'results.txt':
       os.remove(filename)
 
-def getpackages(c):
-  f = ftplib.FTP('ftp.sunet.se','anonymous','','',60)
-  f.login('anonymous','password')
-  packages = f.nlst('/pub/Linux/distributions/Debian/debian/pool/main/' + c)
-  f.quit()
-  return packages
-
 workdir = os.path.expanduser('~/daca2/')
+
+print('~/daca2/suppressions.txt')
 if not os.path.isfile(workdir + 'suppressions.txt'):
   suppressions = open(workdir + 'suppressions.txt', 'wt')
   suppressions.write('\n')
   suppressions.close()
 
+print('~/daca2/' + FOLDER)
 if not os.path.isdir(workdir + FOLDER):
   os.makedirs(workdir + FOLDER)
 os.chdir(workdir + FOLDER)
 if os.path.isfile('results.txt'):
   os.remove('results.txt')
 
-packages = getpackages(FOLDER)
+print('Connect to ' + FTPSERVER)
+f = ftplib.FTP(FTPSERVER)
+f.login()
+
+print('Get package list in folder ' + FOLDER)
+packages = f.nlst(FTPPATH + FOLDER)
 
 for package in packages:
+  print('package:' + package)
   filename = None
-  path = '/pub/Linux/distributions/Debian/debian/pool/main/' + FOLDER + '/' + package
-  f = None
+  path = FTPPATH + FOLDER + '/' + package
   try:
-    f = ftplib.FTP('ftp.sunet.se','anonymous','password','',60)
-    f.login('anonymous','x')
     for s in f.nlst(path):
       if s[-12:] == '.orig.tar.gz':
         filename = s
@@ -60,32 +61,28 @@ for package in packages:
     pass
   except ftplib.error_temp:
     pass
-    if f:
-      try:
-        f.quit()
-      except ftplib.error_reply:
-        pass
 
-    if filename:
-      fullpath = 'ftp://ftp.sunet.se' + path + '/' + filename
-      subprocess.call(['wget',fullpath])
-      subprocess.call(['tar', 'xzvf', filename])
-      subprocess.call(['rm', filename])
+  if filename:
+    fullpath = 'ftp://ftp.sunet.se' + path + '/' + filename
+    subprocess.call(['wget',fullpath])
+    subprocess.call(['tar', 'xzvf', filename])
+    subprocess.call(['rm', filename])
 
-      dirname = None
-      for s in glob.glob(filename[:2] + '*'):
-        if os.path.isdir(s):
-          dirname = s
-      if dirname is None:
-        continue
+    dirname = None
+    for s in glob.glob(filename[:2] + '*'):
+      if os.path.isdir(s):
+        dirname = s
+    if dirname is None:
+      continue
 
-      print('cppcheck "' + dirname + '"')
-      p = subprocess.Popen(['nice', '../cppcheck-O2', '-j2', '-D__GCC__', '--enable=style', '--suppressions-list=../suppressions.txt', dirname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      comm = p.communicate()
+    print('cppcheck "' + dirname + '"')
+    p = subprocess.Popen(['nice', '../cppcheck-O2', '-j2', '-D__GCC__', '--enable=style', '--suppressions-list=../suppressions.txt', dirname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    comm = p.communicate()
 
-      results = open('results.txt', 'at')
-      results.write(comm[1] + '\n')
-      results.close()
+    results = open('results.txt', 'at')
+    results.write(fullpath + '\n')
+    results.write(comm[1] + '\n')
+    results.close()
 
-      # remove all files/folders except results.txt
-      removeAllExceptResults()
+    # remove all files/folders except results.txt
+    removeAllExceptResults()
