@@ -79,7 +79,6 @@ for package in packages:
         p = subprocess.Popen(
             ['nice',
              '../cppcheck-O2',
-             '-j2',
              '-D__GCC__',
              '--enable=style',
              '--suppressions-list=../suppressions.txt',
