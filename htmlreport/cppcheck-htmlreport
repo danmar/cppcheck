@@ -186,21 +186,21 @@ class CppCheckHandler(XmlContentHandler):
             return
 
         self.errors.append({
-            "file" : attributes.get("file", ""),
-            "line" : int(attributes.get("line", 0)),
-            "id" : attributes["id"],
-            "severity" : attributes["severity"],
-            "msg" : attributes["msg"]
+            "file": attributes.get("file", ""),
+            "line": int(attributes.get("line", 0)),
+            "id": attributes["id"],
+            "severity": attributes["severity"],
+            "msg": attributes["msg"]
         })
 
     def handleVersion2(self, name, attributes):
         if name == "error":
             self.errors.append({
-                "file" : "",
-                "line" : 0,
-                "id" : attributes["id"],
-                "severity" : attributes["severity"],
-                "msg" : attributes["msg"]
+                "file": "",
+                "line": 0,
+                "id": attributes["id"],
+                "severity": attributes["severity"],
+                "msg": attributes["msg"]
             })
         elif name == "location":
             assert self.errors
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     for error in contentHandler.errors:
         filename = error["file"]
         if filename not in files.keys():
-            files[filename] = {"errors" : [], "htmlfile" : str(file_no) + ".html"}
+            files[filename] = {"errors": [], "htmlfile": str(file_no) + ".html"}
             file_no = file_no + 1
         files[filename]["errors"].append(error)
 
