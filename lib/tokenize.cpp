@@ -8343,7 +8343,9 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 // exp2f(), exp2l(), log2(), log2f(), log2l(), log1p(),
 // log1pf(), log1pl(), log10(), log10l(), log10f(),
 // log(),logf(),logl(),logb(),logbf(),logbl(), acosh()
-// acoshf(), acoshl(), acos(), acosf(), acosl()
+// acoshf(), acoshl(), acos(), acosf(), acosl(), cosh()
+// coshf(), coshf(), cos(), cosf(), cosl(), erfc(),
+// erfcf(), erfcl()
 // in the tokenlist.
 //
 // Reference:
@@ -8400,8 +8402,10 @@ bool Tokenizer::simplifyMathFunctions()
                 tok->str("1"); // insert result into token list
                 simplifcationMade = true;
             }
-        } else if (Token::Match(tok, "exp|expf|expl|exp2|exp2f|exp2l ( %num% )")) {
-            // Simplify: exp[f|l](0) = 1 and exp2[f|l](0) = 1
+        } else if (Token::Match(tok, "exp|expf|expl|exp2|exp2f|exp2l|cos|cosf|cosl|cosh|coshf|coshl|erfc|erfcf|erfcl ( %num% )")) {
+            // Simplify: exp[f|l](0)  = 1 and exp2[f|l](0) = 1
+            //           cosh[f|l](0) = 1 and cos[f|l](0)  = 1
+            //           erfc[f|l](0) = 1
             // get number string
             const std::string parameter(tok->tokAt(2)->str());
             // is parameter 0 ?
@@ -10296,11 +10300,6 @@ void Tokenizer::printUnknownTypes()
 void Tokenizer::simplifyMathExpressions()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-
-        if (Token::Match(tok,"cosh|cos ( 0 )")) {
-            tok->deleteNext(3);
-            tok->str("1");
-        }
 
         if (Token::Match(tok,"sin|sinh ( 0 )")) {
             tok->deleteNext(3);

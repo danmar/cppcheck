@@ -516,6 +516,9 @@ private:
         TEST_CASE(simplifyMathFunctions_fmax);
         TEST_CASE(simplifyMathFunctions_acosh);
         TEST_CASE(simplifyMathFunctions_acos);
+        TEST_CASE(simplifyMathFunctions_cosh);
+        TEST_CASE(simplifyMathFunctions_cos);
+        TEST_CASE(simplifyMathFunctions_erfc);
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
 
@@ -8345,6 +8348,105 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isTwoNumber("garbage"));
     }
 
+    void simplifyMathFunctions_erfc() {
+        // verify erfc(), erfcf(), erfcl() - simplifcation
+        const char code_erfc[] ="void f(int x) {\n"
+                                " std::cout << erfc(x);\n" // do not simplify
+                                " std::cout << erfc(0L);\n" // simplify to 1
+                                "}";
+        const char expected_erfc[] = "void f ( int x ) {\n"
+                                     "std :: cout << erfc ( x ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_erfc, tokenizeAndStringify(code_erfc));
+
+        const char code_erfcf[] ="void f(float x) {\n"
+                                 " std::cout << erfcf(x);\n" // do not simplify
+                                 " std::cout << erfcf(0.0f);\n" // simplify to 1
+                                 "}";
+        const char expected_erfcf[] = "void f ( float x ) {\n"
+                                      "std :: cout << erfcf ( x ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_erfcf, tokenizeAndStringify(code_erfcf));
+
+        const char code_erfcl[] ="void f(long double x) {\n"
+                                 " std::cout << erfcl(x);\n" // do not simplify
+                                 " std::cout << erfcl(0.0d);\n" // simplify to 1
+                                 "}";
+        const char expected_erfcl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << erfcl ( x ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_erfcl, tokenizeAndStringify(code_erfcl));
+    }
+
+    void simplifyMathFunctions_cos() {
+        // verify cos(), cosf(), cosl() - simplifcation
+        const char code_cos[] ="void f(int x) {\n"
+                               " std::cout << cos(x);\n" // do not simplify
+                               " std::cout << cos(0L);\n" // simplify to 1
+                               "}";
+        const char expected_cos[] = "void f ( int x ) {\n"
+                                    "std :: cout << cos ( x ) ;\n"
+                                    "std :: cout << 1 ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_cos, tokenizeAndStringify(code_cos));
+
+        const char code_cosf[] ="void f(float x) {\n"
+                                " std::cout << cosf(x);\n" // do not simplify
+                                " std::cout << cosf(0.0f);\n" // simplify to 1
+                                "}";
+        const char expected_cosf[] = "void f ( float x ) {\n"
+                                     "std :: cout << cosf ( x ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_cosf, tokenizeAndStringify(code_cosf));
+
+        const char code_cosl[] ="void f(long double x) {\n"
+                                " std::cout << cosl(x);\n" // do not simplify
+                                " std::cout << cosl(0.0d);\n" // simplify to 1
+                                "}";
+        const char expected_cosl[] = "void f ( long double x ) {\n"
+                                     "std :: cout << cosl ( x ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_cosl, tokenizeAndStringify(code_cosl));
+    }
+
+    void simplifyMathFunctions_cosh() {
+        // verify cosh(), coshf(), coshl() - simplifcation
+        const char code_cosh[] ="void f(int x) {\n"
+                                " std::cout << cosh(x);\n" // do not simplify
+                                " std::cout << cosh(0L);\n" // simplify to 1
+                                "}";
+        const char expected_cosh[] = "void f ( int x ) {\n"
+                                     "std :: cout << cosh ( x ) ;\n"
+                                     "std :: cout << 1 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_cosh, tokenizeAndStringify(code_cosh));
+
+        const char code_coshf[] ="void f(float x) {\n"
+                                 " std::cout << coshf(x);\n" // do not simplify
+                                 " std::cout << coshf(0.0f);\n" // simplify to 1
+                                 "}";
+        const char expected_coshf[] = "void f ( float x ) {\n"
+                                      "std :: cout << coshf ( x ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_coshf, tokenizeAndStringify(code_coshf));
+
+        const char code_coshl[] ="void f(long double x) {\n"
+                                 " std::cout << coshl(x);\n" // do not simplify
+                                 " std::cout << coshl(0.0d);\n" // simplify to 1
+                                 "}";
+        const char expected_coshl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << coshl ( x ) ;\n"
+                                      "std :: cout << 1 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_coshl, tokenizeAndStringify(code_coshl));
+    }
+
     void simplifyMathFunctions_acos() {
         // verify acos(), acosf(), acosl() - simplifcation
         const char code_acos[] ="void f(int x) {\n"
@@ -9111,9 +9213,7 @@ private:
     void simplifyMathExpressions() {//#1620
         const char code1[] = "void foo() {\n"
                              "    std::cout<<sin(0);\n"
-                             "    std::cout<<cos(0);\n"
                              "    std::cout<<sinh(0);\n"
-                             "    std::cout<<cosh(0);\n"
                              "    std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
                              "    std::cout<<pow(sin(pow(sin(y),2)+pow(cos(y),2)),2)+pow(cos(pow(sin(y),2)+pow(cos(y),2)),2);\n"
                              "    std::cout<<pow(sin(x),2.0)+pow(cos(x),2.0);\n"
@@ -9136,9 +9236,7 @@ private:
 
         const char expected1[] = "void foo ( ) {\n"
                                  "std :: cout << 0 ;\n"
-                                 "std :: cout << 1 ;\n"
                                  "std :: cout << 0 ;\n"
-                                 "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
