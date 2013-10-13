@@ -2,24 +2,20 @@ language: cpp
 compiler:
   - gcc
   - clang
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils
 script:
   - mkdir build
   - make test SRCDIR=build VERIFY=1 -j 4
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch cli gui lib -igui/test
-  - sudo apt-get update
-  - sudo apt-get install python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake
   - cd gui
   - qmake
   - make -j 4
   - cd ../
   - ./htmlreport/test_htmlreport.py
   - cd htmlreport
-  - ./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v1.xml --title "xml1 test" --report-dir . --source-dir ../test/
-  - ./cppcheck-htmlreport --file ../gui/test/data/xmlfiles/xmlreport_v2.xml --title "xml2 test" --report-dir . --source-dir ../test/
-  - ../cppcheck ../gui/test --enable=all  --inconclusive --xml-version=2 2> gui_test.xml
-  - ./cppcheck-htmlreport --file ./gui_test.xml --title "xml2 + inconclusive test" --report-dir .
-  - ../cppcheck ../gui/test --enable=all --inconclusive --verbose --xml-version=2 2> gui_test.xml
-  - ./cppcheck-htmlreport --file ./gui_test.xml --title "xml2 + inconclusive + verbose test" --report-dir .
+  - ./check.sh
   - cd ../
   - mkdir install_test
   - make DESTDIR=install_test install
