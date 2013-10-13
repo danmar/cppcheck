@@ -14,6 +14,7 @@ import shutil
 import glob
 import os
 import socket
+import datetime
 
 FTPSERVER = 'ftp.sunet.se'
 FTPPATH = '/pub/Linux/distributions/Debian/debian/pool/main/'
