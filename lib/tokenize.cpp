@@ -8345,7 +8345,11 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 // log(),logf(),logl(),logb(),logbf(),logbl(), acosh()
 // acoshf(), acoshl(), acos(), acosf(), acosl(), cosh()
 // coshf(), coshf(), cos(), cosf(), cosl(), erfc(),
-// erfcf(), erfcl()
+// erfcf(), erfcl(), ilogb(), ilogbf(), ilogbf(), erf(),
+// erfl(), erff(), asin(), asinf(), asinf(), asinh(),
+// asinhf(), asinhl(), tan(), tanf(), tanl(), tanh(),
+// tanhf(), tanhl(), atan(), atanf(), atanl(), atanh(),
+// atanhf(), atanhl(), expm1(), expm1l(), expm1f()
 // in the tokenlist.
 //
 // Reference:
@@ -8414,8 +8418,13 @@ bool Tokenizer::simplifyMathFunctions()
                 tok->str("1"); // insert result into token list
                 simplifcationMade = true;
             }
-        } else if (Token::Match(tok, "log1p|log1pf|log1pl ( %num% )")) {
-            // Simplify: log1p[f|l](0) = 0
+        } else if (Token::Match(tok, "log1p|log1pf|log1pl|sin|sinf|sinl|sinh|sinhf|sinhl|erf|erff|erfl|asin|asinf|asinl|asinh|asinhf|asinhl|tan|tanf|tanl|tanh|tanhf|tanhl|atan|atanf|atanl|atanh|atanhf|atanhl|expm1|expm1f|expm1l ( %num% )")) {
+            // Simplify: log1p[f|l](0) = 0 and sin[f|l](0)  = 0
+            //           sinh[f|l](0)  = 0 and erf[f|l](0)  = 0
+            //           asin[f|l](0)  = 0 and sinh[f|l](0) = 0
+            //           tan[f|l](0)   = 0 and tanh[f|l](0) = 0
+            //           atan[f|l](0)  = 0 and atanh[f|l](0)= 0
+            //           expm1[f|l](0) = 0
             // get number string
             const std::string parameter(tok->tokAt(2)->str());
             // is parameter 0 ?
@@ -8424,10 +8433,11 @@ bool Tokenizer::simplifyMathFunctions()
                 tok->str("0"); // insert result into token list
                 simplifcationMade = true;
             }
-        } else if (Token::Match(tok, "log2|log2f|log2l|log|logf|logl|log10|log10f|log10l|logb|logbf|logbl|acosh|acoshf|acoshl|acos|acosf|acosl ( %num% )")) {
-            // Simplify: log2[f|l](1) = 0 , log10[f|l](1) = 0
-            //           log[f|l](1) = 0 , logb10[f|l](1) = 0
-            //           acosh[f|l](1) = 0, acos[f|l](1) = 0
+        } else if (Token::Match(tok, "log2|log2f|log2l|log|logf|logl|log10|log10f|log10l|logb|logbf|logbl|acosh|acoshf|acoshl|acos|acosf|acosl|ilogb|ilogbf|ilogbl ( %num% )")) {
+            // Simplify: log2[f|l](1)  = 0 , log10[f|l](1)  = 0
+            //           log[f|l](1)   = 0 , logb10[f|l](1) = 0
+            //           acosh[f|l](1) = 0 , acos[f|l](1)   = 0
+            //           ilogb[f|l](1) = 0
             // get number string
             const std::string parameter(tok->tokAt(2)->str());
             // is parameter 1 ?
@@ -10300,11 +10310,6 @@ void Tokenizer::printUnknownTypes()
 void Tokenizer::simplifyMathExpressions()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-
-        if (Token::Match(tok,"sin|sinh ( 0 )")) {
-            tok->deleteNext(3);
-            tok->str("0");
-        }
 
         //simplify Pythagorean trigonometric identity: pow(sin(x),2)+pow(cos(x),2) = 1
         //                                             pow(cos(x),2)+pow(sin(x),2) = 1

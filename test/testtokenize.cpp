@@ -504,7 +504,13 @@ private:
         TEST_CASE(simplifyMathFunctions_sqrt);
         TEST_CASE(simplifyMathFunctions_cbrt);
         TEST_CASE(simplifyMathFunctions_exp);
+        TEST_CASE(simplifyMathFunctions_exp2);
+        TEST_CASE(simplifyMathFunctions_logb);
+        TEST_CASE(simplifyMathFunctions_log1p);
+        TEST_CASE(simplifyMathFunctions_ilogb);
+        TEST_CASE(simplifyMathFunctions_log10);
         TEST_CASE(simplifyMathFunctions_log);
+        TEST_CASE(simplifyMathFunctions_log2);
         TEST_CASE(simplifyMathFunctions_div);
         TEST_CASE(simplifyMathFunctions_pow);
         TEST_CASE(simplifyMathFunctions_islessgreater);
@@ -519,6 +525,16 @@ private:
         TEST_CASE(simplifyMathFunctions_cosh);
         TEST_CASE(simplifyMathFunctions_cos);
         TEST_CASE(simplifyMathFunctions_erfc);
+        TEST_CASE(simplifyMathFunctions_erf);
+        TEST_CASE(simplifyMathFunctions_sin);
+        TEST_CASE(simplifyMathFunctions_sinh);
+        TEST_CASE(simplifyMathFunctions_asin);
+        TEST_CASE(simplifyMathFunctions_asinh);
+        TEST_CASE(simplifyMathFunctions_tan);
+        TEST_CASE(simplifyMathFunctions_tanh);
+        TEST_CASE(simplifyMathFunctions_atan);
+        TEST_CASE(simplifyMathFunctions_atanh);
+        TEST_CASE(simplifyMathFunctions_expm1);
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
 
@@ -8603,7 +8619,7 @@ private:
         ASSERT_EQUALS(expected_cbrtl, tokenizeAndStringify(code_cbrtl));
     }
 
-    void simplifyMathFunctions_exp() {
+    void simplifyMathFunctions_exp2() {
         // verify exp2(), exp2f(), exp2l() - simplifcation
         const char code_exp2[] ="void f(int x) {\n"
                                 " std::cout << exp2(x);\n" // do not simplify
@@ -8646,7 +8662,9 @@ private:
                                       "std :: cout << exp2l ( 1.0 ) ;\n"
                                       "}";
         ASSERT_EQUALS(expected_exp2l, tokenizeAndStringify(code_exp2l));
+    }
 
+    void simplifyMathFunctions_exp() {
         // verify exp(), expf(), expl() - simplifcation
         const char code_exp[] ="void f(int x) {\n"
                                " std::cout << exp(x);\n" // do not simplify
@@ -8691,8 +8709,436 @@ private:
         ASSERT_EQUALS(expected_expl, tokenizeAndStringify(code_expl));
     }
 
-    void simplifyMathFunctions_log() {
+    void simplifyMathFunctions_erf() {
+        // verify erf(), erff(), erfl() - simplifcation
+        const char code_erf[] ="void f(int x) {\n"
+                               " std::cout << erf(x);\n" // do not simplify
+                               " std::cout << erf(10);\n" // do not simplify
+                               " std::cout << erf(0L);\n" // simplify to 0
+                               "}";
+        const char expected_erf[] = "void f ( int x ) {\n"
+                                    "std :: cout << erf ( x ) ;\n"
+                                    "std :: cout << erf ( 10 ) ;\n"
+                                    "std :: cout << 0 ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_erf, tokenizeAndStringify(code_erf));
 
+        const char code_erff[] ="void f(float x) {\n"
+                                " std::cout << erff(x);\n" // do not simplify
+                                " std::cout << erff(10);\n" // do not simplify
+                                " std::cout << erff(0.0f);\n" // simplify to 0
+                                "}";
+        const char expected_erff[] = "void f ( float x ) {\n"
+                                     "std :: cout << erff ( x ) ;\n"
+                                     "std :: cout << erff ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_erff, tokenizeAndStringify(code_erff));
+
+        const char code_erfl[] ="void f(long double x) {\n"
+                                " std::cout << erfl(x);\n" // do not simplify
+                                " std::cout << erfl(10.0d);\n" // do not simplify
+                                " std::cout << erfl(0.0d);\n" // simplify to 0
+                                "}";
+        const char expected_erfl[] = "void f ( long double x ) {\n"
+                                     "std :: cout << erfl ( x ) ;\n"
+                                     "std :: cout << erfl ( 10.0d ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_erfl, tokenizeAndStringify(code_erfl));
+    }
+
+    void simplifyMathFunctions_atanh() {
+        // verify atanh(), atanhf(), atanhl() - simplifcation
+        const char code_atanh[] ="void f(int x) {\n"
+                                 " std::cout << atanh(x);\n" // do not simplify
+                                 " std::cout << atanh(10);\n" // do not simplify
+                                 " std::cout << atanh(0L);\n" // simplify to 0
+                                 "}";
+        const char expected_atanh[] = "void f ( int x ) {\n"
+                                      "std :: cout << atanh ( x ) ;\n"
+                                      "std :: cout << atanh ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_atanh, tokenizeAndStringify(code_atanh));
+
+        const char code_atanhf[] ="void f(float x) {\n"
+                                  " std::cout << atanhf(x);\n" // do not simplify
+                                  " std::cout << atanhf(10);\n" // do not simplify
+                                  " std::cout << atanhf(0.0f);\n" // simplify to 0
+                                  "}";
+        const char expected_atanhf[] = "void f ( float x ) {\n"
+                                       "std :: cout << atanhf ( x ) ;\n"
+                                       "std :: cout << atanhf ( 10 ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_atanhf, tokenizeAndStringify(code_atanhf));
+
+        const char code_atanhl[] ="void f(long double x) {\n"
+                                  " std::cout << atanhl(x);\n" // do not simplify
+                                  " std::cout << atanhl(10.0d);\n" // do not simplify
+                                  " std::cout << atanhl(0.0d);\n" // simplify to 0
+                                  "}";
+        const char expected_atanhl[] = "void f ( long double x ) {\n"
+                                       "std :: cout << atanhl ( x ) ;\n"
+                                       "std :: cout << atanhl ( 10.0d ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_atanhl, tokenizeAndStringify(code_atanhl));
+    }
+
+    void simplifyMathFunctions_atan() {
+        // verify atan(), atanf(), atanl() - simplifcation
+        const char code_atan[] ="void f(int x) {\n"
+                                " std::cout << atan(x);\n" // do not simplify
+                                " std::cout << atan(10);\n" // do not simplify
+                                " std::cout << atan(0L);\n" // simplify to 0
+                                "}";
+        const char expected_atan[] = "void f ( int x ) {\n"
+                                     "std :: cout << atan ( x ) ;\n"
+                                     "std :: cout << atan ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_atan, tokenizeAndStringify(code_atan));
+
+        const char code_atanf[] ="void f(float x) {\n"
+                                 " std::cout << atanf(x);\n" // do not simplify
+                                 " std::cout << atanf(10);\n" // do not simplify
+                                 " std::cout << atanf(0.0f);\n" // simplify to 0
+                                 "}";
+        const char expected_atanf[] = "void f ( float x ) {\n"
+                                      "std :: cout << atanf ( x ) ;\n"
+                                      "std :: cout << atanf ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_atanf, tokenizeAndStringify(code_atanf));
+
+        const char code_atanl[] ="void f(long double x) {\n"
+                                 " std::cout << atanl(x);\n" // do not simplify
+                                 " std::cout << atanl(10.0d);\n" // do not simplify
+                                 " std::cout << atanl(0.0d);\n" // simplify to 0
+                                 "}";
+        const char expected_atanl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << atanl ( x ) ;\n"
+                                      "std :: cout << atanl ( 10.0d ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_atanl, tokenizeAndStringify(code_atanl));
+    }
+
+    void simplifyMathFunctions_tanh() {
+        // verify tanh(), tanhf(), tanhl() - simplifcation
+        const char code_tanh[] ="void f(int x) {\n"
+                                " std::cout << tanh(x);\n" // do not simplify
+                                " std::cout << tanh(10);\n" // do not simplify
+                                " std::cout << tanh(0L);\n" // simplify to 0
+                                "}";
+        const char expected_tanh[] = "void f ( int x ) {\n"
+                                     "std :: cout << tanh ( x ) ;\n"
+                                     "std :: cout << tanh ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_tanh, tokenizeAndStringify(code_tanh));
+
+        const char code_tanhf[] ="void f(float x) {\n"
+                                 " std::cout << tanhf(x);\n" // do not simplify
+                                 " std::cout << tanhf(10);\n" // do not simplify
+                                 " std::cout << tanhf(0.0f);\n" // simplify to 0
+                                 "}";
+        const char expected_tanhf[] = "void f ( float x ) {\n"
+                                      "std :: cout << tanhf ( x ) ;\n"
+                                      "std :: cout << tanhf ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_tanhf, tokenizeAndStringify(code_tanhf));
+
+        const char code_tanhl[] ="void f(long double x) {\n"
+                                 " std::cout << tanhl(x);\n" // do not simplify
+                                 " std::cout << tanhl(10.0d);\n" // do not simplify
+                                 " std::cout << tanhl(0.0d);\n" // simplify to 0
+                                 "}";
+        const char expected_tanhl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << tanhl ( x ) ;\n"
+                                      "std :: cout << tanhl ( 10.0d ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_tanhl, tokenizeAndStringify(code_tanhl));
+    }
+
+    void simplifyMathFunctions_tan() {
+        // verify tan(), tanf(), tanl() - simplifcation
+        const char code_tan[] ="void f(int x) {\n"
+                               " std::cout << tan(x);\n" // do not simplify
+                               " std::cout << tan(10);\n" // do not simplify
+                               " std::cout << tan(0L);\n" // simplify to 0
+                               "}";
+        const char expected_tan[] = "void f ( int x ) {\n"
+                                    "std :: cout << tan ( x ) ;\n"
+                                    "std :: cout << tan ( 10 ) ;\n"
+                                    "std :: cout << 0 ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_tan, tokenizeAndStringify(code_tan));
+
+        const char code_tanf[] ="void f(float x) {\n"
+                                " std::cout << tanf(x);\n" // do not simplify
+                                " std::cout << tanf(10);\n" // do not simplify
+                                " std::cout << tanf(0.0f);\n" // simplify to 0
+                                "}";
+        const char expected_tanf[] = "void f ( float x ) {\n"
+                                     "std :: cout << tanf ( x ) ;\n"
+                                     "std :: cout << tanf ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_tanf, tokenizeAndStringify(code_tanf));
+
+        const char code_tanl[] ="void f(long double x) {\n"
+                                " std::cout << tanl(x);\n" // do not simplify
+                                " std::cout << tanl(10.0d);\n" // do not simplify
+                                " std::cout << tanl(0.0d);\n" // simplify to 0
+                                "}";
+        const char expected_tanl[] = "void f ( long double x ) {\n"
+                                     "std :: cout << tanl ( x ) ;\n"
+                                     "std :: cout << tanl ( 10.0d ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_tanl, tokenizeAndStringify(code_tanl));
+    }
+
+    void simplifyMathFunctions_expm1() {
+        // verify expm1(), expm1f(), expm1l() - simplifcation
+        const char code_expm1[] ="void f(int x) {\n"
+                                 " std::cout << expm1(x);\n" // do not simplify
+                                 " std::cout << expm1(10);\n" // do not simplify
+                                 " std::cout << expm1(0L);\n" // simplify to 0
+                                 "}";
+        const char expected_expm1[] = "void f ( int x ) {\n"
+                                      "std :: cout << expm1 ( x ) ;\n"
+                                      "std :: cout << expm1 ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_expm1, tokenizeAndStringify(code_expm1));
+
+        const char code_expm1f[] ="void f(float x) {\n"
+                                  " std::cout << expm1f(x);\n" // do not simplify
+                                  " std::cout << expm1f(10);\n" // do not simplify
+                                  " std::cout << expm1f(0.0f);\n" // simplify to 0
+                                  "}";
+        const char expected_expm1f[] = "void f ( float x ) {\n"
+                                       "std :: cout << expm1f ( x ) ;\n"
+                                       "std :: cout << expm1f ( 10 ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_expm1f, tokenizeAndStringify(code_expm1f));
+
+        const char code_expm1l[] ="void f(long double x) {\n"
+                                  " std::cout << expm1l(x);\n" // do not simplify
+                                  " std::cout << expm1l(10.0d);\n" // do not simplify
+                                  " std::cout << expm1l(0.0d);\n" // simplify to 0
+                                  "}";
+        const char expected_expm1l[] = "void f ( long double x ) {\n"
+                                       "std :: cout << expm1l ( x ) ;\n"
+                                       "std :: cout << expm1l ( 10.0d ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_expm1l, tokenizeAndStringify(code_expm1l));
+    }
+
+    void simplifyMathFunctions_asinh() {
+        // verify asinh(), asinhf(), asinhl() - simplifcation
+        const char code_asinh[] ="void f(int x) {\n"
+                                 " std::cout << asinh(x);\n" // do not simplify
+                                 " std::cout << asinh(10);\n" // do not simplify
+                                 " std::cout << asinh(0L);\n" // simplify to 0
+                                 "}";
+        const char expected_asinh[] = "void f ( int x ) {\n"
+                                      "std :: cout << asinh ( x ) ;\n"
+                                      "std :: cout << asinh ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_asinh, tokenizeAndStringify(code_asinh));
+
+        const char code_asinhf[] ="void f(float x) {\n"
+                                  " std::cout << asinhf(x);\n" // do not simplify
+                                  " std::cout << asinhf(10);\n" // do not simplify
+                                  " std::cout << asinhf(0.0f);\n" // simplify to 0
+                                  "}";
+        const char expected_asinhf[] = "void f ( float x ) {\n"
+                                       "std :: cout << asinhf ( x ) ;\n"
+                                       "std :: cout << asinhf ( 10 ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_asinhf, tokenizeAndStringify(code_asinhf));
+
+        const char code_asinhl[] ="void f(long double x) {\n"
+                                  " std::cout << asinhl(x);\n" // do not simplify
+                                  " std::cout << asinhl(10.0d);\n" // do not simplify
+                                  " std::cout << asinhl(0.0d);\n" // simplify to 0
+                                  "}";
+        const char expected_asinhl[] = "void f ( long double x ) {\n"
+                                       "std :: cout << asinhl ( x ) ;\n"
+                                       "std :: cout << asinhl ( 10.0d ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_asinhl, tokenizeAndStringify(code_asinhl));
+    }
+
+    void simplifyMathFunctions_asin() {
+        // verify asin(), asinf(), asinl() - simplifcation
+        const char code_asin[] ="void f(int x) {\n"
+                                " std::cout << asin(x);\n" // do not simplify
+                                " std::cout << asin(10);\n" // do not simplify
+                                " std::cout << asin(0L);\n" // simplify to 0
+                                "}";
+        const char expected_asin[] = "void f ( int x ) {\n"
+                                     "std :: cout << asin ( x ) ;\n"
+                                     "std :: cout << asin ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_asin, tokenizeAndStringify(code_asin));
+
+        const char code_asinf[] ="void f(float x) {\n"
+                                 " std::cout << asinf(x);\n" // do not simplify
+                                 " std::cout << asinf(10);\n" // do not simplify
+                                 " std::cout << asinf(0.0f);\n" // simplify to 0
+                                 "}";
+        const char expected_asinf[] = "void f ( float x ) {\n"
+                                      "std :: cout << asinf ( x ) ;\n"
+                                      "std :: cout << asinf ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_asinf, tokenizeAndStringify(code_asinf));
+
+        const char code_asinl[] ="void f(long double x) {\n"
+                                 " std::cout << asinl(x);\n" // do not simplify
+                                 " std::cout << asinl(10.0d);\n" // do not simplify
+                                 " std::cout << asinl(0.0d);\n" // simplify to 0
+                                 "}";
+        const char expected_asinl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << asinl ( x ) ;\n"
+                                      "std :: cout << asinl ( 10.0d ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_asinl, tokenizeAndStringify(code_asinl));
+    }
+
+    void simplifyMathFunctions_sinh() {
+        // verify sinh(), sinhf(), sinhl() - simplifcation
+        const char code_sinh[] ="void f(int x) {\n"
+                                " std::cout << sinh(x);\n" // do not simplify
+                                " std::cout << sinh(10);\n" // do not simplify
+                                " std::cout << sinh(0L);\n" // simplify to 0
+                                "}";
+        const char expected_sinh[] = "void f ( int x ) {\n"
+                                     "std :: cout << sinh ( x ) ;\n"
+                                     "std :: cout << sinh ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_sinh, tokenizeAndStringify(code_sinh));
+
+        const char code_sinhf[] ="void f(float x) {\n"
+                                 " std::cout << sinhf(x);\n" // do not simplify
+                                 " std::cout << sinhf(10);\n" // do not simplify
+                                 " std::cout << sinhf(0.0f);\n" // simplify to 0
+                                 "}";
+        const char expected_sinhf[] = "void f ( float x ) {\n"
+                                      "std :: cout << sinhf ( x ) ;\n"
+                                      "std :: cout << sinhf ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_sinhf, tokenizeAndStringify(code_sinhf));
+
+        const char code_sinhl[] ="void f(long double x) {\n"
+                                 " std::cout << sinhl(x);\n" // do not simplify
+                                 " std::cout << sinhl(10.0d);\n" // do not simplify
+                                 " std::cout << sinhl(0.0d);\n" // simplify to 0
+                                 "}";
+        const char expected_sinhl[] = "void f ( long double x ) {\n"
+                                      "std :: cout << sinhl ( x ) ;\n"
+                                      "std :: cout << sinhl ( 10.0d ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_sinhl, tokenizeAndStringify(code_sinhl));
+    }
+
+    void simplifyMathFunctions_sin() {
+        // verify sin(), sinf(), sinl() - simplifcation
+        const char code_sin[] ="void f(int x) {\n"
+                               " std::cout << sin(x);\n" // do not simplify
+                               " std::cout << sin(10);\n" // do not simplify
+                               " std::cout << sin(0L);\n" // simplify to 0
+                               "}";
+        const char expected_sin[] = "void f ( int x ) {\n"
+                                    "std :: cout << sin ( x ) ;\n"
+                                    "std :: cout << sin ( 10 ) ;\n"
+                                    "std :: cout << 0 ;\n"
+                                    "}";
+        ASSERT_EQUALS(expected_sin, tokenizeAndStringify(code_sin));
+
+        const char code_sinf[] ="void f(float x) {\n"
+                                " std::cout << sinf(x);\n" // do not simplify
+                                " std::cout << sinf(10);\n" // do not simplify
+                                " std::cout << sinf(0.0f);\n" // simplify to 0
+                                "}";
+        const char expected_sinf[] = "void f ( float x ) {\n"
+                                     "std :: cout << sinf ( x ) ;\n"
+                                     "std :: cout << sinf ( 10 ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_sinf, tokenizeAndStringify(code_sinf));
+
+        const char code_sinl[] ="void f(long double x) {\n"
+                                " std::cout << sinl(x);\n" // do not simplify
+                                " std::cout << sinl(10.0d);\n" // do not simplify
+                                " std::cout << sinl(0.0d);\n" // simplify to 0
+                                "}";
+        const char expected_sinl[] = "void f ( long double x ) {\n"
+                                     "std :: cout << sinl ( x ) ;\n"
+                                     "std :: cout << sinl ( 10.0d ) ;\n"
+                                     "std :: cout << 0 ;\n"
+                                     "}";
+        ASSERT_EQUALS(expected_sinl, tokenizeAndStringify(code_sinl));
+    }
+
+    void simplifyMathFunctions_ilogb() {
+        // verify ilogb(), ilogbf(), ilogbl() - simplifcation
+        const char code_ilogb[] ="void f(int x) {\n"
+                                 " std::cout << ilogb(x);\n" // do not simplify
+                                 " std::cout << ilogb(10);\n" // do not simplify
+                                 " std::cout << ilogb(1L);\n" // simplify to 0
+                                 "}";
+        const char expected_ilogb[] = "void f ( int x ) {\n"
+                                      "std :: cout << ilogb ( x ) ;\n"
+                                      "std :: cout << ilogb ( 10 ) ;\n"
+                                      "std :: cout << 0 ;\n"
+                                      "}";
+        ASSERT_EQUALS(expected_ilogb, tokenizeAndStringify(code_ilogb));
+
+        const char code_ilogbf[] ="void f(float x) {\n"
+                                  " std::cout << ilogbf(x);\n" // do not simplify
+                                  " std::cout << ilogbf(10);\n" // do not simplify
+                                  " std::cout << ilogbf(1.0f);\n" // simplify to 0
+                                  "}";
+        const char expected_ilogbf[] = "void f ( float x ) {\n"
+                                       "std :: cout << ilogbf ( x ) ;\n"
+                                       "std :: cout << ilogbf ( 10 ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_ilogbf, tokenizeAndStringify(code_ilogbf));
+
+        const char code_ilogbl[] ="void f(long double x) {\n"
+                                  " std::cout << ilogbl(x);\n" // do not simplify
+                                  " std::cout << ilogbl(10.0d);\n" // do not simplify
+                                  " std::cout << ilogbl(1.0d);\n" // simplify to 0
+                                  "}";
+        const char expected_ilogbl[] = "void f ( long double x ) {\n"
+                                       "std :: cout << ilogbl ( x ) ;\n"
+                                       "std :: cout << ilogbl ( 10.0d ) ;\n"
+                                       "std :: cout << 0 ;\n"
+                                       "}";
+        ASSERT_EQUALS(expected_ilogbl, tokenizeAndStringify(code_ilogbl));
+    }
+
+    void simplifyMathFunctions_logb() {
         // verify logb(), logbf(), logbl() - simplifcation
         const char code_logb[] ="void f(int x) {\n"
                                 " std::cout << logb(x);\n" // do not simplify
@@ -8729,7 +9175,9 @@ private:
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_logbl, tokenizeAndStringify(code_logbl));
+    }
 
+    void simplifyMathFunctions_log1p() {
         // verify log1p(), log1pf(), log1pl() - simplifcation
         const char code_log1p[] ="void f(int x) {\n"
                                  " std::cout << log1p(x);\n" // do not simplify
@@ -8766,7 +9214,9 @@ private:
                                        "std :: cout << 0 ;\n"
                                        "}";
         ASSERT_EQUALS(expected_log1pl, tokenizeAndStringify(code_log1pl));
+    }
 
+    void simplifyMathFunctions_log10() {
         // verify log10(), log10f(), log10l() - simplifcation
         const char code_log10[] ="void f(int x) {\n"
                                  " std::cout << log10(x);\n" // do not simplify
@@ -8804,6 +9254,8 @@ private:
                                        "}";
         ASSERT_EQUALS(expected_log10l, tokenizeAndStringify(code_log10l));
 
+    }
+    void simplifyMathFunctions_log() {
         // verify log(), logf(), logl() - simplifcation
         const char code_log[] ="void f(int x) {\n"
                                " std::cout << log(x);\n" // do not simplify
@@ -8840,7 +9292,9 @@ private:
                                      "std :: cout << 0 ;\n"
                                      "}";
         ASSERT_EQUALS(expected_logl, tokenizeAndStringify(code_logl));
+    }
 
+    void simplifyMathFunctions_log2() {
         // verify log2(), log2f(), log2l() - simplifcation
         const char code_log2[] ="void f(int x) {\n"
                                 " std::cout << log2(x);\n" // do not simplify
@@ -9212,8 +9666,6 @@ private:
 
     void simplifyMathExpressions() {//#1620
         const char code1[] = "void foo() {\n"
-                             "    std::cout<<sin(0);\n"
-                             "    std::cout<<sinh(0);\n"
                              "    std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
                              "    std::cout<<pow(sin(pow(sin(y),2)+pow(cos(y),2)),2)+pow(cos(pow(sin(y),2)+pow(cos(y),2)),2);\n"
                              "    std::cout<<pow(sin(x),2.0)+pow(cos(x),2.0);\n"
@@ -9235,8 +9687,6 @@ private:
                              "}";
 
         const char expected1[] = "void foo ( ) {\n"
-                                 "std :: cout << 0 ;\n"
-                                 "std :: cout << 0 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
