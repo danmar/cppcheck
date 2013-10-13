@@ -119,4 +119,7 @@ for package in packages:
         # remove all files/folders except results.txt
         removeAllExceptResults()
 
-generateDaca2Report(f.nlst(FTPPATH))
+try:
+    generateDaca2Report(f.nlst(FTPPATH))
+except socket.error:
+    pass
