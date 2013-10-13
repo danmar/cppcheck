@@ -27,6 +27,26 @@ def removeAllExceptResults():
         elif filename != 'results.txt':
             os.remove(filename)
 
+def generatereport(allfolders):
+  filename = os.path.expanduser('~/daca2/daca2.html')
+  f = open(filename, 'wt')
+  f.write('<html>\n')
+  f.write('<body>\n')
+  f.write('<h1>DACA2</h1>\n')
+
+  f.write('<h2>All folders</h2>\n');
+  for folder in allfolders:
+    results = os.path.expanduser('~/daca2/' + folder + '/results.txt')
+    if os.path.isfile(results):
+      f.write('<a href="'+folder+'/results.txt">'+folder+'</a><br>\n')
+    else:
+      f.write(folder + '<br>\n')
+  f.write('</body>\n')
+  f.write('</html>\n')
+  f.close()
+
+
+
 workdir = os.path.expanduser('~/daca2/')
 
 print('~/daca2/suppressions.txt')
@@ -94,3 +114,5 @@ for package in packages:
 
         # remove all files/folders except results.txt
         removeAllExceptResults()
+
+generatereport(f.nlst(FTPPATH))
