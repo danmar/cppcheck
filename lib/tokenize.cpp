@@ -8349,7 +8349,7 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 // erfl(), erff(), asin(), asinf(), asinf(), asinh(),
 // asinhf(), asinhl(), tan(), tanf(), tanl(), tanh(),
 // tanhf(), tanhl(), atan(), atanf(), atanl(), atanh(),
-// atanhf(), atanhl(), expm1(), expm1l(), expm1f()
+// atanhf(), atanhl(), expm1(), expm1l(), expm1f(), fma()
 // in the tokenlist.
 //
 // Reference:
@@ -8391,6 +8391,17 @@ bool Tokenizer::simplifyMathFunctions()
             tok->deleteNext(3);  // delete e.g. abs ( 1 )
             tok->str(strNumber); // insert result into token list
             simplifcationMade = true;
+        } else if (Token::Match(tok, "fma|fmaf|fmal ( %any% , %any% , %any% )")) {
+            // Simplify: fma(a,b,c) == > ( a ) * ( b ) + ( c )
+            // get parameters
+            const std::string a(tok->tokAt(2)->str());
+            const std::string b(tok->tokAt(4)->str());
+            const std::string c(tok->tokAt(6)->str());
+            if (!a.empty() && !b.empty() && !c.empty()) {
+                tok->deleteNext(7);  // delete fma call
+                tok->str("( " + a + " ) * ( " + b + " ) + ( " + c + " )");  // insert result into token list
+                simplifcationMade = true;
+            }
         } else if (Token::Match(tok, "sqrt|sqrtf|sqrtl|cbrt|cbrtf|cbrtl ( %num% )")) {
             // Simplify: sqrt(0) = 0 and cbrt(0) == 0
             //           sqrt(1) = 1 and cbrt(1) == 1

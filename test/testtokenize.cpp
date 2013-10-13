@@ -535,6 +535,7 @@ private:
         TEST_CASE(simplifyMathFunctions_atan);
         TEST_CASE(simplifyMathFunctions_atanh);
         TEST_CASE(simplifyMathFunctions_expm1);
+        TEST_CASE(simplifyMathFunctions_fma);
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
 
@@ -8824,6 +8825,21 @@ private:
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_atanl, tokenizeAndStringify(code_atanl));
+    }
+
+    void simplifyMathFunctions_fma() {
+        // verify fma(), fmal(), fmaf() - simplifcation
+        const char code_fma[] ="int f(int a, int b, int c) { return fma(a,b,c); }";
+        const char expected_fma[] = "int f ( int a , int b , int c ) { return ( a ) * ( b ) + ( c ) ; }";
+        ASSERT_EQUALS(expected_fma, tokenizeAndStringify(code_fma));
+
+        const char code_fmaf[] ="float f ( float a , float b , float c ) { return fmaf(a,b,c); }";
+        const char expected_fmaf[] = "float f ( float a , float b , float c ) { return ( a ) * ( b ) + ( c ) ; }";
+        ASSERT_EQUALS(expected_fmaf, tokenizeAndStringify(code_fmaf));
+
+        const char code_fmal[] ="long double f ( long double a , long double b , long double c ) { return fmal(a,b,c); }";
+        const char expected_fmal[] = "long double f ( long double a , long double b , long double c ) { return ( a ) * ( b ) + ( c ) ; }";
+        ASSERT_EQUALS(expected_fmal, tokenizeAndStringify(code_fmal));
     }
 
     void simplifyMathFunctions_tanh() {
