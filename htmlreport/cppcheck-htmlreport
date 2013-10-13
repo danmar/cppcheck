@@ -15,29 +15,20 @@ with syntax highlighted source code.
 """
 
 STYLE_FILE = """
-body.body {
-    font-family: Arial;
-    font-size: 13px;
+body {
+    font: normal 13px/1 Arial, Verdana, Sans-Serif;
     background-color: black;
     padding: 0;
     margin: 0;
 }
 
 .error {
-    font-family: Arial;
     font-size: 13px;
     background-color: #ffb7b7;
     padding: 0;
     margin: 0;
 }
 
-#page-header {
-    clear: both;
-    width: 900px;
-    margin: 20px auto 0 auto;
-    height: 10px;
-    border-bottom: 2px solid #aaa;
-}
 
 #page {
     width: 860px;
@@ -48,18 +39,9 @@ body.body {
     padding: 20px;
 }
 
-#page-footer {
-    width: 900px;
-    height: 10px;
-    clear: both;
-    margin: auto;
-    border-top: 2px solid #aaa;
-}
-
 #header {
     width: 100%;
     height: 70px;
-    background: url(logo.png) no-repeat left top;
     border-bottom: thin solid #aaa;
 }
 
@@ -79,10 +61,8 @@ body.body {
 #content {
     float: left;
     width: 720px;
-
     margin: 5px;
     padding: 0 10px 10px 10px;
-
     border-left: thin solid #aaa;
 }
 
@@ -91,32 +71,25 @@ body.body {
     padding-top: 5px;
     border-top: thin solid #aaa;
     clear: both;
-    font-size: 10px;
-}
-
-#footer > div {
-    float: left;
-    width: 33%;
+    font-size: 90%;
 }
 """
 
 HTML_HEAD = """
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE HTML>
+<html lang="en">
   <head>
-    <title>CppCheck - Html report - %s</title>
-    <link href="style.css" rel="stylesheet" type="text/css" />
-    <style type="text/css">
+    <meta charset="utf-8">
+    <title>Cppcheck - HTML report - %s</title>
+    <link href="style.css" rel="stylesheet">
+    <style>
 %s
     </style>
   </head>
-  <body class="body">
-    <div id="page-header">
-      &nbsp;
-    </div>
+  <body>
     <div id="page">
       <div id="header">
-        <h1>CppCheck report - %s</h1>
+        <h1>Cppcheck report - %s</h1>
       </div>
       <div id="menu">
         <a href="index.html">Defect list</a>
@@ -127,20 +100,15 @@ HTML_HEAD = """
 HTML_FOOTER = """
       </div>
       <div id="footer">
-        <div>
-          CppCheck - a tool for static C/C++ code analysis
-        </div>
-        <div>
+        <p>
+          Cppcheck - a tool for static C/C++ code analysis
+        </p>
+        <p>
           Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a><br/>
           Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a><br/>
           IRC: #cppcheck at irc.freenode.net
-        </div>
-        &nbsp;
+        </p>
       </div>
-      &nbsp;
-    </div>
-    <div id="page-footer">
-      &nbsp;
     </div>
   </body>
 </html>
@@ -213,7 +181,7 @@ if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option("--title", dest="title", help="The title of the project.", default="[project name]")
     parser.add_option("--file", dest="file", help="The cppcheck xml output file to read defects from. Default is reading from stdin.")
-    parser.add_option("--report-dir", dest="report_dir", help="The directory where the html report content is written.")
+    parser.add_option("--report-dir", dest="report_dir", help="The directory where the HTML report content is written.")
     parser.add_option("--source-dir", dest="source_dir", help="Base directory where source code files can be found.")
     parser.add_option("--source-encoding", dest="source_encoding", help="Encoding of source code.", default=None)
 
@@ -246,7 +214,7 @@ if __name__ == '__main__':
     # We have a list of errors. But now we want to group them on
     # each source code file. Lets create a files dictionary that
     # will contain a list of all the errors in that file. For each
-    # file we will also generate a html filename to use.
+    # file we will also generate a HTML filename to use.
     files = {}
     file_no = 0
     for error in contentHandler.errors:
@@ -261,7 +229,7 @@ if __name__ == '__main__':
     if not os.path.exists(options.report_dir):
         os.mkdir(options.report_dir)
 
-    # Generate a html file with syntax highlighted source code for each
+    # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
     print("Processing errors")
     for filename, data in files.items():
