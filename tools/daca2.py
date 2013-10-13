@@ -2,9 +2,10 @@
 #
 # 1. Create a folder daca2 in your HOME folder
 # 2. Put cppcheck-O2 in daca2. It should be built with all optimisations.
-# 3. Edit this line:   FOLDER = 'a'
+# 3. Choose a folder to check. Choose any that match regexpr: (lib)?[0-9a-z]
 # 4. Optional: Put a file called "suppressions.txt" in the daca2 folder.
-# 5. Run the daca2 script:  python daca2.py
+# 5. Optional: tweak FTPSERVER and FTPPATH in this script below.
+# 6. Run the daca2 script:  python daca2.py FOLDER
 
 import ftplib
 import subprocess
@@ -27,7 +28,7 @@ def removeAllExceptResults():
         elif filename != 'results.txt':
             os.remove(filename)
 
-def generatereport(allfolders):
+def generateDaca2Report(allfolders):
   filename = os.path.expanduser('~/daca2/daca2.html')
   f = open(filename, 'wt')
   f.write('<html>\n')
@@ -54,6 +55,9 @@ if not os.path.isfile(workdir + 'suppressions.txt'):
     suppressions = open(workdir + 'suppressions.txt', 'wt')
     suppressions.write('\n')
     suppressions.close()
+
+if len(sys.argv) == 2:
+    FOLDER = sys.argv[1]
 
 print('~/daca2/' + FOLDER)
 if not os.path.isdir(workdir + FOLDER):
@@ -115,4 +119,4 @@ for package in packages:
         # remove all files/folders except results.txt
         removeAllExceptResults()
 
-generatereport(f.nlst(FTPPATH))
+generateDaca2Report(f.nlst(FTPPATH))
