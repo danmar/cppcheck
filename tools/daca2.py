@@ -128,6 +128,13 @@ print('Get package list in folder ' + FOLDER)
 packages = f.nlst(FTPPATH + FOLDER)
 
 try:
+    # remove all files/folders except results.txt
+    removeAllExceptResults()
+
+    results = open('results.txt', 'wt')
+    results.write('DATE ' + str(datetime.date.today()) + '\n\n')
+    results.close()
+
     for package in packages:
         scanpackage(package, f)
 except EOFError:
