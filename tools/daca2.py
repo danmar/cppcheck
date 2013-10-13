@@ -53,6 +53,55 @@ def generateDaca2Report(allfolders):
     f.close()
 
 
+def scanpackage(package, f):
+    print('package:' + package)
+    filename = None
+    path = FTPPATH + FOLDER + '/' + package
+    try:
+        for s in f.nlst(path):
+            if s[-12:] == '.orig.tar.gz':
+                filename = s
+    except socket.error:
+        pass
+    except ftplib.error_temp:
+        pass
+
+    if not filename:
+        return
+
+    fullpath = 'ftp://' + FTPSERVER + path + '/' + filename
+    subprocess.call(['wget', fullpath])
+    subprocess.call(['tar', 'xzvf', filename])
+    subprocess.call(['rm', filename])
+
+    dirname = None
+    for s in glob.glob(filename[:2] + '*'):
+        if os.path.isdir(s):
+            dirname = s
+    if dirname is None:
+        return
+
+    print('cppcheck "' + dirname + '"')
+    p = subprocess.Popen(
+        ['nice',
+         '../cppcheck-O2',
+         '-D__GCC__',
+         '--enable=style',
+         '--suppressions-list=../suppressions.txt',
+         dirname],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    comm = p.communicate()
+
+    results = open('results.txt', 'at')
+    results.write(fullpath + '\n')
+    results.write(comm[1] + '\n')
+    results.close()
+
+    # remove all files/folders except results.txt
+    removeAllExceptResults()
+
+
 workdir = os.path.expanduser('~/daca2/')
 
 print('~/daca2/suppressions.txt')
@@ -78,51 +127,11 @@ f.login()
 print('Get package list in folder ' + FOLDER)
 packages = f.nlst(FTPPATH + FOLDER)
 
-for package in packages:
-    print('package:' + package)
-    filename = None
-    path = FTPPATH + FOLDER + '/' + package
-    try:
-        for s in f.nlst(path):
-            if s[-12:] == '.orig.tar.gz':
-                filename = s
-    except socket.error:
-        pass
-    except ftplib.error_temp:
-        pass
-
-    if filename:
-        fullpath = 'ftp://ftp.sunet.se' + path + '/' + filename
-        subprocess.call(['wget', fullpath])
-        subprocess.call(['tar', 'xzvf', filename])
-        subprocess.call(['rm', filename])
-
-        dirname = None
-        for s in glob.glob(filename[:2] + '*'):
-            if os.path.isdir(s):
-                dirname = s
-        if dirname is None:
-            continue
-
-        print('cppcheck "' + dirname + '"')
-        p = subprocess.Popen(
-            ['nice',
-             '../cppcheck-O2',
-             '-D__GCC__',
-             '--enable=style',
-             '--suppressions-list=../suppressions.txt',
-             dirname],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        comm = p.communicate()
-
-        results = open('results.txt', 'at')
-        results.write(fullpath + '\n')
-        results.write(comm[1] + '\n')
-        results.close()
-
-        # remove all files/folders except results.txt
-        removeAllExceptResults()
+try:
+    for package in packages:
+        scanpackage(package, f)
+except EOFError:
+    pass
 
 try:
     generateDaca2Report(f.nlst(FTPPATH))
