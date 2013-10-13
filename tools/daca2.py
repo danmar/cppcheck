@@ -145,3 +145,8 @@ try:
     generateDaca2Report(f.nlst(FTPPATH))
 except socket.error:
     pass
+except EOFError:
+    pass
+
+# remove all files/folders except results.txt
+removeAllExceptResults()
