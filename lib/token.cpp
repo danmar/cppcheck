@@ -1041,6 +1041,8 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes) const
                 os << "long ";
         }
     }
+    if (isExpandedMacro())
+        os << "$";
     if (_str[0] != '\"' || _str.find("\0") == std::string::npos)
         os << _str;
     else {

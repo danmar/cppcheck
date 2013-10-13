@@ -760,7 +760,7 @@ private:
     }
 
     void tokenize22() { // tokenize special marker $ from preprocessor
-        ASSERT_EQUALS("a b", tokenizeAndStringify("a$b"));
+        ASSERT_EQUALS("$a $b", tokenizeAndStringify("a$b"));
     }
 
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
