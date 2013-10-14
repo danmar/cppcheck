@@ -121,7 +121,8 @@ private:
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
 
-        TEST_CASE(forAddBraces);
+        TEST_CASE(forAddBraces1);
+        TEST_CASE(forAddBraces2); // #5088
 
         TEST_CASE(pointers_condition);
 
@@ -1459,7 +1460,7 @@ private:
         }
     }
 
-    void forAddBraces() {
+    void forAddBraces1() {
         {
             const char code[] = "void f() {\n"
                                 "     for(;;)\n"
@@ -1491,6 +1492,15 @@ private:
         }
     }
 
+    void forAddBraces2() { // #5088
+        const char code[] = "void f() {\n"
+                            "    for(;;) try { } catch (...) { }\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "for ( ; ; ) { try { } catch ( . . . ) { } }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
 
     std::string simplifyKnownVariables(const char code[]) {
         errout.str("");

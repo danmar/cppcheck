@@ -4213,6 +4213,17 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
     if (tokAfterCondition->str()=="{") {
         // already surrounded by braces
         tokBracesEnd=tokAfterCondition->link();
+    } else if (Token::Match(tokAfterCondition, "try {") &&
+               Token::Match(tokAfterCondition->linkAt(1), "} catch (")) {
+        tokAfterCondition->previous()->insertToken("{");
+        Token * tokOpenBrace = tokAfterCondition->previous();
+        Token * tokEnd = tokAfterCondition->linkAt(1)->linkAt(2)->linkAt(1);
+
+        tokEnd->insertToken("}");
+        Token * tokCloseBrace = tokEnd->next();
+
+        Token::createMutualLinks(tokOpenBrace, tokCloseBrace);
+        tokBracesEnd = tokCloseBrace;
     } else {
         Token * tokEnd = simplifyAddBracesToCommand(tokAfterCondition);
         if (!tokEnd) // Ticket #4887
