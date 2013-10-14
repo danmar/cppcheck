@@ -203,6 +203,12 @@ public:
             return false;
     }
 
+    bool isimporter(const std::string &importer) const {
+        std::list<std::string>::const_iterator it =
+            std::find(_importers.begin(), _importers.end(), importer);
+        return it != _importers.end();
+    }
+
     std::set<std::string> returnuninitdata;
 
 private:
@@ -220,7 +226,8 @@ private:
     std::list<std::string> _fileextensions; // accepted file extensions
     std::list<std::string> _keywords; // keywords for code in the library
     std::list<std::string> _executableblocks; // keywords for blocks of executable code
-    std::map<std::string, exported_t> _exporters; // keywords that export variables to libraries (meta-code/macros)
+    std::map<std::string, exported_t> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)
+    std::list<std::string> _importers; // keywords that import variables/functions
     std::string _codeblockstart;
     std::string _codeblockend;
     int _codeblockoffset;

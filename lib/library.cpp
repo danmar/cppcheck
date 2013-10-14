@@ -208,6 +208,16 @@ bool Library::load(const char exename[], const char path[])
             }
         }
 
+        else if (strcmp(node->Name(), "imported") == 0) {
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "importer") == 0) {
+                    _importers.push_back(functionnode->Attribute("name"));
+                }
+                else
+                    return false;
+            }
+        }
+
         else if (strcmp(node->Name(), "codeblocks") == 0) {
             //_executableblocks.clear();
             //_codeblockstart = "}";

@@ -142,6 +142,25 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
+        if (settings->library.acceptFile(FileName)
+                && settings->library.isimporter(tok->str()) && tok->next()) {
+            const Token * qPropToken = tok;
+            qPropToken = qPropToken->next();
+            if (qPropToken->next())
+            {
+                qPropToken = qPropToken->next();
+                while (qPropToken && qPropToken->str() != ")") {
+                    const std::string value = qPropToken->str();
+                    if (!value.empty())
+                    {
+                        _functions[value].usedOtherFile = true;
+                        break;
+                    }
+                    qPropToken = qPropToken->next();
+                }
+            }
+        }
+
         if (scopeEnd == NULL) {
             if (!Token::Match(tok, ")|= const| {"))
                 continue;
