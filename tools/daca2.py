@@ -21,12 +21,20 @@ FTPSERVER = 'ftp.sunet.se'
 FTPPATH = '/pub/Linux/distributions/Debian/debian/pool/main/'
 FOLDER = 'b'
 
+def handleRemoveReadonly(func, path, exc):
+    import stat
+    if not os.access(path, os.W_OK):
+        # Is the error an access error ?
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
 
 def removeAllExceptResults():
     filenames = glob.glob('[A-Za-z]*')
     for filename in filenames:
         if os.path.isdir(filename):
-            shutil.rmtree(filename)
+            shutil.rmtree(filename, onerror=handleRemoveReadonly)
         elif filename != 'results.txt':
             os.remove(filename)
 
