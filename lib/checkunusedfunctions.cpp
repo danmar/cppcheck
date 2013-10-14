@@ -98,8 +98,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
-        if (settings->library.acceptFile(FileName)
-                && settings->library.isexecutableblock(tok->str())) {
+        if (settings->library.isexecutableblock(FileName, tok->str())) {
             const Token * qmlVarToken = tok->tokAt(settings->library.blockstartoffset());
             int scope = 1;
             // find all function calls in library code (starts with '(', not if or while etc)

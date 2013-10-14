@@ -147,10 +147,16 @@ public:
         return (it != _ignorefunction.end() && it->second);
     }
 
-    bool isexecutableblock(const std::string &token) const {
-        std::list<std::string>::const_iterator it =
-            std::find(_executableblocks.begin(), _executableblocks.end(), token);
-        return it != _executableblocks.end();
+    bool isexecutableblock(const std::string &path, const std::string &token) const {
+        bool ret;
+        if (acceptFile(path)) {
+            std::list<std::string>::const_iterator it =
+                std::find(_executableblocks.begin(), _executableblocks.end(), token);
+            ret = it != _executableblocks.end();
+        } else {
+            ret = false;
+        }
+        return ret;
     }
 
     int blockstartoffset() const {
