@@ -155,7 +155,7 @@ bool Library::load(const char exename[], const char path[])
 		}
 
 		else if (strcmp(node->Name(),"files")==0) {
-			_fileextensions.clear();
+            //_fileextensions.clear();
 			for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
 				if (strcmp(functionnode->Name(), "file") == 0) {
 					_fileextensions.push_back(functionnode->Attribute("ext"));
@@ -168,7 +168,7 @@ bool Library::load(const char exename[], const char path[])
         }
 
         else if (strcmp(node->Name(), "keywords") == 0) {
-            _keywords.clear();
+            //_keywords.clear();
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "keyword") == 0) {
                     _keywords.push_back(functionnode->Attribute("name"));
@@ -179,16 +179,16 @@ bool Library::load(const char exename[], const char path[])
         }
 
         else if (strcmp(node->Name(), "exported") == 0) {
-            _exporters.clear();
+            //_exporters.clear();
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "exporter") == 0) {
                     const char * prefix = (functionnode->Attribute("prefix"));
                     if (prefix) {
-                        std::map<std::string, std::list<std::string> >::const_iterator
+                        std::map<std::string, exported_t>::const_iterator
                             it = _exporters.find(prefix);
                         if (it == _exporters.end()) {
                             // add the missing list for later on
-                            std::list<std::string> exporter;
+                            exported_t exporter;
                             _exporters[prefix] = exporter;
                         }
                     } else
@@ -196,8 +196,10 @@ bool Library::load(const char exename[], const char path[])
 
                     for (const tinyxml2::XMLElement *enode = functionnode->FirstChildElement(); enode; enode = enode->NextSiblingElement()) {
                         if (strcmp(enode->Name(), "prefix") == 0) {
-                            _exporters[prefix].push_back(enode->Attribute("name"));
-                        } else 
+                            _exporters[prefix].prefixes.push_back(enode->Attribute("name"));
+                        } else if (strcmp(enode->Name(), "suffix") == 0) {
+                            _exporters[prefix].suffixes.push_back(enode->Attribute("name"));
+                        } else
                             return false;
                     }
                 }
@@ -207,10 +209,10 @@ bool Library::load(const char exename[], const char path[])
         }
 
         else if (strcmp(node->Name(), "codeblocks") == 0) {
-            _executableblocks.clear();
-            _codeblockstart = "}";
-            _codeblockend = "{";
-            _codeblockoffset = 0;
+            //_executableblocks.clear();
+            //_codeblockstart = "}";
+            //_codeblockend = "{";
+            //_codeblockoffset = 0;
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "block") == 0) {
                     _executableblocks.push_back(functionnode->Attribute("name"));

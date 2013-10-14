@@ -178,17 +178,27 @@ public:
     }
 
     bool isexporter(const std::string &prefix) const {
-        std::map<std::string, std::list<std::string> >::const_iterator it =
+        std::map<std::string, exported_t>::const_iterator it =
             _exporters.find(prefix);
         return it != _exporters.end();
     }
 
-    bool isexported(const std::string &prefix, const std::string &token) const {
-        std::map<std::string, std::list<std::string> >::const_iterator it = _exporters.find(prefix);
+    bool isexportedprefix(const std::string &prefix, const std::string &token) const {
+        std::map<std::string, exported_t>::const_iterator it = _exporters.find(prefix);
         std::list<std::string>::const_iterator token_it;
         if (it != _exporters.end()) {
-            token_it = std::find(it->second.begin(), it->second.end(), token);
-            return token_it != it->second.end();
+            token_it = std::find(it->second.prefixes.begin(), it->second.prefixes.end(), token);
+            return token_it != it->second.prefixes.end();
+        } else
+            return false;
+    }
+
+    bool isexportedsuffix(const std::string &prefix, const std::string &token) const {
+        std::map<std::string, exported_t>::const_iterator it = _exporters.find(prefix);
+        std::list<std::string>::const_iterator token_it;
+        if (it != _exporters.end()) {
+            token_it = std::find(it->second.suffixes.begin(), it->second.suffixes.end(), token);
+            return token_it != it->second.suffixes.end();
         } else
             return false;
     }
@@ -196,6 +206,11 @@ public:
     std::set<std::string> returnuninitdata;
 
 private:
+    typedef struct
+    {
+        std::list<std::string> prefixes;
+        std::list<std::string> suffixes;
+    } exported_t;
     int allocid;
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
@@ -205,7 +220,7 @@ private:
     std::list<std::string> _fileextensions; // accepted file extensions
     std::list<std::string> _keywords; // keywords for code in the library
     std::list<std::string> _executableblocks; // keywords for blocks of executable code
-    std::map<std::string, std::list<std::string> > _exporters; // keywords that export variables to libraries (meta-code/macros)
+    std::map<std::string, exported_t> _exporters; // keywords that export variables to libraries (meta-code/macros)
     std::string _codeblockstart;
     std::string _codeblockend;
     int _codeblockoffset;

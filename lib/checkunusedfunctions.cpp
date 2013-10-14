@@ -119,17 +119,23 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (settings->library.acceptFile(FileName)
+        if (!settings->library.acceptFile(FileName) // only check c/c++
                 && settings->library.isexporter(tok->str()) && tok->next() != 0) {
             const Token * qPropToken = tok;
             qPropToken = qPropToken->next();
             while (qPropToken && qPropToken->str() != ")") {
-                if (settings->library.isexported(tok->str(), qPropToken->str())) {
-                    qPropToken = qPropToken->next();
-                    const std::string value = qPropToken->str();
+                if (settings->library.isexportedprefix(tok->str(), qPropToken->str())) {
+                    const Token* qNextPropToken = qPropToken->next();
+                    const std::string value = qNextPropToken->str();
                     if (_functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
-                        continue;
+                    }
+                }
+                if (settings->library.isexportedsuffix(tok->str(), qPropToken->str())) {
+                    const Token* qNextPropToken = qPropToken->previous();
+                    const std::string value = qNextPropToken->str();
+                    if (value != ")" && _functions.find(value) != _functions.end()) {
+                        _functions[value].usedOtherFile = true;
                     }
                 }
                 qPropToken = qPropToken->next();
