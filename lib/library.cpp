@@ -218,6 +218,17 @@ bool Library::load(const char exename[], const char path[])
             }
         }
 
+        else if (strcmp(node->Name(), "reflection") == 0) {
+            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+                if (strcmp(functionnode->Name(), "call") == 0) {
+                    _reflection[functionnode->Attribute("name")]
+                            = atoi(functionnode->Attribute("arg"));
+                }
+                else
+                    return false;
+            }
+        }
+
         else if (strcmp(node->Name(), "codeblocks") == 0) {
             //_executableblocks.clear();
             //_codeblockstart = "}";

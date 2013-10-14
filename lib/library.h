@@ -209,6 +209,21 @@ public:
         return it != _importers.end();
     }
 
+    bool isreflection(const std::string &token) const {
+        std::map<std::string,int>::const_iterator it =
+            _reflection.find(token);
+        return it != _reflection.end();
+    }
+
+    int reflectionArgument(const std::string &token) const {
+        int argIndex = -1;
+        if (isreflection(token))
+        {
+            argIndex = _reflection.at(token);
+        }
+        return argIndex;
+    }
+
     std::set<std::string> returnuninitdata;
 
 private:
@@ -228,6 +243,7 @@ private:
     std::list<std::string> _executableblocks; // keywords for blocks of executable code
     std::map<std::string, exported_t> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::list<std::string> _importers; // keywords that import variables/functions
+    std::map<std::string,int> _reflection; // invokation of reflection
     std::string _codeblockstart;
     std::string _codeblockend;
     int _codeblockoffset;

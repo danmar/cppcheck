@@ -146,8 +146,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 && settings->library.isimporter(tok->str()) && tok->next()) {
             const Token * qPropToken = tok;
             qPropToken = qPropToken->next();
-            if (qPropToken->next())
-            {
+            if (qPropToken->next()) {
                 qPropToken = qPropToken->next();
                 while (qPropToken && qPropToken->str() != ")") {
                     const std::string value = qPropToken->str();
@@ -157,6 +156,18 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                         break;
                     }
                     qPropToken = qPropToken->next();
+                }
+            }
+        }
+
+        if (settings->library.isreflection(tok->str())) {
+            const int index = settings->library.reflectionArgument(tok->str());
+            if (index >= 0) {
+                const Token * funcToken = tok->tokAt(index);
+                if (funcToken) {
+                    std::string value = funcToken->str();
+                    value = value.substr(1, value.length() - 2);
+                    _functions[value].usedOtherFile = true;
                 }
             }
         }
