@@ -31,9 +31,6 @@ astyle $style $options tools/*.cpp
 astyle $style $options --recursive "samples/*.c"
 astyle $style $options --recursive "samples/*.cpp"
 
-astyle $style $options htdocs/archive/*.c
-astyle $style $options htdocs/archive/*.h
-
 # Convert tabs to spaces.. even in strings
 # sed -i "s/\t/ /g" test/test*.cpp
 

@@ -417,25 +417,40 @@ private:
         ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
 
         givenACodeSampleToTokenize floatingPoint("0.0f", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(floatingPoint.tokens(), "%num%"));
 
         givenACodeSampleToTokenize doublePrecision("0.0d", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(doublePrecision.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize signedLong("0L", true);
+        ASSERT_EQUALS(true, Token::Match(signedLong.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize negativeSignedLong("-0L", true);
+        ASSERT_EQUALS(true, Token::Match(negativeSignedLong.tokens(), "- %num%"));
+
+        givenACodeSampleToTokenize positiveSignedLong("+0L", true);
+        ASSERT_EQUALS(true, Token::Match(positiveSignedLong.tokens(), "+ %num%"));
 
         givenACodeSampleToTokenize unsignedInt("0U", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(unsignedInt.tokens(), "%num%"));
 
         givenACodeSampleToTokenize unsignedLong("0UL", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(unsignedLong.tokens(), "%num%"));
 
         givenACodeSampleToTokenize unsignedLongLong("0ULL", true);
-        ASSERT_EQUALS(true, Token::Match(hexadecimal.tokens(), "%num%"));
+        ASSERT_EQUALS(true, Token::Match(unsignedLongLong.tokens(), "%num%"));
 
         givenACodeSampleToTokenize positive("+666", true);
         ASSERT_EQUALS(true, Token::Match(positive.tokens(), "+ %num%"));
 
         givenACodeSampleToTokenize negative("-42", true);
         ASSERT_EQUALS(true, Token::Match(negative.tokens(), "- %num%"));
+
+        givenACodeSampleToTokenize negativeNull("-.0", true);
+        ASSERT_EQUALS(true, Token::Match(negativeNull.tokens(), "- %num%"));
+
+        givenACodeSampleToTokenize positiveNull("+.0", true);
+        ASSERT_EQUALS(true, Token::Match(positiveNull.tokens(), "+ %num%"));
     }
 
 

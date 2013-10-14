@@ -24,6 +24,7 @@ import argparse
 
 
 class MatchCompiler:
+
     def __init__(self, verify_mode=False):
         self._verifyMode = verify_mode
         self._reset()
@@ -33,7 +34,8 @@ class MatchCompiler:
         self._matchStrs = {}
         self._matchFunctionCache = {}
 
-    def _generateCacheSignature(self, pattern, endToken=None, varId=None, isFindMatch=False):
+    def _generateCacheSignature(
+            self, pattern, endToken=None, varId=None, isFindMatch=False):
         sig = pattern
 
         if endToken:
@@ -53,19 +55,28 @@ class MatchCompiler:
 
         return sig
 
-    def _lookupMatchFunctionId(self, pattern, endToken=None, varId=None, isFindMatch=False):
-        signature = self._generateCacheSignature(pattern, endToken, varId, isFindMatch)
+    def _lookupMatchFunctionId(
+            self, pattern, endToken=None, varId=None, isFindMatch=False):
+        signature = self._generateCacheSignature(
+            pattern, endToken, varId, isFindMatch)
 
         if signature in self._matchFunctionCache:
             return self._matchFunctionCache[signature]
 
         return None
 
-    def _insertMatchFunctionId(self, id, pattern, endToken=None, varId=None, isFindMatch=False):
-        signature = self._generateCacheSignature(pattern, endToken, varId, isFindMatch)
+    def _insertMatchFunctionId(
+            self, id, pattern, endToken=None, varId=None, isFindMatch=False):
+        signature = self._generateCacheSignature(
+            pattern, endToken, varId, isFindMatch)
 
         # function signature should not be in the cache
-        assert(self._lookupMatchFunctionId(pattern, endToken, varId, isFindMatch) == None)
+        assert(
+            self._lookupMatchFunctionId(
+                pattern,
+                endToken,
+                varId,
+                isFindMatch) is None)
 
         self._matchFunctionCache[signature] = id
 
@@ -101,7 +112,10 @@ class MatchCompiler:
         elif tok == '%str%':
             return '(tok->type()==Token::eString)'
         elif tok == '%type%':
-            return '(tok->isName() && tok->varId()==0U && tok->str() != ' + self._insertMatchStr('delete') + '/* delete */)'
+            return (
+                '(tok->isName() && tok->varId()==0U && tok->str() != ' +
+                self._insertMatchStr('delete') + '/* delete */)'
+            )
         elif tok == '%var%':
             return 'tok->isName()'
         elif tok == '%varid%':
@@ -109,9 +123,12 @@ class MatchCompiler:
         elif (len(tok) > 2) and (tok[0] == "%"):
             print ("unhandled:" + tok)
 
-        return '(tok->str()==' + self._insertMatchStr(tok) + ')/* ' + tok + ' */'
+        return (
+            '(tok->str()==' + self._insertMatchStr(tok) + ')/* ' + tok + ' */'
+        )
 
-    def _compilePattern(self, pattern, nr, varid, isFindMatch=False, tokenType="const Token"):
+    def _compilePattern(self, pattern, nr, varid,
+                        isFindMatch=False, tokenType="const Token"):
         ret = ''
         returnStatement = ''
 
@@ -124,7 +141,8 @@ class MatchCompiler:
                 arg2 = ', const unsigned int varid'
 
             ret = '// pattern: ' + pattern + '\n'
-            ret += 'static bool match' + str(nr) + '(' + tokenType + '* tok'+arg2+') {\n'
+            ret += 'static bool match' + \
+                str(nr) + '(' + tokenType + '* tok' + arg2 + ') {\n'
             returnStatement = 'return false;\n'
 
         tokens = pattern.split(' ')
@@ -144,7 +162,8 @@ class MatchCompiler:
 
             # [abc]
             if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
-                ret += '    if (!tok || tok->str().size()!=1U || !strchr("'+tok[1:-1]+'", tok->str()[0]))\n'
+                ret += '    if (!tok || tok->str().size()!=1U || !strchr("' + tok[
+                    1:-1] + '", tok->str()[0]))\n'
                 ret += '        ' + returnStatement
 
             # a|b|c
@@ -179,7 +198,8 @@ class MatchCompiler:
 
             # !!a
             elif tok[0:2] == "!!":
-                ret += '    if (tok && tok->str() == ' + self._insertMatchStr(tok[2:]) + ')/* ' + tok[2:] + ' */\n'
+                ret += '    if (tok && tok->str() == ' + self._insertMatchStr(
+                    tok[2:]) + ')/* ' + tok[2:] + ' */\n'
                 ret += '        ' + returnStatement
                 gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
@@ -205,8 +225,10 @@ class MatchCompiler:
             more_args += ', unsigned int varid'
 
         ret = '// pattern: ' + pattern + '\n'
-        ret += 'template<class T> static T * findmatch' + str(findmatchnr) + '(T * start_tok'+more_args+') {\n'
-        ret += '    for (; start_tok' + endCondition + '; start_tok = start_tok->next()) {\n'
+        ret += 'template<class T> static T * findmatch' + \
+            str(findmatchnr) + '(T * start_tok' + more_args + ') {\n'
+        ret += '    for (; start_tok' + endCondition + \
+            '; start_tok = start_tok->next()) {\n'
 
         ret += self._compilePattern(pattern, -1, varId, True, 'T')
         ret += '    }\n'
@@ -236,7 +258,7 @@ class MatchCompiler:
                 parlevel -= 1
                 if parlevel == 0:
                     ret = []
-                    ret.append(line[pos1:pos+1])
+                    ret.append(line[pos1:pos + 1])
                     for arg in args:
                         ret.append(arg)
                     ret.append(line[argstart:pos])
@@ -259,7 +281,7 @@ class MatchCompiler:
                     pos += 1
                 elif line[pos] == '"':
                     inString = False
-                    endPos = pos+1
+                    endPos = pos + 1
                     return (startPos, endPos)
             elif line[pos] == '"':
                 startPos = pos
@@ -268,24 +290,28 @@ class MatchCompiler:
 
         return None
 
-    def _compileVerifyTokenMatch(self, is_simplematch, verifyNumber, pattern, patternNumber, varId):
+    def _compileVerifyTokenMatch(
+            self, is_simplematch, verifyNumber, pattern, patternNumber, varId):
         more_args = ''
         if varId:
             more_args = ', const unsigned int varid'
 
-        ret = 'static bool match_verify' + str(verifyNumber) + '(const Token *tok'+more_args+') {\n'
+        ret = 'static bool match_verify' + \
+            str(verifyNumber) + '(const Token *tok' + more_args + ') {\n'
 
         origMatchName = 'Match'
         if is_simplematch:
             origMatchName = 'simpleMatch'
-            assert(varId == None)
+            assert(varId is None)
 
-        ret += '    bool res_compiled_match = match'+str(patternNumber)+'(tok'
+        ret += '    bool res_compiled_match = match' + \
+            str(patternNumber) + '(tok'
         if varId:
             ret += ', varid'
         ret += ');\n'
 
-        ret += '    bool res_parsed_match = Token::' + origMatchName + '(tok, "' + pattern + '"'
+        ret += '    bool res_parsed_match = Token::' + \
+            origMatchName + '(tok, "' + pattern + '"'
         if varId:
             ret += ', varid'
         ret += ');\n'
@@ -306,29 +332,46 @@ class MatchCompiler:
 
         return ret
 
-    def _replaceSpecificTokenMatch(self, is_simplematch, line, start_pos, end_pos, pattern, tok, varId):
+    def _replaceSpecificTokenMatch(
+            self, is_simplematch, line, start_pos, end_pos, pattern, tok, varId):
         more_args = ''
         if varId:
             more_args = ',' + varId
 
         # Compile function or use previously compiled one
-        patternNumber = self._lookupMatchFunctionId(pattern, None, varId, False)
+        patternNumber = self._lookupMatchFunctionId(
+            pattern, None, varId, False)
 
         if patternNumber is None:
             patternNumber = len(self._rawMatchFunctions) + 1
-            self._insertMatchFunctionId(patternNumber, pattern, None, varId, False)
-            self._rawMatchFunctions.append(self._compilePattern(pattern, patternNumber, varId))
+            self._insertMatchFunctionId(
+                patternNumber,
+                pattern,
+                None,
+                varId,
+                False)
+            self._rawMatchFunctions.append(
+                self._compilePattern(pattern, patternNumber, varId))
 
         functionName = "match"
         if self._verifyMode:
             verifyNumber = len(self._rawMatchFunctions) + 1
-            self._rawMatchFunctions.append(self._compileVerifyTokenMatch(is_simplematch, verifyNumber, pattern, patternNumber, varId))
+            self._rawMatchFunctions.append(
+                self._compileVerifyTokenMatch(
+                    is_simplematch,
+                    verifyNumber,
+                    pattern,
+                    patternNumber,
+                    varId))
 
             # inject verify function
             functionName = "match_verify"
             patternNumber = verifyNumber
 
-        return line[:start_pos]+functionName+str(patternNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
+        return (
+            line[:start_pos] + functionName + str(
+                patternNumber) + '(' + tok + more_args + ')' + line[start_pos + end_pos:]
+        )
 
     def _replaceTokenMatch(self, line):
         while True:
@@ -344,7 +387,8 @@ class MatchCompiler:
             if res is None:
                 break
 
-            assert(len(res) == 3 or len(res) == 4)  # assert that Token::Match has either 2 or 3 arguments
+            # assert that Token::Match has either 2 or 3 arguments
+            assert(len(res) == 3 or len(res) == 4)
 
             end_pos = len(res[0])
             tok = res[1]
@@ -358,32 +402,43 @@ class MatchCompiler:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
-            line = self._replaceSpecificTokenMatch(is_simplematch, line, pos1, end_pos, pattern, tok, varId)
+            line = self._replaceSpecificTokenMatch(
+                is_simplematch,
+                line,
+                pos1,
+                end_pos,
+                pattern,
+                tok,
+                varId)
 
         return line
 
-    def _compileVerifyTokenFindMatch(self, is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId):
+    def _compileVerifyTokenFindMatch(
+            self, is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId):
         more_args = ''
         if endToken:
             more_args += ', const Token * endToken'
         if varId:
             more_args += ', const unsigned int varid'
 
-        ret = 'template < class T > static T * findmatch_verify' + str(verifyNumber) + '(T * tok'+more_args+') {\n'
+        ret = 'template < class T > static T * findmatch_verify' + \
+            str(verifyNumber) + '(T * tok' + more_args + ') {\n'
 
         origFindMatchName = 'findmatch'
         if is_findsimplematch:
             origMatchName = 'findsimplematch'
-            assert(varId == None)
+            assert(varId is None)
 
-        ret += '    T * res_compiled_findmatch = findmatch'+str(patternNumber)+'(tok'
+        ret += '    T * res_compiled_findmatch = findmatch' + \
+            str(patternNumber) + '(tok'
         if endToken:
             ret += ', endToken'
         if varId:
             ret += ', varid'
         ret += ');\n'
 
-        ret += '    T * res_parsed_findmatch = Token::' + origFindMatchName + '(tok, "' + pattern + '"'
+        ret += '    T * res_parsed_findmatch = Token::' + \
+            origFindMatchName + '(tok, "' + pattern + '"'
         if endToken:
             ret += ', endToken'
         if varId:
@@ -401,7 +456,8 @@ class MatchCompiler:
 
         return ret
 
-    def _replaceSpecificFindTokenMatch(self, is_findsimplematch, line, start_pos, end_pos, pattern, tok, endToken, varId):
+    def _replaceSpecificFindTokenMatch(
+            self, is_findsimplematch, line, start_pos, end_pos, pattern, tok, endToken, varId):
         more_args = ''
         if endToken:
             more_args += ',' + endToken
@@ -409,23 +465,44 @@ class MatchCompiler:
             more_args += ',' + varId
 
         # Compile function or use previously compiled one
-        findMatchNumber = self._lookupMatchFunctionId(pattern, endToken, varId, True)
+        findMatchNumber = self._lookupMatchFunctionId(
+            pattern, endToken, varId, True)
 
         if findMatchNumber is None:
             findMatchNumber = len(self._rawMatchFunctions) + 1
-            self._insertMatchFunctionId(findMatchNumber, pattern, endToken, varId, True)
-            self._rawMatchFunctions.append(self._compileFindPattern(pattern, findMatchNumber, endToken, varId))
+            self._insertMatchFunctionId(
+                findMatchNumber,
+                pattern,
+                endToken,
+                varId,
+                True)
+            self._rawMatchFunctions.append(
+                self._compileFindPattern(
+                    pattern,
+                    findMatchNumber,
+                    endToken,
+                    varId))
 
         functionName = "findmatch"
         if self._verifyMode:
             verifyNumber = len(self._rawMatchFunctions) + 1
-            self._rawMatchFunctions.append(self._compileVerifyTokenFindMatch(is_findsimplematch, verifyNumber, pattern, findMatchNumber, endToken, varId))
+            self._rawMatchFunctions.append(
+                self._compileVerifyTokenFindMatch(
+                    is_findsimplematch,
+                    verifyNumber,
+                    pattern,
+                    findMatchNumber,
+                    endToken,
+                    varId))
 
             # inject verify function
             functionName = "findmatch_verify"
             findMatchNumber = verifyNumber
 
-        return line[:start_pos]+functionName+str(findMatchNumber)+'('+tok+more_args+')'+line[start_pos+end_pos:]
+        return (
+            line[:start_pos] + functionName + str(
+                findMatchNumber) + '(' + tok + more_args + ')' + line[start_pos + end_pos:]
+        )
 
     def _replaceTokenFindMatch(self, line):
         pos1 = 0
@@ -442,7 +519,9 @@ class MatchCompiler:
             if res is None:
                 break
 
-            assert(len(res) >= 3 or len(res) < 6)  # assert that Token::find(simple)match has either 2, 3 or four arguments
+            assert(len(res) >= 3 or len(res) < 6)
+                   # assert that Token::find(simple)match has either 2, 3 or
+                   # four arguments
 
             g0 = res[0]
             tok = res[1]
@@ -461,7 +540,8 @@ class MatchCompiler:
             #     Token *findsimplematch(const Token *tok, const char pattern[]);
             #     Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
             #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
-            #     Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
+            # Token *findmatch(const Token *tok, const char pattern[], const
+            # Token *end, unsigned int varId = 0);
             endToken = None
             if is_findsimplematch is True and len(res) == 4:
                 endToken = res[3]
@@ -476,7 +556,15 @@ class MatchCompiler:
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
-            line = self._replaceSpecificFindTokenMatch(is_findsimplematch, line, pos1, len(g0), pattern, tok, endToken, varId)
+            line = self._replaceSpecificFindTokenMatch(
+                is_findsimplematch,
+                line,
+                pos1,
+                len(g0),
+                pattern,
+                tok,
+                endToken,
+                varId)
 
         return line
 
@@ -494,7 +582,7 @@ class MatchCompiler:
 
             startPos = res[0]
             endPos = res[1]
-            text = line[startPos+1:endPos-1]
+            text = line[startPos + 1:endPos - 1]
             line = line[:startPos] + self._insertMatchStr(text) + line[endPos:]
 
         return line
@@ -528,7 +616,8 @@ class MatchCompiler:
         # Compute string list
         stringList = ''
         for match in sorted(self._matchStrs, key=self._matchStrs.get):
-            stringList += 'static const std::string matchStr' + str(self._matchStrs[match]) + '("' + match + '");\n'
+            stringList += 'static const std::string matchStr' + \
+                str(self._matchStrs[match]) + '("' + match + '");\n'
 
         # Compute matchFunctions
         strFunctions = ''
@@ -536,7 +625,7 @@ class MatchCompiler:
             strFunctions += function
 
         fout = open(destname, 'wt')
-        fout.write(header+stringList+strFunctions+code)
+        fout.write(header + stringList + strFunctions + code)
         fout.close()
 
 
@@ -556,7 +645,8 @@ def main():
         raise Exception(build_dir + ' is not a directory')
 
     # Argument handling
-    parser = argparse.ArgumentParser(description='Compile Token::Match() calls into native C++ code')
+    parser = argparse.ArgumentParser(
+        description='Compile Token::Match() calls into native C++ code')
     parser.add_argument('--verify', action='store_true', default=False,
                         help='verify compiled matches against on-the-fly parser. Slow!')
     args = parser.parse_args()
@@ -566,7 +656,7 @@ def main():
     # convert all lib/*.cpp files
     for f in glob.glob('lib/*.cpp'):
         print (f + ' => ' + build_dir + '/' + f[4:])
-        mc.convertFile(f, build_dir + '/'+f[4:])
+        mc.convertFile(f, build_dir + '/' + f[4:])
 
 if __name__ == '__main__':
     main()

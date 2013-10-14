@@ -240,6 +240,16 @@ public:
 
     /** set the platform type for user specified platforms */
     bool platformFile(const std::string &filename);
+
+    /**
+     * @brief Returns true if platform type is Windows
+     * @return true if Windows platform type.
+     */
+    bool isWindowsPlatform() const {
+        return platformType == Win32A ||
+               platformType == Win32W ||
+               platformType == Win64;
+    }
 };
 
 /// @}

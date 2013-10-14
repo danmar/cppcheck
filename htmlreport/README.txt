@@ -5,3 +5,5 @@ cppcheck.
 
 The utility is implemented in Python and require the pygments module to be
 able to generate syntax highlighted source code.
+
+For more information run './cppcheck-htmlreport --help'

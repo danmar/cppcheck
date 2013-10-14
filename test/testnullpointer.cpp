@@ -75,6 +75,7 @@ private:
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(crash1);
         TEST_CASE(functioncallDefaultArguments);
+        TEST_CASE(nullpointer_internal_error); // #5080
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp", bool verify=true) {
@@ -2319,6 +2320,17 @@ private:
         check("int f() {\n"
               "    return if\n"
               "}");
+    }
+
+    void nullpointer_internal_error() { // ticket #5080
+        check("struct A { unsigned int size; };\n"
+              "struct B { struct A *a; };\n"
+              "void f(struct B *b) {\n"
+              "    unsigned int j;\n"
+              "    for (j = 0; j < b[0].a->size; ++j) {\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

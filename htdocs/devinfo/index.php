@@ -17,6 +17,11 @@
     //]]>
   </script>
   <script src="/site/js/pack.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    $(function() {
+      $("#github-commits").listCommits("danmar", "cppcheck", "master");
+    });
+  </script>
 </head>
 <body>
 <div id="header">
@@ -34,7 +39,6 @@
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><strong><a href="/devinfo/" title="Developer Information">Developer Info</a></strong></li>
       <li><a href="/demo/">Online Demo</a></li>
-      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
@@ -74,8 +78,12 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
   $feed->init();
   print("<ul class=\"rssfeeditems\">\n");
   foreach ($feed->get_items() as $item) { //for the last timeline items...
-    $author = $item->get_author();
-    print("  <li><a href=\"".$item->get_link()."\">".$item->get_title()."</a> <em>by <strong>".$author->get_name()."</strong> on ".$item->get_date('Y-m-d')."</em></li>\n");
+    if ($author = $item->get_author()) {
+      $author = "by <strong>".trim($author->get_name())."</strong>";
+    } else {
+      $author = null;
+    }
+    print("  <li><a href=\"".$item->get_link()."\">".$item->get_title()."</a> <em>".$author." on ".$item->get_date('Y-m-d')."</em></li>\n");
   }
   print("</ul>\n");
 ?>
@@ -109,5 +117,6 @@ the latest sources in a zip or tgz archive</a> from the github website.</p>
 </ul>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("../analyticstracking.php") ?>
 </body>
 </html>

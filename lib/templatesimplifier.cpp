@@ -76,6 +76,27 @@ void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
         if (tok->str() == "(")
             tok = tok->link();
 
+        else if (Token::Match(tok, "template < > %var%")) {
+            const Token *end = tok;
+            while (end) {
+                if (end->str() == ";")
+                    break;
+                if (end->str() == "{") {
+                    end = end->link()->next();
+                    break;
+                }
+                if (!Token::Match(end, "%var%|::|<|>|>>|,")) {
+                    end = NULL;
+                    break;
+                }
+                end = end->next();
+            }
+            if (end) {
+                Token::eraseTokens(tok,end);
+                tok->deleteThis();
+            }
+        }
+
         else if (Token::Match(tok, "%type% <") &&
                  (!tok->previous() || tok->previous()->str() == ";")) {
             const Token *tok2 = tok->tokAt(2);
@@ -541,7 +562,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                     const Token *from = (*it)->next();
                     std::stack<Token *> links;
                     while (from && (!links.empty() || (from->str() != "," && from->str() != ">"))) {
-                        tok->insertToken(from->str());
+                        tok->insertToken(from->str(), from->originalName());
                         tok = tok->next();
                         if (Token::Match(tok, "(|["))
                             links.push(tok);
@@ -793,9 +814,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
                 result = MathLib::calculate(tok->str(), tok->strAt(2), cop);
             else if (cop == '<') {
                 if (tok->previous()->str() != "<<" && rightInt > 0) // Ensure that its not a shift operator as used for streams
-                    result = MathLib::longToString(leftInt << rightInt);
+                    result = MathLib::toString(leftInt << rightInt);
             } else if (rightInt > 0)
-                result = MathLib::longToString(leftInt >> rightInt);
+                result = MathLib::toString(leftInt >> rightInt);
 
             if (!result.empty()) {
                 ret = true;
@@ -858,7 +879,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         }
 
         if (Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
-            tok->str(MathLib::longToString(tok->str()[1] & 0xff));
+            tok->str(MathLib::toString(tok->str()[1] & 0xff));
         }
 
         if (tok->isNumber()) {

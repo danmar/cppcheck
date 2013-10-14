@@ -132,6 +132,7 @@ private:
         TEST_CASE(template37);  // #4544 - A<class B> a;
         TEST_CASE(template38);  // #4832 - crash on C++11 right angle brackets
         TEST_CASE(template39);  // #4742 - freeze
+        TEST_CASE(template40);  // #5055 - template specialization outside struct
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -446,6 +447,7 @@ private:
 
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
         TEST_CASE(simplifyCharAt);
+        TEST_CASE(simplifyOverride); // ticket #5069
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -1323,6 +1325,9 @@ private:
                                 " int aa ; aa = sizeof ( * ( * a ) . b ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
+
+        // #5064 - sizeof !! (a == 1);
+        ASSERT_EQUALS("sizeof ( ! ! ( a == 1 ) ) ;", tok("sizeof !!(a==1);"));
     }
 
     void sizeof15() {
@@ -2322,6 +2327,14 @@ private:
                             "  const vector<int> vi = static_cast<vector<int>>(v);"
                             "}";
         tok(code);
+    }
+
+    void template40() { // #5055 - false negatives when there is template specialization outside struct
+        const char code[] = "struct A {"
+                            "  template<typename T> struct X { T t; };"
+                            "};"
+                            "template<> struct A::X<int> { int *t; };";
+        ASSERT_EQUALS("struct A { template < typename T > struct X { T t ; } ; } ;", tok(code));
     }
 
     void template_default_parameter() {
@@ -8228,6 +8241,16 @@ private:
         ASSERT_EQUALS("int evallex ( ) { int c ; int t ; do { c = macroid ( c ) ; if ( c == EOF_CHAR || c == '\n' ) { } t = type [ c ] ; } while ( t == LET && catenate ( ) ) ; }",
                       tok(code, true));
     }
+
+    void simplifyOverride() { // ticket #5069
+        const char code[] = "void fun() {\n"
+                            "    unsigned char override[] = {0x01, 0x02};\n"
+                            "    doSomething(override, sizeof(override));\n"
+                            "}\n";
+        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 1 , 2 } ; doSomething ( override , 2 ) ; }",
+                      tok(code, true));
+    }
+
 };
 
 REGISTER_TEST(TestSimplifyTokens)

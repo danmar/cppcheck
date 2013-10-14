@@ -998,6 +998,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct()) && // or a ctor/dtor
              (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
+              (Token::Match(tok->next()->link(), ") %var% ;|{") && tok->next()->link()->next()->isUpperCaseName()) ||
               Token::Match(tok->next()->link(), ") : ::| %var% (|::|<|{") ||
               Token::Match(tok->next()->link(), ") = delete|default ;"))) {
         *funcStart = tok;

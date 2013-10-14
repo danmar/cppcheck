@@ -355,6 +355,8 @@ public:
      */
     void insertToken(const std::string &tokenStr, bool prepend=false);
 
+    void insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend=false);
+
     Token *previous() const {
         return _previous;
     }

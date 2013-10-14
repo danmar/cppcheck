@@ -1103,8 +1103,24 @@ void CheckUninitVar::checkScope(const Scope* scope)
                 if (scope2->className == structname && scope2->numConstructors == 0U) {
                     for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
                         const Variable &var = *it;
-                        if (!var.isArray())
-                            checkScopeForVariable(scope, tok, *i, NULL, NULL, var.name());
+                        if (!var.isArray()) {
+                            // is the variable declared in a inner union?
+                            bool innerunion = false;
+                            for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {
+                                const Scope &innerScope = *it2;
+                                if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
+                                    if (var.typeStartToken()->linenr() >= innerScope.classStart->linenr() &&
+                                        var.typeStartToken()->linenr() <= innerScope.classEnd->linenr()) {
+                                        innerunion = true;
+                                        break;
+                                    }
+
+                                }
+                            }
+
+                            if (!innerunion)
+                                checkScopeForVariable(scope, tok, *i, NULL, NULL, var.name());
+                        }
                     }
                 }
             }
@@ -1518,10 +1534,17 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                 else {
                     bool assign = true;
                     if (tok->strAt(1) == "=") {
+                        unsigned int indentlevel = 0; // Handle '(a=1)..'
                         for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                             if (tok2->varId() == var.declarationId()) {
                                 assign = false;
                                 break;
+                            } else if (tok2->str() == "(") {
+                                ++indentlevel;
+                            } else if (tok2->str() == ")") {
+                                if (indentlevel <= 1U)
+                                    break;
+                                --indentlevel;
                             }
                         }
                     }
@@ -1580,12 +1603,16 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
     if (vartok->previous()->str() == "return")
         return true;
 
+    // Passing variable to typeof/__alignof__
+    if (Token::Match(vartok->tokAt(-3), "typeof|__alignof__ ( * %var%"))
+        return false;
+
     // Passing variable to function..
     if (Token::Match(vartok->previous(), "[(,] %var% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %var% [,)]")) {
         const bool address(vartok->previous()->str() == "&");
 
         // locate start parentheses in function call..
-        int argumentNumber = 0;
+        unsigned int argumentNumber = 0;
         const Token *start = vartok;
         while (start && !Token::Match(start, "[;{}(]")) {
             if (start->str() == ")")

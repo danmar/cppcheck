@@ -119,7 +119,7 @@ static bool isNonBoolStdType(const Variable* var)
 }
 void CheckBool::checkComparisonOfBoolWithInt()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled("warning") || !_tokenizer->isCPP())
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -332,12 +332,17 @@ void CheckBool::checkAssignBoolToPointer()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "!!* %var% = %bool% ;")) {
-                const Variable *var1(tok->next()->variable());
+            if (Token::Match(tok, "%var% = %bool% ;")) {
+                // Todo: properly check if there is a deref
+                // *x.p = true;  // <- don't warn
+                // x.p = true;   // <- warn
+                if (Token::Match(tok->previous(), "[*.)]"))
+                    continue;
 
                 // Is variable a pointer?
+                const Variable *var1(tok->variable());
                 if (var1 && var1->isPointer())
-                    assignBoolToPointerError(tok->next());
+                    assignBoolToPointerError(tok);
             }
         }
     }
@@ -347,6 +352,37 @@ void CheckBool::assignBoolToPointerError(const Token *tok)
 {
     reportError(tok, Severity::error, "assignBoolToPointer",
                 "Boolean value assigned to pointer.");
+}
+
+/**
+ * @brief Is the result of the LHS expression non-bool?
+ * @param tok last token in lhs
+ * @return true => lhs result is non-bool. false => lhs result type is unknown or bool
+ */
+static bool isNonBoolLHSExpr(const Token *tok)
+{
+    // return value. only return true if we "know" it's a non-bool expression
+    bool nonBoolExpr = false;
+
+    for (; tok; tok = tok->previous()) {
+        if (tok->str() == ")") {
+            if (!Token::Match(tok->link()->previous(), "&&|%oror%|( ("))
+                tok = tok->link();
+        } else if (tok->str() == "(" || tok->str() == "[")
+            break;
+        else if (tok->isNumber())
+            nonBoolExpr = true;
+        else if (tok->isArithmeticalOp()) {
+            return true;
+        } else if (tok->isComparisonOp() || (tok->str() == "!" && tok->previous()->str()=="("))
+            return false;
+        else if (Token::Match(tok,"[;{}=?:&|^,]"))
+            break;
+        else if (Token::Match(tok, "&&|%oror%|and|or"))
+            break;
+    }
+
+    return nonBoolExpr;
 }
 
 //-----------------------------------------------------------------------------
@@ -383,33 +419,47 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                     op = opTok->str()[0]=='>'?'<':'>';
             }
 
-            else if (Token::Match(tok, "! %var% %comp% %any%")) {
+            else if (Token::Match(tok, "! %var% %comp% %any%") && !isNonBoolLHSExpr(tok)) {
                 numTok = tok->tokAt(3);
                 opTok = tok->tokAt(2);
                 if (Token::Match(opTok, "<|>"))
                     op = opTok->str()[0];
-            } else if (Token::Match(tok, "%any% %comp% ! %var%")) {
-                numTok = tok;
-                opTok = tok->next();
-                if (Token::Match(opTok, "<|>"))
-                    op = opTok->str()[0]=='>'?'<':'>';
+            } else if (Token::Match(tok->previous(), "(|&&|%oror% %num% %comp% !")) {
+                const Token *rhs = tok->tokAt(3);
+                while (rhs) {
+                    if (rhs->str() == "!") {
+                        if (Token::simpleMatch(rhs, "! ("))
+                            rhs = rhs->next()->link();
+                        rhs = rhs->next();
+                    } else if (rhs->isName() || rhs->isNumber())
+                        rhs = rhs->next();
+                    else
+                        break;
+                }
+                if (Token::Match(rhs, "&&|%oror%|)")) {
+                    numTok = tok;
+                    opTok = tok->next();
+                    if (Token::Match(opTok, "<|>"))
+                        op = opTok->str()[0]=='>'?'<':'>';
+                }
             }
 
             // boolean result in lhs compared with <|<=|>|>=
-            else if (Token::Match(tok,"<|<=|>|>=")) {
+            else if (tok->isComparisonOp() && !Token::Match(tok,"==|!=") && !isNonBoolLHSExpr(tok->previous())) {
                 const Token *lhs = tok;
                 while (NULL != (lhs = lhs->previous())) {
-                    if (lhs->isName() || lhs->isNumber())
+                    if ((lhs->isName() && !Token::Match(lhs,"or|and")) || lhs->isNumber())
                         continue;
-                    if (Token::Match(lhs,"[+-*/.]"))
+                    if (lhs->isArithmeticalOp())
                         continue;
                     if (Token::Match(lhs, ")|]")) {
-                        lhs = lhs->previous();
+                        if (Token::Match(lhs->link()->previous(), "%var% ("))
+                            lhs = lhs->link();
                         continue;
                     }
                     break;
                 }
-                if (Token::Match(lhs,"<|<=|>|>=")) {
+                if (lhs && (lhs->isComparisonOp() || lhs->str() == "!")) {
                     if (_tokenizer->isCPP() && tok->str() == ">" &&
                         (Token::Match(lhs->previous(), "%var% <") || lhs->str() == ">"))
                         continue;

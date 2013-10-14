@@ -13,6 +13,15 @@
     //]]>
   </script>
   <script src="/site/js/pack.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    function checkCodeLength() {
+      if (document.f.code.value.length > 1024) {
+        alert("code length exceeded");
+        return false;
+      }
+      return true;
+    }
+  </script>
 </head>
 <body>
 <div id="header">
@@ -30,7 +39,6 @@
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
       <li><strong><a href="/demo/">Online Demo</a></strong></li>
-      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
@@ -89,5 +97,6 @@ void f()
 <span class="br0">}</span></pre>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("../analyticstracking.php") ?>
 </body>
 </html>

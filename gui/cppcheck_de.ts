@@ -1022,12 +1022,12 @@ Optionen:
         <translation>Unbekannte Sprache angegeben!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="103"/>
+        <location filename="translationhandler.cpp" line="105"/>
         <source>Language file %1 not found!</source>
         <translation>Sprachdatei %1 nicht gefunden!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="109"/>
+        <location filename="translationhandler.cpp" line="111"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>Die Übersetzungen der Sprache %1 konnten nicht aus der Datei %2 geladen werden</translation>
     </message>
@@ -1641,7 +1641,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="115"/>
+        <location filename="translationhandler.cpp" line="117"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -1654,7 +1654,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 Die Sprache wurde auf Englisch zurückgesetzt. Öffnen Sie den Einstellungen-Dialog um eine verfügbare Sprache auszuwählen.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="121"/>
+        <location filename="translationhandler.cpp" line="123"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>

@@ -67,7 +67,7 @@ void CheckStl::iterators()
         const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
         // Check that its an iterator
-        if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
+        if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
             continue;
 
         if (var->type()) { // If it is defined, ensure that it is defined like an iterator

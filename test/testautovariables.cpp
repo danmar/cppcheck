@@ -49,6 +49,7 @@ private:
 
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();
+        checkAutoVariables.assignFunctionArg();
 
         if (runSimpleChecks) {
             const std::string str1(tokenizer.tokens()->stringifyList(0,true));
@@ -78,6 +79,7 @@ private:
         TEST_CASE(testautovar9);
         TEST_CASE(testautovar10); // ticket #2930 - void f(char *p) { p = '\0'; }
         TEST_CASE(testautovar11); // ticket #4641 - fp, assign local struct member address to function parameter
+        TEST_CASE(testautovar12); // ticket #5024 - crash
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -304,6 +306,13 @@ private:
               "    p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("double foo(double d) {\n" // #5005
+              "    int i = d;\n"
+              "    d = i;\n"
+              "    return d;"
+              "}",false,false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar11() { // #4641 - fp, assign local struct member address to function parameter
@@ -324,6 +333,23 @@ private:
               "    *p = &a.data[0];\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        // #4998
+        check("void f(s8**out) {\n"
+              "  s8 *p;\n"  // <- p is pointer => no error
+              "  *out = &p[1];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(s8**out) {\n"
+              "  s8 p[10];\n"  // <- p is array => error
+              "  *out = &p[1];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+    }
+
+    void testautovar12() { // Ticket #5024 - Crash on invalid input
+        check("void f(int* a) { a = }");
     }
 
     void testautovar_array1() {

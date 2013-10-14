@@ -72,6 +72,11 @@
     //]]>
   </script>
   <script src="/site/js/pack.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("#resultsTable").tableFilter();
+    });
+  </script>
 </head>
 <body>
 <div id="header">
@@ -89,7 +94,6 @@
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
       <li><em><a href="/demo/">Online Demo</a></em></li>
-      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
@@ -169,5 +173,6 @@
 ?>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("../../analyticstracking.php") ?>
 </body>
 </html>

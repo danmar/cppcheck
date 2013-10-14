@@ -522,7 +522,7 @@ void CheckOther::checkPipeParameterSize()
                 const Variable *var = varTok->variable();
                 MathLib::bigint dim;
                 if (var && var->isArray() && !var->isArgument() && ((dim=var->dimension(0U)) < 2)) {
-                    const std::string strDim = MathLib::longToString(dim);
+                    const std::string strDim = MathLib::toString(dim);
                     checkPipeParameterSizeError(varTok,varTok->str(), strDim);
                 }
             }
@@ -1882,6 +1882,10 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 
 void CheckOther::checkCommaSeparatedReturn()
 {
+    // This is experimental for now. See #5076
+    if (!_settings->experimental)
+        return;
+
     if (!_settings->isEnabled("style"))
         return;
 
@@ -2078,6 +2082,10 @@ void CheckOther::checkIncompleteStatement()
         else if (Token::Match(tok,"> %var% {") || Token::Match(tok, "[;{}] return {"))
             tok = tok->linkAt(2);
 
+        // C++11 initialize set in initalizer list : [,:] std::set<int>{1} [{,]
+        else if (Token::Match(tok,"> {") && tok->link())
+            tok = tok->next()->link();
+
         else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%")) {
             // No warning if numeric constant is followed by a "." or ","
             if (Token::Match(tok->next(), "%num% [,.]"))
@@ -2145,6 +2153,12 @@ void CheckOther::checkZeroDivision()
         } else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
                    MathLib::isInt(tok->strAt(4)) &&
                    MathLib::toLongNumber(tok->strAt(4)) == 0L) {
+            if (tok->str() == "div") {
+                if (tok->strAt(-1) == ".")
+                    continue;
+                if (tok->variable() || tok->function())
+                    continue;
+            }
             zerodivError(tok);
         }
     }
@@ -2165,20 +2179,77 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
     for (std::size_t functionIndex = 0; functionIndex < numberOfFunctions; ++functionIndex) {
         const Scope * scope = symbolDatabase->functionScopes[functionIndex];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "[/%] %var% !!.")) {
+            if (Token::Match(tok, "[/%] %var% !!.") || Token::Match(tok, "[(,] %var% [,)]")) {
                 const unsigned int varid = tok->next()->varId();
                 const Variable *var = tok->next()->variable();
                 if (!var)
                     continue;
                 bool isVarUnsigned = var->typeEndToken()->isUnsigned();
-                for (const Token *typetok = var->typeStartToken(); typetok != var->typeEndToken(); typetok = typetok->next()) {
+                for (const Token *typetok = var->typeStartToken(); typetok; typetok = typetok->next()) {
+                    if (!typetok->isName() || typetok == var->typeEndToken())
+                        break;
                     if (typetok->isUnsigned()) {
                         isVarUnsigned = true;
                         break;
                     }
                 }
-                const Token *tok2;
+
+                const Token *divtok = tok;
+
+                // Check if variable is divided by function..
+                if (Token::Match(tok, "[(,]")) {
+                    const Token *ftok = tok;
+                    unsigned int parnum = 0U;
+                    while (ftok && ftok->str() != "(") {
+                        if (ftok->str() == ")")
+                            ftok = ftok->link();
+                        else if (ftok->str() == ",")
+                            parnum++;
+                        ftok = ftok ? ftok->previous() : NULL;
+                    }
+                    ftok = ftok ? ftok->previous() : NULL;
+                    if (!ftok)
+                        continue;
+                    if (!Token::Match(ftok, "%var% (") && ftok->function())
+                        continue;
+
+                    const Function * const function = ftok->function();
+                    const Variable * const arg = function ? function->getArgumentVar(parnum) : NULL;
+                    const Token *argtok = arg ? arg->typeStartToken() : NULL;
+
+                    if (!argtok)
+                        continue;
+
+                    if (argtok->str() == "const")
+                        argtok = argtok->next();
+
+                    if (!Token::Match(argtok,"%type% %var% ,|)"))
+                        continue;
+
+                    const Scope * const functionScope = function ? function->functionScope : NULL;
+                    if (!functionScope)
+                        continue;
+
+                    const unsigned int varid2 = argtok->next()->varId();
+                    divtok = NULL;
+                    bool use = false;
+                    for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
+                        if (Token::Match(tok2, "[%/] %varid%", varid2)) {
+                            divtok = tok2;
+                            tok2 = tok2->next();
+                        } else if (tok2->str() != "&" && Token::Match(tok2, "%cop% %varid%",varid2)) {
+                            tok2 = tok2->next();
+                        } else if (tok2->varId() == varid2 || tok2->str() == "{") {
+                            use = true;
+                            break;
+                        }
+                    }
+                    if (!divtok || use)
+                        continue;
+                }
+
                 // Look for if condition
+                const Token *tok2;
                 for (tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                     if (tok2->varId() == varid)
                         break;
@@ -2193,11 +2264,11 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                         if (tok2->str() == "{")
                             break;
                         if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,tok);
+                            zerodivcondError(tok2,divtok);
                         else if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,tok);
+                            zerodivcondError(tok2,divtok);
                         else if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,tok);
+                            zerodivcondError(tok2,divtok);
                     }
                 }
             }
@@ -2223,7 +2294,7 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
         else
             condition = tokcond->str() + "!=0";
     }
-    const std::string linenr(MathLib::longToString(tokdiv ? tokdiv->linenr() : 0));
+    const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
     reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".");
 }
 //---------------------------------------------------------------------------
@@ -2262,7 +2333,7 @@ void CheckOther::checkMathFunctions()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
-            if (Token::Match(tok, "log|log10 ( %num% )")) {
+            if (Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
                 bool isNegative = MathLib::isNegative(tok->strAt(2));
                 bool isInt = MathLib::isInt(tok->strAt(2));
                 bool isFloat = MathLib::isFloat(tok->strAt(2));
@@ -2278,7 +2349,7 @@ void CheckOther::checkMathFunctions()
             }
 
             // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
-            else if (Token::Match(tok, "acos|asin ( %num% )") &&
+            else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )") &&
                      std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0) {
                 mathfunctionCallError(tok);
             }
@@ -2288,19 +2359,19 @@ void CheckOther::checkMathFunctions()
                 mathfunctionCallError(tok);
             }
             // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
-            else if (Token::Match(tok, "atan2 ( %num% , %num% )") &&
+            else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )") &&
                      MathLib::isNullValue(tok->strAt(2)) &&
                      MathLib::isNullValue(tok->strAt(4))) {
                 mathfunctionCallError(tok, 2);
             }
             // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
-            else if (Token::Match(tok, "fmod ( %any%")) {
+            else if (Token::Match(tok, "fmod|fmodf|fmodl ( %any%")) {
                 const Token* nextArg = tok->tokAt(2)->nextArgument();
                 if (nextArg && nextArg->isNumber() && MathLib::isNullValue(nextArg->str()))
                     mathfunctionCallError(tok, 2);
             }
             // pow ( x , y) If x is zero, and y is negative --> division by zero
-            else if (Token::Match(tok, "pow ( %num% , %num% )") &&
+            else if (Token::Match(tok, "pow|powf|powl ( %num% , %num% )") &&
                      MathLib::isNullValue(tok->strAt(2))  &&
                      MathLib::isNegative(tok->strAt(4))) {
                 mathfunctionCallError(tok, 2);
@@ -3189,6 +3260,53 @@ void CheckOther::suspiciousStringCompareError(const Token* tok, const std::strin
                 "String literal compared with variable '" + var + "'. Did you intend to use strcmp() instead?");
 }
 
+//-----------------------------------------------------------------------------
+// Check is a comparision of two variables leads to condition, which is
+// allways true or false.
+// For instance: int a = 1; if(isless(a,a)){...}
+// In this case isless(a,a) evaluates allways to false.
+//
+// Reference:
+// - http://www.cplusplus.com/reference/cmath/
+//-----------------------------------------------------------------------------
+void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse(void)
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->isName() && Token::Match(tok, "isgreater|isless|islessgreater|isgreaterequal|islessequal ( %var% , %var% )")) {
+                const std::string functionName = tok->str(); // store function name
+                const std::string varNameLeft = tok->tokAt(2)->str(); // get the left variable name
+                const unsigned int varidLeft = tok->tokAt(2)->varId();// get the left varid
+                const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
+                // compare varids: if they are not zero but equal
+                // --> the comparison function is calles with the same variables
+                if (varidLeft != 0 && varidLeft == varidRight) {
+                    if (functionName == "isgreater" || functionName == "isless" || functionName == "islessgreater") {
+                        // e.g.: isgreater(x,x) --> (x)>(x) --> false
+                        checkComparisonFunctionIsAlwaysTrueOrFalseError(tok,functionName,varNameLeft,false);
+                    } else { // functionName == "isgreaterequal" || functionName == "islessequal"
+                        // e.g.: isgreaterequal(x,x) --> (x)>=(x) --> true
+                        checkComparisonFunctionIsAlwaysTrueOrFalseError(tok,functionName,varNameLeft,true);
+                    }
+                }
+            }
+        }
+    }
+}
+void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result)
+{
+    const std::string strResult = result ? "true" : "false";
+    reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
+                "Comparison of two identical variables with "+functionName+"("+varName+","+varName+") evaluates always to "+strResult+".\n"
+                "The function "+functionName+" is designed to compare two variables. Calling this function with one variable ("+varName+") "
+                "for both parameters leads to a statement which is always "+strResult+".");
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -3266,11 +3384,17 @@ void CheckOther::checkSignOfUnsignedVariable()
         const Scope * scope = symbolDatabase->functionScopes[i];
         // check all the code in the function
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
+            if (Token::Match(tok, "%var% <|<= 0") && tok->varId() && !Token::Match(tok->tokAt(3), "+|-")) {
+                // TODO: handle a[10].b , a::b , (unsigned int)x , etc
+                const Token *prev = tok->previous();
+                while (prev && (prev->isName() || prev->str() == "."))
+                    prev = prev->previous();
+                if (!Token::Match(prev, "(|&&|%oror%"))
+                    continue;
                 const Variable *var = tok->variable();
                 if (var && var->typeEndToken()->isUnsigned())
                     unsignedLessThanZeroError(tok, var->name(), inconclusive);
-                else if (var && var->isPointer() && tok->strAt(-1) != "*")
+                else if (var && (var->isPointer() || var->isArray()))
                     pointerLessThanZeroError(tok, inconclusive);
             } else if (Token::Match(tok, "0 >|>= %var%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
                 const Variable *var = tok->tokAt(2)->variable();

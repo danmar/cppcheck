@@ -272,7 +272,7 @@ std::string Preprocessor::readpreprocessor(std::istream &istr, const unsigned in
     enum { NEWLINE, SPACE, PREPROCESSOR, BACKSLASH, OTHER } state = NEWLINE;
     std::ostringstream code;
     unsigned int newlines = 1;
-    char chPrev = ' ';
+    unsigned char chPrev = ' ';
     for (unsigned char ch = readChar(istr,bom); istr.good(); ch = readChar(istr,bom)) {
         // Replace assorted special chars with spaces..
         if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
@@ -2457,7 +2457,7 @@ static void getparams(const std::string &line,
         }
 
         // add character to current parameter
-        else if (parlevel >= 1) {
+        else if (parlevel >= 1 && line[pos] != Preprocessor::macroChar) {
             par.append(1, line[pos]);
         }
     }
@@ -3066,7 +3066,6 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                         getparams(line,pos2,params,numberOfNewlines,endFound);
 
-
                         // something went wrong so bail out
                         if (!endFound)
                             break;
@@ -3125,7 +3124,28 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     if (!line.empty() && (std::isalnum(line[pos1]) || line[pos1] == '_'))
                         macrocode.append(1,' ');
 
-                    // insert expanded macro code
+                    // insert macrochar before each symbol/nr/operator
+                    bool str = false;
+                    bool chr = false;
+                    for (std::size_t i = 0U; i < macrocode.size(); ++i) {
+                        if (macrocode[i] == '\\') {
+                            i++;
+                            continue;
+                        } else if (macrocode[i] == '\"')
+                            str = !str;
+                        else if (macrocode[i] == '\'')
+                            chr = !chr;
+                        else if (str || chr)
+                            continue;
+                        else if (std::isalnum(macrocode[i]) || macrocode[i] == '_') {
+                            if ((i > 0U)                        &&
+                                (!std::isalnum(macrocode[i-1])) &&
+                                (macrocode[i-1] != '_')         &&
+                                (macrocode[i-1] != macroChar)) {
+                                macrocode.insert(i, 1U, macroChar);
+                            }
+                        }
+                    }
                     line.insert(pos1, macroChar + macrocode);
 
                     // position = start position.

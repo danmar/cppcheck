@@ -149,7 +149,8 @@ private:
         TEST_CASE(hasGlobalVariables2);
         TEST_CASE(hasGlobalVariables3);
 
-        TEST_CASE(checkTypeStartEndToken);
+        TEST_CASE(checkTypeStartEndToken1);
+        TEST_CASE(checkTypeStartEndToken2); // handling for unknown macro: 'void f() MACRO {..'
 
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
@@ -964,7 +965,7 @@ private:
         }
     }
 
-    void checkTypeStartEndToken() {
+    void checkTypeStartEndToken1() {
         GET_SYMBOL_DB("static std::string i;\n"
                       "static const std::string j;\n"
                       "const std::string* k;\n"
@@ -985,6 +986,22 @@ private:
             ASSERT_EQUALS("char", db->getVariableFromVarId(4)->typeEndToken()->str());
             ASSERT_EQUALS("*", db->getVariableFromVarId(5)->typeEndToken()->str());
         }
+    }
+
+    void checkTypeStartEndToken2() {
+        GET_SYMBOL_DB("class CodeGenerator {\n"
+                      "  DiagnosticsEngine Diags;\n"
+                      "public:\n"
+                      "  void Initialize() {\n"
+                      "    Builder.reset(Diags);\n"
+                      "  }\n"
+                      "\n"
+                      "  void HandleTagDeclRequiredDefinition() LLVM_OVERRIDE {\n"
+                      "    if (Diags.hasErrorOccurred())\n"
+                      "      return;\n"
+                      "  }\n"
+                      "};");
+        ASSERT_EQUALS("DiagnosticsEngine", db->getVariableFromVarId(1)->typeStartToken()->str());
     }
 
     void check(const char code[], bool debug = true) {

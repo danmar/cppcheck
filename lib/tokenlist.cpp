@@ -116,11 +116,12 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
         return;
 
     if (_back) {
-        _back->insertToken(tok->str());
+        _back->insertToken(tok->str(), tok->originalName());
     } else {
         _front = new Token(&_back);
         _back = _front;
         _back->str(tok->str());
+        _back->originalName(tok->originalName());
     }
 
     _back->linenr(lineno);
@@ -139,7 +140,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, unsigned int n)
     std::stack<Token *> link;
 
     while (n > 0) {
-        dest->insertToken(src->str());
+        dest->insertToken(src->str(), src->originalName());
         dest = dest->next();
 
         // Set links

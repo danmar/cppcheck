@@ -179,6 +179,7 @@ private:
         TEST_CASE(macro_simple14);
         TEST_CASE(macro_simple15);
         TEST_CASE(macro_simple16);  // #4703: Macro parameters not trimmed
+        TEST_CASE(macro_simple17);  // #5074: isExpandedMacro not set
         TEST_CASE(macroInMacro1);
         TEST_CASE(macroInMacro2);
         TEST_CASE(macro_mismatch);
@@ -1767,9 +1768,9 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
 #ifdef __GNUC__
-        ASSERT_EQUALS("\n\n$int a = 4; int b = 5;\n", actual[""]);
+        ASSERT_EQUALS("\n\n$int $a = $4; $int $b = $5;\n", actual[""]);
 #else
-        ASSERT_EQUALS("\nint b = 5;\n$int a = 4;\\\n", actual[""]);
+        ASSERT_EQUALS("\nint b = 5;\n$int $a = $4;\\\n", actual[""]);
 #endif
         ASSERT_EQUALS("", errout.str());
     }
@@ -1791,7 +1792,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\nint main(){\n$int a = 4;\n}\n", actual[""]);
+        ASSERT_EQUALS("\n\nint main(){\n$int $a = $4;\n}\n", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1828,20 +1829,20 @@ private:
         {
             const char filedata[] = "#define AAA(aa) f(aa)\n"
                                     "AAA(5);\n";
-            ASSERT_EQUALS("\n$f(5);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n$f($5);\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define AAA(aa) f(aa)\n"
                                     "AAA (5);\n";
-            ASSERT_EQUALS("\n$f(5);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n$f($5);\n", OurPreprocessor::expandMacros(filedata));
         }
     }
 
     void macro_simple2() {
         const char filedata[] = "#define min(x,y) x<y?x:y\n"
                                 "min(a(),b());\n";
-        ASSERT_EQUALS("\n$a()<b()?a():b();\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$a()<$b()?$a():$b();\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple3() {
@@ -1853,7 +1854,7 @@ private:
     void macro_simple4() {
         const char filedata[] = "#define TEMP_1 if( temp > 0 ) return 1;\n"
                                 "TEMP_1\n";
-        ASSERT_EQUALS("\n$if( temp > 0 ) return 1;\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$if( $temp > $0 ) $return $1;\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple5() {
@@ -1864,13 +1865,13 @@ private:
                                 "    int temp = 0;\n"
                                 "    ABC\n"
                                 "}\n";
-        ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    $if( temp > 0 ) return 1;\n}\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    $if( $temp > $0 ) $return $1;\n}\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple6() {
         const char filedata[] = "#define ABC (a+b+c)\n"
                                 "ABC\n";
-        ASSERT_EQUALS("\n$(a+b+c)\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$($a+$b+$c)\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple7() {
@@ -1896,19 +1897,19 @@ private:
     void macro_simple10() {
         const char filedata[] = "#define ABC(t) t x\n"
                                 "ABC(unsigned long);\n";
-        ASSERT_EQUALS("\n$unsigned long x;\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$unsigned $long $x;\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple11() {
         const char filedata[] = "#define ABC(x) delete x\n"
                                 "ABC(a);\n";
-        ASSERT_EQUALS("\n$delete a;\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$delete $a;\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple12() {
         const char filedata[] = "#define AB ab.AB\n"
                                 "AB.CD\n";
-        ASSERT_EQUALS("\n$ab.AB.CD\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$ab.$AB.CD\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple13() {
@@ -1932,7 +1933,15 @@ private:
     void macro_simple16() {  // # 4703
         const char filedata[] = "#define MACRO( A, B, C ) class A##B##C##Creator {};\n"
                                 "MACRO( B\t, U , G )";
-        ASSERT_EQUALS("\n$class BUGCreator{};", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$class $BUGCreator{};", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple17() {  // # 5074 - the Token::isExpandedMacro() doesn't always indicate properly if token comes from macro
+        // It would probably be OK if the generated code was
+        // "\n123+$123" since the first 123 comes from the source code
+        const char filedata[] = "#define MACRO(A) A+123\n"
+                                "MACRO(123)";
+        ASSERT_EQUALS("\n$123+$123", OurPreprocessor::expandMacros(filedata));
     }
 
     void macroInMacro1() {
@@ -1940,7 +1949,7 @@ private:
             const char filedata[] = "#define A(m) long n = m; n++;\n"
                                     "#define B(n) A(n)\n"
                                     "B(0)\n";
-            ASSERT_EQUALS("\n\n$$long n=0;n++;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n$$long $n=$0;$n++;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1961,7 +1970,7 @@ private:
             const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
                                     "#define D(fmt, args...) DBG(fmt, ## args)\n"
                                     "DBG(\"hello: %d\",3);\n";
-            ASSERT_EQUALS("\n\n$printf(\"hello: %d\",3);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n$printf(\"hello: %d\",$3);\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1972,14 +1981,14 @@ private:
                                     "ABC(2,3);\n"
                                     "ABC(4,5,6);\n";
 
-            ASSERT_EQUALS("\n\n\n$1+$0*0;\n$2+$03*0;\n$4+$05*06;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n$1+$$0*$0;\n$2+$$03*$0;\n$4+$$05*$06;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define A 4\n"
                                     "#define B(a) a,A\n"
                                     "B(2);\n";
-            ASSERT_EQUALS("\n\n$2, 4;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n$2, $4;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1993,7 +2002,7 @@ private:
             const char filedata[] = "#define A(x) (x*2)\n"
                                     "#define B A(\n"
                                     "foo B(i));\n";
-            ASSERT_EQUALS("\n\nfoo $$((i)*2);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\nfoo $$(($i)*$2);\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -2008,7 +2017,7 @@ private:
                 "#define A(name) void foo##name() { do { B(1, 2); }\n"
                 "A(0)\n"
                 "A(1)\n";
-            ASSERT_EQUALS("\n\n$void foo0(){do{$}while(0);}\n$void foo1(){do{$}while(0);}\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n$void $foo0(){$do{$$}$while($0);}\n$void $foo1(){$do{$$}$while($0);}\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -2024,7 +2033,7 @@ private:
                 "#define PTR1 (\n"
                 "#define PTR2 PTR1 PTR1\n"
                 "int PTR2 PTR2 foo )))) = 0;\n";
-            ASSERT_EQUALS("\n\nint $$( $( $$( $( foo )))) = 0;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\nint $$( $$( $$( $$( foo )))) = 0;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -2065,7 +2074,7 @@ private:
     void macro_nopar() {
         const char filedata[] = "#define AAA( ) { NULL }\n"
                                 "AAA()\n";
-        ASSERT_EQUALS("\n${ NULL }\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n${ $NULL }\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_switchCase() {
@@ -2077,14 +2086,14 @@ private:
                                     " break; "
                                     "}\n"
                                     "A( 5 );\n";
-            ASSERT_EQUALS("\n$switch(a){case 2:break;};\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n$switch($a){$case $2:$break;};\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             // Make sure "2 BB" doesn't become "2BB"
             const char filedata[] = "#define A() AA : 2 BB\n"
                                     "A();\n";
-            ASSERT_EQUALS("\n$AA : 2 BB;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n$AA : $2 $BB;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -2092,7 +2101,7 @@ private:
                                     "#define B() A\n"
                                     "#define C( a ) B() break;\n"
                                     "{C( 2 );\n";
-            ASSERT_EQUALS("\n\n\n{$$$} break;;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n{$$$}$break;;\n", OurPreprocessor::expandMacros(filedata));
         }
 
 
@@ -2101,7 +2110,7 @@ private:
                                     "#define B() A\n"
                                     "#define C( a ) B() _break;\n"
                                     "{C( 2 );\n";
-            ASSERT_EQUALS("\n\n\n{$$$} _break;;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n{$$$}$_break;;\n", OurPreprocessor::expandMacros(filedata));
         }
 
 
@@ -2110,7 +2119,7 @@ private:
                                     "#define B() A\n"
                                     "#define C( a ) B() 5;\n"
                                     "{C( 2 );\n";
-            ASSERT_EQUALS("\n\n\n{$$$} 5;;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n{$$$}$5;;\n", OurPreprocessor::expandMacros(filedata));
         }
     }
 
@@ -2163,7 +2172,7 @@ private:
                                     "AAA\n";
 
             // Compare results..
-            ASSERT_EQUALS("\n\n\n$char b=0;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n$char $b=$0;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -2192,12 +2201,12 @@ private:
         // simple testcase without ##
         const char filedata1[] = "#define TEST(var,val) var = val\n"
                                  "TEST(foo,20);\n";
-        ASSERT_EQUALS("\n$foo=20;\n", OurPreprocessor::expandMacros(filedata1));
+        ASSERT_EQUALS("\n$foo=$20;\n", OurPreprocessor::expandMacros(filedata1));
 
         // simple testcase with ##
         const char filedata2[] = "#define TEST(var,val) var##_##val = val\n"
                                  "TEST(foo,20);\n";
-        ASSERT_EQUALS("\n$foo_20=20;\n", OurPreprocessor::expandMacros(filedata2));
+        ASSERT_EQUALS("\n$foo_20=$20;\n", OurPreprocessor::expandMacros(filedata2));
 
         // concat macroname
         const char filedata3[] = "#define ABCD 123\n"
@@ -2257,7 +2266,7 @@ private:
         // Preprocess..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\n$printf(\"[0x%lx-0x%lx)\",pstart,pend);\n", actual);
+        ASSERT_EQUALS("\n$printf(\"[0x%lx-0x%lx)\",$pstart,$pend);\n", actual);
     }
 
     void va_args_2() {
@@ -2273,13 +2282,13 @@ private:
     void va_args_3() {
         const char filedata[] = "#define FRED(...) { fred(__VA_ARGS__); }\n"
                                 "FRED(123)\n";
-        ASSERT_EQUALS("\n${ fred(123); }\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n${ $fred($123); }\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void va_args_4() {
         const char filedata[] = "#define FRED(name, ...) name (__VA_ARGS__)\n"
                                 "FRED(abc, 123)\n";
-        ASSERT_EQUALS("\n$abc(123)\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$abc($123)\n", OurPreprocessor::expandMacros(filedata));
     }
 
 
@@ -2350,7 +2359,7 @@ private:
     void stringify5() {
         const char filedata[] = "#define A(x) a(#x,x)\n"
                                 "A(foo(\"\\\"\"))\n";
-        ASSERT_EQUALS("\n$a(\"foo(\\\"\\\\\\\"\\\")\",foo(\"\\\"\"))\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n$a(\"foo(\\\"\\\\\\\"\\\")\",$foo(\"\\\"\"))\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void pragma() {

@@ -23,13 +23,13 @@
     var fs = require("fs"),
         cleanCSS = require("clean-css"),
         UglifyJS = require("uglify-js"),
-        ROOT_DIR = __dirname + "/";     // absolute path to project's root
+        rootDir = __dirname + "/";      // absolute path to project's root
 
     //
     // make minify
     //
     target.minify = function () {
-        cd(ROOT_DIR);
+        cd(rootDir);
         echo();
         echo("### Minifying css files...");
 
@@ -53,8 +53,7 @@
         echo();
         echo("### Minifying js files...");
 
-        var inJs = cat(["site/js/cppcheck.js",
-                        "site/js/github.js",
+        var inJs = cat(["site/js/github.js",
                         "site/js/picnet.table.filter.min.js"]);
 
         var minifiedJs = UglifyJS.minify(inJs, {

@@ -31,7 +31,6 @@ uninitialized variables, unused functions" />
       <li><a href="http://sourceforge.net/apps/trac/cppcheck/">Issues</a></li>
       <li><a href="/devinfo/" title="Developer Information">Developer Info</a></li>
       <li><a href="/demo/">Online Demo</a></li>
-      <li><a href="/archive/">Archive</a></li>
       <li><a href="http://sourceforge.net/projects/cppcheck/">Project page</a></li>
     </ul>
   </div> <!-- .wrap -->
@@ -60,9 +59,9 @@ errors in the code (i.e. have zero false positives).
 
 <h2 id="download">Download</h2>
 <p>
-    <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.61/cppcheck-1.61-x86-Setup.msi">
+    <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.62/cppcheck-1.62-x86-Setup.msi">
         <span class="downButtonText">Download Now!</span>
-        <span class="downButtonVersion">Version 1.61 for Windows</span>
+        <span class="downButtonVersion">Version 1.62 for Windows</span>
     </a>
 </p>
 <p>You can download the standalone Cppcheck from our
@@ -155,5 +154,6 @@ which is oriented for this environment. A comparison of Cppcheck and PVS-Studio 
 </dl>
   </div> <!-- .wrap -->
 </div> <!-- #content -->
+<?php include_once("analyticstracking.php") ?>
 </body>
 </html>

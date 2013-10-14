@@ -1963,6 +1963,12 @@ private:
                        "    TYPEOF(s->status);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    #define w(x) ({ x z;  (x*)z; })\n"
+                       "    int *n = w(typeof(*n));\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -2788,6 +2794,20 @@ private:
                         "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("struct PIXEL {\n"
+                        "    union  {\n"
+                        "        struct { unsigned char red,green,blue,alpha; };\n"
+                        "        unsigned int color;\n"
+                        "    };\n"
+                        "};\n"
+                        "\n"
+                        "unsigned char f() {\n"
+                        "    struct PIXEL p1;\n"
+                        "    p1.color = 255;\n"
+                        "    return p1.red;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // return
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
@@ -2950,8 +2970,19 @@ private:
                         "       }\n"
                         "   }\n"
                         "   return x;\n"
-                        "}\n", "test.c");
+                        "}\n");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        checkUninitVar2("int f(void) {\n"
+                        "   int x;\n"
+                        "   while (a()) {\n"
+                        "       if (b() && (x=1)) {\n"
+                        "           return x;\n"
+                        "       }\n"
+                        "   }\n"
+                        "   return 0;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("void f(void) {\n"
                         "   int x;\n"

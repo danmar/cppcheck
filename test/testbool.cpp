@@ -58,7 +58,7 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool6);
     }
 
-    void check(const char code[], bool experimental = false) {
+    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -71,7 +71,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         // Check...
         CheckBool checkBool(&tokenizer, &settings, this);
@@ -82,10 +82,36 @@ private:
 
 
     void assignBoolToPointer() {
+
         check("void foo(bool *p) {\n"
               "    p = false;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
+
+        // check against potential false positives
+        check("void foo(bool *p) {\n"
+              "    *p = false;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // ticket #5046 - false positive: Boolean value assigned to pointer
+        check("struct S {\n"
+              "    bool *p;\n"
+              "};\n"
+              "void f() {\n"
+              "    S s = {0};\n"
+              "    *s.p = true;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    bool *p;\n"
+              "};\n"
+              "void f() {\n"
+              "    S s = {0};\n"
+              "    s.p = true;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
@@ -280,6 +306,25 @@ private:
               "  if (error == ABC) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() { return !a+b<c; }"); // #5072
+        ASSERT_EQUALS("",errout.str());
+
+        check("int f() { return (!a+b<c); }");
+        ASSERT_EQUALS("",errout.str());
+
+        {
+            const char code[] = "void f(int x, bool y) { if ( x != y ) {} }";
+
+            check(code, false, "test.cpp");
+            ASSERT_EQUALS("[test.cpp:1]: (warning) Comparison of a boolean with an integer.\n", errout.str());
+
+            check(code, false, "test.c");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        check("int f() { return (a+(b<5)<=c); }");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt2() {
@@ -323,7 +368,7 @@ private:
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int x, bool y) {\n"
               "    if (y != !x) {\n"
@@ -338,6 +383,28 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x, int y) {\n"
+              "    return (!y == !x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int a) {\n"
+              "  return (x()+1 == !a);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void f() { if (!!a+!!b+!!c>1){} }");
+        ASSERT_EQUALS("",errout.str());
+
+        check("void f(int a, int b, int c) { if (a != !b || c) {} }");
+        ASSERT_EQUALS("",errout.str());
+
+        check("void f(int a, int b, int c) { if (1 < !!a + !!b + !!c) {} }");
+        ASSERT_EQUALS("",errout.str());
+
+        check("void f(int a, int b, int c) { if (1 < !(a+b)) {} }");
+        TODO_ASSERT_EQUALS("error","",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt3() {
@@ -354,10 +421,31 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
 
+        check("void f(int a, int b, int c) {\n"
+              "  return (a > b) < c;\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void f(int a, int b, int c) {\n"
+              "  return x(a > b) < c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b, int c) {\n"
+              "  return a > b == c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // templates
         check("struct Tokenizer { TokenList list; };\n"
               "void Tokenizer::f() {\n"
               "  std::list<Token*> locationList;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5063 - or
+        check("void f() {\n"
+              "  return a > b or c < d;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

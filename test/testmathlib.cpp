@@ -34,6 +34,7 @@ private:
         TEST_CASE(convert);
         TEST_CASE(isint);
         TEST_CASE(isnegative);
+        TEST_CASE(ispositive);
         TEST_CASE(isfloat);
         TEST_CASE(isGreater)
         TEST_CASE(isGreaterEqual)
@@ -219,6 +220,19 @@ private:
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0.0"));
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0.0"));
 
+        // verify: string --> double --> string conversion
+        ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("1.0f")));
+        ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("1.0")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("0.0f")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("0.0")));
+        ASSERT_EQUALS("-1.0" , MathLib::toString(MathLib::toDoubleNumber("-1.0f")));
+        ASSERT_EQUALS("-1.0" , MathLib::toString(MathLib::toDoubleNumber("-1.0")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("-0.0f")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("-0.0")));
+        ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("+1.0f")));
+        ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("+1.0")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("+0.0f")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("+0.0")));
     }
 
     void isint() const {
@@ -310,6 +324,20 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E+2"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E-2"));
+    }
+
+    void ispositive() const {
+        ASSERT_EQUALS(false, MathLib::isPositive("-1"));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1."));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1.0"));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1.0E+2"));
+        ASSERT_EQUALS(false, MathLib::isPositive("-1.0E-2"));
+
+        ASSERT_EQUALS(true , MathLib::isPositive("+1"));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1."));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1.0"));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1.0E+2"));
+        ASSERT_EQUALS(true , MathLib::isPositive("+1.0E-2"));
     }
 
     void isfloat() const {

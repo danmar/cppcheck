@@ -373,7 +373,8 @@ int main(int argc, char **argv)
     fout << "\tctags -R --exclude=doxyoutput .\n\n";
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
-    fout << "\tinstall cppcheck ${BIN}\n\n";
+    fout << "\tinstall cppcheck ${BIN}\n";
+    fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n\n";
 
     fout << "\n###### Build\n\n";
 
