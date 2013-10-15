@@ -99,18 +99,18 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         // parsing of library code to find called functions
         if (settings->library.isexecutableblock(FileName, tok->str())) {
-            const Token * qmlVarToken = tok->tokAt(settings->library.blockstartoffset());
+            const Token * qmlVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
             int scope = 1;
             // find all function calls in library code (starts with '(', not if or while etc)
             while (scope)
             {
-                if (qmlVarToken->str() == settings->library.blockstart()) {
+                if (qmlVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
                 }
-                else if (qmlVarToken->str() == settings->library.blockend())
+                else if (qmlVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (qmlVarToken->next()->str() == "(" &&
-                    (!settings->library.iskeyword(qmlVarToken->str())))
+                    (!settings->library.iskeyword(FileName, qmlVarToken->str())))
                 {
                     if (_functions.find(qmlVarToken->str()) != _functions.end())
                         _functions[qmlVarToken->str()].usedOtherFile = true;
@@ -143,7 +143,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (settings->library.acceptFile(FileName)
-                && settings->library.isimporter(tok->str()) && tok->next()) {
+                && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
             const Token * qPropToken = tok;
             qPropToken = qPropToken->next();
             if (qPropToken->next()) {
@@ -160,8 +160,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (settings->library.isreflection(tok->str())) {
-            const int index = settings->library.reflectionArgument(tok->str());
+        if (settings->library.isreflection(FileName, tok->str())) {
+            const int index = settings->library.reflectionArgument(FileName, tok->str());
             if (index >= 0) {
                 const Token * funcToken = tok->tokAt(index);
                 if (funcToken) {

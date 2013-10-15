@@ -41,9 +41,8 @@ Library::Library(const Library &lib) :
     _fileextensions(lib._fileextensions),
     _keywords(lib._keywords),
     _executableblocks(lib._executableblocks),
-    _codeblockstart(lib._codeblockstart),
-    _codeblockend(lib._codeblockend),
-    _codeblockoffset(lib._codeblockoffset)
+    _importers(lib._importers),
+    _reflection(lib._reflection)
 {
 }
 
@@ -155,7 +154,6 @@ bool Library::load(const char exename[], const char path[])
 		}
 
 		else if (strcmp(node->Name(),"files")==0) {
-            //_fileextensions.clear();
 			for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
 				if (strcmp(functionnode->Name(), "file") == 0) {
 					_fileextensions.push_back(functionnode->Attribute("ext"));
@@ -168,10 +166,19 @@ bool Library::load(const char exename[], const char path[])
         }
 
         else if (strcmp(node->Name(), "keywords") == 0) {
-            //_keywords.clear();
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "keyword") == 0) {
-                    _keywords.push_back(functionnode->Attribute("name"));
+                if (strcmp(functionnode->Name(), "library") == 0) {
+                    const char * const extension = functionnode->Attribute("extension");
+                    if (_keywords.find(extension) == _keywords.end()) {
+                        std::list<std::string> list;
+                        _keywords[extension] = list;
+                    }
+                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
+                        if (strcmp(librarynode->Name(), "keyword") == 0) {
+                            _keywords.at(extension).push_back(librarynode->Attribute("name"));
+                        } else
+                            return false;
+                    }
                 }
                 else
                     return false;
@@ -179,7 +186,6 @@ bool Library::load(const char exename[], const char path[])
         }
 
         else if (strcmp(node->Name(), "exported") == 0) {
-            //_exporters.clear();
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "exporter") == 0) {
                     const char * prefix = (functionnode->Attribute("prefix"));
@@ -210,19 +216,37 @@ bool Library::load(const char exename[], const char path[])
 
         else if (strcmp(node->Name(), "imported") == 0) {
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "importer") == 0) {
-                    _importers.push_back(functionnode->Attribute("name"));
+                if (strcmp(functionnode->Name(), "library") == 0) {
+                    const char * const extension = functionnode->Attribute("extension");
+                    if (_importers.find(extension) == _importers.end()) {
+                        std::list<std::string> list;
+                        _importers[extension] = list;
+                    }
+                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
+                        if (strcmp(librarynode->Name(), "importer") == 0) {
+                            _importers.at(extension).push_back(librarynode->Attribute("name"));
+                        } else
+                            return false;
+                    }
                 }
-                else
-                    return false;
             }
         }
 
         else if (strcmp(node->Name(), "reflection") == 0) {
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "call") == 0) {
-                    _reflection[functionnode->Attribute("name")]
-                            = atoi(functionnode->Attribute("arg"));
+                if (strcmp(functionnode->Name(), "library") == 0) {
+                    const char * const extension = functionnode->Attribute("extension");
+                    if (_reflection.find(extension) == _reflection.end()) {
+                        std::map<std::string,int> map;
+                        _reflection[extension] = map;
+                    }
+                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
+                        if (strcmp(librarynode->Name(), "call") == 0) {
+                            _reflection.at(extension)[librarynode->Attribute("name")]
+                                    = atoi(functionnode->Attribute("arg"));
+                        } else
+                            return false;
+                    }
                 }
                 else
                     return false;
@@ -230,26 +254,31 @@ bool Library::load(const char exename[], const char path[])
         }
 
         else if (strcmp(node->Name(), "codeblocks") == 0) {
-            //_executableblocks.clear();
-            //_codeblockstart = "}";
-            //_codeblockend = "{";
-            //_codeblockoffset = 0;
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "block") == 0) {
-                    _executableblocks.push_back(functionnode->Attribute("name"));
+                if (strcmp(functionnode->Name(), "library") == 0) {
+                    const char * const extension = functionnode->Attribute("extension");
+                    if (_executableblocks.find(extension) == _executableblocks.end()) {
+                        codeBlocks_t blockInfo;
+                        _executableblocks[extension] = blockInfo;
+                    }
+                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
+                        if (strcmp(librarynode->Name(), "block") == 0) {
+                            _executableblocks.at(extension).blocks.push_back(librarynode->Attribute("name"));
+                        }
+                        else if (strcmp(librarynode->Name(), "structure") == 0) {
+                            const char * start = librarynode->Attribute("start");
+                            if (start)
+                                _executableblocks.at(extension).start = start;
+                            const char * end = librarynode->Attribute("end");
+                            if (end)
+                               _executableblocks.at(extension).end = end;
+                            const char * offset = librarynode->Attribute("offset");
+                            if (offset)
+                                _executableblocks.at(extension).offset = atoi(offset);
+                        } else
+                            return false;
+                    }
                 }
-                else if (strcmp(functionnode->Name(), "structure") == 0) {
-                    const char * start = functionnode->Attribute("start");
-                    if (start)
-                        _codeblockstart = start;
-                    const char * end = functionnode->Attribute("end");
-                    if (end)
-                        _codeblockend = end;
-                    const char * offset = functionnode->Attribute("offset");
-                    if (offset)
-                        _codeblockoffset = atoi(offset);
-                } else
-                    return false;
             }
 
 		} else
