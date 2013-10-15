@@ -243,7 +243,7 @@ bool Library::load(const char exename[], const char path[])
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "call") == 0) {
                             _reflection.at(extension)[librarynode->Attribute("name")]
-                                    = atoi(functionnode->Attribute("arg"));
+                                    = atoi(librarynode->Attribute("arg"));
                         } else
                             return false;
                     }
