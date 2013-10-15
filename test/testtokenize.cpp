@@ -121,7 +121,8 @@ private:
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
 
-        TEST_CASE(forAddBraces);
+        TEST_CASE(forAddBraces1);
+        TEST_CASE(forAddBraces2); // #5088
 
         TEST_CASE(pointers_condition);
 
@@ -1459,7 +1460,7 @@ private:
         }
     }
 
-    void forAddBraces() {
+    void forAddBraces1() {
         {
             const char code[] = "void f() {\n"
                                 "     for(;;)\n"
@@ -1491,6 +1492,15 @@ private:
         }
     }
 
+    void forAddBraces2() { // #5088
+        const char code[] = "void f() {\n"
+                            "    for(;;) try { } catch (...) { }\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "for ( ; ; ) { try { } catch ( . . . ) { } }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
 
     std::string simplifyKnownVariables(const char code[]) {
         errout.str("");
@@ -9735,6 +9745,62 @@ private:
                              "h = pow ( cosh ( x ) , 2.0 ) - pow ( sinh ( y ) , 2.0 ) ;\n"
                              "}";
         ASSERT_EQUALS(code2, tokenizeAndStringify(code2));
+
+        const char code3[] = "void foo() {\n"
+                             "    std::cout<<powf(sinf(x),2)+powf(cosf(x),2);\n"
+                             "    std::cout<<powf(sinf(powf(sinf(y),2)+powf(cosf(y),2)),2)+powf(cosf(powf(sinf(y),2)+powf(cosf(y),2)),2);\n"
+                             "    std::cout<<powf(sinf(x),2.0)+powf(cosf(x),2.0);\n"
+                             "    std::cout<<powf(sinf(x*y+z),2.0)+powf(cosf(x*y+z),2.0);\n"
+                             "    std::cout<<powf(sinf(x*y+z),2)+powf(cosf(x*y+z),2);\n"
+                             "    std::cout<<powf(cosf(x),2)+powf(sinf(x),2);\n"
+                             "    std::cout<<powf(cosf(x),2.0)+powf(sinf(x),2.0);\n"
+                             "    std::cout<<powf(cosf(x*y+z),2.0)+powf(sinf(x*y+z),2.0);\n"
+                             "    std::cout<<powf(cosf(x*y+z),2)+powf(sinf(x*y+z),2);\n"
+                             "    std::cout<<powf(sinhf(x*y+z),2)-powf(coshf(x*y+z),2);\n"
+                             "    std::cout<<powf(sinhf(x),2)-powf(coshf(x),2);\n"
+                             "    std::cout<<powf(sinhf(x*y+z),2.0)-powf(coshf(x*y+z),2.0);\n"
+                             "    std::cout<<powf(sinhf(x),2.0)-powf(coshf(x),2.0);\n"
+                             "    std::cout<<powf(coshf(x*y+z),2)-powf(sinhf(x*y+z),2);\n"
+                             "    std::cout<<powf(coshf(x),2)-powf(sinhf(x),2);\n"
+                             "    std::cout<<powf(coshf(x*y+z),2.0)-powf(sinhf(x*y+z),2.0);\n"
+                             "    std::cout<<powf(coshf(x),2.0)-powf(sinhf(x),2.0);\n"
+                             "    std::cout<<powf(coshf(powf(x,1)),2.0)-powf(sinhf(powf(x,1)),2.0);\n"
+                             "}";
+
+        const char expected3[] = "void foo ( ) {\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "}";
+        ASSERT_EQUALS(expected3, tokenizeAndStringify(code3));
+
+        const char code4[] = "void f ( ) {\n"
+                             "a = powf ( sinf ( x ) , 2 ) + powf ( cosf ( y ) , 2 ) ;\n"
+                             "b = powf ( sinhf ( x ) , 2 ) - powf ( coshf ( y ) , 2 ) ;\n"
+                             "c = powf ( sinf ( x ) , 2.0 ) + powf ( cosf ( y ) , 2.0 ) ;\n"
+                             "d = powf ( sinhf ( x ) , 2.0 ) - powf ( coshf ( y ) , 2.0 ) ;\n"
+                             "e = powf ( cosf ( x ) , 2 ) + powf ( sinf ( y ) , 2 ) ;\n"
+                             "f = powf ( coshf ( x ) , 2 ) - powf ( sinhf ( y ) , 2 ) ;\n"
+                             "g = powf ( cosf ( x ) , 2.0 ) + powf ( sinf ( y ) , 2.0 ) ;\n"
+                             "h = powf ( coshf ( x ) , 2.0 ) - powf ( sinhf ( y ) , 2.0 ) ;\n"
+                             "}";
+        ASSERT_EQUALS(code4, tokenizeAndStringify(code4));
+
     }
 
     static std::string testAst(const char code[]) {

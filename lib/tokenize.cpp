@@ -4213,6 +4213,17 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
     if (tokAfterCondition->str()=="{") {
         // already surrounded by braces
         tokBracesEnd=tokAfterCondition->link();
+    } else if (Token::Match(tokAfterCondition, "try {") &&
+               Token::Match(tokAfterCondition->linkAt(1), "} catch (")) {
+        tokAfterCondition->previous()->insertToken("{");
+        Token * tokOpenBrace = tokAfterCondition->previous();
+        Token * tokEnd = tokAfterCondition->linkAt(1)->linkAt(2)->linkAt(1);
+
+        tokEnd->insertToken("}");
+        Token * tokCloseBrace = tokEnd->next();
+
+        Token::createMutualLinks(tokOpenBrace, tokCloseBrace);
+        tokBracesEnd = tokCloseBrace;
     } else {
         Token * tokEnd = simplifyAddBracesToCommand(tokAfterCondition);
         if (!tokEnd) // Ticket #4887
@@ -10330,10 +10341,10 @@ void Tokenizer::simplifyMathExpressions()
         //                              pow(cosh(x),2)-pow(sinh(x),2) = -1
         // @todo: sinh(x) * sinh(x) - cosh(x) * cosh(x) = -1
         //        cosh(x) * cosh(x) - sinh(x) * sinh(x) = -1
-        if (Token::simpleMatch(tok, "pow (")) {
-            if (Token::simpleMatch(tok->tokAt(2), "sin (")) {
+        if (Token::Match(tok, "pow|powf|powl (")) {
+            if (Token::Match(tok->tokAt(2), "sin|sinf|sinl (")) {
                 Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) + pow ( cos ("))
+                if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( cos|cosf|cosl ("))
                     continue;
                 const std::string leftExponent = tok2->tokAt(2)->str();
                 if (!isTwoNumber(leftExponent))
@@ -10349,9 +10360,9 @@ void Tokenizer::simplifyMathExpressions()
                     Token::eraseTokens(tok, tok3->link()->tokAt(4));
                     tok->str("1");
                 }
-            } else if (Token::simpleMatch(tok->tokAt(2), "cos (")) {
+            } else if (Token::Match(tok->tokAt(2), "cos|cosf|cosl (")) {
                 Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) + pow ( sin ("))
+                if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( sin|sinf|sinl ("))
                     continue;
                 const std::string leftExponent = tok2->tokAt(2)->str();
                 if (!isTwoNumber(leftExponent))
@@ -10367,9 +10378,9 @@ void Tokenizer::simplifyMathExpressions()
                     Token::eraseTokens(tok, tok3->link()->tokAt(4));
                     tok->str("1");
                 }
-            } else if (Token::simpleMatch(tok->tokAt(2), "sinh (")) {
+            } else if (Token::Match(tok->tokAt(2), "sinh|sinhf|sinhl (")) {
                 Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) - pow ( cosh ("))
+                if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( cosh|coshf|coshl ("))
                     continue;
                 const std::string leftExponent = tok2->tokAt(2)->str();
                 if (!isTwoNumber(leftExponent))
@@ -10385,9 +10396,9 @@ void Tokenizer::simplifyMathExpressions()
                     Token::eraseTokens(tok, tok3->link()->tokAt(4));
                     tok->str("-1");
                 }
-            } else if (Token::simpleMatch(tok->tokAt(2), "cosh (")) {
+            } else if (Token::Match(tok->tokAt(2), "cosh|coshf|coshl (")) {
                 Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) - pow ( sinh ("))
+                if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( sinh|sinhf|sinhl ("))
                     continue;
                 const std::string leftExponent = tok2->tokAt(2)->str();
                 if (!isTwoNumber(leftExponent))
