@@ -85,8 +85,8 @@ if lastupdate:
   mainpage.write('<p>Last update: ' + lastupdate + '</p>')
   allrecent = ''
   for r in recent:
-    allrecent = allrecent + ' ' + r
-  mainpage.write('<p>The most recently updated results are for the packages starting with letter(s) or digit(s):' + allrecent + '</p>')
+    allrecent = allrecent + ' <a href="daca2-'+r+'.html">' + r + '</a>'
+  mainpage.write('<p>Most recently updated: ' + allrecent + '</p>')
 
 mainpage.write('</body>\n')
 mainpage.write('</html>\n')
