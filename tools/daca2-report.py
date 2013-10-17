@@ -36,8 +36,8 @@ if len(sys.argv) == 2:
     path = sys.argv[1]
 
 mainpage = open(path + '/daca2.html', 'wt')
-mainpage.write('<html>\n')
-mainpage.write('<head><title>DACA2</title></head>\n')
+mainpage.write('<!DOCTYPE html>\n')
+mainpage.write('<html lang="en"><head><title>DACA2</title></head>\n')
 mainpage.write('<body>\n')
 mainpage.write('<h1>DACA2</h1>\n')
 mainpage.write('<p>Results when running latest Cppcheck on Debian.</p>\n')
@@ -74,8 +74,8 @@ for lib in range(2):
             data = data.replace('\n', '\n')
 
             f = open(path + '/daca2-' + a + '.html', 'wt')
-            f.write('<html>\n')
-            f.write('<head><title>DACA2 - ' + a + '</title></head>\n')
+            f.write('<!DOCTYPE html>\n')
+            f.write('<html lang="en"><head><title>DACA2 - ' + a + '</title></head>\n')
             f.write('<body>\n')
             f.write('<h1>DACA2 - ' + a + '</h1>')
             f.write('<pre>\n' + data + '</pre>\n')
