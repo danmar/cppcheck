@@ -21,79 +21,89 @@ with syntax highlighted source code.
 
 STYLE_FILE = """
 body {
-    font: normal 13px/1 Arial, Verdana, Sans-Serif;
     background-color: black;
-    padding: 0;
+    font: 13px Arial, Verdana, Sans-Serif;
     margin: 0;
+    padding: 0;
 }
 
 .error {
-    font-size: 13px;
     background-color: #ffb7b7;
-    padding: 0;
     margin: 0;
+    padding: 0;
 }
 
+.error2 {
+    background-color: #faa;
+    border: 1px dotted black;
+    margin-left: 4px;
+    margin-top: 4px;
+    padding: 1px
+}
 
 #page {
-    width: auto;
-    margin: 30px;
-    border: 2px solid #aaa;
     background-color: white;
-    padding: 20px;
+    border: 2px solid #aaa;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    margin: 30px;
     overflow: auto;
+    padding: 5px 20px;
+    width: auto;
 }
 
-
 #header {
-    width: 100%;
-    height: 70px;
     border-bottom: thin solid #aaa;
 }
 
 #menu {
+    float: left;
     margin-top: 5px;
     text-align: left;
-    float: left;
     width: 100px;
     height: auto;
 }
 
 #menu > a {
-    margin-left: 10px;
     display: block;
+    margin-left: 10px;
 }
 
 #content {
+    border-left: thin solid #aaa;
     float: left;
-    width: 80%;
     margin: 5px;
     padding: 0 10px 10px 10px;
-    border-left: thin solid #aaa;
+    width: 80%;
 }
 
 .linenos {
-	color: #bbb;
-	padding-right: 6px;
-	border-right: thin solid #aaa;
+    border-right: thin solid #aaa;
+    color: #bbb;
+    padding-right: 6px;
 }
 
 #footer {
-    padding-bottom: 5px;
-    padding-top: 5px;
     border-top: thin solid #aaa;
     clear: both;
     font-size: 90%;
+    margin-top: 5px;
+}
+
+#footer ul {
+    list-style-type: none;
+    padding-left: 0;
 }
 """
 
 HTML_HEAD = """
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <title>Cppcheck - HTML report - %s</title>
-    <link href="style.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <style>
 %s
     </style>
@@ -115,18 +125,18 @@ HTML_FOOTER = """
         <p>
           Cppcheck - a tool for static C/C++ code analysis
         </p>
-        <p>
-          Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a><br/>
-          Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a><br/>
-          IRC: #cppcheck at irc.freenode.net
-        </p>
+        <ul>
+          <li>Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></li>
+          <li>Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></li>
+          <li>IRC: #cppcheck at irc.freenode.net</li>
+        </ul>
       </div>
     </div>
   </body>
 </html>
 """
 
-HTML_ERROR = "<span style=\"border-width: 1px;border-color: black;border-style: solid;background: #ffaaaa;padding: 1px;font-size: 11px;\">&lt;--- %s</span>\n"
+HTML_ERROR = "<span class=\"error2\">&lt;--- %s</span>\n"
 
 
 class AnnotateCodeFormatter(HtmlFormatter):
@@ -145,6 +155,7 @@ class AnnotateCodeFormatter(HtmlFormatter):
 
 
 class CppCheckHandler(XmlContentHandler):
+
     """Parses the cppcheck xml file and produces a list of all its errors."""
 
     def __init__(self):
