@@ -21,6 +21,7 @@ FTPSERVER = 'ftp.sunet.se'
 FTPPATH = '/pub/Linux/distributions/Debian/debian/pool/main/'
 FOLDER = 'b'
 
+
 def handleRemoveReadonly(func, path, exc):
     import stat
     if not os.access(path, os.W_OK):
@@ -29,6 +30,7 @@ def handleRemoveReadonly(func, path, exc):
         func(path)
     else:
         raise
+
 
 def removeAllExceptResults():
     count = 5
@@ -63,9 +65,10 @@ def removeAllExceptResults():
             continue
         count = 0
 
+
 def removeLargeFiles(path):
     for g in glob.glob(path + '*'):
-        if g=='.' or g=='..':
+        if g == '.' or g == '..':
             continue
         if os.path.isdir(g):
             removeLargeFiles(g + '/')
@@ -73,6 +76,7 @@ def removeLargeFiles(path):
             statinfo = os.stat(g)
             if statinfo.st_size > 100000:
                 os.remove(g)
+
 
 def scanarchive(fullpath):
     results = open('results.txt', 'at')

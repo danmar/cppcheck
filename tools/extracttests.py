@@ -27,6 +27,7 @@ import re
 
 
 class Extract:
+
     """
     Read Cppcheck test file and create data
     representation
@@ -50,7 +51,7 @@ class Extract:
         fin = open(filename, 'r')
         for line in fin:
             # testclass starts
-            res = re.match('class ('+name+')', line)
+            res = re.match('class (' + name + ')', line)
             if res is not None:
                 testclass = res.group(1)
 
@@ -59,7 +60,7 @@ class Extract:
                 testclass = None
 
             # function start
-            res = re.match('\\s+void ('+name+')\\(\\)', line)
+            res = re.match('\\s+void (' + name + ')\\(\\)', line)
             if res is not None:
                 functionName = res.group(1)
 
@@ -70,12 +71,12 @@ class Extract:
                 continue
 
             # check
-            res = re.match('\s+check.*\('+string, line)
+            res = re.match('\s+check.*\(' + string, line)
             if res is not None:
                 code = res.group(1)
 
             # code..
-            res = re.match('\\s+'+string, line)
+            res = re.match('\\s+' + string, line)
             if res is not None:
                 code = code + res.group(1)
 
@@ -114,7 +115,8 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
     fout.write('<head>\n')
     fout.write('  <style type="text/css">\n')
     fout.write('  body { font-size: 0.8em }\n')
-    fout.write('  th { background-color: #A3C159; text-transform: uppercase }\n')
+    fout.write(
+        '  th { background-color: #A3C159; text-transform: uppercase }\n')
     fout.write('  td { background-color: white; vertical-align: text-top }\n')
     fout.write('  pre { background-color: #EEEEEE }\n')
     fout.write('  </style>\n')
@@ -123,9 +125,10 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 
     fout.write('<a href="index.htm">Home</a> -- ')
     if errorsOnly:
-        fout.write('<a href="all-'+functionName+'.htm">All test cases</a>')
+        fout.write('<a href="all-' + functionName + '.htm">All test cases</a>')
     else:
-        fout.write('<a href="errors-'+functionName+'.htm">Error test cases</a>')
+        fout.write(
+            '<a href="errors-' + functionName + '.htm">Error test cases</a>')
     fout.write('<br><br>')
 
     testclass = None
@@ -138,13 +141,17 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 
             if not testclass:
                 testclass = node['testclass']
-                fout.write('<h1>' + node['testclass'] + '::' + functionName + '</h1>')
+                fout.write(
+                    '<h1>' + node['testclass'] + '::' + functionName + '</h1>')
                 fout.write('<table border="0" cellspacing="0">\n')
-                fout.write('  <tr><th>Nr</th><th>Code</th><th>Expected</th></tr>\n')
+                fout.write(
+                    '  <tr><th>Nr</th><th>Code</th><th>Expected</th></tr>\n')
 
             fout.write('  <tr><td>' + str(num) + '</td>')
-            fout.write('<td><pre>' + strtoxml(node['code']).replace('\\n', '\n') + '</pre></td>')
-            fout.write('<td>' + strtoxml(node['expected']).replace('\\n', '<br>') + '</td>')
+            fout.write('<td><pre>' + strtoxml(
+                node['code']).replace('\\n', '\n') + '</pre></td>')
+            fout.write(
+                '<td>' + strtoxml(node['expected']).replace('\\n', '<br>') + '</td>')
             fout.write('</tr>\n')
 
     if testclass is not None:
@@ -155,7 +162,8 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 
 if len(sys.argv) <= 1 or '--help' in sys.argv:
     print ('Extract test cases from test file')
-    print ('Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] path/testfile.cpp')
+    print (
+        'Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] path/testfile.cpp')
     sys.exit(0)
 
 # parse command line
@@ -189,7 +197,7 @@ if filename is not None:
         print ('<tree>')
         count = 0
         for node in e.nodes:
-            s  = '  <node'
+            s = '  <node'
             s += ' function="' + node['functionName'] + '"'
             s += ' code="' + strtoxml(node['code']) + '"'
             s += ' expected="' + strtoxml(node['expected']) + '"'
@@ -206,8 +214,10 @@ if filename is not None:
         findex.write('<head>\n')
         findex.write('  <style type="text/css">\n')
         findex.write('  table { font-size: 0.8em }\n')
-        findex.write('  th { background-color: #A3C159; text-transform: uppercase }\n')
-        findex.write('  td { background-color: #F0FFE0; vertical-align: text-top }\n')
+        findex.write(
+            '  th { background-color: #A3C159; text-transform: uppercase }\n')
+        findex.write(
+            '  td { background-color: #F0FFE0; vertical-align: text-top }\n')
         findex.write('  A:link { text-decoration: none }\n')
         findex.write('  A:visited { text-decoration: none }\n')
         findex.write('  A:active { text-decoration: none }\n')
@@ -227,7 +237,7 @@ if filename is not None:
         findex.write('<table border="0" cellspacing="0">\n')
         findex.write('  <tr><th>Name</th><th>Errors</th><th>All</th></tr>\n')
         for functionname in functionNames:
-            findex.write('  <tr><td>'+functionname+'</td>')
+            findex.write('  <tr><td>' + functionname + '</td>')
             numall = 0
             numerr = 0
             for node in e.nodes:
@@ -238,8 +248,10 @@ if filename is not None:
             if numerr == 0:
                 findex.write('<td><div align="right">0</div></td>')
             else:
-                findex.write('<td><a href="errors-'+functionname+'.htm"><div align="right">' + str(numerr) + '</div></a></td>')
-            findex.write('<td><a href="all-'+functionname+'.htm"><div align="right">' + str(numall) + '</div></a></td>')
+                findex.write('<td><a href="errors-' + functionname +
+                             '.htm"><div align="right">' + str(numerr) + '</div></a></td>')
+            findex.write('<td><a href="all-' + functionname +
+                         '.htm"><div align="right">' + str(numall) + '</div></a></td>')
             findex.write('</tr>\n')
 
         findex.write('</table>\n')
@@ -267,7 +279,7 @@ if filename is not None:
         if not os.path.exists(codedir):
             os.mkdir(codedir)
 
-        errors = open(codedir+'errors.txt', 'w')
+        errors = open(codedir + 'errors.txt', 'w')
 
         for node in e.nodes:
             testnum = testnum + 1
@@ -291,7 +303,8 @@ if filename is not None:
             if expected != '':
                 expected = expected.replace('\\n', '\n')
                 expected = expected.replace('\\"', '"')
-                expected = re.sub('\\[test.cp?p?:', '['+filename+':', expected)
+                expected = re.sub(
+                    '\\[test.cp?p?:', '[' + filename + ':', expected)
                 errors.write(expected)
         errors.close()
     else:

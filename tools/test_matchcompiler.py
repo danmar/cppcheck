@@ -21,13 +21,17 @@ import matchcompiler
 
 
 class MatchCompilerTest(unittest.TestCase):
+
     def setUp(self):
         self.mc = matchcompiler.MatchCompiler(verify_mode=False)
 
     def test_parseMatch(self):
-        self.assertEqual(self.mc.parseMatch('  Token::Match(tok, ";") ', 2), ['Token::Match(tok, ";")', 'tok', ' ";"'])
-        self.assertEqual(self.mc.parseMatch('  Token::Match(tok,', 2), None)    # multiline Token::Match is not supported yet
-        self.assertEqual(self.mc.parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), ['Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"'])  # inner function call
+        self.assertEqual(self.mc.parseMatch('  Token::Match(tok, ";") ', 2), [
+                         'Token::Match(tok, ";")', 'tok', ' ";"'])
+        self.assertEqual(self.mc.parseMatch('  Token::Match(tok,', 2), None)
+                         # multiline Token::Match is not supported yet
+        self.assertEqual(self.mc.parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), [
+                         'Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"'])  # inner function call
 
     def test_replaceTokenMatch(self):
         input = 'if (Token::Match(tok, "foobar")) {'
@@ -44,7 +48,8 @@ class MatchCompilerTest(unittest.TestCase):
         input = 'if (Token::Match(tok, "foo\"special\"bar %num%")) {'
         output = self.mc._replaceTokenMatch(input)
         # FIXME: Currently detected as non-static pattern
-        self.assertEqual(output, 'if (Token::Match(tok, "foo"special"bar %num%")) {')
+        self.assertEqual(
+            output, 'if (Token::Match(tok, "foo"special"bar %num%")) {')
         # self.assertEqual(3, len(self.mc._matchStrs))
 
     def test_replaceTokenMatchWithVarId(self):
@@ -55,13 +60,15 @@ class MatchCompilerTest(unittest.TestCase):
 
         input = 'if (Token::Match(tok->next()->next(), "%varid% foobar", tok->varId())) {'
         output = self.mc._replaceTokenMatch(input)
-        self.assertEqual(output, 'if (match2(tok->next()->next(), tok->varId())) {')
+        self.assertEqual(
+            output, 'if (match2(tok->next()->next(), tok->varId())) {')
         self.assertEqual(1, len(self.mc._matchStrs))
 
         input = 'if (Token::Match(tok, "foo\"special\"bar %type% %varid%", my_varid_cache)) {'
         output = self.mc._replaceTokenMatch(input)
         # FIXME: Currently detected as non-static pattern
-        self.assertEqual(output, 'if (Token::Match(tok, "foo"special"bar %type% %varid%", my_varid_cache)) {')
+        self.assertEqual(
+            output, 'if (Token::Match(tok, "foo"special"bar %type% %varid%", my_varid_cache)) {')
         # self.assertEqual(1, len(self.mc._matchStrs))
 
         # test caching: reuse existing matchX()
@@ -92,7 +99,8 @@ class MatchCompilerTest(unittest.TestCase):
         input = 'if (Token::simpleMatch(tok, "foo\"special\"bar")) {'
         output = self.mc._replaceTokenMatch(input)
         # FIXME: Currently detected as non-static pattern
-        self.assertEqual(output, 'if (Token::simpleMatch(tok, "foo\"special\"bar")) {')
+        self.assertEqual(
+            output, 'if (Token::simpleMatch(tok, "foo\"special\"bar")) {')
         self.assertEqual(1, len(self.mc._matchStrs))
 
     def test_replaceTokenFindSimpleMatch(self):
@@ -104,14 +112,16 @@ class MatchCompilerTest(unittest.TestCase):
 
         input = 'if (Token::findsimplematch(tok->next()->next(), "foobar", tok->link())) {'
         output = self.mc._replaceTokenFindMatch(input)
-        self.assertEqual(output, 'if (findmatch2(tok->next()->next(), tok->link())) {')
+        self.assertEqual(
+            output, 'if (findmatch2(tok->next()->next(), tok->link())) {')
         self.assertEqual(1, len(self.mc._matchStrs))
         self.assertEqual(1, self.mc._matchStrs['foobar'])
 
         input = 'if (Token::findsimplematch(tok, "foo\"special\"bar")) {'
         output = self.mc._replaceTokenFindMatch(input)
         # FIXME: Currently detected as non-static pattern
-        self.assertEqual(output, 'if (Token::findsimplematch(tok, "foo\"special\"bar")) {')
+        self.assertEqual(
+            output, 'if (Token::findsimplematch(tok, "foo\"special\"bar")) {')
         self.assertEqual(1, len(self.mc._matchStrs))
 
     def test_replaceTokenFindMatch(self):
@@ -131,14 +141,16 @@ class MatchCompilerTest(unittest.TestCase):
         # findmatch with end token
         input = 'if (Token::findmatch(tok->next()->next(), "foobar %type%", tok->link())) {'
         output = self.mc._replaceTokenFindMatch(input)
-        self.assertEqual(output, 'if (findmatch3(tok->next()->next(), tok->link())) {')
+        self.assertEqual(
+            output, 'if (findmatch3(tok->next()->next(), tok->link())) {')
         self.assertEqual(2, len(self.mc._matchStrs))
         self.assertEqual(1, self.mc._matchStrs['foobar'])
 
         # findmatch with end token and varid
         input = 'if (Token::findmatch(tok->next()->next(), "foobar %type% %varid%", tok->link(), 123)) {'
         output = self.mc._replaceTokenFindMatch(input)
-        self.assertEqual(output, 'if (findmatch4(tok->next()->next(), tok->link(), 123)) {')
+        self.assertEqual(
+            output, 'if (findmatch4(tok->next()->next(), tok->link(), 123)) {')
         self.assertEqual(2, len(self.mc._matchStrs))
         self.assertEqual(1, self.mc._matchStrs['foobar'])
 
