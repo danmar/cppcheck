@@ -63,6 +63,16 @@ def removeAllExceptResults():
             continue
         count = 0
 
+def removeLargeFiles(path):
+    for g in glob.glob(path + '*'):
+        if g=='.' or g=='..':
+            continue
+        if os.path.isdir(g):
+            removeLargeFiles(g + '/')
+        elif g != 'results.txt':
+            statinfo = os.stat(g)
+            if statinfo.st_size > 100000:
+                os.remove(g)
 
 def scanarchive(fullpath):
     results = open('results.txt', 'at')
