@@ -190,11 +190,11 @@ bool Library::load(const char exename[], const char path[])
                 if (strcmp(functionnode->Name(), "exporter") == 0) {
                     const char * prefix = (functionnode->Attribute("prefix"));
                     if (prefix) {
-                        std::map<std::string, exported_t>::const_iterator
+                        std::map<std::string, ExportedFunctions>::const_iterator
                             it = _exporters.find(prefix);
                         if (it == _exporters.end()) {
                             // add the missing list for later on
-                            exported_t exporter;
+                            ExportedFunctions exporter;
                             _exporters[prefix] = exporter;
                         }
                     } else
@@ -202,9 +202,9 @@ bool Library::load(const char exename[], const char path[])
 
                     for (const tinyxml2::XMLElement *enode = functionnode->FirstChildElement(); enode; enode = enode->NextSiblingElement()) {
                         if (strcmp(enode->Name(), "prefix") == 0) {
-                            _exporters[prefix].prefixes.push_back(enode->Attribute("name"));
+                            _exporters[prefix].addPrefix(enode->Attribute("name"));
                         } else if (strcmp(enode->Name(), "suffix") == 0) {
-                            _exporters[prefix].suffixes.push_back(enode->Attribute("name"));
+                            _exporters[prefix].addSuffix(enode->Attribute("name"));
                         } else
                             return false;
                     }
@@ -261,23 +261,23 @@ bool Library::load(const char exename[], const char path[])
                 if (strcmp(functionnode->Name(), "library") == 0) {
                     const char * const extension = functionnode->Attribute("extension");
                     if (_executableblocks.find(extension) == _executableblocks.end()) {
-                        codeBlocks_t blockInfo;
+                        CodeBlock blockInfo;
                         _executableblocks[extension] = blockInfo;
                     }
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "block") == 0) {
-                            _executableblocks.at(extension).blocks.push_back(librarynode->Attribute("name"));
+                            _executableblocks.at(extension).addBlock(librarynode->Attribute("name"));
                         }
                         else if (strcmp(librarynode->Name(), "structure") == 0) {
                             const char * start = librarynode->Attribute("start");
                             if (start)
-                                _executableblocks.at(extension).start = start;
+                                _executableblocks.at(extension).setStart(start);
                             const char * end = librarynode->Attribute("end");
                             if (end)
-                               _executableblocks.at(extension).end = end;
+                                _executableblocks.at(extension).setEnd(end);
                             const char * offset = librarynode->Attribute("offset");
                             if (offset)
-                                _executableblocks.at(extension).offset = atoi(offset);
+                                _executableblocks.at(extension).setOffset(atoi(offset));
                         } else
                             return false;
                     }
