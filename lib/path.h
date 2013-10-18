@@ -109,7 +109,7 @@ public:
      * @param filename filename to check. path info is optional
      * @return returns true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename);
+    static bool acceptFile(const std::string &filename, const class Library *library = 0);
 
     /**
      * @brief Identify language based on file extension.
