@@ -31,13 +31,48 @@ def handleRemoveReadonly(func, path, exc):
         raise
 
 def removeAllExceptResults():
-    filenames = glob.glob('[A-Za-z]*')
-    for filename in filenames:
-        if os.path.isdir(filename):
-            shutil.rmtree(filename, onerror=handleRemoveReadonly)
-        elif filename != 'results.txt':
-            os.remove(filename)
+    count = 5
+    while count > 0:
+        count = count - 1
 
+        filenames = []
+        for g in glob.glob('[A-Za-z0-9]*'):
+            filenames.append(g)
+        for g in glob.glob('.[a-z]*'):
+            filenames.append(g)
+
+        try:
+            for filename in filenames:
+                if os.path.isdir(filename):
+                    shutil.rmtree(filename, onerror=handleRemoveReadonly)
+                elif filename != 'results.txt':
+                    os.remove(filename)
+        except WindowsError, err:
+            time.sleep(30)
+            if count == 0:
+                print('Failed to cleanup files/folders')
+                print(err)
+                sys.exit(1)
+            continue
+        except OSError, err:
+            time.sleep(30)
+            if count == 0:
+                print('Failed to cleanup files/folders')
+                print(err)
+                sys.exit(1)
+            continue
+        count = 0
+
+def removeLargeFiles(path):
+    for g in glob.glob(path + '*'):
+        if g=='.' or g=='..':
+            continue
+        if os.path.isdir(g):
+            removeLargeFiles(g + '/')
+        elif g != 'results.txt':
+            statinfo = os.stat(g)
+            if statinfo.st_size > 100000:
+                os.remove(g)
 
 def scanarchive(fullpath):
     results = open('results.txt', 'at')
@@ -57,6 +92,8 @@ def scanarchive(fullpath):
             dirname = s
     if dirname is None:
         return
+
+    removeLargeFiles('')
 
     print('cppcheck "' + dirname + '"')
     p = subprocess.Popen(
