@@ -93,6 +93,8 @@ def scanarchive(fullpath):
     if dirname is None:
         return
 
+    removeLargeFiles('')
+
     print('cppcheck "' + dirname + '"')
     p = subprocess.Popen(
         ['nice',
