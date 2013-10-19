@@ -2053,7 +2053,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
         }
 
         if (elseIsTrueStack.empty()) {
-			writeError(filePath, linenr, _errorLogger, "syntaxError", "Syntax error in preprocessor code");
+            writeError(filePath, linenr, _errorLogger, "syntaxError", "Syntax error in preprocessor code");
             return "";
         }
 
