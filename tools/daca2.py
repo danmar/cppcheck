@@ -90,6 +90,12 @@ def scanarchive(fullpath):
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
+    if filename[:5] == 'flite':
+        results = open('results.txt', 'at')
+        results.write('fixme: this package is skipped\n')
+        results.close()
+        return
+
     dirname = None
     for s in glob.glob(filename[:2] + '*'):
         if os.path.isdir(s):
