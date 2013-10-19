@@ -5957,12 +5957,14 @@ void Tokenizer::simplifyIfNotNull()
             else if (Token::Match(tok, "%var% != 0")) {
                 deleteFrom = tok;
                 tok->isPointerCompare(true);
+                tok->isExpandedMacro(tok->isExpandedMacro() || tok->tokAt(2)->isExpandedMacro());
             }
 
             else if (Token::Match(tok, "%var% .|:: %var% != 0")) {
                 tok = tok->tokAt(2);
                 deleteFrom = tok;
                 tok->isPointerCompare(true);
+                tok->isExpandedMacro(tok->isExpandedMacro() || tok->tokAt(2)->isExpandedMacro());
             }
         }
 

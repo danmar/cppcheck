@@ -126,6 +126,7 @@ private:
         TEST_CASE(incorrectLogicOperator1);
         TEST_CASE(incorrectLogicOperator2);
         TEST_CASE(incorrectLogicOperator3);
+        TEST_CASE(incorrectLogicOperator4);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(sameExpression);
@@ -3980,6 +3981,13 @@ private:
                       "[test.cpp:3]: (warning) Logical conjunction always evaluates to false: x < 1 && x == 3.\n"
                       "[test.cpp:4]: (warning) Logical conjunction always evaluates to false: x >= 5 && x == 1.\n"
                       "[test.cpp:5]: (warning) Logical conjunction always evaluates to false: x <= 1 && x == 3.\n", errout.str());
+    }
+
+    void incorrectLogicOperator4() {
+        check("void f(int x) {\n"
+              "  if (x && x != $0) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {

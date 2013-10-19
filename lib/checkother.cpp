@@ -3063,6 +3063,9 @@ void CheckOther::complexDuplicateExpressionCheck(const std::list<const Function*
                 start = tok1;
                 break;
             }
+
+            if (tok1->isExpandedMacro())
+                break;
         }
         const Token *end = 0;
         level = 0;
@@ -3077,8 +3080,13 @@ void CheckOther::complexDuplicateExpressionCheck(const std::list<const Function*
                 end = tok1;
                 break;
             }
+
+            if (tok1->isExpandedMacro())
+                break;
         }
-        checkExpressionRange(constFunctions, start, end, toCheck);
+
+        if (start && end)
+            checkExpressionRange(constFunctions, start, end, toCheck);
     }
 }
 
