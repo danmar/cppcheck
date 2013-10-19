@@ -77,6 +77,7 @@ private:
         TEST_CASE(varScope17);
         TEST_CASE(varScope18);
         TEST_CASE(varScope19);      // Ticket #4994
+        TEST_CASE(varScope20);      // Ticket #5103
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -836,7 +837,7 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'i' can be reduced.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         varScope("void f(int x)\n"
                  "{\n"
@@ -985,7 +986,7 @@ private:
                  "    if (x == 5)\n"
                  "        foo(b);\n"
                  "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'b' can be reduced.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         varScope("void f(int x) {\n"
                  "    const bool b = x;\n"
@@ -1164,6 +1165,16 @@ private:
                  "}\n"
                  "long a = 1 ;\n"
                  "long b = 2 ;");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope20() { // Ticket #5103 - constant variable only used in inner scope
+        varScope("int f(int a) {\n"
+                 "  const int x = 234;\n"
+                 "  int b = a;\n"
+                 "  if (b > 32) b = x;\n"
+                 "  return b;\n"
+                 "}");
         ASSERT_EQUALS("", errout.str());
     }
 

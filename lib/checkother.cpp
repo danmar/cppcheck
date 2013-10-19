@@ -1734,6 +1734,9 @@ void CheckOther::checkVariableScope()
         if (!var || !var->isLocal() || (!var->isPointer() && !var->typeStartToken()->isStandardType() && !var->typeStartToken()->next()->isStandardType()))
             continue;
 
+        if (var->isConst())
+            continue;
+
         bool forHead = false; // Don't check variables declared in header of a for loop
         for (const Token* tok = var->typeStartToken(); tok; tok = tok->previous()) {
             if (tok->str() == "(") {
@@ -1750,10 +1753,7 @@ void CheckOther::checkVariableScope()
             tok = tok->tokAt(3);
             if (!tok->isNumber() && tok->type() != Token::eString && tok->type() != Token::eChar && !tok->isBoolean())
                 continue;
-        } else if ((tok->str() == "=" || tok->str() == "(") &&
-                   ((!tok->next()->isNumber() && tok->next()->type() != Token::eString && tok->next()->type() != Token::eChar && !tok->next()->isBoolean()) || tok->strAt(2) != ";"))
-            continue;
-
+        }
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
         for (; tok != var->scope()->classEnd; tok = tok->next()) {
