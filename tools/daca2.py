@@ -2,10 +2,9 @@
 #
 # 1. Create a folder daca2 in your HOME folder
 # 2. Put cppcheck-O2 in daca2. It should be built with all optimisations.
-# 3. Choose a folder to check. Choose any that match regexpr: (lib)?[0-9a-z]
-# 4. Optional: Put a file called "suppressions.txt" in the daca2 folder.
-# 5. Optional: tweak FTPSERVER and FTPPATH in this script below.
-# 6. Run the daca2 script:  python daca2.py FOLDER
+# 3. Optional: Put a file called "suppressions.txt" in the daca2 folder.
+# 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
+# 5. Run the daca2 script:  python daca2.py FOLDER
 
 import ftplib
 import subprocess
@@ -19,7 +18,54 @@ import time
 
 FTPSERVER = 'ftp.sunet.se'
 FTPPATH = '/pub/Linux/distributions/Debian/debian/pool/main/'
-FOLDER = 'b'
+
+def getpackages(folder):
+    print('Connect')
+    f = ftplib.FTP(FTPSERVER)
+    f.login()
+
+    print('Get package list in folder ' + folder)
+    packages = f.nlst(FTPPATH + folder)
+
+    archives = []
+    for package in packages:
+        print(package)
+        count = 10
+        while count > 0:
+            filename = None
+            path = FTPPATH + folder + '/' + package
+            try:
+                time.sleep(0.01)
+                files = f.nlst(path)
+
+                for s in files:
+                    if s.find('.orig.tar.') > 0:
+                        filename = s
+
+                if not filename:
+                    for s in files:
+                        if s.find('.tar.') > 0:
+                            filename = s
+
+            except socket.error as err:
+                print(str(err))
+            except ftplib.error_temp:
+                print(str(err))
+            except EOFError:
+                print(str(err))
+
+            if not filename:
+                print('Retry..')
+                f.close()
+                f.quit()
+                f.login()
+                time.sleep(1)
+                count = count - 1
+            else:
+                archives.append(package + '/' + filename)
+                count = 0
+
+    return archives
 
 
 def handleRemoveReadonly(func, path, exc):
@@ -121,48 +167,12 @@ def scanarchive(fullpath):
     results.write(comm[1] + '\n')
     results.close()
 
-if len(sys.argv) == 2:
-    FOLDER = sys.argv[1]
+if len(sys.argv) != 2:
+    print('no folder given')
+    sys.exit(1)
 
-print('Connect to ' + FTPSERVER)
-f = ftplib.FTP(FTPSERVER)
-f.login()
-
-print('Get package list in folder ' + FOLDER)
-packages = f.nlst(FTPPATH + FOLDER)
-
-archives = []
-for package in packages:
-    filename = None
-    path = FTPPATH + FOLDER + '/' + package
-    try:
-        files = f.nlst(path)
-
-        for s in files:
-            if s.find('.orig.tar.') > 0:
-                filename = s
-
-        if not filename:
-            for s in files:
-                if s.find('.tar.') > 0:
-                    filename = s
-    except socket.error:
-        print('socket.error')
-        pass
-    except ftplib.error_temp:
-        print('ftplib.error_temp')
-        pass
-    except EOFError:
-        print('EOFError')
-        pass
-
-    if not filename:
-        print('archive not found for ' + package)
-    else:
-        archives.append(package + '/' + filename)
-
-print('Disconnect')
-f.quit()
+FOLDER = sys.argv[1]
+archives = getpackages(FOLDER)
 
 time.sleep(30)
 
