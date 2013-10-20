@@ -55,6 +55,7 @@ private:
         TEST_CASE(nullpointer20); // #3807 (fp: return p ? (p->x() || p->y()) : z)
         TEST_CASE(nullpointer21); // #4038 (fp: if (x) p=q; else return;)
         TEST_CASE(nullpointer23); // #4665 (false positive)
+        TEST_CASE(nullpointer24); // #5082 fp: chained assignment
         TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
@@ -1239,6 +1240,15 @@ private:
               "    sprintf(cBuf, \"%s\", c ? c : \"0\" );\n"
               "}");
         TODO_ASSERT_EQUALS("","[test.cpp:4]: (error) Possible null pointer dereference: c\n", errout.str());
+    }
+
+    void nullpointer24() {  // #5083 - fp: chained assignment
+        check("void f(){\n"
+              "    char *c = NULL;\n"
+              "    x = c = new char[10];\n"
+              "    *c = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_cast() { // #4692

@@ -1401,12 +1401,12 @@ private:
     bool null;
 
     /** variable is set to null */
-    static void setnull(std::list<ExecutionPath *> &checks, const unsigned int varid) {
+    static void setnull(std::list<ExecutionPath *> &checks, const unsigned int varid, bool null) {
         std::list<ExecutionPath *>::iterator it;
         for (it = checks.begin(); it != checks.end(); ++it) {
             Nullpointer *c = dynamic_cast<Nullpointer *>(*it);
             if (c && c->varId == varid)
-                c->null = true;
+                c->null = null;
         }
     }
 
@@ -1483,8 +1483,8 @@ private:
                 dereference(checks, &tok);
             else if (unknown && owner->inconclusiveFlag())
                 dereference(checks, &tok);
-            if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
-                setnull(checks, tok.varId());
+            if (Token::Match(tok.previous(), "[;{}=] %var% ="))
+                setnull(checks, tok.varId(), Token::simpleMatch(tok.tokAt(2), "0 ;"));
             else if (!deref &&
                      (!tok.previous()->isOp() || tok.previous()->str() == "&") &&
                      (!tok.next()->isConstOp() || tok.next()->str() == ">>"))
