@@ -167,10 +167,6 @@ def scanarchive(fullpath):
     results.write(comm[1] + '\n')
     results.close()
 
-if len(sys.argv) != 2:
-    print('no folder given')
-    sys.exit(1)
-
 FOLDER = None
 REV = None
 for arg in sys.argv[1:]:
@@ -178,6 +174,11 @@ for arg in sys.argv[1:]:
         REV = arg[6:]
     else:
         FOLDER = arg
+
+if not FOLDER:
+    print('no folder given')
+    sys.exit(1)
+
 archives = getpackages(FOLDER)
 
 time.sleep(30)
