@@ -18,6 +18,7 @@
 
 #include "testsuite.h"
 #include "filelister.h"
+#include "settings.h"
 #include <fstream>
 
 #ifndef _WIN32
@@ -75,7 +76,8 @@ private:
     void recursiveAddFiles() const {
         // Recursively add add files..
         std::map<std::string, std::size_t> files;
-        FileLister::recursiveAddFiles(files, ".");
+        Settings settings; // TODO(struscott): Pull in settings
+        FileLister::recursiveAddFiles(files, ".", &settings.library);
 
         // In case there are leading "./"..
         for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {

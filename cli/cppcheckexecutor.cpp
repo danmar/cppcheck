@@ -94,7 +94,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter));
+            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), &_settings->library);
     }
 
     if (!_files.empty()) {
@@ -176,11 +176,25 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         std::size_t processedsize = 0;
         unsigned int c = 0;
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-            returnValue += cppCheck.check(i->first);
-            processedsize += i->second;
-            if (!settings._errorsOnly)
-                reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
-            c++;
+            if (!_settings->library.acceptFile(i->first)) {
+                returnValue += cppCheck.check(i->first);
+                processedsize += i->second;
+                if (!settings._errorsOnly)
+                    reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                c++;
+            }
+        }
+
+        // second loop to catch all library files which may not work until all
+        // c/cpp files have been parsed and checked
+        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+            if (_settings->library.acceptFile(i->first)) {
+                returnValue += cppCheck.check(i->first);
+                processedsize += i->second;
+                if (!settings._errorsOnly)
+                    reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                c++;
+            }
         }
 
         cppCheck.checkFunctionUsage();

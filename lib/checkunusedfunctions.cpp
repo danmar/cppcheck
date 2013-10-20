@@ -31,7 +31,7 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
 {
     // Function declarations..
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
@@ -96,6 +96,78 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
     // Function usage..
     const Token *scopeEnd = NULL;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+
+        // parsing of library code to find called functions
+        if (settings->library.isexecutableblock(FileName, tok->str())) {
+            const Token * qmlVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
+            int scope = 1;
+            // find all function calls in library code (starts with '(', not if or while etc)
+            while (scope) {
+                if (qmlVarToken->str() == settings->library.blockstart(FileName)) {
+                    scope++;
+                } else if (qmlVarToken->str() == settings->library.blockend(FileName))
+                    scope--;
+                else if (qmlVarToken->next()->str() == "(" &&
+                         (!settings->library.iskeyword(FileName, qmlVarToken->str()))) {
+                    if (_functions.find(qmlVarToken->str()) != _functions.end())
+                        _functions[qmlVarToken->str()].usedOtherFile = true;
+                }
+                qmlVarToken = qmlVarToken->next();
+            }
+        }
+
+        if (!settings->library.acceptFile(FileName) // only check c/c++
+            && settings->library.isexporter(tok->str()) && tok->next() != 0) {
+            const Token * qPropToken = tok;
+            qPropToken = qPropToken->next();
+            while (qPropToken && qPropToken->str() != ")") {
+                if (settings->library.isexportedprefix(tok->str(), qPropToken->str())) {
+                    const Token* qNextPropToken = qPropToken->next();
+                    const std::string value = qNextPropToken->str();
+                    if (_functions.find(value) != _functions.end()) {
+                        _functions[value].usedOtherFile = true;
+                    }
+                }
+                if (settings->library.isexportedsuffix(tok->str(), qPropToken->str())) {
+                    const Token* qNextPropToken = qPropToken->previous();
+                    const std::string value = qNextPropToken->str();
+                    if (value != ")" && _functions.find(value) != _functions.end()) {
+                        _functions[value].usedOtherFile = true;
+                    }
+                }
+                qPropToken = qPropToken->next();
+            }
+        }
+
+        if (settings->library.acceptFile(FileName)
+            && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
+            const Token * qPropToken = tok;
+            qPropToken = qPropToken->next();
+            if (qPropToken->next()) {
+                qPropToken = qPropToken->next();
+                while (qPropToken && qPropToken->str() != ")") {
+                    const std::string value = qPropToken->str();
+                    if (!value.empty()) {
+                        _functions[value].usedOtherFile = true;
+                        break;
+                    }
+                    qPropToken = qPropToken->next();
+                }
+            }
+        }
+
+        if (settings->library.isreflection(FileName, tok->str())) {
+            const int index = settings->library.reflectionArgument(FileName, tok->str());
+            if (index >= 0) {
+                const Token * funcToken = tok->tokAt(index);
+                if (funcToken) {
+                    std::string value = funcToken->str();
+                    value = value.substr(1, value.length() - 2);
+                    _functions[value].usedOtherFile = true;
+                }
+            }
+        }
+
         if (scopeEnd == NULL) {
             if (!Token::Match(tok, ")|= const| {"))
                 continue;

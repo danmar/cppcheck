@@ -2016,6 +2016,15 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
                     (tok->previous() && tok->previous()->str()=="."))
                     continue;
 
+                if (tok->previous() &&
+                    tok->previous()->str()=="(") {
+                    const Token * prev = tok->previous();
+                    if (prev->previous() &&
+                        (_settings->library.ignorefunction(tok->str())
+                         || _settings->library.ignorefunction(prev->previous()->str())))
+                        continue;
+                }
+
                 if (isPureWithoutBody(*callFunction)) {
                     pureFunctionCalls.push_back(tok);
                     continue;
