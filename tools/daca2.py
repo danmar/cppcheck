@@ -49,17 +49,17 @@ def getpackages(folder):
 
             except socket.error as err:
                 print(str(err))
-            except ftplib.error_temp:
+            except ftplib.error_temp as err:
                 print(str(err))
-            except EOFError:
+            except EOFError as err:
                 print(str(err))
 
             if not filename:
                 print('Retry..')
                 f.close()
-                f.quit()
-                f.login()
                 time.sleep(1)
+                f = ftplib.FTP(FTPSERVER)
+                f.login()
                 count = count - 1
             else:
                 archives.append(package + '/' + filename)
