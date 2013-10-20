@@ -75,7 +75,8 @@ for lib in range(2):
 
             f = open(path + '/daca2-' + a + '.html', 'wt')
             f.write('<!DOCTYPE html>\n')
-            f.write('<html lang="en"><head><title>DACA2 - ' + a + '</title></head>\n')
+            f.write(
+                '<html lang="en"><head><title>DACA2 - ' + a + '</title></head>\n')
             f.write('<body>\n')
             f.write('<h1>DACA2 - ' + a + '</h1>')
             f.write('<pre>\n' + data + '</pre>\n')
