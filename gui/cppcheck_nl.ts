@@ -1022,13 +1022,13 @@ Opties:
         <translation>Onbekende taal gekozen!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="103"/>
+        <location filename="translationhandler.cpp" line="105"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Kon het taalbestand niet vinden: %1!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="109"/>
+        <location filename="translationhandler.cpp" line="111"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Kon de vertaling voor taal %1 in bestand %2 niet laden</translation>
@@ -1643,7 +1643,7 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="115"/>
+        <location filename="translationhandler.cpp" line="117"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -1656,7 +1656,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 De gebruikerstaal is gereset naar Engels. Open het dialoogvenster om een van de beschikbare talen te selecteren.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="121"/>
+        <location filename="translationhandler.cpp" line="123"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
