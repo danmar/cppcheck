@@ -19,6 +19,7 @@ import time
 FTPSERVER = 'ftp.sunet.se'
 FTPPATH = '/pub/Linux/distributions/Debian/debian/pool/main/'
 
+
 def getpackages(folder):
     print('Connect')
     f = ftplib.FTP(FTPSERVER)
@@ -133,6 +134,8 @@ def scanarchive(fullpath):
     subprocess.call(['wget', fullpath])
     if filename[-3:] == '.gz':
         subprocess.call(['tar', 'xzvf', filename])
+    elif filename[-3:] == '.xz':
+        subprocess.call(['tar', 'xJvf', filename])
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
