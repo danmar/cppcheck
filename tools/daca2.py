@@ -171,7 +171,13 @@ if len(sys.argv) != 2:
     print('no folder given')
     sys.exit(1)
 
-FOLDER = sys.argv[1]
+FOLDER = None
+REV = None
+for arg in sys.argv[1:]:
+    if arg[:6] == '--rev=':
+        REV = arg[6:]
+    else:
+        FOLDER = arg
 archives = getpackages(FOLDER)
 
 time.sleep(30)
@@ -191,7 +197,10 @@ os.chdir(workdir + FOLDER)
 
 try:
     results = open('results.txt', 'wt')
-    results.write('DATE ' + str(datetime.date.today()) + '\n\n')
+    results.write('DATE ' + str(datetime.date.today()) + '\n')
+    if REV:
+        results.write('GIT-REVISION ' + REV + '\n')
+    results.write('\n')
     results.close()
 
     for archive in archives:
