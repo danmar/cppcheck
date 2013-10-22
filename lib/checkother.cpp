@@ -2267,6 +2267,10 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                             zerodivcondError(tok2,divtok);
                         else if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid))
                             zerodivcondError(tok2,divtok);
+                        else if (Token::Match(tok2, "%var% ("))
+                            // Todo: continue looking in condition unless variable might be
+                            // changed by the function
+                            break;
                         else if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid))
                             zerodivcondError(tok2,divtok);
                     }

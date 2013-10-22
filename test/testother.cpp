@@ -578,6 +578,13 @@ private:
             CheckOther checkOther(&tokenizer, &settings, this);
             checkOther.checkZeroDivisionOrUselessCondition(); // don't crash
         }
+
+        // #5105 - FP
+        check("int f(int a, int b) {\n"
+              "  int r = a / b;\n"
+              "  if (func(b)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {
