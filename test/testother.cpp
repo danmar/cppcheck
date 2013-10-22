@@ -118,6 +118,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(testMisusedScopeObjectInConstructor);
+        TEST_CASE(testMisusedScopeObjectNoCodeAfter);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -3456,6 +3457,7 @@ private:
               "\n"
               "    void foo() const {\n"
               "        error();\n"
+              "        do_something();\n"
               "    }\n"
               "};\n"
              );
@@ -3533,6 +3535,7 @@ private:
               "        Foo(int a, int b) { }\n"
               "    };\n"
               "    Foo();\n"
+              "    do_something();\n"
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:7]: (error) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
@@ -3560,6 +3563,7 @@ private:
                             "void f()\n"
                             "{\n"
                             "    cb_watch_bool();\n"
+                            "    do_something();\n"
                             "}\n";
 
         check(code, "test.cpp");
@@ -3574,6 +3578,7 @@ private:
               "\n"
               "void foo() {\n"
               "    stat(\"file.txt\", &st);\n"
+              "    do_something();\n"
               "}");
         ASSERT_EQUALS("",errout.str());
     }
@@ -3592,6 +3597,7 @@ private:
                             "};\n"
                             "foo::foo() {\n"
                             "  Init(0);\n"
+                            "  do_something();\n"
                             "}\n";
 
         check(code, "test.cpp");
@@ -3603,11 +3609,20 @@ private:
                             "public:\n"
                             "  Foo(char x) {\n"
                             "    Foo(x, 0);\n"
+                            "    do_something();\n"
                             "  }\n"
                             "  Foo(char x, int y) { }\n"
                             "};\n";
         check(code, "test.cpp");
         ASSERT_EQUALS("[test.cpp:4]: (error) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
+    }
+
+    void testMisusedScopeObjectNoCodeAfter() {
+        check("class Foo {};\n"
+              "void f() {\n"
+              "  Foo();\n" // No code after class => don't warn
+              "}", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac2084() {

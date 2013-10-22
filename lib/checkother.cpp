@@ -2427,7 +2427,7 @@ void CheckOther::checkMisusedScopedObject()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "[;{}] %var% (")
-                && Token::simpleMatch(tok->linkAt(2), ") ;")
+                && Token::Match(tok->linkAt(2), ") ; !!}")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
                 && (!tok->next()->function() || // is not a function on this scope
                     (tok->next()->function() && tok->next()->function()->isConstructor()))) { // or is function in this scope and it's a ctor
