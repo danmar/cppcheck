@@ -468,6 +468,24 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(ABC *abc) {\n"
+              "  x(def || !abc || y(def, abc->a));\n"
+              "  if (abc) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(ABC *abc) {\n"
+              "  x(abc && y(def, abc->a));\n"
+              "  if (abc) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(ABC *abc) {\n"
+              "    x(def && abc && y(def, abc->a));\n"
+              "    if (abc) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #3228 - calling function with null object
         {
             const char code[] = "void f(Fred *fred) {\n"

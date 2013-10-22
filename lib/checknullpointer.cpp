@@ -580,8 +580,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                     tok1 = tok1->next();
                 skipvar.insert(tok1->varId());
                 continue;
-            } else if (Token::Match(tok1, "( ! %var% %oror%") ||
-                       Token::Match(tok1, "( %var% &&")) {
+            } else if (Token::Match(tok1, "(|%oror% ! %var% %oror%") ||
+                       Token::Match(tok1, "(|&& %var% &&")) {
                 // TODO: there are false negatives caused by this. The
                 // variable should be removed from skipvar after the
                 // condition
@@ -630,6 +630,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                 bool assignment = false;
                 const unsigned int varid1(tok1->varId());
                 if (varid1 == 0)
+                    continue;
+                if (skipvar.find(varid1) != skipvar.end())
                     continue;
                 const Token *tok2 = tok1->previous();
                 while (tok2 && !Token::Match(tok2, "[;{}]")) {
@@ -850,7 +852,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     // Don't write warning if the dereferencing is
                     // guarded by ?: or &&
                     const Token *tok2 = tok1->previous();
-                    if (tok2 && (tok2->isArithmeticalOp() || tok2->str() == "(")) {
+                    if (tok2 && (tok2->isArithmeticalOp() || Token::Match(tok2, "[(,]"))) {
                         while (tok2 && !Token::Match(tok2, "[;{}?:]")) {
                             if (tok2->str() == ")") {
                                 tok2 = tok2->link();
@@ -859,8 +861,8 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                                     break;
                                 }
                             }
-                            // guarded by &&
-                            if (tok2->varId() == varid && tok2->next()->str() == "&&")
+                            // guarded by && or ||
+                            if (Token::Match(tok2, "%varid% &&|%oror%",varid))
                                 break;
                             tok2 = tok2->previous();
                         }
