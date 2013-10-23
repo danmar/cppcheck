@@ -36,13 +36,14 @@ body {
 
 
 #page {
-    width: 860px;
-    margin: auto;
-    border-left: 2px solid #aaa;
-    border-right: 2px solid #aaa;
+    width: auto;
+    margin: 30px;
+    border: 2px solid #aaa;
     background-color: white;
     padding: 20px;
+    overflow: auto;
 }
+
 
 #header {
     width: 100%;
@@ -55,7 +56,7 @@ body {
     text-align: left;
     float: left;
     width: 100px;
-    height: 300px;
+    height: auto;
 }
 
 #menu > a {
@@ -65,10 +66,16 @@ body {
 
 #content {
     float: left;
-    width: 720px;
+    width: 80%;
     margin: 5px;
     padding: 0 10px 10px 10px;
     border-left: thin solid #aaa;
+}
+
+.linenos {
+	color: #bbb;
+	padding-right: 6px;
+	border-right: thin solid #aaa;
 }
 
 #footer {
@@ -119,7 +126,7 @@ HTML_FOOTER = """
 </html>
 """
 
-HTML_ERROR = "<span style=\"border-width: 2px;border-color: black;border-style: solid;background: #ffaaaa;padding: 3px;\">&lt;--- %s</span>\n"
+HTML_ERROR = "<span style=\"border-width: 1px;border-color: black;border-style: solid;background: #ffaaaa;padding: 1px;font-size: 11px;\">&lt;--- %s</span>\n"
 
 
 class AnnotateCodeFormatter(HtmlFormatter):
