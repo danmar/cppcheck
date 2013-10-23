@@ -562,7 +562,7 @@ private:
             const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
             ASSERT_EQUALS(2U, symbolDatabase->getVariableListSize());
             const Variable *var = symbolDatabase->getVariableFromVarId(1U);
-            ASSERT(var->typeStartToken());
+            ASSERT(!!var->typeStartToken());
             bool invalid = true;
             for (const Token *tok = var->typeStartToken(); tok; tok = tok->next()) {
                 invalid = true;
