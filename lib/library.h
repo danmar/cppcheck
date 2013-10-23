@@ -216,7 +216,8 @@ public:
     }
 
     bool isexportedprefix(const std::string &prefix, const std::string &token) const {
-        const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
+        const std::map<std::string, ExportedFunctions>::const_iterator it =
+                _exporters.find(prefix);
         if (it != _exporters.end()) {
             return it->second.isPrefix(token);
         } else
@@ -280,6 +281,7 @@ public:
 private:
     class ExportedFunctions {
     public:
+        ExportedFunctions() {}
         void addPrefix(const std::string& prefix) {
             _prefixes.push_back(prefix);
         }
@@ -301,6 +303,8 @@ private:
     };
     class CodeBlock {
     public:
+        CodeBlock()
+          : _offset(-1) {}
         void setStart(const std::string& s) {
             _start = s;
         }
