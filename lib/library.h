@@ -301,6 +301,8 @@ private:
     };
     class CodeBlock {
     public:
+        CodeBlock() : _offset(0) {}
+
         void setStart(const std::string& s) {
             _start = s;
         }
@@ -311,7 +313,7 @@ private:
             _offset = o;
         }
         void addBlock(const std::string& blockName) {
-            _blocks.push_back(blockName);
+            _blocks.insert(blockName);
         }
         std::string start() const {
             return _start;
@@ -323,15 +325,14 @@ private:
             return _offset;
         }
         bool isBlock(const std::string& blockName) const {
-            return std::find(_blocks.begin(), _blocks.end(), blockName)
-                   != _blocks.end();
+            return _blocks.find(blockName) != _blocks.end();
         }
 
     private:
         std::string _start;
         std::string _end;
         int _offset;
-        std::list<std::string> _blocks;
+        std::set<std::string> _blocks;
     };
     int allocid;
     std::map<std::string, int> _alloc; // allocation functions
