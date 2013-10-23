@@ -217,7 +217,6 @@ public:
 
     bool isexportedprefix(const std::string &prefix, const std::string &token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
-        std::list<std::string>::const_iterator token_it;
         if (it != _exporters.end()) {
             return it->second.isPrefix(token);
         } else
@@ -226,7 +225,6 @@ public:
 
     bool isexportedsuffix(const std::string &prefix, const std::string &token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
-        std::list<std::string>::const_iterator token_it;
         if (it != _exporters.end()) {
             return it->second.isSuffix(token);
         } else
