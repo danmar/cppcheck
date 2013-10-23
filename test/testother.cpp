@@ -6096,12 +6096,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
-        check("int i;\n"
-              "void f() {\n"
-              "    i = 1;\n"
-              "    i = 1;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        {
+            // non-local variable => only show warning when inconclusive is used
+            const char code[] = "int i;\n"
+                                "void f() {\n"
+                                "    i = 1;\n"
+                                "    i = 1;\n"
+                                "}";
+            check(code, "test.cpp", false, false); // inconclusive = false
+            ASSERT_EQUALS("", errout.str());
+            check(code, "test.cpp", false, true); // inconclusive = true
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        }
 
         check("void f() {\n"
               "    int i;\n"

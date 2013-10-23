@@ -660,8 +660,11 @@ void CheckOther::checkRedundantAssignment()
                         if (error) {
                             if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok) && warning)
                                 redundantAssignmentInSwitchError(it->second, tok, tok->str());
-                            else if (performance)
-                                redundantAssignmentError(it->second, tok, tok->str(), nonLocal(it->second->variable())); // Inconclusive for non-local variables
+                            else if (performance) {
+                                const bool nonlocal = nonLocal(it->second->variable());
+                                if (_settings->inconclusive || !nonlocal) // see #5089 - report inconclusive only when requested
+                                    redundantAssignmentError(it->second, tok, tok->str(), nonlocal); // Inconclusive for non-local variables
+                            }
                         }
                         it->second = tok;
                     }
