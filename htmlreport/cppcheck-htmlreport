@@ -1,7 +1,12 @@
 #!/usr/bin/env python
+
+from __future__ import unicode_literals
+
+import io
 import sys
 import optparse
 import os
+
 from pygments import highlight
 from pygments.lexers import guess_lexer_for_filename
 from pygments.formatters import HtmlFormatter
@@ -183,7 +188,7 @@ if __name__ == '__main__':
     parser.add_option("--file", dest="file", help="The cppcheck xml output file to read defects from. Default is reading from stdin.")
     parser.add_option("--report-dir", dest="report_dir", help="The directory where the HTML report content is written.")
     parser.add_option("--source-dir", dest="source_dir", help="Base directory where source code files can be found.")
-    parser.add_option("--source-encoding", dest="source_encoding", help="Encoding of source code.", default=None)
+    parser.add_option("--source-encoding", dest="source_encoding", help="Encoding of source code.", default='utf-8')
 
     # Parse options and make sure that we have an output directory set.
     options, args = parser.parse_args()
@@ -200,7 +205,7 @@ if __name__ == '__main__':
     if options.file:
         if not os.path.exists(options.file):
             parser.error("cppcheck xml file: %s not found." % options.file)
-        stream = open(options.file, "r")
+        stream = io.open(options.file, "r")
 
     # Parse the xml file and produce a simple list of errors.
     print("Parsing xml report.")
@@ -233,44 +238,48 @@ if __name__ == '__main__':
     # file that contains one or more errors.
     print("Processing errors")
     for filename, data in files.items():
-        try:
-            htmlfile = data["htmlfile"]
-            errors = data["errors"]
+        htmlfile = data["htmlfile"]
+        errors = data["errors"]
 
-            lines = []
-            for error in errors:
-                lines.append(error["line"])
+        lines = []
+        for error in errors:
+            lines.append(error["line"])
 
-            if filename == "":
-                continue
+        if filename == "":
+            continue
 
-            source_file = os.path.join(source_dir, filename)
-            if not os.path.isfile(source_file):
-                sys.stderr.write("ERROR: Source file '%s' not found.\n" % source_file)
-                continue
-            stream = open(source_file)
-            content = stream.read()
-            stream.close()
+        source_filename = os.path.join(source_dir, filename)
+        if not os.path.isfile(source_filename):
+            sys.stderr.write("ERROR: Source file '%s' not found.\n" %
+                             source_filename)
+            continue
+        with io.open(source_filename, 'r') as input_file:
+            content = input_file.read()
 
-            htmlFormatter = AnnotateCodeFormatter(linenos=True, style='colorful', hl_lines=lines, lineanchors="line", encoding=options.source_encoding)
-            htmlFormatter.errors = errors
-            stream = open(os.path.join(options.report_dir, htmlfile), "w")
-            stream.write(HTML_HEAD % (options.title, htmlFormatter.get_style_defs(".highlight"), options.title))
-            lexer = guess_lexer_for_filename(source_file, "")
+        htmlFormatter = AnnotateCodeFormatter(linenos=True, style='colorful', hl_lines=lines, lineanchors="line", encoding=options.source_encoding)
+        htmlFormatter.errors = errors
+        with io.open(os.path.join(options.report_dir, htmlfile), 'w') as output_file:
+            output_file.write(HTML_HEAD %
+                              (options.title,
+                               htmlFormatter.get_style_defs(".highlight"),
+                               options.title))
+
+            lexer = guess_lexer_for_filename(source_filename, "")
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
-            stream.write(highlight(content, lexer, htmlFormatter))
-            stream.write(HTML_FOOTER)
-            stream.close()
 
-            print("  " + filename)
-        except Exception as message:
-            print("ERROR: Filename: %s, %s" % (filename, message))
+            output_file.write(
+                highlight(content, lexer, htmlFormatter).decode(
+                    options.source_encoding))
+
+            output_file.write(HTML_FOOTER)
+
+        print("  " + filename)
 
     # Generate a master index.html file that will contain a list of
     # all the errors created.
     print("Creating index.html")
-    stream = open(os.path.join(options.report_dir, "index.html"), "w")
+    stream = io.open(os.path.join(options.report_dir, "index.html"), "w")
     stream.write(HTML_HEAD % (options.title, "", options.title))
     stream.write("<table>")
     stream.write("<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>")
@@ -294,6 +303,6 @@ if __name__ == '__main__':
     stream.close()
 
     print("Creating style.css file")
-    stream = open(os.path.join(options.report_dir, "style.css"), "w")
+    stream = io.open(os.path.join(options.report_dir, "style.css"), "w")
     stream.write(STYLE_FILE)
     stream.close()
