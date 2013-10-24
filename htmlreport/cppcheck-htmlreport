@@ -29,16 +29,17 @@ body {
 
 .error {
     background-color: #ffb7b7;
-    margin: 0;
-    padding: 0;
 }
 
 .error2 {
     background-color: #faa;
     border: 1px dotted black;
+    display: inline-block;
     margin-left: 4px;
-    margin-top: 4px;
-    padding: 1px
+}
+
+.highlight .hll {
+    padding: 1px;
 }
 
 #page {
@@ -71,6 +72,9 @@ body {
 }
 
 #content {
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
     border-left: thin solid #aaa;
     float: left;
     margin: 5px;
@@ -80,7 +84,7 @@ body {
 
 .linenos {
     border-right: thin solid #aaa;
-    color: #bbb;
+    color: lightgray;
     padding-right: 6px;
 }
 
@@ -136,7 +140,7 @@ HTML_FOOTER = """
 </html>
 """
 
-HTML_ERROR = "<span class=\"error2\">&lt;--- %s</span>\n"
+HTML_ERROR = "<span class='error2'>&lt;--- %s</span>\n"
 
 
 class AnnotateCodeFormatter(HtmlFormatter):
@@ -302,7 +306,7 @@ if __name__ == '__main__':
     stream.write("<table>")
     stream.write("<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>")
     for filename, data in files.items():
-        stream.write("<tr><td colspan='4'><a href=\"%s\">%s</a></td></tr>" % (data["htmlfile"], filename))
+        stream.write("<tr><td colspan='4'><a href='%s'>%s</a></td></tr>" % (data["htmlfile"], filename))
         for error in data["errors"]:
             if error['severity'] == 'error':
                 error_class = 'class="error"'
