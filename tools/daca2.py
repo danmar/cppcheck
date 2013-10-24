@@ -6,51 +6,40 @@
 # 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
 # 5. Run the daca2 script:  python daca2.py FOLDER
 
-import ftplib
 import subprocess
 import sys
 import shutil
 import glob
 import os
-import socket
 import datetime
 import time
 
 FTPSERVER = 'ftp.sunet.se'
-FTPPATH = '/pub/Linux/distributions/Debian/debian/pool/main/'
+FTPPATH = '/pub/Linux/distributions/Debian/debian/'
 
 
 def getpackages(folder):
-    print('Connect')
-    f = ftplib.FTP(FTPSERVER)
-    f.login()
+    subprocess.call(
+        ['nice', 'wget', 'ftp://' + FTPSERVER + FTPPATH + 'ls-lR.gz'])
+    subprocess.call(['nice', 'gunzip', 'ls-lR.gz'])
+    f = open('ls-lR', 'rt')
+    lines = f.readlines()
+    f.close()
+    subprocess.call(['rm', 'ls-lR'])
 
-    print('Get package list in folder ' + folder)
-    packages = f.nlst(FTPPATH + folder)
-
+    path = None
     archives = []
-    for package in packages:
-        print(package)
-        filename = None
-        path = FTPPATH + folder + '/' + package
-
-        time.sleep(1)
-        files = f.nlst(path)
-
-        for s in files:
-            if s.find('.orig.tar.') > 0:
-                filename = s
-
-        if not filename:
-            for s in files:
-                if s.find('.tar.') > 0:
-                    filename = s
-
-        if not filename:
-            archives = []
-            return archives
-
-        archives.append(package + '/' + filename)
+    filename = None
+    for line in lines:
+        if len(line) < 4:
+            if filename:
+                archives.append(path + '/' + filename)
+            path = None
+            filename = None
+        elif line[:13 + len(folder)] == './pool/main/' + folder + '/':
+            path = line[2:-2]
+        elif path and line.find('.orig.tar.') > 0:
+            filename = line[1 + line.rfind(' '):]
 
     return archives
 
@@ -205,7 +194,7 @@ try:
         # remove all files/folders except results.txt
         removeAllExceptResults()
 
-        scanarchive('ftp://' + FTPSERVER + FTPPATH + FOLDER + '/' + archive)
+        scanarchive('ftp://' + FTPSERVER + FTPPATH + archive)
 
 except EOFError:
     pass
