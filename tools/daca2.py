@@ -31,40 +31,26 @@ def getpackages(folder):
     archives = []
     for package in packages:
         print(package)
-        count = 10
-        while count > 0:
-            filename = None
-            path = FTPPATH + folder + '/' + package
-            try:
-                time.sleep(0.01)
-                files = f.nlst(path)
+        filename = None
+        path = FTPPATH + folder + '/' + package
 
-                for s in files:
-                    if s.find('.orig.tar.') > 0:
-                        filename = s
+        time.sleep(1)
+        files = f.nlst(path)
 
-                if not filename:
-                    for s in files:
-                        if s.find('.tar.') > 0:
-                            filename = s
+        for s in files:
+            if s.find('.orig.tar.') > 0:
+                filename = s
 
-            except socket.error as err:
-                print(str(err))
-            except ftplib.error_temp as err:
-                print(str(err))
-            except EOFError as err:
-                print(str(err))
+        if not filename:
+            for s in files:
+                if s.find('.tar.') > 0:
+                    filename = s
 
-            if not filename:
-                print('Retry..')
-                f.close()
-                time.sleep(1)
-                f = ftplib.FTP(FTPSERVER)
-                f.login()
-                count = count - 1
-            else:
-                archives.append(package + '/' + filename)
-                count = 0
+        if not filename:
+            archives = []
+            return archives
+
+        archives.append(package + '/' + filename)
 
     return archives
 
@@ -131,7 +117,12 @@ def scanarchive(fullpath):
     results.close()
 
     filename = fullpath[fullpath.rfind('/') + 1:]
-    subprocess.call(['wget', fullpath])
+    subprocess.call(['nice', 'wget', fullpath])
+    if not os.path.isfile(filename):
+        removeAllExceptResults()
+        os.remove(filename)
+        sys.exit(1)
+
     if filename[-3:] == '.gz':
         subprocess.call(['tar', 'xzvf', filename])
     elif filename[-3:] == '.xz':
@@ -183,6 +174,9 @@ if not FOLDER:
     sys.exit(1)
 
 archives = getpackages(FOLDER)
+if len(archives) == 0:
+    print('failed to load packages')
+    sys.exit(1)
 
 time.sleep(30)
 
