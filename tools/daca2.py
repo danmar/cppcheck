@@ -31,15 +31,19 @@ def getpackages(folder):
     archives = []
     filename = None
     for line in lines:
+        line = line.strip()
         if len(line) < 4:
             if filename:
                 archives.append(path + '/' + filename)
             path = None
             filename = None
         elif line[:13 + len(folder)] == './pool/main/' + folder + '/':
-            path = line[2:-2]
+            path = line[2:-1]
         elif path and line.find('.orig.tar.') > 0:
             filename = line[1 + line.rfind(' '):]
+
+    for a in archives:
+        print(a)
 
     return archives
 
@@ -167,7 +171,8 @@ if len(archives) == 0:
     print('failed to load packages')
     sys.exit(1)
 
-time.sleep(30)
+print('Sleep for 10 seconds..')
+time.sleep(10)
 
 workdir = os.path.expanduser('~/daca2/')
 
