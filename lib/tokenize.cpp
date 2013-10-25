@@ -3399,7 +3399,7 @@ bool Tokenizer::simplifySizeof()
             // Some default value..
             std::size_t sz = 0;
 
-            unsigned int varid = tok->tokAt((tok->strAt(2) == "*") ? 3 : 2)->varId();
+            const unsigned int varid = tok->tokAt((tok->strAt(2) == "*") ? 3 : 2)->varId();
             if (varid != 0) {
                 // Try to locate variable declaration..
                 const Token *decltok = Token::findmatch(list.front(), "%varid%", varid);
