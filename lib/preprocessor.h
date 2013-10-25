@@ -236,7 +236,7 @@ public:
      * @param filePath filename of code
      * @param includePaths Paths where headers might be
      * @param defs defines (only values)
-     * @param pragmaOnce includes that has already been included and contains a #pragma once statement
+     * @param pragmaOnce includes that has already been included and contains a \#pragma once statement
      * @param includes provide a empty list. this is just used to prevent recursive inclusions.
      * \return resulting string
      */
