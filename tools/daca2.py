@@ -110,11 +110,11 @@ def scanarchive(fullpath):
     results.close()
 
     filename = fullpath[fullpath.rfind('/') + 1:]
-    subprocess.call(['nice', 'wget', fullpath])
-    if not os.path.isfile(filename):
-        removeAllExceptResults()
-        os.remove(filename)
-        sys.exit(1)
+    count = 5
+    while count > 0 and not os.path.isfile(filename):
+        count = count - 1
+        time.sleep(10)
+        subprocess.call(['nice', 'wget', fullpath])
 
     if filename[-3:] == '.gz':
         subprocess.call(['tar', 'xzvf', filename])
