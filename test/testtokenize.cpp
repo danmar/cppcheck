@@ -9801,6 +9801,61 @@ private:
                              "}";
         ASSERT_EQUALS(code4, tokenizeAndStringify(code4));
 
+        const char code5[] = "void foo() {\n"
+                             "    std::cout<<powf(sinl(x),2)+powl(cosl(x),2);\n"
+                             "    std::cout<<pow(sinl(powl(sinl(y),2)+powl(cosl(y),2)),2)+powl(cosl(powl(sinl(y),2)+powl(cosl(y),2)),2);\n"
+                             "    std::cout<<powl(sinl(x),2.0)+powl(cosl(x),2.0);\n"
+                             "    std::cout<<powl(sinl(x*y+z),2.0)+powl(cosl(x*y+z),2.0);\n"
+                             "    std::cout<<powl(sinl(x*y+z),2)+powl(cosl(x*y+z),2);\n"
+                             "    std::cout<<powl(cosl(x),2)+powl(sinl(x),2);\n"
+                             "    std::cout<<powl(cosl(x),2.0)+powl(sinl(x),2.0);\n"
+                             "    std::cout<<powl(cosl(x*y+z),2.0)+powl(sinl(x*y+z),2.0);\n"
+                             "    std::cout<<powl(cosl(x*y+z),2)+powl(sinl(x*y+z),2);\n"
+                             "    std::cout<<powl(sinhl(x*y+z),2)-powl(coshl(x*y+z),2);\n"
+                             "    std::cout<<powl(sinhl(x),2)-powl(coshl(x),2);\n"
+                             "    std::cout<<powl(sinhl(x*y+z),2.0)-powl(coshl(x*y+z),2.0);\n"
+                             "    std::cout<<powl(sinhl(x),2.0)-powl(coshl(x),2.0);\n"
+                             "    std::cout<<powl(coshl(x*y+z),2)-powl(sinhl(x*y+z),2);\n"
+                             "    std::cout<<powl(coshl(x),2)-powl(sinhl(x),2);\n"
+                             "    std::cout<<powl(coshl(x*y+z),2.0)-powl(sinhl(x*y+z),2.0);\n"
+                             "    std::cout<<powl(coshl(x),2.0)-powl(sinhl(x),2.0);\n"
+                             "    std::cout<<powl(coshl(powl(x,1)),2.0)-powl(sinhl(powl(x,1)),2.0);\n"
+                             "}";
+
+        const char expected5[] = "void foo ( ) {\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << 1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "std :: cout << -1 ;\n"
+                                 "}";
+        ASSERT_EQUALS(expected5, tokenizeAndStringify(code5));
+
+
+        const char code6[] = "void f ( ) {\n"
+                             "a = powl ( sinl ( x ) , 2 ) + powl ( cosl ( y ) , 2 ) ;\n"
+                             "b = powl ( sinhl ( x ) , 2 ) - powl ( coshl ( y ) , 2 ) ;\n"
+                             "c = powl ( sinl ( x ) , 2.0 ) + powl ( cosl ( y ) , 2.0 ) ;\n"
+                             "d = powl ( sinhl ( x ) , 2.0 ) - powl ( coshl ( y ) , 2.0 ) ;\n"
+                             "e = powl ( cosl ( x ) , 2 ) + powl ( sinl ( y ) , 2 ) ;\n"
+                             "f = powl ( coshl ( x ) , 2 ) - powl ( sinhl ( y ) , 2 ) ;\n"
+                             "g = powl ( cosl ( x ) , 2.0 ) + powl ( sinl ( y ) , 2.0 ) ;\n"
+                             "h = powl ( coshl ( x ) , 2.0 ) - powl ( sinhl ( y ) , 2.0 ) ;\n"
+                             "}";
+        ASSERT_EQUALS(code6, tokenizeAndStringify(code6));
     }
 
     static std::string testAst(const char code[]) {
