@@ -3387,7 +3387,7 @@ bool Tokenizer::simplifySizeof()
         }
 
         else if (Token::Match(tok, "sizeof ( %type% )")) {
-            unsigned int size = sizeOfType(tok->tokAt(2));
+            const unsigned int size = sizeOfType(tok->tokAt(2));
             if (size > 0) {
                 tok->str(MathLib::toString(size));
                 tok->deleteNext(3);
