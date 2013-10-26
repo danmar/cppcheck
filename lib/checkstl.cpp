@@ -57,6 +57,13 @@ void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, c
     }
 }
 
+static const Token *skipMembers(const Token *tok)
+{
+    while (Token::Match(tok, "%var% ."))
+        tok = tok->tokAt(2);
+    return tok;
+}
+
 void CheckStl::iterators()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -152,7 +159,8 @@ void CheckStl::iterators()
 
             // it = foo.erase(..
             // taking the result of an erase is ok
-            else if (Token::Match(tok2, "%varid% = %var% . erase (", iteratorId)) {
+            else if (Token::Match(tok2, "%varid% = %var% .", iteratorId) &&
+                     Token::simpleMatch(skipMembers(tok2->tokAt(2)), "erase (")) {
                 // the returned iterator is valid
                 validatingToken = tok2->linkAt(5);
                 tok2 = tok2->tokAt(5);
