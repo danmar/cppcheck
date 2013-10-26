@@ -14,13 +14,26 @@ import os
 import datetime
 import time
 
-FTPSERVER = 'ftp.sunet.se'
-FTPPATH = '/pub/Linux/distributions/Debian/debian/'
+DEBIAN = ['ftp://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
+          'http://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
+          'ftp://ftp.debian.org/debian/']
+
+
+def wget(filepath):
+    filename = filepath
+    if filepath.find('/') >= 0:
+        filename = filename[filename.rfind('/') + 1:]
+    for d in DEBIAN:
+        subprocess.call(['nice', 'wget', d + filepath])
+        if os.path.isfile(filename):
+            return True
+        time.sleep(10)
+    return False
 
 
 def getpackages(folder):
-    subprocess.call(
-        ['nice', 'wget', 'ftp://' + FTPSERVER + FTPPATH + 'ls-lR.gz'])
+    if not wget('ls-lR.gz'):
+        return []
     subprocess.call(['nice', 'gunzip', 'ls-lR.gz'])
     f = open('ls-lR', 'rt')
     lines = f.readlines()
@@ -98,24 +111,25 @@ def removeLargeFiles(path):
             continue
         if os.path.isdir(g):
             removeLargeFiles(g + '/')
-        elif g != 'results.txt':
+        elif os.path.isfile(g) and g != 'results.txt':
             statinfo = os.stat(g)
             if statinfo.st_size > 100000:
                 os.remove(g)
 
 
-def scanarchive(fullpath):
+def scanarchive(filepath):
     results = open('results.txt', 'at')
-    results.write(fullpath + '\n')
+    results.write(DEBIAN[0] + filepath + '\n')
     results.close()
 
-    filename = fullpath[fullpath.rfind('/') + 1:]
-    count = 5
-    while count > 0 and not os.path.isfile(filename):
-        count = count - 1
-        time.sleep(10)
-        subprocess.call(['nice', 'wget', fullpath])
+    if not wget(filepath):
+        if not wget(filepath):
+            results = open('results.txt', 'at')
+            results.write('wget failed\n')
+            results.close()
+            return
 
+    filename = filepath[filepath.rfind('/') + 1:]
     if filename[-3:] == '.gz':
         subprocess.call(['tar', 'xzvf', filename])
     elif filename[-3:] == '.xz':
@@ -138,7 +152,8 @@ def scanarchive(fullpath):
 
     removeLargeFiles('')
 
-    print('cppcheck "' + dirname + '"')
+    print(filename + ': cppcheck ' + dirname)
+
     p = subprocess.Popen(
         ['nice',
          '../cppcheck-O2',
@@ -199,7 +214,7 @@ try:
         # remove all files/folders except results.txt
         removeAllExceptResults()
 
-        scanarchive('ftp://' + FTPSERVER + FTPPATH + archive)
+        scanarchive(archive)
 
 except EOFError:
     pass
