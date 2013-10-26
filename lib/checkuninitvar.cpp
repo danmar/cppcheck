@@ -479,6 +479,9 @@ private:
         if (tok.varId()) {
             // array variable passed as function parameter..
             if (Token::Match(tok.previous(), "[(,] %var% [+-,)]")) {
+                // #4896 : This checking was removed because of FP,
+                // the new uninitvar checking is used instead to catch
+                // these errors.
                 ExecutionPath::bailOutVar(checks, tok.varId());
                 return &tok;
             }
