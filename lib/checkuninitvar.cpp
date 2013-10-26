@@ -373,6 +373,8 @@ private:
                 break;
             if (Token::Match(tok2, "%var% ("))
                 break;
+            if (Token::Match(tok2, "%var% <") && Token::Match(tok2->linkAt(1), "> ("))
+                break;
             if (tok2->varId() &&
                 !Token::Match(tok2->previous(), "&|::") &&
                 !Token::simpleMatch(tok2->tokAt(-2), "& (") &&
@@ -477,17 +479,7 @@ private:
         if (tok.varId()) {
             // array variable passed as function parameter..
             if (Token::Match(tok.previous(), "[(,] %var% [+-,)]")) {
-                // skip ')'..
-                const Token *tok2 = tok.next();
-                while (tok2 && tok2->str() == ")")
-                    tok2 = tok2->next();
-
-                // variable is assigned like: "( %var% ) .. ="
-                if (Token::Match(tok.previous(), "( %var% )") && tok2 && tok2->str() == "=")
-                    ExecutionPath::bailOutVar(checks, tok.varId());
-                else if (tok.strAt(-2) != ">" || !tok.linkAt(-2))
-                    use(checks, &tok);
-                //use_array(checks, &tok);
+                ExecutionPath::bailOutVar(checks, tok.varId());
                 return &tok;
             }
 
