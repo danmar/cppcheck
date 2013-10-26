@@ -3084,6 +3084,19 @@ private:
                               "    }\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+
+        // #4956 - assignment in for_each
+        functionVariableUsage("void f(std::vector<int> ints) {\n"
+                              "  int x = 0;\n"
+                              "  std::for_each(ints.begin(), ints.end(), [&x](int i){ dostuff(x); x = i; });\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(std::vector<int> ints) {\n"
+                              "  int x = 0;\n"
+                              "  std::for_each(ints.begin(), ints.end(), [&x](int i){ x += i; });\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarShift1() {
