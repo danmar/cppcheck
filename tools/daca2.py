@@ -27,6 +27,7 @@ def wget(filepath):
         subprocess.call(['nice', 'wget', d + filepath])
         if os.path.isfile(filename):
             return True
+        print('Sleep for 10 seconds..')
         time.sleep(10)
     return False
 
@@ -118,6 +119,9 @@ def removeLargeFiles(path):
 
 
 def scanarchive(filepath):
+    # remove all files/folders except results.txt
+    removeAllExceptResults()
+
     results = open('results.txt', 'at')
     results.write(DEBIAN[0] + filepath + '\n')
     results.close()
@@ -139,20 +143,13 @@ def scanarchive(filepath):
 
     if filename[:5] == 'flite':
         results = open('results.txt', 'at')
-        results.write('fixme: this package is skipped\n')
+        results.write('fixme: the flite package is skipped\n')
         results.close()
-        return
-
-    dirname = None
-    for s in glob.glob(filename[:2] + '*'):
-        if os.path.isdir(s):
-            dirname = s
-    if dirname is None:
         return
 
     removeLargeFiles('')
 
-    print(filename + ': cppcheck ' + dirname)
+    print('cppcheck ' + filename)
 
     p = subprocess.Popen(
         ['nice',
@@ -160,7 +157,7 @@ def scanarchive(filepath):
          '-D__GCC__',
          '--enable=style',
          '--suppressions-list=../suppressions.txt',
-         dirname],
+         '.'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     comm = p.communicate()
@@ -211,9 +208,6 @@ try:
     results.close()
 
     for archive in archives:
-        # remove all files/folders except results.txt
-        removeAllExceptResults()
-
         scanarchive(archive)
 
 except EOFError:
