@@ -96,3 +96,15 @@ int main(int argc, char* argv[])
     CppCheckExecutor exec;
     return exec.check(argc, argv);
 }
+
+
+// Warn about deprecated compilers
+#ifdef __GNUC__
+#   if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 4))
+#       warning "Using GCC 4.4 or earlier. Support for this version will be removed soon."
+#   endif
+#elif defined(_MSC_VER)
+#   if (_MSC_VER < 1600)
+#       pragma message("Using Visual Studio 2008 or earlier. Support for this version will be removed soon.")
+#   endif
+#endif
