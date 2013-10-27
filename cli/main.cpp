@@ -99,9 +99,13 @@ int main(int argc, char* argv[])
 
 
 // Warn about deprecated compilers
-#ifdef __GNUC__
+#ifdef __clang
+#   if ( __clang_major__ < 2 || ( __clang_major__  == 2 && __clang_minor__ < 9))
+#       warning "Using Clang 2.8 or earlier. Support for this version will be removed soon."
+#   endif
+#elif defined(__GNUC__)
 #   if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 4))
-#       warning "Using GCC 4.4 or earlier. Support for this version will be removed soon."
+#       warning "Using GCC 4.3 or earlier. Support for this version will be removed soon."
 #   endif
 #elif defined(_MSC_VER)
 #   if (_MSC_VER < 1600)
