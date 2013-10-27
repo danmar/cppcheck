@@ -1305,6 +1305,20 @@ private:
                       "[test.cpp:23]: (warning) %n in format string (no. 23) requires 'int *' but the argument type is 'const wchar_t *'.\n"
                       "[test.cpp:23]: (warning) %n in format string (no. 24) requires 'int *' but the argument type is 'const int *'.\n", errout.str());
 
+        check("void g() {\n" // #5104
+              "    myvector<int> v1(1);\n"
+              "    scanf(\"%d\n\",&v1[0]);\n"
+              "    myvector<unsigned int> v2(1);\n"
+              "    scanf(\"%u\n\",&v2[0]);\n"
+              "    myvector<unsigned int> v3(1);\n"
+              "    scanf(\"%x\n\",&v3[0]);\n"
+              "    myvector<double> v4(1);\n"
+              "    scanf(\"%lf\n\",&v4[0]);\n"
+              "    myvector<char *> v5(1);\n"
+              "    scanf(\"%10s\n\",v5[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testPrintfArgument() {
@@ -1371,9 +1385,9 @@ private:
               "    printf(\"%s\", \"s4\");\n"
               "    printf(\"%u\", s);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a char* given in the argument list.\n"
-                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires a char* given in the argument list.\n"
-                      "[test.cpp:5]: (warning) %s in format string (no. 1) requires a char* given in the argument list.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'std::string'.\n"
                       "[test.cpp:7]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'char *'.\n", errout.str());
 
         check("void foo(const int* cpi, const int ci, int i, int* pi, std::string s) {\n"
@@ -1387,7 +1401,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const int *'.\n"
                       "[test.cpp:3]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const int'.\n"
                       "[test.cpp:4]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'int'.\n"
-                      "[test.cpp:6]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'std'.\n"
+                      "[test.cpp:6]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'std::string'.\n"
                       "[test.cpp:7]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n", errout.str());
 
         check("class foo {};\n"
@@ -2059,6 +2073,24 @@ private:
                       "[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'long'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'long'.\n", errout.str());
 
+        check("void f() {\n" // #5104
+              "    myvector<unsigned short> v1(1,0);\n"
+              "    printf(\"%d\n\",v1[0]);\n"
+              "    myvector<int> v2(1,0);\n"
+              "    printf(\"%d\n\",v2[0]);\n"
+              "    myvector<unsigned int> v3(1,0);\n"
+              "    printf(\"%u\n\",v3[0]);\n"
+              "    myvector<unsigned int> v4(1,0);\n"
+              "    printf(\"%x\n\",v4[0]);\n"
+              "    myvector<double> v5(1,0);\n"
+              "    printf(\"%f\n\",v5[0]);\n"
+              "    myvector<bool> v6(1,0);\n"
+              "    printf(\"%u\n\",v6[0]);\n"
+              "    myvector<char *> v7(1,0);\n"
+              "    printf(\"%s\n\",v7[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
@@ -2441,17 +2473,17 @@ private:
               "    printf(format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    printf(format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "}\n", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %s in format string (no. 5) requires a char* given in the argument list.\n"
+        ASSERT_EQUALS("[test.cpp:6]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:6]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:7]: (warning) %s in format string (no. 5) requires a char* given in the argument list.\n"
+                      "[test.cpp:7]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:7]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:9]: (warning) %s in format string (no. 5) requires a char* given in the argument list.\n"
+                      "[test.cpp:9]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:9]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:10]: (warning) %s in format string (no. 5) requires a char* given in the argument list.\n"
+                      "[test.cpp:10]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:10]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:12]: (warning) %s in format string (no. 5) requires a char* given in the argument list.\n"
+                      "[test.cpp:12]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:12]: (warning) printf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:13]: (warning) %s in format string (no. 5) requires a char* given in the argument list.\n"
+                      "[test.cpp:13]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:13]: (warning) printf format string requires 5 parameters but 6 are given.\n", errout.str());
 
     }

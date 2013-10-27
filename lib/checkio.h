@@ -111,7 +111,7 @@ private:
     void invalidScanfArgTypeError_s(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidScanfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo, bool isUnsigned);
     void invalidScanfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
-    void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat);
+    void invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
@@ -136,7 +136,7 @@ private:
         c.invalidScanfArgTypeError_s(0, 1, "s", NULL);
         c.invalidScanfArgTypeError_int(0, 1, "d", NULL, false);
         c.invalidScanfArgTypeError_float(0, 1, "f", NULL);
-        c.invalidPrintfArgTypeError_s(0, 1);
+        c.invalidPrintfArgTypeError_s(0, 1, NULL);
         c.invalidPrintfArgTypeError_n(0, 1, NULL);
         c.invalidPrintfArgTypeError_p(0, 1, NULL);
         c.invalidPrintfArgTypeError_int(0, 1, "X", NULL);

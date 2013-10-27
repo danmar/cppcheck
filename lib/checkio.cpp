@@ -643,7 +643,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             argInfo.isKnownType() && argInfo.isArrayOrPointer() &&
                                             (!Token::Match(argInfo.typeToken, "char|wchar_t") ||
                                              argInfo.typeToken->strAt(-1) == "const")) {
-                                            invalidScanfArgTypeError_s(tok, numFormat, specifier, &argInfo);
+                                            if (!(argInfo.isArrayOrPointer() && argInfo.element && !argInfo.typeToken->isStandardType()))
+                                                invalidScanfArgTypeError_s(tok, numFormat, specifier, &argInfo);
                                         }
                                         if (scanf_s) {
                                             numSecure++;
@@ -669,9 +670,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         if (argInfo.typeToken->type() == Token::eString)
                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                         else if (argInfo.isKnownType()) {
-                                            if (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")
+                                            if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
+                                                if (argInfo.typeToken->isStandardType() || !argInfo.element)
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (!argInfo.isArrayOrPointer() ||
+                                                       argInfo.typeToken->strAt(-1) == "const") {
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                            else {
+                                            } else {
                                                 switch (specifier[0]) {
                                                 case 'h':
                                                     if (specifier[1] == 'h') {
@@ -745,9 +750,14 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         if (argInfo.typeToken->type() == Token::eString)
                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                         else if (argInfo.isKnownType()) {
-                                            if (argInfo.typeToken->isUnsigned() || !argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")
+                                            if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
+                                                if (argInfo.typeToken->isStandardType() || !argInfo.element)
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            } else if (argInfo.typeToken->isUnsigned() ||
+                                                       !argInfo.isArrayOrPointer() ||
+                                                       argInfo.typeToken->strAt(-1) == "const") {
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                            else {
+                                            } else {
                                                 switch (specifier[0]) {
                                                 case 'h':
                                                     if (specifier[1] == 'h') {
@@ -812,9 +822,14 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         if (argInfo.typeToken->type() == Token::eString)
                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                         else if (argInfo.isKnownType()) {
-                                            if (!argInfo.typeToken->isUnsigned() || !argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")
+                                            if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
+                                                if (argInfo.typeToken->isStandardType() || !argInfo.element)
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (!argInfo.typeToken->isUnsigned() ||
+                                                       !argInfo.isArrayOrPointer() ||
+                                                       argInfo.typeToken->strAt(-1) == "const") {
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                            else {
+                                            } else {
                                                 switch (specifier[0]) {
                                                 case 'h':
                                                     if (specifier[1] == 'h') {
@@ -884,9 +899,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         if (argInfo.typeToken->type() == Token::eString)
                                             invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                         else if (argInfo.isKnownType()) {
-                                            if (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")
+                                            if (!Token::Match(argInfo.typeToken, "float|double")) {
+                                                if (argInfo.typeToken->isStandardType())
+                                                    invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                            } else if (!argInfo.isArrayOrPointer() ||
+                                                       argInfo.typeToken->strAt(-1) == "const") {
                                                 invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            else {
+                                            } else {
                                                 switch (specifier[0]) {
                                                 case 'l':
                                                     if (specifier[1] == 'l') {
@@ -963,8 +982,12 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     switch (*i) {
                                     case 's':
                                         if (argInfo.variableInfo && argListTok->type() != Token::eString &&
-                                            argInfo.isKnownType() && !argInfo.isArrayOrPointer())
-                                            invalidPrintfArgTypeError_s(tok, numFormat);
+                                            argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
+                                            if (!Token::Match(argInfo.typeToken, "char|wchar_t")) {
+                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                    invalidPrintfArgTypeError_s(tok, numFormat, &argInfo);
+                                            }
+                                        }
                                         done = true;
                                         break;
                                     case 'n':
@@ -983,9 +1006,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                                 // use %p on pointers and arrays
                                                 invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                            } else if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char|wchar_t"))
-                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                            else {
+                                            } else if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char|wchar_t")) {
+                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            } else {
                                                 switch (specifier[0]) {
                                                 case 'l':
                                                     if (specifier[1] == 'l') {
@@ -1039,9 +1063,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                                 // use %p on pointers and arrays
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                            } else if ((argInfo.typeToken->isUnsigned() || !Token::Match(argInfo.typeToken, "bool|short|long|int")) && !Token::Match(argInfo.typeToken, "char|short"))
-                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                            else {
+                                            } else if (argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "char|short")) {
+                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!Token::Match(argInfo.typeToken, "bool|char|short|int|long")) {
+                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            } else {
                                                 switch (specifier[0]) {
                                                 case 'l':
                                                     if (specifier[1] == 'l') {
@@ -1097,9 +1125,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                                 // use %p on pointers and arrays
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                            } else if ((!argInfo.typeToken->isUnsigned() || !Token::Match(argInfo.typeToken, "char|short|long|int")) && argInfo.typeToken->str() != "bool")
-                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                            else {
+                                            } else if (!argInfo.typeToken->isUnsigned() && argInfo.typeToken->str() != "bool") {
+                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!Token::Match(argInfo.typeToken, "bool|char|short|long|int")) {
+                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            } else {
                                                 switch (specifier[0]) {
                                                 case 'l':
                                                     if (specifier[1] == 'l') {
@@ -1165,12 +1197,12 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                                 // use %p on pointers and arrays
                                                 invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            } else if (!Token::Match(argInfo.typeToken, "float|double"))
+                                            } else if (!Token::Match(argInfo.typeToken, "float|double")) {
+                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                    invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                            } else if ((specifier[0] == 'L' && (!argInfo.typeToken->isLong() || argInfo.typeToken->str() != "double")) ||
+                                                       (specifier[0] != 'L' && argInfo.typeToken->isLong()))
                                                 invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            else if ((specifier[0] == 'L' && (!argInfo.typeToken->isLong() || argInfo.typeToken->str() != "double")) ||
-                                                     (specifier[0] != 'L' && argInfo.typeToken->isLong()))
-                                                invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-
                                         } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                             // use %p on pointers and arrays
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
@@ -1600,10 +1632,12 @@ void CheckIO::invalidScanfArgTypeError_float(const Token* tok, unsigned int numF
     reportError(tok, Severity::warning, "invalidScanfArgType_float", errmsg.str());
 }
 
-void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat)
+void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
 {
     std::ostringstream errmsg;
-    errmsg << "%s in format string (no. " << numFormat << ") requires a char* given in the argument list.";
+    errmsg << "%s in format string (no. " << numFormat << ") requires \'char *\' but the argument type is ";
+    argumentType(errmsg, argInfo);
+    errmsg << ".";
     reportError(tok, Severity::warning, "invalidPrintfArgType_s", errmsg.str());
 }
 void CheckIO::invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
@@ -1716,10 +1750,16 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
                     os << type->str() << " ";
                     type = type->next();
                 }
+                while (Token::Match(type, "%any% ::")) {
+                    os << type->str() << "::";
+                    type = type->tokAt(2);
+                }
                 type->stringify(os, false, true);
                 if (type->strAt(1) == "*" && !argInfo->element)
                     os << " *";
                 else if (argInfo->variableInfo && !argInfo->element && argInfo->variableInfo->isArray())
+                    os << " *";
+                else if (type->strAt(1) == "*" && argInfo->variableInfo && argInfo->element && argInfo->variableInfo->isArray())
                     os << " *";
                 if (argInfo->address)
                     os << " *";
