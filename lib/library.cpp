@@ -64,10 +64,9 @@ bool Library::load(const char exename[], const char path[])
     }
 
     tinyxml2::XMLDocument doc;
-    if (doc.LoadFile(fp) != tinyxml2::XML_NO_ERROR)
-        return false;
-
-    return load(doc);
+    const tinyxml2::XMLError error = doc.LoadFile(fp);
+    fclose(fp);
+    return (error != tinyxml2::XML_NO_ERROR) && load(doc);
 }
 
 bool Library::load(const tinyxml2::XMLDocument &doc)
