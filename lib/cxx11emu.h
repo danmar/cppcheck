@@ -30,6 +30,13 @@
 // Source: SC22/WG21/N2431 = J16/07-0301
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2431.pdf
 
+// Disable warning about nullptr being a reserved word
+// However, this has no effect; see: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48914
+#if (__GNUC__ >=4 && __GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++0x-compat"
+#endif
+
 const                        // this is a const object...
 class {
 public:
@@ -41,7 +48,14 @@ public:
 	{ return 0; }
 private:
 	void operator&() const;    // whose address can't be taken
-} nullptr = {};              // and whose name is nullptr
+} cppcheck_nullptr_impl = {};  // and whose name is nullptr
+
+#if (__GNUC__ >=4 && __GNUC_MINOR__ >= 6)
+#pragma GCC diagnostic pop
+#endif
+
+// An evil workaround for the inability to disable -Wc++0x-compat.
+#define nullptr cppcheck_nullptr_impl
 
 // Static assertions
 
