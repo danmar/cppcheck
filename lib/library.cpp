@@ -43,29 +43,24 @@ bool Library::load(const char exename[], const char path[])
     }
 
     // open file..
-    FILE *fp = fopen(path, "rb");
-    if (fp == NULL) {
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLError error = doc.LoadFile(path);
+    if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename) == "") {
             fullfilename += ".cfg";
-            fp = fopen(fullfilename.c_str(), "rb");
+            error = doc.LoadFile(fullfilename.c_str());
         }
 
-        if (fp==NULL) {
+        if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
             // Try to locate the library configuration in the installation folder..
             const std::string installfolder = Path::fromNativeSeparators(Path::getPathFromFilename(exename));
             const std::string filename = installfolder + "cfg/" + fullfilename;
-            fp = fopen(filename.c_str(), "rb");
+            error = doc.LoadFile(filename.c_str());
         }
-
-        if (fp == NULL)
-            return false;
     }
 
-    tinyxml2::XMLDocument doc;
-    const tinyxml2::XMLError error = doc.LoadFile(fp);
-    fclose(fp);
     return (error != tinyxml2::XML_NO_ERROR) && load(doc);
 }
 

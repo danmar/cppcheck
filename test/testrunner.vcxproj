@@ -50,6 +50,7 @@
     <ClCompile Include="testinternal.cpp" />
     <ClCompile Include="testio.cpp" />
     <ClCompile Include="testleakautovar.cpp" />
+    <ClCompile Include="testlibrary.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
     <ClCompile Include="testnonreentrantfunctions.cpp" />
