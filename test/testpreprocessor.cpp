@@ -30,6 +30,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <set>
 
 extern std::ostringstream errout;
 extern std::ostringstream output;
@@ -2443,7 +2444,7 @@ private:
         Preprocessor preprocessor(NULL, this);
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
-        std::list<std::string> pragmaOnce;
+        std::set<std::string> pragmaOnce;
         preprocessor.handleIncludes(code, "123.h", includePaths, defs, pragmaOnce, std::list<std::string>());
         ASSERT_EQUALS(1U, pragmaOnce.size());
         ASSERT_EQUALS("123.h", *(pragmaOnce.begin()));
@@ -3317,12 +3318,12 @@ private:
             defs.clear();
             defs["A"] = "";
             {
-                std::list<std::string> pragmaOnce;
+                std::set<std::string> pragmaOnce;
                 const std::string code("#ifdef A\n123\n#endif\n");
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
                 ASSERT_EQUALS("\n123\n\n", actual);
             }{
-                std::list<std::string> pragmaOnce;
+                std::set<std::string> pragmaOnce;
                 const std::string code("#ifdef B\n123\n#endif\n");
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
                 ASSERT_EQUALS("\n\n\n", actual);
@@ -3334,12 +3335,12 @@ private:
             defs.clear();
             defs["A"] = "";
             {
-                std::list<std::string> pragmaOnce;
+                std::set<std::string> pragmaOnce;
                 const std::string code("#ifndef A\n123\n#endif\n");
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
                 ASSERT_EQUALS("\n\n\n", actual);
             }{
-                std::list<std::string> pragmaOnce;
+                std::set<std::string> pragmaOnce;
                 const std::string code("#ifndef B\n123\n#endif\n");
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
                 ASSERT_EQUALS("\n123\n\n", actual);
@@ -3348,7 +3349,7 @@ private:
 
         // define - ifndef
         {
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
             defs.clear();
             const std::string code("#ifndef X\n#define X\n123\n#endif\n"
                                    "#ifndef X\n#define X\n123\n#endif\n");
@@ -3358,7 +3359,7 @@ private:
 
         // #define => #if
         {
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
             defs.clear();
             const std::string code("#define X 123\n"
                                    "#if X==123\n"
@@ -3380,7 +3381,7 @@ private:
                                    "4\n"
                                    "#endif");
             {
-                std::list<std::string> pragmaOnce;
+                std::set<std::string> pragmaOnce;
                 defs.clear();
                 defs["A"] = "";
                 defs["C"] = "";
@@ -3389,7 +3390,7 @@ private:
             }
 
             {
-                std::list<std::string> pragmaOnce;
+                std::set<std::string> pragmaOnce;
                 defs.clear();
                 defs["B"] = "";
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
@@ -3397,7 +3398,7 @@ private:
             }
 
             {
-                std::list<std::string> pragmaOnce;
+                std::set<std::string> pragmaOnce;
                 defs.clear();
                 const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
                 ASSERT_EQUALS("\n\n\n\n\n\n\n4\n\n", actual);
@@ -3408,7 +3409,7 @@ private:
         {
             // see also endifsemicolon
             const std::string code("{\n#ifdef X\n#endif;\n}");
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
             defs.clear();
             defs["Z"] = "";
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
@@ -3422,7 +3423,7 @@ private:
                                    "123\n"
                                    "#endif\n");
 
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
 
             pragmaOnce.clear();
             defs.clear();
@@ -3438,7 +3439,7 @@ private:
         // #error
         {
             errout.str("");
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
             defs.clear();
             const std::string code("#ifndef X\n#error abc\n#endif");
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
@@ -3457,7 +3458,7 @@ private:
         // missing local include
         {
             const std::string code("#include \"missing-include!!.h\"\n");
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
 
             pragmaOnce.clear();
             errout.str("");
@@ -3481,7 +3482,7 @@ private:
         // missing system header
         {
             const std::string code("#include <missing-include!!.h>\n");
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
 
             pragmaOnce.clear();
             errout.str("");
@@ -3511,7 +3512,7 @@ private:
             defs.clear();
             defs["GNU"] = "";
 
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
             errout.str("");
             settings = Settings();
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
@@ -3527,7 +3528,7 @@ private:
 
         // #3405
         {
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
             defs.clear();
             defs["A"] = "";
             const std::string code("\n#ifndef PAL_UTIL_UTILS_H_\n"
@@ -3563,7 +3564,7 @@ private:
 
         // #3418
         {
-            std::list<std::string> pragmaOnce;
+            std::set<std::string> pragmaOnce;
             defs.clear();
             const char code[] = "#define A 1\n"
                                 "#define B A\n"
@@ -3595,7 +3596,7 @@ private:
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
         defs["A"] = "1";
-        std::list<std::string> pragmaOnce;
+        std::set<std::string> pragmaOnce;
         ASSERT_EQUALS(std::string::npos,  // No "123" in the output
                       preprocessor.handleIncludes(code, "test.c", includePaths, defs, pragmaOnce,std::list<std::string>()).find("123"));
     }
@@ -3616,7 +3617,7 @@ private:
         std::map<std::string,std::string> defs;
         defs["B"] = "1";
         defs["C"] = "1";
-        std::list<std::string> pragmaOnce;
+        std::set<std::string> pragmaOnce;
         preprocessor.handleIncludes(code, "test.c", includePaths, defs, pragmaOnce, std::list<std::string>()); // don't crash
     }
 
@@ -3631,7 +3632,7 @@ private:
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
-        std::list<std::string> pragmaOnce;
+        std::set<std::string> pragmaOnce;
         Preprocessor preprocessor(NULL, this);
 
         std::istringstream istr(code);

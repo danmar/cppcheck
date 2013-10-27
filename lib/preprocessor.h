@@ -25,6 +25,7 @@
 #include <istream>
 #include <string>
 #include <list>
+#include <set>
 #include "config.h"
 
 class ErrorLogger;
@@ -240,7 +241,7 @@ public:
      * @param includes provide a empty list. this is just used to prevent recursive inclusions.
      * \return resulting string
      */
-    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> &pragmaOnce, std::list<std::string> includes);
+    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::set<std::string> &pragmaOnce, std::list<std::string> includes);
 
     void setFile0(const std::string &f) {
         file0 = f;
