@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 
 
 // Warn about deprecated compilers
-#ifdef __clang
+#ifdef __clang__
 #   if ( __clang_major__ < 2 || ( __clang_major__  == 2 && __clang_minor__ < 9))
 #       warning "Using Clang 2.8 or earlier. Support for this version will be removed soon."
 #   endif
