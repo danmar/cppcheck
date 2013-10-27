@@ -27,27 +27,6 @@ Library::Library() : allocid(0)
 {
 }
 
-Library::Library(const Library &lib) :
-    use(lib.use),
-    leakignore(lib.leakignore),
-    argumentChecks(lib.argumentChecks),
-    returnuninitdata(lib.returnuninitdata),
-    allocid(lib.allocid),
-    _alloc(lib._alloc),
-    _dealloc(lib._dealloc),
-    _noreturn(lib._noreturn),
-    _ignorefunction(lib._ignorefunction),
-    _reporterrors(lib._reporterrors),
-    _fileextensions(lib._fileextensions),
-    _keywords(lib._keywords),
-    _executableblocks(lib._executableblocks),
-    _importers(lib._importers),
-    _reflection(lib._reflection)
-{
-}
-
-Library::~Library() { }
-
 bool Library::load(const char exename[], const char path[])
 {
     tinyxml2::XMLDocument doc;
@@ -77,9 +56,7 @@ bool Library::load(const char exename[], const char path[])
 
         if (fp==NULL) {
             // Try to locate the library configuration in the installation folder..
-            std::string temp = exename;
-            std::replace(temp.begin(), temp.end(), '\\', '/');
-            const std::string installfolder = Path::getPathFromFilename(temp);
+            const std::string installfolder = Path::fromNativeSeparators(Path::getPathFromFilename(exename));
             const std::string filename = installfolder + "cfg/" + fullfilename;
             fp = fopen(filename.c_str(), "rb");
         }
@@ -169,13 +146,9 @@ bool Library::load(const char exename[], const char path[])
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "library") == 0) {
                     const char * const extension = functionnode->Attribute("extension");
-                    if (_keywords.find(extension) == _keywords.end()) {
-                        std::list<std::string> list;
-                        _keywords[extension] = list;
-                    }
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "keyword") == 0) {
-                            _keywords.at(extension).push_back(librarynode->Attribute("name"));
+                            _keywords[extension].push_back(librarynode->Attribute("name"));
                         } else
                             return false;
                     }
@@ -188,15 +161,7 @@ bool Library::load(const char exename[], const char path[])
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "exporter") == 0) {
                     const char * prefix = (functionnode->Attribute("prefix"));
-                    if (prefix) {
-                        std::map<std::string, ExportedFunctions>::const_iterator
-                        it = _exporters.find(prefix);
-                        if (it == _exporters.end()) {
-                            // add the missing list for later on
-                            ExportedFunctions exporter;
-                            _exporters[prefix] = exporter;
-                        }
-                    } else
+                    if (!prefix)
                         return false;
 
                     for (const tinyxml2::XMLElement *enode = functionnode->FirstChildElement(); enode; enode = enode->NextSiblingElement()) {
@@ -216,13 +181,9 @@ bool Library::load(const char exename[], const char path[])
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "library") == 0) {
                     const char * const extension = functionnode->Attribute("extension");
-                    if (_importers.find(extension) == _importers.end()) {
-                        std::list<std::string> list;
-                        _importers[extension] = list;
-                    }
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "importer") == 0) {
-                            _importers.at(extension).push_back(librarynode->Attribute("name"));
+                            _importers[extension].push_back(librarynode->Attribute("name"));
                         } else
                             return false;
                     }
@@ -234,15 +195,11 @@ bool Library::load(const char exename[], const char path[])
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "library") == 0) {
                     const char * const extension = functionnode->Attribute("extension");
-                    if (_reflection.find(extension) == _reflection.end()) {
-                        std::map<std::string,int> map;
-                        _reflection[extension] = map;
-                    }
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "call") == 0) {
                             const char * const argString = librarynode->Attribute("arg");
                             if (argString) {
-                                _reflection.at(extension)[librarynode->Attribute("name")]
+                                _reflection[extension][librarynode->Attribute("name")]
                                     = atoi(argString);
                             }
                         } else
@@ -257,23 +214,19 @@ bool Library::load(const char exename[], const char path[])
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(), "library") == 0) {
                     const char * const extension = functionnode->Attribute("extension");
-                    if (_executableblocks.find(extension) == _executableblocks.end()) {
-                        CodeBlock blockInfo;
-                        _executableblocks[extension] = blockInfo;
-                    }
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "block") == 0) {
-                            _executableblocks.at(extension).addBlock(librarynode->Attribute("name"));
+                            _executableblocks[extension].addBlock(librarynode->Attribute("name"));
                         } else if (strcmp(librarynode->Name(), "structure") == 0) {
                             const char * start = librarynode->Attribute("start");
                             if (start)
-                                _executableblocks.at(extension).setStart(start);
+                                _executableblocks[extension].setStart(start);
                             const char * end = librarynode->Attribute("end");
                             if (end)
-                                _executableblocks.at(extension).setEnd(end);
+                                _executableblocks[extension].setEnd(end);
                             const char * offset = librarynode->Attribute("offset");
                             if (offset)
-                                _executableblocks.at(extension).setOffset(atoi(offset));
+                                _executableblocks[extension].setOffset(atoi(offset));
                         } else
                             return false;
                     }

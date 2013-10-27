@@ -1978,11 +1978,6 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo()
 {
 }
 
-CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai)
-{
-    *this = ai;
-}
-
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcedeclid)
     : _varname(var->name()), _declarationId((forcedeclid == 0U) ? var->declarationId() : forcedeclid)
 {
@@ -1994,17 +1989,6 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *t
         _element_size = 100;
     else
         _element_size = tokenizer->sizeOfType(var->typeEndToken());
-}
-
-CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(const CheckBufferOverrun::ArrayInfo &ai)
-{
-    if (&ai != this) {
-        _element_size = ai._element_size;
-        _num = ai._num;
-        _declarationId = ai._declarationId;
-        _varname = ai._varname;
-    }
-    return *this;
 }
 
 /**

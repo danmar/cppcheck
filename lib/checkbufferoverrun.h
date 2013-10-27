@@ -130,9 +130,7 @@ public:
 
     public:
         ArrayInfo();
-        ArrayInfo(const ArrayInfo &);
         ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcedeclid = 0);
-        ArrayInfo & operator=(const ArrayInfo &ai);
 
         /**
          * Create array info with specified data

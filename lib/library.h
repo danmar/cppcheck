@@ -39,8 +39,6 @@
 class CPPCHECKLIB Library {
 public:
     Library();
-    Library(const Library &);
-    ~Library();
 
     bool load(const char exename [], const char path []);
 
