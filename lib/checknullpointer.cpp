@@ -344,11 +344,11 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         prev = prev->link()->previous();
 
     // Dereferencing pointer..
-    if (prev->str() == "*" && (Token::Match(prev->previous(), "return|throw|;|{|}|:|[|(|,") || prev->previous()->isOp()) && !Token::Match(prev->tokAt(-2), "sizeof|decltype"))
+    if (prev->str() == "*" && (Token::Match(prev->previous(), "return|throw|;|{|}|:|[|(|,") || prev->previous()->isOp()) && !Token::Match(prev->tokAt(-2), "sizeof|decltype|typeof"))
         return true;
 
     // read/write member variable
-    if (!Token::simpleMatch(prev->previous(), "& (") && !Token::Match(prev->previous(), "sizeof|decltype (") && prev->str() != "&" && Token::Match(tok->next(), ". %var%")) {
+    if (!Token::simpleMatch(prev->previous(), "& (") && !Token::Match(prev->previous(), "sizeof|decltype|typeof (") && prev->str() != "&" && Token::Match(tok->next(), ". %var%")) {
         if (tok->strAt(3) != "(")
             return true;
         unknown = true;
@@ -623,8 +623,8 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
                     tok1 = tok1->next();
             }
 
-            // dereference in function call (but not sizeof|decltype)
-            else if ((Token::Match(tok1->tokAt(-2), "%var% ( %var% . %var%") && !Token::Match(tok1->tokAt(-2), "sizeof|decltype ( %var% . %var%")) ||
+            // dereference in function call (but not sizeof|decltype|typeof)
+            else if ((Token::Match(tok1->tokAt(-2), "%var% ( %var% . %var%") && !Token::Match(tok1->tokAt(-2), "sizeof|decltype|typeof ( %var% . %var%")) ||
                      Token::Match(tok1->previous(), ", %var% . %var%")) {
                 // Is the function return value taken by the pointer?
                 bool assignment = false;
@@ -1073,7 +1073,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 break;
 
             // parameters to sizeof are not dereferenced
-            if (Token::Match(tok2, "decltype|sizeof")) {
+            if (Token::Match(tok2, "decltype|sizeof|typeof")) {
                 if (tok2->strAt(1) != "(")
                     tok2 = tok2->next();
                 else
@@ -1163,7 +1163,7 @@ void CheckNullPointer::nullConstantDereference()
             tok = scope->function->token; // Check initialization list
 
         for (; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "sizeof|decltype|typeid ("))
+            if (Token::Match(tok, "sizeof|decltype|typeid|typeof ("))
                 tok = tok->next()->link();
 
             else if (Token::simpleMatch(tok, "* 0")) {
