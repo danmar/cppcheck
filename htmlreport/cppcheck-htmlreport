@@ -149,11 +149,12 @@ class AnnotateCodeFormatter(HtmlFormatter):
     def wrap(self, source, outfile):
         line_no = 1
         for i, t in HtmlFormatter.wrap(self, source, outfile):
-            # If this is a source code line we want to add a span tag at the end.
+            # If this is a source code line we want to add a span tag at the
+            # end.
             if i == 1:
                 for error in self.errors:
-                    if error["line"] == line_no:
-                        t = t.replace("\n", HTML_ERROR % error["msg"])
+                    if error['line'] == line_no:
+                        t = t.replace('\n', HTML_ERROR % error['msg'])
                 line_no = line_no + 1
             yield i, t
 
@@ -165,11 +166,11 @@ class CppCheckHandler(XmlContentHandler):
     def __init__(self):
         XmlContentHandler.__init__(self)
         self.errors = []
-        self.version = "1"
+        self.version = '1'
 
     def startElement(self, name, attributes):
-        if name == "results":
-            self.version = attributes.get("version", self.version)
+        if name == 'results':
+            self.version = attributes.get('version', self.version)
 
         if self.version == '1':
             self.handleVersion1(name, attributes)
@@ -177,45 +178,54 @@ class CppCheckHandler(XmlContentHandler):
             self.handleVersion2(name, attributes)
 
     def handleVersion1(self, name, attributes):
-        if name != "error":
+        if name != 'error':
             return
 
         self.errors.append({
-            "file": attributes.get("file", ""),
-            "line": int(attributes.get("line", 0)),
-            "id": attributes["id"],
-            "severity": attributes["severity"],
-            "msg": attributes["msg"]
+            'file': attributes.get('file', ''),
+            'line': int(attributes.get('line', 0)),
+            'id': attributes['id'],
+            'severity': attributes['severity'],
+            'msg': attributes['msg']
         })
 
     def handleVersion2(self, name, attributes):
-        if name == "error":
+        if name == 'error':
             self.errors.append({
-                "file": "",
-                "line": 0,
-                "id": attributes["id"],
-                "severity": attributes["severity"],
-                "msg": attributes["msg"]
+                'file': '',
+                'line': 0,
+                'id': attributes['id'],
+                'severity': attributes['severity'],
+                'msg': attributes['msg']
             })
-        elif name == "location":
+        elif name == 'location':
             assert self.errors
-            self.errors[-1]["file"] = attributes["file"]
-            self.errors[-1]["line"] = int(attributes["line"])
+            self.errors[-1]['file'] = attributes['file']
+            self.errors[-1]['line'] = int(attributes['line'])
 
 
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
     parser = optparse.OptionParser()
-    parser.add_option("--title", dest="title", help="The title of the project.", default="[project name]")
-    parser.add_option("--file", dest="file", help="The cppcheck xml output file to read defects from. Default is reading from stdin.")
-    parser.add_option("--report-dir", dest="report_dir", help="The directory where the HTML report content is written.")
-    parser.add_option("--source-dir", dest="source_dir", help="Base directory where source code files can be found.")
-    parser.add_option("--source-encoding", dest="source_encoding", help="Encoding of source code.", default='utf-8')
+    parser.add_option('--title', dest='title',
+                      help='The title of the project.',
+                      default='[project name]')
+    parser.add_option('--file', dest='file',
+                      help='The cppcheck xml output file to read defects '
+                           'from. Default is reading from stdin.')
+    parser.add_option('--report-dir', dest='report_dir',
+                      help='The directory where the HTML report content is '
+                           'written.')
+    parser.add_option('--source-dir', dest='source_dir',
+                      help='Base directory where source code files can be '
+                           'found.')
+    parser.add_option('--source-encoding', dest='source_encoding',
+                      help='Encoding of source code.', default='utf-8')
 
     # Parse options and make sure that we have an output directory set.
     options, args = parser.parse_args()
     if not options.report_dir:
-        parser.error("No report directory set.")
+        parser.error('No report directory set.')
 
     # Get the directory where source code files are located.
     source_dir = os.getcwd()
@@ -223,19 +233,19 @@ if __name__ == '__main__':
         source_dir = options.source_dir
 
     # Get the stream that we read cppcheck errors from.
-    stream = sys.stdin
+    input_file = sys.stdin
     if options.file:
         if not os.path.exists(options.file):
-            parser.error("cppcheck xml file: %s not found." % options.file)
-        stream = io.open(options.file, "r")
+            parser.error('cppcheck xml file: %s not found.' % options.file)
+        input_file = io.open(options.file, 'r')
 
     # Parse the xml file and produce a simple list of errors.
-    print("Parsing xml report.")
+    print('Parsing xml report.')
     try:
         contentHandler = CppCheckHandler()
-        xml_parse(stream, contentHandler)
+        xml_parse(input_file, contentHandler)
     except XmlParseException as msg:
-        print("Failed to parse cppcheck xml file: %s" % msg)
+        print('Failed to parse cppcheck xml file: %s' % msg)
         sys.exit(1)
 
     # We have a list of errors. But now we want to group them on
@@ -245,48 +255,55 @@ if __name__ == '__main__':
     files = {}
     file_no = 0
     for error in contentHandler.errors:
-        filename = error["file"]
+        filename = error['file']
         if filename not in files.keys():
-            files[filename] = {"errors": [], "htmlfile": str(file_no) + ".html"}
+            files[filename] = {
+                'errors': [], 'htmlfile': str(file_no) + '.html'}
             file_no = file_no + 1
-        files[filename]["errors"].append(error)
+        files[filename]['errors'].append(error)
 
     # Make sure that the report directory is created if it doesn't exist.
-    print("Creating %s directory" % options.report_dir)
+    print('Creating %s directory' % options.report_dir)
     if not os.path.exists(options.report_dir):
         os.mkdir(options.report_dir)
 
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
-    print("Processing errors")
+    print('Processing errors')
     for filename, data in files.items():
-        htmlfile = data["htmlfile"]
-        errors = data["errors"]
+        htmlfile = data['htmlfile']
+        errors = data['errors']
 
         lines = []
         for error in errors:
-            lines.append(error["line"])
+            lines.append(error['line'])
 
-        if filename == "":
+        if filename == '':
             continue
 
         source_filename = os.path.join(source_dir, filename)
-        if not os.path.isfile(source_filename):
+        try:
+            with io.open(source_filename, 'r') as input_file:
+                content = input_file.read()
+        except IOError:
             sys.stderr.write("ERROR: Source file '%s' not found.\n" %
                              source_filename)
             continue
-        with io.open(source_filename, 'r') as input_file:
-            content = input_file.read()
 
-        htmlFormatter = AnnotateCodeFormatter(linenos=True, style='colorful', hl_lines=lines, lineanchors="line", encoding=options.source_encoding)
+        htmlFormatter = AnnotateCodeFormatter(linenos=True,
+                                              style='colorful',
+                                              hl_lines=lines,
+                                              lineanchors='line',
+                                              encoding=options.source_encoding)
         htmlFormatter.errors = errors
-        with io.open(os.path.join(options.report_dir, htmlfile), 'w') as output_file:
+        with io.open(os.path.join(options.report_dir, htmlfile),
+                     'w') as output_file:
             output_file.write(HTML_HEAD %
                               (options.title,
-                               htmlFormatter.get_style_defs(".highlight"),
+                               htmlFormatter.get_style_defs('.highlight'),
                                options.title))
 
-            lexer = guess_lexer_for_filename(source_filename, "")
+            lexer = guess_lexer_for_filename(source_filename, '')
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
 
@@ -296,35 +313,41 @@ if __name__ == '__main__':
 
             output_file.write(HTML_FOOTER)
 
-        print("  " + filename)
+        print('  ' + filename)
 
     # Generate a master index.html file that will contain a list of
     # all the errors created.
-    print("Creating index.html")
-    stream = io.open(os.path.join(options.report_dir, "index.html"), "w")
-    stream.write(HTML_HEAD % (options.title, "", options.title))
-    stream.write("<table>")
-    stream.write("<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>")
-    for filename, data in files.items():
-        stream.write("<tr><td colspan='4'><a href='%s'>%s</a></td></tr>" % (data["htmlfile"], filename))
-        for error in data["errors"]:
-            if error['severity'] == 'error':
-                error_class = 'class="error"'
-            else:
-                error_class = ''
+    print('Creating index.html')
+    with io.open(os.path.join(options.report_dir, 'index.html'),
+                 'w') as output_file:
+        output_file.write(HTML_HEAD % (options.title, '', options.title))
+        output_file.write('<table>')
+        output_file.write(
+            '<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
+        for filename, data in files.items():
+            output_file.write(
+                "<tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
+                (data['htmlfile'], filename))
+            for error in data['errors']:
+                if error['severity'] == 'error':
+                    error_class = 'class="error"'
+                else:
+                    error_class = ''
 
-            if error["id"] == "missingInclude":
-                stream.write("<tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>" %
-                             (error["id"], error["severity"], error["msg"]))
-            else:
-                stream.write("<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
-                             (data["htmlfile"], error["line"], error["line"], error["id"],
-                              error["severity"], error_class, error["msg"]))
-    stream.write("</table>")
-    stream.write(HTML_FOOTER)
-    stream.close()
+                if error['id'] == 'missingInclude':
+                    output_file.write(
+                        '<tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
+                        (error['id'], error['severity'], error['msg']))
+                else:
+                    output_file.write(
+                        "<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                        (data['htmlfile'], error['line'], error['line'],
+                         error['id'], error['severity'], error_class,
+                         error['msg']))
+        output_file.write('</table>')
+        output_file.write(HTML_FOOTER)
 
-    print("Creating style.css file")
-    stream = io.open(os.path.join(options.report_dir, "style.css"), "w")
-    stream.write(STYLE_FILE)
-    stream.close()
+    print('Creating style.css file')
+    with io.open(os.path.join(options.report_dir, 'style.css'),
+                 'w') as css_file:
+        css_file.write(STYLE_FILE)
