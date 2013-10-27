@@ -84,6 +84,8 @@ void CheckOther::checkZeroDivision()
 
 #include "cppcheckexecutor.h"
 
+static_assert(sizeof(int) >= 4, "int too small");
+
 /**
  * Main function of cppcheck
  *
