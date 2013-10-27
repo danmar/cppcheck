@@ -105,6 +105,6 @@ int main(int argc, char* argv[])
 #   endif
 #elif defined(_MSC_VER)
 #   if (_MSC_VER < 1600)
-#       pragma message("Using Visual Studio 2008 or earlier. Support for this version will be removed soon.")
+#       pragma message("WARNING: Using Visual Studio 2008 or earlier. Support for this version will be removed soon.")
 #   endif
 #endif
