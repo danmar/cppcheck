@@ -85,7 +85,7 @@ bool CheckAutoVariables::isAutoVarArray(const Token *tok)
 static bool checkRvalueExpression(const Token * const vartok)
 {
     const Variable * const var = vartok->variable();
-    if (var == nullptr)
+    if (var == NULL)
         return false;
 
     const Token * const next = vartok->next();
