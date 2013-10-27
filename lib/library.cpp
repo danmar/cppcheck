@@ -29,8 +29,6 @@ Library::Library() : allocid(0)
 
 bool Library::load(const char exename[], const char path[])
 {
-    tinyxml2::XMLDocument doc;
-
     if (std::strchr(path,',') != NULL) {
         bool ret = true;
         std::string p(path);
@@ -65,9 +63,15 @@ bool Library::load(const char exename[], const char path[])
             return false;
     }
 
+    tinyxml2::XMLDocument doc;
     if (doc.LoadFile(fp) != tinyxml2::XML_NO_ERROR)
         return false;
 
+    return load(doc);
+}
+
+bool Library::load(const tinyxml2::XMLDocument &doc)
+{
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (strcmp(rootnode->Name(),"def") != 0)
         return false;

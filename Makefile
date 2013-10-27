@@ -163,6 +163,7 @@ TESTOBJ =     test/options.o \
               test/testinternal.o \
               test/testio.o \
               test/testleakautovar.o \
+              test/testlibrary.o \
               test/testmathlib.o \
               test/testmemleak.o \
               test/testnonreentrantfunctions.o \
@@ -433,6 +434,9 @@ test/testio.o: test/testio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.
 
 test/testleakautovar.o: test/testleakautovar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkleakautovar.h lib/check.h lib/token.h lib/settings.h lib/library.h lib/path.h lib/standards.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o test/testleakautovar.o test/testleakautovar.cpp
+
+test/testlibrary.o: test/testlibrary.cpp lib/library.h lib/config.h lib/path.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o test/testlibrary.o test/testlibrary.cpp
 
 test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o test/testmathlib.o test/testmathlib.cpp

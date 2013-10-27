@@ -22,13 +22,14 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "path.h"
+
+#include <tinyxml2.h>
 #include <map>
 #include <set>
 #include <string>
 #include <list>
 #include <algorithm>
-
-#include "path.h"
 
 /// @addtogroup Core
 /// @{
@@ -41,6 +42,7 @@ public:
     Library();
 
     bool load(const char exename [], const char path []);
+    bool load(const tinyxml2::XMLDocument &doc);
 
     /** get allocation id for function (by name) */
     int alloc(const std::string &name) const {
