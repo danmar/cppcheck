@@ -61,7 +61,7 @@ bool Library::load(const char exename[], const char path[])
         }
     }
 
-    return (error != tinyxml2::XML_NO_ERROR) && load(doc);
+    return (error == tinyxml2::XML_NO_ERROR) && load(doc);
 }
 
 bool Library::load(const tinyxml2::XMLDocument &doc)
