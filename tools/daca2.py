@@ -141,9 +141,9 @@ def scanarchive(filepath):
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
-    if filename[:5] == 'flite':
+    if filename[:5] == 'flite' or filename[:5] == 'boost':
         results = open('results.txt', 'at')
-        results.write('fixme: the flite package is skipped\n')
+        results.write('fixme: skipped package to avoid hang\n')
         results.close()
         return
 
