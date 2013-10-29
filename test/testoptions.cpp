@@ -55,7 +55,7 @@ private:
 
 
     void no_test_method() const {
-        const char* argv[] = {"./test_runner"};
+        const char* argv[] = {"./test_runner", ""};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("", args.which_test());
     }
