@@ -8850,6 +8850,25 @@ private:
         const char code_fmal[] ="long double f ( long double a , long double b , long double c ) { return fmal(a,b,c); }";
         const char expected_fmal[] = "long double f ( long double a , long double b , long double c ) { return ( a ) * ( b ) + ( c ) ; }";
         ASSERT_EQUALS(expected_fmal, tokenizeAndStringify(code_fmal));
+
+        const char code_fma1[] = "void f() {\n"
+                                 "    std::cout << \"fma(1,2,3): \"  << fma(1,2,3) << std::endl;\n"
+                                 "    std::cout << \"fmaf(1,2,3): \" << fmaf(1,2,3) << std::endl;\n"
+                                 "    std::cout << \"fmal(1,2,3): \" << fmal(1,2,3) << std::endl;\n"
+                                 "};";
+
+        const char expected_fma1[] = "void f() {\n"
+                                     "std :: cout << \"fma(1,2,3): \" << 5 << std :: endl ;\n"
+                                     "std :: cout << \"fmaf(1,2,3): \" << 5 << std :: endl ;\n"
+                                     "std :: cout << \"fmal(1,2,3): \" << 5 << std :: endl ;\n"
+                                     "} ;";
+
+        const char current_fma1[] = "void f ( ) {\n"
+                                    "std :: cout << \"fma(1,2,3): \" << ( 1 ) * ( 2 ) + ( 3 ) << std :: endl ;\n"
+                                    "std :: cout << \"fmaf(1,2,3): \" << ( 1 ) * ( 2 ) + ( 3 ) << std :: endl ;\n"
+                                    "std :: cout << \"fmal(1,2,3): \" << ( 1 ) * ( 2 ) + ( 3 ) << std :: endl ;\n"
+                                    "} ;";
+        TODO_ASSERT_EQUALS(expected_fma1, current_fma1,tokenizeAndStringify(code_fma1));
     }
 
     void simplifyMathFunctions_tanh() {
