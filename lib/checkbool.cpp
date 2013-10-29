@@ -333,10 +333,13 @@ void CheckBool::checkAssignBoolToPointer()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = %bool% ;")) {
-                // Todo: properly check if there is a deref
+                // check if there is a deref
                 // *x.p = true;  // <- don't warn
                 // x.p = true;   // <- warn
-                if (Token::Match(tok->previous(), "[*.)]"))
+                const Token *prev = tok;
+                while (Token::Match(prev->tokAt(-2), "%var% ."))
+                    prev = prev->tokAt(-2);
+                if (Token::Match(prev->previous(), "[*.)]"))
                     continue;
 
                 // Is variable a pointer?

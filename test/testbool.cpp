@@ -111,7 +111,7 @@ private:
               "    S s = {0};\n"
               "    s.p = true;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Boolean value assigned to pointer.\n", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
