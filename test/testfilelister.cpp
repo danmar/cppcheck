@@ -76,8 +76,8 @@ private:
     void recursiveAddFiles() const {
         // Recursively add add files..
         std::map<std::string, std::size_t> files;
-        Settings settings; // TODO(struscott): Pull in settings
-        FileLister::recursiveAddFiles(files, ".", &settings.library);
+        std::set<std::string> extra;
+        FileLister::recursiveAddFiles(files, ".", extra);
 
         // In case there are leading "./"..
         for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {

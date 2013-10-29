@@ -116,7 +116,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (!settings->library.acceptFile(FileName) // only check c/c++
+        if (!settings->library.markupFile(FileName) // only check source files
             && settings->library.isexporter(tok->str()) && tok->next() != 0) {
             const Token * qPropToken = tok;
             qPropToken = qPropToken->next();
@@ -139,7 +139,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (settings->library.acceptFile(FileName)
+        if (settings->library.markupFile(FileName)
             && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
             const Token * qPropToken = tok;
             qPropToken = qPropToken->next();
