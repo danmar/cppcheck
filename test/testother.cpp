@@ -586,6 +586,25 @@ private:
               "  if (func(b)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ?:
+        check("int f(int d) {\n"
+              "  int r = (a?b:c) / d;\n"
+              "  if (d == 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'd==0' is useless or there is division by zero at line 2.\n", errout.str());
+
+        check("int f(int a) {\n"
+              "  int r = a ? 1 / a : 0;\n"
+              "  if (a == 0) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int a) {\n"
+              "  int r = (a == 0) ? 0 : 1 / a;\n"
+              "  if (a == 0) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {

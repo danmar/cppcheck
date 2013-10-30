@@ -2249,6 +2249,21 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
                     }
                     if (!divtok || use)
                         continue;
+                } else {
+                    // Check if this division is guarded by a ?:
+                    bool guard = false;
+                    for (const Token *tok2 = divtok; tok2; tok2 = tok2->previous()) {
+                        if (Token::Match(tok2, "[,;{}]"))
+                            break;
+                        if (Token::Match(tok2, "[?:]")) {
+                            guard = true;
+                            break;
+                        }
+                        if (tok2->str() == ")")
+                            tok2 = tok2->link();
+                    }
+                    if (guard)
+                        continue;
                 }
 
                 // Look for if condition
