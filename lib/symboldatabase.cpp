@@ -2510,7 +2510,7 @@ const Function* Scope::findFunction(const Token *tok) const
         for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
             const Type *base = definedType->derivedFrom[i].type;
             if (base && base->classScope) {
-                if (base->classScope == this) // Ticket #5125: Recursive class; tok should have been found already
+                if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
                     continue;
                 const Function * func = base->classScope->findFunction(tok);
                 if (func)
