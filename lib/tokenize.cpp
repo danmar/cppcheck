@@ -5288,9 +5288,9 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
 
                     if (tok2->str() == "=") {
                         if (isstatic) {
-                            if (Token::Match(tok2->next(), "%num% ,"))
+                            if (Token::Match(tok2->next(), "%num%|%var% ,")) // ticket #5121
                                 tok2 = tok2->tokAt(2);
-                            else if (Token::Match(tok2->next(), "( %num% ) ,")) { // ticket #4450
+                            else if (Token::Match(tok2->next(), "( %num%|%var% ) ,")) { // ticket #4450
                                 tok2->deleteNext();
                                 tok2->next()->deleteNext();
                                 tok2 = tok2->tokAt(2);

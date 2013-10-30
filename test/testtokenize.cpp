@@ -5670,9 +5670,30 @@ private:
         }
 
         {
+            // Ticket #4450
             const char code[] = "static int large_eeprom_type = (13 | (5)), "
                                 "default_flash_type = 42;";
             ASSERT_EQUALS("static int large_eeprom_type = 13 ; static int default_flash_type = 42 ;",
+                          tokenizeAndStringify(code));
+        }
+
+        {
+            // Ticket #5121
+            const char code[] = "unsigned int x;"
+                                "static const unsigned int A = 1, B = A, C = 0, D = (A), E = 0;"
+                                "void f() {"
+                                "  unsigned int *foo = &x;"
+                                "}";
+            ASSERT_EQUALS("unsigned int x ; "
+                          "const static unsigned int A = 1 ; "
+                          "const static unsigned int B = A ; "
+                          "const static unsigned int C = 0 ; "
+                          "const static unsigned int D = A ; "
+                          "const static unsigned int E = 0 ; "
+                          "void f ( ) { "
+                          "unsigned int * foo ; "
+                          "foo = & x ; "
+                          "}",
                           tokenizeAndStringify(code));
         }
     }
