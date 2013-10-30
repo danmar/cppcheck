@@ -199,6 +199,7 @@ private:
         TEST_CASE(symboldatabase35); // ticket #4806 (segmentation fault)
         TEST_CASE(symboldatabase36); // ticket #4892 (segmentation fault)
         TEST_CASE(symboldatabase37);
+        TEST_CASE(symboldatabase38); // ticket #5125 (infinite recursion)
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1637,6 +1638,18 @@ private:
         ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->name() == "Barney");
         ASSERT(db && db->getVariableFromVarId(2) && db->getVariableFromVarId(2)->type() && db->getVariableFromVarId(2)->type()->name() == "Wilma");
         ASSERT(db && db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->type() && db->getVariableFromVarId(3)->type()->name() == "Barney");
+    }
+
+    void symboldatabase38() { // ticket #5125
+        check("template <typename T = class service> struct scoped_service;\n"
+              "struct service {};\n"
+              "template <> struct scoped_service<service> {};\n"
+              "template <typename T>\n"
+              "struct scoped_service : scoped_service<service>\n"
+              "{\n"
+              "  scoped_service( T* ptr ) : scoped_service<service>(ptr), m_ptr(ptr) {}\n"
+              "  T* const m_ptr;\n"
+              "};");
     }
 
     void isImplicitlyVirtual() {
