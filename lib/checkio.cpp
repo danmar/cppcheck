@@ -417,7 +417,7 @@ static bool findFormat(unsigned int arg, const Token *firstArg,
         *formatStringTok = argTok;
         return true;
     } else if (Token::Match(argTok, "%var% [,)]") &&
-               (argTok->variable() &&
+               (argTok && argTok->variable() &&
                 Token::Match(argTok->variable()->typeStartToken(), "char|wchar_t") &&
                 (argTok->variable()->isPointer() ||
                  (argTok->variable()->dimensions().size() == 1 &&
