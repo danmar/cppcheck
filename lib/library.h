@@ -125,11 +125,12 @@ public:
         return arg && arg->strz;
     }
 
-    bool acceptFile(const std::string &path) const {
-        const std::string extension = Path::getFilenameExtensionInLowerCase(path);
-        const std::list<std::string>::const_iterator it =
-            std::find(_fileextensions.begin(), _fileextensions.end(), extension);
-        return it != _fileextensions.end();
+    bool markupFile(const std::string &path) const {
+        return _markupExtensions.find(Path::Path::getFilenameExtensionInLowerCase(path)) != _markupExtensions.end();
+    }
+
+    const std::set<std::string> &markupExtensions() const {
+        return _markupExtensions;
     }
 
     bool reportErrors(const std::string &path) const {
@@ -340,7 +341,7 @@ private:
     std::map<std::string, bool> _noreturn; // is function noreturn?
     std::map<std::string, bool> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
     std::map<std::string, bool> _reporterrors;
-    std::list<std::string> _fileextensions; // accepted file extensions
+    std::set<std::string> _markupExtensions; // file extensions of markup files
     std::map<std::string, std::list<std::string> > _keywords; // keywords for code in the library
     std::map<std::string, CodeBlock> _executableblocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)

@@ -131,7 +131,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     exitcode = 0;
 
     // only show debug warnings for accepted C/C++ source files
-    if (!Path::acceptFile(filename, &_settings.library))
+    if (!Path::acceptFile(filename))
         _settings.debugwarnings = false;
 
     if (_settings.terminated())

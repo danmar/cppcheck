@@ -21,9 +21,10 @@
 #define pathH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include <set>
 #include <string>
 #include <vector>
-#include "config.h"
 
 /// @addtogroup Core
 /// @{
@@ -109,7 +110,19 @@ public:
      * @param filename filename to check. path info is optional
      * @return returns true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename, const class Library *library = 0);
+    static bool acceptFile(const std::string &filename) {
+        const std::set<std::string> extra;
+        return acceptFile(filename, extra);
+    }
+
+    /**
+     * @brief Check if the file extension indicates that it's a C/C++ source file.
+     * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
+     * @param filename filename to check. path info is optional
+     * @param extra    extra file extensions
+     * @return returns true if the file extension indicates it should be checked
+     */
+    static bool acceptFile(const std::string &filename, const std::set<std::string> &extra);
 
     /**
      * @brief Identify language based on file extension.
