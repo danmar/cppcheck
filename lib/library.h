@@ -126,7 +126,7 @@ public:
     }
 
     bool markupFile(const std::string &path) const {
-        return _markupExtensions.find(Path::Path::getFilenameExtensionInLowerCase(path)) != _markupExtensions.end();
+        return _markupExtensions.find(Path::getFilenameExtensionInLowerCase(path)) != _markupExtensions.end();
     }
 
     const std::set<std::string> &markupExtensions() const {
