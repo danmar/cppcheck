@@ -432,6 +432,8 @@ private:
 
         TEST_CASE(labels);
         TEST_CASE(simplifyInitVar);
+        TEST_CASE(simplifyInitVar2);
+        TEST_CASE(simplifyInitVar3);
 
         TEST_CASE(bitfields1);
         TEST_CASE(bitfields2);
@@ -7134,6 +7136,25 @@ private:
             ASSERT_EQUALS("return doSomething ( X ) , 0 ;", tokenizeAndStringify(code, false));
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyInitVar2() {
+        // ticket #5131 - unsigned
+        const char code[] = "void f() {\n"
+                            "    unsigned int a(0),b(0);\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "unsigned int a ; a = 0 ; unsigned int b ; b = 0 ;\n"
+                      "}", tokenizeAndStringify(code));
+    }
+
+    void simplifyInitVar3() {
+        const char code[] = "void f() {\n"
+                            "    int *a(0),b(0);\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "int * a ; a = 0 ; int b ; b = 0 ;\n"
+                      "}", tokenizeAndStringify(code));
     }
 
     void bitfields1() {
