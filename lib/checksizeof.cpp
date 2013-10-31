@@ -297,7 +297,7 @@ void CheckSizeof::sizeofVoid()
                    Token::Match(tok, "+|-|++|-- %var%")) { // Arithmetic operations on variable of type "void*"
             int index = (tok->isName()) ? 0 : 1;
             const Variable* var = tok->tokAt(index)->variable();
-            if (var && Token::Match(var->typeStartToken(), "void *")) {
+            if (var && Token::Match(var->typeStartToken(), "void * !!*")) {
                 std::string varname = tok->strAt(index);
                 // In case this 'void *' var is a member then go back to the main object
                 const Token* tok2 = tok->tokAt(index);

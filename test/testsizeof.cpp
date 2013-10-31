@@ -521,6 +521,12 @@ private:
                       "[test.cpp:5]: (portability) 'p2' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
 
         check("void f() {\n"
+              "  void** p1 = malloc(10);\n"
+              "  p1--;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
               "  void** p1;\n"
               "  int j = sizeof(*p1);\n"
               "}");
