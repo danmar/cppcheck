@@ -67,7 +67,11 @@ bool Library::load(const char exename[], const char path[])
 bool Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    if (rootnode && strcmp(rootnode->Name(),"def") != 0)
+
+    if (rootnode == NULL)
+        return false;
+
+    if (strcmp(rootnode->Name(),"def") != 0)
         return false;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
