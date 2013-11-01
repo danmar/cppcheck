@@ -1421,6 +1421,16 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
     }
 }
 
+CheckIO::ArgumentInfo::~ArgumentInfo()
+{
+    if (tempToken) {
+        while (tempToken->next())
+            tempToken->deleteNext();
+
+        delete tempToken;
+    }
+}
+
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
     if (Token::Match(variableInfo->typeStartToken(), "std :: vector|array <")) {

@@ -72,9 +72,8 @@ private:
     class ArgumentInfo {
     public:
         ArgumentInfo(const Token *arg, const Settings *settings);
-        ~ArgumentInfo() {
-            delete tempToken;
-        }
+        ~ArgumentInfo();
+
         bool isArrayOrPointer() const;
         bool isComplexType() const;
         bool isKnownType() const;
