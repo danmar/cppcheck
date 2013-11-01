@@ -1134,7 +1134,7 @@ static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, 
             // expand token list
             for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
                 if (tok2->isName()) {
-                    simplifyVarMapExpandValue(tok2, variables, seenVariables);
+                    tok2 = simplifyVarMapExpandValue(tok2, variables, seenVariables);
                 }
             }
 
