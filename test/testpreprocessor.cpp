@@ -795,14 +795,14 @@ private:
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c"); // <- don't crash
     }
-    
+
     void test10() { // Ticket #5139
         const char filedata[] = "#define foo a.foo\n"
                                 "#define bar foo\n"
                                 "#define baz bar+0\n"
                                 "#if 0\n"
                                 "#endif";
-        
+
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
