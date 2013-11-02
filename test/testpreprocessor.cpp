@@ -95,6 +95,7 @@ private:
         TEST_CASE(test7e);
         TEST_CASE(test8);  // #if A==1  => cfg: A=1
         TEST_CASE(test9);  // Don't crash for invalid code
+        TEST_CASE(test10); // Ticket #5139
 
         // #error => don't extract any code
         TEST_CASE(error1);
@@ -793,6 +794,21 @@ private:
         settings.userDefines = "X";
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c"); // <- don't crash
+    }
+    
+    void test10() { // Ticket #5139
+        const char filedata[] = "#define foo a.foo\n"
+                                "#define bar foo\n"
+                                "#define baz bar+0\n"
+                                "#if 0\n"
+                                "#endif";
+        
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
     }
 
     void error1() {
