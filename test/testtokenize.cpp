@@ -579,7 +579,7 @@ private:
 
     void tokenize2() {
         const std::string code("{ sizeof a, sizeof b }");
-        ASSERT_EQUALS("{ sizeof a , sizeof b }", tokenizeAndStringify(code.c_str()));
+        ASSERT_EQUALS("{ sizeof ( a ) , sizeof ( b ) }", tokenizeAndStringify(code.c_str()));
     }
 
     void tokenize3() {

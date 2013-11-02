@@ -196,6 +196,9 @@ public:
       */
     void simplifyRealloc();
 
+    /** Add parentheses for sizeof: sizeof x => sizeof(x) */
+    void sizeofAddParentheses();
+
     /**
      * Replace sizeof() to appropriate size.
      * @return true if modifications to token-list are done.

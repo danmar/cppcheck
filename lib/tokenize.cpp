@@ -1675,6 +1675,8 @@ bool Tokenizer::tokenize(std::istream &code,
     if (!simplifyAddBraces())
         return false;
 
+    sizeofAddParentheses();
+
     // Combine tokens..
     combineOperators();
 
@@ -3205,6 +3207,42 @@ void Tokenizer::createLinks2()
             Token::createMutualLinks(top, token);
         }
     }
+}
+
+void Tokenizer::sizeofAddParentheses()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "sizeof %var%")) {
+            Token *tempToken = tok->next();
+            while (Token::Match(tempToken, "%var%")) {
+                while (tempToken && tempToken->next() && tempToken->next()->str() == "[")
+                    tempToken = tempToken->next()->link();
+                if (!tempToken || !tempToken->next())
+                    break;
+
+                if (Token::Match(tempToken->next(), ". %var%")) {
+                    // We are checking a class or struct, search next varname
+                    tempToken = tempToken->tokAt(2);
+                    continue;
+                } else if (tempToken->next()->type() == Token::eIncDecOp) {
+                    // We have variable++ or variable--, the sizeof argument
+                    // ends after the op
+                    tempToken = tempToken->next();
+                } else if (Token::Match(tempToken->next(), "[),;}]")) {
+                    ;
+                } else {
+                    break;
+                }
+
+                // Ok. Add ( after sizeof and ) after tempToken
+                tok->insertToken("(");
+                tempToken->insertToken(")");
+                Token::createMutualLinks(tok->next(), tempToken->next());
+                break;
+            }
+        }
+    }
+
 }
 
 bool Tokenizer::simplifySizeof()

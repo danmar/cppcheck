@@ -803,6 +803,13 @@ private:
               "}", true, "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(type* p) {\n" // #4983
+              "    x(sizeof p[0]);\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
+
         // #3023 - checked deref
         check("void f(struct ABC *abc) {\n"
               "  WARN_ON(!abc || abc->x == 0);\n"
