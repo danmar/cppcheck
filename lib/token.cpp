@@ -1160,9 +1160,14 @@ void Token::astHandleParentheses()
         innerTop = _previous;
     else if (_next && _next->_str == ")")
         return;
-    else  // _str = "("
+    else {  // _str = "("
         innerTop = _next;
-    while (innerTop->_astParent)
+        while (Token::simpleMatch(innerTop->link(),") )"))
+            innerTop = innerTop->_next;
+        if (innerTop && innerTop->_str == "(")
+            innerTop = innerTop->_link->_next;
+    }
+    while (innerTop && innerTop->_astParent)
         innerTop = innerTop->_astParent;
 
     if (_astParent) {

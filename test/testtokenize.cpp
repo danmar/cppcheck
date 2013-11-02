@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "path.h"
 #include <cstring>
+#include <stack>
 
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture {
@@ -9926,6 +9927,17 @@ private:
         if (!tokenList.createTokens(istr,"test.cpp"))
             return "ERROR";
 
+        // Set links..
+        std::stack<Token *> links;
+        for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "(|["))
+                links.push(tok);
+            else if (!links.empty() && Token::Match(tok,")|]")) {
+                Token::createMutualLinks(links.top(), tok);
+                links.pop();
+            }
+        }
+
         // Create AST..
         tokenList.createAst();
 
@@ -9956,6 +9968,7 @@ private:
         ASSERT_EQUALS("12+3*", testAst("(1+2)*3"));
         ASSERT_EQUALS("123+*", testAst("1*(2+3)"));
         ASSERT_EQUALS("123+*4*", testAst("1*(2+3)*4"));
+        ASSERT_EQUALS("ab.c&d==if", testAst("if((a.b&c)==d){}"));
     }
 
     void astbrackets() const { // []
