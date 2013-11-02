@@ -112,7 +112,7 @@ def removeLargeFiles(path):
             continue
         if os.path.isdir(g):
             removeLargeFiles(g + '/')
-        elif os.path.isfile(g) and g != 'results.txt':
+        elif os.path.isfile(g) and g[-4:] != '.txt':
             statinfo = os.stat(g)
             if statinfo.st_size > 100000:
                 os.remove(g)
