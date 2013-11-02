@@ -28,6 +28,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <ctime>
 
 class Settings;
 class SymbolDatabase;
@@ -806,6 +807,10 @@ private:
      * TimerResults
      */
     TimerResults *m_timerResults;
+#ifdef MAXTIME
+    /** Tokenizer maxtime */
+    std::time_t maxtime;
+#endif
 };
 
 /// @}

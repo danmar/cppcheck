@@ -43,6 +43,9 @@ Tokenizer::Tokenizer() :
     _varId(0),
     _codeWithTemplates(false), //is there any templates?
     m_timerResults(NULL)
+#ifdef MAXTIME
+    ,maxtime(std::time(0) + MAXTIME)
+#endif
 {
 }
 
@@ -54,6 +57,9 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     _varId(0),
     _codeWithTemplates(false), //is there any templates?
     m_timerResults(NULL)
+#ifdef MAXTIME
+    ,maxtime(std::time(0) + MAXTIME)
+#endif
 {
     // make sure settings are specified
     assert(_settings);
@@ -513,6 +519,11 @@ void Tokenizer::simplifyTypedef()
 
         if (_settings && _settings->terminated())
             return;
+
+#ifdef MAXTIME
+        if (std::time(0) > maxtime)
+            return;
+#endif
 
         if (goback) {
             //jump back once, see the comment at the end of the function
@@ -6457,6 +6468,11 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
     if (_errorLogger && !list.getFiles().empty())
         _errorLogger->reportProgress(list.getFiles()[0], "Tokenize (simplifyKnownVariables)", tok3->progressValue());
+
+#ifdef MAXTIME
+    if (std::time(0) > maxtime)
+        return false;
+#endif
 
     bool ret = false;
 
