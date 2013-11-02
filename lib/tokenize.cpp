@@ -3645,6 +3645,12 @@ bool Tokenizer::simplifyTokenList()
             tok->deleteNext();
     }
 
+    // Experimental AST handling. Only for C code now since
+    // uninstantiated C++ templates are not handled well. Fix
+    // TestTokenize::asttemplate
+    if (_settings->ast && isC())
+        list.createAst();
+
     if (_settings->terminated())
         return false;
 
@@ -3653,6 +3659,9 @@ bool Tokenizer::simplifyTokenList()
 
         if (_settings->_verbose)
             _symbolDatabase->printOut("Symbol database");
+
+        if (_settings->ast)
+            list.front()->printAst();
     }
 
     if (_settings->debugwarnings) {

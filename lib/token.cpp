@@ -1166,13 +1166,30 @@ void Token::astHandleParentheses()
         innerTop = innerTop->_astParent;
 
     if (_astParent) {
-        if (_str == "(" && _astParent->_astOperand2 != NULL)
+        if (_astParent->_astOperand2 == this)
             _astParent->_astOperand2 = innerTop;
-        else
+        else if (_astParent->_astOperand1 == this)
             _astParent->_astOperand1 = innerTop;
         innerTop->_astParent = _astParent;
-    } else {
-        _astParent = innerTop;
+        _astParent = NULL;
     }
 }
 
+
+void Token::printAst() const
+{
+    bool title = false;
+
+    bool print = true;
+    for (const Token *tok = this; tok; tok = tok->next()) {
+        if (print && tok->_astOperand1) {
+            if (!title)
+                std::cout << "\n\n##AST" << std::endl;
+            title = true;
+            std::cout << tok->astTop()->astString(" ") << std::endl;
+            print = false;
+        }
+        if (Token::Match(tok, "[;{}]"))
+            print = true;
+    }
+}

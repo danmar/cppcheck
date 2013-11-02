@@ -671,14 +671,16 @@ public:
         return ret;
     }
 
-    std::string astString() const {
+    std::string astString(const char *sep = "") const {
         std::string ret;
         if (_astOperand1)
-            ret = _astOperand1->astString();
+            ret = _astOperand1->astString(sep);
         if (_astOperand2)
-            ret += _astOperand2->astString();
-        return ret+_str;
+            ret += _astOperand2->astString(sep);
+        return ret + sep + _str;
     }
+
+    void printAst() const;
 };
 
 /// @}

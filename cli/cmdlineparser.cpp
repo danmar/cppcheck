@@ -125,6 +125,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (std::strcmp(argv[i], "--debug-fp") == 0)
             _settings->debugFalsePositive = true;
 
+        // Experimental AST handling
+        else if (std::strcmp(argv[i], "--ast") == 0)
+            _settings->ast = true;
+
         // Inconclusive checking (still in testing phase)
         else if (std::strcmp(argv[i], "--inconclusive") == 0)
             _settings->inconclusive = true;

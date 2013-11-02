@@ -62,6 +62,9 @@ public:
     /** @brief Is --debug-fp given? */
     bool debugFalsePositive;
 
+    /** @brief Experimental AST handling */
+    bool ast;
+
     /** @brief Inconclusive checks */
     bool inconclusive;
 

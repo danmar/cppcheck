@@ -9929,7 +9929,13 @@ private:
         // Create AST..
         tokenList.createAst();
 
-        return tokenList.front()->astTop()->astString();
+        for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+            if (tok->astOperand1())
+                return tok->astTop()->astString();
+        }
+
+        // No AST found
+        return "";
     }
 
     void astexpr() const { // simple expressions with arithmetical ops

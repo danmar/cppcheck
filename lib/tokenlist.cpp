@@ -392,7 +392,7 @@ void TokenList::createAst() const
             while (tok->next())
                 tok = tok->next();
             for (; tok; tok = tok->previous()) {
-                if ((!tok->previous() || tok->previous()->isOp()) &&
+                if (tok->isOp() && (!tok->previous() || tok->previous()->isOp() || tok->previous()->type() == Token::eOther) &&
                     op.find(" "+tok->str()+" ")!=std::string::npos) {
                     tok->astOperand1(tok->next());
                 }
@@ -401,6 +401,13 @@ void TokenList::createAst() const
             const std::string op(operators[i]);
             for (Token *tok = _front; tok; tok = tok->next()) {
                 if (tok->astOperand1()==NULL && op.find(" "+tok->str()+" ")!=std::string::npos) {
+                    // Don't create AST for "..."
+                    if (tok->str() == "." && (tok->previous()->str() == "." || tok->next()->str() == "."))
+                        continue;
+
+                    if (Token::Match(tok, "* [)]]"))
+                        continue;
+
                     if (tok->type() != Token::eIncDecOp) {
                         tok->astOperand1(tok->previous());
                         tok->astOperand2(tok->next());
