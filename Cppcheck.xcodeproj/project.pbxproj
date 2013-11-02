@@ -51,6 +51,97 @@
 		F4043DE6177F093300CD5A40 /* templatesimplifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD2177F093300CD5A40 /* templatesimplifier.cpp */; };
 		F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD4177F093300CD5A40 /* tokenlist.cpp */; };
 		F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E508117896AEB00C684DC /* tinyxml2.cpp */; };
+		F4C348661825679E00521683 /* cmdlineparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ECF1270DE5000AC0D02 /* cmdlineparser.cpp */; };
+		F4C348671825679F00521683 /* cppcheckexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ED11270DE5000AC0D02 /* cppcheckexecutor.cpp */; };
+		F4C348681825679F00521683 /* filelister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DAD177F08A800CD5A40 /* filelister.cpp */; };
+		F4C348691825679F00521683 /* pathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DAF177F08A800CD5A40 /* pathmatch.cpp */; };
+		F4C3486A1825679F00521683 /* threadexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ED41270DE5000AC0D02 /* threadexecutor.cpp */; };
+		F4C3486C1825692B00521683 /* options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8717AB8511006C06AF /* options.cpp */; };
+		F4C3486D1825692B00521683 /* test64bit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8917AB8511006C06AF /* test64bit.cpp */; };
+		F4C3486E1825692B00521683 /* testassert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8A17AB8511006C06AF /* testassert.cpp */; };
+		F4C3486F1825692B00521683 /* testassignif.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8B17AB8511006C06AF /* testassignif.cpp */; };
+		F4C348701825692B00521683 /* testautovariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8C17AB8511006C06AF /* testautovariables.cpp */; };
+		F4C348711825692B00521683 /* testbool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8D17AB8511006C06AF /* testbool.cpp */; };
+		F4C348721825692B00521683 /* testboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8E17AB8511006C06AF /* testboost.cpp */; };
+		F4C348731825692B00521683 /* testbufferoverrun.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD8F17AB8511006C06AF /* testbufferoverrun.cpp */; };
+		F4C348741825692B00521683 /* testcharvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9017AB8511006C06AF /* testcharvar.cpp */; };
+		F4C348751825692B00521683 /* testclass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9117AB8511006C06AF /* testclass.cpp */; };
+		F4C348761825692B00521683 /* testcmdlineparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9217AB8511006C06AF /* testcmdlineparser.cpp */; };
+		F4C348771825692B00521683 /* testconstructors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9317AB8511006C06AF /* testconstructors.cpp */; };
+		F4C348781825692B00521683 /* testcppcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9417AB8511006C06AF /* testcppcheck.cpp */; };
+		F4C348791825692B00521683 /* testdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9517AB8511006C06AF /* testdivision.cpp */; };
+		F4C3487A1825692B00521683 /* testerrorlogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9617AB8511006C06AF /* testerrorlogger.cpp */; };
+		F4C3487B1825692B00521683 /* testexceptionsafety.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9717AB8511006C06AF /* testexceptionsafety.cpp */; };
+		F4C3487C1825692B00521683 /* testfilelister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9817AB8511006C06AF /* testfilelister.cpp */; };
+		F4C3487D1825692B00521683 /* testincompletestatement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9917AB8511006C06AF /* testincompletestatement.cpp */; };
+		F4C3487E1825692B00521683 /* testinternal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9A17AB8511006C06AF /* testinternal.cpp */; };
+		F4C3487F1825692B00521683 /* testio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9B17AB8511006C06AF /* testio.cpp */; };
+		F4C348801825692B00521683 /* testleakautovar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9C17AB8511006C06AF /* testleakautovar.cpp */; };
+		F4C348811825692B00521683 /* testmathlib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9D17AB8511006C06AF /* testmathlib.cpp */; };
+		F4C348821825692B00521683 /* testmemleak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9E17AB8511006C06AF /* testmemleak.cpp */; };
+		F4C348831825692B00521683 /* testnonreentrantfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9F17AB8511006C06AF /* testnonreentrantfunctions.cpp */; };
+		F4C348841825692B00521683 /* testnullpointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA017AB8511006C06AF /* testnullpointer.cpp */; };
+		F4C348851825692B00521683 /* testobsoletefunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA117AB8511006C06AF /* testobsoletefunctions.cpp */; };
+		F4C348861825692B00521683 /* testoptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA217AB8511006C06AF /* testoptions.cpp */; };
+		F4C348871825692B00521683 /* testother.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA317AB8511006C06AF /* testother.cpp */; };
+		F4C348881825692B00521683 /* testpath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA417AB8511006C06AF /* testpath.cpp */; };
+		F4C348891825692B00521683 /* testpathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA517AB8511006C06AF /* testpathmatch.cpp */; };
+		F4C3488A1825692B00521683 /* testpostfixoperator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA617AB8511006C06AF /* testpostfixoperator.cpp */; };
+		F4C3488B1825692B00521683 /* testpreprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA717AB8511006C06AF /* testpreprocessor.cpp */; };
+		F4C3488C1825692B00521683 /* testrunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA817AB8511006C06AF /* testrunner.cpp */; };
+		F4C3488D1825692B00521683 /* testsimplifytokens.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA917AB8511006C06AF /* testsimplifytokens.cpp */; };
+		F4C3488E1825692B00521683 /* testsizeof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAA17AB8511006C06AF /* testsizeof.cpp */; };
+		F4C3488F1825692B00521683 /* teststl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAB17AB8511006C06AF /* teststl.cpp */; };
+		F4C348901825692B00521683 /* testsuite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAC17AB8511006C06AF /* testsuite.cpp */; };
+		F4C348911825692B00521683 /* testsuppressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAD17AB8511006C06AF /* testsuppressions.cpp */; };
+		F4C348921825692B00521683 /* testsymboldatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAE17AB8511006C06AF /* testsymboldatabase.cpp */; };
+		F4C348931825692B00521683 /* testthreadexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDAF17AB8511006C06AF /* testthreadexecutor.cpp */; };
+		F4C348941825692B00521683 /* testtimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB017AB8511006C06AF /* testtimer.cpp */; };
+		F4C348951825692B00521683 /* testtoken.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB117AB8511006C06AF /* testtoken.cpp */; };
+		F4C348961825692B00521683 /* testtokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB217AB8511006C06AF /* testtokenize.cpp */; };
+		F4C348971825692B00521683 /* testuninitvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB317AB8511006C06AF /* testuninitvar.cpp */; };
+		F4C348981825692B00521683 /* testunusedfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB417AB8511006C06AF /* testunusedfunctions.cpp */; };
+		F4C348991825692B00521683 /* testunusedprivfunc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB517AB8511006C06AF /* testunusedprivfunc.cpp */; };
+		F4C3489A1825692B00521683 /* testunusedvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB617AB8511006C06AF /* testunusedvar.cpp */; };
+		F4C3489B18256A4500521683 /* check64bit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB3177F093300CD5A40 /* check64bit.cpp */; };
+		F4C3489C18256A4500521683 /* checkassert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB5177F093300CD5A40 /* checkassert.cpp */; };
+		F4C3489D18256A4500521683 /* checkassignif.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB7177F093300CD5A40 /* checkassignif.cpp */; };
+		F4C3489E18256A4500521683 /* checkautovariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E8D1270DE3A00AC0D02 /* checkautovariables.cpp */; };
+		F4C3489F18256A4500521683 /* checkbool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB9177F093300CD5A40 /* checkbool.cpp */; };
+		F4C348A018256A4500521683 /* checkboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DBB177F093300CD5A40 /* checkboost.cpp */; };
+		F4C348A118256A4500521683 /* checkbufferoverrun.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E8F1270DE3A00AC0D02 /* checkbufferoverrun.cpp */; };
+		F4C348A218256A4500521683 /* checkclass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E911270DE3A00AC0D02 /* checkclass.cpp */; };
+		F4C348A318256A4500521683 /* checkexceptionsafety.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E931270DE3A00AC0D02 /* checkexceptionsafety.cpp */; };
+		F4C348A418256A4500521683 /* checkinternal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DBD177F093300CD5A40 /* checkinternal.cpp */; };
+		F4C348A518256A4500521683 /* checkio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DBF177F093300CD5A40 /* checkio.cpp */; };
+		F4C348A618256A4500521683 /* checkleakautovar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC1177F093300CD5A40 /* checkleakautovar.cpp */; };
+		F4C348A718256A4500521683 /* checkmemoryleak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E951270DE3A00AC0D02 /* checkmemoryleak.cpp */; };
+		F4C348A818256A4500521683 /* checknonreentrantfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC3177F093300CD5A40 /* checknonreentrantfunctions.cpp */; };
+		F4C348A918256A4500521683 /* checknullpointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC5177F093300CD5A40 /* checknullpointer.cpp */; };
+		F4C348AA18256A4500521683 /* checkobsoletefunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E971270DE3A00AC0D02 /* checkobsoletefunctions.cpp */; };
+		F4C348AB18256A4500521683 /* checkother.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E991270DE3A00AC0D02 /* checkother.cpp */; };
+		F4C348AC18256A4500521683 /* checkpostfixoperator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E9B1270DE3A00AC0D02 /* checkpostfixoperator.cpp */; };
+		F4C348AD18256A4500521683 /* checksizeof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC7177F093300CD5A40 /* checksizeof.cpp */; };
+		F4C348AE18256A4500521683 /* checkstl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E9D1270DE3A00AC0D02 /* checkstl.cpp */; };
+		F4C348AF18256A4500521683 /* checkuninitvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC9177F093300CD5A40 /* checkuninitvar.cpp */; };
+		F4C348B018256A4500521683 /* checkunusedfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E9F1270DE3A00AC0D02 /* checkunusedfunctions.cpp */; };
+		F4C348B118256A4500521683 /* checkunusedvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DCB177F093300CD5A40 /* checkunusedvar.cpp */; };
+		F4C348B218256A4500521683 /* errorlogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EA31270DE3A00AC0D02 /* errorlogger.cpp */; };
+		F4C348B318256A4500521683 /* executionpath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EA51270DE3A00AC0D02 /* executionpath.cpp */; };
+		F4C348B418256A4500521683 /* mathlib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EAB1270DE3A00AC0D02 /* mathlib.cpp */; };
+		F4C348B518256A4500521683 /* path.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EAD1270DE3A00AC0D02 /* path.cpp */; };
+		F4C348B618256A4500521683 /* preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EAF1270DE3A00AC0D02 /* preprocessor.cpp */; };
+		F4C348B718256A4500521683 /* settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EB11270DE3A00AC0D02 /* settings.cpp */; };
+		F4C348B818256A4500521683 /* suppressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DCE177F093300CD5A40 /* suppressions.cpp */; };
+		F4C348B918256A4500521683 /* symboldatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD0177F093300CD5A40 /* symboldatabase.cpp */; };
+		F4C348BA18256A4500521683 /* templatesimplifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD2177F093300CD5A40 /* templatesimplifier.cpp */; };
+		F4C348BB18256A4500521683 /* timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EB31270DE3A00AC0D02 /* timer.cpp */; };
+		F4C348BC18256A4500521683 /* token.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EB51270DE3A00AC0D02 /* token.cpp */; };
+		F4C348BD18256A4500521683 /* tokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EB71270DE3A00AC0D02 /* tokenize.cpp */; };
+		F4C348BE18256A4500521683 /* tokenlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD4177F093300CD5A40 /* tokenlist.cpp */; };
+		F4C348BF18256A8700521683 /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E508117896AEB00C684DC /* tinyxml2.cpp */; };
+		F4C348C018256A8700521683 /* library.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CF847C17B6504100522F24 /* library.cpp */; };
+		F4C348C118256A9900521683 /* cppcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EA11270DE3A00AC0D02 /* cppcheck.cpp */; };
 		F4CF847D17B6504100522F24 /* library.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CF847C17B6504100522F24 /* library.cpp */; };
 /* End PBXBuildFile section */
 
@@ -58,6 +149,15 @@
 		8DD76F690486A84900D96B5E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		F4C3485E182566E800521683 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
@@ -209,6 +309,7 @@
 		F45BDDB617AB8511006C06AF /* testunusedvar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testunusedvar.cpp; path = test/testunusedvar.cpp; sourceTree = "<group>"; };
 		F47E508117896AEB00C684DC /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml2.cpp; path = externals/tinyxml/tinyxml2.cpp; sourceTree = "<group>"; };
 		F47E508217896AEB00C684DC /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml2.h; path = externals/tinyxml/tinyxml2.h; sourceTree = "<group>"; };
+		F4C34860182566E800521683 /* testrunner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testrunner; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4CF847A17B6504000522F24 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = lib/config.h; sourceTree = "<group>"; };
 		F4CF847B17B6504100522F24 /* library.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = library.h; path = lib/library.h; sourceTree = "<group>"; };
 		F4CF847C17B6504100522F24 /* library.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = library.cpp; path = lib/library.cpp; sourceTree = "<group>"; };
@@ -216,6 +317,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4C3485D182566E800521683 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -230,6 +338,7 @@
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
 				C6859E8C029090F304C91782 /* Documentation */,
+				F4C34861182566E800521683 /* testrunner */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
 			name = cppcheck;
@@ -238,6 +347,7 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				F4C348651825673B00521683 /* Client */,
 				F45BDD8217AB84D0006C06AF /* Tests */,
 				F47E507F17896AC700C684DC /* Externals */,
 				2C21A45D1178BB0B00D35009 /* Library */,
@@ -250,6 +360,7 @@
 			isa = PBXGroup;
 			children = (
 				39E60EDE1270DEB100AC0D02 /* cppcheck */,
+				F4C34860182566E800521683 /* testrunner */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -441,6 +552,20 @@
 			name = tinyxml;
 			sourceTree = "<group>";
 		};
+		F4C34861182566E800521683 /* testrunner */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = testrunner;
+			sourceTree = "<group>";
+		};
+		F4C348651825673B00521683 /* Client */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Client;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -460,6 +585,23 @@
 			productInstallPath = "$(HOME)/bin";
 			productName = cppcheck;
 			productReference = 39E60EDE1270DEB100AC0D02 /* cppcheck */;
+			productType = "com.apple.product-type.tool";
+		};
+		F4C3485F182566E800521683 /* testrunner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4C34864182566E800521683 /* Build configuration list for PBXNativeTarget "testrunner" */;
+			buildPhases = (
+				F4C3485C182566E800521683 /* Sources */,
+				F4C3485D182566E800521683 /* Frameworks */,
+				F4C3485E182566E800521683 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testrunner;
+			productName = testrunner;
+			productReference = F4C34860182566E800521683 /* testrunner */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -485,6 +627,7 @@
 			projectRoot = "";
 			targets = (
 				8DD76F620486A84900D96B5E /* cppcheck */,
+				F4C3485F182566E800521683 /* testrunner */,
 			);
 		};
 /* End PBXProject section */
@@ -539,6 +682,104 @@
 				F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */,
 				F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */,
 				F4CF847D17B6504100522F24 /* library.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4C3485C182566E800521683 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4C348C118256A9900521683 /* cppcheck.cpp in Sources */,
+				F4C348BF18256A8700521683 /* tinyxml2.cpp in Sources */,
+				F4C348C018256A8700521683 /* library.cpp in Sources */,
+				F4C3489B18256A4500521683 /* check64bit.cpp in Sources */,
+				F4C3489C18256A4500521683 /* checkassert.cpp in Sources */,
+				F4C3489D18256A4500521683 /* checkassignif.cpp in Sources */,
+				F4C3489E18256A4500521683 /* checkautovariables.cpp in Sources */,
+				F4C3489F18256A4500521683 /* checkbool.cpp in Sources */,
+				F4C348A018256A4500521683 /* checkboost.cpp in Sources */,
+				F4C348A118256A4500521683 /* checkbufferoverrun.cpp in Sources */,
+				F4C348A218256A4500521683 /* checkclass.cpp in Sources */,
+				F4C348A318256A4500521683 /* checkexceptionsafety.cpp in Sources */,
+				F4C348A418256A4500521683 /* checkinternal.cpp in Sources */,
+				F4C348A518256A4500521683 /* checkio.cpp in Sources */,
+				F4C348A618256A4500521683 /* checkleakautovar.cpp in Sources */,
+				F4C348A718256A4500521683 /* checkmemoryleak.cpp in Sources */,
+				F4C348A818256A4500521683 /* checknonreentrantfunctions.cpp in Sources */,
+				F4C348A918256A4500521683 /* checknullpointer.cpp in Sources */,
+				F4C348AA18256A4500521683 /* checkobsoletefunctions.cpp in Sources */,
+				F4C348AB18256A4500521683 /* checkother.cpp in Sources */,
+				F4C348AC18256A4500521683 /* checkpostfixoperator.cpp in Sources */,
+				F4C348AD18256A4500521683 /* checksizeof.cpp in Sources */,
+				F4C348AE18256A4500521683 /* checkstl.cpp in Sources */,
+				F4C348AF18256A4500521683 /* checkuninitvar.cpp in Sources */,
+				F4C348B018256A4500521683 /* checkunusedfunctions.cpp in Sources */,
+				F4C348B118256A4500521683 /* checkunusedvar.cpp in Sources */,
+				F4C348B218256A4500521683 /* errorlogger.cpp in Sources */,
+				F4C348B318256A4500521683 /* executionpath.cpp in Sources */,
+				F4C348B418256A4500521683 /* mathlib.cpp in Sources */,
+				F4C348B518256A4500521683 /* path.cpp in Sources */,
+				F4C348B618256A4500521683 /* preprocessor.cpp in Sources */,
+				F4C348B718256A4500521683 /* settings.cpp in Sources */,
+				F4C348B818256A4500521683 /* suppressions.cpp in Sources */,
+				F4C348B918256A4500521683 /* symboldatabase.cpp in Sources */,
+				F4C348BA18256A4500521683 /* templatesimplifier.cpp in Sources */,
+				F4C348BB18256A4500521683 /* timer.cpp in Sources */,
+				F4C348BC18256A4500521683 /* token.cpp in Sources */,
+				F4C348BD18256A4500521683 /* tokenize.cpp in Sources */,
+				F4C348BE18256A4500521683 /* tokenlist.cpp in Sources */,
+				F4C3486C1825692B00521683 /* options.cpp in Sources */,
+				F4C3486D1825692B00521683 /* test64bit.cpp in Sources */,
+				F4C3486E1825692B00521683 /* testassert.cpp in Sources */,
+				F4C3486F1825692B00521683 /* testassignif.cpp in Sources */,
+				F4C348701825692B00521683 /* testautovariables.cpp in Sources */,
+				F4C348711825692B00521683 /* testbool.cpp in Sources */,
+				F4C348721825692B00521683 /* testboost.cpp in Sources */,
+				F4C348731825692B00521683 /* testbufferoverrun.cpp in Sources */,
+				F4C348741825692B00521683 /* testcharvar.cpp in Sources */,
+				F4C348751825692B00521683 /* testclass.cpp in Sources */,
+				F4C348761825692B00521683 /* testcmdlineparser.cpp in Sources */,
+				F4C348771825692B00521683 /* testconstructors.cpp in Sources */,
+				F4C348781825692B00521683 /* testcppcheck.cpp in Sources */,
+				F4C348791825692B00521683 /* testdivision.cpp in Sources */,
+				F4C3487A1825692B00521683 /* testerrorlogger.cpp in Sources */,
+				F4C3487B1825692B00521683 /* testexceptionsafety.cpp in Sources */,
+				F4C3487C1825692B00521683 /* testfilelister.cpp in Sources */,
+				F4C3487D1825692B00521683 /* testincompletestatement.cpp in Sources */,
+				F4C3487E1825692B00521683 /* testinternal.cpp in Sources */,
+				F4C3487F1825692B00521683 /* testio.cpp in Sources */,
+				F4C348801825692B00521683 /* testleakautovar.cpp in Sources */,
+				F4C348811825692B00521683 /* testmathlib.cpp in Sources */,
+				F4C348821825692B00521683 /* testmemleak.cpp in Sources */,
+				F4C348831825692B00521683 /* testnonreentrantfunctions.cpp in Sources */,
+				F4C348841825692B00521683 /* testnullpointer.cpp in Sources */,
+				F4C348851825692B00521683 /* testobsoletefunctions.cpp in Sources */,
+				F4C348861825692B00521683 /* testoptions.cpp in Sources */,
+				F4C348871825692B00521683 /* testother.cpp in Sources */,
+				F4C348881825692B00521683 /* testpath.cpp in Sources */,
+				F4C348891825692B00521683 /* testpathmatch.cpp in Sources */,
+				F4C3488A1825692B00521683 /* testpostfixoperator.cpp in Sources */,
+				F4C3488B1825692B00521683 /* testpreprocessor.cpp in Sources */,
+				F4C3488C1825692B00521683 /* testrunner.cpp in Sources */,
+				F4C3488D1825692B00521683 /* testsimplifytokens.cpp in Sources */,
+				F4C3488E1825692B00521683 /* testsizeof.cpp in Sources */,
+				F4C3488F1825692B00521683 /* teststl.cpp in Sources */,
+				F4C348901825692B00521683 /* testsuite.cpp in Sources */,
+				F4C348911825692B00521683 /* testsuppressions.cpp in Sources */,
+				F4C348921825692B00521683 /* testsymboldatabase.cpp in Sources */,
+				F4C348931825692B00521683 /* testthreadexecutor.cpp in Sources */,
+				F4C348941825692B00521683 /* testtimer.cpp in Sources */,
+				F4C348951825692B00521683 /* testtoken.cpp in Sources */,
+				F4C348961825692B00521683 /* testtokenize.cpp in Sources */,
+				F4C348971825692B00521683 /* testuninitvar.cpp in Sources */,
+				F4C348981825692B00521683 /* testunusedfunctions.cpp in Sources */,
+				F4C348991825692B00521683 /* testunusedprivfunc.cpp in Sources */,
+				F4C3489A1825692B00521683 /* testunusedvar.cpp in Sources */,
+				F4C348661825679E00521683 /* cmdlineparser.cpp in Sources */,
+				F4C348671825679F00521683 /* cppcheckexecutor.cpp in Sources */,
+				F4C348681825679F00521683 /* filelister.cpp in Sources */,
+				F4C348691825679F00521683 /* pathmatch.cpp in Sources */,
+				F4C3486A1825679F00521683 /* threadexecutor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -599,6 +840,77 @@
 			};
 			name = Release;
 		};
+		F4C34862182566E800521683 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = "";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				HEADER_SEARCH_PATHS = (
+					externals/tinyxml,
+					lib,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F4C34863182566E800521683 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				HEADER_SEARCH_PATHS = (
+					externals/tinyxml,
+					lib,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -619,6 +931,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		F4C34864182566E800521683 /* Build configuration list for PBXNativeTarget "testrunner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4C34862182566E800521683 /* Debug */,
+				F4C34863182566E800521683 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
