@@ -377,7 +377,7 @@ private:
     void naninf() {
         ASSERT_EQUALS("inf.0", MathLib::divide("0.0", "0.0")); // nan
         ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.0")); // inf
-        ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "0.0")); // -inf
+        ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0")); // -inf (#5142)
     }
 };
 
