@@ -635,11 +635,11 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     // Calling a user function?
     // only 1-dimensional arrays can be checked currently
     else if (arrayInfo.num().size() == 1) {
-        const Function* func = tok.function();
+        const Function* const func = tok.function();
 
         if (func && func->hasBody) {
             // Get corresponding parameter..
-            const Variable* parameter = func->getArgumentVar(par-1);
+            const Variable* const parameter = func->getArgumentVar(par-1);
 
             // Ensure that it has a compatible size..
             if (!parameter || _tokenizer->sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
@@ -705,11 +705,11 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
 
     // Check 'float x[10]' arguments in declaration
     if (_settings->isEnabled("warning")) {
-        const Function* func = tok.function();
+        const Function* const func = tok.function();
 
         // If argument is '%type% a[num]' then check bounds against num
         if (func) {
-            const Variable* argument = func->getArgumentVar(par-1);
+            const Variable* const argument = func->getArgumentVar(par-1);
             const Token *nameToken;
             if (argument && Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")
                 && (nameToken = argument->nameToken()) != NULL) {
@@ -802,7 +802,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, maxMinFlipped)) {
         // Can't understand the condition. Check that the start value
         // is used correctly
-        const Token *startForScope = tok->next()->link()->next();
+        const Token * const startForScope = tok->next()->link()->next();
         if (!for_bailout(startForScope, counter_varid)) {
             // Get index variable and stopsize.
             bool condition_out_of_bounds = bool(size > 0);
@@ -1220,7 +1220,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", arrayInfo.declarationId())) {
-            unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
+            const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
             if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size && (unsigned int)total_size == num) {
                 if (_settings->inconclusive)
                     bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
