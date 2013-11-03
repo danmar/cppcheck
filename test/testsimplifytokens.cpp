@@ -371,6 +371,7 @@ private:
         TEST_CASE(enum36); // ticket #4378
         TEST_CASE(enum37); // ticket #4280 (shadow variable)
         TEST_CASE(enum38); // ticket #4463 (when throwing enum id, don't warn about shadow variable)
+        TEST_CASE(enum39); // ticket #5145 (fp variable hides enum)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -7448,6 +7449,12 @@ private:
 
     void enum38() { // #4463
         const char code[] = "enum { a,b }; void f() { throw a; }";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum39() { // #5145 - fp variable hides enum
+        const char code[] = "enum { A }; void f() { int a = 1 * A; }";
         checkSimplifyEnum(code);
         ASSERT_EQUALS("", errout.str());
     }

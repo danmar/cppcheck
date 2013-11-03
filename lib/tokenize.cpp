@@ -7801,9 +7801,8 @@ void Tokenizer::simplifyEnum()
                                     tok3 = tok3->link(); // skip inner scopes
                                 else if (tok3->isName() && enumValues.find(tok3->str()) != enumValues.end()) {
                                     const Token *prev = tok3->previous();
-                                    if ((prev->isName() && !Token::Match(prev, "return|case|throw")) ||
-                                        prev->str() == "*" ||
-                                        Token::Match(prev, "& %type% =")) {
+                                    if ((prev->isName() && !Token::Match(prev,"return|case|throw")) ||
+                                        Token::Match(prev, "&|* %type% =")) {
                                         // variable declaration?
                                         shadowVars.insert(tok3->str());
                                         if (inScope && _settings->isEnabled("style")) {
