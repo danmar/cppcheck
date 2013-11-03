@@ -9985,6 +9985,7 @@ private:
         ASSERT_EQUALS("1(f+2+", testAst("1+f()+2"));
         ASSERT_EQUALS("12f+3+", testAst("1+f(2)+3"));
         ASSERT_EQUALS("123,f+4+", testAst("1+f(2,3)+4"));
+        ASSERT_EQUALS("12a&,f+", testAst("1+f(2,&a)"));
     }
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc.. how do we handle them?

@@ -392,7 +392,11 @@ void TokenList::createAst() const
             while (tok->next())
                 tok = tok->next();
             for (; tok; tok = tok->previous()) {
-                if (tok->isOp() && (!tok->previous() || tok->previous()->isOp() || tok->previous()->type() == Token::eOther) &&
+                if (tok->isOp() &&
+                    (!tok->previous() ||
+                     tok->previous()->isOp() ||
+                     tok->previous()->str() == "," ||
+                     tok->previous()->type() == Token::eOther) &&
                     op.find(" "+tok->str()+" ")!=std::string::npos) {
                     tok->astOperand1(tok->next());
                 }
