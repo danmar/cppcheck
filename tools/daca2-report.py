@@ -37,10 +37,21 @@ if len(sys.argv) == 2:
 
 mainpage = open(path + '/daca2.html', 'wt')
 mainpage.write('<!DOCTYPE html>\n')
-mainpage.write('<html lang="en"><head><title>DACA2</title></head>\n')
+mainpage.write('<html lang="en">\n')
+mainpage.write('<head>\n')
+mainpage.write('<title>DACA2</title>\n')
+mainpage.write('<style> td { font-size: 0.8em; } </style>\n')
+mainpage.write('</head>\n')
 mainpage.write('<body>\n')
 mainpage.write('<h1>DACA2</h1>\n')
-mainpage.write('<p>Results when running latest Cppcheck on Debian.</p>\n')
+mainpage.write(
+    '<p>Results when running latest (git head) Cppcheck on Debian.</p>\n')
+mainpage.write(
+    '<p>For performance reasons the analysis is limited. Files larger than 100kb are skipped. If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
+mainpage.write('<p>The hardware running the analysis is a Raspberry PI.</p>\n')
+mainpage.write('<table>\n')
+mainpage.write(
+    '<tr><td>Name</td><td width="100">&nbsp;</td><td>Date</td></tr>\n')
 
 lastupdate = None
 recent = []
@@ -64,9 +75,9 @@ for lib in range(2):
                     recent.append(a)
 
             mainpage.write(
-                '<a href="daca2-' + a + '.html">' + a + '</a><br>\n')
+                '<tr><td><a href="daca2-' + a + '.html">' + a + '</a></td><td></td><td>' + datestr + '</td></tr>\n')
 
-            data = data.replace('&', '&nbsp;')
+            data = data.replace('&', '&amp;')
             data = data.replace('<', '&lt;')
             data = data.replace('>', '&gt;')
             data = data.replace('\'', '&apos;')
@@ -83,6 +94,8 @@ for lib in range(2):
             f.write('</body>\n')
             f.write('</html>\n')
             f.close()
+
+mainpage.write('</table>\n')
 
 if lastupdate:
     mainpage.write('<p>Last update: ' + lastupdate + '</p>')
