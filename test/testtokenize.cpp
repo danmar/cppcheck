@@ -9996,8 +9996,8 @@ private:
         testAst("for (;;) {}"); // don't crash
     }
 
-    void asttemplate() const { // uninstantiated templates will have <,>,etc.. how do we handle them?
-        //ASSERT_EQUALS("", testAst("a<int>()==3"));
+    void asttemplate() const { // uninstantiated templates will have <,>,etc..
+        ASSERT_EQUALS("aint<>3==", testAst("a<int>()==3"));
     }
 };
 
