@@ -1240,6 +1240,12 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar("void f() {\n"   // Ticket #5108 (fp)
+                       "    const char *a;\n"
+                       "    printf(\"%s\", a=\"abc\");\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void f() {\n"    // Ticket #3497
                        "    char header[1];\n"
                        "    *((unsigned char*)(header)) = 0xff;\n"

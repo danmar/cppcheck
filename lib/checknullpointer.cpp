@@ -245,7 +245,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 
     // 2nd parameter..
-    if ((value == 0 && Token::Match(secondParam, "0|NULL ,|)")) || (secondParam && secondParam->varId() > 0)) {
+    if ((value == 0 && Token::Match(secondParam, "0|NULL ,|)")) || (secondParam && secondParam->varId() > 0 && Token::Match(secondParam->next(),"[,)]"))) {
         if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
             var.push_back(secondParam);
         else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
@@ -302,7 +302,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                         continue;
 
                     if ((*i == 'n' || *i == 's' || scan) && (!scan || value == 0)) {
-                        if ((value == 0 && argListTok->str() == "0") || (argListTok->varId() > 0)) {
+                        if ((value == 0 && argListTok->str() == "0") || (argListTok->varId() > 0 && Token::Match(argListTok,"%var% [,)]"))) {
                             var.push_back(argListTok);
                         }
                     }

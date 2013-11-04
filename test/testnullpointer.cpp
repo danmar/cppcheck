@@ -1264,7 +1264,7 @@ private:
               "    char cBuf[10];\n"
               "    sprintf(cBuf, \"%s\", c ? c : \"0\" );\n"
               "}");
-        TODO_ASSERT_EQUALS("","[test.cpp:4]: (error) Possible null pointer dereference: c\n", errout.str());
+        ASSERT_EQUALS("",errout.str());
     }
 
     void nullpointer24() {  // #5083 - fp: chained assignment
