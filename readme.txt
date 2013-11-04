@@ -67,10 +67,10 @@ Compiling
     g++ (for experts)
     =================
         If you just want to build Cppcheck without dependencies then you can use this command:
-            g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
+            g++ -o cppcheck -Ilib -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/tinyxml/tinyxml2.cpp
 
         If you want to use --rule and --rule-file then dependencies are needed:
-            g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/tinyxml2.cpp
 
     mingw
     =====
