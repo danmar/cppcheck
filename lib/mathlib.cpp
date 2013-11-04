@@ -287,6 +287,10 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
             throw InternalError(0, "Internal Error: Division by zero");
         return toString(toLongNumber(first) / b);
     } else if (second == "0.0") {
+        if (first=="0.0" || first=="+0.0")
+            return "nan.0";
+        if (first=="-0.0")
+            return "-nan.0";
         return (first[0] == '-') ? "-inf.0" : "inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
