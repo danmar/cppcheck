@@ -566,12 +566,22 @@ static void compileLogicOr(Token *&tok, std::stack<Token*> &op)
     }
 }
 
-static void compileAssign(Token *&tok, std::stack<Token*> &op)
+static void compileTernaryOp(Token *&tok, std::stack<Token*> &op)
 {
     compileLogicOr(tok,op);
     while (tok) {
-        if (tok->str() == "=") {
+        if (Token::Match(tok, "[?:]")) {
             compileBinOp(tok, compileLogicOr, op);
+        } else break;
+    }
+}
+
+static void compileAssign(Token *&tok, std::stack<Token*> &op)
+{
+    compileTernaryOp(tok,op);
+    while (tok) {
+        if (tok->str() == "=") {
+            compileBinOp(tok, compileTernaryOp, op);
         } else break;
     }
 }
