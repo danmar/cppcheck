@@ -594,6 +594,18 @@ static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, co
     }
 }
 
+static void eraseMemberAssignments(const unsigned int varId, std::map<unsigned int, std::set<unsigned int> > &membervars, std::map<unsigned int, const Token*> &varAssignments)
+{
+    const std::map<unsigned int, std::set<unsigned int> >::const_iterator it = membervars.find(varId);
+    if (it != membervars.end()) {
+        const std::set<unsigned int> &v = it->second;
+        for (std::set<unsigned int>::const_iterator vit = v.begin(); vit != v.end(); ++vit) {
+            varAssignments.erase(*vit);
+            eraseMemberAssignments(*vit, membervars, varAssignments);
+        }
+    }
+}
+
 void CheckOther::checkRedundantAssignment()
 {
     const bool performance = _settings->isEnabled("performance");
@@ -609,6 +621,7 @@ void CheckOther::checkRedundantAssignment()
 
         std::map<unsigned int, const Token*> varAssignments;
         std::map<unsigned int, const Token*> memAssignments;
+        std::map<unsigned int, std::set<unsigned int> > membervars;
         std::set<unsigned int> initialized;
         const Token* writtenArgumentsEnd = 0;
 
@@ -638,8 +651,11 @@ void CheckOther::checkRedundantAssignment()
                 }
 
                 const Token *startToken = tok;
-                while (Token::Match(startToken, "%var%|::|."))
+                while (Token::Match(startToken, "%var%|::|.")) {
                     startToken = startToken->previous();
+                    if (Token::Match(startToken, "%var% . %var%"))
+                        membervars[startToken->varId()].insert(startToken->tokAt(2)->varId());
+                }
 
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
                 if (tok->next()->isAssignmentOp() && Token::Match(startToken, "[;{}]")) { // Assignment
@@ -671,9 +687,11 @@ void CheckOther::checkRedundantAssignment()
                     if (!Token::simpleMatch(tok->tokAt(2), "0 ;") || (tok->variable() && tok->variable()->nameToken() != tok->tokAt(-2)))
                         varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
+                    eraseMemberAssignments(tok->varId(), membervars, varAssignments);
                 } else if (tok->next()->type() == Token::eIncDecOp || (tok->previous()->type() == Token::eIncDecOp && tok->strAt(1) == ";")) { // Variable incremented/decremented; Prefix-Increment is only suspicious, if its return value is unused
                     varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
+                    eraseMemberAssignments(tok->varId(), membervars, varAssignments);
                 } else if (!Token::simpleMatch(tok->tokAt(-2), "sizeof (")) { // Other usage of variable
                     if (it != varAssignments.end())
                         varAssignments.erase(it);

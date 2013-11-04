@@ -6347,6 +6347,28 @@ private:
               "    return ab.a;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f(struct AB *ab) {\n"
+              "    ab->a = 1;\n"
+              "    ab->b = 2;\n"
+              "    ab++;\n"
+              "    ab->a = 1;\n"
+              "    ab->b = 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f(struct AB *ab) {\n"
+              "    ab->a = 1;\n"
+              "    ab->b = 2;\n"
+              "    ab = x;\n"
+              "    ab->a = 1;\n"
+              "    ab->b = 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
