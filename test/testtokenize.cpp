@@ -9962,17 +9962,21 @@ private:
         ASSERT_EQUALS("abc+=", testAst("a=b+c"));
         ASSERT_EQUALS("abc=,", testAst("a,b=c"));
 
+        ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
+        ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
+        testAst("char a[1]=\"\";"); // don't crash
+        testAst("int f(char argv[]);"); // don't crash
     }
 
     void astpar() const { // parentheses
         ASSERT_EQUALS("12+3*", testAst("(1+2)*3"));
         ASSERT_EQUALS("123+*", testAst("1*(2+3)"));
         ASSERT_EQUALS("123+*4*", testAst("1*(2+3)*4"));
-        ASSERT_EQUALS("ab.c&d==if", testAst("if((a.b&c)==d){}"));
+        ASSERT_EQUALS("ifab.c&d==(", testAst("if((a.b&c)==d){}"));
     }
 
     void astbrackets() const { // []
-        ASSERT_EQUALS("123+[4+", testAst("1[2+3]+4"));
+        ASSERT_EQUALS("a23+[4+", testAst("a[2+3]+4"));
     }
 
     void astunaryop() const { // unary operators
@@ -9982,10 +9986,14 @@ private:
     }
 
     void astfunction() const { // function calls
-        ASSERT_EQUALS("1(f+2+", testAst("1+f()+2"));
-        ASSERT_EQUALS("12f+3+", testAst("1+f(2)+3"));
-        ASSERT_EQUALS("123,f+4+", testAst("1+f(2,3)+4"));
-        ASSERT_EQUALS("12a&,f+", testAst("1+f(2,&a)"));
+        ASSERT_EQUALS("1f(+2+", testAst("1+f()+2"));
+        ASSERT_EQUALS("1f2(+3+", testAst("1+f(2)+3"));
+        ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
+        ASSERT_EQUALS("1f2a&,(+", testAst("1+f(2,&a)"));
+        testAst("extern unsigned f(const char *);"); // don't crash
+        testAst("extern void f(const char *format, ...);"); // don't crash
+        testAst("extern int for_each_commit_graft(int (*)(int*), void *);"); // don't crash
+        testAst("for (;;) {}"); // don't crash
     }
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc.. how do we handle them?
