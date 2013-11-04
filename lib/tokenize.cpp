@@ -517,7 +517,7 @@ void Tokenizer::simplifyTypedef()
         if (_errorLogger && !list.getFiles().empty())
             _errorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
 
-        if (_settings && _settings->terminated())
+        if (_settings->terminated())
             return;
 
 #ifdef MAXTIME
@@ -968,7 +968,7 @@ void Tokenizer::simplifyTypedef()
             std::size_t classLevel = spaceInfo.size();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                if (_settings && _settings->terminated())
+                if (_settings->terminated())
                     return;
 
                 // check for end of scope
@@ -1803,7 +1803,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyEnum();
 
     // The simplify enum have inner loops
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     // Remove __asm..
@@ -1864,7 +1864,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyStdType();
 
     // The simplifyTemplates have inner loops
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     // simplify bit fields..
@@ -1958,7 +1958,7 @@ bool Tokenizer::tokenize(std::istream &code,
     }*/
 
     // The simplifyTemplates have inner loops
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     simplifyConst();
@@ -1973,7 +1973,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyInitVar();
 
     // The simplifyTemplates have inner loops
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     // Split up variable declarations.
@@ -1989,7 +1989,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyAssignmentBlock();
 
     // The simplifyTemplates have inner loops
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     simplifyVariableMultipleAssign();
@@ -2004,7 +2004,7 @@ bool Tokenizer::tokenize(std::istream &code,
     simplifyTemplates();
 
     // The simplifyTemplates have inner loops
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     // Simplify templates.. sometimes the "simplifyTemplates" fail and
@@ -2048,7 +2048,7 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     // The simplify enum might have inner loops
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     // Add std:: in front of std classes, when using namespace std; was given
@@ -3490,7 +3490,7 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     simplifySizeof();
@@ -3535,7 +3535,7 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
-    if (_settings && _settings->terminated())
+    if (_settings->terminated())
         return false;
 
     // Simplify simple calculations..
@@ -3614,7 +3614,7 @@ bool Tokenizer::simplifyTokenList()
 
     bool modified = true;
     while (modified) {
-        if (_settings && _settings->terminated())
+        if (_settings->terminated())
             return false;
 
         modified = false;
@@ -7719,7 +7719,7 @@ void Tokenizer::simplifyEnum()
 
             // Substitute enum values
             {
-                if (_settings && _settings->terminated())
+                if (_settings->terminated())
                     return;
 
                 const std::string pattern = className.empty() ?
@@ -10251,7 +10251,7 @@ void Tokenizer::removeUnnecessaryQualification()
                             continue;
                     }
 
-                    if (_settings && _settings->isEnabled("portability"))
+                    if (_settings->isEnabled("portability"))
                         unnecessaryQualificationError(tok, qualification);
 
                     tok->deleteNext();
