@@ -1,6 +1,6 @@
 {
   "name": "cppcheck-web",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "author": "XhmikosR (https://github.com/XhmikosR)",
   "description": "The dependencies to build cppcheck's website",
   "homepage": "https://github.com/danmar/cppcheck",
@@ -13,17 +13,15 @@
   },
   "license": "GPLv3",
   "main": "make.js",
-  "readmeFilename": "Readme.md",
   "scripts": {
-    "check": "node run-tests",
     "lint": "node run-tests"
   },
   "dependencies": {
-    "clean-css": "~1.1.1",
+    "clean-css": "~2.0.0",
     "csslint": "~0.9.10",
-    "jshint": "~2.1.11",
+    "jshint": "~2.3.0",
     "shelljs": "~0.2.6",
-    "uglify-js": "~2.4.0"
+    "uglify-js": "~2.4.2"
   },
   "jshintConfig": {
     "bitwise": true,
@@ -38,9 +36,7 @@
     "noarg": true,
     "node": true,
     "noempty": true,
-    "plusplus": false,
     "quotmark": "double",
-    "regexp": true,
     "shelljs": true,
     "strict": true,
     "trailing": true,
