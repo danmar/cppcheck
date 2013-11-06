@@ -1143,44 +1143,6 @@ void Token::astOperand2(Token *tok)
     _astOperand2 = tok;
 }
 
-void Token::astFunctionCall()
-{
-    _astOperand1 = _next;
-    _next->_astParent = this;
-}
-
-void Token::astHandleParentheses()
-{
-    // Assumptions:
-    // * code is valid
-    // * _str is one of: ( ) ]
-
-    Token *innerTop;
-    if (Token::Match(this, ")|]"))
-        innerTop = _previous;
-    else if (_next && _next->_str == ")")
-        return;
-    else {  // _str = "("
-        innerTop = _next;
-        while (Token::simpleMatch(innerTop->link(),") )"))
-            innerTop = innerTop->_next;
-        if (innerTop && innerTop->_str == "(")
-            innerTop = innerTop->_link->_next;
-    }
-    while (innerTop && innerTop->_astParent)
-        innerTop = innerTop->_astParent;
-
-    if (_astParent) {
-        if (_astParent->_astOperand2 == this)
-            _astParent->_astOperand2 = innerTop;
-        else if (_astParent->_astOperand1 == this)
-            _astParent->_astOperand1 = innerTop;
-        innerTop->_astParent = _astParent;
-        _astParent = NULL;
-    }
-}
-
-
 void Token::printAst() const
 {
     bool title = false;

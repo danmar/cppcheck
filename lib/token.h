@@ -655,8 +655,6 @@ private:
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
-    void astFunctionCall();
-    void astHandleParentheses();
 
     const Token * astOperand1() const {
         return _astOperand1;
