@@ -1365,10 +1365,11 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 // do-while => goto ")"
                 if (!forwhile) {
                     // Assert that the tokens are '} while ('
-                    if (testrunner && !Token::simpleMatch(tok, "} while ("))
-                        reportError(tok,Severity::debug,"","assertion failed '} while ('");
-                    else
-                        assert(Token::simpleMatch(tok, "} while ("));
+                    if (!Token::simpleMatch(tok, "} while (")) {
+                        if(_settings->debugwarnings)
+                            reportError(tok,Severity::debug,"","assertion failed '} while ('");
+                        break;
+                    }
 
                     // Goto ')'
                     tok = tok->linkAt(2);
