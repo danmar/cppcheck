@@ -667,8 +667,8 @@ void CheckOther::checkRedundantAssignment()
                             else if (tok2->varId() == tok->varId())
                                 error = false;
                             else if (Token::Match(tok2, "%var% (") && nonLocal(tok->variable())) { // Called function might use the variable
-                                const Function* func = tok2->function();
-                                const Variable* var = tok->variable();
+                                const Function* const func = tok2->function();
+                                const Variable* const var = tok->variable();
                                 if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && tok2->strAt(-1) != ".")) // Global variable, or member function
                                     error = false;
                             }
@@ -699,7 +699,7 @@ void CheckOther::checkRedundantAssignment()
                         memAssignments.erase(tok->varId());
                 }
             } else if (Token::Match(tok, "%var% (")) { // Function call. Global variables might be used. Reset their status
-                bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
+                const bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
                 if (memfunc) {
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
@@ -717,7 +717,7 @@ void CheckOther::checkRedundantAssignment()
                         }
                     }
                 } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
-                    const Function* func = tok->function();
+                    const Function* const func = tok->function();
                     if (!func || !func->hasBody) {
                         varAssignments.clear();
                         memAssignments.clear();
