@@ -128,6 +128,7 @@ private:
         TEST_CASE(incorrectLogicOperator2);
         TEST_CASE(incorrectLogicOperator3);
         TEST_CASE(incorrectLogicOperator4);
+        TEST_CASE(incorrectLogicOperator5);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(sameExpression);
@@ -200,6 +201,7 @@ private:
         if (!settings) {
             static Settings _settings;
             settings = &_settings;
+            _settings.ast = true;
         }
         settings->addEnabled("style");
         settings->addEnabled("warning");
@@ -443,8 +445,8 @@ private:
 
     void zeroDiv7() {
         check("void f() {\n"
-              "  int a = 1/2*3/0;\n"
-              "  int b = 1/2*3%0;\n"
+              "  int a = x/2*3/0;\n"
+              "  int b = y/2*3%0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n"
                       "[test.cpp:3]: (error) Division by zero.\n", errout.str());
@@ -4031,6 +4033,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void incorrectLogicOperator5() {
+        check("void f(int x) {\n"
+              "  if (x+3 > 2 || x+3 < 10) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: EXPR > 2 || EXPR < 10.\n", errout.str());
+    }
+
     void secondAlwaysTrueFalseWhenFirstTrueError() {
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
@@ -4320,7 +4329,7 @@ private:
     // clarify conditions with bitwise operator and comparison
     void clarifyCondition2() {
         check("void f() {\n"
-              "    if (x & 2 == 2) {}\n"
+              "    if (x & 3 == 2) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n", errout.str());
 
@@ -4691,9 +4700,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
-              "    if (x!=2 || x!=3 || x!=2) {}\n"
+              "    if (x!=2 || y!=3 || x!=2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", "", errout.str());
 
         check("void foo() {\n"
               "    if (a && b || a && b) {}\n"
@@ -4708,7 +4717,7 @@ private:
         check("void foo() {\n"
               "    if (a && b | b && c) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
 
         check("void foo() {\n"
               "    if ((a + b) | (a + b)) {}\n"

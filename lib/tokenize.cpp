@@ -2091,6 +2091,10 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
+    // Experimental AST handling.
+    if (_settings->ast)
+        list.createAst();
+
     return true;
 }
 //---------------------------------------------------------------------------
@@ -3481,6 +3485,10 @@ bool Tokenizer::simplifyTokenList()
     // clear the _functionList so it can't contain dead pointers
     deleteSymbolDatabase();
 
+    // Experimental AST handling.
+    for (Token *tok = list.front(); tok; tok = tok->next())
+        tok->clearAst();
+
     simplifyCharAt();
 
     // simplify references
@@ -3683,10 +3691,8 @@ bool Tokenizer::simplifyTokenList()
             tok->deleteNext();
     }
 
-    // Experimental AST handling. Only for C code now since
-    // uninstantiated C++ templates are not handled well. Fix
-    // TestTokenize::asttemplate
-    if (_settings->ast && isC())
+    // Experimental AST handling.
+    if (_settings->ast)
         list.createAst();
 
     if (_settings->terminated())

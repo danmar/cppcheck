@@ -669,6 +669,10 @@ public:
         return ret;
     }
 
+    void clearAst() {
+        _astOperand1 = _astOperand2 = _astParent = NULL;
+    }
+
     std::string astString(const char *sep = "") const {
         std::string ret;
         if (_astOperand1)

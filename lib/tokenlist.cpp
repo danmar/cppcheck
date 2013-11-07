@@ -374,7 +374,8 @@ static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &),
 {
     Token *binop = tok;
     tok = tok->next();
-    f(tok,op);
+    if (tok)
+        f(tok,op);
 
     // TODO: Should we check if op is empty.
     // * Is it better to add assertion that it isn't?
@@ -397,6 +398,8 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
     if (tok->isLiteral()) {
         op.push(tok);
         tok = tok->next();
+    } else if (Token::Match(tok, "+|-|~|*|&|!|return")) {
+        compileUnaryOp(tok, compileExpression, op);
     } else if (tok->isName()) {
         if (Token::Match(tok->next(), "++|--")) {  // post increment / decrement
             tok = tok->next();
@@ -423,8 +426,6 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
             }
             op.push(name->next());
         }
-    } else if (Token::Match(tok, "+|-|~|*|&|!")) {
-        compileUnaryOp(tok, compileExpression, op);
     } else if (Token::Match(tok, "++|--")) {
         if (!op.empty() && op.top()->isOp()) {
             // post increment/decrement
@@ -604,7 +605,7 @@ static void compileExpression(Token *&tok, std::stack<Token*> &op)
 void TokenList::createAst()
 {
     for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
-        if (!tok->previous() || Token::Match(tok, "%var% (|[|.|=")) {
+        if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% (|[|.|=")) {
             std::stack<Token *> operands;
             compileExpression(tok, operands);
         }

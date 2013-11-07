@@ -186,12 +186,56 @@ void CheckAssignIf::mismatchingBitAndError(const Token *tok1, const MathLib::big
 }
 
 
+static void getnumchildren(const Token *tok, std::list<MathLib::bigint> &numchildren)
+{
+    if (tok->astOperand1() && tok->astOperand1()->isNumber())
+        numchildren.push_back(MathLib::toLongNumber(tok->astOperand1()->str()));
+    else if (tok->astOperand1() && tok->str() == tok->astOperand1()->str())
+        getnumchildren(tok->astOperand1(), numchildren);
+    if (tok->astOperand2() && tok->astOperand2()->isNumber())
+        numchildren.push_back(MathLib::toLongNumber(tok->astOperand2()->str()));
+    else if (tok->astOperand2() && tok->str() == tok->astOperand2()->str())
+        getnumchildren(tok->astOperand2(), numchildren);
+}
 
 void CheckAssignIf::comparison()
 {
     if (!_settings->isEnabled("style"))
         return;
 
+    if (_settings->ast) {
+        // Experimental code based on AST
+        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "==|!=")) {
+                const Token *expr1 = tok->astOperand1();
+                const Token *expr2 = tok->astOperand2();
+                if (!expr1 || !expr2)
+                    continue;
+                if (expr1->isNumber())
+                    std::swap(expr1,expr2);
+                if (!expr2->isNumber())
+                    continue;
+                const MathLib::bigint num2 = MathLib::toLongNumber(expr2->str());
+                if (num2 < 0)
+                    continue;
+                if (!Token::Match(expr1,"[&|]"))
+                    continue;
+                std::list<MathLib::bigint> numbers;
+                getnumchildren(expr1, numbers);
+                for (std::list<MathLib::bigint>::const_iterator num = numbers.begin(); num != numbers.end(); ++num) {
+                    const MathLib::bigint num1 = *num;
+                    if (num1 < 0)
+                        continue;
+                    if ((expr1->str() == "&" && (num1 & num2) != num2) ||
+                        (expr1->str() == "|" && (num1 | num2) != num2)) {
+                        const std::string& op(tok->str());
+                        comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
+                    }
+                }
+            }
+        }
+        return;
+    }
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "&|%or% %num% )| ==|!= %num% &&|%oror%|)")) {
             const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(1));
