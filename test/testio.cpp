@@ -2091,6 +2091,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("std::vector<char> v;\n" // #5151
+              "void foo() {\n"
+              "   printf(\"%c %u %f\", v.at(32), v.at(32), v.at(32));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'char'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'char'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

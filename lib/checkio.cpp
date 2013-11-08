@@ -1399,6 +1399,20 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                     }
                     typeToken = tempToken;
                     return;
+                }
+
+                // check for std::vector::at() and std::string::at()
+                else if (Token::Match(tok1->previous(), "%var% . at (") &&
+                         Token::Match(tok1->linkAt(2), ") [,)]")) {
+                    varTok = tok1->previous();
+                    variableInfo = varTok->variable();
+
+                    if (!isStdVectorOrString()) {
+                        variableInfo = 0;
+                        typeToken = 0;
+                    }
+
+                    return;
                 } else if (!(tok1->str() == "." || tok1->type() == Token::eVariable || tok1->type() == Token::eFunction))
                     return;
             }
