@@ -2426,8 +2426,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         vartok = localVarTok;
         typetok = localTypeTok;
     } else if (type == eCatch &&
-               (Token::Match(localTypeTok, "%var% )") ||
-                Token::Match(localTypeTok, "%var% &| %var% )"))) {
+               Token::Match(localVarTok, "%var% )")) {
         vartok = localVarTok;
         typetok = localTypeTok;
     }

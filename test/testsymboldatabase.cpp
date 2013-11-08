@@ -201,6 +201,7 @@ private:
         TEST_CASE(symboldatabase37);
         TEST_CASE(symboldatabase38); // ticket #5125 (infinite recursion)
         TEST_CASE(symboldatabase39); // ticket #5120 (infinite recursion)
+        TEST_CASE(symboldatabase40); // ticket #5153
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1655,6 +1656,14 @@ private:
 
     void symboldatabase39() { // ticket #5120
         check("struct V : { public case {} ; struct U : U  void { V *f (int x) (x) } }");
+    }
+
+    void symboldatabase40() { // ticket #5153
+        check("void f() {\n"
+              "    try {  }\n"
+              "    catch (std::bad_alloc) {  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isImplicitlyVirtual() {
