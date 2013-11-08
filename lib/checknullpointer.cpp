@@ -110,7 +110,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("fgetwc");
         functionNames1_all.insert("fgetpos");
         functionNames1_all.insert("fsetpos");
-        functionNames1_all.insert("freopen");
         functionNames1_all.insert("fscanf");
         functionNames1_all.insert("fprintf");
         functionNames1_all.insert("fwscanf");
@@ -161,6 +160,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 
         functionNames1_uninit.insert("perror");
         functionNames1_uninit.insert("fflush");
+        functionNames1_uninit.insert("freopen");
     }
 
     // standard functions that dereference second parameter..

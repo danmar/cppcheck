@@ -1719,6 +1719,9 @@ private:
               "    typeof(*NULL) y;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { freopen(NULL, m, stdin); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void gcc_statement_expression() {
