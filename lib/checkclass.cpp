@@ -837,7 +837,7 @@ void CheckClass::privateFunctions()
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
-        // dont check borland classes with properties..
+        // do not check borland classes with properties..
         if (Token::findsimplematch(scope->classStart, "; __property ;", scope->classEnd))
             continue;
 

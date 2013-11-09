@@ -266,7 +266,7 @@ public:
     /** @brief %Check providing too big sleep time intervals on POSIX systems. */
     void checkSleepTimeInterval();
 
-    /** @brief %Check for using of comparision functions evaluating always to true or false. */
+    /** @brief %Check for using of comparison functions evaluating always to true or false. */
     void checkComparisonFunctionIsAlwaysTrueOrFalse(void);
 
 private:

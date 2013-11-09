@@ -3493,10 +3493,10 @@ void CheckOther::suspiciousStringCompareError(const Token* tok, const std::strin
 }
 
 //-----------------------------------------------------------------------------
-// Check is a comparision of two variables leads to condition, which is
-// allways true or false.
+// Check is a comparison of two variables leads to condition, which is
+// always true or false.
 // For instance: int a = 1; if(isless(a,a)){...}
-// In this case isless(a,a) evaluates allways to false.
+// In this case isless(a,a) evaluates always to false.
 //
 // Reference:
 // - http://www.cplusplus.com/reference/cmath/

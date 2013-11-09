@@ -233,7 +233,7 @@ bool MathLib::isInt(const std::string & s)
         ++n;
 
     // if everything goes good, we are at the end of the string and no digits/character
-    // is here --> return true, but if something was found eg. 12E+12AA return false
+    // is here --> return true, but if something was found e.g. 12E+12AA return false
     return (n >= s.length());
 }
 

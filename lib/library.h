@@ -346,7 +346,7 @@ private:
     std::map<std::string, CodeBlock> _executableblocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::list<std::string> > _importers; // keywords that import variables/functions
-    std::map<std::string,std::map<std::string,int> > _reflection; // invokation of reflection
+    std::map<std::string,std::map<std::string,int> > _reflection; // invocation of reflection
 
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {
