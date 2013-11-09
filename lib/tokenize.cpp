@@ -6139,14 +6139,9 @@ void Tokenizer::simplifyInitVar()
             while (tok1->str() != ",")
                 tok1 = tok1->next();
             tok1->str(";");
-            unsigned int num = 0;
-            const Token *tok2 = tok;
-            if (Token::Match(tok2, "class|struct|union")) {
-                num++;
-                tok2 = tok2->next();
-            }
-            num++;
-            list.insertTokens(tok1, tok, num);
+
+            const unsigned int numTokens = (Token::Match(tok, "class|struct|union")) ? 2U : 1U;
+            list.insertTokens(tok1, tok, numTokens);
             tok = initVar(tok);
         }
     }
