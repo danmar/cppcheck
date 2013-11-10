@@ -1628,6 +1628,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
                     const Token *argStart = arg->typeStartToken();
                     while (argStart->previous() && argStart->previous()->isName())
                         argStart = argStart->previous();
+                    if (!address && Token::Match(argStart, "const| struct| %type% [,)]"))
+                        return true;
                     if (!address && Token::Match(argStart, "const| struct| %type% %var% [,)]"))
                         return true;
                     if (Token::Match(argStart, "const %type% & %var% [,)]"))
@@ -1635,6 +1637,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
                     if (pointer && !address && Token::Match(argStart, "%type% * %var% [,)]"))
                         return true;
                     if ((pointer || address) && Token::Match(argStart, "const %type% * %var% [,)]"))
+                        return true;
+                    if ((pointer || address) && Token::Match(argStart, "const %type% %var% [") && Token::Match(argStart->linkAt(3), "] [,)]"))
                         return true;
                 }
 
