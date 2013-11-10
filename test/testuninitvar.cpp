@@ -64,6 +64,8 @@ private:
         TEST_CASE(uninitvar2_structmembers); // struct members
         TEST_CASE(uninitvar2_while);
         TEST_CASE(uninitvar2_4494);      // #4494
+
+        TEST_CASE(syntax_error); // Ticket #5073
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -2022,12 +2024,13 @@ private:
 
 
     /** New checking that doesn't rely on ExecutionPath */
-    void checkUninitVar2(const char code[], const char fname[] = "test.cpp", bool verify=true) {
+    void checkUninitVar2(const char code[], const char fname[] = "test.cpp", bool verify=true, bool debugwarnings=false) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Settings settings;
+        settings.debugwarnings = debugwarnings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, fname);
@@ -2963,7 +2966,7 @@ private:
         checkUninitVar2("void f() {\n" // #4911 - bad simplification => don't crash
                         "    int a;\n"
                         "    do { } a=do_something(); while (a);\n"
-                        "}\n");
+                        "}\n", "test.cpp", /*verify=*/true, /*debugwarnings=*/true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n"
                       "[test.cpp:3]: (debug) assertion failed '} while ('\n", errout.str());
 
@@ -3149,6 +3152,28 @@ private:
                         "    fred.wilma.barney.betty.f1(p);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:20]: (error) Uninitialized variable: p\n", errout.str());
+    }
+
+    void syntax_error() { // Ticket #5073
+        // Nominal mode => No output
+        checkUninitVar2("struct flex_array {};\n"
+                        "struct cgroup_taskset {};\n"
+                        "void cgroup_attach_task() {\n"
+                        "  struct flex_array *group;\n"
+                        "  struct cgroup_taskset tset = { };\n"
+                        "  do { } while_each_thread(leader, tsk);\n"
+                        "}", "test.cpp", /*verify=*/true, /*debugwarnings=*/false);
+        ASSERT_EQUALS("", errout.str());
+
+        // --debug-warnings mode => Debug warning
+        checkUninitVar2("struct flex_array {};\n"
+                        "struct cgroup_taskset {};\n"
+                        "void cgroup_attach_task() {\n"
+                        "  struct flex_array *group;\n"
+                        "  struct cgroup_taskset tset = { };\n"
+                        "  do { } while_each_thread(leader, tsk);\n"
+                        "}", "test.cpp", /*verify=*/true, /*debugwarnings=*/true);
+        ASSERT_EQUALS("[test.cpp:6]: (debug) assertion failed '} while ('\n", errout.str());
     }
 };
 
