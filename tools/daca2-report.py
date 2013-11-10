@@ -1,4 +1,3 @@
-
 import os
 import sys
 
@@ -39,8 +38,9 @@ mainpage = open(path + '/daca2.html', 'wt')
 mainpage.write('<!DOCTYPE html>\n')
 mainpage.write('<html lang="en">\n')
 mainpage.write('<head>\n')
+mainpage.write('<meta charset="utf-8">\n')
 mainpage.write('<title>DACA2</title>\n')
-mainpage.write('<style> td { font-size: 0.8em; } </style>\n')
+mainpage.write('<style>td { font-size: 0.9em; } td + td { padding-left: 6em; }</style>\n')
 mainpage.write('</head>\n')
 mainpage.write('<body>\n')
 mainpage.write('<h1>DACA2</h1>\n')
@@ -51,7 +51,7 @@ mainpage.write(
 mainpage.write('<p>The hardware running the analysis is a Raspberry PI.</p>\n')
 mainpage.write('<table>\n')
 mainpage.write(
-    '<tr><td>Name</td><td width="100">&nbsp;</td><td>Date</td></tr>\n')
+    '<tr><td>Name</td><td>Date</td></tr>\n')
 
 lastupdate = None
 recent = []
@@ -75,19 +75,20 @@ for lib in range(2):
                     recent.append(a)
 
             mainpage.write(
-                '<tr><td><a href="daca2-' + a + '.html">' + a + '</a></td><td></td><td>' + datestr + '</td></tr>\n')
+                '<tr><td><a href="daca2-' + a + '.html">' + a + '</a></td><td>' + datestr + '</td></tr>\n')
 
             data = data.replace('&', '&amp;')
             data = data.replace('<', '&lt;')
             data = data.replace('>', '&gt;')
-            data = data.replace('\'', '&apos;')
-            data = data.replace('"', '&quot;')
             data = data.replace('\n', '\n')
 
             f = open(path + '/daca2-' + a + '.html', 'wt')
             f.write('<!DOCTYPE html>\n')
-            f.write(
-                '<html lang="en"><head><title>DACA2 - ' + a + '</title></head>\n')
+            f.write('<html lang="en">\n')
+            f.write('<head>\n')
+            f.write('<meta charset="utf-8">\n')
+            f.write('<title>DACA2 - ' + a + '</title>\n')
+            f.write('</head>\n')
             f.write('<body>\n')
             f.write('<h1>DACA2 - ' + a + '</h1>')
             f.write('<pre>\n' + data + '</pre>\n')
@@ -101,7 +102,7 @@ if lastupdate:
     mainpage.write('<p>Last update: ' + lastupdate + '</p>')
     allrecent = ''
     for r in recent:
-        allrecent = allrecent + ' <a href="daca2-' + r + '.html">' + r + '</a>'
+        allrecent = allrecent + '<a href="daca2-' + r + '.html">' + r + '</a>'
     mainpage.write('<p>Most recently updated: ' + allrecent + '</p>')
 
 mainpage.write('</body>\n')
