@@ -2146,6 +2146,20 @@ private:
               "    }\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #5158 "segmentation fault (valid code)"
+        check("typedef struct ct_data_s {\n"
+              "    union {\n"
+              "        char freq;\n"
+              "    } fc;\n"
+              "} ct_data;\n"
+              "typedef struct internal_state {\n"
+              "    struct ct_data_s dyn_ltree[10];\n"
+              "} deflate_state;\n"
+              "void f(deflate_state *s) {\n"
+              "    s->dyn_ltree[0].fc.freq++;\n"
+              "}\n", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantOperationTest() {
