@@ -1364,8 +1364,7 @@ void CheckOther::checkIncorrectLogicOperator()
 
                     // evaluate if expression is always true/false
                     bool alwaysTrue = true, alwaysFalse = true;
-                    bool firstTrue  = true, firstFalse  = true;
-                    bool secondTrue = true, secondFalse = true;
+                    bool firstTrue  = true, secondTrue = true;
                     for (int offset = -3; offset <=3; ++offset) {
                         for (int selvalue = 1; selvalue <= 2; selvalue++) {
                             bool res1,res2;
@@ -1381,16 +1380,12 @@ void CheckOther::checkIncorrectLogicOperator()
                             if (tok->str() == "&&") {
                                 alwaysTrue  &= (res1 && res2);
                                 alwaysFalse &= !(res1 && res2);
-                                secondTrue &= !(res1 && !res2);
-                                firstTrue  &= !(!res1 && res2);
                             } else {
                                 alwaysTrue  &= (res1 || res2);
                                 alwaysFalse &= !(res1 || res2);
-                                secondTrue &= !(res1 && !res2);
-                                firstTrue  &= !(!res1 && res2);
                             }
-                            firstFalse  = false;
-                            secondFalse = false;
+                            firstTrue  &= !(!res1 && res2);
+                            secondTrue &= !(res1 && !res2);
                         }
                     }
 
@@ -1399,11 +1394,11 @@ void CheckOther::checkIncorrectLogicOperator()
                     if (warning && (alwaysTrue || alwaysFalse)) {
                         const std::string text = cond1str + " " + tok->str() + " " + cond2str;
                         incorrectLogicOperatorError(tok, text, alwaysTrue);
-                    } else if (style && (secondTrue || secondFalse)) {
+                    } else if (style && secondTrue) {
                         const std::string text = "If " + cond1str + ", the comparison " + cond2str +
                                                  " is always " + (secondTrue ? "true" : "false") + ".";
                         redundantConditionError(tok, text);
-                    } else if (style && (firstTrue || firstFalse)) {
+                    } else if (style && firstTrue) {
                         const std::string text = "If " + cond2str + ", the comparison " + cond1str +
                                                  " is always " + (firstTrue ? "true" : "false") + ".";
                         redundantConditionError(tok, text);
