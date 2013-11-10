@@ -9966,6 +9966,7 @@ private:
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
         testAst("char a[1]=\"\";"); // don't crash
         testAst("int f(char argv[]);"); // don't crash
+        testAst("--"); // don't crash
     }
 
     void astpar() const { // parentheses

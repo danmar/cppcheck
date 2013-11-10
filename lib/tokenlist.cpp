@@ -599,7 +599,8 @@ static void compileComma(Token *&tok, std::stack<Token*> &op)
 
 static void compileExpression(Token *&tok, std::stack<Token*> &op)
 {
-    compileComma(tok,op);
+    if (tok)
+        compileComma(tok,op);
 }
 
 void TokenList::createAst()
