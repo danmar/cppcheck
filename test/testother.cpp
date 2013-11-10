@@ -6392,6 +6392,18 @@ private:
               "    ab->b = 2;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // don't crash
+        check("struct data {\n"
+              "  struct { int i; } fc;\n"
+              "};\n"
+              "struct state {\n"
+              "  struct data d[123];\n"
+              "};\n"
+              "void func(struct state *s) {\n"
+              "  s->foo[s->x++] = 2;\n"
+              "  s->d[1].fc.i++;\n"
+              "}");
     }
 
     void redundantMemWrite() {

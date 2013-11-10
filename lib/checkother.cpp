@@ -622,15 +622,11 @@ static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, co
 
 static void eraseMemberAssignments(const unsigned int varId, std::map<unsigned int, std::set<unsigned int> > &membervars, std::map<unsigned int, const Token*> &varAssignments)
 {
-    if (varAssignments.empty() || membervars.empty())
-        return;
     const std::map<unsigned int, std::set<unsigned int> >::const_iterator it = membervars.find(varId);
     if (it != membervars.end()) {
         const std::set<unsigned int> &v = it->second;
-        for (std::set<unsigned int>::const_iterator vit = v.begin(); vit != v.end(); ++vit) {
+        for (std::set<unsigned int>::const_iterator vit = v.begin(); vit != v.end(); ++vit)
             varAssignments.erase(*vit);
-            eraseMemberAssignments(*vit, membervars, varAssignments);
-        }
     }
 }
 
