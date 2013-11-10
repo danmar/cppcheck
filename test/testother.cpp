@@ -129,6 +129,7 @@ private:
         TEST_CASE(incorrectLogicOperator3);
         TEST_CASE(incorrectLogicOperator4);
         TEST_CASE(incorrectLogicOperator5);
+        TEST_CASE(incorrectLogicOperator6);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(sameExpression);
@@ -3835,7 +3836,8 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1.0 && x == 3.0.\n", errout.str());
+        //ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1.0 && x == 3.0.\n", errout.str());
+        ASSERT_EQUALS("", errout.str()); // float comparisons with == and != are not checked right now - such comparison is a bad idea
 
         check("void f(float x) {\n"
               "    if (x == 1 && x == 1.0)\n"
@@ -3860,6 +3862,13 @@ private:
 
         check("void f(int x) {\n"
               "    if (x < 1 && x > 1.0)\n"
+              "        a++;\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.0.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x >= 1.0 && x <= 1.001)\n"
               "        a++;\n"
               "}\n"
              );
@@ -4047,11 +4056,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator5() {
+    void incorrectLogicOperator5() { // complex expressions
         check("void f(int x) {\n"
               "  if (x+3 > 2 || x+3 < 10) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: EXPR > 2 || EXPR < 10.\n", errout.str());
+    }
+
+    void incorrectLogicOperator6() { // char literals
+        check("void f(char x) {\n"
+              "  if (x == '1' || x == '2') {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char x) {\n"
+              "  if (x == '1' && x == '2') {}\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {

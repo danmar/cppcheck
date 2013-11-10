@@ -1349,7 +1349,10 @@ void CheckOther::checkIncorrectLogicOperator()
                         continue;
                     }
 
-                    if (MathLib::isInt(value1) != MathLib::isInt(value2))
+                    // Only float and int values are currently handled
+                    if (!MathLib::isInt(value1) && !MathLib::isFloat(value1))
+                        continue;
+                    if (!MathLib::isInt(value2) && !MathLib::isFloat(value2))
                         continue;
 
                     const std::set<std::string> constStandardFunctions;
@@ -1360,6 +1363,11 @@ void CheckOther::checkIncorrectLogicOperator()
 
                     const bool isfloat = MathLib::isFloat(value1) || MathLib::isFloat(value2);
 
+                    // don't check floating point equality comparisons. that is bad
+                    // and deserves different warnings.
+                    if (isfloat && (op1=="==" || op1=="!=" || op2=="==" || op2=="!="))
+                        continue;
+
                     // evaluate if expression is always true/false
                     bool alwaysTrue = true, alwaysFalse = true;
                     bool firstTrue  = true, secondTrue = true;
@@ -1367,7 +1375,28 @@ void CheckOther::checkIncorrectLogicOperator()
                         for (int selvalue = 1; selvalue <= 2; selvalue++) {
                             bool res1,res2;
                             if (isfloat) {
-                                const double varvalue = MathLib::toDoubleNumber(selvalue==1 ? value1 : value2) + (double)offset;
+                                const double d1 = MathLib::toDoubleNumber(value1);
+                                const double d2 = MathLib::toDoubleNumber(value2);
+                                double varvalue = (selvalue==1) ? d1 : d2;
+                                switch (offset) {
+                                case -3:
+                                    varvalue /= 2.0;
+                                    break;
+                                case -2:
+                                    varvalue *= 2.0;
+                                    break;
+                                case -1:
+                                    varvalue -= 1.0;
+                                    break;
+                                case 1:
+                                    varvalue += 1.0;
+                                    break;
+                                case 2:
+                                    varvalue = (d1 + d2) / 2.0;
+                                    break;
+                                default:
+                                    break;
+                                };
                                 res1 = checkFloatRelation(op1, varvalue, MathLib::toDoubleNumber(value1));
                                 res2 = checkFloatRelation(op2, varvalue, MathLib::toDoubleNumber(value2));
                             } else {
