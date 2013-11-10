@@ -1261,6 +1261,24 @@ static bool checkRelation(Relation relation, const std::string &value1, const st
            (relation == MoreEqual && MathLib::isGreaterEqual(value1, value2));
 }
 
+static bool checkIntRelation(const std::string &op, const MathLib::bigint value1, const MathLib::bigint value2)
+{
+    return (op == "==" && value1 == value2) ||
+           (op == "!=" && value1 != value2) ||
+           (op == ">"  && value1 >  value2) ||
+           (op == ">=" && value1 >= value2) ||
+           (op == "<"  && value1 <  value2) ||
+           (op == "<=" && value1 <= value2);
+}
+
+static bool checkFloatRelation(const std::string &op, const double value1, const double value2)
+{
+    return (op == ">"  && value1 >  value2) ||
+           (op == ">=" && value1 >= value2) ||
+           (op == "<"  && value1 <  value2) ||
+           (op == "<=" && value1 <= value2);
+}
+
 static bool analyzeLogicOperatorCondition(const Condition& c1, const Condition& c2,
         bool inv1, bool inv2,
         bool varFirst1, bool varFirst2,
@@ -1296,50 +1314,6 @@ void CheckOther::checkIncorrectLogicOperator()
         const Scope * scope = symbolDatabase->functionScopes[ii];
 
         if (_settings->ast) {
-            enum LogicError { AlwaysFalse, AlwaysTrue, FirstTrue, FirstFalse, SecondTrue, SecondFalse };
-
-            static const struct {
-                const char *c1;
-                const char *logicOp;
-                const char *c2;
-                Relation   relation;
-                LogicError error;
-            } conditions[] = {
-                { "!=", "||", "!=", NotEqual , AlwaysTrue  }, // (x != 1) || (x != 3)  <- always true
-                { "==", "&&", "==", NotEqual , AlwaysFalse }, // (x == 1) && (x == 3)  <- always false
-                { ">" , "||", "<" , Less     , AlwaysTrue  }, // (x > 3)  || (x < 10)  <- always true
-                { ">=", "||", "<" , LessEqual, AlwaysTrue  }, // (x >= 3) || (x < 10)  <- always true
-                { ">=", "||", "<=", LessEqual, AlwaysTrue  }, // (x >= 3) || (x < 10)  <- always true
-                { ">" , "||", "<=", LessEqual, AlwaysTrue  }, // (x > 3)  || (x <= 10) <- always true
-                { "<" , "&&", ">" , LessEqual, AlwaysFalse }, // (x < 1)  && (x > 3)   <- always false
-                { "<=", "&&", ">" , Less,      AlwaysFalse }, // (x <= 1) && (x > 3)   <- always false
-                { "<" , "&&", ">=", Less,      AlwaysFalse }, // (x < 1)  && (x >= 3)  <- always false
-                { ">" , "&&", "==", MoreEqual, AlwaysFalse }, // (x > 5)  && (x == 1)  <- always false
-                { "<" , "&&", "==", LessEqual, AlwaysFalse }, // (x < 1)  && (x == 3)  <- always false
-                { ">=", "&&", "==", More,      AlwaysFalse }, // (x >= 5) && (x == 1)  <- always false
-                { "<=", "&&", "==", Less,      AlwaysFalse }, // (x <= 1) && (x == 3)  <- always false
-                { "==", "||", ">" , More,      SecondTrue  }, // (x == 4) || (x > 3)   <- second expression always true
-                { "==", "||", "<" , Less,      SecondTrue  }, // (x == 4) || (x < 5)   <- second expression always true
-                { "==", "||", ">=", MoreEqual, SecondTrue  }, // (x == 4) || (x >= 3)  <- second expression always true
-                { "==", "||", "<=", LessEqual, SecondTrue  }, // (x == 4) || (x <= 5)  <- second expression always true
-                { ">" , "||", "!=", MoreEqual, SecondTrue  }, // (x > 5)  || (x != 1)  <- second expression always true
-                { "<" , "||", "!=", LessEqual, SecondTrue  }, // (x < 1)  || (x != 3)  <- second expression always true
-                { ">=", "||", "!=", More,      SecondTrue  }, // (x >= 5) || (x != 1)  <- second expression always true
-                { "<=", "||", "!=", Less,      SecondTrue  }, // (x <= 1) || (x != 3)  <- second expression always true
-                { ">" , "&&", "!=", MoreEqual, SecondTrue  }, // (x > 5)  && (x != 1)  <- second expression always true
-                { "<" , "&&", "!=", LessEqual, SecondTrue  }, // (x < 1)  && (x != 3)  <- second expression always true
-                { ">=", "&&", "!=", More,      SecondTrue  }, // (x >= 5) && (x != 1)  <- second expression always true
-                { "<=", "&&", "!=", Less,      SecondTrue  }, // (x <= 1) && (x != 3)  <- second expression always true
-                { ">" , "||", ">" , LessEqual, SecondTrue  }, // (x > 4)  || (x > 5)   <- second expression always true
-                { "<" , "||", "<" , MoreEqual, SecondTrue  }, // (x < 5)  || (x < 4)   <- second expression always true
-                { ">" , "&&", ">" , MoreEqual, SecondTrue  }, // (x > 4)  && (x > 5)   <- second expression always true
-                { "<" , "&&", "<" , MoreEqual, SecondTrue  }, // (x < 5)  && (x < 4)   <- second expression always true
-                { "==", "&&", "!=", NotEqual,  SecondTrue  }, // (x == 3) && (x != 4)  <- second expression always true
-                { "==", "||", "!=", NotEqual,  SecondTrue  }, // (x == 3) || (x != 4)  <- second expression always true
-                { "!=", "&&", "==", Equal,     AlwaysFalse }, // (x != 3) && (x == 3)  <- expression always false
-                { "!=", "||", "==", Equal,     AlwaysTrue  }, // (x != 3) || (x == 3)  <- expression always true
-            };
-
             for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
                 if (Token::Match(tok, "&&|%oror%")) {
                     if (!tok->astOperand1() || !tok->astOperand1()->astOperand1() || !tok->astOperand1()->astOperand2())
@@ -1377,46 +1351,62 @@ void CheckOther::checkIncorrectLogicOperator()
                         continue;
                     }
 
+                    if (MathLib::isInt(value1) != MathLib::isInt(value2))
+                        continue;
+
                     const std::set<std::string> constStandardFunctions;
+                    if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))
+                        continue; // same expressions => only report that
                     if (!isSameExpression(expr1, expr2, constStandardFunctions))
                         continue;
 
-                    for (unsigned int i = 0; i < sizeof(conditions) / sizeof(conditions[0]); i++) {
-                        std::string cond1str;
-                        std::string cond2str;
+                    const bool isfloat = MathLib::isFloat(value1) || MathLib::isFloat(value2);
 
-                        if (conditions[i].c1         == op1                     &&
-                            conditions[i].logicOp    == tok->str()              &&
-                            conditions[i].c2         == op2                     &&
-                            checkRelation(conditions[i].relation, value1, value2)) {
-                            cond1str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
-                            cond2str = (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2;
-                        }
-
-                        else if (conditions[i].c1         == op2                     &&
-                                 conditions[i].logicOp    == tok->str()              &&
-                                 conditions[i].c2         == op1                     &&
-                                 checkRelation(conditions[i].relation, value2, value1)) {
-                            cond1str = (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2;
-                            cond2str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
-                        }
-
-                        else
-                            continue;
-
-                        if (conditions[i].error == AlwaysFalse || conditions[i].error == AlwaysTrue) {
-                            if (warning) {
-                                const std::string text = cond1str + " " + tok->str() + " " + cond2str;
-                                incorrectLogicOperatorError(tok, text, conditions[i].error == AlwaysTrue);
+                    // evaluate if expression is always true/false
+                    bool alwaysTrue = true, alwaysFalse = true;
+                    bool firstTrue  = true, firstFalse  = true;
+                    bool secondTrue = true, secondFalse = true;
+                    for (int offset = -3; offset <=3; ++offset) {
+                        for (int selvalue = 1; selvalue <= 2; selvalue++) {
+                            bool res1,res2;
+                            if (isfloat) {
+                                const double varvalue = MathLib::toDoubleNumber(selvalue==1 ? value1 : value2) + (double)offset;
+                                res1 = checkFloatRelation(op1, varvalue, MathLib::toDoubleNumber(value1));
+                                res2 = checkFloatRelation(op2, varvalue, MathLib::toDoubleNumber(value2));
+                            } else {
+                                const MathLib::bigint varvalue = MathLib::toLongNumber(selvalue==1 ? value1 : value2) + offset;
+                                res1 = checkIntRelation(op1, varvalue, MathLib::toLongNumber(value1));
+                                res2 = checkIntRelation(op2, varvalue, MathLib::toLongNumber(value2));
                             }
-                        } else {
-                            if (style) {
-                                const std::string text = "If " + cond1str + ", the comparison " + cond2str +
-                                                         " is always " + ((conditions[i].error == SecondTrue || conditions[i].error == AlwaysTrue) ? "true" : "false") + ".";
-                                redundantConditionError(tok, text);
+                            if (tok->str() == "&&") {
+                                alwaysTrue  &= (res1 && res2);
+                                alwaysFalse &= !(res1 && res2);
+                                secondTrue &= !(res1 && !res2);
+                                firstTrue  &= !(!res1 && res2);
+                            } else {
+                                alwaysTrue  &= (res1 || res2);
+                                alwaysFalse &= !(res1 || res2);
+                                secondTrue &= !(res1 && !res2);
+                                firstTrue  &= !(!res1 && res2);
                             }
+                            firstFalse  = false;
+                            secondFalse = false;
                         }
-                        break;
+                    }
+
+                    const std::string cond1str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
+                    const std::string cond2str = (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2;
+                    if (warning && (alwaysTrue || alwaysFalse)) {
+                        const std::string text = cond1str + " " + tok->str() + " " + cond2str;
+                        incorrectLogicOperatorError(tok, text, alwaysTrue);
+                    } else if (style && (secondTrue || secondFalse)) {
+                        const std::string text = "If " + cond1str + ", the comparison " + cond2str +
+                                                 " is always " + (secondTrue ? "true" : "false") + ".";
+                        redundantConditionError(tok, text);
+                    } else if (style && (firstTrue || firstFalse)) {
+                        const std::string text = "If " + cond2str + ", the comparison " + cond1str +
+                                                 " is always " + (firstTrue ? "true" : "false") + ".";
+                        redundantConditionError(tok, text);
                     }
                 }
             }

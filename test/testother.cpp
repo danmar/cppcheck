@@ -3849,7 +3849,7 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.0.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1 && x > 3)\n"
@@ -3969,14 +3969,14 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x != 3 && x == 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 3 && x != 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==6) || (x!=6))\n"
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 6 || x == 6.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x == 6 || x != 6.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 10 || x < 3)\n"
@@ -3997,7 +3997,7 @@ private:
               "        a++;\n"
               "}\n"
              );
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x == 6, the comparison x > 5 is always true.\n", errout.str());
 
         // #3419
         check("void f() {\n"
@@ -4098,9 +4098,9 @@ private:
               "    e = x < 5 || x < 6;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If x > 6, the comparison x > 5 is always true.\n"
-                      "[test.cpp:3]: (style) Redundant condition: If x > 5, the comparison x > 6 is always true.\n"
-                      "[test.cpp:4]: (style) Redundant condition: If x < 6, the comparison x < 5 is always true.\n"
-                      "[test.cpp:5]: (style) Redundant condition: If x < 6, the comparison x < 5 is always true.\n", errout.str());
+                      "[test.cpp:3]: (style) Redundant condition: If x > 6, the comparison x > 5 is always true.\n"
+                      "[test.cpp:4]: (style) Redundant condition: If x < 5, the comparison x < 6 is always true.\n"
+                      "[test.cpp:5]: (style) Redundant condition: If x < 5, the comparison x < 6 is always true.\n", errout.str());
     }
 
     void incorrectLogicOp_condSwapping() {
@@ -4132,25 +4132,25 @@ private:
               "    if (x > 3 && x < 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (3 < x && x < 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 && 1 > x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (3 < x && 1 > x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
     }
 
     void sameExpression() {
