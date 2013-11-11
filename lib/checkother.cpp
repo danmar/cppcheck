@@ -3340,7 +3340,7 @@ void CheckOther::checkDuplicateExpression()
 
             // Experimental implementation
             for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-                if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "[*=]")) {
+                if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "[+*=]")) {
                     if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1()))
                         continue;
                     if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))

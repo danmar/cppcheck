@@ -4776,6 +4776,9 @@ private:
               "         ((f=='T') && (o == 2) && ((v < 200) || (v > 9999)))) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) { return x+x; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateIf1() { // ticket 3689 ( avoid false positive )
