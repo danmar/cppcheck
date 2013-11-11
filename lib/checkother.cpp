@@ -50,6 +50,8 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
         else if (tok1->function() && !tok1->function()->isConst)
             return false;
     }
+    if (Token::Match(tok1, "++|--"))
+        return false;
     if (!isSameExpression(tok1->astOperand1(), tok2->astOperand1(), constFunctions))
         return false;
     if (!isSameExpression(tok1->astOperand2(), tok2->astOperand2(), constFunctions))

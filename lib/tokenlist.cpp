@@ -357,6 +357,21 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
+static bool iscast(const Token *tok)
+{
+    if (!Token::Match(tok, "( %var%"))
+        return false;
+
+    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+        if (tok2->str() == ")")
+            return (tok2->next() && !tok2->next()->isOp());
+        if (!Token::Match(tok2, "%var%|*"))
+            return false;
+    }
+
+    return false;
+}
+
 static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &), std::stack<Token*> &op)
 {
     Token *unaryop = tok;
@@ -391,14 +406,19 @@ static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &),
     op.push(binop);
 }
 
+static void compileDot(Token *&tok, std::stack<Token*> &op);
 static void compileExpression(Token *&tok, std::stack<Token*> &op);
 
 static void compileTerm(Token *& tok, std::stack<Token*> &op)
 {
+    if (!tok)
+        return;
     if (tok->isLiteral()) {
         op.push(tok);
         tok = tok->next();
-    } else if (Token::Match(tok, "+|-|~|*|&|!|return")) {
+    } else if (Token::Match(tok, "+|-|~|*|&|!")) {
+        compileUnaryOp(tok, compileDot, op);
+    } else if (tok->str() == "return") {
         compileUnaryOp(tok, compileExpression, op);
     } else if (tok->isName()) {
         if (Token::Match(tok->next(), "++|--")) {  // post increment / decrement
@@ -435,13 +455,25 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
             tok = tok->next();
         } else {
             // pre increment/decrement
-            compileUnaryOp(tok, compileExpression, op);
+            compileUnaryOp(tok, compileDot, op);
         }
     } else if (tok->str() == "(") {
-        // Parenthesized sub-expression
-        tok = tok->next();
-        compileExpression(tok,op);
-        tok = tok->next();
+        if (iscast(tok)) {
+            Token *unaryop = tok;
+            tok = tok->link()->next();
+            compileDot(tok,op);
+
+            if (!op.empty()) {
+                unaryop->astOperand1(op.top());
+                op.pop();
+            }
+            op.push(unaryop);
+        } else {
+            // Parenthesized sub-expression
+            tok = tok->next();
+            compileExpression(tok,op);
+            tok = tok->next();
+        }
     }
 }
 

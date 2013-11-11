@@ -9961,6 +9961,8 @@ private:
         ASSERT_EQUALS("ab::c+", testAst("a::b+c"));
         ASSERT_EQUALS("abc+=", testAst("a=b+c"));
         ASSERT_EQUALS("abc=,", testAst("a,b=c"));
+        ASSERT_EQUALS("a-1+", testAst("-a+1"));
+        ASSERT_EQUALS("ab++-c-", testAst("a-b++-c"));
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
@@ -9974,6 +9976,10 @@ private:
         ASSERT_EQUALS("123+*", testAst("1*(2+3)"));
         ASSERT_EQUALS("123+*4*", testAst("1*(2+3)*4"));
         ASSERT_EQUALS("ifab.c&d==(", testAst("if((a.b&c)==d){}"));
+
+        // casts
+        ASSERT_EQUALS("a1(2(+=",testAst("a=(t)1+(t)2;"));
+        ASSERT_EQUALS("a1(2+=",testAst("a=(t)1+2;"));
     }
 
     void astbrackets() const { // []
