@@ -34,7 +34,8 @@
 				RuntimeTypeInfo="true"
 				SuppressStartupBanner="true"
 				TreatWChar_tAsBuiltInType="false"
-				WarningLevel="4" />
+				WarningLevel="4"
+				ForcedIncludeFiles="$(ProjectDir)..\lib\cxx11emu.h" />
 			<Tool
 				Name="VCCustomBuildTool" />
 			<Tool
@@ -87,7 +88,8 @@
 				RuntimeTypeInfo="true"
 				SuppressStartupBanner="true"
 				TreatWChar_tAsBuiltInType="false"
-				WarningLevel="4" />
+				WarningLevel="4"
+				ForcedIncludeFiles="$(ProjectDir)..\lib\cxx11emu.h" />
 			<Tool
 				Name="VCCustomBuildTool" />
 			<Tool
@@ -270,6 +272,8 @@
 				RelativePath="..\lib\mathlib.h" />
 			<File
 				RelativePath="..\lib\path.h" />
+			<File
+				RelativePath="..\lib\cxx11emu.h" />
 			<File
 				RelativePath="pathmatch.h" />
 			<File
