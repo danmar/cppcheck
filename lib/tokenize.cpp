@@ -9456,7 +9456,7 @@ void Tokenizer::simplifyAsm()
             Token::eraseTokens(tok, tok->next()->link()->next());
         }
 
-        else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile__| (")) {
+        else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile|__volatile__| (")) {
             // Goto "("
             Token *partok = tok->next();
             if (partok->str() != "(")
