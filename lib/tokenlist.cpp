@@ -436,13 +436,21 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                 name->next()->astOperand1(name);
                 tok = tok->next();
             } else {
-                compileExpression(tok,op);
-                tok = tok->next(); // skip ')' or ']'
-                if (!op.empty()) {
-                    name->next()->astOperand2(op.top());
-                    op.pop();
+                Token *prev = name;
+                tok = tok->previous();
+                while (Token::Match(tok, "(|[")) {
+                    Token *tok1 = tok;
+                    tok = tok->next();
+                    compileExpression(tok, op);
+                    if (!op.empty()) {
+                        tok1->astOperand2(op.top());
+                        op.pop();
+                    }
+                    tok1->astOperand1(prev);
+                    prev = tok1;
+                    if (Token::Match(tok, "]|)"))
+                        tok = tok->next();
                 }
-                name->next()->astOperand1(name);
             }
             op.push(name->next());
         }

@@ -9985,6 +9985,7 @@ private:
 
     void astbrackets() const { // []
         ASSERT_EQUALS("a23+[4+", testAst("a[2+3]+4"));
+        ASSERT_EQUALS("a1[0[", testAst("a[1][0]"));
     }
 
     void astunaryop() const { // unary operators
