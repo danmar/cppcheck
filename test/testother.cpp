@@ -6417,6 +6417,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(struct AB *ab) {\n" // #
+              "    ab->data->x = 1;\n"
+              "    ab = &ab1;\n"
+              "    ab->data->x = 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // don't crash
         check("struct data {\n"
               "  struct { int i; } fc;\n"
