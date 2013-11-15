@@ -128,8 +128,8 @@ private:
         TEST_CASE(incorrectLogicOperator2);
         TEST_CASE(incorrectLogicOperator3);
         TEST_CASE(incorrectLogicOperator4);
-        TEST_CASE(incorrectLogicOperator5);
-        TEST_CASE(incorrectLogicOperator6);
+        TEST_CASE(incorrectLogicOperator5); // complex expressions
+        TEST_CASE(incorrectLogicOperator6); // char literals
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(sameExpression);
@@ -3733,6 +3733,11 @@ private:
               "}\n"
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n", errout.str());
+
+        check("void f(int x) {\n" // ast..
+              "    if (y == 1 && x == 1 && x == 7) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 7.\n", errout.str());
 
         check("void f(int x, int y) {\n"
               "    if (x != 1 || y != 1)\n"

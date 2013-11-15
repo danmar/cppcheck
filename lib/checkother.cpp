@@ -1319,37 +1319,43 @@ void CheckOther::checkIncorrectLogicOperator()
         if (_settings->ast) {
             for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
                 if (Token::Match(tok, "&&|%oror%")) {
-                    if (!tok->astOperand1() || !tok->astOperand1()->astOperand1() || !tok->astOperand1()->astOperand2())
+                    // Comparison #1 (LHS)
+                    const Token *comp1 = tok->astOperand1();
+                    if (comp1 && comp1->str() == tok->str())
+                        comp1 = comp1->astOperand2();
+
+                    // Comparison #2 (RHS)
+                    const Token *comp2 = tok->astOperand2();
+
+                    if (!comp1 || !comp1->isComparisonOp() || !comp1->astOperand1() || !comp1->astOperand2())
                         continue;
-                    if (!tok->astOperand2() || !tok->astOperand2()->astOperand1() || !tok->astOperand2()->astOperand2())
-                        continue;
-                    if (!tok->astOperand1()->isComparisonOp() || !tok->astOperand2()->isComparisonOp())
+                    if (!comp2 || !comp2->isComparisonOp() || !comp2->astOperand1() || !comp2->astOperand2())
                         continue;
 
                     std::string op1, value1;
                     const Token *expr1;
-                    if (tok->astOperand1()->astOperand1()->isLiteral()) {
-                        op1    = invertOperatorForOperandSwap(tok->astOperand1()->str());
-                        value1 = tok->astOperand1()->astOperand1()->str();
-                        expr1  = tok->astOperand1()->astOperand2();
-                    } else if (tok->astOperand1()->astOperand2()->isLiteral()) {
-                        op1    = tok->astOperand1()->str();
-                        value1 = tok->astOperand1()->astOperand2()->str();
-                        expr1  = tok->astOperand1()->astOperand1();
+                    if (comp1->astOperand1()->isLiteral()) {
+                        op1    = invertOperatorForOperandSwap(comp1->str());
+                        value1 = comp1->astOperand1()->str();
+                        expr1  = comp1->astOperand2();
+                    } else if (comp1->astOperand2()->isLiteral()) {
+                        op1    = comp1->str();
+                        value1 = comp1->astOperand2()->str();
+                        expr1  = comp1->astOperand1();
                     } else {
                         continue;
                     }
 
                     std::string op2, value2;
                     const Token *expr2;
-                    if (tok->astOperand2()->astOperand1()->isLiteral()) {
-                        op2    = invertOperatorForOperandSwap(tok->astOperand2()->str());
-                        value2 = tok->astOperand2()->astOperand1()->str();
-                        expr2  = tok->astOperand2()->astOperand2();
-                    } else if (tok->astOperand2()->astOperand2()->isLiteral()) {
-                        op2    = tok->astOperand2()->str();
-                        value2 = tok->astOperand2()->astOperand2()->str();
-                        expr2  = tok->astOperand2()->astOperand1();
+                    if (comp2->astOperand1()->isLiteral()) {
+                        op2    = invertOperatorForOperandSwap(comp2->str());
+                        value2 = comp2->astOperand1()->str();
+                        expr2  = comp2->astOperand2();
+                    } else if (comp2->astOperand2()->isLiteral()) {
+                        op2    = comp2->str();
+                        value2 = comp2->astOperand2()->str();
+                        expr2  = comp2->astOperand1();
                     } else {
                         continue;
                     }
@@ -1361,7 +1367,7 @@ void CheckOther::checkIncorrectLogicOperator()
                         continue;
 
                     const std::set<std::string> constStandardFunctions;
-                    if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))
+                    if (isSameExpression(comp1, comp2, constStandardFunctions))
                         continue; // same expressions => only report that
                     if (!isSameExpression(expr1, expr2, constStandardFunctions))
                         continue;
