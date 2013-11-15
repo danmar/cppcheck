@@ -4779,6 +4779,12 @@ private:
 
         check("int f(int x) { return x+x; }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if (a && b && b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+
     }
 
     void duplicateIf1() { // ticket 3689 ( avoid false positive )

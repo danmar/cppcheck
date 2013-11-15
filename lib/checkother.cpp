@@ -3348,6 +3348,8 @@ void CheckOther::checkDuplicateExpression()
                         continue;
                     if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))
                         duplicateExpressionError(tok, tok, tok->str());
+                    else if (tok->astOperand1() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), constStandardFunctions))
+                        duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
                 }
             }
             continue;
