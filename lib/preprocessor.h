@@ -96,6 +96,9 @@ public:
     /** read preprocessor statements into a string. */
     std::string readpreprocessor(std::istream &istr, const unsigned int bom) const;
 
+    /** should __cplusplus be defined? */
+    static bool cplusplus(const Settings *settings, const std::string &filename);
+
     /**
      * Get preprocessed code for a given configuration
      * @param filedata file data including preprocessing 'if', 'define', etc

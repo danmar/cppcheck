@@ -3272,11 +3272,21 @@ private:
         ASSERT_EQUALS("char buf[$123];\n", actual);
     }
 
-    void predefine5() {  // #3737 - automatically define __cplusplus
+    void predefine5() {  // #3737, #5119 - automatically define __cplusplus
+        // #3737...
         const char code[] = "#ifdef __cplusplus\n123\n#endif";
         Preprocessor preprocessor(NULL,this);
         ASSERT_EQUALS("\n\n\n",    preprocessor.getcode(code, "X=123", "test.c"));
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(code, "X=123", "test.cpp"));
+
+        // #5119...
+        ASSERT_EQUALS(false, Preprocessor::cplusplus(NULL,"test.c"));
+        ASSERT_EQUALS(true, Preprocessor::cplusplus(NULL,"test.cpp"));
+
+        Settings settings;
+        ASSERT_EQUALS(true, Preprocessor::cplusplus(&settings,"test.cpp"));
+        settings.userUndefs.insert("__cplusplus");
+        ASSERT_EQUALS(false, Preprocessor::cplusplus(&settings,"test.cpp"));
     }
 
     void predefine6() {  // #3737 - using -D and -f => check all matching configurations

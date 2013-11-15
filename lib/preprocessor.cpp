@@ -123,10 +123,18 @@ static std::string unify(const std::string &s, char separator)
 }
 
 
+bool Preprocessor::cplusplus(const Settings *settings, const std::string &filename)
+{
+    const bool undef   = settings && settings->userUndefs.find("__cplusplus") != settings->userUndefs.end();
+    const bool cpplang = settings && settings->enforcedLang == Settings::CPP;
+    const bool cppfile = (!settings || settings->enforcedLang == Settings::None) && Path::isCPP(filename);
+    return (!undef && (cpplang || cppfile));
+}
+
 /**
  * Get cfgmap - a map of macro names and values
  */
-static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
+static std::map<std::string,std::string> getcfgmap(const std::string &cfg, const Settings *settings, const std::string &filename)
 {
     std::map<std::string, std::string> cfgmap;
 
@@ -153,6 +161,9 @@ static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
             pos = pos2 + 1;
         }
     }
+
+    if (cfgmap.find("__cplusplus") == cfgmap.end() && Preprocessor::cplusplus(settings,filename))
+        cfgmap["__cplusplus"] = "1";
 
     return cfgmap;
 }
@@ -1023,7 +1034,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string("")));
+    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string(""), _settings, filename));
 
     if (_settings && _settings->_maxConfigs == 1U) {
         std::set<std::string> pragmaOnce;
@@ -1735,9 +1746,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::list<bool> matched_ifdef;
 
     // Create a map for the cfg for faster access to defines
-    std::map<std::string, std::string> cfgmap(getcfgmap(cfg));
-    if (((_settings && _settings->enforcedLang == Settings::CPP) || ((!_settings || _settings->enforcedLang == Settings::None) && Path::isCPP(filename))) && cfgmap.find("__cplusplus") == cfgmap.end())
-        cfgmap["__cplusplus"] = "1";
+    std::map<std::string, std::string> cfgmap(getcfgmap(cfg, _settings, filename));
 
     std::stack<std::string> filenames;
     filenames.push(filename);
@@ -2895,7 +2904,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
     {
         // fill up "macros" with user defined macros
-        const std::map<std::string,std::string> cfgmap(getcfgmap(cfg));
+        const std::map<std::string,std::string> cfgmap(getcfgmap(cfg,NULL,""));
         std::map<std::string, std::string>::const_iterator it;
         for (it = cfgmap.begin(); it != cfgmap.end(); ++it) {
             std::string s = it->first;
