@@ -6355,7 +6355,7 @@ bool Tokenizer::simplifyKnownVariables()
                                                std::string(tok2->strAt(-2) + " .") :
                                                std::string("");
 
-                if (tok2->str() == tok2->strAt(2))
+                if (Token::Match(tok2, "%varid% = &| %varid%", tok2->varId()))
                     continue;
 
                 const Token * const valueToken = tok2->tokAt(2);
