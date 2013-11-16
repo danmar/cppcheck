@@ -1685,6 +1685,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
         }
     }
 
+    if (Token::Match(vartok->previous(), "= %var% ;|%cop%"))
+        return true;
+
     bool unknown = false;
     if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
         // function parameter?

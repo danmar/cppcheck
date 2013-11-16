@@ -2081,6 +2081,12 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar2("int f() {\n"
+                        "    int x;\n"
+                        "    x = x;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
         checkUninitVar2("void f() {\n"
                         "    struct ABC *abc;\n"
                         "    abc->a = 0;\n"
