@@ -181,6 +181,7 @@ private:
         TEST_CASE(simplifyKnownVariables52);    // #4728 "= x %cop%"
         TEST_CASE(simplifyKnownVariables53);    // references
         TEST_CASE(simplifyKnownVariables54);    // #4913 'x' is not 0 after *--x=0;
+        TEST_CASE(simplifyKnownVariables55);    // pointer alias
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesIfEq3); // #4708 - if (a==5) { buf[--a] = 0; }
@@ -2822,6 +2823,12 @@ private:
 
     void simplifyKnownVariables54() { // #4913
         ASSERT_EQUALS("void f ( int * p ) { * -- p = 0 ; * p = 0 ; }", tokenizeAndStringify("void f(int*p) { *--p=0; *p=0; }", true));
+    }
+
+    void simplifyKnownVariables55() { // pointer alias
+        ASSERT_EQUALS("void f ( ) { int a ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (*p>0) {} }", true));
+        ASSERT_EQUALS("void f ( ) { int a ; struct AB ab ; ab . a = & a ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; struct AB ab; ab.a = &a; if (*ab.a>0) {} }", true));
+        ASSERT_EQUALS("void f ( ) { int a ; if ( x > a ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (x>*p) {} }", true));
     }
 
     void simplifyKnownVariablesIfEq1() {

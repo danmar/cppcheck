@@ -6730,6 +6730,17 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             ret = true;
         }
 
+        // pointer alias used in condition..
+        if (Token::Match(valueToken,"& %var% ;") && Token::Match(tok3, ("( * " + structname + " %varid% %cop%").c_str(), varid)) {
+            tok3->deleteNext();
+            if (!structname.empty())
+                tok3->deleteNext(2);
+            tok3 = tok3->next();
+            tok3->str(value);
+            tok3->varId(valueVarId);
+            ret = true;
+        }
+
         // Delete pointer alias
         if (pointeralias && tok3->str() == "delete" &&
             (Token::Match(tok3, "delete %varid% ;", varid) ||
@@ -6818,7 +6829,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 ret = true;
             tok3->str(value);
             tok3->varId(valueVarId);
-            if (tok3->previous()->str() == "*" && valueIsPointer) {
+            if (tok3->previous()->str() == "*" && (valueIsPointer || Token::Match(valueToken, "& %var% ;"))) {
                 tok3 = tok3->previous();
                 tok3->deleteThis();
                 ret = true;
