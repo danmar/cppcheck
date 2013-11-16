@@ -2546,6 +2546,13 @@ private:
     // Handling of function calls
     void uninitvar2_func() {
         // non-pointer variable
+        checkUninitVar2("void a(char);\n"  // value => error
+                        "void b() {\n"
+                        "    char c;\n"
+                        "    a(c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
         checkUninitVar2("void a(char c);\n"  // value => error
                         "void b() {\n"
                         "    char c;\n"
@@ -2605,6 +2612,13 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
 
         checkUninitVar2("void a(const char *c);\n"  // const address => error
+                        "void b() {\n"
+                        "    char *c;\n"
+                        "    a(c);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar2("void a(const char c[]);\n"  // const address => error
                         "void b() {\n"
                         "    char *c;\n"
                         "    a(c);\n"
