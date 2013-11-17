@@ -1649,7 +1649,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
         }
     }
 
-    if (Token::Match(vartok->previous(), "++|--|?|:|%cop%")) {
+    if (Token::Match(vartok->previous(), "++|--|%cop%")) {
         if (cpp && vartok->previous()->str() == ">>") {
             // assume that variable is initialized
             return false;
@@ -1687,6 +1687,23 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
 
     if (Token::Match(vartok->previous(), "= %var% ;|%cop%"))
         return true;
+
+    if (Token::Match(vartok->previous(), "? %var%")) {
+        // this is only variable usage if variable is either:
+        // * unconditionally uninitialized
+        // * used in both rhs and lhs of ':' operator
+        bool rhs = false;
+        for (const Token *tok2 = vartok; tok2; tok2 = tok2->next()) {
+            if (tok2->str() == "(")
+                tok2 = tok2->link();
+            else if (tok2->str() == ":")
+                rhs = true;
+            else if (Token::Match(tok2, "[)];,{}]"))
+                break;
+            else if (rhs && tok2->varId() == vartok->varId())
+                return true;
+        }
+    }
 
     bool unknown = false;
     if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {

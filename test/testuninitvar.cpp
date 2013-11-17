@@ -2143,6 +2143,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f(int a) {\n"
+                        "    int x;\n"
+                        "    if (a==3) { x=2; }\n"
+                        "    y = (a==3) ? x : a;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // = { .. }
         checkUninitVar2("int f() {\n"
                         "    int a;\n"
