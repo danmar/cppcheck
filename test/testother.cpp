@@ -4703,16 +4703,14 @@ private:
         check("void fun() {\n"
               "    return  a && a ||\n"
               "            b == b &&\n"
-              "            c - c &&\n"
               "            d > d &&\n"
               "            e < e &&\n"
               "            f ;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n"
                       "[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n"
-                      "[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n"
-                      "[test.cpp:5] -> [test.cpp:5]: (style) Same expression on both sides of '>'.\n"
-                      "[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '<'.\n", errout.str());
+                      "[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '>'.\n"
+                      "[test.cpp:5] -> [test.cpp:5]: (style) Same expression on both sides of '<'.\n", errout.str());
 
         check("void foo() {\n"
               "    return a && a;\n"
@@ -4790,6 +4788,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
+        check("void foo() {\n"
+              "    if (a || b || b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if (a / 1000 / 1000) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateIf1() { // ticket 3689 ( avoid false positive )
