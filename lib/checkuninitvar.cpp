@@ -1649,7 +1649,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool cpp
         }
     }
 
-    if (Token::Match(vartok->previous(), "++|--|%cop%")) {
+    if (Token::Match(vartok->previous(), "++|--|?|:|%cop%")) {
         if (cpp && vartok->previous()->str() == ">>") {
             // assume that variable is initialized
             return false;

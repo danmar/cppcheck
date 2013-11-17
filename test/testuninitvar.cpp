@@ -2152,6 +2152,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        // = ({ .. })
+        checkUninitVar2("void f() {\n"
+                        "    int x = ({ 1 + 2; });\n"
+                        "    int y = 1 + (x ? y : y);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: y\n", errout.str());
+
         // >> => initialization / usage
         {
             const char code[] = "void f() {\n"
