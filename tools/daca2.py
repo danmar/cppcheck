@@ -110,6 +110,8 @@ def removeLargeFiles(path):
     for g in glob.glob(path + '*'):
         if g == '.' or g == '..':
             continue
+        if os.path.islink(g):
+            continue
         if os.path.isdir(g):
             removeLargeFiles(g + '/')
         elif os.path.isfile(g) and g[-4:] != '.txt':
