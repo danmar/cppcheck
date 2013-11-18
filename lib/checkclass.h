@@ -50,7 +50,7 @@ public:
         CheckClass checkClass(tokenizer, settings, errorLogger);
 
         // can't be a simplified check .. the 'sizeof' is used.
-        checkClass.noMemset();
+        checkClass.checkMemset();
     }
 
     /** @brief Run checks on the simplified token list */
@@ -93,7 +93,7 @@ public:
      * It can also overwrite the virtual table.
      * Important: The checking doesn't work on simplified tokens list.
      */
-    void noMemset();
+    void checkMemset();
     void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation);
 
     /** @brief 'operator=' should return something and it should not be const. */

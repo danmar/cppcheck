@@ -898,7 +898,7 @@ static const Scope* findFunctionOf(const Scope* scope)
     return 0;
 }
 
-void CheckClass::noMemset()
+void CheckClass::checkMemset()
 {
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -949,6 +949,20 @@ void CheckClass::noMemset()
 
                         if (derefs == 0)
                             type = var->typeScope();
+
+                        // TODO: The SymbolDatabase mix up variables in nested structs.
+                        //       So we must bailout right now if there are nested structs.
+                        bool bailout = false;
+                        for (const Token *typetok2 = var->typeStartToken(); typetok2 && typetok2 != var->typeEndToken(); typetok2 = typetok2->next()) {
+                            if (typetok2->str() == "::")
+                                bailout = true;
+                            if (typetok2->str() == "{") {
+                                bailout = false;
+                                break;
+                            }
+                        }
+                        if (bailout)
+                            continue;
                     }
                 }
 
