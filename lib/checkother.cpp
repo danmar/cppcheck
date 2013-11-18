@@ -1315,19 +1315,14 @@ template<class T> static T getvalue(const int test, const T value1, const T valu
     switch (test) {
     case 1:
         return std::min(value1, value2) - (T)1;
-        break;
     case 2:
         return value1;
-        break;
     case 3:
         return (value1 + value2) / (T)2;
-        break;
     case 4:
         return value2;
-        break;
     case 5:
         return std::max(value1, value2) + (T)1;
-        break;
     };
     return 0;
 }
