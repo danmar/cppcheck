@@ -1304,6 +1304,34 @@ static bool analyzeLogicOperatorCondition(const Condition& c1, const Condition& 
     return checkRelation(relation, firstConstant, secondConstant);
 }
 
+template<class T> static T getvalue(const int test, const T value1, const T value2)
+{
+    // test:
+    // 1 => return value that is less than both value1 and value2
+    // 2 => return value1
+    // 3 => return value that is between value1 and value2
+    // 4 => return value2
+    // 5 => return value that is larger than both value1 and value2
+    switch (test) {
+    case 1:
+        return std::min(value1, value2) - (T)1;
+        break;
+    case 2:
+        return value1;
+        break;
+    case 3:
+        return (value1 + value2) / (T)2;
+        break;
+    case 4:
+        return value2;
+        break;
+    case 5:
+        return std::max(value1, value2) + (T)1;
+        break;
+    };
+    return 0;
+}
+
 void CheckOther::checkIncorrectLogicOperator()
 {
     bool style = _settings->isEnabled("style");
@@ -1368,7 +1396,7 @@ void CheckOther::checkIncorrectLogicOperator()
 
                     const std::set<std::string> constStandardFunctions;
                     if (isSameExpression(comp1, comp2, constStandardFunctions))
-                        continue; // same expressions => only report that
+                        continue; // same expressions => only report that there are same expressions
                     if (!isSameExpression(expr1, expr2, constStandardFunctions))
                         continue;
 
@@ -1382,49 +1410,36 @@ void CheckOther::checkIncorrectLogicOperator()
                     // evaluate if expression is always true/false
                     bool alwaysTrue = true, alwaysFalse = true;
                     bool firstTrue  = true, secondTrue = true;
-                    for (int offset = -3; offset <=3; ++offset) {
-                        for (int selvalue = 1; selvalue <= 2; selvalue++) {
-                            bool res1,res2;
-                            if (isfloat) {
-                                const double d1 = MathLib::toDoubleNumber(value1);
-                                const double d2 = MathLib::toDoubleNumber(value2);
-                                double varvalue = (selvalue==1) ? d1 : d2;
-                                switch (offset) {
-                                case -3:
-                                    varvalue /= 2.0;
-                                    break;
-                                case -2:
-                                    varvalue *= 2.0;
-                                    break;
-                                case -1:
-                                    varvalue -= 1.0;
-                                    break;
-                                case 1:
-                                    varvalue += 1.0;
-                                    break;
-                                case 2:
-                                    varvalue = (d1 + d2) / 2.0;
-                                    break;
-                                default:
-                                    break;
-                                };
-                                res1 = checkFloatRelation(op1, varvalue, MathLib::toDoubleNumber(value1));
-                                res2 = checkFloatRelation(op2, varvalue, MathLib::toDoubleNumber(value2));
-                            } else {
-                                const MathLib::bigint varvalue = MathLib::toLongNumber(selvalue==1 ? value1 : value2) + offset;
-                                res1 = checkIntRelation(op1, varvalue, MathLib::toLongNumber(value1));
-                                res2 = checkIntRelation(op2, varvalue, MathLib::toLongNumber(value2));
-                            }
-                            if (tok->str() == "&&") {
-                                alwaysTrue  &= (res1 && res2);
-                                alwaysFalse &= !(res1 && res2);
-                            } else {
-                                alwaysTrue  &= (res1 || res2);
-                                alwaysFalse &= !(res1 || res2);
-                            }
-                            firstTrue  &= !(!res1 && res2);
-                            secondTrue &= !(res1 && !res2);
+                    for (int test = 1; test <= 5; ++test) {
+                        // test:
+                        // 1 => testvalue is less than both value1 and value2
+                        // 2 => testvalue is value1
+                        // 3 => testvalue is between value1 and value2
+                        // 4 => testvalue value2
+                        // 5 => testvalue is larger than both value1 and value2
+                        bool result1, result2;
+                        if (isfloat) {
+                            const double d1 = MathLib::toDoubleNumber(value1);
+                            const double d2 = MathLib::toDoubleNumber(value2);
+                            const double testvalue = getvalue<double>(test, d1, d2);
+                            result1 = checkFloatRelation(op1, testvalue, d1);
+                            result2 = checkFloatRelation(op2, testvalue, d2);
+                        } else {
+                            const MathLib::bigint i1 = MathLib::toLongNumber(value1);
+                            const MathLib::bigint i2 = MathLib::toLongNumber(value2);
+                            const MathLib::bigint testvalue = getvalue<MathLib::bigint>(test, i1, i2);
+                            result1 = checkIntRelation(op1, testvalue, i1);
+                            result2 = checkIntRelation(op2, testvalue, i2);
                         }
+                        if (tok->str() == "&&") {
+                            alwaysTrue  &= (result1 && result2);
+                            alwaysFalse &= !(result1 && result2);
+                        } else {
+                            alwaysTrue  &= (result1 || result2);
+                            alwaysFalse &= !(result1 || result2);
+                        }
+                        firstTrue  &= !(!result1 && result2);
+                        secondTrue &= !(result1 && !result2);
                     }
 
                     const std::string cond1str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
@@ -1437,6 +1452,9 @@ void CheckOther::checkIncorrectLogicOperator()
                                                  " is always " + (secondTrue ? "true" : "false") + ".";
                         redundantConditionError(tok, text);
                     } else if (style && firstTrue) {
+                        //const std::string text = "The comparison " + cond1str + " is always " +
+                        //                         (firstTrue ? "true" : "false") + " when " +
+                        //                         cond2str + ".";
                         const std::string text = "If " + cond2str + ", the comparison " + cond1str +
                                                  " is always " + (firstTrue ? "true" : "false") + ".";
                         redundantConditionError(tok, text);
