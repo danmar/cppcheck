@@ -133,6 +133,7 @@ private:
         TEST_CASE(template38);  // #4832 - crash on C++11 right angle brackets
         TEST_CASE(template39);  // #4742 - freeze
         TEST_CASE(template40);  // #5055 - template specialization outside struct
+        TEST_CASE(template41);  // #4710 - const in instantiation not handled perfectly
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2336,6 +2337,16 @@ private:
                             "};"
                             "template<> struct A::X<int> { int *t; };";
         ASSERT_EQUALS("struct A { template < typename T > struct X { T t ; } ; } ;", tok(code));
+    }
+
+    void template41() { // #4710 - const in template instantiation not handled perfectly
+        const char code1[] = "template<class T> struct X { };\n"
+                             "void f(const X<int> x) { }";
+        ASSERT_EQUALS("void f ( const X<int> x ) { } struct X<int> { }", tok(code1));
+
+        const char code2[] = "template<class T> T f(T t) { return t; }\n"
+                             "int x() { return f<int>(123); }";
+        ASSERT_EQUALS("int x ( ) { return f<int> ( 123 ) ; } int f<int> ( int t ) { return t ; }", tok(code2));
     }
 
     void template_default_parameter() {
