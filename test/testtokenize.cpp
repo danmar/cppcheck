@@ -97,6 +97,8 @@ private:
         TEST_CASE(removeCast12);
         TEST_CASE(removeCast13);
 
+        TEST_CASE(simplifyFloatCasts); // float casting a integer
+
         TEST_CASE(inlineasm);
 
         TEST_CASE(ifAddBraces1);
@@ -1121,6 +1123,12 @@ private:
         TODO_ASSERT_EQUALS("; float angle ; angle = tilt ;",
                            "; float angle ; angle = ( float ) + tilt ;",
                            tokenizeAndStringify("; float angle = (float) +tilt;", true));
+    }
+
+    void simplifyFloatCasts() { // float casting integers
+        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = (float)1;"));
+        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = ((float)1);"));
+        ASSERT_EQUALS("a = 291.0 ;", tokenizeAndStringify("a = ((float)0x123);"));
     }
 
     void inlineasm() {

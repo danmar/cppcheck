@@ -1994,6 +1994,9 @@ bool Tokenizer::tokenize(std::istream &code,
 
     simplifyVariableMultipleAssign();
 
+    // Simplify float casts (float)1 => 1.0
+    simplifyFloatCasts();
+
     // Remove redundant parentheses
     simplifyRedundantParentheses();
     for (Token *tok = list.front(); tok; tok = tok->next())
@@ -4785,6 +4788,17 @@ void Tokenizer::simplifyUndefinedSizeArray()
                 tok = end;
             } else
                 tok = tok->tokAt(3);
+        }
+    }
+}
+
+void Tokenizer::simplifyFloatCasts()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok->next(), "( float|double ) %num%") && MathLib::isInt(tok->strAt(4))) {
+            tok->deleteNext(3);
+            tok = tok->next();
+            tok->str(tok->str() + ".0");
         }
     }
 }

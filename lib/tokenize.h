@@ -326,6 +326,11 @@ public:
     void simplifyTypedef();
 
     /**
+     * Simplify float casts (float)1 => 1.0
+     */
+    void simplifyFloatCasts();
+
+    /**
      * Simplify casts
      */
     void simplifyCasts();
