@@ -413,6 +413,8 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
 {
     if (!tok)
         return;
+    if (Token::Match(tok, "L %str%|%char%"))
+        tok = tok->next();
     if (tok->isLiteral()) {
         op.push(tok);
         tok = tok->next();

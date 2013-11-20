@@ -9991,6 +9991,9 @@ private:
         testAst("char a[1]=\"\";"); // don't crash
         testAst("int f(char argv[]);"); // don't crash
         testAst("--"); // don't crash
+
+        ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
+        ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
     }
 
     void astpar() const { // parentheses
