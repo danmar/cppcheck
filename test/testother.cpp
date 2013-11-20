@@ -4812,6 +4812,14 @@ private:
               "    if (a / 1000 / 1000) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if (a << 1 << 1) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() { return !!y; }"); // No FP
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateIf1() { // ticket 3689 ( avoid false positive )
