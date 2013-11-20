@@ -7891,7 +7891,25 @@ void Tokenizer::simplifyEnum()
                         else {
                             tok2 = tok2->previous();
                             tok2->deleteNext();
-                            tok2 = copyTokens(tok2, ev->start, ev->end);
+                            bool hasOp = false;
+                            int indentlevel = 0;
+                            for (const Token *enumtok = ev->start; enumtok != ev->end; enumtok = enumtok->next()) {
+                                if (enumtok->str() == "(")
+                                    ++indentlevel;
+                                else if (enumtok->str() == ")")
+                                    --indentlevel;
+                                if (indentlevel == 0)
+                                    hasOp |= enumtok->isOp();
+                            }
+                            if (!hasOp)
+                                tok2 = copyTokens(tok2, ev->start, ev->end);
+                            else {
+                                tok2->insertToken("(");
+                                Token *startPar = tok2->next();
+                                tok2 = copyTokens(startPar, ev->start, ev->end);
+                                tok2->insertToken(")");
+                                Token::createMutualLinks(startPar, tok2->next());
+                            }
                         }
 
                         if (hasClass) {

@@ -373,6 +373,7 @@ private:
         TEST_CASE(enum37); // ticket #4280 (shadow variable)
         TEST_CASE(enum38); // ticket #4463 (when throwing enum id, don't warn about shadow variable)
         TEST_CASE(enum39); // ticket #5145 (fp variable hides enum)
+        TEST_CASE(enum40);
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -7069,10 +7070,10 @@ private:
                             "int sum =  a + b + c + d + e + f + g;";
         const char expected[] = "int sum ; sum = "
                                 "sizeof ( int ) + "
-                                "1 + sizeof ( int ) + "
-                                "1 + sizeof ( int ) + 101 + " // 101 = 100 + 1
-                                "sizeof ( int ) + 102 + " // 102 = 100 + 1 + 1
-                                "sizeof ( int ) + 283 " // 283 = 100+2+90+91
+                                "( 1 + sizeof ( int ) ) + "
+                                "( 1 + sizeof ( int ) + 100 ) + " // 101 = 100 + 1
+                                "( 1 + sizeof ( int ) + 101 ) + " // 102 = 100 + 1 + 1
+                                "( 1 + sizeof ( int ) + 102 ) + 181 " // 283 = 100+2+90+91
                                 ";";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -7417,7 +7418,7 @@ private:
 
     void enum32() {  // #3998 - wrong enum simplification => access violation
         const char code[] = "enum { x=(32), y=x, z }; { a, z }";
-        ASSERT_EQUALS("{ a , 33 }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("{ a , ( 33 ) }", checkSimplifyEnum(code));
     }
 
     void enum33() {  // #4015 - segmentation fault
@@ -7468,6 +7469,11 @@ private:
         const char code[] = "enum { A }; void f() { int a = 1 * A; }";
         checkSimplifyEnum(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum40() {
+        const char code[] = "enum { A=(1<<0)|(1<<1) }; void f() { x = y + A; }";
+        ASSERT_EQUALS("void f ( ) { x = y + ( 3 ) ; }", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
