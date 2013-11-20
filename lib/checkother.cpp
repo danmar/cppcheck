@@ -1313,16 +1313,32 @@ template<class T> static T getvalue(const int test, const T value1, const T valu
     // 4 => return value2
     // 5 => return value that is larger than both value1 and value2
     switch (test) {
-    case 1:
-        return std::min(value1, value2) - (T)1;
+    case 1: {
+        T ret = std::min(value1, value2);
+        if ((ret - (T)1) < ret)
+            return ret - (T)1;
+        else if ((ret / (T)2) < ret)
+            return ret / (T)2;
+        else if ((ret * (T)2) < ret)
+            return ret * (T)2;
+        return ret;
+    }
     case 2:
         return value1;
     case 3:
         return (value1 + value2) / (T)2;
     case 4:
         return value2;
-    case 5:
-        return std::max(value1, value2) + (T)1;
+    case 5: {
+        T ret = std::max(value1, value2);
+        if ((ret + (T)1) > ret)
+            return ret + (T)1;
+        else if ((ret / (T)2) > ret)
+            return ret / (T)2;
+        else if ((ret * (T)2) > ret)
+            return ret * (T)2;
+        return ret;
+    }
     };
     return 0;
 }

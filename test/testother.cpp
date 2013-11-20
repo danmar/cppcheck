@@ -4039,6 +4039,21 @@ private:
               "        m_x2 = x + w - 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(float x) {\n" // x+1 => x
+              "  if (x <= 1.0e20 && x >= -1.0e20) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(float x) {\n" // x+1 => x
+              "  if (x >= 1.0e20 && x <= 1.0e21) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(float x) {\n" // x+1 => x
+              "  if (x <= -1.0e20 && x >= -1.0e21) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator3() {
