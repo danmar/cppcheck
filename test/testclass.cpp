@@ -205,7 +205,25 @@ private:
                                   "struct Derived : Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("class Base {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+
+        checkDuplInheritedMembers("class Base {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : public Base {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   int x;\n"
@@ -216,8 +234,33 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:2]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
-                      "[test.cpp:8] -> [test.cpp:5]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("class Base0 {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "class Base1 {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base0, Base1 {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n", errout.str());
+
+        checkDuplInheritedMembers("class Base0 {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "class Base1 {\n"
+                                  "   public:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base0, Base1 {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
+                      "[test.cpp:10] -> [test.cpp:7]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   int x;\n"

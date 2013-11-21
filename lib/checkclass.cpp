@@ -1973,7 +1973,7 @@ void CheckClass::checkDuplInheritedMembers()
                 for (std::list<Variable>::const_iterator parentClassVarIt = parentClassIt->type->classScope->varlist.begin();
                      parentClassVarIt != parentClassIt->type->classScope->varlist.end();
                      ++parentClassVarIt) {
-                    if (classVarIt->name() == parentClassVarIt->name()) { // Check if the class and its parent have a common variable
+                    if (classVarIt->name() == parentClassVarIt->name() && !parentClassVarIt->isPrivate()) { // Check if the class and its parent have a common variable
                         duplInheritedMembersError(classVarIt->nameToken(), parentClassVarIt->nameToken(),
                                                   classIt->name(), parentClassIt->type->name(), classVarIt->name(),
                                                   classIt->classScope->type == Scope::eStruct,
