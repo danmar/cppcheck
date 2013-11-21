@@ -1127,9 +1127,9 @@ private:
 
     void simplifyFloatCasts() { // float casting integers
         // C-style casts
-        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = (float)1;"));
-        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = ((float)1);"));
-        ASSERT_EQUALS("a = 291.0 ;", tokenizeAndStringify("a = ((float)0x123);"));
+        ASSERT_EQUALS("a = 1.0f ;", tokenizeAndStringify("a = (float)1;"));
+        ASSERT_EQUALS("a = 1.0f ;", tokenizeAndStringify("a = ((float)1);"));
+        ASSERT_EQUALS("a = 291.0f ;", tokenizeAndStringify("a = ((float)0x123);"));
 
         ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = (double)1;"));
         ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = ((double)1);"));

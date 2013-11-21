@@ -4796,9 +4796,11 @@ void Tokenizer::simplifyFloatCasts()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok->next(), "( float|double ) %num%") && MathLib::isInt(tok->strAt(4))) {
+            const bool isFloatType(tok->strAt(2) == "float");
             tok->deleteNext(3);
             tok = tok->next();
-            tok->str(tok->str() + ".0");
+            // in case of type 'float', add the corresponding suffix 'f'
+            tok->str(tok->str() + (isFloatType ? ".0f":".0"));
         }
     }
 }
