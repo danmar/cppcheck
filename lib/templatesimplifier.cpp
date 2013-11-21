@@ -499,7 +499,7 @@ std::list<Token *> TemplateSimplifier::getTemplateInstantiations(Token *tokens)
 
 
 void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &templates,
-        const std::list<Token *> &templateInstantiations)
+        std::list<Token *> * const templateInstantiations)
 {
     for (std::list<Token *>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1) {
         // template parameters with default value has syntax such as:
@@ -534,7 +534,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
             continue;
 
         // iterate through all template instantiations
-        for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
+        for (std::list<Token *>::const_iterator iter2 = templateInstantiations->begin(); iter2 != templateInstantiations->end(); ++iter2) {
             Token *tok = *iter2;
 
             if (!Token::Match(tok, (classname + " < %any%").c_str()))
@@ -580,11 +580,27 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
 
         for (std::list<Token *>::iterator it = eq.begin(); it != eq.end(); ++it) {
             Token * const eqtok = *it;
-            const Token *tok2;
+            Token *tok2;
+            int indentlevel = 0;
             for (tok2 = eqtok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(")
                     tok2 = tok2->link();
-                else if (tok2->str() == "," || tok2->str() == ">")
+                else if (Token::Match(tok2, "%type% <") && templateParameters(tok2->next())) {
+                    std::list<Token*>::iterator ti = std::find(templateInstantiations->begin(),
+                                                     templateInstantiations->end(),
+                                                     tok2);
+                    if (ti != templateInstantiations->end())
+                        templateInstantiations->erase(ti);
+                    ++indentlevel;
+                } else if (indentlevel > 0 && tok2->str() == ">")
+                    --indentlevel;
+                else if (indentlevel > 0 && tok2->str() == ">>") {
+                    indentlevel -= 2;
+                    if (indentlevel < 0)
+                        tok2->str(">");
+                } else if (indentlevel == 0 && Token::Match(tok2, ",|>|>>"))
+                    break;
+                if (indentlevel < 0)
                     break;
             }
             Token::eraseTokens(eqtok, tok2);
@@ -1263,7 +1279,7 @@ void TemplateSimplifier::simplifyTemplates(
         return;
 
     // Template arguments with default values
-    TemplateSimplifier::useDefaultArgumentValues(templates, templateInstantiations);
+    TemplateSimplifier::useDefaultArgumentValues(templates, &templateInstantiations);
 
     // expand templates
     //bool done = false;
