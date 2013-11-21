@@ -28,6 +28,7 @@ private:
     void run() {
         TEST_CASE(empty);
         TEST_CASE(function);
+        TEST_CASE(function_arg);
         TEST_CASE(memory);
     }
 
@@ -59,6 +60,35 @@ private:
         ASSERT(library.leakignore.empty());
         ASSERT(library.argumentChecks.empty());
         ASSERT(library.isnotnoreturn("foo"));
+    }
+
+    void function_arg() {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"foo\">\n"
+                               "    <arg nr=\"1\">\n"
+                               "        <not-uninit/>\n"
+                               "    </arg>\n"
+                               "    <arg nr=\"2\">\n"
+                               "        <not-null/>\n"
+                               "    </arg>\n"
+                               "    <arg nr=\"3\">\n"
+                               "        <formatstr/>\n"
+                               "    </arg>\n"
+                               "    <arg nr=\"4\">\n"
+                               "        <strz/>\n"
+                               "    </arg>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        Library library;
+        library.load(doc);
+        ASSERT_EQUALS(true, library.argumentChecks["foo"][1].notuninit);
+        ASSERT_EQUALS(true, library.argumentChecks["foo"][2].notnull);
+        ASSERT_EQUALS(true, library.argumentChecks["foo"][3].formatstr);
+        ASSERT_EQUALS(true, library.argumentChecks["foo"][4].strz);
     }
 
     void memory() {

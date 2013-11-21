@@ -115,9 +115,9 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                         else if (strcmp(argnode->Name(), "not-uninit") == 0)
                             notuninit = true;
                         else if (strcmp(argnode->Name(), "formatstr") == 0)
-                            notuninit = true;
+                            formatstr = true;
                         else if (strcmp(argnode->Name(), "strz") == 0)
-                            notuninit = true;
+                            strz = true;
                         else
                             return false;
                     }
