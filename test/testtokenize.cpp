@@ -74,6 +74,7 @@ private:
         TEST_CASE(garbageCode2); // #4300
         TEST_CASE(garbageCode3); // #4869
         TEST_CASE(garbageCode4); // #4887
+        TEST_CASE(garbageCode5); // #5168
 
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
@@ -974,6 +975,10 @@ private:
 
     void garbageCode4() { // #4887
         tokenizeAndStringify("void f ( ) { = a ; if ( 1 ) if = ( 0 ) ; }");
+    }
+
+    void garbageCode5() { // #5168
+        tokenizeAndStringify("( asm : ; void : );");
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
