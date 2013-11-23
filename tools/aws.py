@@ -32,7 +32,7 @@ def gitpull():
 def daca2(foldernum):
     folders = '0123456789abcdefghijklmnopqrstuvwxyz'
     folder = folders[foldernum % len(folders)]
-    if (folders / len(folders)) % 1 == 1:
+    if (foldernum / len(folders)) % 2 == 1:
         folder = 'lib' + folder
 
     print('Daca2 folder=' + folder)
@@ -51,7 +51,6 @@ def daca2(foldernum):
         ['mv', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
 
     subprocess.call(['python', 'tools/daca2.py', folder, '--rev=' + rev])
-    subprocess.call(['python', 'tools/daca2.py', 'lib' + folder, '--rev=' + rev])
 
 subprocess.call(['make', 'clean'])
 foldernum = 0
