@@ -1407,7 +1407,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                     varTok = tok1->previous();
                     variableInfo = varTok->variable();
 
-                    if (!isStdVectorOrString()) {
+                    if (!variableInfo || !isStdVectorOrString()) {
                         variableInfo = 0;
                         typeToken = 0;
                     }
