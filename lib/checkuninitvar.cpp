@@ -493,7 +493,7 @@ private:
                 for (it = checks.begin(); it != checks.end(); ++it) {
                     UninitVar *c = dynamic_cast<UninitVar *>(*it);
                     if (c && c->varId == tok.varId()) {
-                        if (c->var->isArray())
+                        if (c->var->isArray() || c->alloc)
                             bailOutVar(checks, tok.varId());
                         break;
                     }

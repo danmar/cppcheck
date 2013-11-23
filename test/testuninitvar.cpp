@@ -1437,6 +1437,15 @@ private:
                        "    uintptr_t y = x + 10;\n"  // <- not bad usage
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "  z_stream strm;\n"
+                       "  char* buf = malloc(10);\n"
+                       "  strm.next_out = buf;\n"
+                       "  deflate(&strm, Z_FINISH);\n"
+                       "  memcpy(body, buf, 10);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // class / struct..
