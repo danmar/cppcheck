@@ -75,8 +75,11 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
         return false;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (strcmp(node->Name(),"memory")==0) {
-            while (!ismemory(++allocid));
+        if (strcmp(node->Name(),"memory")==0 || strcmp(node->Name(),"resource")==0) {
+            if (strcmp(node->Name(), "memory")==0)
+                while (!ismemory(++allocid));
+            else
+                while (!isresource(++allocid));
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 if (strcmp(memorynode->Name(),"alloc")==0) {
                     _alloc[memorynode->GetText()] = allocid;

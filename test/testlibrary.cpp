@@ -30,6 +30,7 @@ private:
         TEST_CASE(function);
         TEST_CASE(function_arg);
         TEST_CASE(memory);
+        TEST_CASE(resource);
     }
 
     void empty() {
@@ -109,6 +110,27 @@ private:
         ASSERT(library.argumentChecks.empty());
 
         ASSERT(Library::ismemory(library.alloc("CreateX")));
+        ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
+    }
+
+    void resource() {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <resource>\n"
+                               "    <alloc>CreateX</alloc>\n"
+                               "    <dealloc>DeleteX</dealloc>\n"
+                               "  </resource>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        Library library;
+        library.load(doc);
+        ASSERT(library.use.empty());
+        ASSERT(library.leakignore.empty());
+        ASSERT(library.argumentChecks.empty());
+
+        ASSERT(Library::isresource(library.alloc("CreateX")));
         ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
     }
 };
