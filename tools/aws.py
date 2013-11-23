@@ -52,8 +52,6 @@ def daca2(foldernum):
 
     subprocess.call(['python', 'tools/daca2.py', folder, '--rev=' + rev])
     subprocess.call(['python', 'tools/daca2.py', 'lib' + folder, '--rev=' + rev])
-    daca2report()
-
 
 subprocess.call(['make', 'clean'])
 foldernum = 0
