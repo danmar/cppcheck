@@ -123,11 +123,20 @@ def gitpull():
     return False
 
 
+def daca2report():
+    print('Generate DACA2 report')
+    subprocess.call(['rm', '-rf', 'daca2-report'])
+    subprocess.call(['mkdir', 'daca2-report'])
+    subprocess.call(['python', 'tools/daca2-report.py', 'daca2-report'])
+    upload('-r daca2-report', 'htdocs/devinfo/')
+
+
 def daca2(foldernum):
     folders = '0123456789abcdefghijklmnopqrstuvwxyz'
     folder = folders[foldernum % len(folders)]
 
     print('Daca2 folder=' + folder)
+    daca2report()
 
     p = subprocess.Popen(['git', 'show', '--format=%h'],
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -141,14 +150,10 @@ def daca2(foldernum):
         ['mv', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
 
     subprocess.call(['python', 'tools/daca2.py', folder, '--rev=' + rev])
+    daca2report()
     subprocess.call(
         ['python', 'tools/daca2.py', 'lib' + folder, '--rev=' + rev])
-
-    print('Generate DACA2 report')
-    subprocess.call(['rm', '-rf', 'daca2-report'])
-    subprocess.call(['mkdir', 'daca2-report'])
-    subprocess.call(['python', 'tools/daca2-report.py', 'daca2-report'])
-    upload('-r daca2-report', 'htdocs/devinfo/')
+    daca2report()
 
 t0 = datetime.date.today()
 foldernum = 0
