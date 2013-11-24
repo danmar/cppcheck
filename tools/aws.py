@@ -52,6 +52,10 @@ def daca2(foldernum):
 
     subprocess.call(['python', 'tools/daca2.py', folder, '--rev=' + rev])
 
+    subprocess.call(['cp',
+                     os.path.expanduser('~/daca2/' + folder + '/results.txt'),
+                     os.path.expanduser('~/daca2/results-' + folder + '.txt')])
+
 subprocess.call(['make', 'clean'])
 foldernum = 0
 while True:
