@@ -3175,7 +3175,7 @@ void Tokenizer::createLinks2()
         if (token->link()) {
             if (Token::Match(token, "{|[|("))
                 type.push(token);
-            else if (Token::Match(token, "}|]|)")) {
+            else if (!type.empty() && Token::Match(token, "}|]|)")) {
                 while (type.top()->str() == "<")
                     type.pop();
                 type.pop();

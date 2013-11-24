@@ -134,6 +134,7 @@ private:
         TEST_CASE(template39);  // #4742 - freeze
         TEST_CASE(template40);  // #5055 - template specialization outside struct
         TEST_CASE(template41);  // #4710 - const in instantiation not handled perfectly
+        TEST_CASE(template42);  // #4878 - variadic templates
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2349,6 +2350,19 @@ private:
                              "int x() { return f<int>(123); }";
         ASSERT_EQUALS("int x ( ) { return f<int> ( 123 ) ; } int f<int> ( int t ) { return t ; }", tok(code2));
     }
+
+    void template42() { // #4878 cpcheck aborts in ext-blocks.cpp (clang testcode)
+        const char code[] = "template<typename ...Args>\n"
+                            "int f0(Args ...args) {\n"
+                            "  return ^ {\n"
+                            "    return sizeof...(Args);\n"
+                            "  }() + ^ {\n"
+                            "    return sizeof...(args);\n"
+                            "  }();\n"
+                            "}";
+        tok(code);
+    }
+
 
     void template_default_parameter() {
         {
