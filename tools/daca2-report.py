@@ -40,7 +40,8 @@ mainpage.write('<html lang="en">\n')
 mainpage.write('<head>\n')
 mainpage.write('<meta charset="utf-8">\n')
 mainpage.write('<title>DACA2</title>\n')
-mainpage.write('<style>td { font-size: 0.9em; } td + td { padding-left: 6em; }</style>\n')
+mainpage.write(
+    '<style>td { font-size: 0.9em; } td + td { padding-left: 6em; }</style>\n')
 mainpage.write('</head>\n')
 mainpage.write('<body>\n')
 mainpage.write('<h1>DACA2</h1>\n')
@@ -51,7 +52,14 @@ mainpage.write(
 mainpage.write('<p>The hardware running the analysis is a Raspberry PI.</p>\n')
 mainpage.write('<table>\n')
 mainpage.write(
-    '<tr><td>Name</td><td>Date</td></tr>\n')
+    '<tr>' +
+    '<td>Name</td>' +
+    '<td>Date</td>' +
+    '<td>Error</td>' +
+    '<td>Warning</td>' +
+    '<td>Performance</td>' +
+    '<td>Portability</td>' +
+    '<td>Style</td></tr>\n')
 
 lastupdate = None
 recent = []
@@ -75,7 +83,15 @@ for lib in range(2):
                     recent.append(a)
 
             mainpage.write(
-                '<tr><td><a href="daca2-' + a + '.html">' + a + '</a></td><td>' + datestr + '</td></tr>\n')
+                '<tr>' +
+                '<td><a href="daca2-' + a + '.html">' + a + '</a></td>' +
+                '<td>' + datestr + '</td>' +
+                '<td>' + str(data.count('(error)')) + '</td>' +
+                '<td>' + str(data.count('(warning)')) + '</td>' +
+                '<td>' + str(data.count('(performance)')) + '</td>' +
+                '<td>' + str(data.count('(portability)')) + '</td>' +
+                '<td>' + str(data.count('(style)')) + '</td>' +
+                '</tr>\n')
 
             data = data.replace('&', '&amp;')
             data = data.replace('<', '&lt;')
