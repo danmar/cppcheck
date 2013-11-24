@@ -203,7 +203,7 @@ os.chdir(workdir + FOLDER)
 
 try:
     results = open('results.txt', 'wt')
-    results.write('DATE ' + str(datetime.date.today()) + '\n')
+    results.write('STARTDATE ' + str(datetime.date.today()) + '\n')
     if REV:
         results.write('GIT-REVISION ' + REV + '\n')
     results.write('\n')
@@ -211,6 +211,10 @@ try:
 
     for archive in archives:
         scanarchive(archive)
+
+    results = open('results.txt', 'at')
+    results.write('DATE ' + str(datetime.date.today()) + '\n')
+    results.close()
 
 except EOFError:
     pass
