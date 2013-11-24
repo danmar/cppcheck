@@ -52,6 +52,16 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
     }
     if (Token::Match(tok1, "++|--"))
         return false;
+    if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
+        const Token *t1 = tok1->next();
+        const Token *t2 = tok2->next();
+        while (t1 && t2 && t1->str() == t2->str() && (t1->isName() || t1->str() == "*")) {
+            t1 = t1->next();
+            t2 = t2->next();
+        }
+        if (!t1 || !t2 || t1->str() != ")" || t2->str() != ")")
+            return false;
+    }
     if (!isSameExpression(tok1->astOperand1(), tok2->astOperand1(), constFunctions))
         return false;
     if (!isSameExpression(tok1->astOperand2(), tok2->astOperand2(), constFunctions))

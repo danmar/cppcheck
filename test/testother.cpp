@@ -4820,6 +4820,17 @@ private:
 
         check("int f() { return !!y; }"); // No FP
         ASSERT_EQUALS("", errout.str());
+
+        // make sure there are not "same expression" fp when there are different casts
+        check("void f(long x) { if ((int32_t)x == (int64_t)x) {} }",
+              NULL,  // filename
+              false, // experimental
+              false, // inconclusive
+              false, // posix
+              false, // runSimpleChecks
+              NULL   // settings
+             );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateIf1() { // ticket 3689 ( avoid false positive )
