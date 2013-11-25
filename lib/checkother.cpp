@@ -3359,6 +3359,11 @@ void CheckOther::complexDuplicateExpressionCheck(const std::list<const Function*
 
 static bool astIsFloat(const Token *tok)
 {
+    if (tok->astOperand1() && astIsFloat(tok->astOperand1()))
+        return true;
+    if (tok->astOperand2() && astIsFloat(tok->astOperand2()))
+        return true;
+
     // TODO: check function calls, struct members, arrays, etc also
     return tok->variable() && Token::Match(tok->variable()->typeStartToken(), "float|double");
 }

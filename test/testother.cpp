@@ -4872,6 +4872,13 @@ private:
 
         check("float f(float x) { return x-x; }"); // ticket #4485 (Inf)
         ASSERT_EQUALS("", errout.str());
+
+        check("float f(float x) { return (X double)x == (X double)x; }", NULL, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X { float f; };\n"
+              "float f(struct X x) { return x.f == x.f; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression3() {
