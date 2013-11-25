@@ -1305,6 +1305,13 @@ private:
                        "    return a[0][1];\n"
                        "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", "", errout.str());
+
+        // # 4740
+        checkUninitVar("void f() {\n"
+                       "    int *a[2][19];\n"
+                       "    int **b = a[0];\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..

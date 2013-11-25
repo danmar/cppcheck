@@ -413,7 +413,7 @@ private:
         // Variable declaration..
         if (tok.varId() && Token::Match(&tok, "%var% [[;]")) {
             const Variable* var2 = tok.variable();
-            if (var2 && var2->nameToken() == &tok && !var2->isStatic() && !var2->isExtern() && !var2->isConst()) {
+            if (var2 && var2->nameToken() == &tok && !var2->isStatic() && !var2->isExtern() && !var2->isConst() && !Token::simpleMatch(tok.linkAt(1), "] [")) {
                 if (tok.linkAt(1)) { // array
                     const Token* endtok = tok.next();
                     while (endtok->link())
