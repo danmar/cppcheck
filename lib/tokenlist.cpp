@@ -478,6 +478,9 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                 op.pop();
             }
             op.push(unaryop);
+        } else if (Token::Match(tok,"( {")) {
+            op.push(tok->next());
+            tok = tok->link()->next();
         } else {
             // Parenthesized sub-expression
             tok = tok->next();
