@@ -363,10 +363,8 @@ static bool iscast(const Token *tok)
         return false;
 
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-        if (tok2->str() == ")")
-            return (tok2->next() && !tok2->next()->isOp());
         if (!Token::Match(tok2, "%var%|*"))
-            return false;
+            return Token::Match(tok2, ") %any%") && (!tok2->next()->isOp() && tok2->next()->str() != "[");
     }
 
     return false;
@@ -500,12 +498,22 @@ static void compileScope(Token *&tok, std::stack<Token*> &op)
     }
 }
 
-static void compileDot(Token *&tok, std::stack<Token*> &op)
+static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op)
 {
     compileScope(tok,op);
     while (tok) {
-        if (tok->str() == ".") {
+        if (tok->str() == "[") {
             compileBinOp(tok, compileScope, op);
+        } else break;
+    }
+}
+
+static void compileDot(Token *&tok, std::stack<Token*> &op)
+{
+    compileParAndBrackets(tok,op);
+    while (tok) {
+        if (tok->str() == ".") {
+            compileBinOp(tok, compileParAndBrackets, op);
         } else break;
     }
 }

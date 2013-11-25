@@ -10008,10 +10008,6 @@ private:
 
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
-
-        // ({..})
-        ASSERT_EQUALS("a{+d+", testAst("a+({b+c;})+d"));
-        ASSERT_EQUALS("a{d*+", testAst("a+({b+c;})*d"));
     }
 
     void astpar() const { // parentheses
@@ -10023,11 +10019,18 @@ private:
         // casts
         ASSERT_EQUALS("a1(2(+=",testAst("a=(t)1+(t)2;"));
         ASSERT_EQUALS("a1(2+=",testAst("a=(t)1+2;"));
+
+        // ({..})
+        ASSERT_EQUALS("a{+d+", testAst("a+({b+c;})+d"));
+        ASSERT_EQUALS("a{d*+", testAst("a+({b+c;})*d"));
     }
 
     void astbrackets() const { // []
         ASSERT_EQUALS("a23+[4+", testAst("a[2+3]+4"));
         ASSERT_EQUALS("a1[0[", testAst("a[1][0]"));
+        ASSERT_EQUALS("ab0[=", testAst("a=(b)[0];"));
+        ASSERT_EQUALS("abc0[.=", testAst("a=b.c[0];"));
+        ASSERT_EQUALS("ab0[1[=", testAst("a=b[0][1];"));
     }
 
     void astunaryop() const { // unary operators
