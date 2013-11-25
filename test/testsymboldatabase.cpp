@@ -202,6 +202,7 @@ private:
         TEST_CASE(symboldatabase38); // ticket #5125 (infinite recursion)
         TEST_CASE(symboldatabase39); // ticket #5120 (infinite recursion)
         TEST_CASE(symboldatabase40); // ticket #5153
+        TEST_CASE(symboldatabase41); // ticket #5197 (unknown macro)
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1664,6 +1665,11 @@ private:
               "    catch (std::bad_alloc) {  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase41() { // ticket #5197 (unknown macro)
+        GET_SYMBOL_DB("struct X1 { MACRO1 f(int spd) MACRO2; };\n");
+        ASSERT(db && db->findScopeByName("X1") && db->findScopeByName("X1")->functionList.size() == 1 && !db->findScopeByName("X1")->functionList.front().hasBody);
     }
 
     void isImplicitlyVirtual() {

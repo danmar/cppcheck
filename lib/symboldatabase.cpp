@@ -486,6 +486,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scope->functionList.push_back(function);
                     }
 
+                    // unknown macro (#5197)
+                    else if (Token::Match(end, ") %any% ;")) {
+                        tok = end->tokAt(3);
+
+                        scope->functionList.push_back(function);
+                    }
+
                     // inline function
                     else {
                         function.isInline = true;
