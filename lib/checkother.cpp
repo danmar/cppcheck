@@ -62,6 +62,9 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
         if (!t1 || !t2 || t1->str() != ")" || t2->str() != ")")
             return false;
     }
+    // bailout when we see ({..})
+    if (tok1->str() == "{")
+        return false;
     if (!isSameExpression(tok1->astOperand1(), tok2->astOperand1(), constFunctions))
         return false;
     if (!isSameExpression(tok1->astOperand2(), tok2->astOperand2(), constFunctions))
