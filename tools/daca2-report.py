@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 
 
 def readdate(data):
@@ -29,6 +30,13 @@ def readdate(data):
         elif d != ' ' and d != '-':
             return None
         datepos = datepos + 1
+
+if os.path.isfile(os.path.expanduser('~/aws-debian.pem')):
+    subprocess.call(['scp',
+                     '-i',
+                     os.path.expanduser('~/aws-debian.pem'),
+                     'admin@ec2-54-201-59-232.us-west-2.compute.amazonaws.com:daca2/results-*.txt',
+                     os.path.expanduser('~/daca2/')])
 
 path = '.'
 if len(sys.argv) == 2:
@@ -75,6 +83,17 @@ for lib in range(2):
             f.close()
 
             datestr = readdate(data)
+
+            if os.path.isfile(daca2 + 'results-' + a + '.txt'):
+                f2 = open(daca2 + 'results-' + a + '.txt')
+                data2 = f2.read()
+                f2.close()
+
+                datestr2 = readdate(data2)
+                if not datestr or datestr < datestr2:
+                    data = data2
+                    datestr = datestr2
+
             if datestr:
                 if not lastupdate or datestr > lastupdate:
                     lastupdate = datestr
