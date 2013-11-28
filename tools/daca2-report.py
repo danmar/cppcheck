@@ -57,7 +57,6 @@ mainpage.write(
     '<p>Results when running latest (git head) Cppcheck on Debian.</p>\n')
 mainpage.write(
     '<p>For performance reasons the analysis is limited. Files larger than 100kb are skipped. If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
-mainpage.write('<p>The hardware running the analysis is a Raspberry PI.</p>\n')
 mainpage.write('<table>\n')
 mainpage.write(
     '<tr>' +
