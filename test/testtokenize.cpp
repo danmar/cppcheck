@@ -97,6 +97,7 @@ private:
         TEST_CASE(removeCast11);
         TEST_CASE(removeCast12);
         TEST_CASE(removeCast13);
+        TEST_CASE(removeCast14);
 
         TEST_CASE(simplifyFloatCasts); // float casting a integer
 
@@ -1128,6 +1129,11 @@ private:
         TODO_ASSERT_EQUALS("; float angle ; angle = tilt ;",
                            "; float angle ; angle = ( float ) + tilt ;",
                            tokenizeAndStringify("; float angle = (float) +tilt;", true));
+    }
+
+    void removeCast14() { // const
+		// #5081
+        ASSERT_EQUALS("( ! ( & s ) . a )", tokenizeAndStringify("(! ( (struct S const *) &s)->a)", true));
     }
 
     void simplifyFloatCasts() { // float casting integers
