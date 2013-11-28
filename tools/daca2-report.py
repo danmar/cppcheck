@@ -100,6 +100,8 @@ for lib in range(2):
                     recent = []
                 if datestr == lastupdate:
                     recent.append(a)
+            else:
+                datestr = ''
 
             mainpage.write(
                 '<tr>' +
