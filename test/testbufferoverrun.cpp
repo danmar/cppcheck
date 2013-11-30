@@ -240,6 +240,8 @@ private:
         TEST_CASE(crash2);  // Ticket #2607 - crash
         TEST_CASE(crash3);  // Ticket #3034 - crash
 
+        TEST_CASE(garbage1);  // Ticket #5203
+
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
         TEST_CASE(executionPaths3);   // no FP for function parameter
@@ -3633,6 +3635,9 @@ private:
               "}");
     }
 
+    void garbage1() { // Ticket #5203
+        check("int f ( int* r ) { {  int s[2] ; f ( s ) ; if ( ) } }");
+    }
 
     void epcheck(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..

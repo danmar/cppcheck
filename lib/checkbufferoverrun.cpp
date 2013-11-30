@@ -229,6 +229,8 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
     const Token* end = tok->linkAt(1)->linkAt(1);
     if (Token::simpleMatch(end, "} else {")) // scan the else-block
         end = end->linkAt(2);
+    if (Token::simpleMatch(end, "{")) // Ticket #5203: Invalid code, bailout
+        return true;
     for (; tok != end; tok = tok->next()) {
         // If scanning a "if" block then bailout for "break"
         if (is_if && (tok->str() == "break" || tok->str() == "continue"))
