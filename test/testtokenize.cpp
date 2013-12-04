@@ -1132,7 +1132,7 @@ private:
     }
 
     void removeCast14() { // const
-		// #5081
+        // #5081
         ASSERT_EQUALS("( ! ( & s ) . a )", tokenizeAndStringify("(! ( (struct S const *) &s)->a)", true));
     }
 
