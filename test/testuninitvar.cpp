@@ -64,6 +64,7 @@ private:
         TEST_CASE(uninitvar2_structmembers); // struct members
         TEST_CASE(uninitvar2_while);
         TEST_CASE(uninitvar2_4494);      // #4494
+        TEST_CASE(uninitvar2_malloc);    // malloc returns uninitialized data
 
         TEST_CASE(syntax_error); // Ticket #5073
     }
@@ -2047,6 +2048,7 @@ private:
         // Tokenize..
         Settings settings;
         settings.debugwarnings = debugwarnings;
+        settings.library.returnuninitdata.insert("malloc");
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, fname);
@@ -2909,6 +2911,35 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "int f() {\n"
+                        "  struct AB *ab;\n"
+                        "  for (i = 1; i < 10; i++) {\n"
+                        "    if (condition && (ab = getab()) != NULL) {\n"
+                        "      a = ab->a;\n"
+                        "    }\n"
+                        "  }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "int f(int x) {\n"
+                        "  struct AB *ab;\n"
+                        "  if (x == 0) {\n"
+                        "    ab = getab();\n"
+                        "  }\n"
+                        "  if (x == 0 && (ab != NULL || ab->a == 0)) { }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("struct A { int *x; };\n" // declarationId is 0 for "delete"
+                        "void foo(void *info, void*p);\n"
+                        "void bar(void) {\n"
+                        "  struct A *delete = 0;\n"
+                        "  foo( info, NULL );\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // return
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
@@ -3202,6 +3233,27 @@ private:
                         "    fred.wilma.barney.betty.f1(p);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:20]: (error) Uninitialized variable: p\n", errout.str());
+    }
+
+    void uninitvar2_malloc() {
+        checkUninitVar2("int f() {\n"
+                        "    int *p = malloc(40);\n"
+                        "    return *p;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
+        checkUninitVar2("int f() {\n"
+                        "    int *p = malloc(40);\n"
+                        "    var = *p;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "int f() {\n"
+                        "    struct AB *ab = malloc(sizeof(struct AB));\n"
+                        "    return ab->a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
     }
 
     void syntax_error() { // Ticket #5073

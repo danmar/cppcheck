@@ -57,13 +57,13 @@ public:
     /** Check for uninitialized variables */
     void check();
     void checkScope(const Scope* scope);
-    bool checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, const std::string &membervar);
-    bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, const std::string &membervar);
-    bool checkLoopBody(const Token *tok, const Variable& var, const std::string &membervar, const bool suppressErrors);
-    void checkRhs(const Token *tok, const Variable &var, const std::string &membervar);
-    static bool isVariableUsage(const Token *vartok, bool ispointer, bool cpp);
+    bool checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, bool * const alloc, const std::string &membervar);
+    bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, bool alloc, const std::string &membervar);
+    bool checkLoopBody(const Token *tok, const Variable& var, const bool alloc, const std::string &membervar, const bool suppressErrors);
+    void checkRhs(const Token *tok, const Variable &var, bool alloc, const std::string &membervar);
+    static bool isVariableUsage(const Token *vartok, bool ispointer, bool alloc, bool cpp);
     static bool isMemberVariableAssignment(const Token *tok, const std::string &membervar);
-    bool isMemberVariableUsage(const Token *tok, bool isPointer, const std::string &membervar) const;
+    bool isMemberVariableUsage(const Token *tok, bool isPointer, bool alloc, const std::string &membervar) const;
 
     /**
      * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables
