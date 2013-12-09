@@ -2094,9 +2094,7 @@ bool Tokenizer::tokenize(std::istream &code,
         }
     }
 
-    // Experimental AST handling.
-    if (_settings->ast)
-        list.createAst();
+    list.createAst();
 
     return true;
 }
@@ -3694,9 +3692,7 @@ bool Tokenizer::simplifyTokenList()
             tok->deleteNext();
     }
 
-    // Experimental AST handling.
-    if (_settings->ast)
-        list.createAst();
+    list.createAst();
 
     if (_settings->terminated())
         return false;
@@ -3707,8 +3703,7 @@ bool Tokenizer::simplifyTokenList()
         if (_settings->_verbose)
             _symbolDatabase->printOut("Symbol database");
 
-        if (_settings->ast)
-            list.front()->printAst();
+        list.front()->printAst();
     }
 
     if (_settings->debugwarnings) {

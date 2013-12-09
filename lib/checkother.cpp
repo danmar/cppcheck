@@ -1267,16 +1267,6 @@ static std::string invertOperatorForOperandSwap(std::string s)
     return s;
 }
 
-static bool checkRelation(Relation relation, const std::string &value1, const std::string &value2)
-{
-    return (relation == Equal     && MathLib::isEqual(value1, value2)) ||
-           (relation == NotEqual  && MathLib::isNotEqual(value1, value2)) ||
-           (relation == Less      && MathLib::isLess(value1, value2)) ||
-           (relation == LessEqual && MathLib::isLessEqual(value1, value2)) ||
-           (relation == More      && MathLib::isGreater(value1, value2)) ||
-           (relation == MoreEqual && MathLib::isGreaterEqual(value1, value2));
-}
-
 static bool checkIntRelation(const std::string &op, const MathLib::bigint value1, const MathLib::bigint value2)
 {
     return (op == "==" && value1 == value2) ||
@@ -1293,28 +1283,6 @@ static bool checkFloatRelation(const std::string &op, const double value1, const
            (op == ">=" && value1 >= value2) ||
            (op == "<"  && value1 <  value2) ||
            (op == "<=" && value1 <= value2);
-}
-
-static bool analyzeLogicOperatorCondition(const Condition& c1, const Condition& c2,
-        bool inv1, bool inv2,
-        bool varFirst1, bool varFirst2,
-        const std::string& firstConstant, const std::string& secondConstant,
-        const Token* op1Tok, const Token* op3Tok,
-        Relation relation)
-{
-    if (!(c1.position == NA || (c1.position == First && varFirst1) || (c1.position == Second && !varFirst1)))
-        return false;
-
-    if (!(c2.position == NA || (c2.position == First && varFirst2) || (c2.position == Second && !varFirst2)))
-        return false;
-
-    if (!Token::Match(op1Tok, inv1?invertOperatorForOperandSwap(c1.opTokStr).c_str():c1.opTokStr))
-        return false;
-
-    if (!Token::Match(op3Tok, inv2?invertOperatorForOperandSwap(c2.opTokStr).c_str():c2.opTokStr))
-        return false;
-
-    return checkRelation(relation, firstConstant, secondConstant);
 }
 
 template<class T> static T getvalue(const int test, const T value1, const T value2)
@@ -1368,321 +1336,119 @@ void CheckOther::checkIncorrectLogicOperator()
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
 
-        if (_settings->ast) {
-            for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-                if (Token::Match(tok, "&&|%oror%")) {
-                    // Comparison #1 (LHS)
-                    const Token *comp1 = tok->astOperand1();
-                    if (comp1 && comp1->str() == tok->str())
-                        comp1 = comp1->astOperand2();
-
-                    // Comparison #2 (RHS)
-                    const Token *comp2 = tok->astOperand2();
-
-                    if (!comp1 || !comp1->isComparisonOp() || !comp1->astOperand1() || !comp1->astOperand2())
-                        continue;
-                    if (!comp2 || !comp2->isComparisonOp() || !comp2->astOperand1() || !comp2->astOperand2())
-                        continue;
-
-                    std::string op1, value1;
-                    const Token *expr1;
-                    if (comp1->astOperand1()->isLiteral()) {
-                        op1    = invertOperatorForOperandSwap(comp1->str());
-                        value1 = comp1->astOperand1()->str();
-                        expr1  = comp1->astOperand2();
-                    } else if (comp1->astOperand2()->isLiteral()) {
-                        op1    = comp1->str();
-                        value1 = comp1->astOperand2()->str();
-                        expr1  = comp1->astOperand1();
-                    } else {
-                        continue;
-                    }
-
-                    std::string op2, value2;
-                    const Token *expr2;
-                    if (comp2->astOperand1()->isLiteral()) {
-                        op2    = invertOperatorForOperandSwap(comp2->str());
-                        value2 = comp2->astOperand1()->str();
-                        expr2  = comp2->astOperand2();
-                    } else if (comp2->astOperand2()->isLiteral()) {
-                        op2    = comp2->str();
-                        value2 = comp2->astOperand2()->str();
-                        expr2  = comp2->astOperand1();
-                    } else {
-                        continue;
-                    }
-
-                    // Only float and int values are currently handled
-                    if (!MathLib::isInt(value1) && !MathLib::isFloat(value1))
-                        continue;
-                    if (!MathLib::isInt(value2) && !MathLib::isFloat(value2))
-                        continue;
-
-                    const std::set<std::string> constStandardFunctions;
-                    if (isSameExpression(comp1, comp2, constStandardFunctions))
-                        continue; // same expressions => only report that there are same expressions
-                    if (!isSameExpression(expr1, expr2, constStandardFunctions))
-                        continue;
-
-                    const bool isfloat = MathLib::isFloat(value1) || MathLib::isFloat(value2);
-
-                    // don't check floating point equality comparisons. that is bad
-                    // and deserves different warnings.
-                    if (isfloat && (op1=="==" || op1=="!=" || op2=="==" || op2=="!="))
-                        continue;
-
-                    // evaluate if expression is always true/false
-                    bool alwaysTrue = true, alwaysFalse = true;
-                    bool firstTrue  = true, secondTrue = true;
-                    for (int test = 1; test <= 5; ++test) {
-                        // test:
-                        // 1 => testvalue is less than both value1 and value2
-                        // 2 => testvalue is value1
-                        // 3 => testvalue is between value1 and value2
-                        // 4 => testvalue value2
-                        // 5 => testvalue is larger than both value1 and value2
-                        bool result1, result2;
-                        if (isfloat) {
-                            const double d1 = MathLib::toDoubleNumber(value1);
-                            const double d2 = MathLib::toDoubleNumber(value2);
-                            const double testvalue = getvalue<double>(test, d1, d2);
-                            result1 = checkFloatRelation(op1, testvalue, d1);
-                            result2 = checkFloatRelation(op2, testvalue, d2);
-                        } else {
-                            const MathLib::bigint i1 = MathLib::toLongNumber(value1);
-                            const MathLib::bigint i2 = MathLib::toLongNumber(value2);
-                            const MathLib::bigint testvalue = getvalue<MathLib::bigint>(test, i1, i2);
-                            result1 = checkIntRelation(op1, testvalue, i1);
-                            result2 = checkIntRelation(op2, testvalue, i2);
-                        }
-                        if (tok->str() == "&&") {
-                            alwaysTrue  &= (result1 && result2);
-                            alwaysFalse &= !(result1 && result2);
-                        } else {
-                            alwaysTrue  &= (result1 || result2);
-                            alwaysFalse &= !(result1 || result2);
-                        }
-                        firstTrue  &= !(!result1 && result2);
-                        secondTrue &= !(result1 && !result2);
-                    }
-
-                    const std::string cond1str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
-                    const std::string cond2str = (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2;
-                    if (warning && (alwaysTrue || alwaysFalse)) {
-                        const std::string text = cond1str + " " + tok->str() + " " + cond2str;
-                        incorrectLogicOperatorError(tok, text, alwaysTrue);
-                    } else if (style && secondTrue) {
-                        const std::string text = "If " + cond1str + ", the comparison " + cond2str +
-                                                 " is always " + (secondTrue ? "true" : "false") + ".";
-                        redundantConditionError(tok, text);
-                    } else if (style && firstTrue) {
-                        //const std::string text = "The comparison " + cond1str + " is always " +
-                        //                         (firstTrue ? "true" : "false") + " when " +
-                        //                         cond2str + ".";
-                        const std::string text = "If " + cond2str + ", the comparison " + cond1str +
-                                                 " is always " + (firstTrue ? "true" : "false") + ".";
-                        redundantConditionError(tok, text);
-                    }
-                }
-            }
-            continue;
-        }
-
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // Find a pair of comparison expressions with or without parentheses
-            // with a shared variable and constants and with a logical operator between them.
-            // e.g. if (x != 3 || x != 4)
-            const Token *term1Tok = NULL, *term2Tok = NULL;
-            const Token *op1Tok = NULL, *op2Tok = NULL, *op3Tok = NULL, *nextTok = NULL;
+            if (Token::Match(tok, "&&|%oror%")) {
+                // Comparison #1 (LHS)
+                const Token *comp1 = tok->astOperand1();
+                if (comp1 && comp1->str() == tok->str())
+                    comp1 = comp1->astOperand2();
 
-            if (Token::Match(tok, "( %any% %comp% %any% ) &&|%oror%")) {
-                term1Tok = tok->next();
-                op1Tok = tok->tokAt(2);
-                op2Tok = tok->tokAt(5);
-            } else if (Token::Match(tok, "%any% %comp% %any% &&|%oror%")) {
-                term1Tok = tok;
-                op1Tok = tok->next();
-                op2Tok = tok->tokAt(3);
-            }
-            if (op2Tok) {
-                if (Token::Match(op2Tok->next(), "( %any% %comp% %any% ) %any%")) {
-                    term2Tok = op2Tok->tokAt(2);
-                    op3Tok = op2Tok->tokAt(3);
-                    nextTok = op2Tok->tokAt(6);
-                } else if (Token::Match(op2Tok->next(), "%any% %comp% %any% %any%")) {
-                    term2Tok = op2Tok->next();
-                    op3Tok = op2Tok->tokAt(2);
-                    nextTok = op2Tok->tokAt(4);
-                }
-            }
+                // Comparison #2 (RHS)
+                const Token *comp2 = tok->astOperand2();
 
-            if (nextTok) {
-                // Find the common variable and the two different-valued constants
-                std::string firstConstant, secondConstant;
-                bool varFirst1, varFirst2;
-                unsigned int varId;
-                const Token *var1Tok = NULL, *var2Tok = NULL;
-                if (Token::Match(term1Tok, "%var% %any% %num%")) {
-                    var1Tok = term1Tok;
-                    varId = var1Tok->varId();
-                    if (!varId) {
-                        continue;
-                    }
-                    varFirst1 = true;
-                    firstConstant = term1Tok->strAt(2);
-                } else if (Token::Match(term1Tok, "%num% %any% %var%")) {
-                    var1Tok = term1Tok->tokAt(2);
-                    varId = var1Tok->varId();
-                    if (!varId) {
-                        continue;
-                    }
-                    varFirst1 = false;
-                    firstConstant = term1Tok->str();
+                if (!comp1 || !comp1->isComparisonOp() || !comp1->astOperand1() || !comp1->astOperand2())
+                    continue;
+                if (!comp2 || !comp2->isComparisonOp() || !comp2->astOperand1() || !comp2->astOperand2())
+                    continue;
+
+                std::string op1, value1;
+                const Token *expr1;
+                if (comp1->astOperand1()->isLiteral()) {
+                    op1    = invertOperatorForOperandSwap(comp1->str());
+                    value1 = comp1->astOperand1()->str();
+                    expr1  = comp1->astOperand2();
+                } else if (comp1->astOperand2()->isLiteral()) {
+                    op1    = comp1->str();
+                    value1 = comp1->astOperand2()->str();
+                    expr1  = comp1->astOperand1();
                 } else {
                     continue;
                 }
 
-                if (Token::Match(term2Tok, "%var% %any% %num%")) {
-                    var2Tok = term2Tok;
-                    varFirst2 = true;
-                    secondConstant = term2Tok->strAt(2);
-                } else if (Token::Match(term2Tok, "%num% %any% %var%")) {
-                    var2Tok = term2Tok->tokAt(2);
-                    varFirst2 = false;
-                    secondConstant = term2Tok->str();
+                std::string op2, value2;
+                const Token *expr2;
+                if (comp2->astOperand1()->isLiteral()) {
+                    op2    = invertOperatorForOperandSwap(comp2->str());
+                    value2 = comp2->astOperand1()->str();
+                    expr2  = comp2->astOperand2();
+                } else if (comp2->astOperand2()->isLiteral()) {
+                    op2    = comp2->str();
+                    value2 = comp2->astOperand2()->str();
+                    expr2  = comp2->astOperand1();
                 } else {
                     continue;
                 }
 
-                if (varId != var2Tok->varId() || firstConstant.empty() || secondConstant.empty()) {
+                // Only float and int values are currently handled
+                if (!MathLib::isInt(value1) && !MathLib::isFloat(value1))
                     continue;
+                if (!MathLib::isInt(value2) && !MathLib::isFloat(value2))
+                    continue;
+
+                const std::set<std::string> constStandardFunctions;
+                if (isSameExpression(comp1, comp2, constStandardFunctions))
+                    continue; // same expressions => only report that there are same expressions
+                if (!isSameExpression(expr1, expr2, constStandardFunctions))
+                    continue;
+
+                const bool isfloat = MathLib::isFloat(value1) || MathLib::isFloat(value2);
+
+                // don't check floating point equality comparisons. that is bad
+                // and deserves different warnings.
+                if (isfloat && (op1=="==" || op1=="!=" || op2=="==" || op2=="!="))
+                    continue;
+
+                // evaluate if expression is always true/false
+                bool alwaysTrue = true, alwaysFalse = true;
+                bool firstTrue  = true, secondTrue = true;
+                for (int test = 1; test <= 5; ++test) {
+                    // test:
+                    // 1 => testvalue is less than both value1 and value2
+                    // 2 => testvalue is value1
+                    // 3 => testvalue is between value1 and value2
+                    // 4 => testvalue value2
+                    // 5 => testvalue is larger than both value1 and value2
+                    bool result1, result2;
+                    if (isfloat) {
+                        const double d1 = MathLib::toDoubleNumber(value1);
+                        const double d2 = MathLib::toDoubleNumber(value2);
+                        const double testvalue = getvalue<double>(test, d1, d2);
+                        result1 = checkFloatRelation(op1, testvalue, d1);
+                        result2 = checkFloatRelation(op2, testvalue, d2);
+                    } else {
+                        const MathLib::bigint i1 = MathLib::toLongNumber(value1);
+                        const MathLib::bigint i2 = MathLib::toLongNumber(value2);
+                        const MathLib::bigint testvalue = getvalue<MathLib::bigint>(test, i1, i2);
+                        result1 = checkIntRelation(op1, testvalue, i1);
+                        result2 = checkIntRelation(op2, testvalue, i2);
+                    }
+                    if (tok->str() == "&&") {
+                        alwaysTrue  &= (result1 && result2);
+                        alwaysFalse &= !(result1 && result2);
+                    } else {
+                        alwaysTrue  &= (result1 || result2);
+                        alwaysFalse &= !(result1 || result2);
+                    }
+                    firstTrue  &= !(!result1 && result2);
+                    secondTrue &= !(result1 && !result2);
                 }
 
-                enum LogicError { AlwaysFalse, AlwaysTrue, FirstTrue, FirstFalse, SecondTrue, SecondFalse };
-
-                static const struct LinkedConditions {
-                    const char *before;
-                    Condition  c1;
-                    const char *op2TokStr;
-                    Condition  c2;
-                    const char *after;
-                    Relation   relation;
-                    LogicError error;
-                } conditions[] = {
-                    { "!!&&", { NA,    "!="   }, "%oror%", { NA,    "!="   }, "!!&&", NotEqual,  AlwaysTrue  }, // (x != 1) || (x != 3)  <- always true
-                    { 0,      { NA,    "=="   }, "&&",     { NA,    "=="   }, 0,      NotEqual,  AlwaysFalse }, // (x == 1) && (x == 3)  <- always false
-                    { "!!&&", { First, ">"    }, "%oror%", { First, "<"    }, "!!&&", Less,      AlwaysTrue  }, // (x > 3)  || (x < 10)  <- always true
-                    { "!!&&", { First, ">="   }, "%oror%", { First, "<|<=" }, "!!&&", LessEqual, AlwaysTrue  }, // (x >= 3) || (x < 10)  <- always true
-                    { "!!&&", { First, ">"    }, "%oror%", { First, "<="   }, "!!&&", LessEqual, AlwaysTrue  }, // (x > 3)  || (x <= 10) <- always true
-                    { 0,      { First, "<"    }, "&&",     { First, ">"    }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x > 3)   <- always false
-                    { 0,      { First, "<="   }, "&&",     { First, ">|>=" }, 0,      Less,      AlwaysFalse }, // (x <= 1) && (x > 3)   <- always false
-                    { 0,      { First, "<"    }, "&&",     { First, ">="   }, 0,      Less,      AlwaysFalse }, // (x < 1)  && (x >= 3)  <- always false
-                    { 0,      { First, ">"    }, "&&",     { NA,    "=="   }, 0,      MoreEqual, AlwaysFalse }, // (x > 5)  && (x == 1)  <- always false
-                    { 0,      { First, "<"    }, "&&",     { NA,    "=="   }, 0,      LessEqual, AlwaysFalse }, // (x < 1)  && (x == 3)  <- always false
-                    { 0,      { First, ">="   }, "&&",     { NA,    "=="   }, 0,      More,      AlwaysFalse }, // (x >= 5) && (x == 1)  <- always false
-                    { 0,      { First, "<="   }, "&&",     { NA,    "=="   }, 0,      Less,      AlwaysFalse }, // (x <= 1) && (x == 3)  <- always false
-                    { "!!&&", { NA,    "=="   }, "%oror%", { First, ">"    }, "!!&&", More,      SecondTrue  }, // (x == 4) || (x > 3)   <- second expression always true
-                    { "!!&&", { NA,    "=="   }, "%oror%", { First, "<"    }, "!!&&", Less,      SecondTrue  }, // (x == 4) || (x < 5)   <- second expression always true
-                    { "!!&&", { NA,    "=="   }, "%oror%", { First, ">="   }, "!!&&", MoreEqual, SecondTrue  }, // (x == 4) || (x >= 3)  <- second expression always true
-                    { "!!&&", { NA,    "=="   }, "%oror%", { First, "<="   }, "!!&&", LessEqual, SecondTrue  }, // (x == 4) || (x <= 5)  <- second expression always true
-                    { "!!&&", { First, ">"    }, "%oror%", { NA,    "!="   }, "!!&&", MoreEqual, SecondTrue  }, // (x > 5)  || (x != 1)  <- second expression always true
-                    { "!!&&", { First, "<"    }, "%oror%", { NA,    "!="   }, "!!&&", LessEqual, SecondTrue  }, // (x < 1)  || (x != 3)  <- second expression always true
-                    { "!!&&", { First, ">="   }, "%oror%", { NA,    "!="   }, "!!&&", More,      SecondTrue  }, // (x >= 5) || (x != 1)  <- second expression always true
-                    { "!!&&", { First, "<="   }, "%oror%", { NA,    "!="   }, "!!&&", Less,      SecondTrue  }, // (x <= 1) || (x != 3)  <- second expression always true
-                    { 0,      { First, ">"    }, "&&",     { NA,    "!="   }, 0,      MoreEqual, SecondTrue  }, // (x > 5)  && (x != 1)  <- second expression always true
-                    { 0,      { First, "<"    }, "&&",     { NA,    "!="   }, 0,      LessEqual, SecondTrue  }, // (x < 1)  && (x != 3)  <- second expression always true
-                    { 0,      { First, ">="   }, "&&",     { NA,    "!="   }, 0,      More,      SecondTrue  }, // (x >= 5) && (x != 1)  <- second expression always true
-                    { 0,      { First, "<="   }, "&&",     { NA,    "!="   }, 0,      Less,      SecondTrue  }, // (x <= 1) && (x != 3)  <- second expression always true
-                    { "!!&&", { First, ">|>=" }, "%oror%", { First, ">|>=" }, "!!&&", LessEqual, SecondTrue  }, // (x > 4)  || (x > 5)   <- second expression always true
-                    { "!!&&", { First, "<|<=" }, "%oror%", { First, "<|<=" }, "!!&&", MoreEqual, SecondTrue  }, // (x < 5)  || (x < 4)   <- second expression always true
-                    { 0,      { First, ">|>=" }, "&&",     { First, ">|>=" }, 0,      MoreEqual, SecondTrue  }, // (x > 4)  && (x > 5)   <- second expression always true
-                    { 0,      { First, "<|<=" }, "&&",     { First, "<|<=" }, 0,      MoreEqual, SecondTrue  }, // (x < 5)  && (x < 4)   <- second expression always true
-                    { 0,      { NA,    "=="   }, "&&",     { NA,    "!="   }, 0,      NotEqual,  SecondTrue  }, // (x == 3) && (x != 4)  <- second expression always true
-                    { "!!&&", { NA,    "=="   }, "%oror%", { NA,    "!="   }, "!!&&", NotEqual,  SecondTrue  }, // (x == 3) || (x != 4)  <- second expression always true
-                    { 0,      { NA,    "!="   }, "&&",     { NA,    "=="   }, 0,      Equal,     AlwaysFalse }, // (x != 3) && (x == 3)  <- expression always false
-                    { "!!&&", { NA,    "!="   }, "%oror%", { NA,    "=="   }, "!!&&", Equal,     AlwaysTrue  }, // (x != 3) || (x == 3)  <- expression always true
-                };
-
-                for (unsigned int i = 0; i < (sizeof(conditions) / sizeof(conditions[0])); i++) {
-                    if (!Token::Match(op2Tok, conditions[i].op2TokStr))
-                        continue;
-
-                    if (conditions[i].before != 0 && !Token::Match(tok->previous(), conditions[i].before))
-                        continue;
-
-                    if (conditions[i].after != 0 && !Token::Match(nextTok, conditions[i].after))
-                        continue;
-
-                    if (tok->previous()->isArithmeticalOp() || nextTok->isArithmeticalOp())
-                        continue;
-
-                    std::string cond1str = var1Tok->str() + " " + (varFirst1?op1Tok->str():invertOperatorForOperandSwap(op1Tok->str())) + " " + firstConstant;
-                    std::string cond2str = var2Tok->str() + " " + (varFirst2?op3Tok->str():invertOperatorForOperandSwap(op3Tok->str())) + " " + secondConstant;
-                    // cond1 op cond2
-                    bool error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, false,
-                                 varFirst1, varFirst2, firstConstant, secondConstant,
-                                 op1Tok, op3Tok,
-                                 conditions[i].relation);
-                    // inv(cond1) op cond2 // invert first condition
-                    if (!error && conditions[i].c1.position != NA)
-                        error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, false,
-                                                              !varFirst1, varFirst2, firstConstant, secondConstant,
-                                                              op1Tok, op3Tok,
-                                                              conditions[i].relation);
-                    // cond1 op inv(cond2) // invert second condition
-                    if (!error && conditions[i].c2.position != NA)
-                        error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, true,
-                                                              varFirst1, !varFirst2, firstConstant, secondConstant,
-                                                              op1Tok, op3Tok,
-                                                              conditions[i].relation);
-                    // inv(cond1) op inv(cond2) // invert both conditions
-                    if (!error && conditions[i].c1.position != NA && conditions[i].c2.position != NA)
-                        error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, true,
-                                                              !varFirst1, !varFirst2, firstConstant, secondConstant,
-                                                              op1Tok, op3Tok,
-                                                              conditions[i].relation);
-                    if (!error)
-                        std::swap(cond1str, cond2str);
-                    // cond2 op cond1 // swap conditions
-                    if (!error)
-                        error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, false,
-                                                              varFirst2, varFirst1, secondConstant, firstConstant,
-                                                              op3Tok, op1Tok,
-                                                              conditions[i].relation);
-                    // cond2 op inv(cond1) // swap conditions; invert first condition
-                    if (!error && conditions[i].c1.position != NA)
-                        error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, false,
-                                                              !varFirst2, varFirst1, secondConstant, firstConstant,
-                                                              op3Tok, op1Tok,
-                                                              conditions[i].relation);
-                    // inv(cond2) op cond1 // swap conditions; invert second condition
-                    if (!error && conditions[i].c2.position != NA)
-                        error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, false, true,
-                                                              varFirst2, !varFirst1, secondConstant, firstConstant,
-                                                              op3Tok, op1Tok,
-                                                              conditions[i].relation);
-                    // inv(cond2) op inv(cond1) // swap conditions; invert both conditions
-                    if (!error && conditions[i].c1.position != NA && conditions[i].c2.position != NA)
-                        error = analyzeLogicOperatorCondition(conditions[i].c1, conditions[i].c2, true, true,
-                                                              !varFirst2, !varFirst1, secondConstant, firstConstant,
-                                                              op3Tok, op1Tok,
-                                                              conditions[i].relation);
-
-                    if (error) {
-                        if (conditions[i].error == AlwaysFalse || conditions[i].error == AlwaysTrue) {
-                            if (warning) {
-                                const std::string text = cond1str + " " + op2Tok->str() + " " + cond2str;
-                                incorrectLogicOperatorError(term1Tok, text, conditions[i].error == AlwaysTrue);
-                            }
-                        } else {
-                            if (style) {
-                                const std::string text = "If " + cond1str + ", the comparison " + cond2str +
-                                                         " is always " + ((conditions[i].error == SecondTrue || conditions[i].error == AlwaysTrue) ? "true" : "false") + ".";
-                                redundantConditionError(term1Tok, text);
-                            }
-                        }
-                        break;
-                    }
+                const std::string cond1str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
+                const std::string cond2str = (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2;
+                if (warning && (alwaysTrue || alwaysFalse)) {
+                    const std::string text = cond1str + " " + tok->str() + " " + cond2str;
+                    incorrectLogicOperatorError(tok, text, alwaysTrue);
+                } else if (style && secondTrue) {
+                    const std::string text = "If " + cond1str + ", the comparison " + cond2str +
+                                             " is always " + (secondTrue ? "true" : "false") + ".";
+                    redundantConditionError(tok, text);
+                } else if (style && firstTrue) {
+                    //const std::string text = "The comparison " + cond1str + " is always " +
+                    //                         (firstTrue ? "true" : "false") + " when " +
+                    //                         cond2str + ".";
+                    const std::string text = "If " + cond2str + ", the comparison " + cond1str +
+                                             " is always " + (firstTrue ? "true" : "false") + ".";
+                    redundantConditionError(tok, text);
                 }
             }
         }
@@ -3390,57 +3156,18 @@ void CheckOther::checkDuplicateExpression()
         if (scope->type != Scope::eFunction)
             continue;
 
-        if (_settings->ast) {
-            std::set<std::string> constStandardFunctions;
-            constStandardFunctions.insert("strcmp");
+        std::set<std::string> constStandardFunctions;
+        constStandardFunctions.insert("strcmp");
 
-            // Experimental implementation
-            for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-                if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|-|*|/|%|=|<<|>>")) {
-                    if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1()))
-                        continue;
-                    if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))
-                        duplicateExpressionError(tok, tok, tok->str());
-                    else if (tok->astOperand1() && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), constStandardFunctions))
-                        duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
-                }
-            }
-            continue;
-        }
-
-        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "%or%", "");
-        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "%oror%", "");
-        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "&", "%oror%|%or%");
-        complexDuplicateExpressionCheck(constFunctions, scope->classStart, "&&", "%oror%|%or%");
-
-        for (const Token *tok = scope->classStart; tok && tok != scope->classStart->link(); tok = tok->next()) {
-            if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% %comp%|- %var% )|&&|%oror%|;|,") &&
-                tok->strAt(1) == tok->strAt(3)) {
-                // float == float and float != float are valid NaN checks
-                // float - float is a valid Inf check
-                if (Token::Match(tok->tokAt(2), "==|!=|-") && tok->next()->varId()) {
-                    const Variable *var = tok->next()->variable();
-                    if (var && var->typeStartToken() == var->typeEndToken()) {
-                        if (Token::Match(var->typeStartToken(), "float|double"))
-                            continue;
-                    }
-                }
-
-                // If either variable token is an expanded macro then
-                // don't write the warning
-                if (tok->next()->isExpandedMacro() || tok->tokAt(3)->isExpandedMacro())
+        // Experimental implementation
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|-|*|/|%|=|<<|>>")) {
+                if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1()))
                     continue;
-
-                duplicateExpressionError(tok->next(), tok->tokAt(3), tok->strAt(2));
-            } else if (Token::Match(tok, ",|=|return|(|&&|%oror% %var% . %var% %comp%|- %var% . %var% )|&&|%oror%|;|,") &&
-                       tok->strAt(1) == tok->strAt(5) && tok->strAt(3) == tok->strAt(7)) {
-
-                // If either variable token is an expanded macro then
-                // don't write the warning
-                if (tok->next()->isExpandedMacro() || tok->tokAt(6)->isExpandedMacro())
-                    continue;
-
-                duplicateExpressionError(tok->next(), tok->tokAt(6), tok->strAt(4));
+                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))
+                    duplicateExpressionError(tok, tok, tok->str());
+                else if (tok->astOperand1() && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), constStandardFunctions))
+                    duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
             }
         }
     }

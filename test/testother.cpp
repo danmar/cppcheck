@@ -202,7 +202,6 @@ private:
         if (!settings) {
             static Settings _settings;
             settings = &_settings;
-            _settings.ast = true;
         }
         settings->addEnabled("style");
         settings->addEnabled("warning");

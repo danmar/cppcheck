@@ -44,7 +44,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.ast = true;
         settings.addEnabled("style");
 
         // Tokenize..

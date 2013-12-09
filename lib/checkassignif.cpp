@@ -203,60 +203,33 @@ void CheckAssignIf::comparison()
     if (!_settings->isEnabled("style"))
         return;
 
-    if (_settings->ast) {
-        // Experimental code based on AST
-        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "==|!=")) {
-                const Token *expr1 = tok->astOperand1();
-                const Token *expr2 = tok->astOperand2();
-                if (!expr1 || !expr2)
-                    continue;
-                if (expr1->isNumber())
-                    std::swap(expr1,expr2);
-                if (!expr2->isNumber())
-                    continue;
-                const MathLib::bigint num2 = MathLib::toLongNumber(expr2->str());
-                if (num2 < 0)
-                    continue;
-                if (!Token::Match(expr1,"[&|]"))
-                    continue;
-                std::list<MathLib::bigint> numbers;
-                getnumchildren(expr1, numbers);
-                for (std::list<MathLib::bigint>::const_iterator num = numbers.begin(); num != numbers.end(); ++num) {
-                    const MathLib::bigint num1 = *num;
-                    if (num1 < 0)
-                        continue;
-                    if ((expr1->str() == "&" && (num1 & num2) != num2) ||
-                        (expr1->str() == "|" && (num1 | num2) != num2)) {
-                        const std::string& op(tok->str());
-                        comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
-                    }
-                }
-            }
-        }
-        return;
-    }
+    // Experimental code based on AST
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "&|%or% %num% )| ==|!= %num% &&|%oror%|)")) {
-            const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(1));
-            if (num1 < 0)
+        if (Token::Match(tok, "==|!=")) {
+            const Token *expr1 = tok->astOperand1();
+            const Token *expr2 = tok->astOperand2();
+            if (!expr1 || !expr2)
                 continue;
-
-            const Token *compareToken = tok->tokAt(2);
-            if (compareToken->str() == ")") {
-                if (!Token::Match(compareToken->link()->previous(), "(|%oror%|&&"))
-                    continue;
-                compareToken = compareToken->next();
-            }
-
-            const MathLib::bigint num2 = MathLib::toLongNumber(compareToken->strAt(1));
+            if (expr1->isNumber())
+                std::swap(expr1,expr2);
+            if (!expr2->isNumber())
+                continue;
+            const MathLib::bigint num2 = MathLib::toLongNumber(expr2->str());
             if (num2 < 0)
                 continue;
-
-            if ((tok->str() == "&" && (num1 & num2) != num2) ||
-                (tok->str() == "|" && (num1 | num2) != num2)) {
-                const std::string& op(compareToken->str());
-                comparisonError(tok, tok->str(), num1, op, num2, op=="==" ? false : true);
+            if (!Token::Match(expr1,"[&|]"))
+                continue;
+            std::list<MathLib::bigint> numbers;
+            getnumchildren(expr1, numbers);
+            for (std::list<MathLib::bigint>::const_iterator num = numbers.begin(); num != numbers.end(); ++num) {
+                const MathLib::bigint num1 = *num;
+                if (num1 < 0)
+                    continue;
+                if ((expr1->str() == "&" && (num1 & num2) != num2) ||
+                    (expr1->str() == "|" && (num1 | num2) != num2)) {
+                    const std::string& op(tok->str());
+                    comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
+                }
             }
         }
     }
