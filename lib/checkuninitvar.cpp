@@ -1092,34 +1092,64 @@ void CheckUninitVar::checkScope(const Scope* scope)
             bool alloc = false;
             checkScopeForVariable(scope, tok, *i, NULL, NULL, &alloc, "");
         }
-        if (Token::Match(i->typeStartToken(), "struct %type% *| %var% ;")) {
-            const std::string structname(i->typeStartToken()->next()->str());
-            const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
-            for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
-                const Scope *scope2 = symbolDatabase->classAndStructScopes[j];
-                if (scope2->className == structname && scope2->numConstructors == 0U) {
-                    for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
-                        const Variable &var = *it;
-                        if (!var.isArray()) {
-                            // is the variable declared in a inner union?
-                            bool innerunion = false;
-                            for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {
-                                const Scope &innerScope = *it2;
-                                if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
-                                    if (var.typeStartToken()->linenr() >= innerScope.classStart->linenr() &&
-                                        var.typeStartToken()->linenr() <= innerScope.classEnd->linenr()) {
-                                        innerunion = true;
-                                        break;
-                                    }
+        if (Token::Match(i->typeStartToken(), "struct %type% *| %var% ;"))
+            checkStruct(scope, tok, *i);
+    }
 
-                                }
-                            }
-
-                            if (!innerunion) {
-                                bool alloc = false;
-                                checkScopeForVariable(scope, tok, *i, NULL, NULL, &alloc, var.name());
-                            }
+    if (scope->function) {
+        for (unsigned int i = 0; i < scope->function->argCount(); i++) {
+            const Variable *arg = scope->function->getArgumentVar(i);
+            if (arg && Token::Match(arg->typeStartToken(), "struct| %type% * %var% [,)]")) {
+                // Treat the pointer as initialized until it is assigned by malloc
+                for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+                    if (Token::Match(tok, "[;{}] %varid% = %var% (", arg->declarationId()) &&
+                        _settings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
+                        if (arg->typeStartToken()->str() == "struct")
+                            checkStruct(scope, tok, *arg);
+                        else if (arg->typeStartToken()->isStandardType()) {
+                            bool alloc = false;
+                            checkScopeForVariable(scope, tok->next(), *arg, NULL, NULL, &alloc, "");
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckUninitVar::checkStruct(const Scope* scope, const Token *tok, const Variable &structvar)
+{
+    const Token *typeToken = structvar.typeStartToken();
+    if (typeToken->str() == "struct")
+        typeToken = typeToken->next();
+    const std::string structname(typeToken->str());
+    const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
+        const Scope *scope2 = symbolDatabase->classAndStructScopes[j];
+        if (scope2->className == structname && scope2->numConstructors == 0U) {
+            for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
+                const Variable &var = *it;
+                if (!var.isArray()) {
+                    // is the variable declared in a inner union?
+                    bool innerunion = false;
+                    for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {
+                        const Scope &innerScope = *it2;
+                        if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
+                            if (var.typeStartToken()->linenr() >= innerScope.classStart->linenr() &&
+                                var.typeStartToken()->linenr() <= innerScope.classEnd->linenr()) {
+                                innerunion = true;
+                                break;
+                            }
+
+                        }
+                    }
+
+                    if (!innerunion) {
+                        bool alloc = false;
+                        const Token *tok2 = tok;
+                        if (tok->str() == "}")
+                            tok2 = tok2->next();
+                        checkScopeForVariable(scope, tok2, structvar, NULL, NULL, &alloc, var.name());
                     }
                 }
             }

@@ -57,6 +57,7 @@ public:
     /** Check for uninitialized variables */
     void check();
     void checkScope(const Scope* scope);
+    void checkStruct(const Scope* scope, const Token *tok, const Variable &structvar);
     bool checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, bool * const alloc, const std::string &membervar);
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, bool alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const bool alloc, const std::string &membervar, const bool suppressErrors);

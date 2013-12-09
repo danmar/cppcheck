@@ -3254,6 +3254,22 @@ private:
                         "    return ab->a;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+        // function parameter (treat it as initialized until malloc is used)
+        checkUninitVar2("int f(int *p) {\n"
+                        "    if (*p == 1) {}\n" // no error
+                        "    p = malloc(256);\n"
+                        "    return *p;\n" // error
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "int f(struct AB *ab) {\n"
+                        "    if (ab->a == 1) {}\n" // no error
+                        "    ab = malloc(sizeof(struct AB));\n"
+                        "    return ab->a;\n" // error
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
     }
 
     void syntax_error() { // Ticket #5073
