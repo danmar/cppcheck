@@ -470,16 +470,6 @@ private:
                "* NaN (not a number) value used in arithmetic expression.\n"
                "* comma in return statement (the comma can easily be misread as a semicolon).\n";
     }
-
-    void checkExpressionRange(const std::list<const Function*> &constFunctions,
-                              const Token *start,
-                              const Token *end,
-                              const std::string &toCheck);
-
-    void complexDuplicateExpressionCheck(const std::list<const Function*> &constFunctions,
-                                         const Token *classStart,
-                                         const std::string &toCheck,
-                                         const std::string &alt);
 };
 /// @}
 //---------------------------------------------------------------------------
