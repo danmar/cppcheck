@@ -1693,9 +1693,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
                         return true;
                     if (Token::Match(argStart, "const %type% & %var% [,)]"))
                         return true;
-                    if (pointer && !address && Token::Match(argStart, "%type% * %var% [,)]"))
+                    if (pointer && !address && Token::Match(argStart, "struct| %type% * %var% [,)]"))
                         return true;
-                    if ((pointer || address) && Token::Match(argStart, "const %type% * %var% [,)]"))
+                    if ((pointer || address) && Token::Match(argStart, "const struct| %type% * %var% [,)]"))
                         return true;
                     if ((pointer || address) && Token::Match(argStart, "const %type% %var% [") && Token::Match(argStart->linkAt(3), "] [,)]"))
                         return true;
@@ -1830,7 +1830,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, boo
 
     if (Token::Match(tok, "%var% . %var%") && tok->strAt(2) == membervar)
         return true;
-    else if (Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer, alloc, _tokenizer->isCPP()))
+    else if (!isPointer && Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer, alloc, _tokenizer->isCPP()))
         return true;
 
     return false;

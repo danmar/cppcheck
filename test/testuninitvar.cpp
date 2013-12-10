@@ -2649,6 +2649,14 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
 
+        checkUninitVar2("typedef struct { int a; int b; } AB;\n"
+                        "void a(AB *ab);\n"
+                        "void b() {\n"
+                        "    AB *ab;\n"
+                        "    a(ab);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab\n", errout.str());
+
         checkUninitVar2("void a(const char *c);\n"  // const address => error
                         "void b() {\n"
                         "    char *c;\n"
