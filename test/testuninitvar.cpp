@@ -3278,6 +3278,14 @@ private:
                         "    return ab->a;\n" // error
                         "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void do_something(struct AB *ab);\n" // unknown function
+                        "int f() {\n"
+                        "    struct AB *ab = malloc(sizeof(struct AB));\n"
+                        "    do_something(ab);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void syntax_error() { // Ticket #5073

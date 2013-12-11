@@ -1693,9 +1693,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
                         return true;
                     if (Token::Match(argStart, "const %type% & %var% [,)]"))
                         return true;
-                    if (pointer && !address && Token::Match(argStart, "struct| %type% * %var% [,)]"))
+                    if (pointer && !address && !alloc && Token::Match(argStart, "struct| %type% * %var% [,)]"))
                         return true;
-                    if ((pointer || address) && Token::Match(argStart, "const struct| %type% * %var% [,)]"))
+                    if ((pointer || address) && !alloc && Token::Match(argStart, "const struct| %type% * %var% [,)]"))
                         return true;
                     if ((pointer || address) && Token::Match(argStart, "const %type% %var% [") && Token::Match(argStart->linkAt(3), "] [,)]"))
                         return true;
