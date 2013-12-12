@@ -704,107 +704,176 @@ Checking test.c...
   <chapter>
     <title>Library configuration</title>
 
-    <para><literal>Cppcheck</literal> has internal knowledge about how
-    standard C/C++ functions work. There is no internal knowledge about how
-    all libraries and environments work, and there can't be.
-    <literal>Cppcheck</literal> can be told how libraries and environments
-    work by using configuration files.</para>
+    <para>When external libraries are used, such as windows/posix/gtk/qt/etc,
+    <literal>Cppcheck</literal> doesn't know how the external functions
+    behave. <literal>Cppcheck</literal> then fails to detect various problems
+    such as leaks, buffer overflows, possible null pointer dereferences, etc.
+    But this can be fixed with configuration files.</para>
 
-    <para>The idea is that users will be able to download library
-    configuration files for all popular libraries and environments
-    here:</para>
+    <para>If you create a configuration file for a popular library, we would
+    appreciate if you upload it to us.</para>
 
-    <para><uri>http://cppcheck.sourceforge.net/archive</uri></para>
+    <section>
+      <title>Memory/resource leaks</title>
 
-    <para>Ideally, all you need to do is choose and download the configuration
-    files you need.</para>
+      <para>Here is an example program:</para>
 
-    <para>The archive is not complete however. If you can't find the
-    configuration file you need in the archive, you can wait - maybe somebody
-    else will write it and share it. Or you can write your own configuration
-    file (and then it's possible to share your configuration file with
-    others).</para>
+      <para><programlisting>void test()
+{
+    HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
+}</programlisting></para>
 
-    <para>A minimal configuration file looks like this:</para>
+      <para>The code example above has a resource leak -
+      <literal>CreatePen()</literal> is a windows function that creates a pen.
+      However Cppcheck doesn't assume that return values from functions must
+      be freed. There is no error message:</para>
 
-    <programlisting>&lt;?xml version="1.0"?&gt;
+      <programlisting># cppcheck pen1.c
+Checking pen1.c...</programlisting>
+
+      <para>If you provide a windows configuration file then
+      <literal>Cppcheck</literal> detects the bug:</para>
+
+      <programlisting># cppcheck --library=windows.cfg pen1.c
+Checking pen1.c...
+[pen1.c:3]: (error) Resource leak: pen</programlisting>
+
+      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
-&lt;/def&gt;</programlisting>
-
-    <para>This configuration file is filled up with various options:</para>
-
-    <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;memory&gt;
-    &lt;alloc&gt;CreateFred&lt;/alloc&gt;
-    &lt;dealloc&gt;CloseFred&lt;/dealloc&gt;
-
-    &lt;use&gt;AppendFred&lt;/use&gt;
-  &lt;/memory&gt;
-
-  &lt;memory&gt;
-    &lt;alloc init="false"&gt;AllocWilma&lt;/alloc&gt;
-    &lt;alloc init="true"&gt;CAllocWilma&lt;/alloc&gt;
-    &lt;dealloc&gt;CloseWilma&lt;/dealloc&gt;
-  &lt;/memory&gt;
-
   &lt;resource&gt;
-    &lt;alloc&gt;Lock&lt;/alloc&gt;
-    &lt;dealloc&gt;Unlock&lt;/dealloc&gt;
+    &lt;alloc&gt;CreatePen&lt;/alloc&gt;
+    &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
   &lt;/resource&gt;
+&lt;/def&gt;</programlisting>
+    </section>
 
-  &lt;function name="IsEqual"&gt;
-    &lt;leak-ignore/&gt;
-  &lt;/function&gt;
+    <section>
+      <title>Uninitialized memory</title>
 
-  &lt;function name="AssignFred"&gt;
-    &lt;noreturn&gt;false&lt;/noreturn&gt;
-    &lt;arg nr="1"&gt;
-      &lt;not-null/&gt;
-    &lt;/arg&gt;
+      <para>Here is an example program:</para>
+
+      <programlisting>void test()
+{
+    char buffer1[1024];
+    char buffer2[1024];
+    CopyMemory(buffer1, buffer2, 1024);
+}</programlisting>
+
+      <para>The bug here is that buffer2 is uninitialized. The second argument
+      for CopyMemory needs to be initialized. However
+      <literal>Cppcheck</literal> assumes that it is fine to pass
+      uninitialized variables to functions:</para>
+
+      <programlisting># cppcheck uninit.c 
+Checking uninit.c...</programlisting>
+
+      <para>If you provide a windows configuration file then Cppcheck detects
+      the bug:</para>
+
+      <programlisting># cppcheck --library=windows.cfg uninit.c 
+Checking uninit.c...
+[uninit.c:5]: (error) Uninitialized variable: buffer2</programlisting>
+
+      <para>Here is the minimal <literal>windows.cfg</literal>:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="CopyMemory"&gt;
     &lt;arg nr="2"&gt;
       &lt;not-uninit/&gt;
     &lt;/arg&gt;
-    &lt;arg nr="3"&gt;
-      &lt;strz/&gt;
-    &lt;/arg&gt;
-    &lt;arg nr="4"&gt;
-      &lt;formatstr/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting></para>
+    </section>
+
+    <section>
+      <title>Null pointers</title>
+
+      <para>Cppcheck assumes it's ok to pass NULL pointers to functions. Here
+      is an example program:</para>
+
+      <programlisting>void test()
+{
+    CopyMemory(NULL, NULL, 1024);
+}</programlisting>
+
+      <para>The MSDN documentation is not clear if that is ok or not. But
+      let's assume it's bad. Cppcheck assumes that it's ok to pass NULL to
+      functions so no error is reported:</para>
+
+      <programlisting># cppcheck null.c 
+Checking null.c...</programlisting>
+
+      <para>If you provide a windows configuration file then
+      <literal>Cppcheck</literal> detects the bug:</para>
+
+      <programlisting>cppcheck --library=windows.cfg null.c 
+Checking null.c...
+[null.c:3]: (error) Null pointer dereference</programlisting>
+
+      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="CopyMemory"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
     &lt;/arg&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
-
-    <para>In the <literal>&lt;memory&gt;</literal> and
-    <literal>&lt;resource&gt;</literal> the allocation and deallocation
-    functions are configured. Putting allocation and deallocation functions in
-    different <literal>&lt;memory&gt;</literal> and
-    <literal>&lt;resource&gt;</literal> blocks means they are mismatching -
-    you'll get a warning message if you allocate memory with
-    <literal>CreateFred</literal> and try to close it with
-    <literal>CloseWilma</literal>.</para>
-
-    <para>The <literal>&lt;use&gt;</literal> and
-    <literal>&lt;leak-ignore&gt;</literal> elements are used to control the
-    leaks checking. If it should be ignored that a function is called, use
-    <literal>&lt;leak-ignore&gt;</literal>. If there is no leak whenever the
-    memory is passed to a function, use <literal>&lt;use&gt;</literal>.</para>
-
-    <para>In the <literal>&lt;function&gt;</literal> block some useful info is
-    added about function behaviour. The <literal>&lt;noreturn&gt;</literal>
-    tells <literal>Cppcheck</literal> if the function is a no return function.
-    The <literal>&lt;arg&gt;</literal> is used to validate arguments. If it's
-    invalid to pass NULL, use <literal>&lt;not-null&gt;</literal>. If it's
-    invalid to pass uninitialized data, use
-    <literal>&lt;not-uninit&gt;</literal>. If the argument is a
-    zero-terminated string, use <literal>&lt;strz&gt;</literal>. If the
-    argument is a formatstring, use
-    <literal>&lt;formatstr&gt;</literal>.</para>
+    </section>
 
     <section>
-      <title>Example: strcpy()</title>
+      <title>noreturn</title>
 
-      <para>The strcpy() was chosen in this example for demonstration purposes
-      because its behaviour is well-known.</para>
+      <para>Cppcheck doesn't assume that functions always return. Here is an
+      example code:</para>
+
+      <programlisting>void test(int x)
+{
+    int data, buffer[1024];
+    if (x == 1)
+        data = 123;
+    else
+        ZeroMemory(buffer, sizeof(buffer));
+    buffer[0] = data;  // &lt;- error: data is uninitialized if x is not 1
+}</programlisting>
+
+      <para>In theory, if <literal>ZeroMemory</literal> terminates the program
+      then there is no bug. Cppcheck therefore reports no error:</para>
+
+      <programlisting># cppcheck noreturn.c 
+Checking noreturn.c...</programlisting>
+
+      <para>However if you use <literal>--check-library</literal> and
+      <literal>--enable=information</literal> you'll get this:</para>
+
+      <programlisting># cppcheck --check-library --enable=information noreturn.c 
+Checking noreturn.c...
+[noreturn.c:7]: (information) --check-library: Function ZeroMemory() should have &lt;noreturn&gt; configuration
+</programlisting>
+
+      <para>If a proper <literal>windows.cfg</literal> is provided, the bug is
+      detected:</para>
+
+      <programlisting># cppcheck --library=windows.cfg noreturn.c 
+Checking noreturn.c...
+[noreturn.c:8]: (error) Uninitialized variable: data</programlisting>
+
+      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="ZeroMemory"&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Example configuration for strcpy()</title>
 
       <para>The proper configuration for the standard strcpy() function would
       be:</para>
@@ -821,20 +890,16 @@ Checking test.c...
     &lt;/arg&gt;
   &lt;/function&gt;</programlisting>
 
-      <para>The <literal>&lt;leak-ignore/&gt;</literal> is optional and it
-      tells Cppcheck to ignore this function call in the leaks checking.
-      Passing allocated memory to this function won't mean it will be
-      deallocated.</para>
+      <para>The <literal>&lt;leak-ignore/&gt;</literal> tells Cppcheck to
+      ignore this function call in the leaks checking. Passing allocated
+      memory to this function won't mean it will be deallocated.</para>
 
-      <para>The <literal>&lt;noreturn&gt;</literal> is optional. But it's
-      recommended.</para>
+      <para>The <literal>&lt;noreturn&gt;</literal> tells Cppcheck if this
+      function returns or not.</para>
 
       <para>The first argument that the function takes is a pointer. It must
-      not be a null pointer, a uninitialized pointer nor a dead pointer. It
-      must point at some data, this data can be initialized but it is not
-      wrong if it isn't. Using <literal>&lt;not-null&gt;</literal> is correct.
-      <literal>Cppcheck</literal> will check by default that the pointer is
-      not uninitialized nor dead.</para>
+      not be a null pointer, therefore <literal>&lt;not-null&gt;</literal> is
+      used.</para>
 
       <para>The second argument the function takes is a pointer. It must not
       be null. And it must point at initialized data. Using
