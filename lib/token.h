@@ -662,6 +662,9 @@ public:
     const Token * astOperand2() const {
         return _astOperand2;
     }
+    const Token * astParent() const {
+        return _astParent;
+    }
     const Token *astTop() const {
         const Token *ret = this;
         while (ret->_astParent)

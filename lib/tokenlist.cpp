@@ -667,7 +667,7 @@ static void compileExpression(Token *&tok, std::stack<Token*> &op)
 void TokenList::createAst()
 {
     for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
-        if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% (|[|.|=")) {
+        if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% (|[|.|=") || Token::Match(tok->previous(), "[;{}] %cop%")) {
             std::stack<Token *> operands;
             compileExpression(tok, operands);
         }
