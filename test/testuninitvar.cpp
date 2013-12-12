@@ -3263,6 +3263,15 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
+        checkUninitVar2("struct t_udf_file {  int dir_left; };\n"
+                        "\n"
+                        "void f() {\n"
+                        "  struct t_udf_file *newf;\n"
+                        "  newf = malloc(sizeof(*newf));\n"
+                        "  if (!newf) return 0;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // function parameter (treat it as initialized until malloc is used)
         checkUninitVar2("int f(int *p) {\n"
                         "    if (*p == 1) {}\n" // no error
@@ -3287,7 +3296,7 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-		// analysis failed. varid 0.
+        // analysis failed. varid 0.
         checkUninitVar2("void *vlc_custom_create (vlc_object_t *parent, size_t length, const char *typename) {\n"
                         "  assert (length >= sizeof (vlc_object_t));\n"
                         "}\n");

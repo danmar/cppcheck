@@ -1740,7 +1740,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         }
 
         if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]")) {
-            return true;
+            return (pointer && alloc && vartok->strAt(-1) != "*") ? false : true;
         }
     }
 
