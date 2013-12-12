@@ -1099,7 +1099,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
     if (scope->function) {
         for (unsigned int i = 0; i < scope->function->argCount(); i++) {
             const Variable *arg = scope->function->getArgumentVar(i);
-            if (arg && Token::Match(arg->typeStartToken(), "struct| %type% * %var% [,)]")) {
+            if (arg && arg->declarationId() && Token::Match(arg->typeStartToken(), "struct| %type% * %var% [,)]")) {
                 // Treat the pointer as initialized until it is assigned by malloc
                 for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
                     if (Token::Match(tok, "[;{}] %varid% = %var% (", arg->declarationId()) &&

@@ -3286,6 +3286,12 @@ private:
                         "    do_something(ab);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+		// analysis failed. varid 0.
+        checkUninitVar2("void *vlc_custom_create (vlc_object_t *parent, size_t length, const char *typename) {\n"
+                        "  assert (length >= sizeof (vlc_object_t));\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void syntax_error() { // Ticket #5073
