@@ -331,7 +331,8 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
     if (alloctype == CheckMemoryLeak::File ||
         alloctype == CheckMemoryLeak::Pipe ||
         alloctype == CheckMemoryLeak::Fd   ||
-        alloctype == CheckMemoryLeak::Dir)
+        alloctype == CheckMemoryLeak::Dir  ||
+        alloctype == CheckMemoryLeak::OtherRes)
         resourceLeakError(tok, varname);
     else
         memleakError(tok, varname);
