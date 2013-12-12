@@ -1086,6 +1086,8 @@ void CheckUninitVar::checkScope(const Scope* scope)
         }
         while (tok && tok->str() != ";")
             tok = tok->next();
+        if (!tok)
+            continue;
         if (Token::findsimplematch(i->typeStartToken(), "=", tok))
             continue;
         if (stdtype || i->isPointer()) {
