@@ -1703,7 +1703,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
 
             } else if (Token::Match(start->previous(), "if|while|for")) {
                 // control-flow statement reading the variable "by value"
-                return true;
+                return !alloc;
             }
         }
     }
@@ -1766,7 +1766,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
 
     bool unknown = false;
     if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
-        // pointer is allocated
+        // pointer is allocated - dereferencing it is ok.
         if (alloc)
             return false;
 
