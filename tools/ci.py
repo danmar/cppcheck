@@ -136,7 +136,6 @@ def daca2(foldernum):
     folder = folders[foldernum % len(folders)]
 
     print('Daca2 folder=' + folder)
-    daca2report()
 
     p = subprocess.Popen(['git', 'show', '--format=%h'],
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -144,6 +143,8 @@ def daca2(foldernum):
     rev = comm[0]
     rev = rev[:rev.find('\n')]
 
+    subprocess.call(
+        ['make', 'clean'])
     subprocess.call(
         ['nice', 'make', 'SRCDIR=build', 'CXXFLAGS=-O2', 'CPPFLAGS=-DMAXTIME=600'])
     subprocess.call(
