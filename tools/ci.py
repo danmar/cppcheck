@@ -29,8 +29,9 @@ def upload(file_to_upload, destination):
         password = sys.argv[1]
         child = pexpect.spawn(
             'scp ' + file_to_upload + ' danielmarjamaki,cppcheck@web.sourceforge.net:' + destination)
-        child.expect(
-            'danielmarjamaki,cppcheck@web.sourceforge.net\'s password:')
+        #child.expect(
+        #    'danielmarjamaki,cppcheck@web.sourceforge.net\'s password:')
+        child.expect('Password:')
         child.sendline(password)
         child.interact()
     except IOError:
