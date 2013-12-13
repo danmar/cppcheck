@@ -614,6 +614,8 @@ private:
             if (Token::Match(&tok, "free|kfree|fclose ( %var% )") ||
                 Token::Match(&tok, "realloc ( %var%")) {
                 dealloc_pointer(checks, tok.tokAt(2));
+                if (tok.str() == "realloc")
+                    ExecutionPath::bailOutVar(checks, tok.tokAt(2)->varId());
                 return tok.tokAt(3);
             }
 

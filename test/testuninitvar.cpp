@@ -106,6 +106,13 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
 
+        checkUninitVar("void foo() {\n" // #5240
+                       "    char *p = malloc(100);\n"
+                       "    char *tmp = realloc(p,1000);\n"
+                       "    if (!tmp) free(p);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void foo() {\n"
                        "    int *p = NULL;\n"
                        "    realloc(p,10);\n"
