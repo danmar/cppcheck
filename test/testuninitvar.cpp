@@ -2143,6 +2143,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("void f() {\n"
+                        "    int x;\n"
+                        "    char *p = (char*)&x + 1;\n"
+                        "}", "test.cpp", false);  // verify=false (the cast is removed but we don't care)
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n"
                         "    int i;\n"
                         "    i=f(), i!=2;\n"
                         "}");

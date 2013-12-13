@@ -1726,7 +1726,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         // is there something like: ; "*((&var ..expr.. ="  => the variable is assigned
         if (vartok->previous()->str() == "&") {
             const Token *tok2 = vartok->tokAt(-2);
-            if (tok2 && (tok2->isConstOp() || Token::Match(tok2, "[;{}(]")))
+            if (tok2 && (tok2->isConstOp() || Token::Match(tok2, "[;{}(=]")))
                 return false; // address of
             if (tok2 && tok2->str() == ")")
                 tok2 = tok2->link()->previous();
