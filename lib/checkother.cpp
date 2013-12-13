@@ -2922,6 +2922,7 @@ void CheckOther::checkDuplicateExpression()
         constStandardFunctions.insert("strcmp");
 
         // Experimental implementation
+        // TODO: check for duplicate separated expressions:  (a==1 || a==2 || a==1)
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|-|*|/|%|=|<<|>>")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1()))
