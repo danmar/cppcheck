@@ -1395,9 +1395,10 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     return true;
 
                 // is variable used in for-head?
+                bool initcond = false;
                 if (!suppressErrors) {
                     const Token *startCond = forwhile ? tok->next() : tok->next()->link()->tokAt(2);
-                    checkIfForWhileHead(startCond, var, false, bool(number_of_if == 0), alloc && *alloc, membervar);
+                    initcond = checkIfForWhileHead(startCond, var, false, bool(number_of_if == 0), alloc && *alloc, membervar);
                 }
 
                 // goto "}"
@@ -1418,6 +1419,10 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     if (!tok)
                         // bailout : invalid code / bad tokenizer
                         break;
+
+                    if (initcond)
+                        // variable is initialized in while-condition
+                        return true;
                 }
             }
         }

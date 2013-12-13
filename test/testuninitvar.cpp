@@ -3106,6 +3106,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    int i;\n"
+                        "    do {} while (!getvalue(&i));\n"
+                        "    i++;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar2(">{ x while (y) z int = }"); // #4175 : don't crash
 
         checkUninitVar2("int f(void) {\n"
