@@ -136,7 +136,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("ctime");
         functionNames1_all.insert("mktime");
 
-        functionNames1_nullptr.insert("itoa");
         functionNames1_nullptr.insert("memcpy");
         functionNames1_nullptr.insert("memmove");
         functionNames1_nullptr.insert("memset");
@@ -158,6 +157,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_nullptr.insert("localtime");
         functionNames1_nullptr.insert("strftime");
 
+        functionNames1_uninit.insert("itoa"); // value to convert
         functionNames1_uninit.insert("perror");
         functionNames1_uninit.insert("fflush");
         functionNames1_uninit.insert("freopen");
@@ -167,7 +167,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     static std::set<std::string> functionNames2_all;     // used no matter what 'value' is
     static std::set<std::string> functionNames2_nullptr; // used only if 'value' is 0
     if (functionNames2_all.empty()) {
-        functionNames2_all.insert("itoa");
         functionNames2_all.insert("mbstowcs");
         functionNames2_all.insert("wcstombs");
         functionNames2_all.insert("memcmp");
@@ -216,6 +215,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames2_all.insert("putwc");
         functionNames2_all.insert("freopen");
 
+        functionNames2_nullptr.insert("itoa"); // destination buffer
         functionNames2_nullptr.insert("frexp");
         functionNames2_nullptr.insert("modf");
         functionNames2_nullptr.insert("fgetpos");
