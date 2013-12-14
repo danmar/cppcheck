@@ -597,6 +597,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                     return "use";
                 else if (tok2->strAt(1) == "=")
                     return "assign";
+                else if (tok->str()=="printf")
+                    return "use"; // <- it is not certain printf dereference the pointer TODO: check the format string
                 else
                     return "use_";
             }
