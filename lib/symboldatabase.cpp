@@ -2067,7 +2067,7 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
     return false;
 }
 
-const Variable* Function::getArgumentVar(unsigned int num) const
+const Variable* Function::getArgumentVar(std::size_t num) const
 {
     for (std::list<Variable>::const_iterator i = argumentList.begin(); i != argumentList.end(); ++i) {
         if (i->index() == num)
