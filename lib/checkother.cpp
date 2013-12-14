@@ -3256,6 +3256,21 @@ void CheckOther::pointerPositiveError(const Token *tok, bool inconclusive)
                 "A pointer can not be negative so it is either pointless or an error to check if it is not.", inconclusive);
 }
 
+/* check if a constructor in given class scope takes a reference */
+static bool constructorTakesReference(const Scope * const classScope)
+{
+    for (std::list<Function>::const_iterator func = classScope->functionList.begin(); func != classScope->functionList.end(); ++func) {
+        if (func->isConstructor()) {
+            const Function &constructor = *func;
+            for (std::size_t argnr = 0U; argnr < constructor.argCount(); argnr++) {
+                if (constructor.getArgumentVar(argnr)->isReference())
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 /*
 This check rule works for checking the "const A a = getA()" usage when getA() returns "const A &" or "A &".
 In most scenarios, "const A & a = getA()" will be more efficient.
@@ -3274,12 +3289,13 @@ void CheckOther::checkRedundantCopy()
             continue;
 
         const Token* startTok = var->nameToken();
-        const Token* endToken;
         if (startTok->strAt(1) == "=") // %type% %var% = ... ;
-            endToken = Token::findsimplematch(startTok->tokAt(2), ";");
-        else if (startTok->strAt(1) == "(") // %type% %var%(...)
-            endToken = startTok->linkAt(1);
-        else
+            ;
+        else if (startTok->strAt(1) == "(" && var->isClass() && var->typeScope()) {
+            // Object is instantiated. Warn if constructor takes arguments by value.
+            if (constructorTakesReference(var->typeScope()))
+                continue;
+        } else
             continue;
 
         const Token* tok = startTok->tokAt(2);
@@ -3287,7 +3303,7 @@ void CheckOther::checkRedundantCopy()
             tok = tok->tokAt(2);
         if (!Token::Match(tok, "%var% ("))
             continue;
-        if (tok->linkAt(1)->next() != endToken) // bailout for usage like "const A a = getA()+3"
+        if (!Token::Match(tok->linkAt(1), ") )| ;")) // bailout for usage like "const A a = getA()+3"
             continue;
 
         const Function* func = tok->function();

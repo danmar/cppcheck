@@ -6122,6 +6122,15 @@ private:
                              "    return 0;\n"
                              "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5190 - FP when creating object with constructor that takes a reference
+        check_redundant_copy("class A {};\n"
+                             "class B { B(const A &a); };\n"
+                             "const A &getA();\n"
+                             "void f() {\n"
+                             "    const B b(getA());\n"
+                             "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNegativeShift() {
