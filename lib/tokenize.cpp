@@ -3953,7 +3953,6 @@ void Tokenizer::simplifyEmptyNamespaces()
 
 void Tokenizer::simplifyFlowControl()
 {
-
     for (Token *begin = list.front(); begin; begin = begin->next()) {
 
         if (begin->str() == "(" || begin->str() == "[" ||
@@ -4000,7 +3999,9 @@ void Tokenizer::simplifyFlowControl()
                 eraseDeadCode(tok, 0);
 
             } else if (Token::Match(tok,"return|goto") ||
-                       Token::Match(tok,"exit|abort") ||
+                       Token::Match(tok->previous(), "[;{}] exit (") ||
+                       (Token::Match(tok->previous(), "[;{}] %var% (") &&
+                        _settings->library.isnoreturn(tok->str())) ||
                        (tok->str() == "throw" && !isC())) {
                 //TODO: ensure that we exclude user-defined 'exit|abort|throw', except for 'noreturn'
                 //catch the first ';'

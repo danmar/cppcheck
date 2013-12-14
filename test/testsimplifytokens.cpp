@@ -452,6 +452,8 @@ private:
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
         TEST_CASE(simplifyCharAt);
         TEST_CASE(simplifyOverride); // ticket #5069
+
+        TEST_CASE(simplifyFlowControl);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -8297,6 +8299,25 @@ private:
                       tok(code, true));
     }
 
+    void simplifyFlowControl() {
+        const char code1[] = "void f() {\n"
+                             "  return;\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { return ; }", tok(code1,true));
+
+        const char code2[] = "void f() {\n"
+                             "  exit();\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { exit ( ) ; }", tok(code2,true));
+
+        const char code3[] = "void f() {\n"
+                             "  x.abort();\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { x . abort ( ) ; y ( ) ; }", tok(code3,true));
+    }
 };
 
 REGISTER_TEST(TestSimplifyTokens)
