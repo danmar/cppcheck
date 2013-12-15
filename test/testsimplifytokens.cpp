@@ -375,6 +375,7 @@ private:
         TEST_CASE(enum38); // ticket #4463 (when throwing enum id, don't warn about shadow variable)
         TEST_CASE(enum39); // ticket #5145 (fp variable hides enum)
         TEST_CASE(enum40);
+        TEST_CASE(enum41); // ticket #5212 (valgrind errors during enum simplification)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -7498,6 +7499,18 @@ private:
     void enum40() {
         const char code[] = "enum { A=(1<<0)|(1<<1) }; void f() { x = y + A; }";
         ASSERT_EQUALS("void f ( ) { x = y + ( 3 ) ; }", checkSimplifyEnum(code));
+    }
+
+    void enum41() { // ticket #5212 (valgrind errors during enum simplification)
+        const char code[] = "namespace Foo {\n"
+                            "  enum BarConfig {\n"
+                            "    eBitOne = (1 << 0),\n"
+                            "    eBitTwo = (1 << 1),\n"
+                            "    eAll        = eBitOne|eBitTwo\n"
+                            "  };\n"
+                            "}\n"
+                            "int x = Foo::eAll;";
+        ASSERT_EQUALS("int x ; x = ( 1 ) | 2 ;", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function

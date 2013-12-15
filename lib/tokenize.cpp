@@ -7884,11 +7884,13 @@ void Tokenizer::simplifyEnum()
                     }
 
                     if (simplify) {
-                        if (ev->value)
+                        if (ev->value) {
                             tok2->str(ev->value->str());
-                        else {
+                            if (hasClass)
+                                tok2->deleteNext(2);
+                        } else {
                             tok2 = tok2->previous();
-                            tok2->deleteNext();
+                            tok2->deleteNext(hasClass ? 3 : 1);
                             bool hasOp = false;
                             int indentlevel = 0;
                             for (const Token *enumtok = ev->start; enumtok != ev->end; enumtok = enumtok->next()) {
@@ -7907,11 +7909,8 @@ void Tokenizer::simplifyEnum()
                                 tok2 = copyTokens(startPar, ev->start, ev->end);
                                 tok2->insertToken(")");
                                 Token::createMutualLinks(startPar, tok2->next());
+                                tok2 = tok2->next();
                             }
-                        }
-
-                        if (hasClass) {
-                            tok2->deleteNext(2);
                         }
 
                         simplify = false;
