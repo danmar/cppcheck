@@ -819,11 +819,8 @@ std::string Preprocessor::removeParentheses(const std::string &str)
                         --ind;
                         if (ind == 0) {
                             if (i == line.length() - 1) {
-                                const std::string::size_type posIndx = line.find('(');
-                                if (posIndx != std::string::npos) {
-                                    line[posIndx] = ' ';
-                                    line.erase(line.length() - 1);
-                                }
+                                line[line.find('(')] = ' ';
+                                line.erase(line.length() - 1);
                             }
                             break;
                         }
