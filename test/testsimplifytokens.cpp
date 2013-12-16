@@ -376,6 +376,7 @@ private:
         TEST_CASE(enum39); // ticket #5145 (fp variable hides enum)
         TEST_CASE(enum40);
         TEST_CASE(enum41); // ticket #5212 (valgrind errors during enum simplification)
+        TEST_CASE(enum42); // ticket #5182 (template function call in enum value)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -7511,6 +7512,12 @@ private:
                             "}\n"
                             "int x = Foo::eAll;";
         ASSERT_EQUALS("int x ; x = ( 1 ) | 2 ;", checkSimplifyEnum(code));
+    }
+
+    void enum42() { // ticket #5182 (template function call in template value)
+        const char code[] = "enum { A = f<int,2>() };\n"
+                            "a = A;";
+        ASSERT_EQUALS("a = f < int , 2 > ( ) ;", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
