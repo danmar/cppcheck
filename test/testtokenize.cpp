@@ -988,9 +988,9 @@ private:
     }
 
     void foreach() {
-        // #3690
+        // #3690,#5154
         const std::string code("void f() { for each ( char c in MyString ) { Console::Write(c); } }");
-        ASSERT_EQUALS("void f ( ) { for ( char c in MyString ) { Console :: Write ( c ) ; } }" ,tokenizeAndStringify(code.c_str()));
+        ASSERT_EQUALS("void f ( ) { asm ( \"char c in MyString\" ) { Console :: Write ( c ) ; } }" ,tokenizeAndStringify(code.c_str()));
     }
 
     void concatenateNegativeNumber() {

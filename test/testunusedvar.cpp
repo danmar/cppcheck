@@ -3097,6 +3097,14 @@ private:
                               "  std::for_each(ints.begin(), ints.end(), [&x](int i){ x += i; });\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+
+        // #5154 - MSVC 'for each'
+        functionVariableUsage("void f() {\n"
+                              "  std::map<int,int> ints;\n"
+                              "  ints[0]= 1;\n"
+                              "  for each(std::pair<int,int> i in ints) { x += i.first; }\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarShift1() {

@@ -1594,10 +1594,11 @@ bool Tokenizer::tokenize(std::istream &code,
     // if MACRO
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|for|while|BOOST_FOREACH %var% (")) {
-            if (Token::simpleMatch(tok, "for each"))
-                // 'for each ( )' -> 'for ( )'
+            if (Token::simpleMatch(tok, "for each")) {
+                // 'for each ( )' -> 'asm ( )'
+                tok->str("asm");
                 tok->deleteNext();
-            else {
+            } else {
                 syntaxError(tok);
                 return false;
             }
