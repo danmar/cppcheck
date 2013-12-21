@@ -2566,6 +2566,8 @@ static Token *skipTernaryOp(Token *tok)
         if (Token::Match(tok->next(), "[{};]"))
             break;
     }
+    if (colonlevel) // Ticket #5214: Make sure the ':' matches the proper '?'
+        return 0;
     return tok;
 }
 
@@ -2606,7 +2608,12 @@ bool Tokenizer::simplifyLabelsCaseDefault()
                 if (tok->str() == "(" || tok->str() == "[") {
                     tok = tok->link();
                 } else if (tok->str() == "?") {
-                    tok = skipTernaryOp(tok);
+                    Token *tok1 = skipTernaryOp(tok);
+                    if(!tok1) {
+                        syntaxError(tok);
+                        return false;
+                    }
+                    tok = tok1;
                 }
                 if (Token::Match(tok->next(),"[:{};]"))
                     break;
