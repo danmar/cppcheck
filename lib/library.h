@@ -96,10 +96,11 @@ public:
             notnull = notuninit = formatstr = strz = false;
         }
 
-        bool notnull;
-        bool notuninit;
-        bool formatstr;
-        bool strz;
+        bool         notnull;
+        bool         notuninit;
+        bool         formatstr;
+        bool         strz;
+        std::string  valid;
     };
 
     // function name, argument nr => argument data

@@ -112,6 +112,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     bool notuninit = false;
                     bool formatstr = false;
                     bool strz = false;
+                    std::string valid;
                     for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                         if (strcmp(argnode->Name(), "not-null") == 0)
                             notnull = true;
@@ -121,13 +122,33 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                             formatstr = true;
                         else if (strcmp(argnode->Name(), "strz") == 0)
                             strz = true;
+                        else if (strcmp(argnode->Name(), "valid") == 0) {
+                            // Validate the validation expression
+                            const char *p = argnode->GetText();
+                            if (!std::isdigit(*p))
+                                return false;
+                            for (; *p; p++) {
+                                if (std::isdigit(*p))
+                                    continue;
+                                if (*p == '-' && std::isdigit(*(p-1)))
+                                    continue;
+                                if (*p == ',' && *(p+1) != ',')
+                                    continue;
+                                return false;
+                            }
+
+                            // Set validation expression
+                            valid = argnode->GetText();
+                        }
+
                         else
                             return false;
                     }
-                    argumentChecks[name][nr].notnull = notnull;
+                    argumentChecks[name][nr].notnull   = notnull;
                     argumentChecks[name][nr].notuninit = notuninit;
                     argumentChecks[name][nr].formatstr = formatstr;
-                    argumentChecks[name][nr].strz = strz;
+                    argumentChecks[name][nr].strz      = strz;
+                    argumentChecks[name][nr].valid     = valid;
                 } else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
                     _ignorefunction[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 } else

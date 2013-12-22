@@ -79,6 +79,9 @@ private:
                                "    <arg nr=\"4\">\n"
                                "        <strz/>\n"
                                "    </arg>\n"
+                               "    <arg nr=\"5\">\n"
+                               "        <valid>1-</valid>\n"
+                               "    </arg>\n"
                                "  </function>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
@@ -90,6 +93,7 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][2].notnull);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][3].formatstr);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][4].strz);
+        ASSERT_EQUALS("1-", library.argumentChecks["foo"][5].valid);
     }
 
     void memory() {
