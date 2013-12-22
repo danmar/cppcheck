@@ -135,110 +135,95 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
             }
         }
 
-        else if (strcmp(node->Name(),"files")==0) {
-            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "file") == 0) {
-                    _markupExtensions.insert(functionnode->Attribute("ext"));
-                    const char * report = functionnode->Attribute("reporterrors");
-                    if (report)
-                        _reporterrors[functionnode->Attribute("ext")] = strcmp(report, "true")==0;
-                } else
-                    return false;
-            }
-        }
+        else if (strcmp(node->Name(), "markup") == 0) {
+            const char * const extension = node->Attribute("ext");
+            if (!extension)
+                return false;
+            _markupExtensions.insert(extension);
 
-        else if (strcmp(node->Name(), "keywords") == 0) {
-            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "library") == 0) {
-                    const char * const extension = functionnode->Attribute("extension");
-                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
-                        if (strcmp(librarynode->Name(), "keyword") == 0) {
+            const char * const reporterrors = node->Attribute("reporterrors");
+            _reporterrors[extension] = (reporterrors && strcmp(reporterrors, "true") == 0);
+
+            for (const tinyxml2::XMLElement *markupnode = node->FirstChildElement(); markupnode; markupnode = markupnode->NextSiblingElement()) {
+                if (strcmp(markupnode->Name(), "keywords") == 0) {
+                    for (const tinyxml2::XMLElement *librarynode = markupnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
+                        if (strcmp(librarynode->Name(), "keyword") == 0)
                             _keywords[extension].insert(librarynode->Attribute("name"));
-                        } else
-                            return false;
-                    }
-                } else
-                    return false;
-            }
-        }
-
-        else if (strcmp(node->Name(), "exported") == 0) {
-            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "exporter") == 0) {
-                    const char * prefix = (functionnode->Attribute("prefix"));
-                    if (!prefix)
-                        return false;
-
-                    for (const tinyxml2::XMLElement *enode = functionnode->FirstChildElement(); enode; enode = enode->NextSiblingElement()) {
-                        if (strcmp(enode->Name(), "prefix") == 0) {
-                            _exporters[prefix].addPrefix(enode->Attribute("name"));
-                        } else if (strcmp(enode->Name(), "suffix") == 0) {
-                            _exporters[prefix].addSuffix(enode->Attribute("name"));
-                        } else
-                            return false;
-                    }
-                } else
-                    return false;
-            }
-        }
-
-        else if (strcmp(node->Name(), "imported") == 0) {
-            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "library") == 0) {
-                    const char * const extension = functionnode->Attribute("extension");
-                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
-                        if (strcmp(librarynode->Name(), "importer") == 0) {
-                            _importers[extension].insert(librarynode->Attribute("name"));
-                        } else
+                        else
                             return false;
                     }
                 }
-            }
-        }
 
-        else if (strcmp(node->Name(), "reflection") == 0) {
-            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "library") == 0) {
-                    const char * const extension = functionnode->Attribute("extension");
-                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
-                        if (strcmp(librarynode->Name(), "call") == 0) {
-                            const char * const argString = librarynode->Attribute("arg");
-                            if (argString) {
-                                _reflection[extension][librarynode->Attribute("name")]
-                                    = atoi(argString);
-                            }
-                        } else
+                else if (strcmp(markupnode->Name(), "exported") == 0) {
+                    for (const tinyxml2::XMLElement *exporter = node->FirstChildElement(); exporter; exporter = exporter->NextSiblingElement()) {
+                        if (strcmp(exporter->Name(), "exporter") != 0)
+                            return false;
+
+                        const char * const prefix = exporter->Attribute("prefix");
+                        if (!prefix)
+                            return false;
+
+                        for (const tinyxml2::XMLElement *e = exporter->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                            if (strcmp(e->Name(), "prefix") == 0)
+                                _exporters[prefix].addPrefix(e->GetText());
+                            else if (strcmp(e->Name(), "suffix") == 0)
+                                _exporters[prefix].addSuffix(e->GetText());
+                            else
+                                return false;
+                        }
+                    }
+                }
+
+                else if (strcmp(markupnode->Name(), "imported") == 0) {
+                    for (const tinyxml2::XMLElement *librarynode = markupnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
+                        if (strcmp(librarynode->Name(), "importer") == 0)
+                            _importers[extension].insert(librarynode->GetText());
+                        else
                             return false;
                     }
-                } else
-                    return false;
-            }
-        }
+                }
 
-        else if (strcmp(node->Name(), "codeblocks") == 0) {
-            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                if (strcmp(functionnode->Name(), "library") == 0) {
-                    const char * const extension = functionnode->Attribute("extension");
-                    for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
-                        if (strcmp(librarynode->Name(), "block") == 0) {
-                            _executableblocks[extension].addBlock(librarynode->Attribute("name"));
-                        } else if (strcmp(librarynode->Name(), "structure") == 0) {
-                            const char * start = librarynode->Attribute("start");
+                else if (strcmp(markupnode->Name(), "reflection") == 0) {
+                    for (const tinyxml2::XMLElement *reflectionnode = markupnode->FirstChildElement(); reflectionnode; reflectionnode = reflectionnode->NextSiblingElement()) {
+                        if (strcmp(reflectionnode->Name(), "call") != 0)
+                            return false;
+
+                        const char * const argString = reflectionnode->Attribute("arg");
+                        if (!argString)
+                            return false;
+
+                        _reflection[extension][reflectionnode->GetText()] = atoi(argString);
+                    }
+                }
+
+                else if (strcmp(markupnode->Name(), "codeblocks") == 0) {
+                    for (const tinyxml2::XMLElement *blocknode = blocknode->FirstChildElement(); blocknode; blocknode = blocknode->NextSiblingElement()) {
+                        if (strcmp(blocknode->Name(), "block") == 0)
+                            _executableblocks[extension].addBlock(blocknode->Attribute("name"));
+
+                        else if (strcmp(blocknode->Name(), "structure") == 0) {
+                            const char * start = blocknode->Attribute("start");
                             if (start)
                                 _executableblocks[extension].setStart(start);
-                            const char * end = librarynode->Attribute("end");
+                            const char * end = blocknode->Attribute("end");
                             if (end)
                                 _executableblocks[extension].setEnd(end);
-                            const char * offset = librarynode->Attribute("offset");
+                            const char * offset = blocknode->Attribute("offset");
                             if (offset)
                                 _executableblocks[extension].setOffset(atoi(offset));
-                        } else
+                        }
+
+                        else
                             return false;
                     }
                 }
-            }
 
-        } else
+                else
+                    return false;
+            }
+        }
+
+        else
             return false;
     }
     return true;
