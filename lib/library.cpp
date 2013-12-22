@@ -153,7 +153,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     const char * const extension = functionnode->Attribute("extension");
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "keyword") == 0) {
-                            _keywords[extension].push_back(librarynode->Attribute("name"));
+                            _keywords[extension].insert(librarynode->Attribute("name"));
                         } else
                             return false;
                     }
@@ -188,7 +188,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     const char * const extension = functionnode->Attribute("extension");
                     for (const tinyxml2::XMLElement *librarynode = functionnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
                         if (strcmp(librarynode->Name(), "importer") == 0) {
-                            _importers[extension].push_back(librarynode->Attribute("name"));
+                            _importers[extension].insert(librarynode->Attribute("name"));
                         } else
                             return false;
                     }

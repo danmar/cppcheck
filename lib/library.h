@@ -134,13 +134,8 @@ public:
     }
 
     bool reportErrors(const std::string &path) const {
-        const std::map<std::string, bool>::const_iterator it =
-            _reporterrors.find(Path::getFilenameExtensionInLowerCase(path));
-        if (it != _reporterrors.end()) {
-            return it->second;
-        }
-        // assume true if we don't know as it'll be a core-type (c/cpp etc)
-        return true;
+        const std::map<std::string, bool>::const_iterator it = _reporterrors.find(Path::getFilenameExtensionInLowerCase(path));
+        return (it == _reporterrors.end() || it->second);
     }
 
     bool ignorefunction(const std::string &function) const {
@@ -149,16 +144,8 @@ public:
     }
 
     bool isexecutableblock(const std::string &file, const std::string &token) const {
-        bool isexecblock;
-        const std::map<std::string, CodeBlock>::const_iterator map_it
-            = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
-
-        if (map_it != _executableblocks.end()) {
-            isexecblock = map_it->second.isBlock(token);
-        } else {
-            isexecblock = false;
-        }
-        return isexecblock;
+        const std::map<std::string, CodeBlock>::const_iterator it = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
+        return (it != _executableblocks.end() && it->second.isBlock(token));
     }
 
     int blockstartoffset(const std::string &file) const {
@@ -195,71 +182,35 @@ public:
     }
 
     bool iskeyword(const std::string &file, const std::string &keyword) const {
-        bool iskw;
-        const std::map<std::string, std::list<std::string> >::const_iterator it =
+        const std::map<std::string, std::set<std::string> >::const_iterator it =
             _keywords.find(Path::getFilenameExtensionInLowerCase(file));
-
-        if (it != _keywords.end()) {
-            const std::list<std::string> list = it->second;
-            const std::list<std::string>::const_iterator list_it =
-                std::find(list.begin(), list.end(), keyword);
-            iskw = list_it != list.end();
-        } else {
-            iskw = false;
-        }
-        return iskw;
+        return (it != _keywords.end() && it->second.count(keyword));
     }
 
     bool isexporter(const std::string &prefix) const {
-        const std::map<std::string, ExportedFunctions>::const_iterator it =
-            _exporters.find(prefix);
-        return it != _exporters.end();
+        return _exporters.find(prefix) != _exporters.end();
     }
 
     bool isexportedprefix(const std::string &prefix, const std::string &token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
-        if (it != _exporters.end()) {
-            return it->second.isPrefix(token);
-        } else
-            return false;
+        return (it != _exporters.end() && it->second.isPrefix(token));
     }
 
     bool isexportedsuffix(const std::string &prefix, const std::string &token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
-        if (it != _exporters.end()) {
-            return it->second.isSuffix(token);
-        } else
-            return false;
+        return (it != _exporters.end() && it->second.isSuffix(token));
     }
 
     bool isimporter(const std::string& file, const std::string &importer) const {
-        bool isImporter;
-        const std::map<std::string, std::list<std::string> >::const_iterator it =
+        const std::map<std::string, std::set<std::string> >::const_iterator it =
             _importers.find(Path::getFilenameExtensionInLowerCase(file));
-
-        if (it != _importers.end()) {
-            const std::list<std::string> list = it->second;
-            const std::list<std::string>::const_iterator it2 =
-                std::find(list.begin(), list.end(), importer);
-            isImporter = (it2 != list.end());
-        } else {
-            isImporter = false;
-        }
-        return isImporter;
+        return (it != _importers.end() && it->second.count(importer) > 0);
     }
 
     bool isreflection(const std::string& file, const std::string &token) const {
-        bool isReflecMethod;
         const std::map<std::string,std::map<std::string,int> >::const_iterator it
             = _reflection.find(Path::getFilenameExtensionInLowerCase(file));
-        if (it != _reflection.end()) {
-            const std::map<std::string,int>::const_iterator it2 =
-                it->second.find(token);
-            isReflecMethod = it2 != it->second.end();
-        } else {
-            isReflecMethod = false;
-        }
-        return isReflecMethod;
+        return (it != _reflection.end() && it->second.count(token));
     }
 
     int reflectionArgument(const std::string& file, const std::string &token) const {
@@ -282,23 +233,21 @@ private:
     class ExportedFunctions {
     public:
         void addPrefix(const std::string& prefix) {
-            _prefixes.push_back(prefix);
+            _prefixes.insert(prefix);
         }
         void addSuffix(const std::string& suffix) {
-            _suffixes.push_back(suffix);
+            _suffixes.insert(suffix);
         }
         bool isPrefix(const std::string& prefix) const {
-            return std::find(_prefixes.begin(), _prefixes.end(), prefix)
-                   != _prefixes.end();
+            return (_prefixes.find(prefix) != _prefixes.end());
         }
         bool isSuffix(const std::string& suffix) const {
-            return std::find(_suffixes.begin(), _suffixes.end(), suffix)
-                   != _suffixes.end();
+            return (_suffixes.find(suffix) != _suffixes.end());
         }
 
     private:
-        std::list<std::string> _prefixes;
-        std::list<std::string> _suffixes;
+        std::set<std::string> _prefixes;
+        std::set<std::string> _suffixes;
     };
     class CodeBlock {
     public:
@@ -342,10 +291,10 @@ private:
     std::map<std::string, bool> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
     std::map<std::string, bool> _reporterrors;
     std::set<std::string> _markupExtensions; // file extensions of markup files
-    std::map<std::string, std::list<std::string> > _keywords; // keywords for code in the library
+    std::map<std::string, std::set<std::string> > _keywords; // keywords for code in the library
     std::map<std::string, CodeBlock> _executableblocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)
-    std::map<std::string, std::list<std::string> > _importers; // keywords that import variables/functions
+    std::map<std::string, std::set<std::string> > _importers; // keywords that import variables/functions
     std::map<std::string,std::map<std::string,int> > _reflection; // invocation of reflection
 
 
