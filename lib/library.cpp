@@ -19,6 +19,9 @@
 #include "library.h"
 #include "path.h"
 #include "tinyxml2.h"
+#include "tokenlist.h"
+#include "mathlib.h"
+#include "token.h"
 
 #include <string>
 #include <algorithm>
@@ -108,13 +111,16 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     leakignore.insert(name);
                 else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != NULL) {
                     const int nr = atoi(functionnode->Attribute("nr"));
+                    bool notbool = false;
                     bool notnull = false;
                     bool notuninit = false;
                     bool formatstr = false;
                     bool strz = false;
                     std::string valid;
                     for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
-                        if (strcmp(argnode->Name(), "not-null") == 0)
+                        if (strcmp(argnode->Name(), "not-bool") == 0)
+                            notbool = true;
+                        else if (strcmp(argnode->Name(), "not-null") == 0)
                             notnull = true;
                         else if (strcmp(argnode->Name(), "not-uninit") == 0)
                             notuninit = true;
@@ -144,6 +150,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                         else
                             return false;
                     }
+                    argumentChecks[name][nr].notbool   = notbool;
                     argumentChecks[name][nr].notnull   = notnull;
                     argumentChecks[name][nr].notuninit = notuninit;
                     argumentChecks[name][nr].formatstr = formatstr;
@@ -248,4 +255,25 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
             return false;
     }
     return true;
+}
+
+bool Library::isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const
+{
+    const ArgumentChecks *ac = getarg(functionName, argnr);
+    if (!ac || ac->valid.empty())
+        return true;
+    TokenList tokenList(0);
+    std::istringstream istr(ac->valid + ',');
+    tokenList.createTokens(istr,"");
+    for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        if (tok->isNumber() && argvalue == MathLib::toLongNumber(tok->str()))
+            return true;
+        if (Token::Match(tok, "%num% - %num%") && argvalue >= MathLib::toLongNumber(tok->str()) && argvalue <= MathLib::toLongNumber(tok->strAt(2)))
+            return true;
+        if (Token::Match(tok, "%num% - ,") && argvalue >= MathLib::toLongNumber(tok->str()))
+            return true;
+        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,"- %num%") && argvalue <= MathLib::toLongNumber(tok->strAt(1)))
+            return true;
+    }
+    return false;
 }

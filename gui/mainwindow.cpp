@@ -516,9 +516,6 @@ Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
 
-    const QString applicationFilePath = QCoreApplication::applicationFilePath();
-    result.library.load(applicationFilePath.toLatin1(), "std");
-
     // If project file loaded, read settings from it
     if (mProject) {
         ProjectFile *pfile = mProject->GetProjectFile();
@@ -566,6 +563,11 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.cpp = mSettings->value(SETTINGS_STD_CPP11, true).toBool() ? Standards::CPP11 : Standards::CPP03;
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
+
+    const QString applicationFilePath = QCoreApplication::applicationFilePath();
+    result.library.load(applicationFilePath.toLatin1(), "std");
+    if (result.standards.posix)
+        result.library.load(applicationFilePath.toLatin1(), "posix");
 
     if (result._jobs <= 1) {
         result._jobs = 1;

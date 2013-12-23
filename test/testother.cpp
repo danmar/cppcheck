@@ -49,6 +49,8 @@ private:
 
         TEST_CASE(nanInArithmeticExpression);
 
+        TEST_CASE(invalidFunctionUsage1);
+
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
@@ -81,8 +83,6 @@ private:
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
-
-        TEST_CASE(dangerousStrolUsage);
 
         TEST_CASE(passedByValue);
 
@@ -210,6 +210,16 @@ private:
         settings->inconclusive = inconclusive;
         settings->experimental = experimental;
         settings->standards.posix = posix;
+
+        if (posix) {
+            const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"usleep\"> <arg nr=\"1\"><valid>0-999999</valid></arg> </function>\n"
+                               "</def>";
+            tinyxml2::XMLDocument xmldoc;
+            xmldoc.Parse(cfg, sizeof(cfg));
+            settings->library.load(xmldoc);
+        }
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
@@ -651,64 +661,88 @@ private:
 
     }
 
-    void sprintfUsage(const char code[]) {
+    void invalidFunctionUsage(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
+        const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                           "<def>\n"
+                           "  <function name=\"memset\"> <arg nr=\"3\"><not-bool/></arg> </function>\n"
+                           "  <function name=\"strtol\"> <arg nr=\"3\"><valid>0,2-36</valid></arg> </function>\n"
+                           "</def>";
+        tinyxml2::XMLDocument xmldoc;
+        xmldoc.Parse(cfg, sizeof(cfg));
+
         Settings settings;
+        settings.library.load(xmldoc);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        //tokenizer.tokens()->printOut( "tokens" );
-
         // Check for redundant code..
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.invalidFunctionUsage();
     }
 
+    void invalidFunctionUsage1() {
+        invalidFunctionUsage("int f() { memset(a,b,sizeof(a)!=12); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
+
+        invalidFunctionUsage("int f() { memset(a,b,sizeof(a)!=0); }");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        invalidFunctionUsage("int f() { strtol(a,b,sizeof(a)!=12); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (comparison result) but the valid values are '0,2-36'.\n", errout.str());
+
+        invalidFunctionUsage("int f() { strtol(a,b,1); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 1 but the valid values are '0,2-36'.\n", errout.str());
+
+        invalidFunctionUsage("int f() { strtol(a,b,10); }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void sprintf1() {
-        sprintfUsage("void foo()\n"
-                     "{\n"
-                     "    char buf[100];\n"
-                     "    sprintf(buf,\"%s\",buf);\n"
-                     "}");
+        invalidFunctionUsage("void foo()\n"
+                             "{\n"
+                             "    char buf[100];\n"
+                             "    sprintf(buf,\"%s\",buf);\n"
+                             "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().\n", errout.str());
     }
 
     void sprintf2() {
-        sprintfUsage("void foo()\n"
-                     "{\n"
-                     "    char buf[100];\n"
-                     "    sprintf(buf,\"%i\",sizeof(buf));\n"
-                     "}");
+        invalidFunctionUsage("void foo()\n"
+                             "{\n"
+                             "    char buf[100];\n"
+                             "    sprintf(buf,\"%i\",sizeof(buf));\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf3() {
-        sprintfUsage("void foo()\n"
-                     "{\n"
-                     "    char buf[100];\n"
-                     "    sprintf(buf,\"%i\",sizeof(buf));\n"
-                     "    if (buf[0]);\n"
-                     "}");
+        invalidFunctionUsage("void foo()\n"
+                             "{\n"
+                             "    char buf[100];\n"
+                             "    sprintf(buf,\"%i\",sizeof(buf));\n"
+                             "    if (buf[0]);\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf4() {
-        sprintfUsage("struct A\n"
-                     "{\n"
-                     "    char filename[128];\n"
-                     "};\n"
-                     "\n"
-                     "void foo()\n"
-                     "{\n"
-                     "    const char* filename = \"hello\";\n"
-                     "    struct A a;\n"
-                     "    snprintf(a.filename, 128, \"%s\", filename);\n"
-                     "}");
+        invalidFunctionUsage("struct A\n"
+                             "{\n"
+                             "    char filename[128];\n"
+                             "};\n"
+                             "\n"
+                             "void foo()\n"
+                             "{\n"
+                             "    const char* filename = \"hello\";\n"
+                             "    struct A a;\n"
+                             "    snprintf(a.filename, 128, \"%s\", filename);\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1372,26 +1406,6 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (portability) Casting from float* to integer* is not portable due to different binary data representations on different platforms.\n", errout.str());
 
         checkInvalidPointerCast("Q_DECLARE_METATYPE(int*)"); // #4135 - don't crash
-    }
-
-    void dangerousStrolUsage() {
-        {
-            sprintfUsage("int f(const char *num)\n"
-                         "{\n"
-                         "    return strtol(num, NULL, 1);\n"
-                         "}");
-
-            ASSERT_EQUALS("[test.cpp:3]: (error) Invalid radix in call to strtol(). It must be 0 or 2-36.\n", errout.str());
-        }
-
-        {
-            sprintfUsage("int f(const char *num)\n"
-                         "{\n"
-                         "    return strtol(num, NULL, 10);\n"
-                         "}");
-
-            ASSERT_EQUALS("", errout.str());
-        }
     }
 
     void testPassedByValue(const char code[]) {
@@ -6893,12 +6907,12 @@ private:
         check("void f(){\n"
               "usleep(1000000);\n"
               "}",NULL,false,false,true);
-        ASSERT_EQUALS("[test.cpp:2]: (error) The argument of usleep must be less than 1000000.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000000 but the valid values are '0-999999'.\n", errout.str());
 
         check("void f(){\n"
               "usleep(1000001);\n"
               "}",NULL,false,false,true);
-        ASSERT_EQUALS("[test.cpp:2]: (error) The argument of usleep must be less than 1000000.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000001 but the valid values are '0-999999'.\n", errout.str());
     }
 
     void checkCommaSeparatedReturn() {

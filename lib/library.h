@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "path.h"
+#include "mathlib.h"
 
 #include <tinyxml2.h>
 #include <map>
@@ -30,6 +31,8 @@
 #include <string>
 #include <list>
 #include <algorithm>
+
+class TokenList;
 
 /// @addtogroup Core
 /// @{
@@ -91,11 +94,13 @@ public:
         return (it != _noreturn.end() && !it->second);
     }
 
-    struct ArgumentChecks {
+    class ArgumentChecks {
+    public:
         ArgumentChecks() {
-            notnull = notuninit = formatstr = strz = false;
+            notbool = notnull = notuninit = formatstr = strz = false;
         }
 
+        bool         notbool;
         bool         notnull;
         bool         notuninit;
         bool         formatstr;
@@ -105,6 +110,11 @@ public:
 
     // function name, argument nr => argument data
     std::map<std::string, std::map<int, ArgumentChecks> > argumentChecks;
+
+    bool isboolargbad(const std::string &functionName, int argnr) const {
+        const ArgumentChecks *arg = getarg(functionName, argnr);
+        return arg && arg->notbool;
+    }
 
     bool isnullargbad(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
@@ -124,6 +134,13 @@ public:
     bool isargstrz(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->strz;
+    }
+
+    bool isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const;
+
+    std::string validarg(const std::string &functionName, int argnr) const {
+        const ArgumentChecks *arg = getarg(functionName, argnr);
+        return arg ? arg->valid : std::string("");
     }
 
     bool markupFile(const std::string &path) const {

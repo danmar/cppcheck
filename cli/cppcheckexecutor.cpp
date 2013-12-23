@@ -157,6 +157,9 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_FAILURE;
     }
 
+    if (settings.standards.posix)
+        settings.library.load(argv[0], "posix");
+
     if (settings.reportProgress)
         time1 = std::time(0);
 

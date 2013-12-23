@@ -579,40 +579,6 @@ void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string
                 "The variable '" + strVarName + "' is an array of size " + strDim + ", which does not match.");
 }
 
-//-----------------------------------------------------------------------------
-// check usleep(), which is allowed to be called with in a range of [0,999999]
-//
-// Reference:
-// - http://man7.org/linux/man-pages/man3/usleep.3.html
-//-----------------------------------------------------------------------------
-void CheckOther::checkSleepTimeInterval()
-{
-    if (!_settings->standards.posix)
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "usleep ( %num% )")) {
-                const Token * const numTok = tok->tokAt(2);
-                MathLib::bigint value = MathLib::toLongNumber(numTok->str());
-                if (value > 999999) { // less than 1 million
-                    checkSleepTimeError(numTok, numTok->str());
-                }
-            }
-        }
-    }
-}
-
-void CheckOther::checkSleepTimeError(const Token *tok, const std::string &strDim)
-{
-    reportError(tok, Severity::error,
-                "tooBigSleepTime", "The argument of usleep must be less than 1000000.\n"
-                "The argument of usleep must be less than 1000000, but " + strDim + " is provided.");
-}
-
 //---------------------------------------------------------------------------
 // Detect redundant assignments: x = 0; x = 4;
 //---------------------------------------------------------------------------
@@ -1472,24 +1438,40 @@ void CheckOther::redundantConditionError(const Token *tok, const std::string &te
 //---------------------------------------------------------------------------
 void CheckOther::invalidFunctionUsage()
 {
-    // strtol and strtoul..
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "strtol|strtoul|strtoll|strtoull|wcstol|wcstoul|wcstoll|wcstoull ("))
-            continue;
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%var% ( !!)"))
+                continue;
+            const std::string functionName = tok->str();
+            int argnr = 1;
+            const Token *argtok = tok->tokAt(2);
+            while (argtok && argtok->str() != ")") {
+                if (Token::Match(argtok,"%num% [,)]")) {
+                    if (MathLib::isInt(argtok->str()) &&
+                        !_settings->library.isargvalid(functionName, argnr, MathLib::toLongNumber(argtok->str())))
+                        invalidFunctionArgError(argtok,functionName,argnr,_settings->library.validarg(functionName,argnr));
+                } else {
+                    const Token *top = argtok;
+                    while (top->astParent() && top->astParent()->str() != "," && top->astParent() != tok->next())
+                        top = top->astParent();
+                    if (top->isComparisonOp() || Token::Match(top, "%oror%|&&")) {
+                        if (_settings->library.isboolargbad(functionName, argnr))
+                            invalidFunctionArgBoolError(top, functionName, argnr);
 
-        const std::string& funcname = tok->str();
-        tok = tok->tokAt(2);
-        // Locate the third parameter of the function call..
-        for (int i = 0; i < 2 && tok; i++)
-            tok = tok->nextArgument();
-
-        if (Token::Match(tok, "%num% )")) {
-            const MathLib::bigint radix = MathLib::toLongNumber(tok->str());
-            if (!(radix == 0 || (radix >= 2 && radix <= 36))) {
-                dangerousUsageStrtolError(tok, funcname);
+                        // Are the values 0 and 1 valid?
+                        else if (!_settings->library.isargvalid(functionName, argnr, 0))
+                            invalidFunctionArgError(top, functionName, argnr, _settings->library.validarg(functionName,argnr));
+                        else if (!_settings->library.isargvalid(functionName, argnr, 1))
+                            invalidFunctionArgError(top, functionName, argnr, _settings->library.validarg(functionName,argnr));
+                    }
+                }
+                argnr++;
+                argtok = argtok->nextArgument();
             }
-        } else
-            break;
+        }
     }
 
     // sprintf|snprintf overlapping data
@@ -1529,11 +1511,6 @@ void CheckOther::invalidFunctionUsage()
     }
 }
 
-void CheckOther::dangerousUsageStrtolError(const Token *tok, const std::string& funcname)
-{
-    reportError(tok, Severity::error, "dangerousUsageStrtol", "Invalid radix in call to " + funcname + "(). It must be 0 or 2-36.");
-}
-
 void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "sprintfOverlappingData",
@@ -1543,6 +1520,26 @@ void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string
                 "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
                 "\"If copying takes place between objects that overlap as a result of a call "
                 "to sprintf() or snprintf(), the results are undefined.\"");
+}
+
+void CheckOther::invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr)
+{
+    std::ostringstream errmsg;
+    errmsg << "Invalid " << functionName << "() argument nr " << argnr;
+    if (!tok)
+        ;
+    else if (tok->isNumber())
+        errmsg << ". The value is " << tok->str() << " but the valid values are '" << validstr << "'.";
+    else if (tok->isComparisonOp())
+        errmsg << ". The value is 0 or 1 (comparison result) but the valid values are '" << validstr << "'.";
+    reportError(tok, Severity::error, "invalidFunctionArg", errmsg.str());
+}
+
+void CheckOther::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)
+{
+    std::ostringstream errmsg;
+    errmsg << "Invalid " << functionName << "() argument nr " << argnr << ". A non-boolean value is required.";
+    reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str());
 }
 
 //---------------------------------------------------------------------------

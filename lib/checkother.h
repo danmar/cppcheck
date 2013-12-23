@@ -109,7 +109,6 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
         checkOther.checkSuspiciousEqualityComparison();
-        checkOther.checkSleepTimeInterval();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }
 
@@ -132,11 +131,12 @@ public:
     void invalidPointerCast();
 
     /**
-     * @brief Invalid function usage (invalid radix / overlapping data)
+     * @brief Invalid function usage (invalid input value / overlapping data)
      *
      * %Check that given function parameters are valid according to the standard
      * - wrong radix given for strtol/strtoul
      * - overlapping data when using sprintf/snprintf
+     * - wrong input value according to library
      */
     void invalidFunctionUsage();
 
@@ -263,9 +263,6 @@ public:
     /** @brief %Check to avoid casting a return value to unsigned char and then back to integer type.  */
     void checkCastIntToCharAndBack();
 
-    /** @brief %Check providing too big sleep time intervals on POSIX systems. */
-    void checkSleepTimeInterval();
-
     /** @brief %Check for using of comparison functions evaluating always to true or false. */
     void checkComparisonFunctionIsAlwaysTrueOrFalse(void);
 
@@ -275,7 +272,6 @@ private:
 
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
-    void checkSleepTimeError(const Token *tok, const std::string &strDim);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void oppositeInnerConditionError(const Token *tok);
@@ -285,8 +281,9 @@ private:
     void redundantGetAndSetUserIdError(const Token *tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
-    void dangerousUsageStrtolError(const Token *tok, const std::string& funcname);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
+    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
+    void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void udivError(const Token *tok, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
@@ -340,6 +337,8 @@ private:
 
         // error
         c.sprintfOverlappingDataError(0, "varname");
+        c.invalidFunctionArgError(0, "func_name", 1, "1-4");
+        c.invalidFunctionArgBoolError(0, "func_name", 1);
         c.udivError(0, false);
         c.zerodivError(0);
         c.zerodivcondError(0,0);
@@ -349,7 +348,6 @@ private:
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
         c.checkPipeParameterSizeError(0, "varname", "dimension");
-        c.checkSleepTimeError(0,"dimension");
 
         //performance
         c.redundantCopyError(0, "varname");
@@ -361,7 +359,6 @@ private:
         c.checkCastIntToCharAndBackError(0,"func_name");
         c.oppositeInnerConditionError(0);
         c.cstyleCastError(0);
-        c.dangerousUsageStrtolError(0, "strtol");
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");
         c.charArrayIndexError(0);
@@ -421,7 +418,7 @@ private:
                "* bitwise operation with negative right operand\n"
                "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "* cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
-               "* provide too big sleep times on POSIX systems\n"
+               "* invalid input values for functions\n"
 
                // warning
                "* either division by zero or useless condition\n"
@@ -435,7 +432,6 @@ private:
                "* C-style pointer cast in cpp file\n"
                "* casting between incompatible pointer types\n"
                "* redundant if\n"
-               "* bad usage of the function 'strtol'\n"
                "* [[CheckUnsignedDivision|unsigned division]]\n"
                "* passing parameter by value\n"
                "* [[IncompleteStatement|Incomplete statement]]\n"
