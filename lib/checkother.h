@@ -92,7 +92,6 @@ public:
         checkOther.checkZeroDivision();
         checkOther.checkZeroDivisionOrUselessCondition();
         checkOther.checkMathFunctions();
-        checkOther.checkCCTypeFunctions();
 
         checkOther.redundantGetAndSetUserId();
         checkOther.checkIncorrectLogicOperator();
@@ -173,9 +172,6 @@ public:
 
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
-
-    /** @brief %Check for parameters given to cctype function that do make error*/
-    void checkCCTypeFunctions();
 
     /** @brief % Check for seteuid(geteuid()) or setuid(getuid())*/
     void redundantGetAndSetUserId();
@@ -295,7 +291,6 @@ private:
     void zerodivcondError(const Token *tokcond, const Token *tokdiv);
     void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
-    void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
@@ -392,7 +387,6 @@ private:
         c.pointerLessThanZeroError(0, false);
         c.pointerPositiveError(0, false);
         c.SuspiciousSemicolonError(0);
-        c.cctypefunctionCallError(0, "funname", "value");
         c.moduloAlwaysTrueFalseError(0, "1");
         c.incompleteArrayFillError(0, "buffer", "memset", false);
         c.varFuncNullUBError(0);
@@ -458,7 +452,6 @@ private:
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
-               "* incorrect usage of functions from ctype library.\n"
                "* Comparisons of modulo results that are always true/false.\n"
                "* Array filled incompletely using memset/memcpy/memmove.\n"
                "* redundant get and set function of user id (--std=posix).\n"

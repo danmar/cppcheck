@@ -2413,24 +2413,6 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
     } else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value '#' to #() leads to undefined result.");
 }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void CheckOther::checkCCTypeFunctions()
-{
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->varId() == 0 &&
-            Token::Match(tok, "isalnum|isalpha|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|isxdigit ( %num% ,|)") &&
-            MathLib::isNegative(tok->strAt(2))) {
-            cctypefunctionCallError(tok, tok->str(), tok->strAt(2));
-        }
-    }
-}
-void CheckOther::cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value)
-{
-    reportError(tok, Severity::error, "wrongcctypecall", "Passing value " + value + " to " + functionName + "() causes undefined behavior which may lead to a crash.");
-}
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckOther::checkMisusedScopedObject()
