@@ -356,6 +356,16 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #5255
+        checkUninitVar("struct Element {\n"
+                       "    static void abcd() {}\n"
+                       "};\n"
+                       "void a() {\n"
+                       "    Element *e;\n"
+                       "    e->abcd();\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Handling >> and <<
         {
             checkUninitVar("int a() {\n"
@@ -3074,6 +3084,14 @@ private:
                         "    for (Element *ptr3 = ptr3->Next(); ptr3; ptr3 = ptr3->Next()) {}\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: ptr3\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    static void f() { }\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; element->f();\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("void f() {\n" // #4911 - bad simplification => don't crash
                         "    int a;\n"

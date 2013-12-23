@@ -514,6 +514,11 @@ private:
 
             if (Token::Match(tok.previous(), "[;{}] %var% [=[.]")) {
                 if (tok.next()->str() == ".") {
+                    if (Token::Match(&tok, "%var% . %var% (")) {
+                        const Function *function = tok.tokAt(2)->function();
+                        if (function && function->isStatic)
+                            return &tok;
+                    }
                     if (use_dead_pointer(checks, &tok)) {
                         return &tok;
                     }
@@ -1770,7 +1775,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
     }
 
     bool unknown = false;
-    if (pointer && (CheckNullPointer::isPointerDeRef(vartok, unknown) || Token::Match(vartok, "%var% ."))) {
+    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
         // pointer is allocated - dereferencing it is ok.
         if (alloc)
             return false;
@@ -1783,6 +1788,11 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         // if this is not a function parameter report this dereference as variable usage
         if (!functionParameter)
             return true;
+    }
+
+    if (pointer && Token::Match(vartok, "%var% . %var% (")) {
+        const Function *function = vartok->tokAt(2)->function();
+        return (!function || !function->isStatic);
     }
 
     if (cpp && Token::Match(vartok->next(), "<<|>>")) {
