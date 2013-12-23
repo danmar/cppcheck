@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.63 dev</title>
 
-    <date>2013-07-14</date>
+    <date>2013-12-23</date>
   </bookinfo>
 
   <chapter>
@@ -750,7 +750,7 @@ Checking pen1.c...
     </section>
 
     <section>
-      <title>Uninitialized memory</title>
+      <title>Function argument: Uninitialized memory</title>
 
       <para>Here is an example program:</para>
 
@@ -789,7 +789,7 @@ Checking uninit.c...
     </section>
 
     <section>
-      <title>Null pointers</title>
+      <title>Function Argument: Null pointers</title>
 
       <para>Cppcheck assumes it's ok to pass NULL pointers to functions. Here
       is an example program:</para>
@@ -823,6 +823,71 @@ Checking null.c...
     &lt;/arg&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Function Argument: Format string</title>
+
+      <para>You can define that a function takes a format string.
+      Example:</para>
+
+      <programlisting>void test()
+{
+    do_something("%i %i\n", 1024);
+}</programlisting>
+
+      <para>No error is reported for that:</para>
+
+      <programlisting># cppcheck formatstring.c 
+Checking formatstring.c...</programlisting>
+
+      <para>A configuration file can be created that says that the string is a
+      format string. For instance:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;formatstr/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
+
+      <programlisting>cppcheck --library=test.cfg formatstring.c 
+Checking formatstring.c...
+[formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
+    </section>
+
+    <section>
+      <title>Function Argument: Value range</title>
+
+      <para>The valid values can be defined. Imagine:</para>
+
+      <programlisting>void test()
+{
+    do_something(1024);
+}</programlisting>
+
+      <para>No error is reported for that:</para>
+
+      <programlisting># cppcheck valuerange.c 
+Checking valuerange.c...</programlisting>
+
+      <para>A configuration file can be created that says that 1024 is out of
+      bounds. For instance:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;valid&gt;0-1023&lt;/valid&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
+
+      <programlisting>cppcheck --library=test.cfg range.c 
+Checking range.c...
+[range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
     </section>
 
     <section>
