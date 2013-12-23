@@ -509,3 +509,47 @@ void CheckBool::comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0
         reportError(tok, Severity::warning, "compareBoolExpressionWithInt",
                     "Comparison of a boolean expression with an integer.");
 }
+
+
+void CheckBool::pointerArithBool()
+{
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "if|while (")) {
+                pointerArithBoolCond(tok->next()->astOperand2());
+            }
+        }
+    }
+}
+
+void CheckBool::pointerArithBoolCond(const Token *tok)
+{
+    if (!tok)
+        return;
+    if (Token::Match(tok, "&&|%oror%")) {
+        pointerArithBoolCond(tok->astOperand1());
+        pointerArithBoolCond(tok->astOperand2());
+        return;
+    }
+    if (tok->str() != "+")
+        return;
+
+    if (tok->astOperand1() &&
+        tok->astOperand1()->isName() &&
+        tok->astOperand1()->variable() &&
+        tok->astOperand1()->variable()->isPointer() &&
+        tok->astOperand2()->isNumber())
+        pointerArithBoolError(tok);
+}
+
+void CheckBool::pointerArithBoolError(const Token *tok)
+{
+    reportError(tok,
+                Severity::error,
+                "pointerArithBool",
+                "Converting pointer arithmetic result to bool. Either a dereference is forgot, or pointer overflow is required to get a false value");
+}
