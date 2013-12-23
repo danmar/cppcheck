@@ -2609,7 +2609,7 @@ bool Tokenizer::simplifyLabelsCaseDefault()
                     tok = tok->link();
                 } else if (tok->str() == "?") {
                     Token *tok1 = skipTernaryOp(tok);
-                    if(!tok1) {
+                    if (!tok1) {
                         syntaxError(tok);
                         return false;
                     }

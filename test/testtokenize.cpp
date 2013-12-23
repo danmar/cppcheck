@@ -982,7 +982,7 @@ private:
     void garbageCode5() { // #5168
         tokenizeAndStringify("( asm : ; void : );");
     }
-    
+
     void garbageCode6() { // #5214
         tokenizeAndStringify("int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
         tokenizeAndStringify("int a = int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
