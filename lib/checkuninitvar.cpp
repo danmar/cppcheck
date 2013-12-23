@@ -1068,18 +1068,6 @@ void CheckUninitVar::checkScope(const Scope* scope)
             continue;
         if (i->nameToken()->strAt(1) == "(")
             continue;
-
-        bool forHead = false; // Don't check variables declared in header of a for loop
-        for (const Token* tok = i->typeStartToken(); tok; tok = tok->previous()) {
-            if (tok->str() == "(") {
-                forHead = true;
-                break;
-            } else if (Token::Match(tok, "[{};]"))
-                break;
-        }
-        if (forHead)
-            continue;
-
         bool stdtype = _tokenizer->isC();
         const Token* tok = i->typeStartToken();
         for (; tok && tok->str() != ";" && tok->str() != "<"; tok = tok->next()) {
@@ -1090,8 +1078,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
             tok = tok->next();
         if (!tok)
             continue;
-        if (Token::findsimplematch(i->typeStartToken(), "=", tok))
+        if (Token::Match(i->nameToken(), "%var% =")) {
+            checkRhs(i->nameToken(), *i, false, "");
             continue;
+        }
         if (stdtype || i->isPointer()) {
             bool alloc = false;
             checkScopeForVariable(scope, tok, *i, NULL, NULL, &alloc, "");
@@ -1780,7 +1770,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
     }
 
     bool unknown = false;
-    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
+    if (pointer && (CheckNullPointer::isPointerDeRef(vartok, unknown) || Token::Match(vartok, "%var% ."))) {
         // pointer is allocated - dereferencing it is ok.
         if (alloc)
             return false;

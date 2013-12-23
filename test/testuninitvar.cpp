@@ -3065,6 +3065,16 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    for (int x = x; x < 10; x++) {}\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("void f() {\n"
+                        "    for (Element *ptr3 = ptr3->Next(); ptr3; ptr3 = ptr3->Next()) {}\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: ptr3\n", errout.str());
+
         checkUninitVar2("void f() {\n" // #4911 - bad simplification => don't crash
                         "    int a;\n"
                         "    do { } a=do_something(); while (a);\n"

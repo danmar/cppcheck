@@ -225,7 +225,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                 }
 
                 else if (strcmp(markupnode->Name(), "codeblocks") == 0) {
-                    for (const tinyxml2::XMLElement *blocknode = blocknode->FirstChildElement(); blocknode; blocknode = blocknode->NextSiblingElement()) {
+                    for (const tinyxml2::XMLElement *blocknode = markupnode->FirstChildElement(); blocknode; blocknode = blocknode->NextSiblingElement()) {
                         if (strcmp(blocknode->Name(), "block") == 0)
                             _executableblocks[extension].addBlock(blocknode->Attribute("name"));
 
