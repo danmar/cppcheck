@@ -179,50 +179,21 @@ void CheckOther::clarifyCalculation()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->str() == "?") {
-                // condition
-                const Token *cond = tok->previous();
-                if (cond->isName() || cond->isNumber())
-                    cond = cond->previous();
-                else if (cond->str() == ")")
-                    cond = cond->link()->previous();
-                else
-                    continue;
+            // ? operator where lhs is arithmetical expression
+            if (tok->str() != "?" || !tok->astOperand1() || !tok->astOperand1()->isArithmeticalOp())
+                continue;
 
-                if (cond && cond->str() == "!")
-                    cond = cond->previous();
-
-                if (!cond)
-                    continue;
-
-                // calculation
-                if (!cond->isArithmeticalOp())
-                    continue;
-
-                const std::string &op = cond->str();
-                cond = cond->previous();
-
-                // skip previous multiplications..
-                while (cond && cond->previous()) {
-                    if ((cond->isName() || cond->isNumber()) && cond->previous()->str() == "*")
-                        cond = cond->tokAt(-2);
-                    else if (cond->str() == ")")
-                        cond = cond->link()->previous();
-                    else
-                        break;
-                }
-
-                if (!cond)
-                    continue;
-
-                // first multiplication operand
-                if (cond->str() == ")") {
-                    clarifyCalculationError(cond, op);
-                } else if (cond->isName() || cond->isNumber()) {
-                    if (Token::Match(cond->previous(),"return|=|+|-|,|(") || cond->strAt(-1) == op)
-                        clarifyCalculationError(cond, op);
-                }
+            // Is code clarified by parentheses already?
+            const Token *tok2 = tok->astOperand1();
+            for (; tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+                else if (tok2->str() == ")" || tok2->str() == "?")
+                    break;
             }
+
+            if (tok2 && tok2->str() == "?")
+                clarifyCalculationError(tok, tok->astOperand1()->str());
         }
     }
 }
