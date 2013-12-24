@@ -1812,7 +1812,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         return (var && var->typeStartToken()->isStandardType());
     }
 
-    if (vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())
+    if (!alloc && vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())
         return true;
 
     if (vartok->strAt(1) == "]")

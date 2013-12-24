@@ -3342,6 +3342,12 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n"
+                        "    char *p = malloc(100);\n"
+                        "    p || assert_failed();\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // function parameter (treat it as initialized until malloc is used)
         checkUninitVar2("int f(int *p) {\n"
                         "    if (*p == 1) {}\n" // no error
