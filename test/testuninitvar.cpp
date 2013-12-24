@@ -2318,6 +2318,16 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
+        // try/catch : don't warn about exception variable
+        checkUninitVar2("void f() {\n"
+                        "    try {\n"
+                        "    } catch (CException* e) {\n"
+                        "        trace();\n"
+                        "        e->Delete();\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // exit
         checkUninitVar2("void f() {\n"
                         "    int x;\n"
