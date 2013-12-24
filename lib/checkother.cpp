@@ -33,6 +33,23 @@ namespace {
     CheckOther instance;
 }
 
+static bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
+{
+    if (!tok)
+        return true;
+    if (tok->isName() && tok->next()->str() == "(") {
+        if (!tok->function() && !Token::Match(tok->previous(), ".|::") && constFunctions.find(tok->str()) == constFunctions.end())
+            return false;
+        else if (tok->function() && !tok->function()->isConst)
+            return false;
+    }
+    if (Token::Match(tok, "++|--"))
+        return false;
+    // bailout when we see ({..})
+    if (tok->str() == "{")
+        return false;
+    return isConstExpression(tok->astOperand1(),constFunctions) && isConstExpression(tok->astOperand2(),constFunctions);
+}
 
 static bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions)
 {
@@ -2908,8 +2925,20 @@ void CheckOther::checkDuplicateExpression()
                     continue;
                 if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))
                     duplicateExpressionError(tok, tok, tok->str());
-                else if (tok->astOperand1() && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), constStandardFunctions))
+                else if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), constStandardFunctions))
                     duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
+                else if (tok->astOperand2()) {
+                    const Token *ast1 = tok->astOperand1();
+                    while (ast1 && tok->str() == ast1->str()) {
+                        if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), constStandardFunctions))
+                            duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
+                        else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), constStandardFunctions))
+                            duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
+                        if (!isConstExpression(ast1->astOperand2(), constStandardFunctions))
+                            break;
+                        ast1 = ast1->astOperand1();
+                    }
+                }
             }
         }
     }
