@@ -363,7 +363,7 @@ static bool iscast(const Token *tok)
         return false;
 
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-        if (!Token::Match(tok2, "%var%|*"))
+        if (!Token::Match(tok2, "%var%|*|&|::"))
             return Token::Match(tok2, ") %any%") && (!tok2->next()->isOp() && tok2->next()->str() != "[");
     }
 
@@ -531,8 +531,6 @@ static void compileMulDiv(Token *&tok, std::stack<Token*> &op)
     compileDot(tok,op);
     while (tok) {
         if (Token::Match(tok, "[*/%]")) {
-            if (Token::Match(tok, "* [,)]"))
-                break;
             compileBinOp(tok, compileDot, op);
         } else break;
     }
