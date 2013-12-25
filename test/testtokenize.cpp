@@ -10065,6 +10065,7 @@ private:
         testAst("extern void f(const char *format, ...);"); // don't crash
         testAst("extern int for_each_commit_graft(int (*)(int*), void *);"); // don't crash
         testAst("for (;;) {}"); // don't crash
+        ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
     }
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc..
