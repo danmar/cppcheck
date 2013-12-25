@@ -877,12 +877,12 @@ private:
         check("void f(char *p) {\n"
               "    if (p+1){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. Either a dereference is forgot, or pointer overflow is required to get a false value\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
 
         check("void f(char *p) {\n"
               "    if (p && p+1){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. Either a dereference is forgot, or pointer overflow is required to get a false value\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
     }
 };
 

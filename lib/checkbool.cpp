@@ -551,5 +551,6 @@ void CheckBool::pointerArithBoolError(const Token *tok)
     reportError(tok,
                 Severity::error,
                 "pointerArithBool",
-                "Converting pointer arithmetic result to bool. Either a dereference is forgot, or pointer overflow is required to get a false value");
+                "Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n"
+                "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.");
 }
