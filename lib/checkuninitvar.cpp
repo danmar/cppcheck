@@ -1757,7 +1757,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         }
     }
 
-    if (Token::Match(vartok->previous(), "= %var% ;|%cop%"))
+    if (!alloc && Token::Match(vartok->previous(), "= %var% ;|%cop%"))
         return true;
 
     if (Token::Match(vartok->previous(), "? %var%")) {
