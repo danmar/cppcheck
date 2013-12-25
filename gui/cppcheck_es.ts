@@ -11,12 +11,12 @@
     <message>
         <location filename="about.ui" line="64"/>
         <source>Version %1</source>
-        <translation>Version %1</translation>
+        <translation type="unfinished">Versión %1</translation>
     </message>
     <message>
         <location filename="about.ui" line="71"/>
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
-        <translation>Cppcheck - Utilidad para análisis estático de código.</translation>
+        <translation type="unfinished">Cppcheck - Utilidad para análisis estático de código C/C++.</translation>
     </message>
     <message utf8="true">
         <location filename="about.ui" line="81"/>
@@ -28,7 +28,7 @@
         <location filename="about.ui" line="91"/>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
-        <translation>Estre programa está licenciado bajo los términos de GNU General Public License versión 3</translation>
+        <translation type="unfinished">Este programa está licenciado bajo los términos de GNU General Public License versión 3</translation>
     </message>
     <message>
         <location filename="about.ui" line="102"/>
@@ -133,7 +133,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="logview.cpp" line="68"/>
         <source>Save Log</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Guardar Log</translation>
     </message>
     <message>
         <location filename="logview.cpp" line="69"/>
@@ -148,7 +148,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="logview.cpp" line="74"/>
         <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">No se pudo abrir el fichero para escritura: &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -191,7 +191,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="127"/>
         <source>&amp;Check</source>
-        <translation>&amp;Comprobar</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.ui" line="131"/>
@@ -221,7 +221,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="218"/>
         <source>&amp;License...</source>
-        <translation>&amp;licencia...</translation>
+        <translation type="unfinished">&amp;Licencia...</translation>
     </message>
     <message>
         <location filename="main.ui" line="223"/>
@@ -231,7 +231,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="232"/>
         <source>&amp;About...</source>
-        <translation>&amp;sobre...</translation>
+        <translation type="unfinished">&amp;Sobre...</translation>
     </message>
     <message>
         <location filename="main.ui" line="237"/>
@@ -242,7 +242,7 @@ Parameters: -l(line) (file)</source>
         <location filename="main.ui" line="240"/>
         <location filename="main.ui" line="243"/>
         <source>Check files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Checkear ficheros</translation>
     </message>
     <message>
         <location filename="main.ui" line="246"/>
@@ -258,7 +258,7 @@ Parameters: -l(line) (file)</source>
         <location filename="main.ui" line="258"/>
         <location filename="main.ui" line="261"/>
         <source>Check directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Chequear carpeta</translation>
     </message>
     <message>
         <location filename="main.ui" line="264"/>
@@ -278,13 +278,13 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="285"/>
         <source>&amp;Stop</source>
-        <translation>&amp;Parar</translation>
+        <translation type="unfinished">&amp;Detener</translation>
     </message>
     <message>
         <location filename="main.ui" line="288"/>
         <location filename="main.ui" line="291"/>
         <source>Stop checking</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Detener chequeo</translation>
     </message>
     <message>
         <location filename="main.ui" line="294"/>
@@ -319,59 +319,59 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="341"/>
         <source>Style warnings</source>
-        <translation>Estilos de advertencias</translation>
+        <translation type="unfinished">Advertencias de estilo</translation>
     </message>
     <message>
         <location filename="main.ui" line="344"/>
         <location filename="main.ui" line="347"/>
         <source>Show style warnings</source>
-        <translation>Mostrar estilos de advertencias</translation>
+        <translation type="unfinished">Mostrar advertencias de estilo</translation>
     </message>
     <message>
         <location filename="main.ui" line="359"/>
         <source>Errors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Errores</translation>
     </message>
     <message>
         <location filename="main.ui" line="362"/>
         <location filename="main.ui" line="365"/>
         <source>Show errors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar errores</translation>
     </message>
     <message>
         <location filename="main.ui" line="446"/>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar S&amp;cratchpad...</translation>
     </message>
     <message>
         <location filename="main.ui" line="540"/>
         <source>Information</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Información</translation>
     </message>
     <message>
         <location filename="main.ui" line="543"/>
         <source>Show information messages</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar mensajes de información</translation>
     </message>
     <message>
         <location filename="main.ui" line="555"/>
         <source>Portability</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Portabilidad</translation>
     </message>
     <message>
         <location filename="main.ui" line="558"/>
         <source>Show portability warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar advertencias de portabilidad</translation>
     </message>
     <message>
         <location filename="main.ui" line="566"/>
         <source>&amp;Filter</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Filtro</translation>
     </message>
     <message>
         <location filename="main.ui" line="569"/>
         <source>Filter results</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Resultados de filtro</translation>
     </message>
     <message>
         <location filename="main.ui" line="585"/>
@@ -552,13 +552,13 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="514"/>
         <source>Performance warnings</source>
-        <translation>Ajustar advertencias</translation>
+        <translation type="unfinished">Advertencias de rendimiento</translation>
     </message>
     <message>
         <location filename="main.ui" line="517"/>
         <location filename="main.ui" line="520"/>
         <source>Show performance warnings</source>
-        <translation>Mostrar ajustes de advertencias</translation>
+        <translation type="unfinished">Mostrar advertencias de rendimiento</translation>
     </message>
     <message>
         <location filename="main.ui" line="528"/>
@@ -609,7 +609,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="mainwindow.cpp" line="826"/>
         <source>License</source>
-        <translation>Licencia</translation>
+        <translation type="unfinished">Licencia</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="833"/>
@@ -629,7 +629,7 @@ Do you want to stop the checking and exit Cppcheck?.</source>
     <message>
         <location filename="mainwindow.cpp" line="74"/>
         <source>Quick Filter:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Filtro rápido:</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="409"/>
@@ -641,21 +641,27 @@ Do you want to stop the checking and exit Cppcheck?.</source>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Se encontró el fichero de proyecto: %1
+
+Quiere cargar dicho fichero de proyecto?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="480"/>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Se encontraron ficheros de proyecto en el directorio.
+
+Quiere proceder a chequear sin utilizar alguno de estos ficheros de proyecto?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="680"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Los resultados actuales serán eliminados
+
+Abrir un nuevo fichero XML eliminará los resultados actuales. Desea continuar?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="850"/>
@@ -893,7 +899,7 @@ Options:
         <location filename="projectfile.ui" line="165"/>
         <location filename="projectfile.ui" line="238"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Editar</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="109"/>
@@ -976,7 +982,7 @@ Options:
     <message>
         <location filename="translationhandler.cpp" line="32"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Guardar</translation>
     </message>
 </context>
 <context>
@@ -1007,7 +1013,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="1045"/>
         <source>Severity</source>
-        <translation>Importancia</translation>
+        <translation type="unfinished">Severidad</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="1045"/>
@@ -1171,7 +1177,7 @@ Por favor selecciona la carpeta donde se encuentra.</translation>
     <message>
         <location filename="resultsview.cpp" line="201"/>
         <source>%p% (%1 of %2 files checked)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%p% (%1 de %2 ficheros chequeados)</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="214"/>
@@ -1224,7 +1230,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="scratchpad.ui" line="48"/>
         <source>filename</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nombre de fichero</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="55"/>
@@ -1247,22 +1253,22 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="settings.ui" line="85"/>
         <source>Ideal count:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cantidad ideal:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="114"/>
         <source>Force checking all #ifdef configurations</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Forzar chequeo de todas las configuraciones #ifdef</translation>
     </message>
     <message>
         <location filename="settings.ui" line="135"/>
         <source>Display error Id in column &quot;Id&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar Id de error en la columna &quot;Id&quot;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="142"/>
         <source>Enable inline suppressions</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Habilitar supresiones inline</translation>
     </message>
     <message>
         <location filename="settings.ui" line="163"/>
@@ -1283,32 +1289,32 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="settings.ui" line="244"/>
         <source>Edit...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Editar...</translation>
     </message>
     <message>
         <location filename="settings.ui" line="258"/>
         <source>Set as default</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Definir como default</translation>
     </message>
     <message>
         <location filename="settings.ui" line="315"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Idioma</translation>
     </message>
     <message>
         <location filename="settings.ui" line="329"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avanzado</translation>
     </message>
     <message>
         <location filename="settings.ui" line="335"/>
         <source>&amp;Show inconclusive errors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar errores &quot;inconclusive&quot;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="342"/>
         <source>S&amp;how internal warnings in log</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar warnings internas en log</translation>
     </message>
     <message>
         <location filename="settings.ui" line="41"/>
@@ -1334,7 +1340,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
         <location filename="settings.ui" line="201"/>
         <location filename="settings.ui" line="251"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Eliminar</translation>
     </message>
     <message>
         <location filename="settings.ui" line="226"/>
@@ -1459,7 +1465,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="stats.ui" line="290"/>
         <source>Portability warnings:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Advertencias de portabilidad:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="308"/>
@@ -1469,7 +1475,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="stats.ui" line="326"/>
         <source>Information messages:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mensajes de información:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="364"/>
@@ -1574,7 +1580,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="statsdialog.cpp" line="108"/>
         <source>Style warnings</source>
-        <translation type="unfinished">Estilos de advertencias</translation>
+        <translation type="unfinished">Advertencias de estilo</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="109"/>
@@ -1589,7 +1595,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="statsdialog.cpp" line="111"/>
         <source>Information messages</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mensajes de información</translation>
     </message>
 </context>
 <context>
@@ -1597,7 +1603,7 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
     <message>
         <location filename="threadresult.cpp" line="54"/>
         <source>%1 of %2 files checked</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 de %2 ficheros chequeados</translation>
     </message>
 </context>
 <context>
@@ -1609,7 +1615,11 @@ Para cambiar el tipo de comportamiento, abrir el menú vista.</translation>
 %1
 
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Hubo un fallo al cambiar el idioma de la interfaz gráfica:
+
+%1
+
+El idioma de la interfaz grafica ha sido cambiado a Inglés. Abra la ventana de Preferencias para seleccionar alguno de los idiomas disponibles.</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="123"/>
