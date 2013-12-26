@@ -58,8 +58,13 @@ bool Library::load(const char exename[], const char path[])
 
         if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
             // Try to locate the library configuration in the installation folder..
-            const std::string installfolder = Path::fromNativeSeparators(Path::getPathFromFilename(exename));
-            const std::string filename = installfolder + "cfg/" + fullfilename;
+#ifdef CFGDIR
+            const std::string cfgfolder(CFGDIR);
+#else
+            const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(exename)) + "cfg");
+#endif
+            const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
+            const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
         }
     }

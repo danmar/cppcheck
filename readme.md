@@ -60,17 +60,22 @@ http://software-download.name/pcre-library-windows/
 
 ### gnu make
 
-To build Cppcheck with rules (PCRE dependency):
-
-```shell
-make HAVE_RULES=yes
-```
-
-To build Cppcheck without rules (no dependencies):
+Simple build (no dependencies):
 
 ```shell
 make
 ```
+
+The recommended release build is:
+
+```shell
+make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+```
+
+Flags:
+SRCDIR=build   : Python is used to optimise cppcheck
+CFGDIR=cfg     : Specify folder where .cfg files are found
+HAVE_RULES=yes : Enable rules (pcre is required if this is used)
 
 ### g++ (for experts)
 

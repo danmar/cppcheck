@@ -57,6 +57,10 @@ ifndef CXXFLAGS
     CXXFLAGS=-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wconversion -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
 
+ifdef CFGDIR
+    CXXFLAGS += -DCFGDIR=\"$(CFGDIR)\"
+endif
+
 ifeq ($(HAVE_RULES),yes)
     CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell pcre-config --cflags)
     ifdef LIBS

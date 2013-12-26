@@ -313,6 +313,11 @@ int main(int argc, char **argv)
                                 "-g");
     }
 
+    // explicit cfg dir..
+    fout << "ifdef CFGDIR\n"
+         << "    CXXFLAGS += -DCFGDIR=\\\"$(CFGDIR)\\\"\n"
+         << "endif\n\n";
+
     fout << "ifeq ($(HAVE_RULES),yes)\n"
          << "    CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell pcre-config --cflags)\n"
          << "    ifdef LIBS\n"
