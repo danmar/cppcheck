@@ -233,6 +233,9 @@ static bool isCalculation(const Token *op)
         if (!op->astOperand2())
             return false;
 
+        if (op->astOperand2()->str() == "[")
+            return false;
+
         // type specification?
         std::stack<const Token *> operands;
         operands.push(op);

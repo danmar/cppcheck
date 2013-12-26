@@ -97,6 +97,9 @@ private:
         check("sizeof(void * const)");
         ASSERT_EQUALS("", errout.str());
 
+        check("sizeof(int*[2])");
+        ASSERT_EQUALS("", errout.str());
+
         check("sizeof(foo++)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
 
