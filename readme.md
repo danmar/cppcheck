@@ -73,6 +73,7 @@ make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
 ```
 
 Flags:
+
 1.  SRCDIR=build
 
     Python is used to optimise cppcheck
