@@ -248,6 +248,8 @@ static bool isCalculation(const Token *op)
                 operands.push(item->astOperand1());
             if (item->astOperand2())
                 operands.push(item->astOperand2());
+            else if (Token::Match(item, "*|&"))
+                return false;
         }
 
         // type specification => return false
