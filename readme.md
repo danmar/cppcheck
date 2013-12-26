@@ -1,7 +1,6 @@
 # Cppcheck [![Build Status](https://travis-ci.org/danmar/cppcheck.png?branch=master)](https://travis-ci.org/danmar/cppcheck) [![Coverity Scan Build Status](https://scan.coverity.com/projects/512/badge.svg)](https://scan.coverity.com/projects/512)
-## Donations
 
-### Donations
+## Donations
 
 If you find Cppcheck useful for you, feel free to make a donation.
 
@@ -58,7 +57,7 @@ To compile without rules (no dependencies):
 The PCRE dll is needed to build the CLI. It can be downloaded here:
 http://software-download.name/pcre-library-windows/
 
-### gnu make
+### GNU make
 
 Simple build (no dependencies):
 
@@ -74,17 +73,17 @@ make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
 
 Flags:
 
-1.  SRCDIR=build
+1.  `SRCDIR=build`
 
     Python is used to optimise cppcheck
 
-2.  CFGDIR=cfg
+2.  `CFGDIR=cfg`
 
     Specify folder where .cfg files are found
 
-3.  HAVE_RULES=yes
+3.  `HAVE_RULES=yes`
 
-    Enable rules (pcre is required if this is used)
+    Enable rules (PCRE is required if this is used)
 
 ### g++ (for experts)
 
