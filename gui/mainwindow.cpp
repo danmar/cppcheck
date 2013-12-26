@@ -571,7 +571,7 @@ Settings MainWindow::GetCppcheckSettings()
         posix = result.library.load(applicationFilePath.toLatin1(), "posix");
 
     if (!std || !posix)
-        QMessageBox::warning(this, "Error", "Failed to load " + QString(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken.");
+        QMessageBox::warning(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken.").arg(!std ? "std.cfg" : "posix.cfg"));
 
     if (result._jobs <= 1) {
         result._jobs = 1;
