@@ -565,10 +565,10 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
-    bool std = result.library.load(applicationFilePath.toLatin1(), "std");
+    bool std = result.library.load(applicationFilePath.toLatin1(), "std.cfg");
     bool posix = true;
     if (result.standards.posix)
-        posix = result.library.load(applicationFilePath.toLatin1(), "posix");
+        posix = result.library.load(applicationFilePath.toLatin1(), "posix.cfg");
 
     if (!std || !posix)
         QMessageBox::warning(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken.").arg(!std ? "std.cfg" : "posix.cfg"));

@@ -155,10 +155,10 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_FAILURE;
     }
 
-    bool std = settings.library.load(argv[0], "std");
+    bool std = settings.library.load(argv[0], "std.cfg");
     bool posix = true;
     if (settings.standards.posix)
-        posix = settings.library.load(argv[0], "posix");
+        posix = settings.library.load(argv[0], "posix.cfg");
 
     if (!std || !posix) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
