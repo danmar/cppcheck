@@ -151,14 +151,22 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     Settings& settings = cppCheck.settings();
     _settings = &settings;
 
-    settings.library.load(argv[0], "std");
-
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         return EXIT_FAILURE;
     }
 
+    bool std = settings.library.load(argv[0], "std");
+    bool posix = true;
     if (settings.standards.posix)
-        settings.library.load(argv[0], "posix");
+        posix = settings.library.load(argv[0], "posix");
+
+    if (!std || !posix) {
+        const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken.");
+        ErrorLogger::ErrorMessage errmsg(callstack, Severity::information, msg, "failedToLoadCfg", false);
+        reportErr(errmsg);
+        return EXIT_FAILURE;
+    }
 
     if (settings.reportProgress)
         time1 = std::time(0);
