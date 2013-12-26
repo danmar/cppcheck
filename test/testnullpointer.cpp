@@ -2180,7 +2180,7 @@ private:
         // for 1st parameter null pointer is not ok..
         {
             Library library;
-            struct Library::ArgumentChecks arg;
+            Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
             library.argumentChecks["x"][1].notnull = true;
