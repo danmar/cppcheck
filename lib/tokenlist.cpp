@@ -455,15 +455,23 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
             op.push(name->next());
         }
     } else if (Token::Match(tok, "++|--")) {
-        if (!op.empty() && op.top()->isOp()) {
+        bool pre = false;
+        if (tok->next() && tok->next()->isName())
+            pre = true;
+        else if (!op.empty() && !op.top()->isOp())
+            pre = false;
+        else
+            pre = true;
+
+        if (pre) {
+            // pre increment/decrement
+            compileUnaryOp(tok, compileDot, op);
+        } else {
             // post increment/decrement
             tok->astOperand1(op.top());
             op.pop();
             op.push(tok);
             tok = tok->next();
-        } else {
-            // pre increment/decrement
-            compileUnaryOp(tok, compileDot, op);
         }
     } else if (tok->str() == "(") {
         if (iscast(tok)) {
