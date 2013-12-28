@@ -180,7 +180,7 @@ void CheckOther::clarifyCalculation()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // ? operator where lhs is arithmetical expression
-            if (tok->str() != "?" || !tok->astOperand1() || !tok->astOperand1()->isArithmeticalOp())
+            if (tok->str() != "?" || !tok->astOperand1() || !tok->astOperand1()->isArithmeticalOp() || !tok->astOperand1()->isCalculation())
                 continue;
 
             // Is code clarified by parentheses already?

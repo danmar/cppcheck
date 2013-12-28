@@ -4174,6 +4174,9 @@ private:
               "   return shift < sizeof(int64_t)*8 ? 1 : 2;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { a = *p ? 1 : 2; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void clarifyStatement() {

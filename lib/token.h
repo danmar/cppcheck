@@ -672,6 +672,15 @@ public:
         return ret;
     }
 
+    /**
+     * Is current token a calculation? Only true for operands.
+     * For '*' and '&' tokens it is looked up if this is a
+     * dereference or address-of. A dereference or address-of is not
+     * counted as a calculation.
+     * @return returns true if current token is a calculation
+     */
+    bool isCalculation() const;
+
     void clearAst() {
         _astOperand1 = _astOperand2 = _astParent = NULL;
     }

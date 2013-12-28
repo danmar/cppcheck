@@ -22,7 +22,6 @@
 #include "symboldatabase.h"
 #include <algorithm>
 #include <cctype>
-#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -219,45 +218,6 @@ void CheckSizeof::sizeofsizeofError(const Token *tok)
 }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-static bool isCalculation(const Token *op)
-{
-    if (!op)
-        return false;
-
-    if (!Token::Match(op, "%cop%|++|--"))
-        return false;
-
-    if (Token::Match(op, "*|&")) {
-        // dereference or address-of?
-        if (!op->astOperand2())
-            return false;
-
-        if (op->astOperand2()->str() == "[")
-            return false;
-
-        // type specification?
-        std::stack<const Token *> operands;
-        operands.push(op);
-        while (!operands.empty()) {
-            const Token *item = operands.top();
-            operands.pop();
-            if (item->isNumber() || item->varId() > 0)
-                return true;
-            if (item->astOperand1())
-                operands.push(item->astOperand1());
-            if (item->astOperand2())
-                operands.push(item->astOperand2());
-            else if (Token::Match(item, "*|&"))
-                return false;
-        }
-
-        // type specification => return false
-        return false;
-    }
-
-    return true;
-}
 
 void CheckSizeof::sizeofCalculation()
 {
@@ -267,7 +227,7 @@ void CheckSizeof::sizeofCalculation()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             const Token *argument = tok->next()->astOperand2();
-            if (isCalculation(argument) && (!argument->isExpandedMacro() || _settings->inconclusive))
+            if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || _settings->inconclusive))
                 sizeofCalculationError(argument, argument->isExpandedMacro());
         }
     }

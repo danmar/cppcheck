@@ -27,6 +27,7 @@
 #include <cctype>
 #include <sstream>
 #include <map>
+#include <stack>
 
 Token::Token(Token **t) :
     tokensBack(t),
@@ -1141,6 +1142,42 @@ void Token::astOperand2(Token *tok)
         tok = tok->_astParent;
     tok->_astParent = this;
     _astOperand2 = tok;
+}
+
+bool Token::isCalculation() const
+{
+    if (!Token::Match(this, "%cop%|++|--"))
+        return false;
+
+    if (Token::Match(this, "*|&")) {
+        // dereference or address-of?
+        if (!this->astOperand2())
+            return false;
+
+        if (this->astOperand2()->str() == "[")
+            return false;
+
+        // type specification?
+        std::stack<const Token *> operands;
+        operands.push(this);
+        while (!operands.empty()) {
+            const Token *op = operands.top();
+            operands.pop();
+            if (op->isNumber() || op->varId() > 0)
+                return true;
+            if (op->astOperand1())
+                operands.push(op->astOperand1());
+            if (op->astOperand2())
+                operands.push(op->astOperand2());
+            else if (Token::Match(op, "*|&"))
+                return false;
+        }
+
+        // type specification => return false
+        return false;
+    }
+
+    return true;
 }
 
 void Token::printAst() const
