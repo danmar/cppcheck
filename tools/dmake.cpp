@@ -82,7 +82,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
     }
 }
 
@@ -244,6 +244,13 @@ int main(int argc, char **argv)
          << "    endif\n"
          << "endif\n\n";
 
+    // explicit cfg dir..
+    fout << "ifdef CFGDIR\n"
+         << "    CFG=-DCFGDIR=\\\"$(CFGDIR)\\\"\n"
+         << "else\n"
+         << "    CFG=\n"
+         << "endif\n\n";
+
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
     fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
          << "# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.\n"
@@ -312,11 +319,6 @@ int main(int argc, char **argv)
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
-
-    // explicit cfg dir..
-    fout << "ifdef CFGDIR\n"
-         << "    CXXFLAGS += -DCFGDIR=\\\"$(CFGDIR)\\\"\n"
-         << "endif\n\n";
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
          << "    CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell pcre-config --cflags)\n"
