@@ -532,9 +532,24 @@ Settings MainWindow::GetCppcheckSettings()
 
         QStringList libraries = pfile->GetLibraries();
         foreach(QString library, libraries) {
-            const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            if (!result.library.load(applicationFilePath.toLatin1(), (library+".cfg").toLatin1()))
-                QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(library));
+            const QString filename = library + ".cfg";
+
+            // Try to load the library from the project folder..
+            QString path = QFileInfo(pfile->GetFilename()).canonicalPath();
+            if (result.library.load("", (path+"/"+filename).toLatin1()))
+                continue;
+
+            // Try to load the library from the application folder..
+            path = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+            if (result.library.load("", (path+"/"+filename).toLatin1()))
+                continue;
+
+            // Try to load the library from the cfg subfolder..
+            path = path + "/cfg";
+            if (result.library.load("", (path+"/"+filename).toLatin1()))
+                continue;
+
+            QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(filename));
         }
 
         // Only check the given -D configuration
