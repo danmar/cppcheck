@@ -204,6 +204,7 @@ private:
         TEST_CASE(mismatch4);
         TEST_CASE(mismatch5);
         TEST_CASE(mismatch6);
+        TEST_CASE(mismatch7); // opendir()/closedir() on non-POSIX
 
         TEST_CASE(mismatchSize);
 
@@ -1501,6 +1502,33 @@ private:
               "        fclose ( f ) ; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void mismatch7() {
+        Settings settings;
+        settings.standards.posix = false;
+        const char mycode1[]= "DIR *opendir(const char *name);\n"
+                              "void closedir(DIR *dir) {\n"
+                              "    free(dir);\n"
+                              "}\n"
+                              "\n"
+                              "void f(const char *dir) {\n"
+                              "  DIR *dirp;\n"
+                              "  if ((dirp = opendir(dir)) == NULL) return 0;\n"
+                              "  closedir(dirp);\n"
+                              "}\n";
+        check(mycode1, &settings);
+        ASSERT_EQUALS("", errout.str());
+        settings.standards.posix = true;
+        check(mycode1, &settings);
+        ASSERT_EQUALS("", errout.str());
+        const char mycode2[]= "void f(const char *dir) {\n"
+                              "  DIR *dirp;\n"
+                              "  if ((dirp = opendir(dir)) == NULL) return 0;\n"
+                              "  free(dirp);\n"
+                              "}\n";
+        check(mycode2, &settings);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: dirp\n", errout.str());
     }
 
     void mismatchSize() {

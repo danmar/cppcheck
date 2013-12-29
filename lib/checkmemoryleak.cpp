@@ -179,8 +179,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (Token::simpleMatch(tok2, "popen ("))
             return Pipe;
 
-        if (Token::Match(tok2, "opendir|fdopendir ("))
-            return Dir;
+        if (settings1->standards.posix)
+        {
+            if (Token::Match(tok2, "opendir|fdopendir ("))
+                return Dir;
+        }
 
         // Does tok2 point on "g_malloc", "g_strdup", ..
         const int alloctype = settings1->library.alloc(tok2->str());
