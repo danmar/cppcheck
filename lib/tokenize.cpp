@@ -3197,12 +3197,21 @@ void Tokenizer::createLinks2()
         else if (token->str() == ">" || token->str() == ">>") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
-            if (token->next() && !Token::Match(token->next(), "%var%|>|&|*|::|,|(|)|{"))
+            if (token->next() && !Token::Match(token->next(), "%var%|>|&|*|::|,|(|)|{|;"))
                 continue;
 
             // Check type of open link
             if (type.empty() || type.top()->str() != "<" || (token->str() == ">>" && type.size() < 2)) {
                 continue;
+            }
+
+            // if > is followed by ; .. "new a<b>;" is expected
+            if (Token::Match(token->next(), ";")) {
+                Token *prev = type.top()->previous();
+                while (prev && Token::Match(prev->previous(), ":: %var%"))
+                    prev = prev->tokAt(-2);
+                if (!prev || !prev->previous() || prev->previous()->str() != "new")
+                    continue;
             }
 
             Token* top = type.top();

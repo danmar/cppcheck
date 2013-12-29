@@ -2879,6 +2879,13 @@ private:
         }
 
         {
+            const char code[] = "void f() {\n"
+                                "  a = new std::map<std::string, std::string>;\n"
+                                "}\n";
+            ASSERT_EQUALS("void f ( ) { a = new std :: map < std :: string , std :: string > ; }", tok(code));
+        }
+
+        {
             // ticket #1327
             const char code[] = "const C<1,2,3> foo ()\n"
                                 "{\n"
