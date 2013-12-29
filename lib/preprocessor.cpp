@@ -3158,6 +3158,13 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                 (macrocode[i-1] != macroChar)) {
                                 macrocode.insert(i, 1U, macroChar);
                             }
+                            // 1e-7
+                            if (i+3 < macrocode.size()     &&
+                                std::isdigit(macrocode[i]) &&
+                                macrocode[i+1] == 'e'      &&
+                                macrocode[i+2] == '-'      &&
+                                std::isdigit(macrocode[i+3]))
+                                i += 3;
                         }
                     }
                     line.insert(pos1, macroChar + macrocode);

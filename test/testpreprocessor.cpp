@@ -183,6 +183,7 @@ private:
         TEST_CASE(macro_simple15);
         TEST_CASE(macro_simple16);  // #4703: Macro parameters not trimmed
         TEST_CASE(macro_simple17);  // #5074: isExpandedMacro not set
+        TEST_CASE(macro_simple18);  // (1e-7)
         TEST_CASE(macroInMacro1);
         TEST_CASE(macroInMacro2);
         TEST_CASE(macro_mismatch);
@@ -1975,6 +1976,12 @@ private:
         const char filedata[] = "#define MACRO(A) A+123\n"
                                 "MACRO(123)";
         ASSERT_EQUALS("\n$123+$123", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple18() {  // (1e-7)
+        const char filedata[] = "#define A (1e-7)\n"
+                                "a=A;";
+        ASSERT_EQUALS("\na=$($1e-7);", OurPreprocessor::expandMacros(filedata));
     }
 
     void macroInMacro1() {
