@@ -179,8 +179,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (Token::simpleMatch(tok2, "popen ("))
             return Pipe;
 
-        if (settings1->standards.posix)
-        {
+        if (settings1->standards.posix) {
             if (Token::Match(tok2, "opendir|fdopendir ("))
                 return Dir;
         }
