@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <QString>
 #include <QStringList>
+#include <QCheckBox>
 
 #include "ui_projectfile.h"
 
@@ -206,6 +207,9 @@ private:
      * @brief Projectfile path.
      */
     QString mFilePath;
+
+    /** @brief Library checkboxes */
+    QList<QCheckBox*> mLibraryCheckboxes;
 };
 
 /// @}

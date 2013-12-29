@@ -59,39 +59,11 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <layout class="QHBoxLayout" name="librariesLayout">
          <item>
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>Libraries:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="mChkboxGtk">
-           <property name="text">
-            <string>gtk</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="mChkboxPosix">
-           <property name="text">
-            <string>posix</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="mChkboxQt">
-           <property name="text">
-            <string>qt</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="mChkboxWindows">
-           <property name="text">
-            <string>windows</string>
            </property>
           </widget>
          </item>

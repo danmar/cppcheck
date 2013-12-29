@@ -33,11 +33,32 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
 {
     mUI.setupUi(this);
 
-    QFileInfo inf(path);
+    const QFileInfo inf(path);
     QString filename = inf.fileName();
     QString title = tr("Project file: %1").arg(filename);
     setWindowTitle(title);
     LoadSettings();
+
+    // Checkboxes for the libraries..
+    const QString applicationFilePath = QCoreApplication::applicationFilePath();
+    const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
+    const QString searchPaths[] = { appPath, appPath + "/cfg", inf.canonicalPath() };
+    for (int i = 0; i < 3; i++) {
+        QDir dir(searchPaths[i]);
+        dir.setSorting(QDir::Name);
+        dir.setNameFilters(QStringList("*.cfg"));
+        dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+        foreach(QFileInfo item, dir.entryInfoList()) {
+            QString library = item.fileName();
+            library.chop(4);
+            if (library.compare("std", Qt::CaseInsensitive) == 0)
+                continue;
+            QCheckBox *checkbox = new QCheckBox(this);
+            checkbox->setText(library);
+            mUI.librariesLayout->addWidget(checkbox);
+            mLibraryCheckboxes << checkbox;
+        }
+    }
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(AddIncludeDir()));
@@ -163,10 +184,9 @@ QStringList ProjectFileDialog::GetExcludedPaths() const
 QStringList ProjectFileDialog::GetLibraries() const
 {
     QStringList libraries;
-    const QCheckBox *c[] = { mUI.mChkboxGtk, mUI.mChkboxPosix, mUI.mChkboxQt, mUI.mChkboxWindows };
-    for (unsigned int i = 0; i < sizeof(c) / sizeof(c[0]); i++) {
-        if (c[i]->isChecked())
-            libraries << c[i]->text();
+    for (int i = 0; i < mLibraryCheckboxes.size(); i++) {
+        if (mLibraryCheckboxes[i]->isChecked())
+            libraries << mLibraryCheckboxes[i]->text();
     }
     return libraries;
 }
@@ -214,9 +234,10 @@ void ProjectFileDialog::SetExcludedPaths(const QStringList &paths)
 
 void ProjectFileDialog::SetLibraries(const QStringList &libraries)
 {
-    QCheckBox *c[] = { mUI.mChkboxGtk, mUI.mChkboxPosix, mUI.mChkboxQt, mUI.mChkboxWindows };
-    for (unsigned int i = 0; i < sizeof(c) / sizeof(c[0]); i++)
-        c[i]->setChecked(libraries.contains(c[i]->text()));
+    for (int i = 0; i < mLibraryCheckboxes.size(); i++) {
+        QCheckBox *checkbox = mLibraryCheckboxes[i];
+        checkbox->setChecked(libraries.contains(checkbox->text()));
+    }
 }
 
 void ProjectFileDialog::AddIncludeDir()
