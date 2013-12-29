@@ -79,6 +79,12 @@ public:
     QStringList GetExcludedPaths() const;
 
     /**
+    * @brief Get list libraries.
+    * @return list of libraries.
+    */
+    QStringList GetLibraries() const;
+
+    /**
     * @brief Get filename for the project file.
     * @return file name.
     */
@@ -117,6 +123,12 @@ public:
     * @param paths List of paths.
     */
     void SetExcludedPaths(const QStringList &paths);
+
+    /**
+    * @brief Set list of libraries.
+    * @param paths List of libraries.
+    */
+    void SetLibraries(const QStringList &libraries);
 
     /**
     * @brief Write project file (to disk).
@@ -164,6 +176,12 @@ protected:
     */
     void ReadExcludes(QXmlStreamReader &reader);
 
+    /**
+    * @brief Read list of libraries.
+    * @param reader XML stream reader.
+    */
+    void ReadLibraries(QXmlStreamReader &reader);
+
 private:
 
     /**
@@ -198,6 +216,11 @@ private:
     * @brief Paths excluded from the check.
     */
     QStringList mExcludedPaths;
+
+    /**
+    * @brief List of libraries.
+    */
+    QStringList mLibraries;
 };
 /// @}
 #endif  // PROJECT_FILE_H

@@ -530,6 +530,13 @@ Settings MainWindow::GetCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
+        QStringList libraries = pfile->GetLibraries();
+        foreach(QString library, libraries) {
+            const QString applicationFilePath = QCoreApplication::applicationFilePath();
+            if (!result.library.load(applicationFilePath.toLatin1(), (library+".cfg").toLatin1()))
+                QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(library));
+        }
+
         // Only check the given -D configuration
         if (!defines.isEmpty())
             result._maxConfigs = 1;

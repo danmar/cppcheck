@@ -44,6 +44,8 @@ static const char IgnorePathNameAttrib[] = "name";
 static const char ExcludeElementName[] = "exclude";
 static const char ExcludePathName[] = "path";
 static const char ExcludePathNameAttrib[] = "name";
+static const char LibrariesElementName[] = "libraries";
+static const char LibraryElementName[] = "library";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -99,6 +101,10 @@ bool ProjectFile::Read(const QString &filename)
             // These are read for compatibility
             if (insideProject && xmlReader.name() == IgnoreElementName)
                 ReadExcludes(xmlReader);
+
+            // Find libraries list from insid project element
+            if (insideProject && xmlReader.name() == LibrariesElementName)
+                ReadLibraries(xmlReader);
 
             break;
 
@@ -158,6 +164,15 @@ QStringList ProjectFile::GetExcludedPaths() const
         paths << QDir::fromNativeSeparators(path);
     }
     return paths;
+}
+
+QStringList ProjectFile::GetLibraries() const
+{
+    QStringList libraries;
+    foreach(QString library, mLibraries) {
+        libraries << library;
+    }
+    return libraries;
 }
 
 void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
@@ -327,6 +342,45 @@ void ProjectFile::ReadExcludes(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
+
+void ProjectFile::ReadLibraries(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            // Read library-elements
+            if (reader.name().toString() == LibraryElementName) {
+                type = reader.readNext();
+                if (type == QXmlStreamReader::Characters) {
+                    QString library = reader.text().toString();
+                    mLibraries << library;
+                }
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() == LibrariesElementName)
+                allRead = true;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (!allRead);
+}
+
 void ProjectFile::SetIncludes(const QStringList &includes)
 {
     mIncludeDirs = includes;
@@ -345,6 +399,11 @@ void ProjectFile::SetCheckPaths(const QStringList &paths)
 void ProjectFile::SetExcludedPaths(const QStringList &paths)
 {
     mExcludedPaths = paths;
+}
+
+void ProjectFile::SetLibraries(const QStringList &libraries)
+{
+    mLibraries = libraries;
 }
 
 bool ProjectFile::Write(const QString &filename)
@@ -403,6 +462,16 @@ bool ProjectFile::Write(const QString &filename)
         foreach(QString path, mExcludedPaths) {
             xmlWriter.writeStartElement(ExcludePathName);
             xmlWriter.writeAttribute(ExcludePathNameAttrib, path);
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mLibraries.isEmpty()) {
+        xmlWriter.writeStartElement(LibrariesElementName);
+        foreach(QString library, mLibraries) {
+            xmlWriter.writeStartElement(LibraryElementName);
+            xmlWriter.writeCharacters(library);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();

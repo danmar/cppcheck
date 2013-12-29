@@ -160,6 +160,17 @@ QStringList ProjectFileDialog::GetExcludedPaths() const
     return paths;
 }
 
+QStringList ProjectFileDialog::GetLibraries() const
+{
+    QStringList libraries;
+    const QCheckBox *c[] = { mUI.mChkboxGtk, mUI.mChkboxPosix, mUI.mChkboxQt, mUI.mChkboxWindows };
+    for (unsigned int i = 0; i < sizeof(c) / sizeof(c[0]); i++) {
+        if (c[i]->isChecked())
+            libraries << c[i]->text();
+    }
+    return libraries;
+}
+
 void ProjectFileDialog::SetRootPath(const QString &root)
 {
     QString newroot = QDir::toNativeSeparators(root);
@@ -199,6 +210,13 @@ void ProjectFileDialog::SetExcludedPaths(const QStringList &paths)
     foreach(QString path, paths) {
         AddExcludePath(path);
     }
+}
+
+void ProjectFileDialog::SetLibraries(const QStringList &libraries)
+{
+    QCheckBox *c[] = { mUI.mChkboxGtk, mUI.mChkboxPosix, mUI.mChkboxQt, mUI.mChkboxWindows };
+    for (unsigned int i = 0; i < sizeof(c) / sizeof(c[0]); i++)
+        c[i]->setChecked(libraries.contains(c[i]->text()));
 }
 
 void ProjectFileDialog::AddIncludeDir()

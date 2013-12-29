@@ -71,6 +71,12 @@ public:
     QStringList GetExcludedPaths() const;
 
     /**
+    * @brief Return selected libraries from the dialog control.
+    * @return List of libraries.
+    */
+    QStringList GetLibraries() const;
+
+    /**
     * @brief Set project root path to dialog control.
     * @param root Project root path to set to dialog control.
     */
@@ -99,6 +105,12 @@ public:
     * @param paths List of path names to set to dialog control.
     */
     void SetExcludedPaths(const QStringList &paths);
+
+    /**
+    * @brief Set libraries to dialog control.
+    * @param paths List of libraries to set to dialog control.
+    */
+    void SetLibraries(const QStringList &libraries);
 
 protected slots:
     /**
