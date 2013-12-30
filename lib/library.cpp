@@ -76,6 +76,8 @@ bool Library::load(const char exename[], const char path[])
 #ifdef CFGDIR
             const std::string cfgfolder(CFGDIR);
 #else
+            if (!exename)
+                return false;
             const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(exename)) + "cfg");
 #endif
             const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
