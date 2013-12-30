@@ -46,6 +46,8 @@ static const char ExcludePathName[] = "path";
 static const char ExcludePathNameAttrib[] = "name";
 static const char LibrariesElementName[] = "libraries";
 static const char LibraryElementName[] = "library";
+static const char SuppressionsElementName[] = "suppressions";
+static const char SuppressionElementName[] = "suppression";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -102,9 +104,13 @@ bool ProjectFile::Read(const QString &filename)
             if (insideProject && xmlReader.name() == IgnoreElementName)
                 ReadExcludes(xmlReader);
 
-            // Find libraries list from insid project element
+            // Find libraries list from inside project element
             if (insideProject && xmlReader.name() == LibrariesElementName)
-                ReadLibraries(xmlReader);
+                ReadStringList(mLibraries, xmlReader,LibraryElementName);
+
+            // Find suppressions list from inside project element
+            if (insideProject && xmlReader.name() == SuppressionsElementName)
+                ReadStringList(mSuppressions, xmlReader,SuppressionElementName);
 
             break;
 
@@ -173,6 +179,15 @@ QStringList ProjectFile::GetLibraries() const
         libraries << library;
     }
     return libraries;
+}
+
+QStringList ProjectFile::GetSuppressions() const
+{
+    QStringList suppressions;
+    foreach(QString suppression, mSuppressions) {
+        suppressions << suppression;
+    }
+    return suppressions;
 }
 
 void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
@@ -343,7 +358,7 @@ void ProjectFile::ReadExcludes(QXmlStreamReader &reader)
 }
 
 
-void ProjectFile::ReadLibraries(QXmlStreamReader &reader)
+void ProjectFile::ReadStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
 {
     QXmlStreamReader::TokenType type;
     bool allRead = false;
@@ -352,17 +367,17 @@ void ProjectFile::ReadLibraries(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
-            if (reader.name().toString() == LibraryElementName) {
+            if (reader.name().toString() == elementname) {
                 type = reader.readNext();
                 if (type == QXmlStreamReader::Characters) {
-                    QString library = reader.text().toString();
-                    mLibraries << library;
+                    QString text = reader.text().toString();
+                    stringlist << text;
                 }
             }
             break;
 
         case QXmlStreamReader::EndElement:
-            if (reader.name().toString() == LibrariesElementName)
+            if (reader.name().toString() != elementname)
                 allRead = true;
             break;
 
@@ -404,6 +419,11 @@ void ProjectFile::SetExcludedPaths(const QStringList &paths)
 void ProjectFile::SetLibraries(const QStringList &libraries)
 {
     mLibraries = libraries;
+}
+
+void ProjectFile::SetSuppressions(const QStringList &suppressions)
+{
+    mSuppressions = suppressions;
 }
 
 bool ProjectFile::Write(const QString &filename)
@@ -467,17 +487,31 @@ bool ProjectFile::Write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
-    if (!mLibraries.isEmpty()) {
-        xmlWriter.writeStartElement(LibrariesElementName);
-        foreach(QString library, mLibraries) {
-            xmlWriter.writeStartElement(LibraryElementName);
-            xmlWriter.writeCharacters(library);
-            xmlWriter.writeEndElement();
-        }
-        xmlWriter.writeEndElement();
-    }
+    WriteStringList(xmlWriter,
+                    mLibraries,
+                    LibrariesElementName,
+                    LibraryElementName);
+
+    WriteStringList(xmlWriter,
+                    mSuppressions,
+                    SuppressionsElementName,
+                    SuppressionElementName);
 
     xmlWriter.writeEndDocument();
     file.close();
     return true;
+}
+
+void ProjectFile::WriteStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[])
+{
+    if (stringlist.isEmpty())
+        return;
+
+    xmlWriter.writeStartElement(startelementname);
+    foreach(QString str, stringlist) {
+        xmlWriter.writeStartElement(stringelementname);
+        xmlWriter.writeCharacters(str);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
 }

@@ -78,6 +78,12 @@ public:
     QStringList GetLibraries() const;
 
     /**
+    * @brief Return suppressions from the dialog control.
+    * @return List of suppressions.
+    */
+    QStringList GetSuppressions() const;
+
+    /**
     * @brief Set project root path to dialog control.
     * @param root Project root path to set to dialog control.
     */
@@ -112,6 +118,12 @@ public:
     * @param paths List of libraries to set to dialog control.
     */
     void SetLibraries(const QStringList &libraries);
+
+    /**
+    * @brief Set suppressions to dialog control.
+    * @param paths List of suppressions to set to dialog control.
+    */
+    void SetSuppressions(const QStringList &suppressions);
 
 protected slots:
     /**
@@ -169,6 +181,16 @@ protected slots:
       * @brief Move include path down in the list.
       */
     void MoveIncludePathDown();
+
+    /**
+    * @brief Add suppression to the list
+    */
+    void AddSuppression();
+
+    /**
+    * @brief Remove selected suppression from the list
+    */
+    void RemoveSuppression();
 
 protected:
 

@@ -22,11 +22,14 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QDir>
 #include <QSettings>
 #include "common.h"
 #include "projectfiledialog.h"
 #include "library.h"
+#include "cppcheck.h"
+#include "errorlogger.h"
 
 ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     : QDialog(parent)
@@ -83,6 +86,8 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     connect(mUI.mBtnRemoveIgnorePath, SIGNAL(clicked()), this, SLOT(RemoveExcludePath()));
     connect(mUI.mBtnIncludeUp, SIGNAL(clicked()), this, SLOT(MoveIncludePathUp()));
     connect(mUI.mBtnIncludeDown, SIGNAL(clicked()), this, SLOT(MoveIncludePathDown()));
+    connect(mUI.mBtnAddSuppression, SIGNAL(clicked()), this, SLOT(AddSuppression()));
+    connect(mUI.mBtnRemoveSuppression, SIGNAL(clicked()), this, SLOT(RemoveSuppression()));
 }
 
 ProjectFileDialog::~ProjectFileDialog()
@@ -195,11 +200,22 @@ QStringList ProjectFileDialog::GetExcludedPaths() const
 QStringList ProjectFileDialog::GetLibraries() const
 {
     QStringList libraries;
-    for (int i = 0; i < mLibraryCheckboxes.size(); i++) {
-        if (mLibraryCheckboxes[i]->isChecked())
-            libraries << mLibraryCheckboxes[i]->text();
+    foreach(const QCheckBox *checkbox, mLibraryCheckboxes) {
+        if (checkbox->isChecked())
+            libraries << checkbox->text();
     }
     return libraries;
+}
+
+QStringList ProjectFileDialog::GetSuppressions() const
+{
+    QStringList suppressions;
+    const int count = mUI.mListSuppressions->count();
+    for (int i = 0; i < count; i++) {
+        QListWidgetItem *item = mUI.mListSuppressions->item(i);
+        suppressions << item->text();
+    }
+    return suppressions;
 }
 
 void ProjectFileDialog::SetRootPath(const QString &root)
@@ -249,6 +265,12 @@ void ProjectFileDialog::SetLibraries(const QStringList &libraries)
         QCheckBox *checkbox = mLibraryCheckboxes[i];
         checkbox->setChecked(libraries.contains(checkbox->text()));
     }
+}
+
+void ProjectFileDialog::SetSuppressions(const QStringList &suppressions)
+{
+    mUI.mListSuppressions->clear();
+    mUI.mListSuppressions->addItems(suppressions);
 }
 
 void ProjectFileDialog::AddIncludeDir()
@@ -359,4 +381,34 @@ void ProjectFileDialog::MoveIncludePathDown()
     row = row < count ? row + 1 : count;
     mUI.mListIncludeDirs->insertItem(row, item);
     mUI.mListIncludeDirs->setCurrentItem(item);
+}
+
+void ProjectFileDialog::AddSuppression()
+{
+    class QErrorLogger : public ErrorLogger {
+    public:
+        virtual void reportOut(const std::string &outmsg) {}
+        virtual void reportErr(const ErrorLogger::ErrorMessage &msg) {
+            errorIds << QString::fromStdString(msg._id);
+        }
+        QStringList errorIds;
+    };
+
+    QErrorLogger errorLogger;
+    CppCheck cppcheck(errorLogger,false);
+    cppcheck.getErrorMessages();
+    errorLogger.errorIds.sort();
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, tr("Add Suppression"),
+                                         tr("Select error id suppress:"), errorLogger.errorIds, 0, false, &ok);
+    if (ok && !item.isEmpty())
+        mUI.mListSuppressions->addItem(item);
+}
+
+void ProjectFileDialog::RemoveSuppression()
+{
+    const int row = mUI.mListSuppressions->currentRow();
+    QListWidgetItem *item = mUI.mListSuppressions->takeItem(row);
+    delete item;
 }

@@ -562,6 +562,11 @@ Settings MainWindow::GetCppcheckSettings()
                 QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(filename));
         }
 
+        QStringList suppressions = pfile->GetSuppressions();
+        foreach(QString suppression, suppressions) {
+            result.nomsg.addSuppressionLine(suppression.toStdString());
+        }
+
         // Only check the given -D configuration
         if (!defines.isEmpty())
             result._maxConfigs = 1;
