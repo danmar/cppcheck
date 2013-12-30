@@ -98,7 +98,7 @@ private:
         checkNullPointer.nullPointer();
 
         const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
         if (verify && str1 != str2)
             warn(("Unsimplified code in test case. It looks like this test "

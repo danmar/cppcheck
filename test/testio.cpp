@@ -82,7 +82,7 @@ private:
         checkIO.checkWrongPrintfScanfArguments();
 
         // Simplify token list..
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
         checkIO.checkCoutCerrMisusage();
         checkIO.checkFileUsage();
         checkIO.invalidScanf();

@@ -305,7 +305,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     Tokenizer tokenizer(&_settings, this);
     std::istringstream istr(code);
     tokenizer.tokenize(istr, filename.c_str(), "");
-    tokenizer.simplifyTokenList();
+    tokenizer.simplifyTokenList2();
 
     // Analyse the tokens..
     std::set<std::string> data;
@@ -376,7 +376,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
 
         Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
-        result = _tokenizer.simplifyTokenList();
+        result = _tokenizer.simplifyTokenList2();
         timer3.Stop();
         if (!result)
             return;

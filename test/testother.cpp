@@ -231,7 +231,7 @@ private:
 
         if (runSimpleChecks) {
             const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
             const std::string str2(tokenizer.tokens()->stringifyList(0,true));
             if (str1 != str2)
                 warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
@@ -567,7 +567,7 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr,"test.cpp");
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
             // Assert that the symboldatabase is inconsistent..
             const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
@@ -5933,7 +5933,7 @@ private:
 
         // Simplify token list..
         CheckOther checkOther(&tokenizer, &settings, this);
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
         checkOther.checkRedundantCopy();
     }
     void checkRedundantCopy() {

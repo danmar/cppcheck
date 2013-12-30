@@ -572,7 +572,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
         if (simplify)
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
     }
@@ -888,7 +888,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.c");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS("[test.c:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
     }
@@ -3150,7 +3150,7 @@ private:
         tokenizer.tokenize(istr, filename);
 
         if (simplify)
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
         // result..
         return tokenizer.tokens()->stringifyList(true);
@@ -5422,7 +5422,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS("void f ( ) { const char * a ; a = { \"hello more world\" } ; }", tokenizer.tokens()->stringifyList(0, false));
     }
@@ -5449,7 +5449,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS("void f ( ) { } void g ( ) { }", tokenizer.tokens()->stringifyList(0, false));
     }
@@ -5472,7 +5472,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS("void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }", tokenizer.tokens()->stringifyList(0, false));
     }
@@ -6064,7 +6064,7 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
             ASSERT_EQUALS("", errout.str());
         }
 

@@ -53,7 +53,7 @@ private:
         const std::string str1(tokenizer.tokens()->stringifyList(0,true));
 
         // Assign variable ids
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
 
@@ -3649,7 +3649,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);

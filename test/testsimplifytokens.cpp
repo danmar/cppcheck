@@ -470,7 +470,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         if (simplify)
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(0, !simplify);
     }
@@ -485,7 +485,7 @@ private:
 
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(0, false);
     }
@@ -500,7 +500,7 @@ private:
         tokenizer.tokenize(istr, filename);
 
         if (simplify)
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
         // result..
         return tokenizer.tokens()->stringifyList(true);
@@ -3139,7 +3139,7 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
             const char expect[] = "\n\n##file 0\n"
                                   "1: void foo ( )\n"
@@ -3173,7 +3173,7 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
             const char expect[] = "\n\n##file 0\n"
                                   "1: void foo ( )\n"
@@ -4233,7 +4233,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS(true, tokenizer.validate());
     }
@@ -4296,7 +4296,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS(true, tokenizer.validate());
     }

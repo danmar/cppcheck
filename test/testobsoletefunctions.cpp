@@ -81,7 +81,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for obsolete functions..
         CheckObsoleteFunctions checkObsoleteFunctions(&tokenizer, &settings, this);
