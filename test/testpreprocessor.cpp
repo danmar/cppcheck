@@ -1979,9 +1979,17 @@ private:
     }
 
     void macro_simple18() {  // (1e-7)
-        const char filedata[] = "#define A (1e-7)\n"
-                                "a=A;";
-        ASSERT_EQUALS("\na=$($1e-7);", OurPreprocessor::expandMacros(filedata));
+        const char filedata1[] = "#define A (1e-7)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($1e-7);", OurPreprocessor::expandMacros(filedata1));
+
+        const char filedata2[] = "#define A (1E-7)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($1E-7);", OurPreprocessor::expandMacros(filedata2));
+
+        const char filedata3[] = "#define A (1e+7)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($1e+7);", OurPreprocessor::expandMacros(filedata3));
     }
 
     void macroInMacro1() {
