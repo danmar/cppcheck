@@ -145,3 +145,9 @@ win32 {
     HEADERS += ../lib/version.h
     LIBS += -lshlwapi
 }
+
+
+# CFGDIR=xyz
+contains(CFGDIR, .+) {
+    DEFINES += CFGDIR=\\\"$${CFGDIR}\\\"
+}
