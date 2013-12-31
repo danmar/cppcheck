@@ -25,7 +25,6 @@
 #include "path.h"
 #include "mathlib.h"
 
-#include <tinyxml2.h>
 #include <map>
 #include <set>
 #include <string>
@@ -33,6 +32,9 @@
 #include <algorithm>
 
 class TokenList;
+namespace tinyxml2 {
+    class XMLDocument;
+}
 
 /// @addtogroup Core
 /// @{

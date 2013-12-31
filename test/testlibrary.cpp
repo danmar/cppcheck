@@ -20,6 +20,7 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "testsuite.h"
+#include <tinyxml2.h>
 
 class TestLibrary : public TestFixture {
 public:

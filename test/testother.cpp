@@ -18,10 +18,11 @@
 
 #include "preprocessor.h"
 #include "tokenize.h"
+#include "symboldatabase.h"
 #include "checkother.h"
 #include "testsuite.h"
 #include <sstream>
-#include <symboldatabase.h>
+#include <tinyxml2.h>
 
 extern std::ostringstream errout;
 
