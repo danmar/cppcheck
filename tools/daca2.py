@@ -158,6 +158,7 @@ def scanarchive(filepath):
          '../cppcheck-O2',
          '-D__GCC__',
          '--enable=style',
+         '--error-exitcode=0',
          '--suppressions-list=../suppressions.txt',
          '.'],
         stdout=subprocess.PIPE,
@@ -165,7 +166,10 @@ def scanarchive(filepath):
     comm = p.communicate()
 
     results = open('results.txt', 'at')
-    results.write(comm[1] + '\n')
+    results.write(comm[1])
+    if p.returncode != 0:
+        results.write('Exit code is not zero! Crash?\n')
+    results.write('\n')
     results.close()
 
 FOLDER = None
