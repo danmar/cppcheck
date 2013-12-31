@@ -46,32 +46,22 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     // Checkboxes for the libraries..
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
-    QStringList searchPaths;
-    if (Library::cfgdir())
-        searchPaths << Library::cfgdir();
-    searchPaths << inf.canonicalPath();
-    searchPaths << appPath;
-    searchPaths << (appPath + "/cfg");
-    QStringList libraries;
-    foreach(const QString path, searchPaths) {
-        QDir dir(path);
+    const QString searchPaths[] = { appPath, appPath + "/cfg", inf.canonicalPath() };
+    for (int i = 0; i < 3; i++) {
+        QDir dir(searchPaths[i]);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
         foreach(QFileInfo item, dir.entryInfoList()) {
-            libraries << item.fileName();
+            QString library = item.fileName();
+            library.chop(4);
+            if (library.compare("std", Qt::CaseInsensitive) == 0)
+                continue;
+            QCheckBox *checkbox = new QCheckBox(this);
+            checkbox->setText(library);
+            mUI.librariesLayout->addWidget(checkbox);
+            mLibraryCheckboxes << checkbox;
         }
-    }
-    libraries.removeDuplicates();
-    libraries.sort();
-    foreach(QString library, libraries) {
-        library.chop(4);
-        if (library.compare("std", Qt::CaseInsensitive) == 0)
-            continue;
-        QCheckBox *checkbox = new QCheckBox(this);
-        checkbox->setText(library);
-        mUI.librariesLayout->addWidget(checkbox);
-        mLibraryCheckboxes << checkbox;
     }
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));

@@ -425,14 +425,6 @@ private:
     void LoadProjectFile(const QString &filePath);
 
     /**
-     * @brief Load library file
-     * @param Library  library to use
-     * @param filename filename (no path)
-     * @return True if successful
-     */
-    bool LoadLibrary(Library *library, QString filename);
-
-    /**
     * @brief Update project MRU items in File-menu.
     */
     void UpdateMRUMenuItems();

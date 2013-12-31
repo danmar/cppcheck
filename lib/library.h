@@ -44,15 +44,6 @@ class CPPCHECKLIB Library {
 public:
     Library();
 
-    /** return cfgdir or NULL */
-    static const char *cfgdir() {
-#ifdef CFGDIR
-        return CFGDIR;
-#else
-        return NULL;
-#endif
-    }
-
     bool load(const char exename [], const char path []);
     bool load(const tinyxml2::XMLDocument &doc);
 
