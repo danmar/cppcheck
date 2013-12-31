@@ -512,6 +512,28 @@ void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
+bool MainWindow::LoadLibrary(Library *library, QString filename)
+{
+    // Try to load the library from the project folder..
+    if (mProject) {
+        QString path = QFileInfo(mProject->GetProjectFile()->GetFilename()).canonicalPath();
+        if (library->load(NULL, (path+"/"+filename).toLatin1()))
+            return true;
+    }
+
+    // Try to load the library from the application folder..
+    QString path = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+    if (library->load(NULL, (path+"/"+filename).toLatin1()))
+        return true;
+
+    // Try to load the library from the cfg subfolder..
+    path = path + "/cfg";
+    if (library->load(NULL, (path+"/"+filename).toLatin1()))
+        return true;
+
+    return false;
+}
+
 Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
@@ -533,23 +555,8 @@ Settings MainWindow::GetCppcheckSettings()
         QStringList libraries = pfile->GetLibraries();
         foreach(QString library, libraries) {
             const QString filename = library + ".cfg";
-
-            // Try to load the library from the project folder..
-            QString path = QFileInfo(pfile->GetFilename()).canonicalPath();
-            if (result.library.load("", (path+"/"+filename).toLatin1()))
-                continue;
-
-            // Try to load the library from the application folder..
-            path = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-            if (result.library.load("", (path+"/"+filename).toLatin1()))
-                continue;
-
-            // Try to load the library from the cfg subfolder..
-            path = path + "/cfg";
-            if (result.library.load("", (path+"/"+filename).toLatin1()))
-                continue;
-
-            QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(filename));
+            if (!LoadLibrary(&result.library, filename))
+                QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(filename));
         }
 
         QStringList suppressions = pfile->GetSuppressions();
@@ -591,11 +598,10 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
-    const QString applicationFilePath = QCoreApplication::applicationFilePath();
-    bool std = result.library.load(applicationFilePath.toLatin1(), "std.cfg");
+    bool std = LoadLibrary(&result.library, "std.cfg");
     bool posix = true;
     if (result.standards.posix)
-        posix = result.library.load(applicationFilePath.toLatin1(), "posix.cfg");
+        posix = LoadLibrary(&result.library, "posix.cfg");
 
     if (!std || !posix)
         QMessageBox::warning(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken.").arg(!std ? "std.cfg" : "posix.cfg"));
