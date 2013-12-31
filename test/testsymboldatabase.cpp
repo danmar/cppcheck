@@ -203,6 +203,7 @@ private:
         TEST_CASE(symboldatabase39); // ticket #5120 (infinite recursion)
         TEST_CASE(symboldatabase40); // ticket #5153
         TEST_CASE(symboldatabase41); // ticket #5197 (unknown macro)
+        TEST_CASE(symboldatabase42); // only put variables in variable list
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1670,6 +1671,14 @@ private:
     void symboldatabase41() { // ticket #5197 (unknown macro)
         GET_SYMBOL_DB("struct X1 { MACRO1 f(int spd) MACRO2; };\n");
         ASSERT(db && db->findScopeByName("X1") && db->findScopeByName("X1")->functionList.size() == 1 && !db->findScopeByName("X1")->functionList.front().hasBody);
+    }
+
+    void symboldatabase42() { // only put variables in variable list
+        GET_SYMBOL_DB("void f() { extern int x(); }\n");
+        ASSERT(db);
+        const Scope * const fscope = db ? db->findScopeByName("f") : NULL;
+        ASSERT(fscope);
+        ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
     }
 
     void isImplicitlyVirtual() {

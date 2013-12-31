@@ -2170,7 +2170,7 @@ void Tokenizer::simplifyTemplates()
 //---------------------------------------------------------------------------
 
 
-static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId, bool executableScope)
+static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId, bool executableScope, bool cpp)
 {
     const Token *tok2 = *tok;
 
@@ -2183,7 +2183,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     bool hasstruct = false;   // Is there a "struct" or "class"?
     while (tok2) {
         if (tok2->isName()) {
-            if (tok2->str() == "class" || tok2->str() == "struct" || tok2->str() == "union" || tok2->str() == "typename") {
+            if (tok2->str() == "struct" || tok2->str() == "union" || (cpp && (tok2->str() == "class" || tok2->str() == "typename"))) {
                 hasstruct = true;
                 typeCount = 0;
             } else if (tok2->str() == "const") {
@@ -2465,7 +2465,7 @@ void Tokenizer::setVarId()
             if (notstart.find(tok2->str()) != notstart.end())
                 continue;
 
-            const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top());
+            const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP());
 
             if (decl && Token::Match(tok2->previous(), "%type% [;[=,)]") && tok2->previous()->str() != "const") {
                 variableId[tok2->previous()->str()] = ++_varId;
@@ -2482,7 +2482,7 @@ void Tokenizer::setVarId()
                     continue;
 
                 const Token *tok3 = tok2->next();
-                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3,"struct|union|class %type%") && tok3->str() != "." && !setVarIdParseDeclaration(&tok3,variableId,executableScope.top())) {
+                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3,"struct|union|class %type%") && tok3->str() != "." && !setVarIdParseDeclaration(&tok3,variableId,executableScope.top(),isCPP())) {
                     variableId[tok2->previous()->str()] = ++_varId;
                     tok = tok2->previous();
                 }

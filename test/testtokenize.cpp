@@ -280,6 +280,7 @@ private:
         TEST_CASE(varid_in_class10);
         TEST_CASE(varid_in_class11);    // #4277 - anonymous union
         TEST_CASE(varid_in_class12);    // #4637 - method
+        TEST_CASE(varid_in_class13);    // #4637 - method
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -4419,6 +4420,24 @@ private:
                       "3: void f ( ) ;\n"
                       "4: } ;\n",
                       tokenizeDebugListing(code));
+    }
+
+    void varid_in_class13() {
+        const char code1[] = "struct a { char typename; };";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct a { char typename@1 ; } ;\n",
+                      tokenizeDebugListing(code1, false, "test.c"));
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct a { char typename ; } ;\n",  // not valid C++ code
+                      tokenizeDebugListing(code1, false, "test.cpp"));
+
+        const char code2[] = "struct a { char typename[2]; };";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct a { char typename@1 [ 2 ] ; } ;\n",
+                      tokenizeDebugListing(code2, false, "test.c"));
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct a { char typename [ 2 ] ; } ;\n",  // not valid C++ code
+                      tokenizeDebugListing(code2, false, "test.cpp"));
     }
 
     void varid_initList() {

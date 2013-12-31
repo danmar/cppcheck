@@ -2029,25 +2029,25 @@ private:
     void array_index_same_struct_and_var_name() {
         // don't throw internal error
         check("struct tt {\n"
-              "    char typename[21];\n"
+              "    char name[21];\n"
               "} ;\n"
               "void doswitch(struct tt *x)\n"
               "{\n"
               "    struct tt *tt=x;\n"
-              "    tt->typename;\n"
+              "    tt->name;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         // detect error
         check("struct tt {\n"
-              "    char typename[21];\n"
+              "    char name[21];\n"
               "} ;\n"
               "void doswitch(struct tt *x)\n"
               "{\n"
               "    struct tt *tt=x;\n"
-              "    tt->typename[22] = 123;\n"
+              "    tt->name[22] = 123;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt.typename[21]' accessed at index 22, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt.name[21]' accessed at index 22, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_1_standard_functions() {

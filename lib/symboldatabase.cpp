@@ -2330,8 +2330,11 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         while (tok && tok->str() == "[")
             tok = tok->link()->next();
 
-        if (vartok->varId() == 0 && !vartok->isBoolean())
-            check->debugMessage(vartok, "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
+        if (vartok->varId() == 0) {
+            if (!vartok->isBoolean())
+                check->debugMessage(vartok, "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
+            return tok;
+        }
 
         const Type *vType = NULL;
 
