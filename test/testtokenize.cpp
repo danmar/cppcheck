@@ -289,6 +289,7 @@ private:
         TEST_CASE(varid_functionPrototypeTemplate);
         TEST_CASE(varid_templatePtr); // #4319
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
+        TEST_CASE(varid_templateArray);
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
         TEST_CASE(varid_rvalueref);
@@ -4562,6 +4563,12 @@ private:
     void varid_templateNamespaceFuncPtr() {
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: KeyListT < float , & NIFFile :: getFloat > mKeyList@1 [ 4 ] ;\n", tokenizeDebugListing("KeyListT<float, &NIFFile::getFloat> mKeyList[4];"));
+    }
+
+    void varid_templateArray() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: VertexArrayIterator < float [ 2 ] > attrPos@1 ; attrPos@1 = m_AttributePos . GetIterator < float [ 2 ] > ( ) ;\n",
+                      tokenizeDebugListing("VertexArrayIterator<float[2]> attrPos = m_AttributePos.GetIterator<float[2]>();"));
     }
 
     void varid_variadicFunc() {
