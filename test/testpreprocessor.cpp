@@ -1990,6 +1990,14 @@ private:
         const char filedata3[] = "#define A (1e+7)\n"
                                  "a=A;";
         ASSERT_EQUALS("\na=$($1e+7);", OurPreprocessor::expandMacros(filedata3));
+
+        const char filedata4[] = "#define A (1.e+7)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($1.e+7);", OurPreprocessor::expandMacros(filedata4));
+
+        const char filedata5[] = "#define A (1.7f)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($1.7f);", OurPreprocessor::expandMacros(filedata5));
     }
 
     void macroInMacro1() {
