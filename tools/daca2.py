@@ -166,8 +166,9 @@ def scanarchive(filepath):
     comm = p.communicate()
 
     results = open('results.txt', 'at')
-    results.write(comm[1])
-    if p.returncode != 0:
+    if p.returncode == 0:
+        results.write(comm[1])
+    elif comm[0].find('cppcheck: error: could not find or open any of the paths given.') < 0:
         results.write('Exit code is not zero! Crash?\n')
     results.write('\n')
     results.close()
