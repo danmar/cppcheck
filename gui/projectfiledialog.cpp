@@ -261,6 +261,7 @@ void ProjectFileDialog::SetSuppressions(const QStringList &suppressions)
 {
     mUI.mListSuppressions->clear();
     mUI.mListSuppressions->addItems(suppressions);
+    mUI.mListSuppressions->sortItems();
 }
 
 void ProjectFileDialog::AddIncludeDir()
@@ -377,7 +378,7 @@ void ProjectFileDialog::AddSuppression()
 {
     class QErrorLogger : public ErrorLogger {
     public:
-        virtual void reportOut(const std::string &outmsg) {}
+        virtual void reportOut(const std::string &/*outmsg*/) {}
         virtual void reportErr(const ErrorLogger::ErrorMessage &msg) {
             errorIds << QString::fromStdString(msg._id);
         }
@@ -392,8 +393,10 @@ void ProjectFileDialog::AddSuppression()
     bool ok;
     QString item = QInputDialog::getItem(this, tr("Add Suppression"),
                                          tr("Select error id suppress:"), errorLogger.errorIds, 0, false, &ok);
-    if (ok && !item.isEmpty())
+    if (ok && !item.isEmpty()) {
         mUI.mListSuppressions->addItem(item);
+        mUI.mListSuppressions->sortItems();
+    }
 }
 
 void ProjectFileDialog::RemoveSuppression()
