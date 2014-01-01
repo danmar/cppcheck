@@ -996,7 +996,8 @@ private:
     }
 
     void garbageCode7() {
-        tokenizeAndStringify(" 1  (int j) {  return return (c) * sizeof } y[1];", /*simplify=*/true);
+        tokenizeAndStringify("1 (int j) { return return (c) * sizeof } y[1];", /*simplify=*/true);
+        tokenizeAndStringify("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)", /*simplify=*/true);
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
