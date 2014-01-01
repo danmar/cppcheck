@@ -426,7 +426,7 @@ private:
 
     /**
      * @brief Load library file
-     * @param Library  library to use
+     * @param library  library to use
      * @param filename filename (no path)
      * @return True if successful
      */

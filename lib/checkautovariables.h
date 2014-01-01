@@ -27,6 +27,7 @@
 #include "token.h"
 
 /// @addtogroup Checks
+/** @brief Various small checks for automatic variables */
 /// @{
 
 

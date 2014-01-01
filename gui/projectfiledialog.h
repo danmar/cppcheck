@@ -115,13 +115,13 @@ public:
 
     /**
     * @brief Set libraries to dialog control.
-    * @param paths List of libraries to set to dialog control.
+    * @param libraries List of libraries to set to dialog control.
     */
     void SetLibraries(const QStringList &libraries);
 
     /**
     * @brief Set suppressions to dialog control.
-    * @param paths List of suppressions to set to dialog control.
+    * @param suppressions List of suppressions to set to dialog control.
     */
     void SetSuppressions(const QStringList &suppressions);
 
