@@ -805,7 +805,7 @@ static bool checkFunctionUsage(const std::string& name, const Scope* scope)
         if (func->functionScope) {
             if (Token::Match(func->tokenDef, "%var% (")) {
                 for (const Token *ftok = func->tokenDef->tokAt(2); ftok && ftok->str() != ")"; ftok = ftok->next()) {
-                    if (Token::Match(ftok, "= %var% (") && ftok->strAt(1) == name)
+                    if (Token::Match(ftok, "= %var% [(,)]") && ftok->strAt(1) == name)
                         return true;
                     if (ftok->str() == "(")
                         ftok = ftok->link();
