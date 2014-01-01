@@ -715,7 +715,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         _settings->_maxConfigs = ~0U;
 
     if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
-        PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option, so it's disabled.");
+        PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
     if (_settings->inconclusive && _settings->_xml && _settings->_xml_version == 1U) {
