@@ -39,16 +39,12 @@ public:
     }
 
     void run(const char code[]) {
-        printf("%s\n", ErrorLogger::ErrorMessage::getXMLHeader(2).c_str());
         cppcheck.check("test.c", code);
-        printf("%s\n", ErrorLogger::ErrorMessage::getXMLFooter(2).c_str());
-        printf("\n\n");
     }
 
     void reportOut(const std::string &outmsg) { }
     void reportErr(const ErrorLogger::ErrorMessage &msg) {
-        const std::string str(msg.toXML(true,2U));
-        printf("%s\n", str.c_str());
+        printf("%s\n", msg.toString(true).c_str());
     }
 
     void reportProgress(const
@@ -70,17 +66,24 @@ int main()
 {
     char data[4096] = {0};
 
+    const char *query_string = getenv("QUERY_STRING");
+    if (query_string)
+        std::strncpy(data, query_string, sizeof(data)-2);
+
     const char *lenstr = getenv("CONTENT_LENGTH");
     if (lenstr) {
         int len = std::min(1 + atoi(lenstr), (int)(sizeof(data) - 2));
         fgets(data, len, stdin);
-    } else {
-        const char *s = getenv("QUERY_STRING");
-        std::strncpy(data, s?s:"", sizeof(data)-2);
     }
 
     char code[4096] = {0};
     unencode(data, code);
+
+    if (strlen(code) > 1000) {
+        puts("Content-type: text/html\r\n\r\n");
+        puts("<html><body>For performance reasons the code must be shorter than 1000 chars.</body></html>");
+        return EXIT_SUCCESS;
+    }
 
     FILE *logfile = fopen("democlient.log", "at");
     if (logfile != NULL) {
@@ -88,10 +91,13 @@ int main()
         fclose(logfile);
     }
 
-    printf("Content-type: text/plain\n\n");
+    puts("Content-type: text/html\r\n\r\n");
+    puts("<html><body><pre>");
 
     CppcheckExecutor cppcheckExecutor;
     cppcheckExecutor.run(code);
+
+    puts("</pre>Done!</body></html>");
 
     return EXIT_SUCCESS;
 }

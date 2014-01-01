@@ -46,7 +46,7 @@
 <div id="content">
   <div class="wrap">
 <h2>Online Demo</h2>
-<form action="/demo/report/" name="f" onsubmit="return checkCodeLength();" method="post" target="_blank">
+<form action="/cgi-bin/democlient-test.cgi" name="f" onsubmit="return checkCodeLength();" method="get" target="_blank">
 <p><label for="code">Enter code:</label> <span class="maxChars">(max 1024 characters)</span><br />
 <textarea id="code" name="code" rows="20" cols="80">
 void f()

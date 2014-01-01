@@ -18,6 +18,7 @@ options="--pad-header --unpad-paren --suffix=none --convert-tabs"
 
 astyle $style $options cli/*.cpp
 astyle $style $options cli/*.h
+astyle $style $options democlient/*.cpp
 astyle $style $options gui/*.cpp
 astyle $style $options gui/*.h
 astyle $style $options -r gui/test/*.cpp
