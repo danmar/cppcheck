@@ -3994,7 +3994,7 @@ void Tokenizer::simplifyFlowControl()
         unsigned int indentlevel = 0;
         bool stilldead = false;
 
-        for (Token *tok = begin; tok != end; tok = tok->next()) {
+        for (Token *tok = begin; tok && tok != end; tok = tok->next()) {
             if (tok->str() == "(" || tok->str() == "[") {
                 tok = tok->link();
                 continue;

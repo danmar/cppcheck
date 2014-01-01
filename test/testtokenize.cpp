@@ -76,6 +76,7 @@ private:
         TEST_CASE(garbageCode4); // #4887
         TEST_CASE(garbageCode5); // #5168
         TEST_CASE(garbageCode6); // #5214
+        TEST_CASE(garbageCode7);
 
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
@@ -992,6 +993,10 @@ private:
     void garbageCode6() { // #5214
         tokenizeAndStringify("int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
         tokenizeAndStringify("int a = int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
+    }
+
+    void garbageCode7() {
+        tokenizeAndStringify(" 1  (int j) {  return return (c) * sizeof } y[1];", /*simplify=*/true);
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
