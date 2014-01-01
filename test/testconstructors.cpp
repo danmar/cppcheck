@@ -1923,6 +1923,14 @@ private:
               "    }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+        check("class A {\n"
+              "    double d;\n"
+              "public:\n"
+              "    A() {\n"
+              "        ::rtl::math::setNan(&d);\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray1() {
