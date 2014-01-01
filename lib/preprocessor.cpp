@@ -584,7 +584,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
         } else if ((i==0 || std::isspace(str[i-1])) && str.compare(i,5,"__asm",0,5) == 0) {
-            while (i < str.size() && !std::isspace(str[i]))
+            while (i < str.size() && (std::isalpha(str[i]) || str[i]=='_'))
                 code << str[i++];
             while (i < str.size() && std::isspace(str[i]))
                 code << str[i++];

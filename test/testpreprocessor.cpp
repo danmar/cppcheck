@@ -414,6 +414,10 @@ private:
 
         // #4873
         ASSERT_EQUALS("__asm { }", preprocessor.removeComments("__asm { /* This is a comment */ }", "4873.cpp"));
+
+        // #5169
+        ASSERT_EQUALS("#define A(B) __asm__(\"int $3\"); int wait=1;\n",
+                      preprocessor.removeComments("#define A(B) __asm__(\"int $3\"); /**/ int wait=1;\n", "5169.c"));
     }
 
 
