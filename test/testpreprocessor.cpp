@@ -2002,6 +2002,14 @@ private:
         const char filedata5[] = "#define A (1.7f)\n"
                                  "a=A;";
         ASSERT_EQUALS("\na=$($1.7f);", OurPreprocessor::expandMacros(filedata5));
+
+        const char filedata6[] = "#define A (.1)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($.1);", OurPreprocessor::expandMacros(filedata6));
+
+        const char filedata7[] = "#define A (1.)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($1.);", OurPreprocessor::expandMacros(filedata7));
     }
 
     void macroInMacro1() {
