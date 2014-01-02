@@ -25,6 +25,7 @@ script:
   - sudo mkdir -p /usr/share/cppcheck/cfg
   - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
   - /usr/bin/cppcheck ./cli
+  - make reduce -j 4
 notifications:
   irc:
     channels:
