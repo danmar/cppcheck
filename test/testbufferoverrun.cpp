@@ -3940,7 +3940,7 @@ private:
               "    ssize_t len = readlink(path, buf, 254);\n"
               "    printf(\"%s\n\", buf);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", "", errout.str());
 
         // C only: Primitive pointer simplification
         check("void f() {\n"
@@ -3948,7 +3948,7 @@ private:
               "    ssize_t len = readlink(path, &buf[0], 254);\n"
               "    printf(\"%s\n\", buf);\n"
               "}\n", true, "test.c");
-        ASSERT_EQUALS("[test.c:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.c:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", "", errout.str());
 
         check("void f() {\n"
               "    char buf[255];\n"
@@ -3980,6 +3980,13 @@ private:
               "    buf[len] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char buf[255] = {0};\n"
+              "    readlink(path, buf, 254);\n"  // <- doesn't write whole buf
+              "    puts(buf);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void readlinkat() {
@@ -3988,7 +3995,7 @@ private:
               "    ssize_t len = readlinkat(42, path, buf, 254);\n"
               "    printf(\"%s\n\", buf);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlinkat().\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlinkat().\n", "", errout.str());
 
         check("void f() {\n"
               "    char buf[255];\n"

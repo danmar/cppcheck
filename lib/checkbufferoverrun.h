@@ -191,7 +191,7 @@ public:
     void parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value);
 
     /** Check readlink or readlinkat() buffer usage */
-    void checkReadlinkBufferUsage(const Token *tok, const Token *scope_begin, const MathLib::bigint total_size, const bool is_readlinkat);
+    void checkReadlinkBufferUsage(const Token *ftok, const Token *scope_begin, const unsigned int varid, const MathLib::bigint total_size);
 
     /**
      * Helper function for checkFunctionCall - check a function parameter
