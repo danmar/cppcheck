@@ -188,7 +188,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         unsigned int c = 0;
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
             if (!_settings->library.markupFile(i->first)
-                    || !_settings->library.processMarkupAfterCode(i->first)) {
+                || !_settings->library.processMarkupAfterCode(i->first)) {
                 returnValue += cppCheck.check(i->first);
                 processedsize += i->second;
                 if (!settings._errorsOnly)
