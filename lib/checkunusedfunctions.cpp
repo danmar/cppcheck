@@ -109,7 +109,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     scope--;
                 else if (qmlVarToken->next()->str() == "(" &&
                          (!settings->library.iskeyword(FileName, qmlVarToken->str()))) {
-                    if (_functions.find(qmlVarToken->str()) != _functions.end())
+                    if (_functions.find(qmlVarToken->str()) == _functions.end())
                         _functions[qmlVarToken->str()].usedOtherFile = true;
                 }
                 qmlVarToken = qmlVarToken->next();
