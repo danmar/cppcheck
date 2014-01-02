@@ -252,7 +252,6 @@ public:
 private:
     class ExportedFunctions {
     public:
-        ExportedFunctions() {}
         void addPrefix(const std::string& prefix) {
             _prefixes.insert(prefix);
         }
@@ -273,6 +272,7 @@ private:
     class CodeBlock {
     public:
         CodeBlock() : _offset(0) {}
+
         void setStart(const std::string& s) {
             _start = s;
         }
