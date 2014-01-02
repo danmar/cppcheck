@@ -159,8 +159,7 @@ public:
     }
 
     bool ignorefunction(const std::string &function) const {
-        const std::map<std::string, bool>::const_iterator it = _ignorefunction.find(function);
-        return (it != _ignorefunction.end() && it->second);
+        return (_ignorefunction.find(function) != _ignorefunction.end());
     }
 
     bool isexecutableblock(const std::string &file, const std::string &token) const {
@@ -308,7 +307,7 @@ private:
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
-    std::map<std::string, bool> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
+    std::set<std::string> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
     std::map<std::string, bool> _reporterrors;
     std::set<std::string> _markupExtensions; // file extensions of markup files
     std::map<std::string, std::set<std::string> > _keywords; // keywords for code in the library
