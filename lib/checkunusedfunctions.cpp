@@ -99,20 +99,27 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         // parsing of library code to find called functions
         if (settings->library.isexecutableblock(FileName, tok->str())) {
-            const Token * qmlVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
+            const Token * markupVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
             int scope = 1;
             // find all function calls in library code (starts with '(', not if or while etc)
             while (scope) {
-                if (qmlVarToken->str() == settings->library.blockstart(FileName)) {
+                if (markupVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
-                } else if (qmlVarToken->str() == settings->library.blockend(FileName))
+                } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
-                else if (qmlVarToken->next()->str() == "(" &&
-                         (!settings->library.iskeyword(FileName, qmlVarToken->str()))) {
-                    if (_functions.find(qmlVarToken->str()) != _functions.end())
-                        _functions[qmlVarToken->str()].usedOtherFile = true;
+                else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
+                    if (_functions.find(markupVarToken->str()) != _functions.end())
+                        _functions[markupVarToken->str()].usedOtherFile = true;
+                    else if (markupVarToken->next()->str() == "("){
+                        FunctionUsage &func = _functions[markupVarToken->str()];
+                        func.filename = tokenizer.getSourceFilePath();
+                        if (func.filename.empty() || func.filename == "+")
+                            func.usedOtherFile = true;
+                        else
+                            func.usedSameFile = true;
+                    }
                 }
-                qmlVarToken = qmlVarToken->next();
+                markupVarToken = markupVarToken->next();
             }
         }
 

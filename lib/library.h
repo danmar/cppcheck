@@ -149,6 +149,11 @@ public:
         return _markupExtensions.find(Path::getFilenameExtensionInLowerCase(path)) != _markupExtensions.end();
     }
 
+    bool processMarkupAfterCode(const std::string &path) const {
+        const std::map<std::string, bool>::const_iterator it = _processAfterCode.find(Path::getFilenameExtensionInLowerCase(path));
+        return (it == _processAfterCode.end() || it->second);
+    }
+
     const std::set<std::string> &markupExtensions() const {
         return _markupExtensions;
     }
@@ -309,6 +314,7 @@ private:
     std::map<std::string, bool> _noreturn; // is function noreturn?
     std::set<std::string> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
     std::map<std::string, bool> _reporterrors;
+    std::map<std::string, bool> _processAfterCode;
     std::set<std::string> _markupExtensions; // file extensions of markup files
     std::map<std::string, std::set<std::string> > _keywords; // keywords for code in the library
     std::map<std::string, CodeBlock> _executableblocks; // keywords for blocks of executable code
