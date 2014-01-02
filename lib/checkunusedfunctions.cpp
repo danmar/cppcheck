@@ -107,11 +107,12 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     scope++;
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
-                else if (markupVarToken->next()->str() == "(" &&
-                         (!settings->library.iskeyword(FileName, markupVarToken->str()))) {
+                else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
+                    if (markupVarToken->str() == "displayTutorial")
+                        printf("hi");
                     if (_functions.find(markupVarToken->str()) != _functions.end())
                         _functions[markupVarToken->str()].usedOtherFile = true;
-                    else {
+                    else if (markupVarToken->next()->str() == "("){
                         FunctionUsage &func = _functions[markupVarToken->str()];
                         func.filename = tokenizer.getSourceFilePath();
                         if (func.filename.empty() || func.filename == "+")

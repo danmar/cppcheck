@@ -193,6 +193,8 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 
             const char * const reporterrors = node->Attribute("reporterrors");
             _reporterrors[extension] = (reporterrors && strcmp(reporterrors, "true") == 0);
+            const char * const aftercode = node->Attribute("aftercode");
+            _processAfterCode[extension] = (aftercode && strcmp(aftercode, "true") == 0);
 
             for (const tinyxml2::XMLElement *markupnode = node->FirstChildElement(); markupnode; markupnode = markupnode->NextSiblingElement()) {
                 if (strcmp(markupnode->Name(), "keywords") == 0) {
