@@ -205,7 +205,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                 }
 
                 else if (strcmp(markupnode->Name(), "exported") == 0) {
-                    for (const tinyxml2::XMLElement *exporter = node->FirstChildElement(); exporter; exporter = exporter->NextSiblingElement()) {
+                    for (const tinyxml2::XMLElement *exporter = markupnode->FirstChildElement(); exporter; exporter = exporter->NextSiblingElement()) {
                         if (strcmp(exporter->Name(), "exporter") != 0)
                             return false;
 
