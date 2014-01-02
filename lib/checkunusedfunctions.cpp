@@ -108,8 +108,6 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
-                    if (markupVarToken->str() == "displayTutorial")
-                        printf("hi");
                     if (_functions.find(markupVarToken->str()) != _functions.end())
                         _functions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "("){
