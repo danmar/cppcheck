@@ -199,6 +199,11 @@ private:
         TEST_CASE(symboldatabase35); // ticket #4806 (segmentation fault)
         TEST_CASE(symboldatabase36); // ticket #4892 (segmentation fault)
         TEST_CASE(symboldatabase37);
+        TEST_CASE(symboldatabase38); // ticket #5125 (infinite recursion)
+        TEST_CASE(symboldatabase39); // ticket #5120 (infinite recursion)
+        TEST_CASE(symboldatabase40); // ticket #5153
+        TEST_CASE(symboldatabase41); // ticket #5197 (unknown macro)
+        TEST_CASE(symboldatabase42); // only put variables in variable list
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1016,7 +1021,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // force symbol database creation
         tokenizer.getSymbolDatabase();
@@ -1276,7 +1281,7 @@ private:
               "public:\n"
               "    int f() { return C< ::D,int>::f(); }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (debug) simplifyTemplates: bailing out\n", errout.str());
     }
 
     void symboldatabase8() {
@@ -1637,6 +1642,43 @@ private:
         ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->name() == "Barney");
         ASSERT(db && db->getVariableFromVarId(2) && db->getVariableFromVarId(2)->type() && db->getVariableFromVarId(2)->type()->name() == "Wilma");
         ASSERT(db && db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->type() && db->getVariableFromVarId(3)->type()->name() == "Barney");
+    }
+
+    void symboldatabase38() { // ticket #5125
+        check("template <typename T = class service> struct scoped_service;\n"
+              "struct service {};\n"
+              "template <> struct scoped_service<service> {};\n"
+              "template <typename T>\n"
+              "struct scoped_service : scoped_service<service>\n"
+              "{\n"
+              "  scoped_service( T* ptr ) : scoped_service<service>(ptr), m_ptr(ptr) {}\n"
+              "  T* const m_ptr;\n"
+              "};");
+    }
+
+    void symboldatabase39() { // ticket #5120
+        check("struct V : { public case {} ; struct U : U  void { V *f (int x) (x) } }");
+    }
+
+    void symboldatabase40() { // ticket #5153
+        check("void f() {\n"
+              "    try {  }\n"
+              "    catch (std::bad_alloc) {  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase41() { // ticket #5197 (unknown macro)
+        GET_SYMBOL_DB("struct X1 { MACRO1 f(int spd) MACRO2; };\n");
+        ASSERT(db && db->findScopeByName("X1") && db->findScopeByName("X1")->functionList.size() == 1 && !db->findScopeByName("X1")->functionList.front().hasBody);
+    }
+
+    void symboldatabase42() { // only put variables in variable list
+        GET_SYMBOL_DB("void f() { extern int x(); }\n");
+        ASSERT(db);
+        const Scope * const fscope = db ? db->findScopeByName("f") : NULL;
+        ASSERT(fscope);
+        ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
     }
 
     void isImplicitlyVirtual() {

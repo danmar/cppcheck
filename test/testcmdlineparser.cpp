@@ -346,10 +346,10 @@ private:
 
     void defines4() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "-DDEBUG=", "file.cpp"};
+        const char *argv[] = {"cppcheck", "-DDEBUG=", "file.cpp"}; // #5137 - defining empty macro
         settings.userDefines.clear();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS("DEBUG", settings.userDefines);
+        ASSERT_EQUALS("DEBUG=", settings.userDefines);
     }
 
     void enforceLanguage() {

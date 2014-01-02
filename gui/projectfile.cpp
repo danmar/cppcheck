@@ -44,6 +44,10 @@ static const char IgnorePathNameAttrib[] = "name";
 static const char ExcludeElementName[] = "exclude";
 static const char ExcludePathName[] = "path";
 static const char ExcludePathNameAttrib[] = "name";
+static const char LibrariesElementName[] = "libraries";
+static const char LibraryElementName[] = "library";
+static const char SuppressionsElementName[] = "suppressions";
+static const char SuppressionElementName[] = "suppression";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -99,6 +103,14 @@ bool ProjectFile::Read(const QString &filename)
             // These are read for compatibility
             if (insideProject && xmlReader.name() == IgnoreElementName)
                 ReadExcludes(xmlReader);
+
+            // Find libraries list from inside project element
+            if (insideProject && xmlReader.name() == LibrariesElementName)
+                ReadStringList(mLibraries, xmlReader,LibraryElementName);
+
+            // Find suppressions list from inside project element
+            if (insideProject && xmlReader.name() == SuppressionsElementName)
+                ReadStringList(mSuppressions, xmlReader,SuppressionElementName);
 
             break;
 
@@ -158,6 +170,24 @@ QStringList ProjectFile::GetExcludedPaths() const
         paths << QDir::fromNativeSeparators(path);
     }
     return paths;
+}
+
+QStringList ProjectFile::GetLibraries() const
+{
+    QStringList libraries;
+    foreach(QString library, mLibraries) {
+        libraries << library;
+    }
+    return libraries;
+}
+
+QStringList ProjectFile::GetSuppressions() const
+{
+    QStringList suppressions;
+    foreach(QString suppression, mSuppressions) {
+        suppressions << suppression;
+    }
+    return suppressions;
 }
 
 void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
@@ -327,6 +357,45 @@ void ProjectFile::ReadExcludes(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
+
+void ProjectFile::ReadStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            // Read library-elements
+            if (reader.name().toString() == elementname) {
+                type = reader.readNext();
+                if (type == QXmlStreamReader::Characters) {
+                    QString text = reader.text().toString();
+                    stringlist << text;
+                }
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() != elementname)
+                allRead = true;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (!allRead);
+}
+
 void ProjectFile::SetIncludes(const QStringList &includes)
 {
     mIncludeDirs = includes;
@@ -345,6 +414,16 @@ void ProjectFile::SetCheckPaths(const QStringList &paths)
 void ProjectFile::SetExcludedPaths(const QStringList &paths)
 {
     mExcludedPaths = paths;
+}
+
+void ProjectFile::SetLibraries(const QStringList &libraries)
+{
+    mLibraries = libraries;
+}
+
+void ProjectFile::SetSuppressions(const QStringList &suppressions)
+{
+    mSuppressions = suppressions;
 }
 
 bool ProjectFile::Write(const QString &filename)
@@ -408,7 +487,31 @@ bool ProjectFile::Write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
+    WriteStringList(xmlWriter,
+                    mLibraries,
+                    LibrariesElementName,
+                    LibraryElementName);
+
+    WriteStringList(xmlWriter,
+                    mSuppressions,
+                    SuppressionsElementName,
+                    SuppressionElementName);
+
     xmlWriter.writeEndDocument();
     file.close();
     return true;
+}
+
+void ProjectFile::WriteStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[])
+{
+    if (stringlist.isEmpty())
+        return;
+
+    xmlWriter.writeStartElement(startelementname);
+    foreach(QString str, stringlist) {
+        xmlWriter.writeStartElement(stringelementname);
+        xmlWriter.writeCharacters(str);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
 }

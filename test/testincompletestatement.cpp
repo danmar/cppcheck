@@ -46,7 +46,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for incomplete statements..
         CheckOther checkOther(&tokenizer, &settings, this);

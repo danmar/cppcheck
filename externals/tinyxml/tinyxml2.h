@@ -118,7 +118,7 @@ inline int TIXML_SNPRINTF( char* buffer, size_t size, const char* format, ... )
 
 static const int TIXML2_MAJOR_VERSION = 1;
 static const int TIXML2_MINOR_VERSION = 0;
-static const int TIXML2_PATCH_VERSION = 11;
+static const int TIXML2_PATCH_VERSION = 12;
 
 namespace tinyxml2
 {
@@ -249,6 +249,11 @@ public:
     const T& operator[](int i) const	{
         TIXMLASSERT( i>= 0 && i < _size );
         return _mem[i];
+    }
+
+    const T& PeekTop() const                            {
+        TIXMLASSERT( _size > 0 );
+        return _mem[ _size - 1];
     }
 
     int Size() const					{
@@ -638,9 +643,7 @@ public:
     	Text:		the text string
     	@endverbatim
     */
-    const char* Value() const			{
-        return _value.GetStr();
-    }
+    const char* Value() const;
 
     /** Set the Value of an XML node.
     	@sa Value()
@@ -731,6 +734,10 @@ public:
 
     /**
     	Add a child node as the last (right) child.
+		If the child node is already part of the document,
+		it is moved from its old location to the new location.
+		Returns the addThis argument or 0 if the node does not
+		belong to the same document.
     */
     XMLNode* InsertEndChild( XMLNode* addThis );
 
@@ -739,10 +746,19 @@ public:
     }
     /**
     	Add a child node as the first (left) child.
+		If the child node is already part of the document,
+		it is moved from its old location to the new location.
+		Returns the addThis argument or 0 if the node does not
+		belong to the same document.
     */
     XMLNode* InsertFirstChild( XMLNode* addThis );
     /**
     	Add a node after the specified child node.
+		If the child node is already part of the document,
+		it is moved from its old location to the new location.
+		Returns the addThis argument or 0 if the afterThis node
+		is not a child of this node, or if the node does not
+		belong to the same document.
     */
     XMLNode* InsertAfterChild( XMLNode* afterThis, XMLNode* addThis );
 
@@ -1009,13 +1025,11 @@ class TINYXML2_LIB XMLAttribute
     friend class XMLElement;
 public:
     /// The name of the attribute.
-    const char* Name() const {
-        return _name.GetStr();
-    }
+    const char* Name() const;
+
     /// The value of the attribute.
-    const char* Value() const {
-        return _value.GetStr();
-    }
+    const char* Value() const;
+
     /// The next attribute in the list.
     const XMLAttribute* Next() const {
         return _next;
@@ -1884,7 +1898,7 @@ public:
     	with only required whitespace and newlines.
     */
     XMLPrinter( FILE* file=0, bool compact = false, int depth = 0 );
-    ~XMLPrinter()	{}
+    virtual ~XMLPrinter()	{}
 
     /** If streaming, write the BOM and declaration. */
     void PushHeader( bool writeBOM, bool writeDeclaration );
@@ -1899,7 +1913,7 @@ public:
     void PushAttribute( const char* name, bool value );
     void PushAttribute( const char* name, double value );
     /// If streaming, close the Element.
-    void CloseElement();
+    virtual void CloseElement();
 
     /// Add a text node.
     void PushText( const char* text, bool cdata=false );
@@ -1949,13 +1963,16 @@ public:
         return _buffer.Size();
     }
 
-private:
+protected:
     void SealElement();
+    bool _elementJustOpened;
+    DynArray< const char*, 10 > _stack;
+
+private:
     void PrintSpace( int depth );
     void PrintString( const char*, bool restrictedEntitySet );	// prints out, after detecting entities.
     void Print( const char* format, ... );
 
-    bool _elementJustOpened;
     bool _firstElement;
     FILE* _fp;
     int _depth;
@@ -1970,7 +1987,6 @@ private:
     bool _entityFlag[ENTITY_RANGE];
     bool _restrictedEntityFlag[ENTITY_RANGE];
 
-    DynArray< const char*, 10 > _stack;
     DynArray< char, 20 > _buffer;
 #ifdef _MSC_VER
     DynArray< char, 20 > _accumulator;

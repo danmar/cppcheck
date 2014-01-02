@@ -54,6 +54,7 @@ public:
         // Checks
         checkBool.checkComparisonOfBoolExpressionWithInt();
         checkBool.checkComparisonOfBoolWithInt();
+        checkBool.pointerArithBool();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -89,6 +90,10 @@ public:
     /** @brief %Check for comparing a bool expression with an integer other than 0 or 1 */
     void checkComparisonOfBoolExpressionWithInt();
 
+    /** @brief %Check for 'if (p+1)' etc. either somebody forgot to dereference, or else somebody uses pointer overflow */
+    void pointerArithBool();
+    void pointerArithBoolCond(const Token *tok);
+
 private:
     // Error messages..
     void comparisonOfFuncReturningBoolError(const Token *tok, const std::string &expression);
@@ -100,6 +105,7 @@ private:
     void assignBoolToPointerError(const Token *tok);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
+    void pointerArithBoolError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBool c(0, settings, errorLogger);
@@ -112,6 +118,7 @@ private:
         c.comparisonOfBoolWithIntError(0, "varname", true);
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0, true);
+        c.pointerArithBoolError(0);
     }
 
     static std::string myName() {
@@ -126,7 +133,8 @@ private:
                "* comparison of a boolean expression with an integer other than 0 or 1\n"
                "* comparison of a function returning boolean value using relational operator\n"
                "* comparison of a boolean value with boolean value using relational operator\n"
-               "* using bool in bitwise expression\n";
+               "* using bool in bitwise expression\n"
+               "* pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n";
     }
 };
 /// @}

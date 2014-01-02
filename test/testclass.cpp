@@ -191,7 +191,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -205,7 +205,25 @@ private:
                                   "struct Derived : Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("class Base {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+
+        checkDuplInheritedMembers("class Base {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : public Base {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   int x;\n"
@@ -216,8 +234,33 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:2]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
-                      "[test.cpp:8] -> [test.cpp:5]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("class Base0 {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "class Base1 {\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base0, Base1 {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n", errout.str());
+
+        checkDuplInheritedMembers("class Base0 {\n"
+                                  "   protected:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "class Base1 {\n"
+                                  "   public:\n"
+                                  "   int x;\n"
+                                  "};\n"
+                                  "struct Derived : Base0, Base1 {\n"
+                                  "   int x;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
+                      "[test.cpp:10] -> [test.cpp:7]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   int x;\n"
@@ -260,7 +303,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -498,7 +541,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -623,7 +666,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -857,7 +900,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -1679,7 +1722,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -1934,7 +1977,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -2042,7 +2085,7 @@ private:
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.noMemset();
+        checkClass.checkMemset();
     }
 
     void memsetOnClass() {
@@ -2219,7 +2262,7 @@ private:
                       "    n1::Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'.\n", "", errout.str());
 
         checkNoMemset("class A {\n"
                       "  virtual ~A() { }\n"
@@ -2229,6 +2272,15 @@ private:
                       "  const int N = 10;\n"
                       "  A** arr = new A*[N];\n"
                       "  memset(arr, 0, N * sizeof(A*));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("class A {\n" // #5116 - nested class data is mixed in the SymbolDatabase
+                      "  std::string s;\n"
+                      "  struct B { int x; };\n"
+                      "};\n"
+                      "void f(A::B *b) {\n"
+                      "  memset(b,0,4);\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2484,7 +2536,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -2527,7 +2579,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
         if (verify && str1 != str2)
             warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
@@ -5428,7 +5480,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.initializerListOrder();
@@ -5456,7 +5508,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.initializationListUsage();
@@ -5609,7 +5661,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkPureVirtualFunctionCall();

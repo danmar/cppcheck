@@ -224,11 +224,13 @@ private:
 static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 {
     // Used later to check if the body belongs to a "if"
-    bool is_if = tok->str() == "if";
+    const bool is_if = tok->str() == "if";
 
     const Token* end = tok->linkAt(1)->linkAt(1);
     if (Token::simpleMatch(end, "} else {")) // scan the else-block
         end = end->linkAt(2);
+    if (Token::simpleMatch(end, "{")) // Ticket #5203: Invalid code, bailout
+        return true;
     for (; tok != end; tok = tok->next()) {
         // If scanning a "if" block then bailout for "break"
         if (is_if && (tok->str() == "break" || tok->str() == "continue"))
@@ -597,7 +599,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
             return;
 
         // arg : the index of the "wanted" argument in the function call.
-        unsigned int arg = it->second;
+        const unsigned int arg = it->second;
 
         // Parse function call. When a ',' is seen, arg is decremented.
         // if arg becomes 1 then the current function parameter is the wanted parameter.
@@ -635,11 +637,11 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     // Calling a user function?
     // only 1-dimensional arrays can be checked currently
     else if (arrayInfo.num().size() == 1) {
-        const Function* func = tok.function();
+        const Function* const func = tok.function();
 
         if (func && func->hasBody) {
             // Get corresponding parameter..
-            const Variable* parameter = func->getArgumentVar(par-1);
+            const Variable* const parameter = func->getArgumentVar(par-1);
 
             // Ensure that it has a compatible size..
             if (!parameter || _tokenizer->sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
@@ -705,11 +707,11 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
 
     // Check 'float x[10]' arguments in declaration
     if (_settings->isEnabled("warning")) {
-        const Function* func = tok.function();
+        const Function* const func = tok.function();
 
         // If argument is '%type% a[num]' then check bounds against num
         if (func) {
-            const Variable* argument = func->getArgumentVar(par-1);
+            const Variable* const argument = func->getArgumentVar(par-1);
             const Token *nameToken;
             if (argument && Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")
                 && (nameToken = argument->nameToken()) != NULL) {
@@ -802,7 +804,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, maxMinFlipped)) {
         // Can't understand the condition. Check that the start value
         // is used correctly
-        const Token *startForScope = tok->next()->link()->next();
+        const Token * const startForScope = tok->next()->link()->next();
         if (!for_bailout(startForScope, counter_varid)) {
             // Get index variable and stopsize.
             bool condition_out_of_bounds = bool(size > 0);
@@ -1220,7 +1222,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", arrayInfo.declarationId())) {
-            unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
+            const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
             if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size && (unsigned int)total_size == num) {
                 if (_settings->inconclusive)
                     bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
@@ -1978,11 +1980,6 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo()
 {
 }
 
-CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai)
-{
-    *this = ai;
-}
-
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcedeclid)
     : _varname(var->name()), _declarationId((forcedeclid == 0U) ? var->declarationId() : forcedeclid)
 {
@@ -1994,17 +1991,6 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *t
         _element_size = 100;
     else
         _element_size = tokenizer->sizeOfType(var->typeEndToken());
-}
-
-CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(const CheckBufferOverrun::ArrayInfo &ai)
-{
-    if (&ai != this) {
-        _element_size = ai._element_size;
-        _num = ai._num;
-        _declarationId = ai._declarationId;
-        _varname = ai._varname;
-    }
-    return *this;
 }
 
 /**
@@ -2096,11 +2082,13 @@ private:
      * @param varid2 variable id for the index
      */
     static void array_index(const Token *tok, std::list<ExecutionPath *> &checks, unsigned int varid1, unsigned int varid2) {
-        if (checks.empty() || varid1 == 0 || varid2 == 0)
+        if (tok == NULL || checks.empty() || varid1 == 0 || varid2 == 0)
             return;
 
         // Locate array info corresponding to varid1
-        ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(checks.front());
+        const ExecutionPathBufferOverrun * c = dynamic_cast<ExecutionPathBufferOverrun *>(checks.front());
+        if (c == NULL)
+            return;
         std::map<unsigned int, CheckBufferOverrun::ArrayInfo>::const_iterator it1;
         it1 = c->arrayInfo.find(varid1);
         if (it1 == c->arrayInfo.end())
@@ -2113,7 +2101,7 @@ private:
             c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
             if (c && c->varId == varid2 && c->value >= ai.num(0)) {
                 // variable value is out of bounds, report error
-                CheckBufferOverrun *checkBufferOverrun = dynamic_cast<CheckBufferOverrun *>(c->owner);
+                CheckBufferOverrun * const checkBufferOverrun = dynamic_cast<CheckBufferOverrun *>(c->owner);
                 if (checkBufferOverrun) {
                     std::vector<MathLib::bigint> index;
                     index.push_back(c->value);
@@ -2169,7 +2157,7 @@ void CheckBufferOverrun::executionPaths()
     // Parse all variables and extract array info..
     std::map<unsigned int, ArrayInfo> arrayInfo;
     for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
-        const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);
+        const Variable * const var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(i);
         if (var && var->isArray() && var->dimension(0) > 0)
             arrayInfo[i] = ArrayInfo(var, _tokenizer);
     }
@@ -2187,10 +2175,10 @@ void CheckBufferOverrun::arrayIndexThenCheck()
     if (!_settings->isEnabled("style"))
         return;
 
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+        const Scope * const scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% [ %var% ]")) {
                 const std::string& indexName(tok->strAt(2));
@@ -2253,10 +2241,10 @@ void CheckBufferOverrun::writeOutsideBufferSize()
     if (!_settings->standards.posix)
         return;
 
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+        const Scope * const scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "pwrite|write (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str% , %num%")) {
                 const std::string & functionName(tok->str());

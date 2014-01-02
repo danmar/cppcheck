@@ -179,8 +179,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (Token::simpleMatch(tok2, "popen ("))
             return Pipe;
 
-        if (Token::Match(tok2, "opendir|fdopendir ("))
-            return Dir;
+        if (settings1->standards.posix) {
+            if (Token::Match(tok2, "opendir|fdopendir ("))
+                return Dir;
+        }
 
         // Does tok2 point on "g_malloc", "g_strdup", ..
         const int alloctype = settings1->library.alloc(tok2->str());
@@ -331,7 +333,8 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
     if (alloctype == CheckMemoryLeak::File ||
         alloctype == CheckMemoryLeak::Pipe ||
         alloctype == CheckMemoryLeak::Fd   ||
-        alloctype == CheckMemoryLeak::Dir)
+        alloctype == CheckMemoryLeak::Dir  ||
+        alloctype == CheckMemoryLeak::OtherRes)
         resourceLeakError(tok, varname);
     else
         memleakError(tok, varname);
@@ -596,6 +599,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                     return "use";
                 else if (tok2->strAt(1) == "=")
                     return "assign";
+                else if (tok->str()=="printf")
+                    return "use"; // <- it is not certain printf dereference the pointer TODO: check the format string
                 else
                     return "use_";
             }

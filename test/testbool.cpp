@@ -56,6 +56,9 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool4);
         TEST_CASE(checkComparisonOfFuncReturningBool5);
         TEST_CASE(checkComparisonOfFuncReturningBool6);
+
+        // Converting pointer addition result to bool
+        TEST_CASE(pointerArithBool1);
     }
 
     void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
@@ -76,7 +79,7 @@ private:
         // Check...
         CheckBool checkBool(&tokenizer, &settings, this);
         checkBool.runChecks(&tokenizer, &settings, this);
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
         checkBool.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
@@ -111,7 +114,7 @@ private:
               "    S s = {0};\n"
               "    s.p = true;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Boolean value assigned to pointer.\n", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
@@ -868,6 +871,18 @@ private:
               "    if (!x == true) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void pointerArithBool1() { // #5126
+        check("void f(char *p) {\n"
+              "    if (p+1){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+
+        check("void f(char *p) {\n"
+              "    if (p && p+1){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
     }
 };
 

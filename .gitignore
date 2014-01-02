@@ -10,6 +10,7 @@ reduce.exe
 tags
 testrunner
 testrunner.exe
+tools/daca2*.html
 tools/dmake
 tools/errmsg
 tools/extracttests

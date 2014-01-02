@@ -218,7 +218,7 @@ void CheckSizeof::sizeofsizeofError(const Token *tok)
 }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
 void CheckSizeof::sizeofCalculation()
 {
     if (!_settings->isEnabled("warning"))
@@ -226,16 +226,9 @@ void CheckSizeof::sizeofCalculation()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            const Token* const end = tok->linkAt(1);
-            for (const Token *tok2 = tok->tokAt(2); tok2 != end; tok2 = tok2->next()) {
-                if (tok2->isConstOp() && (!tok2->isExpandedMacro() || _settings->inconclusive) && !Token::Match(tok2, ">|<|&") && (Token::Match(tok2->previous(), "%var%") || tok2->str() != "*")) {
-                    if (!(Token::Match(tok2->previous(), "%type%") || Token::Match(tok2->next(), "%type%"))) {
-                        sizeofCalculationError(tok2, tok2->isExpandedMacro());
-                        break;
-                    }
-                } else if (tok2->type() == Token::eIncDecOp)
-                    sizeofCalculationError(tok2, tok2->isExpandedMacro());
-            }
+            const Token *argument = tok->next()->astOperand2();
+            if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || _settings->inconclusive))
+                sizeofCalculationError(argument, argument->isExpandedMacro());
         }
     }
 }
@@ -297,7 +290,7 @@ void CheckSizeof::sizeofVoid()
                    Token::Match(tok, "+|-|++|-- %var%")) { // Arithmetic operations on variable of type "void*"
             int index = (tok->isName()) ? 0 : 1;
             const Variable* var = tok->tokAt(index)->variable();
-            if (var && Token::Match(var->typeStartToken(), "void *")) {
+            if (var && Token::Match(var->typeStartToken(), "void * !!*")) {
                 std::string varname = tok->strAt(index);
                 // In case this 'void *' var is a member then go back to the main object
                 const Token* tok2 = tok->tokAt(index);

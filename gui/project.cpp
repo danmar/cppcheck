@@ -95,6 +95,10 @@ bool Project::Edit()
     dlg.SetPaths(paths);
     QStringList ignorepaths = mPFile->GetExcludedPaths();
     dlg.SetExcludedPaths(ignorepaths);
+    QStringList libraries = mPFile->GetLibraries();
+    dlg.SetLibraries(libraries);
+    QStringList suppressions = mPFile->GetSuppressions();
+    dlg.SetSuppressions(suppressions);
 
     int rv = dlg.exec();
     if (rv == QDialog::Accepted) {
@@ -108,6 +112,10 @@ bool Project::Edit()
         mPFile->SetCheckPaths(paths);
         QStringList excludedpaths = dlg.GetExcludedPaths();
         mPFile->SetExcludedPaths(excludedpaths);
+        QStringList libraries = dlg.GetLibraries();
+        mPFile->SetLibraries(libraries);
+        QStringList suppressions = dlg.GetSuppressions();
+        mPFile->SetSuppressions(suppressions);
 
         bool writeSuccess = mPFile->Write();
         if (!writeSuccess) {

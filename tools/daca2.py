@@ -6,65 +6,58 @@
 # 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
 # 5. Run the daca2 script:  python daca2.py FOLDER
 
-import ftplib
 import subprocess
 import sys
 import shutil
 import glob
 import os
-import socket
 import datetime
 import time
 
-FTPSERVER = 'ftp.sunet.se'
-FTPPATH = '/pub/Linux/distributions/Debian/debian/pool/main/'
+DEBIAN = ['ftp://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
+          'http://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
+          'ftp://ftp.debian.org/debian/']
+
+
+def wget(filepath):
+    filename = filepath
+    if filepath.find('/') >= 0:
+        filename = filename[filename.rfind('/') + 1:]
+    for d in DEBIAN:
+        subprocess.call(['nice', 'wget', d + filepath])
+        if os.path.isfile(filename):
+            return True
+        print('Sleep for 10 seconds..')
+        time.sleep(10)
+    return False
 
 
 def getpackages(folder):
-    print('Connect')
-    f = ftplib.FTP(FTPSERVER)
-    f.login()
+    if not wget('ls-lR.gz'):
+        return []
+    subprocess.call(['nice', 'gunzip', 'ls-lR.gz'])
+    f = open('ls-lR', 'rt')
+    lines = f.readlines()
+    f.close()
+    subprocess.call(['rm', 'ls-lR'])
 
-    print('Get package list in folder ' + folder)
-    packages = f.nlst(FTPPATH + folder)
-
+    path = None
     archives = []
-    for package in packages:
-        print(package)
-        count = 10
-        while count > 0:
+    filename = None
+    for line in lines:
+        line = line.strip()
+        if len(line) < 4:
+            if filename:
+                archives.append(path + '/' + filename)
+            path = None
             filename = None
-            path = FTPPATH + folder + '/' + package
-            try:
-                time.sleep(0.01)
-                files = f.nlst(path)
+        elif line[:13 + len(folder)] == './pool/main/' + folder + '/':
+            path = line[2:-1]
+        elif path and line.find('.orig.tar.') > 0:
+            filename = line[1 + line.rfind(' '):]
 
-                for s in files:
-                    if s.find('.orig.tar.') > 0:
-                        filename = s
-
-                if not filename:
-                    for s in files:
-                        if s.find('.tar.') > 0:
-                            filename = s
-
-            except socket.error as err:
-                print(str(err))
-            except ftplib.error_temp as err:
-                print(str(err))
-            except EOFError as err:
-                print(str(err))
-
-            if not filename:
-                print('Retry..')
-                f.close()
-                time.sleep(1)
-                f = ftplib.FTP(FTPSERVER)
-                f.login()
-                count = count - 1
-            else:
-                archives.append(package + '/' + filename)
-                count = 0
+    for a in archives:
+        print(a)
 
     return archives
 
@@ -117,21 +110,32 @@ def removeLargeFiles(path):
     for g in glob.glob(path + '*'):
         if g == '.' or g == '..':
             continue
+        if os.path.islink(g):
+            continue
         if os.path.isdir(g):
             removeLargeFiles(g + '/')
-        elif g != 'results.txt':
+        elif os.path.isfile(g) and g[-4:] != '.txt':
             statinfo = os.stat(g)
             if statinfo.st_size > 100000:
                 os.remove(g)
 
 
-def scanarchive(fullpath):
+def scanarchive(filepath):
+    # remove all files/folders except results.txt
+    removeAllExceptResults()
+
     results = open('results.txt', 'at')
-    results.write(fullpath + '\n')
+    results.write(DEBIAN[0] + filepath + '\n')
     results.close()
 
-    filename = fullpath[fullpath.rfind('/') + 1:]
-    subprocess.call(['wget', fullpath])
+    if not wget(filepath):
+        if not wget(filepath):
+            results = open('results.txt', 'at')
+            results.write('wget failed\n')
+            results.close()
+            return
+
+    filename = filepath[filepath.rfind('/') + 1:]
     if filename[-3:] == '.gz':
         subprocess.call(['tar', 'xzvf', filename])
     elif filename[-3:] == '.xz':
@@ -139,35 +143,34 @@ def scanarchive(fullpath):
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
-    if filename[:5] == 'flite':
+    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:6] == 'iceowl':
         results = open('results.txt', 'at')
-        results.write('fixme: this package is skipped\n')
+        results.write('fixme: skipped package to avoid hang\n')
         results.close()
-        return
-
-    dirname = None
-    for s in glob.glob(filename[:2] + '*'):
-        if os.path.isdir(s):
-            dirname = s
-    if dirname is None:
         return
 
     removeLargeFiles('')
 
-    print('cppcheck "' + dirname + '"')
+    print('cppcheck ' + filename)
+
     p = subprocess.Popen(
         ['nice',
          '../cppcheck-O2',
          '-D__GCC__',
          '--enable=style',
+         '--error-exitcode=0',
          '--suppressions-list=../suppressions.txt',
-         dirname],
+         '.'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     comm = p.communicate()
 
     results = open('results.txt', 'at')
-    results.write(comm[1] + '\n')
+    if p.returncode == 0:
+        results.write(comm[1])
+    elif comm[0].find('cppcheck: error: could not find or open any of the paths given.') < 0:
+        results.write('Exit code is not zero! Crash?\n')
+    results.write('\n')
     results.close()
 
 FOLDER = None
@@ -183,8 +186,12 @@ if not FOLDER:
     sys.exit(1)
 
 archives = getpackages(FOLDER)
+if len(archives) == 0:
+    print('failed to load packages')
+    sys.exit(1)
 
-time.sleep(30)
+print('Sleep for 10 seconds..')
+time.sleep(10)
 
 workdir = os.path.expanduser('~/daca2/')
 
@@ -201,17 +208,18 @@ os.chdir(workdir + FOLDER)
 
 try:
     results = open('results.txt', 'wt')
-    results.write('DATE ' + str(datetime.date.today()) + '\n')
+    results.write('STARTDATE ' + str(datetime.date.today()) + '\n')
     if REV:
         results.write('GIT-REVISION ' + REV + '\n')
     results.write('\n')
     results.close()
 
     for archive in archives:
-        # remove all files/folders except results.txt
-        removeAllExceptResults()
+        scanarchive(archive)
 
-        scanarchive('ftp://' + FTPSERVER + FTPPATH + FOLDER + '/' + archive)
+    results = open('results.txt', 'at')
+    results.write('DATE ' + str(datetime.date.today()) + '\n')
+    results.close()
 
 except EOFError:
     pass

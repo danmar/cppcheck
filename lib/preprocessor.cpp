@@ -123,10 +123,18 @@ static std::string unify(const std::string &s, char separator)
 }
 
 
+bool Preprocessor::cplusplus(const Settings *settings, const std::string &filename)
+{
+    const bool undef   = settings && settings->userUndefs.find("__cplusplus") != settings->userUndefs.end();
+    const bool cpplang = settings && settings->enforcedLang == Settings::CPP;
+    const bool cppfile = (!settings || settings->enforcedLang == Settings::None) && Path::isCPP(filename);
+    return (!undef && (cpplang || cppfile));
+}
+
 /**
  * Get cfgmap - a map of macro names and values
  */
-static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
+static std::map<std::string,std::string> getcfgmap(const std::string &cfg, const Settings *settings, const std::string &filename)
 {
     std::map<std::string, std::string> cfgmap;
 
@@ -153,6 +161,9 @@ static std::map<std::string,std::string> getcfgmap(const std::string &cfg)
             pos = pos2 + 1;
         }
     }
+
+    if (cfgmap.find("__cplusplus") == cfgmap.end() && Preprocessor::cplusplus(settings,filename))
+        cfgmap["__cplusplus"] = "1";
 
     return cfgmap;
 }
@@ -573,7 +584,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
         } else if ((i==0 || std::isspace(str[i-1])) && str.compare(i,5,"__asm",0,5) == 0) {
-            while (i < str.size() && !std::isspace(str[i]))
+            while (i < str.size() && (std::isalpha(str[i]) || str[i]=='_'))
                 code << str[i++];
             while (i < str.size() && std::isspace(str[i]))
                 code << str[i++];
@@ -1023,10 +1034,10 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string("")));
+    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string(""), _settings, filename));
 
     if (_settings && _settings->_maxConfigs == 1U) {
-        std::list<std::string> pragmaOnce;
+        std::set<std::string> pragmaOnce;
         std::list<std::string> includes;
         processedFile = handleIncludes(processedFile, filename, includePaths, defs, pragmaOnce, includes);
         resultConfigurations = getcfgs(processedFile, filename, defs);
@@ -1134,7 +1145,7 @@ static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, 
             // expand token list
             for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
                 if (tok2->isName()) {
-                    simplifyVarMapExpandValue(tok2, variables, seenVariables);
+                    tok2 = simplifyVarMapExpandValue(tok2, variables, seenVariables);
                 }
             }
 
@@ -1735,9 +1746,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::list<bool> matched_ifdef;
 
     // Create a map for the cfg for faster access to defines
-    std::map<std::string, std::string> cfgmap(getcfgmap(cfg));
-    if (((_settings && _settings->enforcedLang == Settings::CPP) || ((!_settings || _settings->enforcedLang == Settings::None) && Path::isCPP(filename))) && cfgmap.find("__cplusplus") == cfgmap.end())
-        cfgmap["__cplusplus"] = "1";
+    std::map<std::string, std::string> cfgmap(getcfgmap(cfg, _settings, filename));
 
     std::stack<std::string> filenames;
     filenames.push(filename);
@@ -2011,7 +2020,7 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
 }
 
 
-std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::list<std::string> &pragmaOnce, std::list<std::string> includes)
+std::string Preprocessor::handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::set<std::string> &pragmaOnce, std::list<std::string> includes)
 {
     const std::string path(filePath.substr(0, 1 + filePath.find_last_of("\\/")));
 
@@ -2060,7 +2069,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
         std::stack<bool>::reference elseIsTrue = elseIsTrueStack.top();
 
         if (line == "#pragma once") {
-            pragmaOnce.push_back(filePath);
+            pragmaOnce.insert(filePath);
         } else if (line.compare(0,7,"#ifdef ") == 0) {
             if (indent == indentmatch) {
                 const std::string tag = getdef(line,true);
@@ -2202,7 +2211,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 includes.push_back(filename);
 
                 // Don't include header if it's already included and contains #pragma once
-                if (std::find(pragmaOnce.begin(), pragmaOnce.end(), filename) != pragmaOnce.end()) {
+                if (pragmaOnce.find(filename) != pragmaOnce.end()) {
                     ostr << std::endl;
                     continue;
                 }
@@ -2895,7 +2904,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
     {
         // fill up "macros" with user defined macros
-        const std::map<std::string,std::string> cfgmap(getcfgmap(cfg));
+        const std::map<std::string,std::string> cfgmap(getcfgmap(cfg,NULL,""));
         std::map<std::string, std::string>::const_iterator it;
         for (it = cfgmap.begin(); it != cfgmap.end(); ++it) {
             std::string s = it->first;
@@ -3148,6 +3157,29 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                 (macrocode[i-1] != '_')         &&
                                 (macrocode[i-1] != macroChar)) {
                                 macrocode.insert(i, 1U, macroChar);
+                            }
+
+                            // 1e-7 / 1e+7
+                            if (i+3U < macrocode.size()     &&
+                                (std::isdigit(macrocode[i]) || macrocode[i]=='.')  &&
+                                (macrocode[i+1] == 'e' || macrocode[i+1] == 'E')   &&
+                                (macrocode[i+2] == '-' || macrocode[i+2] == '+')   &&
+                                std::isdigit(macrocode[i+3])) {
+                                i += 3U;
+                            }
+
+                            // 1.f / 1.e7
+                            if (i+2U < macrocode.size()    &&
+                                std::isdigit(macrocode[i]) &&
+                                macrocode[i+1] == '.'      &&
+                                std::isalnum(macrocode[i+2])) {
+                                i += 2U;
+                                if (i+2U < macrocode.size() &&
+                                    (macrocode[i+0] == 'e' || macrocode[i+0] == 'E')   &&
+                                    (macrocode[i+1] == '-' || macrocode[i+1] == '+')   &&
+                                    std::isdigit(macrocode[i+2])) {
+                                    i += 2U;
+                                }
                             }
                         }
                     }

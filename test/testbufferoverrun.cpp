@@ -53,7 +53,7 @@ private:
         const std::string str1(tokenizer.tokens()->stringifyList(0,true));
 
         // Assign variable ids
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
 
@@ -239,6 +239,8 @@ private:
         TEST_CASE(crash1);  // Ticket #1587 - crash
         TEST_CASE(crash2);  // Ticket #2607 - crash
         TEST_CASE(crash3);  // Ticket #3034 - crash
+
+        TEST_CASE(garbage1);  // Ticket #5203
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -2027,25 +2029,25 @@ private:
     void array_index_same_struct_and_var_name() {
         // don't throw internal error
         check("struct tt {\n"
-              "    char typename[21];\n"
+              "    char name[21];\n"
               "} ;\n"
               "void doswitch(struct tt *x)\n"
               "{\n"
               "    struct tt *tt=x;\n"
-              "    tt->typename;\n"
+              "    tt->name;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         // detect error
         check("struct tt {\n"
-              "    char typename[21];\n"
+              "    char name[21];\n"
               "} ;\n"
               "void doswitch(struct tt *x)\n"
               "{\n"
               "    struct tt *tt=x;\n"
-              "    tt->typename[22] = 123;\n"
+              "    tt->name[22] = 123;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt.typename[21]' accessed at index 22, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt.name[21]' accessed at index 22, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_1_standard_functions() {
@@ -3633,6 +3635,9 @@ private:
               "}");
     }
 
+    void garbage1() { // Ticket #5203
+        check("int f ( int* r ) { {  int s[2] ; f ( s ) ; if ( ) } }");
+    }
 
     void epcheck(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
@@ -3644,7 +3649,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);

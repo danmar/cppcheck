@@ -19,6 +19,12 @@ script:
   - cd ../
   - mkdir install_test
   - make DESTDIR=install_test install
+  - make clean
+  - make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg HAVE_RULES=yes -j 4
+  - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg HAVE_RULES=yes install
+  - sudo mkdir -p /usr/share/cppcheck/cfg
+  - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
+  - /usr/bin/cppcheck ./cli
 notifications:
   irc:
     channels:

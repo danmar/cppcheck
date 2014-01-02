@@ -147,15 +147,15 @@ public:
      * - "!!else" No tokens or any token that is not "else".
      * - "someRandomText" If token contains "someRandomText".
      *
-     * multi-compare patterns such as "int|void|char" can contain %or%, %oror% and %op%
-     * but it is not recommended to put such an %cmd% as the first pattern.
+     * multi-compare patterns such as "int|void|char" can contain %%or%, %%oror% and %%op%
+     * but it is not recommended to put such an %%cmd% as the first pattern.
      *
-     * It's possible to use multi-compare patterns with all the other %cmds%,
-     * except for %varid%, and normal names, but the %cmds% should be put as
+     * It's possible to use multi-compare patterns with all the other %%cmds%,
+     * except for %%varid%, and normal names, but the %%cmds% should be put as
      * the first patterns in the list, then the normal names.
      * For example: "%var%|%num%|)" means yes to a variable, a number or ')'.
      *
-     * @todo Make it possible to use the %cmds% and the normal names in the
+     * @todo Make it possible to use the %%cmds% and the normal names in the
      * multicompare list without an order.
      *
      * The patterns can be also combined to compare to multiple tokens at once
@@ -167,7 +167,7 @@ public:
      * @param tok List of tokens to be compared to the pattern
      * @param pattern The pattern against which the tokens are compared,
      * e.g. "const" or ") const|volatile| {".
-     * @param varid if %varid% is given in the pattern the Token::varId
+     * @param varid if %%varid% is given in the pattern the Token::varId
      * will be matched against this argument
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
@@ -177,7 +177,7 @@ public:
     /**
      * Return length of C-string.
      *
-     * Should be called for %str% tokens only.
+     * Should be called for %%str%% tokens only.
      *
      * @param tok token with C-string
      **/
@@ -186,7 +186,7 @@ public:
     /**
      * Return char of C-string at index (possible escaped "\\n")
      *
-     * Should be called for %str% tokens only.
+     * Should be called for %%str%% tokens only.
      *
      * @param tok token with C-string
      * @param index position of character
@@ -655,14 +655,15 @@ private:
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
-    void astFunctionCall();
-    void astHandleParentheses();
 
     const Token * astOperand1() const {
         return _astOperand1;
     }
     const Token * astOperand2() const {
         return _astOperand2;
+    }
+    const Token * astParent() const {
+        return _astParent;
     }
     const Token *astTop() const {
         const Token *ret = this;
@@ -671,14 +672,29 @@ public:
         return ret;
     }
 
-    std::string astString() const {
+    /**
+     * Is current token a calculation? Only true for operands.
+     * For '*' and '&' tokens it is looked up if this is a
+     * dereference or address-of. A dereference or address-of is not
+     * counted as a calculation.
+     * @return returns true if current token is a calculation
+     */
+    bool isCalculation() const;
+
+    void clearAst() {
+        _astOperand1 = _astOperand2 = _astParent = NULL;
+    }
+
+    std::string astString(const char *sep = "") const {
         std::string ret;
         if (_astOperand1)
-            ret = _astOperand1->astString();
+            ret = _astOperand1->astString(sep);
         if (_astOperand2)
-            ret += _astOperand2->astString();
-        return ret+_str;
+            ret += _astOperand2->astString(sep);
+        return ret + sep + _str;
     }
+
+    void printAst() const;
 };
 
 /// @}

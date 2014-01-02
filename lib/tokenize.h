@@ -28,6 +28,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <ctime>
 
 class Settings;
 class SymbolDatabase;
@@ -100,12 +101,20 @@ public:
     void setVarId();
 
     /**
-     * Simplify tokenlist
-     *
-     * @return false if there is an error that requires aborting
-     * the checking of this file.
-     */
-    bool simplifyTokenList();
+    * Basic simplification of tokenlist
+    *
+    * @return false if there is an error that requires aborting
+    * the checking of this file.
+    */
+    bool simplifyTokenList1();
+
+    /**
+    * Most aggressive simplification of tokenlist
+    *
+    * @return false if there is an error that requires aborting
+    * the checking of this file.
+    */
+    bool simplifyTokenList2();
 
     /**
      * Deletes dead code between 'begin' and 'end'.
@@ -194,6 +203,9 @@ public:
       * 'x = realloc (y, 0);' => 'x = 0; free(y);'
       */
     void simplifyRealloc();
+
+    /** Add parentheses for sizeof: sizeof x => sizeof(x) */
+    void sizeofAddParentheses();
 
     /**
      * Replace sizeof() to appropriate size.
@@ -320,6 +332,11 @@ public:
      * A c;
      */
     void simplifyTypedef();
+
+    /**
+     * Simplify float casts (float)1 => 1.0
+     */
+    void simplifyFloatCasts();
 
     /**
      * Simplify casts
@@ -806,6 +823,10 @@ private:
      * TimerResults
      */
     TimerResults *m_timerResults;
+#ifdef MAXTIME
+    /** Tokenizer maxtime */
+    std::time_t maxtime;
+#endif
 };
 
 /// @}

@@ -136,7 +136,7 @@ private:
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, settings, this);
@@ -204,6 +204,7 @@ private:
         TEST_CASE(mismatch4);
         TEST_CASE(mismatch5);
         TEST_CASE(mismatch6);
+        TEST_CASE(mismatch7); // opendir()/closedir() on non-POSIX
 
         TEST_CASE(mismatchSize);
 
@@ -377,7 +378,7 @@ private:
         std::istringstream istr(code);
         if (!tokenizer.tokenize(istr, "test.cpp"))
             return "";
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());
 
@@ -1501,6 +1502,33 @@ private:
               "        fclose ( f ) ; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void mismatch7() {
+        Settings settings;
+        settings.standards.posix = false;
+        const char mycode1[]= "DIR *opendir(const char *name);\n"
+                              "void closedir(DIR *dir) {\n"
+                              "    free(dir);\n"
+                              "}\n"
+                              "\n"
+                              "void f(const char *dir) {\n"
+                              "  DIR *dirp;\n"
+                              "  if ((dirp = opendir(dir)) == NULL) return 0;\n"
+                              "  closedir(dirp);\n"
+                              "}\n";
+        check(mycode1, &settings);
+        ASSERT_EQUALS("", errout.str());
+        settings.standards.posix = true;
+        check(mycode1, &settings);
+        ASSERT_EQUALS("", errout.str());
+        const char mycode2[]= "void f(const char *dir) {\n"
+                              "  DIR *dirp;\n"
+                              "  if ((dirp = opendir(dir)) == NULL) return 0;\n"
+                              "  free(dirp);\n"
+                              "}\n";
+        check(mycode2, &settings);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: dirp\n", errout.str());
     }
 
     void mismatchSize() {
@@ -2998,6 +3026,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f()\n"
+              "{\n"
+              "    char *s = new char[100];\n"
+              "    delete [] s;\n"
+              "    printf(\"%p\\n\", s);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // The pointer to the pointer is valid..
         check("void f()\n"
               "{\n"
@@ -3973,7 +4009,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
@@ -5093,7 +5129,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, fname ? fname : "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
@@ -5463,7 +5499,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);

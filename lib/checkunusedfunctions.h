@@ -28,6 +28,7 @@
 #include "errorlogger.h"
 
 /// @addtogroup Checks
+/** @brief Check for functions never called */
 /// @{
 
 class CPPCHECKLIB CheckUnusedFunctions: public Check {

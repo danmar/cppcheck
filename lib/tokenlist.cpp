@@ -357,71 +357,327 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
-void TokenList::createAst() const
+static bool iscast(const Token *tok)
 {
-    // operators that must be ordered according to C-precedence
-    const char * const operators[] = {
-        " :: ",
-        " ++ -- . ",
-        "> ++ -- + - ! ~ * & sizeof ",  // prefix unary operators, from right to left
-        " * / % ",
-        " + - ",
-        " << >> ",
-        " < <= > >= ",
-        " == != ",
-        " & ",
-        " ^ ",
-        " | ",
-        " && ",
-        " || ",
-        " = ? : ",
-        " throw ",
-        " , "
-        " [ "
-    };
+    if (!Token::Match(tok, "( %var%"))
+        return false;
 
-    // No tokens => bail out
-    if (!_front)
+    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+        if (!Token::Match(tok2, "%var%|*|&|::"))
+            return Token::Match(tok2, ") %any%") && (!tok2->next()->isOp() && tok2->next()->str() != "[");
+    }
+
+    return false;
+}
+
+static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &), std::stack<Token*> &op)
+{
+    Token *unaryop = tok;
+    tok = tok->next();
+    f(tok,op);
+
+    if (!op.empty()) {
+        unaryop->astOperand1(op.top());
+        op.pop();
+    }
+    op.push(unaryop);
+}
+
+static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &), std::stack<Token*> &op)
+{
+    Token *binop = tok;
+    tok = tok->next();
+    if (tok)
+        f(tok,op);
+
+    // TODO: Should we check if op is empty.
+    // * Is it better to add assertion that it isn't?
+    // * Write debug warning if it's empty?
+    if (!op.empty()) {
+        binop->astOperand2(op.top());
+        op.pop();
+    }
+    if (!op.empty()) {
+        binop->astOperand1(op.top());
+        op.pop();
+    }
+    op.push(binop);
+}
+
+static void compileDot(Token *&tok, std::stack<Token*> &op);
+static void compileExpression(Token *&tok, std::stack<Token*> &op);
+
+static void compileTerm(Token *& tok, std::stack<Token*> &op)
+{
+    if (!tok)
         return;
-
-    for (unsigned int i = 0; i < sizeof(operators) / sizeof(*operators); ++i) {
-        // TODO: extract operators to std::set - that should be faster
-        if (*operators[i] == '>') {  // Unary operators, parse from right to left
-            const std::string op(1+operators[i]);
-            Token *tok = _front;
-            while (tok->next())
+    if (Token::Match(tok, "L %str%|%char%"))
+        tok = tok->next();
+    if (tok->isLiteral()) {
+        op.push(tok);
+        tok = tok->next();
+    } else if (Token::Match(tok, "+|-|~|*|&|!")) {
+        compileUnaryOp(tok, compileDot, op);
+    } else if (tok->str() == "return") {
+        compileUnaryOp(tok, compileExpression, op);
+    } else if (tok->isName()) {
+        if (Token::Match(tok->next(), "++|--")) {  // post increment / decrement
+            tok = tok->next();
+            tok->astOperand1(tok->previous());
+            op.push(tok);
+            tok = tok->next();
+        } else if (!Token::Match(tok->next(), "(|[")) {
+            op.push(tok);
+            tok = tok->next();
+        } else {
+            Token *name = tok;
+            tok = tok->tokAt(2);
+            if (Token::Match(tok, ")|]")) {
+                name->next()->astOperand1(name);
                 tok = tok->next();
-            for (; tok; tok = tok->previous()) {
-                if ((!tok->previous() || tok->previous()->isOp()) &&
-                    op.find(" "+tok->str()+" ")!=std::string::npos) {
-                    tok->astOperand1(tok->next());
-                }
-            }
-        } else {  // parse from left to right
-            const std::string op(operators[i]);
-            for (Token *tok = _front; tok; tok = tok->next()) {
-                if (tok->astOperand1()==NULL && op.find(" "+tok->str()+" ")!=std::string::npos) {
-                    if (tok->type() != Token::eIncDecOp) {
-                        tok->astOperand1(tok->previous());
-                        tok->astOperand2(tok->next());
-                    } else if (tok->previous() && !tok->previous()->isOp()) {
-                        tok->astOperand1(tok->previous());
+            } else {
+                Token *prev = name;
+                tok = tok->previous();
+                while (Token::Match(tok, "(|[")) {
+                    Token *tok1 = tok;
+                    tok = tok->next();
+                    compileExpression(tok, op);
+                    if (!op.empty()) {
+                        tok1->astOperand2(op.top());
+                        op.pop();
                     }
+                    tok1->astOperand1(prev);
+                    prev = tok1;
+                    if (Token::Match(tok, "]|)"))
+                        tok = tok->next();
                 }
             }
+            op.push(name->next());
+        }
+    } else if (Token::Match(tok, "++|--")) {
+        bool pre = false;
+        if (tok->next() && tok->next()->isName())
+            pre = true;
+        else if (!op.empty() && !op.top()->isOp())
+            pre = false;
+        else
+            pre = true;
+
+        if (pre) {
+            // pre increment/decrement
+            compileUnaryOp(tok, compileDot, op);
+        } else {
+            // post increment/decrement
+            tok->astOperand1(op.top());
+            op.pop();
+            op.push(tok);
+            tok = tok->next();
+        }
+    } else if (tok->str() == "(") {
+        if (iscast(tok)) {
+            Token *unaryop = tok;
+            tok = tok->link()->next();
+            compileDot(tok,op);
+
+            if (!op.empty()) {
+                unaryop->astOperand1(op.top());
+                op.pop();
+            }
+            op.push(unaryop);
+        } else if (Token::Match(tok,"( {")) {
+            op.push(tok->next());
+            tok = tok->link()->next();
+        } else if (Token::simpleMatch(tok->link(),") (")) {
+            // Parenthesized sub-expression
+            Token *nextpar = tok->link()->next();
+            tok = tok->next();
+            compileExpression(tok,op);
+            tok = nextpar;
+            compileBinOp(tok, compileExpression, op);
+            tok = tok->next();
+        } else {
+            // Parenthesized sub-expression
+            tok = tok->next();
+            compileExpression(tok,op);
+            tok = tok->next();
         }
     }
+}
 
-    // function calls..
-    for (Token *tok = _front; tok; tok = tok->next()) {
-        if (Token::Match(tok, "%var% ("))
-            tok->astFunctionCall();
+static void compileScope(Token *&tok, std::stack<Token*> &op)
+{
+    compileTerm(tok,op);
+    while (tok) {
+        if (tok->str() == "::") {
+            compileBinOp(tok, compileTerm, op);
+        } else break;
     }
+}
 
-    // parentheses..
-    for (Token *tok = _front; tok; tok = tok->next()) {
-        if (Token::Match(tok, "(|)|]")) {
-            tok->astHandleParentheses();
+static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op)
+{
+    compileScope(tok,op);
+    while (tok) {
+        if (tok->str() == "[") {
+            compileBinOp(tok, compileScope, op);
+        } else break;
+    }
+}
+
+static void compileDot(Token *&tok, std::stack<Token*> &op)
+{
+    compileParAndBrackets(tok,op);
+    while (tok) {
+        if (tok->str() == ".") {
+            compileBinOp(tok, compileParAndBrackets, op);
+        } else break;
+    }
+}
+
+static void compileMulDiv(Token *&tok, std::stack<Token*> &op)
+{
+    compileDot(tok,op);
+    while (tok) {
+        if (Token::Match(tok, "[*/%]")) {
+            if (Token::Match(tok, "* [,)]"))
+                break;
+            compileBinOp(tok, compileDot, op);
+        } else break;
+    }
+}
+
+static void compileAddSub(Token *&tok, std::stack<Token*> &op)
+{
+    compileMulDiv(tok,op);
+    while (tok) {
+        if (Token::Match(tok, "+|-")) {
+            compileBinOp(tok, compileMulDiv, op);
+        } else break;
+    }
+}
+
+static void compileShift(Token *&tok, std::stack<Token*> &op)
+{
+    compileAddSub(tok,op);
+    while (tok) {
+        if (Token::Match(tok, "<<|>>")) {
+            compileBinOp(tok, compileAddSub, op);
+        } else break;
+    }
+}
+
+static void compileRelComp(Token *&tok, std::stack<Token*> &op)
+{
+    compileShift(tok,op);
+    while (tok) {
+        if (Token::Match(tok, "<|<=|>=|>")) {
+            compileBinOp(tok, compileShift, op);
+        } else break;
+    }
+}
+
+static void compileEqComp(Token *&tok, std::stack<Token*> &op)
+{
+    compileRelComp(tok,op);
+    while (tok) {
+        if (Token::Match(tok, "==|!=")) {
+            compileBinOp(tok, compileRelComp, op);
+        } else break;
+    }
+}
+
+static void compileAnd(Token *&tok, std::stack<Token*> &op)
+{
+    compileEqComp(tok,op);
+    while (tok) {
+        if (tok->str() == "&") {
+            compileBinOp(tok, compileEqComp, op);
+        } else break;
+    }
+}
+
+static void compileXor(Token *&tok, std::stack<Token*> &op)
+{
+    compileAnd(tok,op);
+    while (tok) {
+        if (tok->str() == "^") {
+            compileBinOp(tok, compileAnd, op);
+        } else break;
+    }
+}
+
+static void compileOr(Token *&tok, std::stack<Token*> &op)
+{
+    compileXor(tok,op);
+    while (tok) {
+        if (tok->str() == "|") {
+            compileBinOp(tok, compileXor, op);
+        } else break;
+    }
+}
+
+static void compileLogicAnd(Token *&tok, std::stack<Token*> &op)
+{
+    compileOr(tok,op);
+    while (tok) {
+        if (tok->str() == "&&") {
+            compileBinOp(tok, compileOr, op);
+        } else break;
+    }
+}
+
+static void compileLogicOr(Token *&tok, std::stack<Token*> &op)
+{
+    compileLogicAnd(tok,op);
+    while (tok) {
+        if (tok->str() == "||") {
+            compileBinOp(tok, compileLogicAnd, op);
+        } else break;
+    }
+}
+
+static void compileTernaryOp(Token *&tok, std::stack<Token*> &op)
+{
+    compileLogicOr(tok,op);
+    while (tok) {
+        if (Token::Match(tok, "[?:]")) {
+            compileBinOp(tok, compileLogicOr, op);
+        } else break;
+    }
+}
+
+static void compileAssign(Token *&tok, std::stack<Token*> &op)
+{
+    compileTernaryOp(tok,op);
+    while (tok) {
+        if (tok->str() == "=") {
+            compileBinOp(tok, compileTernaryOp, op);
+        } else break;
+    }
+}
+
+static void compileComma(Token *&tok, std::stack<Token*> &op)
+{
+    compileAssign(tok,op);
+    while (tok) {
+        if (tok->str() == ",") {
+            compileBinOp(tok, compileAssign, op);
+        } else break;
+    }
+}
+
+static void compileExpression(Token *&tok, std::stack<Token*> &op)
+{
+    if (tok)
+        compileComma(tok,op);
+}
+
+void TokenList::createAst()
+{
+    for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
+        if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% (|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%")) {
+            std::stack<Token *> operands;
+            compileExpression(tok, operands);
         }
     }
 }

@@ -122,7 +122,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.c");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for leaks..
         CheckLeakAutoVar c;

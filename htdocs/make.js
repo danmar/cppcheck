@@ -21,7 +21,7 @@
 
     require("shelljs/make");
     var fs = require("fs"),
-        cleanCSS = require("clean-css"),
+        CleanCSS = require("clean-css"),
         UglifyJS = require("uglify-js"),
         rootDir = __dirname + "/";      // absolute path to project's root
 
@@ -34,18 +34,17 @@
         echo("### Minifying css files...");
 
         // pack.css
-
         var inCss = cat(["site/css/normalize.css",
                          "site/css/all.css",
                          "site/css/demo.css"
         ]);
 
-        var packCss = cleanCSS.process(inCss, {
-            removeEmpty: true,
-            keepSpecialComments: 0
-        });
+        var minifier = new CleanCSS({
+                keepSpecialComments: 0,
+                selectorsMergeMode: "ie8"
+            });
 
-        fs.writeFileSync("site/css/pack.css", packCss, "utf8");
+        fs.writeFileSync("site/css/pack.css", minifier.minify(inCss), "utf8");
 
         echo();
         echo("### Finished site/css/pack.css.");

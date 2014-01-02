@@ -780,6 +780,24 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
+        // C++11 std::for_each
+        // No warning should be written if a variable is first read and
+        // then written in the body.
+        if (Token::simpleMatch(tok, "for_each (") && Token::simpleMatch(tok->linkAt(1), ") ;")) {
+            const Token *end = tok->linkAt(1);
+            if (end->previous()->str() == "}") {
+                std::set<unsigned int> readvar;
+                for (const Token *body = end->linkAt(-1); body != end; body = body->next()) {
+                    if (body->varId() == 0U)
+                        continue;
+                    if (!Token::Match(body->next(),"="))
+                        readvar.insert(body->varId());
+                    else if (readvar.find(body->varId()) != readvar.end())
+                        variables.erase(body->varId());
+                }
+            }
+        }
+
         if (Token::Match(tok->previous(), "[;{}]")) {
             for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->varId()) {

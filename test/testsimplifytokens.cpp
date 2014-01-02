@@ -133,6 +133,8 @@ private:
         TEST_CASE(template38);  // #4832 - crash on C++11 right angle brackets
         TEST_CASE(template39);  // #4742 - freeze
         TEST_CASE(template40);  // #5055 - template specialization outside struct
+        TEST_CASE(template41);  // #4710 - const in instantiation not handled perfectly
+        TEST_CASE(template42);  // #4878 - variadic templates
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -371,6 +373,10 @@ private:
         TEST_CASE(enum36); // ticket #4378
         TEST_CASE(enum37); // ticket #4280 (shadow variable)
         TEST_CASE(enum38); // ticket #4463 (when throwing enum id, don't warn about shadow variable)
+        TEST_CASE(enum39); // ticket #5145 (fp variable hides enum)
+        TEST_CASE(enum40);
+        TEST_CASE(enum41); // ticket #5212 (valgrind errors during enum simplification)
+        TEST_CASE(enum42); // ticket #5182 (template function call in enum value)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
 
@@ -448,6 +454,8 @@ private:
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
         TEST_CASE(simplifyCharAt);
         TEST_CASE(simplifyOverride); // ticket #5069
+
+        TEST_CASE(simplifyFlowControl);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -462,7 +470,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         if (simplify)
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(0, !simplify);
     }
@@ -477,7 +485,7 @@ private:
 
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(0, false);
     }
@@ -492,7 +500,7 @@ private:
         tokenizer.tokenize(istr, filename);
 
         if (simplify)
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
         // result..
         return tokenizer.tokens()->stringifyList(true);
@@ -2337,6 +2345,29 @@ private:
         ASSERT_EQUALS("struct A { template < typename T > struct X { T t ; } ; } ;", tok(code));
     }
 
+    void template41() { // #4710 - const in template instantiation not handled perfectly
+        const char code1[] = "template<class T> struct X { };\n"
+                             "void f(const X<int> x) { }";
+        ASSERT_EQUALS("void f ( const X<int> x ) { } struct X<int> { }", tok(code1));
+
+        const char code2[] = "template<class T> T f(T t) { return t; }\n"
+                             "int x() { return f<int>(123); }";
+        ASSERT_EQUALS("int x ( ) { return f<int> ( 123 ) ; } int f<int> ( int t ) { return t ; }", tok(code2));
+    }
+
+    void template42() { // #4878 cpcheck aborts in ext-blocks.cpp (clang testcode)
+        const char code[] = "template<typename ...Args>\n"
+                            "int f0(Args ...args) {\n"
+                            "  return ^ {\n"
+                            "    return sizeof...(Args);\n"
+                            "  }() + ^ {\n"
+                            "    return sizeof...(args);\n"
+                            "  }();\n"
+                            "}";
+        tok(code);
+    }
+
+
     void template_default_parameter() {
         {
             const char code[] = "template <class T, int n=3>\n"
@@ -2415,6 +2446,14 @@ private:
                                       "{ int ar [ 3 ] ; }"
                                      );
             TODO_ASSERT_EQUALS(wanted, current, tok(code));
+        }
+        {
+            const char code[] = "template<class T, class T2 = A<T>> class B {};\n"
+                                "template<class B = A, typename C = C<B>> class C;\n"
+                                "template<class B, typename C> class D { };\n";
+            ASSERT_EQUALS("template < class T , class T2 > class B { } ; "
+                          "template < class B , typename C > class C ; "
+                          "template < class B , typename C > class D { } ;", tok(code));
         }
     }
 
@@ -2840,6 +2879,13 @@ private:
         }
 
         {
+            const char code[] = "void f() {\n"
+                                "  a = new std::map<std::string, std::string>;\n"
+                                "}\n";
+            ASSERT_EQUALS("void f ( ) { a = new std :: map < std :: string , std :: string > ; }", tok(code));
+        }
+
+        {
             // ticket #1327
             const char code[] = "const C<1,2,3> foo ()\n"
                                 "{\n"
@@ -3093,7 +3139,7 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
             const char expect[] = "\n\n##file 0\n"
                                   "1: void foo ( )\n"
@@ -3127,7 +3173,7 @@ private:
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList2();
 
             const char expect[] = "\n\n##file 0\n"
                                   "1: void foo ( )\n"
@@ -4187,7 +4233,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS(true, tokenizer.validate());
     }
@@ -4250,7 +4296,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS(true, tokenizer.validate());
     }
@@ -7057,10 +7103,10 @@ private:
                             "int sum =  a + b + c + d + e + f + g;";
         const char expected[] = "int sum ; sum = "
                                 "sizeof ( int ) + "
-                                "1 + sizeof ( int ) + "
-                                "1 + sizeof ( int ) + 101 + " // 101 = 100 + 1
-                                "sizeof ( int ) + 102 + " // 102 = 100 + 1 + 1
-                                "sizeof ( int ) + 283 " // 283 = 100+2+90+91
+                                "( 1 + sizeof ( int ) ) + "
+                                "( 1 + sizeof ( int ) + 100 ) + " // 101 = 100 + 1
+                                "( 1 + sizeof ( int ) + 101 ) + " // 102 = 100 + 1 + 1
+                                "( 1 + sizeof ( int ) + 102 ) + 181 " // 283 = 100+2+90+91
                                 ";";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -7405,7 +7451,7 @@ private:
 
     void enum32() {  // #3998 - wrong enum simplification => access violation
         const char code[] = "enum { x=(32), y=x, z }; { a, z }";
-        ASSERT_EQUALS("{ a , 33 }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("{ a , ( 33 ) }", checkSimplifyEnum(code));
     }
 
     void enum33() {  // #4015 - segmentation fault
@@ -7450,6 +7496,35 @@ private:
         const char code[] = "enum { a,b }; void f() { throw a; }";
         checkSimplifyEnum(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum39() { // #5145 - fp variable hides enum
+        const char code[] = "enum { A }; void f() { int a = 1 * A; }";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum40() {
+        const char code[] = "enum { A=(1<<0)|(1<<1) }; void f() { x = y + A; }";
+        ASSERT_EQUALS("void f ( ) { x = y + ( 3 ) ; }", checkSimplifyEnum(code));
+    }
+
+    void enum41() { // ticket #5212 (valgrind errors during enum simplification)
+        const char code[] = "namespace Foo {\n"
+                            "  enum BarConfig {\n"
+                            "    eBitOne = (1 << 0),\n"
+                            "    eBitTwo = (1 << 1),\n"
+                            "    eAll        = eBitOne|eBitTwo\n"
+                            "  };\n"
+                            "}\n"
+                            "int x = Foo::eAll;";
+        ASSERT_EQUALS("int x ; x = ( 1 ) | 2 ;", checkSimplifyEnum(code));
+    }
+
+    void enum42() { // ticket #5182 (template function call in template value)
+        const char code[] = "enum { A = f<int,2>() };\n"
+                            "a = A;";
+        ASSERT_EQUALS("a = f < int , 2 > ( ) ;", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
@@ -8251,6 +8326,25 @@ private:
                       tok(code, true));
     }
 
+    void simplifyFlowControl() {
+        const char code1[] = "void f() {\n"
+                             "  return;\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { return ; }", tok(code1,true));
+
+        const char code2[] = "void f() {\n"
+                             "  exit();\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { exit ( ) ; }", tok(code2,true));
+
+        const char code3[] = "void f() {\n"
+                             "  x.abort();\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { x . abort ( ) ; y ( ) ; }", tok(code3,true));
+    }
 };
 
 REGISTER_TEST(TestSimplifyTokens)

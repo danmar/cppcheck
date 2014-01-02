@@ -82,7 +82,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
     }
 }
 
@@ -242,6 +242,13 @@ int main(int argc, char **argv)
          << "    else\n"
          << "        matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
          << "    endif\n"
+         << "endif\n\n";
+
+    // explicit cfg dir..
+    fout << "ifdef CFGDIR\n"
+         << "    CFG=-DCFGDIR=\\\"$(CFGDIR)\\\"\n"
+         << "else\n"
+         << "    CFG=\n"
          << "endif\n\n";
 
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.

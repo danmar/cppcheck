@@ -92,7 +92,6 @@ public:
         checkOther.checkZeroDivision();
         checkOther.checkZeroDivisionOrUselessCondition();
         checkOther.checkMathFunctions();
-        checkOther.checkCCTypeFunctions();
 
         checkOther.redundantGetAndSetUserId();
         checkOther.checkIncorrectLogicOperator();
@@ -109,7 +108,6 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
         checkOther.checkSuspiciousEqualityComparison();
-        checkOther.checkSleepTimeInterval();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }
 
@@ -132,11 +130,12 @@ public:
     void invalidPointerCast();
 
     /**
-     * @brief Invalid function usage (invalid radix / overlapping data)
+     * @brief Invalid function usage (invalid input value / overlapping data)
      *
      * %Check that given function parameters are valid according to the standard
      * - wrong radix given for strtol/strtoul
      * - overlapping data when using sprintf/snprintf
+     * - wrong input value according to library
      */
     void invalidFunctionUsage();
 
@@ -173,9 +172,6 @@ public:
 
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
-
-    /** @brief %Check for parameters given to cctype function that do make error*/
-    void checkCCTypeFunctions();
 
     /** @brief % Check for seteuid(geteuid()) or setuid(getuid())*/
     void redundantGetAndSetUserId();
@@ -263,10 +259,7 @@ public:
     /** @brief %Check to avoid casting a return value to unsigned char and then back to integer type.  */
     void checkCastIntToCharAndBack();
 
-    /** @brief %Check providing too big sleep time intervals on POSIX systems. */
-    void checkSleepTimeInterval();
-
-    /** @brief %Check for using of comparision functions evaluating always to true or false. */
+    /** @brief %Check for using of comparison functions evaluating always to true or false. */
     void checkComparisonFunctionIsAlwaysTrueOrFalse(void);
 
 private:
@@ -275,7 +268,6 @@ private:
 
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
-    void checkSleepTimeError(const Token *tok, const std::string &strDim);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void oppositeInnerConditionError(const Token *tok);
@@ -285,8 +277,9 @@ private:
     void redundantGetAndSetUserIdError(const Token *tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
-    void dangerousUsageStrtolError(const Token *tok, const std::string& funcname);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
+    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
+    void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void udivError(const Token *tok, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
@@ -298,7 +291,6 @@ private:
     void zerodivcondError(const Token *tokcond, const Token *tokdiv);
     void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
-    void cctypefunctionCallError(const Token *tok, const std::string &functionName, const std::string &value);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
@@ -340,6 +332,8 @@ private:
 
         // error
         c.sprintfOverlappingDataError(0, "varname");
+        c.invalidFunctionArgError(0, "func_name", 1, "1-4");
+        c.invalidFunctionArgBoolError(0, "func_name", 1);
         c.udivError(0, false);
         c.zerodivError(0);
         c.zerodivcondError(0,0);
@@ -349,7 +343,6 @@ private:
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
         c.checkPipeParameterSizeError(0, "varname", "dimension");
-        c.checkSleepTimeError(0,"dimension");
 
         //performance
         c.redundantCopyError(0, "varname");
@@ -361,7 +354,6 @@ private:
         c.checkCastIntToCharAndBackError(0,"func_name");
         c.oppositeInnerConditionError(0);
         c.cstyleCastError(0);
-        c.dangerousUsageStrtolError(0, "strtol");
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");
         c.charArrayIndexError(0);
@@ -395,7 +387,6 @@ private:
         c.pointerLessThanZeroError(0, false);
         c.pointerPositiveError(0, false);
         c.SuspiciousSemicolonError(0);
-        c.cctypefunctionCallError(0, "funname", "value");
         c.moduloAlwaysTrueFalseError(0, "1");
         c.incompleteArrayFillError(0, "buffer", "memset", false);
         c.varFuncNullUBError(0);
@@ -421,7 +412,7 @@ private:
                "* bitwise operation with negative right operand\n"
                "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "* cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
-               "* provide too big sleep times on POSIX systems\n"
+               "* invalid input values for functions\n"
 
                // warning
                "* either division by zero or useless condition\n"
@@ -435,7 +426,6 @@ private:
                "* C-style pointer cast in cpp file\n"
                "* casting between incompatible pointer types\n"
                "* redundant if\n"
-               "* bad usage of the function 'strtol'\n"
                "* [[CheckUnsignedDivision|unsigned division]]\n"
                "* passing parameter by value\n"
                "* [[IncompleteStatement|Incomplete statement]]\n"
@@ -462,7 +452,6 @@ private:
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
-               "* incorrect usage of functions from ctype library.\n"
                "* Comparisons of modulo results that are always true/false.\n"
                "* Array filled incompletely using memset/memcpy/memmove.\n"
                "* redundant get and set function of user id (--std=posix).\n"
@@ -470,16 +459,6 @@ private:
                "* NaN (not a number) value used in arithmetic expression.\n"
                "* comma in return statement (the comma can easily be misread as a semicolon).\n";
     }
-
-    void checkExpressionRange(const std::list<const Function*> &constFunctions,
-                              const Token *start,
-                              const Token *end,
-                              const std::string &toCheck);
-
-    void complexDuplicateExpressionCheck(const std::list<const Function*> &constFunctions,
-                                         const Token *classStart,
-                                         const std::string &toCheck,
-                                         const std::string &alt);
 };
 /// @}
 //---------------------------------------------------------------------------

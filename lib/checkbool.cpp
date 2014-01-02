@@ -333,10 +333,13 @@ void CheckBool::checkAssignBoolToPointer()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = %bool% ;")) {
-                // Todo: properly check if there is a deref
+                // check if there is a deref
                 // *x.p = true;  // <- don't warn
                 // x.p = true;   // <- warn
-                if (Token::Match(tok->previous(), "[*.)]"))
+                const Token *prev = tok;
+                while (Token::Match(prev->tokAt(-2), "%var% ."))
+                    prev = prev->tokAt(-2);
+                if (Token::Match(prev->previous(), "[*.)]"))
                     continue;
 
                 // Is variable a pointer?
@@ -505,4 +508,49 @@ void CheckBool::comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0
     else
         reportError(tok, Severity::warning, "compareBoolExpressionWithInt",
                     "Comparison of a boolean expression with an integer.");
+}
+
+
+void CheckBool::pointerArithBool()
+{
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "if|while (")) {
+                pointerArithBoolCond(tok->next()->astOperand2());
+            }
+        }
+    }
+}
+
+void CheckBool::pointerArithBoolCond(const Token *tok)
+{
+    if (!tok)
+        return;
+    if (Token::Match(tok, "&&|%oror%")) {
+        pointerArithBoolCond(tok->astOperand1());
+        pointerArithBoolCond(tok->astOperand2());
+        return;
+    }
+    if (tok->str() != "+")
+        return;
+
+    if (tok->astOperand1() &&
+        tok->astOperand1()->isName() &&
+        tok->astOperand1()->variable() &&
+        tok->astOperand1()->variable()->isPointer() &&
+        tok->astOperand2()->isNumber())
+        pointerArithBoolError(tok);
+}
+
+void CheckBool::pointerArithBoolError(const Token *tok)
+{
+    reportError(tok,
+                Severity::error,
+                "pointerArithBool",
+                "Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n"
+                "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.");
 }

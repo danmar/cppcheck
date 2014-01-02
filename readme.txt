@@ -54,23 +54,24 @@ Compiling
 
     gnu make
     ========
-        To build Cppcheck with rules (pcre dependency):
-            make HAVE_RULES=yes
-
-        To build Cppcheck without rules (no dependencies):
+        Simple build (no dependencies):
             make
 
-        If you have python it is recommended that you add "SRCDIR=build". When
-        that is used, the Makefile uses python to compile Cppcheck (but python
-        is not used at runtime). The advantage is that it makes Cppcheck faster.
+        The recommended release build is:
+            make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+
+        Flags:
+        SRCDIR=build   : Python is used to optimise cppcheck
+        CFGDIR=cfg     : Specify folder where .cfg files are found
+        HAVE_RULES=yes : Enable rules (pcre is required if this is used)
 
     g++ (for experts)
     =================
         If you just want to build Cppcheck without dependencies then you can use this command:
-            g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
+            g++ -o cppcheck -Ilib -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/tinyxml/tinyxml2.cpp
 
         If you want to use --rule and --rule-file then dependencies are needed:
-            g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/tinyxml2.cpp
 
     mingw
     =====

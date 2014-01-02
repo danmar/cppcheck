@@ -550,7 +550,9 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             ftok = ftok->tokAt(2);
 
         // Skip "classname :: "
-        if (Token::Match(ftok, "%var% ::"))
+        if (Token::Match(ftok, ":: %var% "))
+            ftok = ftok->next();
+        while (Token::Match(ftok, "%var% ::"))
             ftok = ftok->tokAt(2);
 
         // Clearing all variables..
@@ -803,7 +805,7 @@ static bool checkFunctionUsage(const std::string& name, const Scope* scope)
         if (func->functionScope) {
             if (Token::Match(func->tokenDef, "%var% (")) {
                 for (const Token *ftok = func->tokenDef->tokAt(2); ftok && ftok->str() != ")"; ftok = ftok->next()) {
-                    if (Token::Match(ftok, "= %var% (") && ftok->strAt(1) == name)
+                    if (Token::Match(ftok, "= %var% [(,)]") && ftok->strAt(1) == name)
                         return true;
                     if (ftok->str() == "(")
                         ftok = ftok->link();
@@ -837,7 +839,7 @@ void CheckClass::privateFunctions()
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
-        // dont check borland classes with properties..
+        // do not check borland classes with properties..
         if (Token::findsimplematch(scope->classStart, "; __property ;", scope->classEnd))
             continue;
 
@@ -898,7 +900,7 @@ static const Scope* findFunctionOf(const Scope* scope)
     return 0;
 }
 
-void CheckClass::noMemset()
+void CheckClass::checkMemset()
 {
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -949,6 +951,20 @@ void CheckClass::noMemset()
 
                         if (derefs == 0)
                             type = var->typeScope();
+
+                        // TODO: The SymbolDatabase mix up variables in nested structs.
+                        //       So we must bailout right now if there are nested structs.
+                        bool bailout = false;
+                        for (const Token *typetok2 = var->typeStartToken(); typetok2 && typetok2 != var->typeEndToken(); typetok2 = typetok2->next()) {
+                            if (typetok2->str() == "::")
+                                bailout = true;
+                            if (typetok2->str() == "{") {
+                                bailout = false;
+                                break;
+                            }
+                        }
+                        if (bailout)
+                            continue;
                     }
                 }
 
@@ -1959,7 +1975,7 @@ void CheckClass::checkDuplInheritedMembers()
                 for (std::list<Variable>::const_iterator parentClassVarIt = parentClassIt->type->classScope->varlist.begin();
                      parentClassVarIt != parentClassIt->type->classScope->varlist.end();
                      ++parentClassVarIt) {
-                    if (classVarIt->name() == parentClassVarIt->name()) { // Check if the class and its parent have a common variable
+                    if (classVarIt->name() == parentClassVarIt->name() && !parentClassVarIt->isPrivate()) { // Check if the class and its parent have a common variable
                         duplInheritedMembersError(classVarIt->nameToken(), parentClassVarIt->nameToken(),
                                                   classIt->name(), parentClassIt->type->name(), classVarIt->name(),
                                                   classIt->classScope->type == Scope::eStruct,

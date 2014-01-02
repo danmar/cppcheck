@@ -79,6 +79,18 @@ public:
     QStringList GetExcludedPaths() const;
 
     /**
+    * @brief Get list libraries.
+    * @return list of libraries.
+    */
+    QStringList GetLibraries() const;
+
+    /**
+    * @brief Get list suppressions.
+    * @return list of suppressions.
+    */
+    QStringList GetSuppressions() const;
+
+    /**
     * @brief Get filename for the project file.
     * @return file name.
     */
@@ -119,10 +131,31 @@ public:
     void SetExcludedPaths(const QStringList &paths);
 
     /**
+    * @brief Set list of libraries.
+    * @param libraries List of libraries.
+    */
+    void SetLibraries(const QStringList &libraries);
+
+    /**
+    * @brief Set list of suppressions.
+    * @param suppressions List of suppressions.
+    */
+    void SetSuppressions(const QStringList &suppressions);
+
+    /**
     * @brief Write project file (to disk).
     * @param filename Filename to use.
     */
     bool Write(const QString &filename = QString());
+
+    /**
+     * @brief Write string list
+     * @param xmlWriter xml writer
+     * @param stringlist string list to write
+     * @param startelementname name of start element
+     * @param stringelementname name of each string element
+     */
+    static void WriteStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[]);
 
     /**
     * @brief Set filename for the project file.
@@ -164,6 +197,14 @@ protected:
     */
     void ReadExcludes(QXmlStreamReader &reader);
 
+    /**
+     * @brief Read string list
+     * @param stringlist   destination string list
+     * @param reader       XML stream reader
+     * @param elementname  elementname for each string
+     */
+    void ReadStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
+
 private:
 
     /**
@@ -198,6 +239,16 @@ private:
     * @brief Paths excluded from the check.
     */
     QStringList mExcludedPaths;
+
+    /**
+    * @brief List of libraries.
+    */
+    QStringList mLibraries;
+
+    /**
+     * @brief List of suppressions.
+     */
+    QStringList mSuppressions;
 };
 /// @}
 #endif  // PROJECT_FILE_H

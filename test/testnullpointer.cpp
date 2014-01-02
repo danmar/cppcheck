@@ -98,7 +98,7 @@ private:
         checkNullPointer.nullPointer();
 
         const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
         if (verify && str1 != str2)
             warn(("Unsimplified code in test case. It looks like this test "
@@ -803,6 +803,13 @@ private:
               "}", true, "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(type* p) {\n" // #4983
+              "    x(sizeof p[0]);\n"
+              "    if (!p)\n"
+              "        ;\n"
+              "}", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
+
         // #3023 - checked deref
         check("void f(struct ABC *abc) {\n"
               "  WARN_ON(!abc || abc->x == 0);\n"
@@ -1257,7 +1264,7 @@ private:
               "    char cBuf[10];\n"
               "    sprintf(cBuf, \"%s\", c ? c : \"0\" );\n"
               "}");
-        TODO_ASSERT_EQUALS("","[test.cpp:4]: (error) Possible null pointer dereference: c\n", errout.str());
+        ASSERT_EQUALS("",errout.str());
     }
 
     void nullpointer24() {  // #5083 - fp: chained assignment
@@ -1707,6 +1714,14 @@ private:
               "    itoa(x,NULL,10);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+
+        check("void f() {\n"
+              "    typeof(*NULL) y;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { freopen(NULL, m, stdin); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void gcc_statement_expression() {
@@ -2165,7 +2180,7 @@ private:
         // for 1st parameter null pointer is not ok..
         {
             Library library;
-            struct Library::ArgumentChecks arg;
+            Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
             library.argumentChecks["x"][1].notnull = true;

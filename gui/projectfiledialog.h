@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <QString>
 #include <QStringList>
+#include <QCheckBox>
 
 #include "ui_projectfile.h"
 
@@ -71,6 +72,18 @@ public:
     QStringList GetExcludedPaths() const;
 
     /**
+    * @brief Return selected libraries from the dialog control.
+    * @return List of libraries.
+    */
+    QStringList GetLibraries() const;
+
+    /**
+    * @brief Return suppressions from the dialog control.
+    * @return List of suppressions.
+    */
+    QStringList GetSuppressions() const;
+
+    /**
     * @brief Set project root path to dialog control.
     * @param root Project root path to set to dialog control.
     */
@@ -99,6 +112,18 @@ public:
     * @param paths List of path names to set to dialog control.
     */
     void SetExcludedPaths(const QStringList &paths);
+
+    /**
+    * @brief Set libraries to dialog control.
+    * @param libraries List of libraries to set to dialog control.
+    */
+    void SetLibraries(const QStringList &libraries);
+
+    /**
+    * @brief Set suppressions to dialog control.
+    * @param suppressions List of suppressions to set to dialog control.
+    */
+    void SetSuppressions(const QStringList &suppressions);
 
 protected slots:
     /**
@@ -157,6 +182,16 @@ protected slots:
       */
     void MoveIncludePathDown();
 
+    /**
+    * @brief Add suppression to the list
+    */
+    void AddSuppression();
+
+    /**
+    * @brief Remove selected suppression from the list
+    */
+    void RemoveSuppression();
+
 protected:
 
     /**
@@ -194,6 +229,9 @@ private:
      * @brief Projectfile path.
      */
     QString mFilePath;
+
+    /** @brief Library checkboxes */
+    QList<QCheckBox*> mLibraryCheckboxes;
 };
 
 /// @}

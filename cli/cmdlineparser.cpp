@@ -373,10 +373,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             if (define.find("=") == std::string::npos)
                 define += "=1";
 
-            // DEF= => empty define
-            else if (define.find("=") + 1U == define.size())
-                define.erase(define.size() - 1U);
-
             if (!_settings->userDefines.empty())
                 _settings->userDefines += ";";
             _settings->userDefines += define;
@@ -719,7 +715,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         _settings->_maxConfigs = ~0U;
 
     if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
-        PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option, so it's disabled.");
+        PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
     if (_settings->inconclusive && _settings->_xml && _settings->_xml_version == 1U) {

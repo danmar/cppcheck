@@ -486,6 +486,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scope->functionList.push_back(function);
                     }
 
+                    // unknown macro (#5197)
+                    else if (Token::Match(end, ") %any% ;")) {
+                        tok = end->tokAt(3);
+
+                        scope->functionList.push_back(function);
+                    }
+
                     // inline function
                     else {
                         function.isInline = true;
@@ -2060,7 +2067,7 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
     return false;
 }
 
-const Variable* Function::getArgumentVar(unsigned int num) const
+const Variable* Function::getArgumentVar(std::size_t num) const
 {
     for (std::list<Variable>::const_iterator i = argumentList.begin(); i != argumentList.end(); ++i) {
         if (i->index() == num)
@@ -2323,8 +2330,11 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
         while (tok && tok->str() == "[")
             tok = tok->link()->next();
 
-        if (vartok->varId() == 0 && !vartok->isBoolean())
-            check->debugMessage(vartok, "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
+        if (vartok->varId() == 0) {
+            if (!vartok->isBoolean())
+                check->debugMessage(vartok, "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
+            return tok;
+        }
 
         const Type *vType = NULL;
 
@@ -2426,8 +2436,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         vartok = localVarTok;
         typetok = localTypeTok;
     } else if (type == eCatch &&
-               (Token::Match(localTypeTok, "%var% )") ||
-                Token::Match(localTypeTok, "%var% &| %var% )"))) {
+               Token::Match(localVarTok, "%var% )")) {
         vartok = localVarTok;
         typetok = localTypeTok;
     }
@@ -2510,6 +2519,8 @@ const Function* Scope::findFunction(const Token *tok) const
         for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
             const Type *base = definedType->derivedFrom[i].type;
             if (base && base->classScope) {
+                if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
+                    continue;
                 const Function * func = base->classScope->findFunction(tok);
                 if (func)
                     return func;

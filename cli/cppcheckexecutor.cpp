@@ -94,7 +94,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), &_settings->library);
+            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions());
     }
 
     if (!_files.empty()) {
@@ -151,9 +151,20 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     Settings& settings = cppCheck.settings();
     _settings = &settings;
 
-    settings.library.load(argv[0], "std");
-
     if (!parseFromArgs(&cppCheck, argc, argv)) {
+        return EXIT_FAILURE;
+    }
+
+    bool std = settings.library.load(argv[0], "std.cfg");
+    bool posix = true;
+    if (settings.standards.posix)
+        posix = settings.library.load(argv[0], "posix.cfg");
+
+    if (!std || !posix) {
+        const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken.");
+        ErrorLogger::ErrorMessage errmsg(callstack, Severity::information, msg, "failedToLoadCfg", false);
+        reportErr(errmsg);
         return EXIT_FAILURE;
     }
 
@@ -176,7 +187,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         std::size_t processedsize = 0;
         unsigned int c = 0;
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-            if (!_settings->library.acceptFile(i->first)) {
+            if (!_settings->library.markupFile(i->first)) {
                 returnValue += cppCheck.check(i->first);
                 processedsize += i->second;
                 if (!settings._errorsOnly)
@@ -185,10 +196,10 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
             }
         }
 
-        // second loop to catch all library files which may not work until all
+        // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-            if (_settings->library.acceptFile(i->first)) {
+            if (_settings->library.markupFile(i->first)) {
                 returnValue += cppCheck.check(i->first);
                 processedsize += i->second;
                 if (!settings._errorsOnly)

@@ -27,6 +27,7 @@
 #include <cctype>
 #include <sstream>
 #include <map>
+#include <stack>
 
 Token::Token(Token **t) :
     tokensBack(t),
@@ -1143,36 +1144,56 @@ void Token::astOperand2(Token *tok)
     _astOperand2 = tok;
 }
 
-void Token::astFunctionCall()
+bool Token::isCalculation() const
 {
-    _astOperand1 = _next;
-    _next->_astParent = this;
+    if (!Token::Match(this, "%cop%|++|--"))
+        return false;
+
+    if (Token::Match(this, "*|&")) {
+        // dereference or address-of?
+        if (!this->astOperand2())
+            return false;
+
+        if (this->astOperand2()->str() == "[")
+            return false;
+
+        // type specification?
+        std::stack<const Token *> operands;
+        operands.push(this);
+        while (!operands.empty()) {
+            const Token *op = operands.top();
+            operands.pop();
+            if (op->isNumber() || op->varId() > 0)
+                return true;
+            if (op->astOperand1())
+                operands.push(op->astOperand1());
+            if (op->astOperand2())
+                operands.push(op->astOperand2());
+            else if (Token::Match(op, "*|&"))
+                return false;
+        }
+
+        // type specification => return false
+        return false;
+    }
+
+    return true;
 }
 
-void Token::astHandleParentheses()
+void Token::printAst() const
 {
-    // Assumptions:
-    // * code is valid
-    // * _str is one of: ( ) ]
+    bool title = false;
 
-    Token *innerTop;
-    if (Token::Match(this, ")|]"))
-        innerTop = _previous;
-    else if (_next && _next->_str == ")")
-        return;
-    else  // _str = "("
-        innerTop = _next;
-    while (innerTop->_astParent)
-        innerTop = innerTop->_astParent;
-
-    if (_astParent) {
-        if (_str == "(" && _astParent->_astOperand2 != NULL)
-            _astParent->_astOperand2 = innerTop;
-        else
-            _astParent->_astOperand1 = innerTop;
-        innerTop->_astParent = _astParent;
-    } else {
-        _astParent = innerTop;
+    bool print = true;
+    for (const Token *tok = this; tok; tok = tok->next()) {
+        if (print && tok->_astOperand1) {
+            if (!title)
+                std::cout << "\n\n##AST" << std::endl;
+            title = true;
+            std::cout << tok->astTop()->astString(" ") << std::endl;
+            print = false;
+        }
+        if (Token::Match(tok, "[;{}]"))
+            print = true;
     }
 }
-

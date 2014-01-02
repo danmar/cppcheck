@@ -45,6 +45,7 @@ private:
         TEST_CASE(func_pointer3);
         TEST_CASE(func_pointer4); // ticket #2807
         TEST_CASE(func_pointer5); // ticket #2233
+        TEST_CASE(func_pointer6); // ticket #4787
 
         TEST_CASE(ctor);
         TEST_CASE(ctor2);
@@ -85,7 +86,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
 
         // Check for unused private functions..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -313,6 +314,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+
+    void func_pointer6() { // #4787
+        check("class Test {\n"
+              "private:\n"
+              "    static void a(const char* p) { }\n"
+              "public:\n"
+              "    void test(void* f = a) {\n"
+              "        f(\"test\");\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     void ctor() {

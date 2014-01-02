@@ -51,7 +51,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
 
         // Ensure that the test case is not bad.
@@ -245,21 +245,9 @@ private:
     void compare() {
         check("void foo(int x)\n"
               "{\n"
-              "    if (x & 4 == 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
-
-        check("void foo(int x)\n"
-              "{\n"
               "    if ((x & 4) == 3);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
-
-        check("void foo(int x)\n"
-              "{\n"
-              "    if (x & 4 != 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) != 0x3' is always true.\n", errout.str());
 
         check("void foo(int x)\n"
               "{\n"
@@ -273,24 +261,9 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X | 0x4) != 0x3' is always true.\n", errout.str());
 
-        // array
-        check("void foo(int *x)\n"
-              "{\n"
-              "    if (x[0] & 4 == 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
-
-        // struct member
-        check("void foo(struct X *x)\n"
-              "{\n"
-              "    if (x->y & 4 == 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
-
-        // expression
         check("void foo(int x)\n"
               "{\n"
-              "    if ((x+2) & 4 == 3);\n"
+              "    if ((x & y & 4 & z ) == 3);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
     }

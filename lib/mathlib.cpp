@@ -233,7 +233,7 @@ bool MathLib::isInt(const std::string & s)
         ++n;
 
     // if everything goes good, we are at the end of the string and no digits/character
-    // is here --> return true, but if something was found eg. 12E+12AA return false
+    // is here --> return true, but if something was found e.g. 12E+12AA return false
     return (n >= s.length());
 }
 
@@ -287,7 +287,11 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
             throw InternalError(0, "Internal Error: Division by zero");
         return toString(toLongNumber(first) / b);
     } else if (second == "0.0") {
-        return "inf.0";
+        if (first=="0.0" || first=="+0.0")
+            return "nan.0";
+        if (first=="-0.0")
+            return "-nan.0";
+        return (first[0] == '-') ? "-inf.0" : "inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
 }

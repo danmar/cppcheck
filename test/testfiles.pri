@@ -23,6 +23,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testinternal.cpp \
            $${BASEPATH}/testio.cpp \
            $${BASEPATH}/testleakautovar.cpp \
+           $${BASEPATH}/testlibrary.cpp \
            $${BASEPATH}/testmathlib.cpp \
            $${BASEPATH}/testmemleak.cpp \
            $${BASEPATH}/testnonreentrantfunctions.cpp \
