@@ -5110,7 +5110,7 @@ public:
     }
 
 private:
-    void check(const char code[], const char fname[] = 0) {
+    void check(const char code[], const char fname[] = 0, bool isCPP = true) {
         // Clear the error buffer..
         errout.str("");
 
@@ -5119,7 +5119,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, fname ? fname : "test.cpp");
+        tokenizer.tokenize(istr, fname ? fname : (isCPP ? "test.cpp" : "test.c"));
         tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
@@ -5166,6 +5166,7 @@ private:
         // Segmentation fault in CheckMemoryLeakStructMember
         TEST_CASE(trac5030);
 
+        TEST_CASE(varid); // #5201: Analysis confused by (variable).attribute notation
     }
 
     void err() {
@@ -5463,6 +5464,19 @@ private:
               "int const oldbufsize = otherbufsize;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varid() { // #5201
+        check("struct S {\n"
+              "  void *state_check_buff;\n"
+              "};\n"
+              "void f() {\n"
+              "  S s;\n"
+              "  (s).state_check_buff = (void* )malloc(1);\n"
+              "  if (s.state_check_buff == 0)\n"
+              "    return;\n"
+              "}", /*fname=*/0, /*isCPP=*/false);
+        ASSERT_EQUALS("[test.c:9]: (error) Memory leak: s.state_check_buff\n", errout.str());
     }
 };
 
