@@ -3151,7 +3151,18 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                             chr = !chr;
                         else if (str || chr)
                             continue;
-                        else if (std::isalnum(macrocode[i]) || macrocode[i] == '_') {
+                        else if (macrocode[i] == '.') { // 5. / .5
+                            if ((i > 0U && std::isdigit(macrocode[i-1])) ||
+                                (i+1 < macrocode.size() && std::isdigit(macrocode[i+1]))) {
+                                if (i > 0U && !std::isdigit(macrocode[i-1])) {
+                                    macrocode.insert(i, 1U, macroChar);
+                                    i++;
+                                }
+                                i++;
+                                if (i<macrocode.size() && std::isdigit(macrocode[i]))
+                                    i++;
+                            }
+                        } else if (std::isalnum(macrocode[i]) || macrocode[i] == '_') {
                             if ((i > 0U)                        &&
                                 (!std::isalnum(macrocode[i-1])) &&
                                 (macrocode[i-1] != '_')         &&

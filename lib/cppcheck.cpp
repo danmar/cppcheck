@@ -46,8 +46,7 @@ CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
 
 CppCheck::~CppCheck()
 {
-    if (_settings._showtime != SHOWTIME_NONE)
-        S_timerResults.ShowResults();
+    S_timerResults.ShowResults(_settings._showtime);
 }
 
 const char * CppCheck::version()

@@ -2860,7 +2860,7 @@ static bool astIsFloat(const Token *tok)
         return true;
 
     // TODO: check function calls, struct members, arrays, etc also
-    return tok->variable() && Token::Match(tok->variable()->typeStartToken(), "float|double");
+    return !tok->variable() || Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
 }
 
 //---------------------------------------------------------------------------

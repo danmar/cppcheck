@@ -1304,12 +1304,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         // readlink() / readlinkat() buffer usage
-        if (_settings->standards.posix) {
-            if (Token::simpleMatch(tok, "readlink (") && Token::Match(tok->tokAt(2)->nextArgument(), "%varid% , %num% )", arrayInfo.declarationId()))
-                checkReadlinkBufferUsage(tok, scope_begin, total_size, false);
-            else if (Token::simpleMatch(tok, "readlinkat (") && Token::Match(tok->tokAt(2)->nextArgument()->nextArgument(), "%varid% , %num% )", arrayInfo.declarationId()))
-                checkReadlinkBufferUsage(tok, scope_begin, total_size, true);
-        }
+        if (_settings->standards.posix && Token::Match(tok, "readlink|readlinkat ("))
+            checkReadlinkBufferUsage(tok, scope_begin, arrayInfo.declarationId(), total_size);
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
         if (_settings->isEnabled("portability") && Token::Match(tok, "= %varid% + %num% ;", arrayInfo.declarationId())) {
@@ -1344,18 +1340,25 @@ bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
     return false;
 }
 
-void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token *scope_begin, const MathLib::bigint total_size, const bool is_readlinkat)
+void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* ftok, const Token *scope_begin, const unsigned int varid, const MathLib::bigint total_size)
 {
-    const Token* bufParam = tok->tokAt(2)->nextArgument();
-    if (is_readlinkat)
-        bufParam = bufParam->nextArgument();
-    const std::string funcname = is_readlinkat ? "readlinkat" : "readlink";
+    const std::string funcname = ftok->str();
+
+    const Token* bufParam = ftok->tokAt(2)->nextArgument();
+    if (funcname == "readlinkat")
+        bufParam = bufParam ? bufParam->nextArgument() : NULL;
+    if (!Token::Match(bufParam, "%varid% , %num% )", varid))
+        return;
 
     const MathLib::bigint n = MathLib::toLongNumber(bufParam->strAt(2));
     if (total_size > 0 && n > total_size)
         outOfBoundsError(bufParam, funcname + "() buf size", true, n, total_size);
 
     if (!_settings->inconclusive)
+        return;
+
+    // only writing a part of the buffer
+    if (n < total_size)
         return;
 
     // readlink()/readlinkat() never terminates the buffer, check the end of the scope for buffer termination.
@@ -1369,9 +1372,9 @@ void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* tok, const Token 
     }
 
     if (!found_termination) {
-        bufferNotZeroTerminatedError(tok, bufParam->str(), funcname);
+        bufferNotZeroTerminatedError(ftok, bufParam->str(), funcname);
     } else if (n == total_size) {
-        possibleReadlinkBufferOverrunError(tok, funcname, bufParam->str());
+        possibleReadlinkBufferOverrunError(ftok, funcname, bufParam->str());
     }
 }
 

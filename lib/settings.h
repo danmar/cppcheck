@@ -29,6 +29,7 @@
 #include "library.h"
 #include "suppressions.h"
 #include "standards.h"
+#include "timer.h"
 
 /// @addtogroup Core
 /// @{
@@ -120,7 +121,7 @@ public:
     std::string _outputFormat;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
-    unsigned int _showtime;
+    SHOWTIME_MODES _showtime;
 
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */

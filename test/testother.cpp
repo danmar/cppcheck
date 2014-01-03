@@ -4591,12 +4591,12 @@ private:
     }
 
     void duplicateExpression1() {
-        check("void foo() {\n"
+        check("void foo(int a) {\n"
               "    if (a == a) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
-        check("void fun() {\n"
+        check("void fun(int b) {\n"
               "    return  a && a ||\n"
               "            b == b &&\n"
               "            d > d &&\n"
@@ -4618,12 +4618,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(int b) {\n"
               "    f(a,b == b);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(int b) {\n"
               "    f(b == b, a);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
@@ -4759,6 +4759,10 @@ private:
 
         check("struct X { float f; };\n"
               "float f(struct X x) { return x.f == x.f; }");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5284 - when type is unknown, assume it's float
+        check("int f() { return x==x; }");
         ASSERT_EQUALS("", errout.str());
     }
 

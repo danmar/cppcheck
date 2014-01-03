@@ -24,7 +24,8 @@ def wget(filepath):
     if filepath.find('/') >= 0:
         filename = filename[filename.rfind('/') + 1:]
     for d in DEBIAN:
-        subprocess.call(['nice', 'wget', d + filepath])
+        subprocess.call(
+            ['nice', 'wget', '--tries=10', '--timeout=300', d + filepath])
         if os.path.isfile(filename):
             return True
         print('Sleep for 10 seconds..')

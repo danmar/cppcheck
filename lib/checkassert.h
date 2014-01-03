@@ -60,7 +60,8 @@ private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckAssert c(0, settings, errorLogger);
-        c.assertWithSideEffects();
+        c.sideEffectInAssertError(0, "function");
+        c.assignmentInAssertError(0, "var");
     }
 
     static std::string myName() {

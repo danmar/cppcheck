@@ -110,7 +110,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
                     if (_functions.find(markupVarToken->str()) != _functions.end())
                         _functions[markupVarToken->str()].usedOtherFile = true;
-                    else if (markupVarToken->next()->str() == "("){
+                    else if (markupVarToken->next()->str() == "(") {
                         FunctionUsage &func = _functions[markupVarToken->str()];
                         func.filename = tokenizer.getSourceFilePath();
                         if (func.filename.empty() || func.filename == "+")

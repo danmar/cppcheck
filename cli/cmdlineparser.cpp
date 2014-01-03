@@ -593,8 +593,15 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->_showtime = SHOWTIME_SUMMARY;
             else if (showtimeMode == "top5")
                 _settings->_showtime = SHOWTIME_TOP5;
-            else
+            else if (showtimeMode.empty())
                 _settings->_showtime = SHOWTIME_NONE;
+            else {
+                std::string message("cppcheck: error: unrecognized showtime mode: \"");
+                message += showtimeMode;
+                message +=  "\".";
+                PrintMessage(message);
+                return false;
+            }
         }
 
 #ifdef HAVE_RULES

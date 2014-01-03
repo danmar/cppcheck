@@ -179,7 +179,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     argumentChecks[name][nr].strz      = strz;
                     argumentChecks[name][nr].valid     = valid;
                 } else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
-                    _ignorefunction[name] = (strcmp(functionnode->GetText(), "true") == 0);
+                    _ignorefunction.insert(name);
                 } else
                     return false;
             }
