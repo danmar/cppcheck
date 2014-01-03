@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <algorithm>
 #include <iostream>
+#include <vector>
 #include "timer.h"
-
 /*
     TODO:
     - sort list by time
@@ -29,6 +30,13 @@
         - for Timer* classes
 */
 
+namespace {
+    typedef std::pair<std::string, struct TimerResultsData> dataElementType;
+    bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
+    {
+        return lhs.second.seconds() > rhs.second.seconds();
+    }
+}
 
 void TimerResults::ShowResults(SHOWTIME_MODES mode) const
 {
@@ -38,20 +46,18 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
     std::cout << std::endl;
     TimerResultsData overallData;
 
-    std::map<std::string, struct TimerResultsData>::const_iterator I = _results.begin();
-    const std::map<std::string, struct TimerResultsData>::const_iterator E = _results.end();
-    size_t item = 0;
-    while (I != E) {
-        const double sec = I->second.seconds();
-        const double secAverage = sec / (double)(I->second._numberOfResults);
-        std::cout << I->first << ": " << sec << "s (avg. " << secAverage << "s - " << I->second._numberOfResults  << " result(s))" << std::endl;
+    std::vector<dataElementType> data(_results.begin(), _results.end());
+    std::sort(data.begin(), data.end(), more_second_sec);
 
-        overallData._clocks += I->second._clocks;
-
-        ++I;
-        ++item;
-        if ((mode == SHOWTIME_TOP5) && (item>=5))
-            break;
+    size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
+    for (std::vector<dataElementType>::const_iterator iter=data.begin() ; iter!=data.end(); ++iter) {
+        const double sec = iter->second.seconds();
+        const double secAverage = sec / (double)(iter->second._numberOfResults);
+        overallData._clocks += iter->second._clocks;
+        if ((mode != SHOWTIME_TOP5) || (ordinal<=5)) {
+            std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second._numberOfResults  << " result(s))" << std::endl;
+        }
+        ++ordinal;
     }
 
     const double secOverall = overallData.seconds();
