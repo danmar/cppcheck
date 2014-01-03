@@ -1053,15 +1053,6 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
     }
 
-
-
-
-
-
-
-
-
-
     void ifelse6() {
         check("static char *f()\n"
               "{\n"
@@ -5495,6 +5486,16 @@ private:
         Settings settings;
         settings.standards.posix = true;
 
+        // Add some test allocation functions to the library.
+        // When not run as a unit test, these are read from
+        // an XML file (e.g. cfg/posix.cfg).
+        int id = 0;
+        while (!settings.library.ismemory(++id))
+            continue;
+        settings.library.setalloc("malloc", id);
+        settings.library.setalloc("calloc", id);
+        settings.library.setalloc("strdup", id);
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -5510,7 +5511,7 @@ private:
         // pass allocated memory to function..
         TEST_CASE(functionParameter);
         // never use leakable resource
-        TEST_CASE(missingAssignement);
+        TEST_CASE(missingAssignment);
     }
 
     void functionParameter() {
@@ -5549,10 +5550,42 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with strdup, mkstemp doesn't release it.\n", "", errout.str());
     }
 
-    void missingAssignement() {
+    void missingAssignment() {
         check("void x()\n"
               "{\n"
               "    malloc(10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not used.\n", errout.str());
+
+        check("void x()\n"
+              "{\n"
+              "    calloc(10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function calloc is not used.\n", errout.str());
+
+        check("void x()\n"
+              "{\n"
+              "    strdup(\"Test\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function strdup is not used.\n", errout.str());
+
+        check("void x()\n"
+              "{\n"
+              "    (char*) malloc(10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not used.\n", errout.str());
+
+        check("void x()\n"
+              "{\n"
+              "    char* ptr = malloc(10);\n"
+              "    foo(ptr);\n"
+              "    free(ptr);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void x()\n"
+              "{\n"
+              "    42,malloc(42);\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not used.\n", "", errout.str());
 

@@ -2702,6 +2702,9 @@ void CheckMemoryLeakNoVar::check()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
+        // Checks if a call to an allocation function like malloc() is made and its return value is not assigned.
+        checkForUnusedReturnValue(scope);
+
         // goto the "}" that ends the executable scope..
         const Token *tok = scope->classEnd;
 
@@ -2743,7 +2746,27 @@ void CheckMemoryLeakNoVar::check()
     }
 }
 
+//---------------------------------------------------------------------------
+// Checks if a call to an allocation function like malloc() is made and its return value is not assigned.
+//---------------------------------------------------------------------------
+void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
+{
+    for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        if (Token::Match(tok, "{|}|; %var% (")) {
+            tok = tok->next();
+            const int allocationId = _settings->library.alloc(tok->str());
+            if (allocationId > 0)
+                returnValueNotUsedError(tok, tok->str());
+        }
+    }
+}
+
 void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall)
 {
     reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.");
+}
+
+void CheckMemoryLeakNoVar::returnValueNotUsedError(const Token *tok, const std::string &alloc)
+{
+    reportError(tok, Severity::error, "leakReturnValNotUsed", "Return value of allocation function " + alloc + " is not used.");
 }

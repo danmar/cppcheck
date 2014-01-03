@@ -449,13 +449,20 @@ public:
     void check();
 
 private:
+    /**
+     * @brief %Check if a call to an allocation function like malloc() is made and its return value is not assigned.
+     * @param scope     The scope of the function to check.
+     */
+    void checkForUnusedReturnValue(const Scope *scope);
 
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
+    void returnValueNotUsedError(const Token* tok, const std::string &alloc);
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakNoVar c(0, settings, e);
 
         c.functionCallLeak(0, "funcName", "funcName");
+        c.returnValueNotUsedError(0, "funcName");
     }
 
     static std::string myName() {
