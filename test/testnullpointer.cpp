@@ -498,7 +498,7 @@ private:
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning, inconclusive) Possible null pointer dereference: fred - otherwise it is redundant to check it against null.\n", errout.str());
         }
 
-        // false positives when there are macros
+        // #3425 - false positives when there are macros
         check("void f(struct FRED *fred) {\n"
               "    fred->x = 0;\n"
               "    $if(!fred){}\n"
@@ -822,7 +822,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // false positives when there are macros
+        // #3425 - false positives when there are macros
         check("void f(int *p) {\n"
               "    *p = 0;\n"
               "    $if(!p){}\n"

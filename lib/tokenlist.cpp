@@ -199,10 +199,13 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
         if (ch == Preprocessor::macroChar) {
             while (code.peek() == Preprocessor::macroChar)
                 code.get();
-            ch = ' ';
+            if (!CurrentToken.empty()) {
+                addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+                _back->isExpandedMacro(expandedMacro);
+            }
+            CurrentToken.clear();
             expandedMacro = true;
-        } else if (ch == '\n') {
-            expandedMacro = false;
+            continue;
         }
 
         // char/string..
@@ -317,8 +320,10 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             }
 
             addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
-            if (!CurrentToken.empty())
+            if (!CurrentToken.empty()) {
                 _back->isExpandedMacro(expandedMacro);
+                expandedMacro = false;
+            }
 
             CurrentToken.clear();
 
@@ -339,6 +344,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             _back->isExpandedMacro(expandedMacro);
             CurrentToken.clear();
+            expandedMacro = false;
             continue;
         }
 

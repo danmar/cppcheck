@@ -761,7 +761,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // - logical operators
         const Token* tok = i->classDef;
         if ((i->type == Scope::eIf || i->type == Scope::eElseIf || i->type == Scope::eWhile) &&
-            tok && Token::Match(tok, "else| %var% ( !| %var% )|%oror%|&&") && !tok->next()->isExpandedMacro()) {
+            tok && Token::Match(tok, "else| %var% ( !| %var% )|%oror%|&&") && !tok->tokAt(tok->str()=="else"?1:0)->isExpandedMacro()) {
 
             if (tok->str() == "else")
                 tok = tok->next();
