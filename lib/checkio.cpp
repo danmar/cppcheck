@@ -1038,8 +1038,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     } else if (specifier.find("I32") != std::string::npos) {
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    } else if (!(argInfo.typeToken->originalName() != "size_t" ||
-                                                                 argInfo.typeToken->originalName() != "ptrdiff_t"))
+                                                    } else if (!(argInfo.typeToken->originalName() == "size_t" ||
+                                                                 argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                                 argInfo.typeToken->originalName() == "WPARAM" ||
+                                                                 argInfo.typeToken->originalName() == "UINT_PTR" ||
+                                                                 argInfo.typeToken->originalName() == "LONG_PTR" ||
+                                                                 argInfo.typeToken->originalName() == "LPARAM" ||
+                                                                 argInfo.typeToken->originalName() == "LRESULT"))
                                                         invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 default:

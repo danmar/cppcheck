@@ -2205,6 +2205,18 @@ private:
                       "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+
+        // ticket #5264
+        check("void foo(LPARAM lp, WPARAM wp, LRESULT lr) {\n"
+              "    printf(\"%Ix %Ix %Ix\", lp, wp, lr);\n"
+              "}\n", false, false, Settings::Win64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(LPARAM lp, WPARAM wp, LRESULT lr) {\n"
+              "    printf(\"%Ix %Ix %Ix\", lp, wp, lr);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testMicrosoftScanfArgument() {
