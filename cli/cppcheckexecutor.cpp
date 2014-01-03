@@ -162,8 +162,18 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     if (!std || !posix) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken.");
-        ErrorLogger::ErrorMessage errmsg(callstack, Severity::information, msg, "failedToLoadCfg", false);
+        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken, please re-install.");
+#ifdef CFGDIR
+        const std::string details("The Cppcheck binary was compiled with CFGDIR set to \"" +
+                                  std::string(CFGDIR) + "\" and will therefore search for "
+                                  "std.cfg in that path.");
+#else
+        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(argv[0])) + "cfg");
+        const std::string details("The Cppcheck binary was compiled without CFGDIR set. Either the "
+                                  "std.cfg should be available in " + cfgfolder + " or the CFGDIR "
+                                  "should be configured.");
+#endif
+        ErrorLogger::ErrorMessage errmsg(callstack, Severity::information, msg+" "+details, "failedToLoadCfg", false);
         reportErr(errmsg);
         return EXIT_FAILURE;
     }
