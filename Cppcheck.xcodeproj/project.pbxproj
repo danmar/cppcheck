@@ -794,7 +794,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "CFGDIR=\\\"$SRCROOT/cfg/\\\"";
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = externals/tinyxml;
 				INSTALL_PATH = /usr/local/bin;
@@ -809,6 +809,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_MODEL_TUNING = "";
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "CFGDIR=\\\"$SRCROOT/cfg/\\\"";
 				HEADER_SEARCH_PATHS = externals/tinyxml;
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = cppcheck;
