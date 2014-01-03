@@ -20,7 +20,6 @@
 
 /*
     TODO:
-    - handle SHOWTIME_TOP5 in TimerResults
     - sort list by time
     - do not sort the results alphabetically
     - rename "file" to "single"
@@ -31,13 +30,17 @@
 */
 
 
-void TimerResults::ShowResults() const
+void TimerResults::ShowResults(SHOWTIME_MODES mode) const
 {
+    if (mode == SHOWTIME_NONE)
+        return;
+
+    std::cout << std::endl;
     TimerResultsData overallData;
 
     std::map<std::string, struct TimerResultsData>::const_iterator I = _results.begin();
     const std::map<std::string, struct TimerResultsData>::const_iterator E = _results.end();
-
+    size_t item = 0;
     while (I != E) {
         const double sec = I->second.seconds();
         const double secAverage = sec / (double)(I->second._numberOfResults);
@@ -46,6 +49,9 @@ void TimerResults::ShowResults() const
         overallData._clocks += I->second._clocks;
 
         ++I;
+        ++item;
+        if ((mode == SHOWTIME_TOP5) && (item>=5))
+            break;
     }
 
     const double secOverall = overallData.seconds();

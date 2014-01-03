@@ -35,7 +35,7 @@ Settings::Settings()
       _xml(false), _xml_version(1),
       _jobs(1),
       _exitCode(0),
-      _showtime(0),
+      _showtime(SHOWTIME_NONE),
       _maxConfigs(12),
       enforcedLang(None),
       reportProgress(false),

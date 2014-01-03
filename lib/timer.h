@@ -25,7 +25,7 @@
 #include <ctime>
 #include "config.h"
 
-enum {
+enum  SHOWTIME_MODES {
     SHOWTIME_NONE = 0,
     SHOWTIME_FILE,
     SHOWTIME_SUMMARY,
@@ -59,7 +59,7 @@ public:
     TimerResults() {
     }
 
-    void ShowResults() const;
+    void ShowResults(SHOWTIME_MODES mode) const;
     virtual void AddResults(const std::string& str, std::clock_t clocks);
 
 private:
