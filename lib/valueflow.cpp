@@ -25,7 +25,7 @@ static void valueFlowBeforeCondition(Token *tokens)
     for (Token *tok = tokens; tok; tok = tok->next()) {
         unsigned int varid;
         MathLib::bigint num;
-        if (Token::Match(tok, "==|!=|>=|<=") && tok->astOperand2()) {
+        if (Token::Match(tok, "==|!=|>=|<=") && tok->astOperand1() && tok->astOperand2()) {
             if (tok->astOperand1()->isName() && tok->astOperand2()->isNumber()) {
                 varid = tok->astOperand1()->varId();
                 num = MathLib::toLongNumber(tok->astOperand2()->str());
