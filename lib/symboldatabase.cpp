@@ -59,7 +59,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     std::map<const Token *, Scope *> back;
 
     // find all scopes
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok ? tok->next() : NULL) {
         // Locate next class
         if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::") &&
             tok->strAt(-1) != "friend") {
@@ -1432,7 +1432,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     Scope *new_scope = &scopeList.back();
 
     // skip to start of function
-    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const" && Token::Match(tok1->link()->next(), ",|{|%type%")))) {
+    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const" && Token::Match(tok1->link()->next(), "%type%|,|{")))) {
         if (tok1->str() == "(" || tok1->str() == "{")
             tok1 = tok1->link();
         tok1 = tok1->next();
