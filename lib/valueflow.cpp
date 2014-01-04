@@ -28,6 +28,7 @@ static void valueFlowBeforeCondition(Token *tokens)
         if (Token::Match(tok, "==|!=|>=|<=") && tok->astOperand2()) {
             if (tok->astOperand1()->isName() && tok->astOperand2()->isNumber()) {
                 varid = tok->astOperand1()->varId();
+                num = MathLib::toLongNumber(tok->astOperand2()->str());
             } else if (tok->astOperand1()->isNumber() && tok->astOperand2()->isName()) {
                 varid = tok->astOperand2()->varId();
                 num = MathLib::toLongNumber(tok->astOperand1()->str());
@@ -50,7 +51,7 @@ static void valueFlowBeforeCondition(Token *tokens)
 
         struct ValueFlow::Value val;
         val.link = tok;
-        val.intvalue = MathLib::toLongNumber(tok->astOperand2()->str());
+        val.intvalue = num;
 
         for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
             if (tok2->varId() == varid)
