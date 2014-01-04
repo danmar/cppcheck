@@ -317,11 +317,7 @@ $(SRCDIR)/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfu
 $(SRCDIR)/checkunusedvar.o: lib/checkunusedvar.cpp lib/checkunusedvar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o $(SRCDIR)/checkunusedvar.o $(SRCDIR)/checkunusedvar.cpp
 
-<<<<<<< HEAD
-$(SRCDIR)/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/preprocessor.h lib/version.h
-=======
 $(SRCDIR)/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/preprocessor.h lib/version.h
->>>>>>> valueflow
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o $(SRCDIR)/cppcheck.o $(SRCDIR)/cppcheck.cpp
 
 $(SRCDIR)/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/config.h lib/suppressions.h lib/path.h lib/cppcheck.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h
@@ -531,6 +527,6 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/errorl
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o test/testunusedvar.o test/testunusedvar.cpp
 
-test/testvalueflow.o: test/testvalueflow.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h test/testutils.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h lib/valueflow.h
+test/testvalueflow.o: test/testvalueflow.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h test/testutils.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h lib/valueflow.h lib/token.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o test/testvalueflow.o test/testvalueflow.cpp
 
