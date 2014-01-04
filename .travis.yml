@@ -2,30 +2,55 @@ language: cpp
 compiler:
   - gcc
   - clang
+env:
+  global:
+#   unfortunately we need this to stay within 50min timelimit given by travis.
+#   this also turns off the debug/warning cxxflags
+    - CXXFLAGS=-O2
+  matrix:
+    - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
+    - SRCDIR=build VERIFY=1
+    - MAKEFLAGS="HAVE_RULES=yes"
+    -
 before_install:
+# install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils
+ - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3
 script:
-  - mkdir build
-  - make test SRCDIR=build VERIFY=1 -j 4
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch cli gui lib -igui/test
+# compile cppcheck, default build
+  - make -j4
+  - make test -j4
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppress=duplicateBranch cli gui lib build -igui/test
+# compile gui
   - cd gui
   - qmake
-  - make -j 4
+  - make -j4
+  - git clean -dfx .
+#     can't set this as env flags, so try again with HAVE_RULES=yes
+  - qmake HAVE_RULES=yes
+  - make -j4
   - cd ../
+# check htmlreport stuff
   - ./htmlreport/test_htmlreport.py
   - cd htmlreport
   - ./check.sh
   - cd ../
+# check if DESTDIR works  TODO: actually execute this
   - mkdir install_test
   - make DESTDIR=install_test install
-  - make clean
-  - make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg HAVE_RULES=yes -j 4
-  - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg HAVE_RULES=yes install
+# rm everything
+  - git clean -dfx
+# check what happens if we want to install it to some other dir,
+  - make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 4
+  - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
   - sudo mkdir -p /usr/share/cppcheck/cfg
   - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
+# check if it actually works:
   - /usr/bin/cppcheck ./cli
+# check if reduce tool compiles
   - make reduce -j 4
+# check if showtime=top5 works
+  - ./tools/test_showtimetop5.sh
 notifications:
   irc:
     channels:
