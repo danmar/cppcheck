@@ -155,7 +155,7 @@
     <Icon Id='cppcheckgui.exe' SourceFile='$(var.GuiBuildDir)\cppcheck-gui.exe' />
 
     <WixVariable Id="WixUILicenseRtf" Value="GPLv3.rtf" />
-    <WixVariable Id="WixUIBannerBmp" Value="Bitmaps\banner.bmp" />
-    <WixVariable Id="WixUIDialogBmp" Value="Bitmaps\dialog.bmp" />
+    <WixVariable Id="WixUIBannerBmp" Value="images\banner.jpg" />
+    <WixVariable Id="WixUIDialogBmp" Value="images\dialog.jpg" />
   </Product>
 </Wix>
