@@ -28,13 +28,14 @@
 #include <sstream>
 #include <stdexcept>
 #include "timer.h"
+#include "version.h"
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
 #include <pcre.h>
 #endif
 
-static const char Version[] = "1.63";
+static const char Version[] = CPPCHECK_VERSION_STRING;
 static const char ExtraVersion[] = "";
 
 static TimerResults S_timerResults;
