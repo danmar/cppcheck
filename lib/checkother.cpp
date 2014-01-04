@@ -2152,6 +2152,16 @@ void CheckOther::checkZeroDivision()
                     continue;
             }
             zerodivError(tok);
+        } else if (Token::Match(tok, "[/%]") && tok->astOperand2() && !tok->astOperand2()->values.empty()) {
+            // Value flow..
+            const std::list<ValueFlow::Value> &values = tok->astOperand2()->values;
+            std::list<ValueFlow::Value>::const_iterator it;
+            for (it = values.begin(); it != values.end(); ++it) {
+                if (it->intvalue == 0) {
+                    if (!it->link || _settings->isEnabled("warning"))
+                        zerodivError(tok);
+                }
+            }
         }
     }
 }

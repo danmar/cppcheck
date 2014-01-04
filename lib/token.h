@@ -21,10 +21,12 @@
 #define tokenH
 //---------------------------------------------------------------------------
 
+#include <list>
 #include <string>
 #include <vector>
 #include <ostream>
 #include "config.h"
+#include "valueflow.h"
 
 class Scope;
 class Function;
@@ -574,6 +576,9 @@ public:
     void originalName(const std::string & name) {
         _originalName = name;
     }
+
+    /** Values of token */
+    std::list<struct ValueFlow::Value> values;
 
 private:
     void next(Token *nextToken) {

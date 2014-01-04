@@ -40,7 +40,8 @@ Settings::Settings()
       enforcedLang(None),
       reportProgress(false),
       checkConfiguration(false),
-      checkLibrary(false)
+      checkLibrary(false),
+      valueFlow(false)
 {
     // This assumes the code you are checking is for the same architecture this is compiled on.
 #if defined(_WIN64)

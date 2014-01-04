@@ -1603,6 +1603,10 @@ bool Tokenizer::tokenize(std::istream &code,
         }
 
         list.createAst();
+
+        if (_settings->valueFlow)
+            ValueFlow::setValues(list.front());
+
         return true;
     }
     return false;
@@ -7020,7 +7024,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             tok->deleteNext();
             ret = true;
         }
-        
+
         if (Token::Match(tok->previous(), "[,;{}] ( %var% ) .")) {
             // Remove the parentheses
             tok->deleteThis();
