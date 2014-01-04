@@ -637,6 +637,18 @@ Options:
         <source>C++03</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Failed to load the selected library %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to load %1. Your Cppcheck installation is broken.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -734,6 +746,22 @@ Options:
         <source>Exclude</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Libraries:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Suppressions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Suppression list:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProjectFileDialog</name>
@@ -751,6 +779,14 @@ Options:
     </message>
     <message>
         <source>Select a directory to check</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Suppression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select error id suppress:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
