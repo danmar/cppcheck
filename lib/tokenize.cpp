@@ -7020,6 +7020,13 @@ bool Tokenizer::simplifyRedundantParentheses()
             tok->deleteNext();
             ret = true;
         }
+        
+        if (Token::Match(tok->previous(), "[,;{}] ( %var% ) .")) {
+            // Remove the parentheses
+            tok->deleteThis();
+            tok->deleteNext();
+            ret = true;
+        }
 
         if (Token::Match(tok->previous(), "[(,;{}] ( %var% (") &&
             tok->link()->previous() == tok->linkAt(2)) {
