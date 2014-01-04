@@ -5777,6 +5777,19 @@ private:
                           "}",
                           tokenizeAndStringify(code));
         }
+
+        {
+            // Ticket #5266
+            const char code[] = "class Machine {\n"
+                                "  static int const STACK_ORDER = 10, STACK_MAX = 1 << STACK_ORDER,"
+                                "                   STACK_GUARD = 2;\n"
+                                "};";
+            ASSERT_EQUALS("class Machine {\n"
+                          "static const int STACK_ORDER = 10 ; static const int STACK_MAX = 1 << STACK_ORDER ; "
+                          "static const int STACK_GUARD = 2 ;\n"
+                          "} ;",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void vardecl6() {
