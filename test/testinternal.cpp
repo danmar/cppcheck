@@ -317,7 +317,7 @@ private:
     }
 
     void invalidMultiCompare() {
-		// #5310
+        // #5310
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \";|%type%\");\n"

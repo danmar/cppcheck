@@ -61,8 +61,8 @@ void CheckInternal::checkTokenMatchPatterns()
                 // check multicompare pattern..
                 for (const char *s = start; s != end; s++) {
                     if (*s == '|') {
-                        if (*(s+1) == '%' && 
-                            std::isalpha(*(s+2)) && 
+                        if (*(s+1) == '%' &&
+                            std::isalpha(*(s+2)) &&
                             std::strncmp(s+1,"%op%",4)!=0 &&
                             std::strncmp(s+1,"%or%",4)!=0 &&
                             std::strncmp(s+1,"%cop%",5)!=0 &&
