@@ -40,6 +40,7 @@ private:
         TEST_CASE(unknownPattern)
         TEST_CASE(redundantNextPrevious)
         TEST_CASE(internalError)
+        TEST_CASE(invalidMultiCompare);
     }
 
     void check(const char code[]) {
@@ -222,7 +223,9 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo|%type|bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo|%type|bar\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%var%,%oror%) inside Token::Match() call: \"foo|%type|bar\"\n"
+                      "[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo|%type|bar\"\n"
+                      , errout.str());
 
         // Make sure we don't take %or% for a broken %oror%
         check("void f() {\n"
@@ -310,6 +313,21 @@ private:
               "      z[0] = 0;\n"
               "   }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void invalidMultiCompare() {
+		// #5310
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \";|%type%\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%var%,%oror%) inside Token::Match() call: \";|%type%\"\n", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \";|%oror%\");\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
