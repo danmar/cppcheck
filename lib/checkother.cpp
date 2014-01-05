@@ -2178,11 +2178,11 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
 {
     if (!_settings->isEnabled("warning"))
         return;
-        
+
     // Use experimental checking instead based on value flow analysis
     if (_settings->valueFlow)
-		return;
-        
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t numberOfFunctions = symbolDatabase->functionScopes.size();
     for (std::size_t functionIndex = 0; functionIndex < numberOfFunctions; ++functionIndex) {
