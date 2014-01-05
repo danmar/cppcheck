@@ -1605,7 +1605,7 @@ bool Tokenizer::tokenize(std::istream &code,
         list.createAst();
 
         if (_settings->valueFlow)
-            ValueFlow::setValues(list.front());
+            ValueFlow::setValues(&list, _errorLogger, _settings);
 
         return true;
     }

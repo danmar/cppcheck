@@ -22,15 +22,17 @@
 //---------------------------------------------------------------------------
 
 class Token;
+class TokenList;
+class ErrorLogger;
+class Settings;
 
 namespace ValueFlow {
-
     struct Value {
-        const Token *link;
+        const Token *condition;
         long long    intvalue;
     };
 
-    void setValues(Token *tokens);
+    void setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
 }
 
 #endif // valueflowH

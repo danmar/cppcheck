@@ -2158,8 +2158,10 @@ void CheckOther::checkZeroDivision()
             std::list<ValueFlow::Value>::const_iterator it;
             for (it = values.begin(); it != values.end(); ++it) {
                 if (it->intvalue == 0) {
-                    if (!it->link || _settings->isEnabled("warning"))
+                    if (it->condition == NULL)
                         zerodivError(tok);
+                    else if (_settings->isEnabled("warning"))
+                        zerodivcondError(it->condition,tok);
                 }
             }
         }
@@ -2176,6 +2178,11 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
 {
     if (!_settings->isEnabled("warning"))
         return;
+        
+    // Use experimental checking instead based on value flow analysis
+    if (_settings->valueFlow)
+		return;
+        
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t numberOfFunctions = symbolDatabase->functionScopes.size();
     for (std::size_t functionIndex = 0; functionIndex < numberOfFunctions; ++functionIndex) {
