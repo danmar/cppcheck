@@ -135,6 +135,7 @@ private:
         TEST_CASE(template40);  // #5055 - template specialization outside struct
         TEST_CASE(template41);  // #4710 - const in instantiation not handled perfectly
         TEST_CASE(template42);  // #4878 - variadic templates
+        TEST_CASE(template43);  // #5097 - assert due to '>>' not treated as end of template instantiation
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2365,6 +2366,19 @@ private:
                             "  }();\n"
                             "}";
         tok(code);
+    }
+
+    void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantation
+        const char code[] = "template <typename T> struct C { };"
+                            "template <typename T> struct D { static int f() { return C<T>::f(); } };"
+                            "template <typename T> inline int f2() { return D<T>::f(); }"
+                            "template <typename T> int f1(int x, T *) { int id = f2<T>(); return id; }"
+                            "template <> struct C < B < A >> {"
+                            "  static int f() {"
+                            "    return f1 < B < A >> (0, reinterpret_cast< B<A> *>(E<void *>::Int(-1)));"
+                            "  }"
+                            "};";
+        tok(code); // Don't assert
     }
 
 
