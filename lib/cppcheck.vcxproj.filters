@@ -128,6 +128,9 @@
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="valueflow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -254,6 +257,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\externals\tinyxml\tinyxml2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="valueflow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
