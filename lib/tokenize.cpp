@@ -5389,28 +5389,17 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                 if (varName->str() != "operator") {
                     tok2 = varName->next(); // The ',' or '=' token
 
-                    if (tok2->str() == "=") {
-                        if (isstatic) {
-                            if (Token::Match(tok2->next(), "%num%|%var% ,")) // ticket #5121
-                                tok2 = tok2->tokAt(2);
-                            else if (Token::Match(tok2->next(), "( %num%|%var% ) ,")) { // ticket #4450
-                                tok2->deleteNext();
-                                tok2->next()->deleteNext();
-                                tok2 = tok2->tokAt(2);
-                            } else
-                                tok2 = NULL;
-                        } else if (isconst && !ispointer) {
-                            //do not split const non-pointer variables..
-                            while (tok2 && tok2->str() != "," && tok2->str() != ";") {
-                                if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
-                                    tok2 = tok2->link();
-                                if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0)
-                                    tok2 = tok2->findClosingBracket();
-                                tok2 = tok2->next();
-                            }
-                            if (tok2 && tok2->str() == ";")
-                                tok2 = NULL;
+                    if (tok2->str() == "=" && (isstatic || (isconst && !ispointer))) {
+                        //do not split const non-pointer variables..
+                        while (tok2 && tok2->str() != "," && tok2->str() != ";") {
+                            if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
+                                tok2 = tok2->link();
+                            if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0)
+                                tok2 = tok2->findClosingBracket();
+                            tok2 = tok2->next();
                         }
+                        if (tok2 && tok2->str() == ";")
+                            tok2 = NULL;
                     }
                 } else
                     tok2 = NULL;
