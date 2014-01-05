@@ -329,6 +329,12 @@ private:
               "    Token::Match(tok, \";|%oror%\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // The %var%|%num% works..
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"%var%|%num%\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
