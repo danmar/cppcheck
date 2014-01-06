@@ -67,7 +67,6 @@ public:
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }
 
-    static void printTests();
     static std::size_t runTests(const options& args);
 };
 

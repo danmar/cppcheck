@@ -220,15 +220,6 @@ void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) con
     }
 }
 
-void TestFixture::printTests()
-{
-    const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();
-
-    for (std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it) {
-        std::cout << (*it)->classname << std::endl;
-    }
-}
-
 void TestFixture::run(const std::string &str)
 {
     testToRun = str;
