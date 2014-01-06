@@ -1,0 +1,4 @@
+uselessAssignmentPtrArg:build/checkstl.cpp
+assertWithSideEffect:build/checkuninitvar.cpp
+duplicateBranch:build/checkunusedvar.cpp
+duplicateBranch:lib/checkunusedvar.cpp 
