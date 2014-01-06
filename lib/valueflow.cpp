@@ -24,6 +24,14 @@
 #include "token.h"
 #include "tokenlist.h"
 
+static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what)
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+    callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok,tokenlist));
+    ErrorLogger::ErrorMessage errmsg(callstack, Severity::debug, "ValueFlow bailout: " + what, "valueFlowBailout", false);
+    errorLogger->reportErr(errmsg);
+}
+
 static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -58,6 +66,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         if (varid == 0U)
             continue;
 
+        // bailout: global variables
+        if (var && var->isGlobal()) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok, "global variable " + var->nameToken()->str());
+            continue;
+        }
+
         struct ValueFlow::Value val;
         val.condition = tok;
         val.intvalue = num;
@@ -74,6 +89,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             }
 
             if (tok2->varId() == varid) {
+                // bailout: assignment
+                if (Token::Match(tok2, "%var% =")) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
+                    continue;
+                }
+
                 tok2->values.push_back(val);
                 if (var && tok2 == var->nameToken())
                     break;

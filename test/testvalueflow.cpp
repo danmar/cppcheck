@@ -60,12 +60,41 @@ private:
         return false;
     }
 
+
+    void bailout(const char code[]) {
+        Settings settings;
+        settings.valueFlow = true;  // temporary flag
+        settings.debugwarnings = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        errout.str("");
+        tokenizer.tokenize(istr, "test.cpp");
+    }
+
+
     void valueFlowBeforeCondition() {
         const char code[] = "void f(int x) {\n"
                             "    int a = x;\n"
                             "    if (x == 123) {}\n"
                             "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
+
+        // bailout: assignment
+        bailout("void f(int x) {\n"
+                "    x = y;\n"
+                "    if (x == 123) {}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: assignment of x\n", errout.str());
+
+        // bailout: global variables
+        bailout("int x;\n"
+                "void f() {\n"
+                "    int a = x;\n"
+                "    if (x == 123) {}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
     }
 };
 
