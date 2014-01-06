@@ -31,13 +31,6 @@ def readdate(data):
             return None
         datepos = datepos + 1
 
-if os.path.isfile(os.path.expanduser('~/aws-debian.pem')):
-    subprocess.call(['scp',
-                     '-i',
-                     os.path.expanduser('~/aws-debian.pem'),
-                     'admin@ec2-54-201-59-232.us-west-2.compute.amazonaws.com:daca2/results-*.txt',
-                     os.path.expanduser('~/daca2/')])
-
 path = '.'
 if len(sys.argv) == 2:
     path = sys.argv[1]
