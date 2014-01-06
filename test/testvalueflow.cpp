@@ -35,6 +35,7 @@ private:
 
     void run() {
         TEST_CASE(valueFlowBeforeCondition);
+        TEST_CASE(valueFlowSubFunction);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -53,7 +54,6 @@ private:
                     if (it->intvalue == value)
                         return true;
                 }
-                return false;
             }
         }
 
@@ -102,6 +102,23 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
+    }
+
+    void valueFlowSubFunction() {
+        const char *code;
+
+        code = "void f1(int x) { return x; }\n"
+               "void f2(int x) {\n"
+               "    f1(123);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 1U, 123));
+
+        code = "void f1(int x) { return x; }\n"
+               "void f2(int x) {\n"
+               "    f1(x);\n"
+               "    if (x==0){}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 1U, 0));
     }
 };
 

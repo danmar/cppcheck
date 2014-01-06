@@ -206,6 +206,7 @@ void Token::deleteThis()
         _function = _next->_function;
         _variable = _next->_variable;
         _originalName = _next->_originalName;
+        values = _next->values;
         if (_link)
             _link->link(this);
 
@@ -229,6 +230,7 @@ void Token::deleteThis()
         _function = _previous->_function;
         _variable = _previous->_variable;
         _originalName = _previous->_originalName;
+        values = _previous->values;
         if (_link)
             _link->link(this);
 
