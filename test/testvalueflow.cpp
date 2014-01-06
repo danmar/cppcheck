@@ -34,7 +34,7 @@ public:
 private:
 
     void run() {
-        valueFlowBeforeCondition();
+        TEST_CASE(valueFlowBeforeCondition);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
