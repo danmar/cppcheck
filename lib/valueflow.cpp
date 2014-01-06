@@ -100,6 +100,12 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 if (var && tok2 == var->nameToken())
                     break;
             }
+
+            if (tok2->str() == "}") {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on }");
+                break;
+            }
         }
     }
 }
