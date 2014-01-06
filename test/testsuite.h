@@ -72,7 +72,6 @@ public:
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) { currentTest = classname + "::" + #NAME; if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
 #define ASSERT( CONDITION )  assert_(__FILE__, __LINE__, CONDITION)
-#define TODO_ASSERT( CONDITION )  todoAssert(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED , ACTUAL )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
