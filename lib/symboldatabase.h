@@ -65,6 +65,10 @@ public:
     } needInitialization;
 
     struct BaseInfo {
+        BaseInfo() :
+            type(NULL), nameTok(NULL), access(Public), isVirtual(false) {
+        }
+
         std::string name;
         const Type* type;
         const Token* nameTok;
@@ -73,6 +77,10 @@ public:
     };
 
     struct FriendInfo {
+        FriendInfo() :
+            nameStart(NULL), nameEnd(NULL), type(NULL) {
+        }
+
         const Token* nameStart;
         const Token* nameEnd;
         std::string name;

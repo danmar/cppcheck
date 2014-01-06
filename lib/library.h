@@ -98,8 +98,12 @@ public:
 
     class ArgumentChecks {
     public:
-        ArgumentChecks() {
-            notbool = notnull = notuninit = formatstr = strz = false;
+        ArgumentChecks() :
+            notbool(false),
+            notnull(false),
+            notuninit(false),
+            formatstr(false),
+            strz(false) {
         }
 
         bool         notbool;
