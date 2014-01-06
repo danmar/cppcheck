@@ -362,7 +362,7 @@ $(SRCDIR)/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/errorlogger.h lib/conf
 $(SRCDIR)/tokenlist.o: lib/tokenlist.cpp lib/tokenlist.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/path.h lib/preprocessor.h lib/settings.h lib/library.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o $(SRCDIR)/tokenlist.o $(SRCDIR)/tokenlist.cpp
 
-$(SRCDIR)/valueflow.o: lib/valueflow.cpp lib/valueflow.h lib/token.h lib/config.h lib/mathlib.h
+$(SRCDIR)/valueflow.o: lib/valueflow.cpp lib/valueflow.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/token.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o $(SRCDIR)/valueflow.o $(SRCDIR)/valueflow.cpp
 
 cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlineparser.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h cli/filelister.h

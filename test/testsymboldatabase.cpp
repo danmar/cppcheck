@@ -1760,6 +1760,19 @@ private:
                           "};");
             ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->functionList.front().isImplicitlyVirtual(false)); // Default false, but we saw "virtual" -> true
         }
+        // #5289
+        {
+            GET_SYMBOL_DB("template<>\n"
+                          "class Bar<void, void> {\n"
+                          "};\n"
+                          "template<typename K, typename V, int KeySize>\n"
+                          "class Bar : private Bar<void, void> {\n"
+                          "   void foo() {\n"
+                          "   }\n"
+                          "};");
+            ASSERT(db && db->findScopeByName("Bar") && !db->findScopeByName("Bar")->functionList.front().isImplicitlyVirtual(false));
+        }
+
     }
 
     void garbage() {

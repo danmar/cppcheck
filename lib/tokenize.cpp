@@ -370,6 +370,7 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 }
 
 struct Space {
+    Space() : classEnd(NULL), isNamespace(false) { }
     std::string className;
     const Token * classEnd;
     bool isNamespace;
@@ -1605,7 +1606,7 @@ bool Tokenizer::tokenize(std::istream &code,
         list.createAst();
 
         if (_settings->valueFlow)
-            ValueFlow::setValues(list.front());
+            ValueFlow::setValues(&list, _errorLogger, _settings);
 
         return true;
     }
@@ -7531,23 +7532,23 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
 
 class EnumValue {
 public:
-    EnumValue() {
-        name  = 0;
-        value = 0;
-        start = 0;
-        end   = 0;
+    EnumValue() :
+        name(NULL),
+        value(NULL),
+        start(NULL),
+        end(NULL) {
     }
-    EnumValue(const EnumValue &ev) {
-        name  = ev.name;
-        value = ev.value;
-        start = ev.start;
-        end   = ev.end;
+    EnumValue(const EnumValue &ev) :
+        name(ev.name),
+        value(ev.value),
+        start(ev.start),
+        end(ev.end) {
     }
-    EnumValue(Token *name_, Token *value_, Token *start_, Token *end_) {
-        name  = name_;
-        value = value_;
-        start = start_;
-        end   = end_;
+    EnumValue(Token *name_, Token *value_, Token *start_, Token *end_) :
+        name(name_),
+        value(value_),
+        start(start_),
+        end(end_) {
     }
 
     void simplify(const std::map<std::string, EnumValue> &enumValues) {

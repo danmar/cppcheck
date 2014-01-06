@@ -2023,7 +2023,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
 bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
 {
     // check each base class
-    for (unsigned int i = 0; i < baseType->derivedFrom.size(); ++i) {
+    for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
         // check if base class exists in database
         if (baseType->derivedFrom[i].type && baseType->derivedFrom[i].type->classScope) {
             const Scope *parent = baseType->derivedFrom[i].type->classScope;
@@ -2055,9 +2055,11 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
                 }
             }
 
-            if (!baseType->derivedFrom[i].type->derivedFrom.empty())
-                if (isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))
+            if (!baseType->derivedFrom[i].type->derivedFrom.empty()) {
+                // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN
+                if ((baseType != baseType->derivedFrom[i].type) && isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))
                     return true;
+            }
         } else {
             // unable to find base class so assume it has no virtual function
             safe = false;

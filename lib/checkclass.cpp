@@ -468,7 +468,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                         }
                     }
                 }
-            } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const" && Token::Match(ftok->next()->link()->next(), ",|{|%type%")) {
+            } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const" && Token::Match(ftok->next()->link()->next(), "%type%|,|{")) {
                 initVar(ftok->str(), scope, usage);
                 ftok = ftok->linkAt(1);
             } else if (level != 0 && Token::Match(ftok, "%var% =")) // assignment in the initializer: var(value = x)

@@ -22,6 +22,8 @@
 #include "symboldatabase.h"
 #include <string>
 #include <set>
+#include <cstring>
+#include <cctype>
 
 // Register this check class (by creating a static instance of it).
 // Disabled in release builds
@@ -46,6 +48,34 @@ void CheckInternal::checkTokenMatchPatterns()
         if (pattern.empty()) {
             simplePatternError(tok, pattern, funcname);
             continue;
+        }
+
+        const char *p = pattern.c_str();
+        while (*p) {
+            while (*p && std::isspace(*p))
+                p++;
+            const char *start = p;
+            while (*p && !std::isspace(*p))
+                p++;
+            const char *end = p - 1;
+            if (start < end && !(*start == '[' && *end == ']')) {
+                bool cmd = (*start=='%' && std::isalpha(*(start+1)));
+                // check multicompare pattern..
+                for (const char *s = start; s != end; s++) {
+                    if (*s == '|') {
+                        if (!(*(s+1) == '%' && std::isalpha(*(s+2)))) {
+                            cmd = false;
+                        } else if (!cmd &&
+                                   std::strncmp(s+1,"%op%",4)!=0 &&
+                                   std::strncmp(s+1,"%or%",4)!=0 &&
+                                   std::strncmp(s+1,"%cop%",5)!=0 &&
+                                   std::strncmp(s+1,"%var%",5)!=0 &&
+                                   std::strncmp(s+1,"%oror%",6)!=0) {
+                            multiComparePatternError(tok, pattern, funcname);
+                        }
+                    }
+                }
+            }
         }
 
         // Check for signs of complex patterns
@@ -243,6 +273,13 @@ void CheckInternal::checkRedundantNextPrevious()
             redundantNextPreviousError(tok, func1, func2);
         }
     }
+}
+
+void CheckInternal::multiComparePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
+{
+    reportError(tok, Severity::error, "multiComparePatternError",
+                "Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%var%,%oror%) inside Token::" + funcname + "() call: \"" + pattern + "\""
+               );
 }
 
 void CheckInternal::simplePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)

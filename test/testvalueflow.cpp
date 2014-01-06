@@ -34,7 +34,8 @@ public:
 private:
 
     void run() {
-        valueFlowBeforeCondition();
+        TEST_CASE(valueFlowBeforeCondition);
+        TEST_CASE(valueFlowSubFunction);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -53,12 +54,25 @@ private:
                     if (it->intvalue == value)
                         return true;
                 }
-                return false;
             }
         }
 
         return false;
     }
+
+
+    void bailout(const char code[]) {
+        Settings settings;
+        settings.valueFlow = true;  // temporary flag
+        settings.debugwarnings = true;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        errout.str("");
+        tokenizer.tokenize(istr, "test.cpp");
+    }
+
 
     void valueFlowBeforeCondition() {
         const char code[] = "void f(int x) {\n"
@@ -66,6 +80,45 @@ private:
                             "    if (x == 123) {}\n"
                             "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
+
+        // bailout: if/else/etc
+        bailout("void f(int x) {\n"
+                "    if (x != 123) { b = x; }\n"
+                "    if (x == 123) {}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: variable x stopping on }\n", errout.str());
+
+        // bailout: assignment
+        bailout("void f(int x) {\n"
+                "    x = y;\n"
+                "    if (x == 123) {}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: assignment of x\n", errout.str());
+
+        // bailout: global variables
+        bailout("int x;\n"
+                "void f() {\n"
+                "    int a = x;\n"
+                "    if (x == 123) {}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
+    }
+
+    void valueFlowSubFunction() {
+        const char *code;
+
+        code = "void f1(int x) { return x; }\n"
+               "void f2(int x) {\n"
+               "    f1(123);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 1U, 123));
+
+        code = "void f1(int x) { return x; }\n"
+               "void f2(int x) {\n"
+               "    f1(x);\n"
+               "    if (x==0){}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 1U, 0));
     }
 };
 

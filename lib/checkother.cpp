@@ -2158,8 +2158,10 @@ void CheckOther::checkZeroDivision()
             std::list<ValueFlow::Value>::const_iterator it;
             for (it = values.begin(); it != values.end(); ++it) {
                 if (it->intvalue == 0) {
-                    if (!it->link || _settings->isEnabled("warning"))
+                    if (it->condition == NULL)
                         zerodivError(tok);
+                    else if (_settings->isEnabled("warning"))
+                        zerodivcondError(it->condition,tok);
                 }
             }
         }
@@ -2176,6 +2178,11 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
 {
     if (!_settings->isEnabled("warning"))
         return;
+
+    // Use experimental checking instead based on value flow analysis
+    if (_settings->valueFlow)
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t numberOfFunctions = symbolDatabase->functionScopes.size();
     for (std::size_t functionIndex = 0; functionIndex < numberOfFunctions; ++functionIndex) {
@@ -2297,6 +2304,24 @@ void CheckOther::checkZeroDivisionOrUselessCondition()
     }
 }
 
+// TODO: this utility function should probably be moved to some common file
+static std::string astStringify(const Token *top)
+{
+    const Token *start = top;
+    while (start->astOperand1() && start->astOperand2())
+        start = start->astOperand1();
+    const Token *end = top;
+    while (end->astOperand1() && end->astOperand2())
+        end = end->astOperand2();
+    std::string str;
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        str += tok->str();
+        if (Token::Match(tok, "%var%|%num% %var%|%num%"))
+            str += " ";
+    }
+    return str + end->str();
+}
+
 void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
 {
     std::list<const Token *> callstack;
@@ -2307,9 +2332,13 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
         callstack.push_back(tokdiv);
     }
     std::string condition;
-    if (Token::Match(tokcond, "%num% <|<=")) {
+    if (!tokcond) {
+        // getErrorMessages
+    } else if (Token::Match(tokcond, "%num% <|<=")) {
         condition = tokcond->strAt(2) + ((tokcond->strAt(1) == "<") ? ">" : ">=") + tokcond->str();
-    } else if (tokcond) {
+    } else if (tokcond->isComparisonOp()) {
+        condition = astStringify(tokcond);
+    } else {
         if (tokcond->str() == "!")
             condition = tokcond->next()->str() + "==0";
         else
