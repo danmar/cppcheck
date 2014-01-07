@@ -94,6 +94,10 @@ void CheckOther::checkZeroDivision()
 
 #include "cppcheckexecutor.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 /**
  * Main function of cppcheck
  *
@@ -104,6 +108,11 @@ void CheckOther::checkZeroDivision()
 int main(int argc, char* argv[])
 {
     CppCheckExecutor exec;
+#ifdef _WIN32
+	char exename[1024] = {0};
+	GetModuleFileNameA(NULL, exename, sizeof(exename)/sizeof(exename[0])-1);
+	argv[0] = exename;
+#endif
     return exec.check(argc, argv);
 }
 
