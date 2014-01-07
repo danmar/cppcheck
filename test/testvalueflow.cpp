@@ -82,6 +82,12 @@ private:
                             "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
 
+        // bailout: ?:
+        bailout("void f(int x) {\n"
+                "    y = ((x<0) ? x : ((x==2)?3:4));\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: variable x stopping on :\n", errout.str());
+
         // bailout: if/else/etc
         bailout("void f(int x) {\n"
                 "    if (x != 123) { b = x; }\n"

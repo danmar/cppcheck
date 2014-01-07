@@ -62,6 +62,11 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             } else {
                 continue;
             }
+            if (Token::Match(tok->astParent(), "[?:]")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " stopping on " + tok->astParent()->str());
+                continue;
+            }
         } else if (Token::Match(tok->previous(), "if|while ( %var% %oror%|&&|)") ||
                    Token::Match(tok, "%oror%|&& %var% %oror%|&&|)")) {
             varid = tok->next()->varId();
