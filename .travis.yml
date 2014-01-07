@@ -51,6 +51,8 @@ script:
   - make reduce -j 4
 # check if showtime=top5 works
   - ./tools/test_showtimetop5.sh
+# check the files in cgf dir with xmllint
+  - xmllint --noout cfg/*
 notifications:
   irc:
     channels:
