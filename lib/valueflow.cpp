@@ -85,9 +85,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             continue;
         }
 
-        struct ValueFlow::Value val;
-        val.condition = tok;
-        val.intvalue = num;
+        const ValueFlow::Value val(tok, num);
 
         for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
             if (!tok2) {
@@ -122,6 +120,59 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
     }
 }
 
+static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "for ("))
+            continue;
+
+        tok = tok->tokAt(2);
+        if (!Token::Match(tok,"%type%| %var% = %num% ;")) { // TODO: don't use %num%
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok, "For loop not handled");
+            continue;
+        }
+        Token * const vartok = tok->tokAt(Token::Match(tok, "%var% =") ? 0 : 1);
+        const MathLib::bigint num1 = MathLib::toLongNumber(vartok->strAt(2));
+        if (vartok->varId() == 0U)
+            continue;
+        tok = vartok->tokAt(4);
+        if (!Token::Match(tok, "%varid% <|<=|!= %num% ; %varid% ++ ) {", vartok->varId())) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok, "For loop not handled");
+            continue;
+        }
+        const MathLib::bigint num2 = MathLib::toLongNumber(tok->strAt(2)) - ((tok->strAt(1)=="<=") ? 0 : 1);
+
+        Token * const bodyStart = tok->tokAt(7);
+        const Token * const bodyEnd   = bodyStart->link();
+
+        // Is variable modified inside for loop
+        bool modified = false;
+        for (const Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
+            if (Token::Match(tok2, "%varid% =", vartok->varId())) {
+                modified = true;
+                break;
+            }
+        }
+        if (modified)
+            continue;
+
+        for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
+            if (tok2->varId() == vartok->varId()) {
+                tok2->values.push_back(ValueFlow::Value(num1));
+                tok2->values.push_back(ValueFlow::Value(num2));
+            }
+
+            if (tok2->str() == "{") {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "For loop variable " + vartok->str() + " stopping on {");
+                break;
+            }
+        }
+    }
+}
+
 static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     std::list<ValueFlow::Value> argvalues;
@@ -129,11 +180,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         if (Token::Match(tok, "[(,] %var% [,)]") && !tok->next()->values.empty())
             argvalues = tok->next()->values;
         else if (Token::Match(tok, "[(,] %num% [,)]")) {
-            ValueFlow::Value val;
-            val.condition = 0;
-            val.intvalue = MathLib::toLongNumber(tok->next()->str());
             argvalues.clear();
-            argvalues.push_back(val);
+            argvalues.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
         } else {
             continue;
         }
@@ -184,6 +232,7 @@ void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->values.clear();
 
+    valueFlowForLoop(tokenlist, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, errorLogger, settings);
     valueFlowSubFunction(tokenlist, errorLogger, settings);
 }

@@ -35,6 +35,7 @@ private:
 
     void run() {
         TEST_CASE(valueFlowBeforeCondition);
+        TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
     }
 
@@ -102,6 +103,16 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
+    }
+
+    void valueFlowForLoop() {
+        const char code[] = "void f() {\n"
+                            "    for (int x = 0; x < 10; x++)\n"
+                            "        a[x] = 0;\n"
+                            "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 10));
     }
 
     void valueFlowSubFunction() {

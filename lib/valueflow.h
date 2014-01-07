@@ -27,7 +27,11 @@ class ErrorLogger;
 class Settings;
 
 namespace ValueFlow {
-    struct Value {
+    class Value {
+    public:
+        Value() : condition(0), intvalue(0) {}
+        Value(long long val) : condition(0), intvalue(val) {}
+        Value(const Token *c, long long val) : condition(c), intvalue(val) {}
         const Token *condition;
         long long    intvalue;
     };
