@@ -87,7 +87,10 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
 
         const ValueFlow::Value val(tok, num);
         ValueFlow::Value val2;
-        if (num==1 && var->typeStartToken()->isUnsigned() && Token::Match(tok,"<=|>="))
+        if (var &&
+            var->typeStartToken()->isUnsigned() &&
+            ((num==0 && Token::Match(tok,"<|>"))   ||
+             (num==1 && Token::Match(tok,"<=|>="))))
             val2 = ValueFlow::Value(tok,0);
 
         for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
