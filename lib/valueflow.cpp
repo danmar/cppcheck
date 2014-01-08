@@ -192,6 +192,9 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 {
     std::list<ValueFlow::Value> argvalues;
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "[(,]"))
+            continue;
+
         // passing value(s) to function
         if (Token::Match(tok, "[(,] %var% [,)]") && !tok->next()->values.empty())
             argvalues = tok->next()->values;
@@ -199,7 +202,18 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             argvalues.clear();
             argvalues.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
         } else {
-            continue;
+            // bool operator => values 1/0 are passed to function..
+            const Token *op = tok->next();
+            while (op && op->astParent() && !Token::Match(op->astParent(), "[(,]"))
+                op = op->astParent();
+            if (op && (op->isComparisonOp() || op->str() == "!")) {
+                argvalues.clear();
+                argvalues.push_back(ValueFlow::Value(0));
+                argvalues.push_back(ValueFlow::Value(1));
+            } else {
+                // possible values are unknown..
+                continue;
+            }
         }
 
         const Token * const argumentToken = tok->next();
@@ -230,7 +244,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         // Set value in function scope..
         const unsigned int varid2 = arg->nameToken()->varId();
         for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%cop%|return %varid%", varid2)) {
+            if (Token::Match(tok2, "%cop%|return %varid%", varid2) || Token::Match(tok2, "= %varid% %cop%|;", varid2)) {
                 tok2 = tok2->next();
                 std::list<ValueFlow::Value> &values = const_cast<Token*>(tok2)->values;
                 values.insert(values.begin(), argvalues.begin(), argvalues.end());
