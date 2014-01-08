@@ -76,17 +76,32 @@ private:
 
 
     void valueFlowBeforeCondition() {
-        const char code[] = "void f(int x) {\n"
-                            "    int a = x;\n"
-                            "    if (x == 123) {}\n"
-                            "}";
+        const char *code;
+
+        code = "void f(int x) {\n"
+               "    int a = x;\n"
+               "    if (x == 123) {}\n"
+               "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
 
         // bailout: ?:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: variable x stopping on :\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: no simplification of x within ?: expression\n", errout.str());
+
+        bailout("int f(int x) {\n"
+                "  int r = x ? 1 / x : 0;\n"
+                "  if (x == 0) {}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: no simplification of x within ?: expression\n", errout.str());
+
+        code = "void f(int x) {\n"
+               "    int a = x;\n"
+               "    a = b ? x/2 : 20/x;\n"
+               "    if (x == 123) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
 
         // bailout: if/else/etc
         bailout("void f(int x) {\n"

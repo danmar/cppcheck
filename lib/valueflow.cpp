@@ -50,7 +50,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         unsigned int varid;
         MathLib::bigint num;
         const Variable *var;
-        if (Token::Match(tok, "==|!=|>=|<=") && tok->astOperand1() && tok->astOperand2()) {
+        if (tok->isComparisonOp() && tok->astOperand1() && tok->astOperand2()) {
             if (tok->astOperand1()->isName() && tok->astOperand2()->isNumber()) {
                 varid = tok->astOperand1()->varId();
                 var = tok->astOperand1()->variable();
@@ -60,11 +60,6 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 var = tok->astOperand2()->variable();
                 num = MathLib::toLongNumber(tok->astOperand1()->str());
             } else {
-                continue;
-            }
-            if (Token::Match(tok->astParent(), "[?:]")) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " stopping on " + tok->astParent()->str());
                 continue;
             }
         } else if (Token::Match(tok->previous(), "if|while ( %var% %oror%|&&|)") ||
@@ -109,6 +104,16 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
                     break;
+                }
+
+                // skip if variable is conditionally used in ?: expression.
+                const Token *parent = tok2->astParent();
+                while (parent && !Token::Match(parent, "[?:]"))
+                    parent = parent->astParent();
+                if (parent) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "no simplification of " + tok2->str() + " within ?: expression");
+                    continue;
                 }
 
                 tok2->values.push_back(val);
