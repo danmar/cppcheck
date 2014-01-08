@@ -103,7 +103,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
 
             if (tok2->varId() == varid) {
                 // bailout: assignment
-                if (Token::Match(tok2, "%var% =")) {
+                if (Token::Match(tok2->previous(), "!!* %var% =")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
                     break;

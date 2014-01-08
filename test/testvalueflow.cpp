@@ -91,6 +91,12 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
+        code = "void f(int *x) {\n"
+               "    *x = 100;\n"
+               "    if (x) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+
         // bailout: ?:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"

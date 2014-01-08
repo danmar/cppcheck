@@ -86,6 +86,7 @@ private:
         Settings settings;
         settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
+        //settings.valueFlow = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
