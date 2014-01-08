@@ -109,9 +109,9 @@ int main(int argc, char* argv[])
 {
     CppCheckExecutor exec;
 #ifdef _WIN32
-	char exename[1024] = {0};
-	GetModuleFileNameA(NULL, exename, sizeof(exename)/sizeof(exename[0])-1);
-	argv[0] = exename;
+    char exename[1024] = {0};
+    GetModuleFileNameA(NULL, exename, sizeof(exename)/sizeof(exename[0])-1);
+    argv[0] = exename;
 #endif
     return exec.check(argc, argv);
 }
