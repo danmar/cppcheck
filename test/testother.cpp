@@ -210,7 +210,6 @@ private:
         settings->inconclusive = inconclusive;
         settings->experimental = experimental;
         settings->standards.posix = posix;
-        settings->valueFlow = true;
 
         if (posix) {
             const char cfg[] = "<?xml version=\"1.0\"?>\n"
