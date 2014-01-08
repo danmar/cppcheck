@@ -182,6 +182,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 {
     std::list<ValueFlow::Value> argvalues;
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        // passing value(s) to function
         if (Token::Match(tok, "[(,] %var% [,)]") && !tok->next()->values.empty())
             argvalues = tok->next()->values;
         else if (Token::Match(tok, "[(,] %num% [,)]")) {
@@ -226,7 +227,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             } else if (tok2->varId() == varid2 || tok2->str() == "{") {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "parameter " + arg->nameToken()->str());
-                continue;
+                break;
             }
         }
     }

@@ -136,6 +136,16 @@ private:
                "    if (x==0){}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 1U, 0));
+
+        code = "void f1(int x) {\n"
+               "    if (x == 0) return;\n"
+               "    int y = 1234 / x;\n"
+               "}\n"
+               "\n"
+               "void f2() {\n"
+               "    f1(0);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 };
 
