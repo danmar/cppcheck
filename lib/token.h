@@ -578,7 +578,7 @@ public:
     }
 
     /** Values of token */
-    std::list<struct ValueFlow::Value> values;
+    std::list<ValueFlow::Value> values;
 
 private:
     void next(Token *nextToken) {
