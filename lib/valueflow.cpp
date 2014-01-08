@@ -206,7 +206,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             const Token *op = tok->next();
             while (op && op->astParent() && !Token::Match(op->astParent(), "[(,]"))
                 op = op->astParent();
-            if (op && (op->isComparisonOp() || op->str() == "!")) {
+            if (Token::Match(op, "%comp%|%oror%|&&|!")) {
                 argvalues.clear();
                 argvalues.push_back(ValueFlow::Value(0));
                 argvalues.push_back(ValueFlow::Value(1));
