@@ -84,6 +84,13 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
 
+        code = "void f(unsigned int x) {\n"
+               "    int a = x;\n"
+               "    if (x >= 1) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+
         // bailout: ?:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
