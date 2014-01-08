@@ -10074,6 +10074,9 @@ private:
 
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
+
+        ASSERT_EQUALS("a0>bc/?d:", testAst("(a>0) ? (b/(c)) : d;"));
+        ASSERT_EQUALS("abc/+d+", testAst("a + (b/(c)) + d;"));
     }
 
     void astpar() const { // parentheses
