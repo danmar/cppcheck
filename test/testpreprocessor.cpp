@@ -2010,6 +2010,10 @@ private:
         const char filedata7[] = "#define A (1.)\n"
                                  "a=A;";
         ASSERT_EQUALS("\na=$($1.);", OurPreprocessor::expandMacros(filedata7));
+
+        const char filedata8[] = "#define A (8.0E+007)\n"
+                                 "a=A;";
+        ASSERT_EQUALS("\na=$($8.0E+007);", OurPreprocessor::expandMacros(filedata8));
     }
 
     void macroInMacro1() {

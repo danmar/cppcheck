@@ -3161,6 +3161,11 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                 i++;
                                 if (i<macrocode.size() && std::isdigit(macrocode[i]))
                                     i++;
+                                if (i+1U < macrocode.size() &&
+                                    (macrocode[i] == 'e' || macrocode[i] == 'E') &&
+                                    (macrocode[i+1] == '+' || macrocode[i+1] == '-')) {
+                                    i+=2;
+                                }
                             }
                         } else if (std::isalnum(macrocode[i]) || macrocode[i] == '_') {
                             if ((i > 0U)                        &&
@@ -3183,7 +3188,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                             if (i+2U < macrocode.size()    &&
                                 std::isdigit(macrocode[i]) &&
                                 macrocode[i+1] == '.'      &&
-                                std::isalnum(macrocode[i+2])) {
+                                std::isalpha(macrocode[i+2])) {
                                 i += 2U;
                                 if (i+2U < macrocode.size() &&
                                     (macrocode[i+0] == 'e' || macrocode[i+0] == 'E')   &&
