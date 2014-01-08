@@ -53,6 +53,12 @@ script:
   - ./tools/test_showtimetop5.sh
 # check the files in cgf dir with xmllint
   - xmllint --noout cfg/*
+# check if Makefile needs to be regenerated
+  - git clean -dfx
+  - make dmake
+  - ./dmake
+#   now, if dmake modified the makefile, return false!
+  - git diff --exit-code
 notifications:
   irc:
     channels:
