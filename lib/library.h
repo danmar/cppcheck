@@ -47,6 +47,7 @@ public:
     Library();
 
     bool load(const char exename [], const char path []);
+    bool loadxmldata(const char xmldata[], std::size_t len);
     bool load(const tinyxml2::XMLDocument &doc);
 
     /** get allocation id for function (by name) */

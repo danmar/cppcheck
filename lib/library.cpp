@@ -89,6 +89,12 @@ bool Library::load(const char exename[], const char path[])
     return (error == tinyxml2::XML_NO_ERROR) && load(doc);
 }
 
+bool Library::loadxmldata(const char xmldata[], std::size_t len)
+{
+    tinyxml2::XMLDocument doc;
+    return (tinyxml2::XML_NO_ERROR == doc.Parse(xmldata, len)) && load(doc);
+}
+
 bool Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
